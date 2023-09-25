@@ -22,15 +22,16 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-03-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2022-08-01/compute"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/Azure/go-autorest/autorest/to"
 
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
+	"k8s.io/utils/pointer"
 
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
+	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
 )
 
 // AttachDisk attaches a disk to vm
@@ -88,7 +89,7 @@ func (as *availabilitySet) AttachDisk(ctx context.Context, nodeName types.NodeNa
 				Caching:                 opt.cachingMode,
 				CreateOption:            "attach",
 				ManagedDisk:             managedDisk,
-				WriteAcceleratorEnabled: to.BoolPtr(opt.writeAcceleratorEnabled),
+				WriteAcceleratorEnabled: pointer.Bool(opt.writeAcceleratorEnabled),
 			})
 	}
 
@@ -100,10 +101,6 @@ func (as *availabilitySet) AttachDisk(ctx context.Context, nodeName types.NodeNa
 		},
 	}
 	klog.V(2).Infof("azureDisk - update(%s): vm(%s) - attach disk list(%s)", nodeResourceGroup, vmName, diskMap)
-	// Invalidate the cache right after updating
-	defer func() {
-		_ = as.DeleteCacheForNode(vmName)
-	}()
 
 	future, rerr := as.VirtualMachinesClient.UpdateAsync(ctx, nodeResourceGroup, vmName, newVM, "attach_disk")
 	if rerr != nil {
@@ -124,8 +121,13 @@ func (as *availabilitySet) AttachDisk(ctx context.Context, nodeName types.NodeNa
 }
 
 func (as *availabilitySet) DeleteCacheForNode(nodeName string) error {
-	_ = as.cloud.vmCache.Delete(nodeName)
-	return nil
+	err := as.cloud.vmCache.Delete(nodeName)
+	if err == nil {
+		klog.V(2).Infof("DeleteCacheForNode(%s) successfully", nodeName)
+	} else {
+		klog.Errorf("DeleteCacheForNode(%s) failed with %v", nodeName, err)
+	}
+	return err
 }
 
 // WaitForUpdateResult waits for the response of the update request
@@ -136,8 +138,16 @@ func (as *availabilitySet) WaitForUpdateResult(ctx context.Context, future *azur
 		return err
 	}
 
-	if rerr := as.VirtualMachinesClient.WaitForUpdateResult(ctx, future, nodeResourceGroup, source); rerr != nil {
+	result, rerr := as.VirtualMachinesClient.WaitForUpdateResult(ctx, future, nodeResourceGroup, source)
+	if rerr != nil {
 		return rerr.Error()
+	}
+
+	// clean node cache first and then update cache
+	_ = as.DeleteCacheForNode(vmName)
+	if result != nil && result.VirtualMachineProperties != nil {
+		// if we have an updated result, we update the vmss vm cache
+		as.updateCache(vmName, result)
 	}
 	return nil
 }
@@ -168,7 +178,7 @@ func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeNa
 				(disk.ManagedDisk != nil && diskURI != "" && strings.EqualFold(*disk.ManagedDisk.ID, diskURI)) {
 				// found the disk
 				klog.V(2).Infof("azureDisk - detach disk: name %s uri %s", diskName, diskURI)
-				disks[i].ToBeDetached = to.BoolPtr(true)
+				disks[i].ToBeDetached = pointer.Bool(true)
 				bFoundDisk = true
 			}
 		}
@@ -176,13 +186,13 @@ func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeNa
 
 	if !bFoundDisk {
 		// only log here, next action is to update VM status with original meta data
-		klog.Errorf("detach azure disk on node(%s): disk list(%s) not found", nodeName, diskMap)
+		klog.Warningf("detach azure disk on node(%s): disk list(%s) not found", nodeName, diskMap)
 	} else {
 		if strings.EqualFold(as.cloud.Environment.Name, consts.AzureStackCloudName) && !as.Config.DisableAzureStackCloud {
 			// Azure stack does not support ToBeDetached flag, use original way to detach disk
 			newDisks := []compute.DataDisk{}
 			for _, disk := range disks {
-				if !to.Bool(disk.ToBeDetached) {
+				if !pointer.BoolDeref(disk.ToBeDetached, false) {
 					newDisks = append(newDisks, disk)
 				}
 			}
@@ -198,19 +208,28 @@ func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeNa
 		},
 	}
 	klog.V(2).Infof("azureDisk - update(%s): vm(%s) - detach disk list(%s)", nodeResourceGroup, vmName, nodeName, diskMap)
-	// Invalidate the cache right after updating
+
+	var result *compute.VirtualMachine
+	var rerr *retry.Error
 	defer func() {
+		// invalidate the cache right after updating
 		_ = as.DeleteCacheForNode(vmName)
+
+		// update the cache with the updated result only if its not nil
+		// and contains the VirtualMachineProperties
+		if rerr == nil && result != nil && result.VirtualMachineProperties != nil {
+			as.updateCache(vmName, result)
+		}
 	}()
 
-	rerr := as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
+	result, rerr = as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
 	if rerr != nil {
 		klog.Errorf("azureDisk - detach disk list(%s) on rg(%s) vm(%s) failed, err: %v", diskMap, nodeResourceGroup, vmName, rerr)
 		if rerr.HTTPStatusCode == http.StatusNotFound {
 			klog.Errorf("azureDisk - begin to filterNonExistingDisks(%v) on rg(%s) vm(%s)", diskMap, nodeResourceGroup, vmName)
 			disks := as.filterNonExistingDisks(ctx, *vm.StorageProfile.DataDisks)
 			newVM.VirtualMachineProperties.StorageProfile.DataDisks = &disks
-			rerr = as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
+			result, rerr = as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, newVM, "detach_disk")
 		}
 	}
 
@@ -223,23 +242,34 @@ func (as *availabilitySet) DetachDisk(ctx context.Context, nodeName types.NodeNa
 
 // UpdateVM updates a vm
 func (as *availabilitySet) UpdateVM(ctx context.Context, nodeName types.NodeName) error {
-	vmName := mapNodeNameToVMName(nodeName)
-	nodeResourceGroup, err := as.GetNodeResourceGroup(vmName)
+	future, err := as.UpdateVMAsync(ctx, nodeName)
 	if err != nil {
 		return err
 	}
-	klog.V(2).Infof("azureDisk - update(%s): vm(%s)", nodeResourceGroup, vmName)
-	// Invalidate the cache right after updating
-	defer func() {
-		_ = as.DeleteCacheForNode(vmName)
-	}()
+	return as.WaitForUpdateResult(ctx, future, nodeName, "update_vm")
+}
 
-	rerr := as.VirtualMachinesClient.Update(ctx, nodeResourceGroup, vmName, compute.VirtualMachineUpdate{}, "update_vm")
-	klog.V(2).Infof("azureDisk - update(%s): vm(%s) - returned with %v", nodeResourceGroup, vmName, rerr)
-	if rerr != nil {
-		return rerr.Error()
+// UpdateVMAsync updates a vm asynchronously
+func (as *availabilitySet) UpdateVMAsync(ctx context.Context, nodeName types.NodeName) (*azure.Future, error) {
+	vmName := mapNodeNameToVMName(nodeName)
+	nodeResourceGroup, err := as.GetNodeResourceGroup(vmName)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+
+	future, rerr := as.VirtualMachinesClient.UpdateAsync(ctx, nodeResourceGroup, vmName, compute.VirtualMachineUpdate{}, "update_vm")
+	if rerr != nil {
+		return future, rerr.Error()
+	}
+	return future, nil
+}
+
+func (as *availabilitySet) updateCache(nodeName string, vm *compute.VirtualMachine) {
+	if as.common.DisableUpdateCache {
+		return
+	}
+	as.cloud.vmCache.Update(nodeName, vm)
+	klog.V(2).Infof("updateCache(%s) successfully", nodeName)
 }
 
 // GetDataDisks gets a list of data disks attached to the node.
