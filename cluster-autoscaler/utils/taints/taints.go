@@ -61,8 +61,8 @@ type TaintKeySet map[string]bool
 
 // TaintConfig is a config of taints that require special handling
 type TaintConfig struct {
-	IgnoredTaints     TaintKeySet
-	StatusTaints      TaintKeySet
+	IgnoredTaints TaintKeySet
+	StatusTaints  TaintKeySet
 }
 
 // NewTaintConfig returns the taint config extracted from options
@@ -80,8 +80,8 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 	}
 
 	return TaintConfig{
-		IgnoredTaints:     ignoredTaints,
-		StatusTaints:      statusTaints,
+		IgnoredTaints: ignoredTaints,
+		StatusTaints:  statusTaints,
 	}
 }
 

@@ -555,8 +555,8 @@ func TestSanitizeTaints(t *testing.T) {
 		},
 	}
 	taintConfig := TaintConfig{
-		IgnoredTaints:     map[string]bool{"ignore-me": true},
-		StatusTaints:      map[string]bool{"status-me": true},
+		IgnoredTaints: map[string]bool{"ignore-me": true},
+		StatusTaints:  map[string]bool{"status-me": true},
 	}
 
 	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)
