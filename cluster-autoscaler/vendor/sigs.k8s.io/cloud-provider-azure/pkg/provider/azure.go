@@ -21,7 +21,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -35,6 +34,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 
 	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
@@ -76,13 +76,7 @@ import (
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/zoneclient"
 	azcache "sigs.k8s.io/cloud-provider-azure/pkg/cache"
 	"sigs.k8s.io/cloud-provider-azure/pkg/consts"
-	nodemanager "sigs.k8s.io/cloud-provider-azure/pkg/nodemanager"
 	"sigs.k8s.io/cloud-provider-azure/pkg/retry"
-
-	// ensure the newly added package from azure-sdk-for-go is in vendor/
-	_ "sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient"
-	// ensure the newly added package from azure-sdk-for-go is in vendor/
-	_ "sigs.k8s.io/cloud-provider-azure/pkg/azureclients/deploymentclient"
 
 	"sigs.k8s.io/yaml"
 )
@@ -140,8 +134,8 @@ type Config struct {
 	// the cloudprovider will try to add all nodes to a single backend pool which is forbidden.
 	// In other words, if you use multiple agent pools (availability sets), you MUST set this field.
 	PrimaryAvailabilitySetName string `json:"primaryAvailabilitySetName,omitempty" yaml:"primaryAvailabilitySetName,omitempty"`
-	// The type of azure nodes. Candidate values are: vmss and standard.
-	// If not set, it will be default to standard.
+	// The type of azure nodes. Candidate values are: vmss, standard and vmssflex.
+	// If not set, it will be default to vmss.
 	VMType string `json:"vmType,omitempty" yaml:"vmType,omitempty"`
 	// The name of the scale set that should be used as the load balancer backend.
 	// If this is set, the Azure cloudprovider will only add nodes from that scale set to the load
@@ -190,16 +184,6 @@ type Config struct {
 	CloudProviderBackoff bool `json:"cloudProviderBackoff,omitempty" yaml:"cloudProviderBackoff,omitempty"`
 	// Use instance metadata service where possible
 	UseInstanceMetadata bool `json:"useInstanceMetadata,omitempty" yaml:"useInstanceMetadata,omitempty"`
-
-	// EnableMultipleStandardLoadBalancers determines the behavior of the standard load balancer. If set to true
-	// there would be one standard load balancer per VMAS or VMSS, which is similar with the behavior of the basic
-	// load balancer. Users could select the specific standard load balancer for their service by the service
-	// annotation `service.beta.kubernetes.io/azure-load-balancer-mode`, If set to false, the same standard load balancer
-	// would be shared by all services in the cluster. In this case, the mode selection annotation would be ignored.
-	EnableMultipleStandardLoadBalancers bool `json:"enableMultipleStandardLoadBalancers,omitempty" yaml:"enableMultipleStandardLoadBalancers,omitempty"`
-	// NodePoolsWithoutDedicatedSLB stores the VMAS/VMSS names that share the primary standard load balancer instead
-	// of having a dedicated one. This is useful only when EnableMultipleStandardLoadBalancers is set to true.
-	NodePoolsWithoutDedicatedSLB string `json:"nodePoolsWithoutDedicatedSLB,omitempty" yaml:"nodePoolsWithoutDedicatedSLB,omitempty"`
 
 	// Backoff exponent
 	CloudProviderBackoffExponent float64 `json:"cloudProviderBackoffExponent,omitempty" yaml:"cloudProviderBackoffExponent,omitempty"`
@@ -265,6 +249,76 @@ type Config struct {
 	PutVMSSVMBatchSize int `json:"putVMSSVMBatchSize" yaml:"putVMSSVMBatchSize"`
 	// PrivateLinkServiceResourceGroup determines the specific resource group of the private link services user want to use
 	PrivateLinkServiceResourceGroup string `json:"privateLinkServiceResourceGroup,omitempty" yaml:"privateLinkServiceResourceGroup,omitempty"`
+
+	// EnableMigrateToIPBasedBackendPoolAPI uses the migration API to migrate from NIC-based to IP-based backend pool.
+	// The migration API can provide a migration from NIC-based to IP-based backend pool without service downtime.
+	// If the API is not used, the migration will be done by decoupling all nodes on the backend pool and then re-attaching
+	// node IPs, which will introduce service downtime. The downtime increases with the number of nodes in the backend pool.
+	EnableMigrateToIPBasedBackendPoolAPI bool `json:"enableMigrateToIPBasedBackendPoolAPI" yaml:"enableMigrateToIPBasedBackendPoolAPI"`
+
+	// MultipleStandardLoadBalancerConfigurations stores the properties regarding multiple standard load balancers.
+	// It will be ignored if LoadBalancerBackendPoolConfigurationType is nodeIPConfiguration.
+	// If the length is not 0, it is assumed the multiple standard load balancers mode is on. In this case,
+	// there must be one configuration named "<clustername>" or an error will be reported.
+	MultipleStandardLoadBalancerConfigurations []MultipleStandardLoadBalancerConfiguration `json:"multipleStandardLoadBalancerConfigurations,omitempty" yaml:"multipleStandardLoadBalancerConfigurations,omitempty"`
+
+	// DisableAPICallCache disables the cache for Azure API calls. It is for ARG support and not all resources will be disabled.
+	DisableAPICallCache bool `json:"disableAPICallCache,omitempty" yaml:"disableAPICallCache,omitempty"`
+
+	// RouteUpdateIntervalInSeconds is the interval for updating routes. Default is 30 seconds.
+	RouteUpdateIntervalInSeconds int `json:"routeUpdateIntervalInSeconds,omitempty" yaml:"routeUpdateIntervalInSeconds,omitempty"`
+	// LoadBalancerBackendPoolUpdateIntervalInSeconds is the interval for updating load balancer backend pool of local services. Default is 30 seconds.
+	LoadBalancerBackendPoolUpdateIntervalInSeconds int `json:"loadBalancerBackendPoolUpdateIntervalInSeconds,omitempty" yaml:"loadBalancerBackendPoolUpdateIntervalInSeconds,omitempty"`
+}
+
+// MultipleStandardLoadBalancerConfiguration stores the properties regarding multiple standard load balancers.
+type MultipleStandardLoadBalancerConfiguration struct {
+	// Name of the public load balancer. There will be an internal load balancer
+	// created if needed, and the name will be `<name>-internal`. The internal lb
+	// shares the same configurations as the external one. The internal lbs
+	// are not needed to be included in `MultipleStandardLoadBalancerConfigurations`.
+	// There must be a name of "<clustername>" in the load balancer configuration list.
+	Name string `json:"name" yaml:"name"`
+
+	MultipleStandardLoadBalancerConfigurationSpec
+
+	MultipleStandardLoadBalancerConfigurationStatus
+}
+
+// MultipleStandardLoadBalancerConfigurationSpec stores the properties regarding multiple standard load balancers.
+type MultipleStandardLoadBalancerConfigurationSpec struct {
+	// This load balancer can have services placed on it. Defaults to true,
+	// can be set to false to drain and eventually remove a load balancer.
+	// This only affects services that will be using the LB. For services
+	// that is currently using the LB, they will not be affected.
+	AllowServicePlacement *bool `json:"allowServicePlacement" yaml:"allowServicePlacement"`
+
+	// A string value that must specify the name of an existing vmSet.
+	// All nodes in the given vmSet will always be added to this load balancer.
+	// A vmSet can only be the primary vmSet for a single load balancer.
+	PrimaryVMSet string `json:"primaryVMSet" yaml:"primaryVMSet"`
+
+	// Services that must match this selector can be placed on this load balancer. If not supplied,
+	// services with any labels can be created on the load balancer.
+	ServiceLabelSelector *metav1.LabelSelector `json:"serviceLabelSelector" yaml:"serviceLabelSelector"`
+
+	// Services created in namespaces with the supplied label will be allowed to select that load balancer.
+	// If not supplied, services created in any namespaces can be created on that load balancer.
+	ServiceNamespaceSelector *metav1.LabelSelector `json:"serviceNamespaceSelector" yaml:"serviceNamespaceSelector"`
+
+	// Nodes matching this selector will be preferentially added to the load balancers that
+	// they match selectors for. NodeSelector does not override primaryAgentPool for node allocation.
+	NodeSelector *metav1.LabelSelector `json:"nodeSelector" yaml:"nodeSelector"`
+}
+
+// MultipleStandardLoadBalancerConfigurationStatus stores the properties regarding multiple standard load balancers.
+type MultipleStandardLoadBalancerConfigurationStatus struct {
+	// ActiveServices stores the services that are supposed to use the load balancer.
+	ActiveServices sets.Set[string] `json:"activeServices" yaml:"activeServices"`
+
+	// ActiveNodes stores the nodes that are supposed to be in the load balancer.
+	// It will be used in EnsureHostsInPool to make sure the given ones are in the backend pool.
+	ActiveNodes sets.Set[string] `json:"activeNodes" yaml:"activeNodes"`
 }
 
 type InitSecretConfig struct {
@@ -326,22 +380,21 @@ type Cloud struct {
 
 	// ipv6DualStack allows overriding for unit testing.  It's normally initialized from featuregates
 	ipv6DualStackEnabled bool
-	// isSHaredLoadBalancerSynced indicates if the reconcileSharedLoadBalancer has been run
-	isSharedLoadBalancerSynced bool
 	// Lock for access to node caches, includes nodeZones, nodeResourceGroups, and unmanagedNodes.
 	nodeCachesLock sync.RWMutex
 	// nodeNames holds current nodes for tracking added nodes in VM caches.
-	nodeNames sets.String
-	// nodeZones is a mapping from Zone to a sets.String of Node's names in the Zone
+	nodeNames sets.Set[string]
+	// nodeZones is a mapping from Zone to a sets.Set[string] of Node's names in the Zone
 	// it is updated by the nodeInformer
-	nodeZones map[string]sets.String
+	nodeZones map[string]sets.Set[string]
 	// nodeResourceGroups holds nodes external resource groups
 	nodeResourceGroups map[string]string
 	// unmanagedNodes holds a list of nodes not managed by Azure cloud provider.
-	unmanagedNodes sets.String
+	unmanagedNodes sets.Set[string]
 	// excludeLoadBalancerNodes holds a list of nodes that should be excluded from LoadBalancer.
-	excludeLoadBalancerNodes sets.String
-	nodePrivateIPs           map[string]sets.String
+	excludeLoadBalancerNodes   sets.Set[string]
+	nodePrivateIPs             map[string]sets.Set[string]
+	nodePrivateIPToNodeNameMap map[string]string
 	// nodeInformerSynced is for determining if the informer has synced.
 	nodeInformerSynced cache.InformerSynced
 
@@ -354,18 +407,24 @@ type Cloud struct {
 	regionZonesMap   map[string][]string
 	refreshZonesLock sync.RWMutex
 
-	KubeClient       clientset.Interface
-	eventBroadcaster record.EventBroadcaster
-	eventRecorder    record.EventRecorder
-	routeUpdater     *delayedRouteUpdater
+	KubeClient         clientset.Interface
+	eventBroadcaster   record.EventBroadcaster
+	eventRecorder      record.EventRecorder
+	routeUpdater       batchProcessor
+	backendPoolUpdater batchProcessor
 
-	vmCache  *azcache.TimedCache
-	lbCache  *azcache.TimedCache
-	nsgCache *azcache.TimedCache
-	rtCache  *azcache.TimedCache
-	pipCache *azcache.TimedCache
+	vmCache  azcache.Resource
+	lbCache  azcache.Resource
+	nsgCache azcache.Resource
+	rtCache  azcache.Resource
+	// public ip cache
+	// key: [resourceGroupName]
+	// Value: sync.Map of [pipName]*PublicIPAddress
+	pipCache azcache.Resource
 	// use LB frontEndIpConfiguration ID as the key and search for PLS attached to the frontEnd
-	plsCache *azcache.TimedCache
+	plsCache azcache.Resource
+	// a timed cache storing storage account properties to avoid querying storage account frequently
+	storageAccountCache azcache.Resource
 
 	// Add service lister to always get latest service
 	serviceLister corelisters.ServiceLister
@@ -374,6 +433,16 @@ type Cloud struct {
 
 	*ManagedDiskController
 	*controllerCommon
+
+	// multipleStandardLoadBalancerConfigurationsSynced make sure the `reconcileMultipleStandardLoadBalancerConfigurations`
+	// runs only once every time the cloud provide restarts.
+	multipleStandardLoadBalancerConfigurationsSynced bool
+	// nodesWithCorrectLoadBalancerByPrimaryVMSet marks nodes that are matched with load balancers by primary vmSet.
+	nodesWithCorrectLoadBalancerByPrimaryVMSet      sync.Map
+	multipleStandardLoadBalancersActiveServicesLock sync.Mutex
+	multipleStandardLoadBalancersActiveNodesLock    sync.Mutex
+	localServiceNameToServiceInfoMap                sync.Map
+	endpointSlicesCache                             sync.Map
 }
 
 // NewCloud returns a Cloud with initialized clients
@@ -439,13 +508,14 @@ func (az *Cloud) configSecretMetadata(secretName, secretNamespace, cloudConfigKe
 
 func NewCloudFromSecret(ctx context.Context, clientBuilder cloudprovider.ControllerClientBuilder, secretName, secretNamespace, cloudConfigKey string) (cloudprovider.Interface, error) {
 	az := &Cloud{
-		nodeNames:                sets.NewString(),
-		nodeZones:                map[string]sets.String{},
-		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.NewString(),
-		routeCIDRs:               map[string]string{},
-		excludeLoadBalancerNodes: sets.NewString(),
-		nodePrivateIPs:           map[string]sets.String{},
+		nodeNames:                  sets.New[string](),
+		nodeZones:                  map[string]sets.Set[string]{},
+		nodeResourceGroups:         map[string]string{},
+		unmanagedNodes:             sets.New[string](),
+		routeCIDRs:                 map[string]string{},
+		excludeLoadBalancerNodes:   sets.New[string](),
+		nodePrivateIPs:             map[string]sets.Set[string]{},
+		nodePrivateIPToNodeNameMap: map[string]string{},
 	}
 
 	az.configSecretMetadata(secretName, secretNamespace, cloudConfigKey)
@@ -471,13 +541,14 @@ func NewCloudWithoutFeatureGates(ctx context.Context, configReader io.Reader, ca
 	}
 
 	az := &Cloud{
-		nodeNames:                sets.NewString(),
-		nodeZones:                map[string]sets.String{},
-		nodeResourceGroups:       map[string]string{},
-		unmanagedNodes:           sets.NewString(),
-		routeCIDRs:               map[string]string{},
-		excludeLoadBalancerNodes: sets.NewString(),
-		nodePrivateIPs:           map[string]sets.String{},
+		nodeNames:                  sets.New[string](),
+		nodeZones:                  map[string]sets.Set[string]{},
+		nodeResourceGroups:         map[string]string{},
+		unmanagedNodes:             sets.New[string](),
+		routeCIDRs:                 map[string]string{},
+		excludeLoadBalancerNodes:   sets.New[string](),
+		nodePrivateIPs:             map[string]sets.Set[string]{},
+		nodePrivateIPToNodeNameMap: map[string]string{},
 	}
 
 	err = az.InitializeCloudFromConfig(ctx, config, false, callFromCCM)
@@ -508,8 +579,8 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 	}
 
 	if config.VMType == "" {
-		// default to standard vmType if not set.
-		config.VMType = consts.VMTypeStandard
+		// default to vmss vmType if not set.
+		config.VMType = consts.VMTypeVMSS
 	}
 
 	if config.RouteUpdateWaitingInSeconds <= 0 {
@@ -524,12 +595,12 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 		// The default cloud config type is cloudConfigTypeMerge.
 		config.CloudConfigType = cloudConfigTypeMerge
 	} else {
-		supportedCloudConfigTypes := sets.NewString(
+		supportedCloudConfigTypes := sets.New(
 			string(cloudConfigTypeMerge),
 			string(cloudConfigTypeFile),
 			string(cloudConfigTypeSecret))
 		if !supportedCloudConfigTypes.Has(string(config.CloudConfigType)) {
-			return fmt.Errorf("cloudConfigType %v is not supported, supported values are %v", config.CloudConfigType, supportedCloudConfigTypes.List())
+			return fmt.Errorf("cloudConfigType %v is not supported, supported values are %v", config.CloudConfigType, supportedCloudConfigTypes.UnsortedList())
 		}
 	}
 
@@ -538,12 +609,12 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 		strings.EqualFold(config.LoadBalancerBackendPoolConfigurationType, consts.LoadBalancerBackendPoolConfigurationTypePODIP) {
 		config.LoadBalancerBackendPoolConfigurationType = consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration
 	} else {
-		supportedLoadBalancerBackendPoolConfigurationTypes := sets.NewString(
+		supportedLoadBalancerBackendPoolConfigurationTypes := sets.New(
 			strings.ToLower(consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration),
 			strings.ToLower(consts.LoadBalancerBackendPoolConfigurationTypeNodeIP),
 			strings.ToLower(consts.LoadBalancerBackendPoolConfigurationTypePODIP))
 		if !supportedLoadBalancerBackendPoolConfigurationTypes.Has(strings.ToLower(config.LoadBalancerBackendPoolConfigurationType)) {
-			return fmt.Errorf("loadBalancerBackendPoolConfigurationType %s is not supported, supported values are %v", config.LoadBalancerBackendPoolConfigurationType, supportedLoadBalancerBackendPoolConfigurationTypes.List())
+			return fmt.Errorf("loadBalancerBackendPoolConfigurationType %s is not supported, supported values are %v", config.LoadBalancerBackendPoolConfigurationType, supportedLoadBalancerBackendPoolConfigurationTypes.UnsortedList())
 		}
 	}
 
@@ -630,6 +701,12 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 		az.LoadBalancerBackendPool = newBackendPoolTypeNodeIP(az)
 	}
 
+	if az.useMultipleStandardLoadBalancers() {
+		if err := az.checkEnableMultipleStandardLoadBalancers(); err != nil {
+			return err
+		}
+	}
+
 	err = az.initCaches()
 	if err != nil {
 		return err
@@ -642,8 +719,17 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 	// updating routes and syncing zones only in CCM
 	if callFromCCM {
 		// start delayed route updater.
-		az.routeUpdater = newDelayedRouteUpdater(az, routeUpdateInterval)
-		go az.routeUpdater.run()
+		if az.RouteUpdateIntervalInSeconds == 0 {
+			az.RouteUpdateIntervalInSeconds = consts.DefaultRouteUpdateIntervalInSeconds
+		}
+		az.routeUpdater = newDelayedRouteUpdater(az, time.Duration(az.RouteUpdateIntervalInSeconds)*time.Second)
+		go az.routeUpdater.run(ctx)
+
+		// start backend pool updater.
+		if az.useMultipleStandardLoadBalancers() {
+			az.backendPoolUpdater = newLoadBalancerBackendPoolUpdater(az, time.Duration(az.LoadBalancerBackendPoolUpdateIntervalInSeconds)*time.Second)
+			go az.backendPoolUpdater.run(ctx)
+		}
 
 		// Azure Stack does not support zone at the moment
 		// https://docs.microsoft.com/en-us/azure-stack/user/azure-stack-network-differences?view=azs-2102
@@ -655,8 +741,46 @@ func (az *Cloud) InitializeCloudFromConfig(ctx context.Context, config *Config, 
 				return err
 			}
 
-			go az.refreshZones(az.syncRegionZonesMap)
+			go az.refreshZones(ctx, az.syncRegionZonesMap)
 		}
+	}
+
+	return nil
+}
+
+func (az *Cloud) useMultipleStandardLoadBalancers() bool {
+	return az.useStandardLoadBalancer() && len(az.MultipleStandardLoadBalancerConfigurations) > 0
+}
+
+func (az *Cloud) useSingleStandardLoadBalancer() bool {
+	return az.useStandardLoadBalancer() && len(az.MultipleStandardLoadBalancerConfigurations) == 0
+}
+
+// Multiple standard load balancer mode only supports IP-based load balancers.
+func (az *Cloud) checkEnableMultipleStandardLoadBalancers() error {
+	if az.isLBBackendPoolTypeNodeIPConfig() {
+		return fmt.Errorf("multiple standard load balancers cannot be used with backend pool type %s", consts.LoadBalancerBackendPoolConfigurationTypeNodeIPConfiguration)
+	}
+
+	names := sets.New[string]()
+	primaryVMSets := sets.New[string]()
+	for _, multiSLBConfig := range az.MultipleStandardLoadBalancerConfigurations {
+		if names.Has(multiSLBConfig.Name) {
+			return fmt.Errorf("duplicated multiple standard load balancer configuration name %s", multiSLBConfig.Name)
+		}
+		names.Insert(multiSLBConfig.Name)
+
+		if multiSLBConfig.PrimaryVMSet == "" {
+			return fmt.Errorf("multiple standard load balancer configuration %s must have primary VMSet", multiSLBConfig.Name)
+		}
+		if primaryVMSets.Has(multiSLBConfig.PrimaryVMSet) {
+			return fmt.Errorf("duplicated primary VMSet %s in multiple standard load balancer configurations %s", multiSLBConfig.PrimaryVMSet, multiSLBConfig.Name)
+		}
+		primaryVMSets.Insert(multiSLBConfig.PrimaryVMSet)
+	}
+
+	if az.LoadBalancerBackendPoolUpdateIntervalInSeconds == 0 {
+		az.LoadBalancerBackendPoolUpdateIntervalInSeconds = consts.DefaultLoadBalancerBackendPoolUpdateIntervalInSeconds
 	}
 
 	return nil
@@ -675,6 +799,10 @@ func (az *Cloud) getPutVMSSVMBatchSize() int {
 }
 
 func (az *Cloud) initCaches() (err error) {
+	if az.Config.DisableAPICallCache {
+		klog.Infof("API call cache is disabled, ignore logs about cache operations")
+	}
+
 	az.vmCache, err = az.newVMCache()
 	if err != nil {
 		return err
@@ -705,10 +833,17 @@ func (az *Cloud) initCaches() (err error) {
 		return err
 	}
 
+	if az.storageAccountCache, err = az.newStorageAccountCache(); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (az *Cloud) setLBDefaults(config *Config) error {
+	if config.LoadBalancerSku == "" {
+		config.LoadBalancerSku = consts.LoadBalancerSkuStandard
+	}
+
 	if strings.EqualFold(config.LoadBalancerSku, consts.LoadBalancerSkuStandard) {
 		// Do not add master nodes to standard LB by default.
 		if config.ExcludeMasterFromStandardLB == nil {
@@ -921,7 +1056,7 @@ func ParseConfig(configReader io.Reader) (*Config, error) {
 		return nil, nil
 	}
 
-	configContents, err := ioutil.ReadAll(configReader)
+	configContents, err := io.ReadAll(configReader)
 	if err != nil {
 		return nil, err
 	}
@@ -934,6 +1069,18 @@ func ParseConfig(configReader io.Reader) (*Config, error) {
 	// The resource group name may be in different cases from different Azure APIs, hence it is converted to lower here.
 	// See more context at https://github.com/kubernetes/kubernetes/issues/71994.
 	config.ResourceGroup = strings.ToLower(config.ResourceGroup)
+
+	// these environment variables are injected by workload identity webhook
+	if tenantID := os.Getenv("AZURE_TENANT_ID"); tenantID != "" {
+		config.TenantID = tenantID
+	}
+	if clientID := os.Getenv("AZURE_CLIENT_ID"); clientID != "" {
+		config.AADClientID = clientID
+	}
+	if federatedTokenFile := os.Getenv("AZURE_FEDERATED_TOKEN_FILE"); federatedTokenFile != "" {
+		config.AADFederatedTokenFile = federatedTokenFile
+		config.UseFederatedWorkloadIdentityExtension = true
+	}
 	return &config, nil
 }
 
@@ -1007,20 +1154,10 @@ func initDiskControllers(az *Cloud) error {
 	klog.V(2).Infof("attach/detach disk operation rate limit QPS: %f, Bucket: %d", qps, bucket)
 
 	common := &controllerCommon{
-		location:              az.Location,
-		storageEndpointSuffix: az.Environment.StorageEndpointSuffix,
-		resourceGroup:         az.ResourceGroup,
-		subscriptionID:        az.SubscriptionID,
-		cloud:                 az,
-		lockMap:               newLockMap(),
-		diskOpRateLimiter:     flowcontrol.NewTokenBucketRateLimiter(qps, bucket),
-	}
-
-	if az.HasExtendedLocation() {
-		common.extendedLocation = &ExtendedLocation{
-			Name: az.ExtendedLocationName,
-			Type: az.ExtendedLocationType,
-		}
+		cloud:                        az,
+		lockMap:                      newLockMap(),
+		diskOpRateLimiter:            flowcontrol.NewTokenBucketRateLimiter(qps, bucket),
+		AttachDetachInitialDelayInMs: defaultAttachDetachInitialDelayInMs,
 	}
 
 	az.ManagedDiskController = &ManagedDiskController{common: common}
@@ -1068,6 +1205,8 @@ func (az *Cloud) SetInformers(informerFactory informers.SharedInformerFactory) {
 	az.nodeInformerSynced = nodeInformer.HasSynced
 
 	az.serviceLister = informerFactory.Core().V1().Services().Lister()
+
+	az.setUpEndpointSlicesInformer(informerFactory)
 }
 
 // updateNodeCaches updates local cache for node's zones and external resource groups.
@@ -1080,7 +1219,7 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		az.nodeNames.Delete(prevNode.ObjectMeta.Name)
 
 		// Remove from nodeZones cache.
-		prevZone, ok := prevNode.ObjectMeta.Labels[consts.LabelFailureDomainBetaZone]
+		prevZone, ok := prevNode.ObjectMeta.Labels[v1.LabelTopologyZone]
 		if ok && az.isAvailabilityZone(prevZone) {
 			az.nodeZones[prevZone].Delete(prevNode.ObjectMeta.Name)
 			if az.nodeZones[prevZone].Len() == 0 {
@@ -1108,12 +1247,14 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		// if the node is being deleted from the cluster, exclude it from load balancers
 		if newNode == nil {
 			az.excludeLoadBalancerNodes.Insert(prevNode.ObjectMeta.Name)
+			az.nodesWithCorrectLoadBalancerByPrimaryVMSet.Delete(strings.ToLower(prevNode.ObjectMeta.Name))
 		}
 
 		// Remove from nodePrivateIPs cache.
 		for _, address := range getNodePrivateIPAddresses(prevNode) {
 			klog.V(4).Infof("removing IP address %s of the node %s", address, prevNode.Name)
 			az.nodePrivateIPs[prevNode.Name].Delete(address)
+			delete(az.nodePrivateIPToNodeNameMap, address)
 		}
 	}
 
@@ -1122,10 +1263,10 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		az.nodeNames.Insert(newNode.ObjectMeta.Name)
 
 		// Add to nodeZones cache.
-		newZone, ok := newNode.ObjectMeta.Labels[consts.LabelFailureDomainBetaZone]
+		newZone, ok := newNode.ObjectMeta.Labels[v1.LabelTopologyZone]
 		if ok && az.isAvailabilityZone(newZone) {
 			if az.nodeZones[newZone] == nil {
-				az.nodeZones[newZone] = sets.NewString()
+				az.nodeZones[newZone] = sets.New[string]()
 			}
 			az.nodeZones[newZone].Insert(newNode.ObjectMeta.Name)
 		}
@@ -1149,17 +1290,11 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		switch {
 		case !isNodeManagedByCloudProvider:
 			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
+			klog.V(6).Infof("excluding Node %q from LoadBalancer because it is not managed by cloud provider", newNode.ObjectMeta.Name)
 
 		case hasExcludeBalancerLabel:
 			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
-
-		case !isNodeReady(newNode) && nodemanager.GetCloudTaint(newNode.Spec.Taints) == nil:
-			// If not in ready state and not a newly created node, add to excludeLoadBalancerNodes cache.
-			// New nodes (tainted with "node.cloudprovider.kubernetes.io/uninitialized") should not be
-			// excluded from load balancers regardless of their state, so as to reduce the number of
-			// VMSS API calls and not provoke VMScaleSetActiveModelsCountLimitReached.
-			// (https://github.com/kubernetes-sigs/cloud-provider-azure/issues/851)
-			az.excludeLoadBalancerNodes.Insert(newNode.ObjectMeta.Name)
+			klog.V(6).Infof("excluding Node %q from LoadBalancer because it has exclude-from-external-load-balancers label", newNode.ObjectMeta.Name)
 
 		default:
 			// Nodes not falling into the three cases above are valid backends and
@@ -1170,17 +1305,21 @@ func (az *Cloud) updateNodeCaches(prevNode, newNode *v1.Node) {
 		// Add to nodePrivateIPs cache
 		for _, address := range getNodePrivateIPAddresses(newNode) {
 			if az.nodePrivateIPs[newNode.Name] == nil {
-				az.nodePrivateIPs[newNode.Name] = sets.NewString()
+				az.nodePrivateIPs[newNode.Name] = sets.New[string]()
+			}
+			if az.nodePrivateIPToNodeNameMap == nil {
+				az.nodePrivateIPToNodeNameMap = make(map[string]string)
 			}
 
-			klog.V(4).Infof("adding IP address %s of the node %s", address, newNode.Name)
+			klog.V(6).Infof("adding IP address %s of the node %s", address, newNode.Name)
 			az.nodePrivateIPs[newNode.Name].Insert(address)
+			az.nodePrivateIPToNodeNameMap[address] = newNode.Name
 		}
 	}
 }
 
 // GetActiveZones returns all the zones in which k8s nodes are currently running.
-func (az *Cloud) GetActiveZones() (sets.String, error) {
+func (az *Cloud) GetActiveZones() (sets.Set[string], error) {
 	if az.nodeInformerSynced == nil {
 		return nil, fmt.Errorf("azure cloud provider doesn't have informers set")
 	}
@@ -1191,7 +1330,7 @@ func (az *Cloud) GetActiveZones() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetActiveZones")
 	}
 
-	zones := sets.NewString()
+	zones := sets.New[string]()
 	for zone, nodes := range az.nodeZones {
 		if len(nodes) > 0 {
 			zones.Insert(zone)
@@ -1228,7 +1367,7 @@ func (az *Cloud) GetNodeResourceGroup(nodeName string) (string, error) {
 }
 
 // GetNodeNames returns a set of all node names in the k8s cluster.
-func (az *Cloud) GetNodeNames() (sets.String, error) {
+func (az *Cloud) GetNodeNames() (sets.Set[string], error) {
 	// Kubelet won't set az.nodeInformerSynced, return nil.
 	if az.nodeInformerSynced == nil {
 		return nil, nil
@@ -1240,14 +1379,14 @@ func (az *Cloud) GetNodeNames() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetNodeNames")
 	}
 
-	return sets.NewString(az.nodeNames.List()...), nil
+	return sets.New(az.nodeNames.UnsortedList()...), nil
 }
 
 // GetResourceGroups returns a set of resource groups that all nodes are running on.
-func (az *Cloud) GetResourceGroups() (sets.String, error) {
+func (az *Cloud) GetResourceGroups() (sets.Set[string], error) {
 	// Kubelet won't set az.nodeInformerSynced, always return configured resourceGroup.
 	if az.nodeInformerSynced == nil {
-		return sets.NewString(az.ResourceGroup), nil
+		return sets.New(az.ResourceGroup), nil
 	}
 
 	az.nodeCachesLock.RLock()
@@ -1256,7 +1395,7 @@ func (az *Cloud) GetResourceGroups() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetResourceGroups")
 	}
 
-	resourceGroups := sets.NewString(az.ResourceGroup)
+	resourceGroups := sets.New(az.ResourceGroup)
 	for _, rg := range az.nodeResourceGroups {
 		resourceGroups.Insert(rg)
 	}
@@ -1265,7 +1404,7 @@ func (az *Cloud) GetResourceGroups() (sets.String, error) {
 }
 
 // GetUnmanagedNodes returns a list of nodes not managed by Azure cloud provider (e.g. on-prem nodes).
-func (az *Cloud) GetUnmanagedNodes() (sets.String, error) {
+func (az *Cloud) GetUnmanagedNodes() (sets.Set[string], error) {
 	// Kubelet won't set az.nodeInformerSynced, always return nil.
 	if az.nodeInformerSynced == nil {
 		return nil, nil
@@ -1277,7 +1416,7 @@ func (az *Cloud) GetUnmanagedNodes() (sets.String, error) {
 		return nil, fmt.Errorf("node informer is not synced when trying to GetUnmanagedNodes")
 	}
 
-	return sets.NewString(az.unmanagedNodes.List()...), nil
+	return sets.New(az.unmanagedNodes.UnsortedList()...), nil
 }
 
 // ShouldNodeExcludedFromLoadBalancer returns true if node is unmanaged, in external resource group or labeled with "node.kubernetes.io/exclude-from-external-load-balancers".
@@ -1301,11 +1440,15 @@ func (az *Cloud) ShouldNodeExcludedFromLoadBalancer(nodeName string) (bool, erro
 	return az.excludeLoadBalancerNodes.Has(nodeName), nil
 }
 
-func isNodeReady(node *v1.Node) bool {
-	for _, cond := range node.Status.Conditions {
-		if cond.Type == v1.NodeReady && cond.Status == v1.ConditionTrue {
-			return true
+func (az *Cloud) getActiveNodesByLoadBalancerName(lbName string) sets.Set[string] {
+	az.multipleStandardLoadBalancersActiveNodesLock.Lock()
+	defer az.multipleStandardLoadBalancersActiveNodesLock.Unlock()
+
+	for _, multiSLBConfig := range az.MultipleStandardLoadBalancerConfigurations {
+		if strings.EqualFold(strings.TrimSuffix(lbName, consts.InternalLoadBalancerNameSuffix), multiSLBConfig.Name) {
+			return multiSLBConfig.ActiveNodes
 		}
 	}
-	return false
+
+	return sets.New[string]()
 }

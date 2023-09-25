@@ -38,9 +38,12 @@ var _ Interface = &Client{}
 
 // Client implements the blobclient interface
 type Client struct {
-	armClient      armclient.Interface
-	subscriptionID string
-	cloudName      string
+	blobServicesClient storage.BlobServicesClient
+	armClient          armclient.Interface
+	subscriptionID     string
+	cloudName          string
+	baseURI            string
+	authorizer         autorest.Authorizer
 
 	// Rate limiting configures.
 	rateLimiterReader flowcontrol.RateLimiter
@@ -60,6 +63,9 @@ func New(config *azclients.ClientConfig) *Client {
 	authorizer := config.Authorizer
 	apiVersion := APIVersion
 
+	blobServicesClient := storage.NewBlobServicesClientWithBaseURI(baseURI, config.SubscriptionID)
+	blobServicesClient.Authorizer = authorizer
+
 	if strings.EqualFold(config.CloudName, AzureStackCloudName) && !config.DisableAzureStackCloud {
 		apiVersion = AzureStackCloudAPIVersion
 	}
@@ -78,12 +84,15 @@ func New(config *azclients.ClientConfig) *Client {
 	}
 
 	client := &Client{
-		armClient:         armClient,
-		rateLimiterReader: rateLimiterReader,
-		rateLimiterWriter: rateLimiterWriter,
-		subscriptionID:    config.SubscriptionID,
-		cloudName:         config.CloudName,
-		now:               time.Now,
+		blobServicesClient: blobServicesClient,
+		armClient:          armClient,
+		rateLimiterReader:  rateLimiterReader,
+		rateLimiterWriter:  rateLimiterWriter,
+		subscriptionID:     config.SubscriptionID,
+		cloudName:          config.CloudName,
+		now:                time.Now,
+		baseURI:            baseURI,
+		authorizer:         authorizer,
 	}
 
 	return client
@@ -267,4 +276,22 @@ func (c *Client) getContainer(ctx context.Context, subsID, resourceGroupName, ac
 
 	container.Response = autorest.Response{Response: response}
 	return container, nil
+}
+
+func (c *Client) GetServiceProperties(ctx context.Context, subsID, resourceGroupName, accountName string) (storage.BlobServiceProperties, error) {
+	blobServicesClient := c.blobServicesClient
+	if subsID != c.subscriptionID {
+		blobServicesClient = storage.NewBlobServicesClientWithBaseURI(c.baseURI, c.subscriptionID)
+		blobServicesClient.Authorizer = c.authorizer
+	}
+	return blobServicesClient.GetServiceProperties(ctx, resourceGroupName, accountName)
+}
+
+func (c *Client) SetServiceProperties(ctx context.Context, subsID, resourceGroupName, accountName string, parameters storage.BlobServiceProperties) (storage.BlobServiceProperties, error) {
+	blobServicesClient := c.blobServicesClient
+	if subsID != c.subscriptionID {
+		blobServicesClient = storage.NewBlobServicesClientWithBaseURI(c.baseURI, c.subscriptionID)
+		blobServicesClient.Authorizer = c.authorizer
+	}
+	return blobServicesClient.SetServiceProperties(ctx, resourceGroupName, accountName, parameters)
 }
