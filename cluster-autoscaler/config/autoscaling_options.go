@@ -203,10 +203,10 @@ type AutoscalingOptions struct {
 	MaxBulkSoftTaintTime time.Duration
 	// MaxPodEvictionTime sets the maximum time CA tries to evict a pod before giving up.
 	MaxPodEvictionTime time.Duration
-	// IgnoredTaints is a list of taints CA considers to reflect transient node
+	// StartupTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
-	// The ignored taints are expected to appear during node startup.
-	IgnoredTaints []string
+	// startup taints are expected to appear during node startup.
+	StartupTaints []string
 	// StatusTaints is a list of taints CA considers to reflect transient node
 	// status that should be removed when creating a node template for scheduling.
 	// The status taints are expected to appear during node lifetime, after startup.

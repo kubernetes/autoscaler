@@ -307,7 +307,7 @@ func buildFakeClientWithConflicts(t *testing.T, nodes ...*apiv1.Node) *fake.Clie
 	return fakeClient
 }
 
-func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
+func TestFilterOutNodesWithStartupTaints(t *testing.T) {
 	isReady := func(t *testing.T, node *apiv1.Node) bool {
 		for _, condition := range node.Status.Conditions {
 			if condition.Type == apiv1.NodeReady {
@@ -331,13 +331,13 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 		startupTaintsPrefixes []string
 		node                  *apiv1.Node
 	}{
-		"empty ignored taints, no node": {
+		"empty startup taints, no node": {
 			readyNodes:    0,
 			allNodes:      0,
 			startupTaints: map[string]bool{},
 			node:          nil,
 		},
-		"one ignored taint, no node": {
+		"one startup taint, no node": {
 			readyNodes: 0,
 			allNodes:   0,
 			startupTaints: map[string]bool{
@@ -345,7 +345,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			},
 			node: nil,
 		},
-		"one ignored taint, one ready untainted node": {
+		"one startup taint, one ready untainted node": {
 			readyNodes: 1,
 			allNodes:   1,
 			startupTaints: map[string]bool{
@@ -364,7 +364,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"one ignored taint, one unready tainted node": {
+		"one startup taint, one unready tainted node": {
 			readyNodes: 0,
 			allNodes:   1,
 			startupTaints: map[string]bool{
@@ -389,7 +389,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, one node unready prefixed with startup taint prefix": {
+		"no startup taint, one node unready prefixed with startup taint prefix (Compatability)": {
 			readyNodes:            0,
 			allNodes:              1,
 			startupTaints:         map[string]bool{},
@@ -413,7 +413,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, one node unready prefixed with startup taint": {
+		"no startup taint, one node unready prefixed with startup taint prefix": {
 			readyNodes:            0,
 			allNodes:              1,
 			startupTaints:         map[string]bool{},
@@ -437,7 +437,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, two taints": {
+		"no startup taint, two taints": {
 			readyNodes:    1,
 			allNodes:      1,
 			startupTaints: map[string]bool{},
@@ -475,7 +475,7 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				StartupTaints:        tc.startupTaints,
 				StartupTaintPrefixes: tc.startupTaintsPrefixes,
 			}
-			allNodes, readyNodes := FilterOutNodesWithIgnoredTaints(taintConfig, nodes, nodes)
+			allNodes, readyNodes := FilterOutNodesWithStartupTaints(taintConfig, nodes, nodes)
 			assert.Equal(t, tc.allNodes, len(allNodes))
 			assert.Equal(t, tc.readyNodes, len(readyNodes))
 

@@ -70,8 +70,8 @@ type TaintConfig struct {
 // NewTaintConfig returns the taint config extracted from options
 func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 	startupTaints := make(TaintKeySet)
-	for _, taintKey := range opts.IgnoredTaints {
-		klog.V(4).Infof("Ignoring taint %s on all NodeGroups", taintKey)
+	for _, taintKey := range opts.StartupTaints {
+		klog.V(4).Infof("Startup taint %s on all NodeGroups", taintKey)
 		startupTaints[taintKey] = true
 	}
 
@@ -333,7 +333,7 @@ func CleanAllTaints(nodes []*apiv1.Node, client kube_client.Interface, recorder 
 	}
 }
 
-func prefixExistsInList(prefixes []string, key string) bool {
+func matchesAnyPrefix(prefixes []string, key string) bool {
 	for _, prefix := range prefixes {
 		if strings.HasPrefix(key, prefix) {
 			return true
@@ -362,10 +362,10 @@ func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint
 		}
 
 		if _, exists := taintConfig.StartupTaints[taint.Key]; exists {
-			klog.V(4).Infof("Removing ignored taint %s, when creating template from node", taint.Key)
+			klog.V(4).Infof("Removing startup taint %s, when creating template from node", taint.Key)
 			continue
 		}
-		shouldRemoveBasedOnPrefix := prefixExistsInList(taintConfig.StartupTaintPrefixes, taint.Key) || prefixExistsInList(taintConfig.StatusTaintPrefixes, taint.Key)
+		shouldRemoveBasedOnPrefix := matchesAnyPrefix(taintConfig.StartupTaintPrefixes, taint.Key) || matchesAnyPrefix(taintConfig.StatusTaintPrefixes, taint.Key)
 		if shouldRemoveBasedOnPrefix {
 			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
 			continue
@@ -381,12 +381,12 @@ func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint
 	return newTaints
 }
 
-// FilterOutNodesWithIgnoredTaints override the condition status of the given nodes to mark them as NotReady when they have
+// FilterOutNodesWithStartupTaints override the condition status of the given nodes to mark them as NotReady when they have
 // filtered taints.
-func FilterOutNodesWithIgnoredTaints(taintConfig TaintConfig, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+func FilterOutNodesWithStartupTaints(taintConfig TaintConfig, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
-	nodesWithIgnoredTaints := make(map[string]*apiv1.Node)
+	nodesWithStartupTaints := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
 		if len(node.Spec.Taints) == 0 {
 			newReadyNodes = append(newReadyNodes, node)
@@ -394,10 +394,10 @@ func FilterOutNodesWithIgnoredTaints(taintConfig TaintConfig, allNodes, readyNod
 		}
 		ready := true
 		for _, t := range node.Spec.Taints {
-			_, hasIgnoredTaint := taintConfig.StartupTaints[t.Key]
-			if hasIgnoredTaint || prefixExistsInList(taintConfig.StartupTaintPrefixes, t.Key) {
+			_, hasStartupTaint := taintConfig.StartupTaints[t.Key]
+			if hasStartupTaint || matchesAnyPrefix(taintConfig.StartupTaintPrefixes, t.Key) {
 				ready = false
-				nodesWithIgnoredTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.StartupNodes)
+				nodesWithStartupTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.StartupNodes)
 				klog.V(3).Infof("Overriding status of node %v, which seems to have startup taint %q", node.Name, t.Key)
 				break
 			}
@@ -408,7 +408,7 @@ func FilterOutNodesWithIgnoredTaints(taintConfig TaintConfig, allNodes, readyNod
 	}
 	// Override any node with ignored taint with its "unready" copy
 	for _, node := range allNodes {
-		if newNode, found := nodesWithIgnoredTaints[node.Name]; found {
+		if newNode, found := nodesWithStartupTaints[node.Name]; found {
 			newAllNodes = append(newAllNodes, newNode)
 		} else {
 			newAllNodes = append(newAllNodes, node)

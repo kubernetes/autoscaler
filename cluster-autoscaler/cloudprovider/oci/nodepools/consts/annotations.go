@@ -24,5 +24,5 @@ const (
 
 	// ToBeDeletedByClusterAutoscaler is the taint used to ensure that after a node has been called to be deleted
 	// no more pods will schedule onto it
-	ToBeDeletedByClusterAutoscaler = "startup-taint.cluster-autoscaler.kubernetes.io/oke-impending-node-termination"
+	ToBeDeletedByClusterAutoscaler = "ignore-taint.cluster-autoscaler.kubernetes.io/oke-impending-node-termination"
 )
