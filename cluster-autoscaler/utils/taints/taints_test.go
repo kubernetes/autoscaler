@@ -389,7 +389,7 @@ func TestFilterOutNodesWithStartupTaints(t *testing.T) {
 				},
 			},
 		},
-		"no startup taint, one node unready prefixed with startup taint prefix (Compatability)": {
+		"no startup taint, one node unready prefixed with startup taint prefix (Compatibility)": {
 			readyNodes:            0,
 			allNodes:              1,
 			startupTaints:         map[string]bool{},
