@@ -959,7 +959,7 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	// our normal handling for booting up nodes deal with this.
 	// TODO: Remove this call when we handle dynamically provisioned resources.
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
-	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.taintConfig.IgnoredTaints, allNodes, readyNodes)
+	allNodes, readyNodes = taints.FilterOutNodesWithIgnoredTaints(a.taintConfig.StartupTaints, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
 }
 

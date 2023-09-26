@@ -47,8 +47,8 @@ const (
 	// StartupTaintPrefix (Same as IgnoreTaintPrefix) any taint starting with it will be filtered out from autoscaler template node.
 	StartupTaintPrefix = "startup-taint.cluster-autoscaler.kubernetes.io/"
 
-	// DefaultStatusTaintPrefix any taint starting with it will be filtered out from autoscaler template node but unlike IgnoreTaintPrefix & StartTaintPrefix it should not be trated as unready.
-	DefaultStatusTaintPrefix = "status-taint.cluster-autoscaler.kubernetes.io/"
+	// StatusTaintPrefix any taint starting with it will be filtered out from autoscaler template node but unlike IgnoreTaintPrefix & StartupTaintPrefix it should not be trated as unready.
+	StatusTaintPrefix = "status-taint.cluster-autoscaler.kubernetes.io/"
 
 	gkeNodeTerminationHandlerTaint = "cloud.google.com/impending-node-termination"
 
@@ -61,16 +61,16 @@ type TaintKeySet map[string]bool
 
 // TaintConfig is a config of taints that require special handling
 type TaintConfig struct {
-	IgnoredTaints TaintKeySet
+	StartupTaints TaintKeySet
 	StatusTaints  TaintKeySet
 }
 
 // NewTaintConfig returns the taint config extracted from options
 func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
-	ignoredTaints := make(TaintKeySet)
+	startupTaints := make(TaintKeySet)
 	for _, taintKey := range opts.IgnoredTaints {
 		klog.V(4).Infof("Ignoring taint %s on all NodeGroups", taintKey)
-		ignoredTaints[taintKey] = true
+		startupTaints[taintKey] = true
 	}
 
 	statusTaints := make(TaintKeySet)
@@ -80,7 +80,7 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 	}
 
 	return TaintConfig{
-		IgnoredTaints: ignoredTaints,
+		StartupTaints: startupTaints,
 		StatusTaints:  statusTaints,
 	}
 }
@@ -348,7 +348,7 @@ func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint
 			continue
 		}
 
-		if _, exists := taintConfig.IgnoredTaints[taint.Key]; exists {
+		if _, exists := taintConfig.StartupTaints[taint.Key]; exists {
 			klog.V(4).Infof("Removing ignored taint %s, when creating template from node", taint.Key)
 			continue
 		}
@@ -362,7 +362,7 @@ func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint
 			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
 			continue
 		}
-		if strings.HasPrefix(taint.Key, DefaultStatusTaintPrefix) {
+		if strings.HasPrefix(taint.Key, StatusTaintPrefix) {
 			klog.V(4).Infof("Removing status taint %s, when creating template from node", taint.Key)
 			continue
 		}
