@@ -89,8 +89,16 @@ func (ds *GroupDeletionScheduler) ScheduleDeletion(nodeInfo *framework.NodeInfo,
 
 	nodeDeleteResult := ds.prepareNodeForDeletion(nodeInfo, drain)
 	if nodeDeleteResult.Err != nil {
-		ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
-		return
+		isTimeout := true
+		for _, podEvictionResult := range nodeDeleteResult.PodEvictionResults {
+			if !podEvictionResult.TimedOut || podEvictionResult.Err != nil {
+				isTimeout = false
+			}
+		}
+		if !isTimeout {
+			ds.AbortNodeDeletion(nodeInfo.Node(), nodeGroup.Id(), drain, "prepareNodeForDeletion failed", nodeDeleteResult)
+			return
+		}
 	}
 
 	ds.addToBatcher(nodeInfo, nodeGroup, batchSize, drain, opts.ZeroOrMaxNodeScaling)
