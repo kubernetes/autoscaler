@@ -325,10 +325,11 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 	}
 
 	for name, tc := range map[string]struct {
-		readyNodes    int
-		allNodes      int
-		startupTaints TaintKeySet
-		node          *apiv1.Node
+		readyNodes            int
+		allNodes              int
+		startupTaints         TaintKeySet
+		startupTaintsPrefixes []string
+		node                  *apiv1.Node
 	}{
 		"empty ignored taints, no node": {
 			readyNodes:    0,
@@ -388,10 +389,11 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 				},
 			},
 		},
-		"no ignored taint, one node unready prefixed with ignore taint": {
-			readyNodes:    0,
-			allNodes:      1,
-			startupTaints: map[string]bool{},
+		"no ignored taint, one node unready prefixed with startup taint prefix": {
+			readyNodes:            0,
+			allNodes:              1,
+			startupTaints:         map[string]bool{},
+			startupTaintsPrefixes: []string{IgnoreTaintPrefix},
 			node: &apiv1.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              "notReadyTainted",
@@ -412,9 +414,10 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			},
 		},
 		"no ignored taint, one node unready prefixed with startup taint": {
-			readyNodes:    0,
-			allNodes:      1,
-			startupTaints: map[string]bool{},
+			readyNodes:            0,
+			allNodes:              1,
+			startupTaints:         map[string]bool{},
+			startupTaintsPrefixes: []string{StartupTaintPrefix},
 			node: &apiv1.Node{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              "notReadyTainted",
@@ -468,7 +471,11 @@ func TestFilterOutNodesWithIgnoredTaints(t *testing.T) {
 			if tc.node != nil {
 				nodes = append(nodes, tc.node)
 			}
-			allNodes, readyNodes := FilterOutNodesWithIgnoredTaints(tc.startupTaints, nodes, nodes)
+			taintConfig := TaintConfig{
+				StartupTaints:        tc.startupTaints,
+				StartupTaintPrefixes: tc.startupTaintsPrefixes,
+			}
+			allNodes, readyNodes := FilterOutNodesWithIgnoredTaints(taintConfig, nodes, nodes)
 			assert.Equal(t, tc.allNodes, len(allNodes))
 			assert.Equal(t, tc.readyNodes, len(readyNodes))
 
@@ -555,11 +562,13 @@ func TestSanitizeTaints(t *testing.T) {
 		},
 	}
 	taintConfig := TaintConfig{
-		StartupTaints: map[string]bool{"ignore-me": true},
-		StatusTaints:  map[string]bool{"status-me": true},
+		StartupTaints:        map[string]bool{"ignore-me": true},
+		StatusTaints:         map[string]bool{"status-me": true},
+		StartupTaintPrefixes: []string{IgnoreTaintPrefix, StartupTaintPrefix},
 	}
 
 	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)
-	require.Equal(t, len(newTaints), 1)
-	assert.Equal(t, newTaints[0].Key, "test-taint")
+	require.Equal(t, 2, len(newTaints))
+	assert.Equal(t, newTaints[0].Key, StatusTaintPrefix+"some-taint")
+	assert.Equal(t, newTaints[1].Key, "test-taint")
 }
