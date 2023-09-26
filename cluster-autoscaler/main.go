@@ -348,7 +348,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
-		IgnoredTaints:                    append(*ignoreTaintsFlag, *startupTaintFlag...),
+		StartupTaints:                    append(*ignoreTaintsFlag, *startupTaintFlag...),
 		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
