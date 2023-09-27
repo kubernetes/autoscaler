@@ -44,8 +44,6 @@ import (
 	"k8s.io/utils/clock"
 )
 
-// TODO integration test with old AES GCM data recorded and new KDF data recorded
-
 func init() {
 	value.RegisterMetrics()
 	metrics.RegisterMetrics()
@@ -112,22 +110,24 @@ type envelopeTransformer struct {
 	stateFunc       StateFunc
 
 	// cache is a thread-safe expiring lru cache which caches decrypted DEKs indexed by their encrypted form.
-	cache *simpleCache
+	cache       *simpleCache
+	apiServerID string
 }
 
 // NewEnvelopeTransformer returns a transformer which implements a KEK-DEK based envelope encryption scheme.
 // It uses envelopeService to encrypt and decrypt DEKs. Respective DEKs (in encrypted form) are prepended to
 // the data items they encrypt.
-func NewEnvelopeTransformer(envelopeService kmsservice.Service, providerName string, stateFunc StateFunc) value.Transformer {
-	return newEnvelopeTransformerWithClock(envelopeService, providerName, stateFunc, cacheTTL, clock.RealClock{})
+func NewEnvelopeTransformer(envelopeService kmsservice.Service, providerName string, stateFunc StateFunc, apiServerID string) value.Transformer {
+	return newEnvelopeTransformerWithClock(envelopeService, providerName, stateFunc, apiServerID, cacheTTL, clock.RealClock{})
 }
 
-func newEnvelopeTransformerWithClock(envelopeService kmsservice.Service, providerName string, stateFunc StateFunc, cacheTTL time.Duration, clock clock.Clock) value.Transformer {
+func newEnvelopeTransformerWithClock(envelopeService kmsservice.Service, providerName string, stateFunc StateFunc, apiServerID string, cacheTTL time.Duration, clock clock.Clock) value.Transformer {
 	return &envelopeTransformer{
 		envelopeService: envelopeService,
 		providerName:    providerName,
 		stateFunc:       stateFunc,
-		cache:           newSimpleCache(clock, cacheTTL),
+		cache:           newSimpleCache(clock, cacheTTL, providerName),
+		apiServerID:     apiServerID,
 	}
 }
 
@@ -180,7 +180,7 @@ func (t *envelopeTransformer) TransformFromStorage(ctx context.Context, data []b
 			return nil, false, err
 		}
 	}
-	metrics.RecordKeyID(metrics.FromStorageLabel, t.providerName, encryptedObject.KeyID)
+	metrics.RecordKeyID(metrics.FromStorageLabel, t.providerName, encryptedObject.KeyID, t.apiServerID)
 
 	out, stale, err := transformer.TransformFromStorage(ctx, encryptedObject.EncryptedData, dataCtx)
 	if err != nil {
@@ -208,7 +208,6 @@ func (t *envelopeTransformer) TransformToStorage(ctx context.Context, data []byt
 	// this prevents a cache miss every time the DEK rotates
 	// this has the side benefit of causing the cache to perform a GC
 	// TODO see if we can do this inside the stateFunc control loop
-	// TODO(aramase): Add metrics for cache size.
 	t.cache.set(state.CacheKey, state.Transformer)
 
 	requestInfo := getRequestInfoFromContext(ctx)
@@ -221,7 +220,7 @@ func (t *envelopeTransformer) TransformToStorage(ctx context.Context, data []byt
 		return nil, err
 	}
 
-	metrics.RecordKeyID(metrics.ToStorageLabel, t.providerName, state.EncryptedObject.KeyID)
+	metrics.RecordKeyID(metrics.ToStorageLabel, t.providerName, state.EncryptedObject.KeyID, t.apiServerID)
 
 	encObjectCopy := state.EncryptedObject
 	encObjectCopy.EncryptedData = result
@@ -250,7 +249,6 @@ func (t *envelopeTransformer) addTransformerForDecryption(cacheKey []byte, key [
 	if err != nil {
 		return nil, err
 	}
-	// TODO(aramase): Add metrics for cache size.
 	t.cache.set(cacheKey, transformer)
 	return transformer, nil
 }
