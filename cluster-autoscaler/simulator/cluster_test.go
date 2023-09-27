@@ -30,7 +30,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -207,7 +206,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
 			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), false)
-			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), []*policyv1.PodDisruptionBudget{})
+			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), nil)
 			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
 			assert.Equal(t, toRemove, test.toRemove)
 			assert.Equal(t, unremovable, test.unremovable)

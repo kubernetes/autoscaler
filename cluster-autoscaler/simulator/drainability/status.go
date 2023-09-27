@@ -18,8 +18,6 @@ package drainability
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-
-	apiv1 "k8s.io/api/core/v1"
 )
 
 // OutcomeType identifies the action that should be taken when it comes to
@@ -78,18 +76,4 @@ func NewSkipStatus() Status {
 // NewUndefinedStatus returns a new Status that doesn't contain a decision.
 func NewUndefinedStatus() Status {
 	return Status{}
-}
-
-// Rule determines whether a given pod can be drained or not.
-type Rule interface {
-	// Drainable determines whether a given pod is drainable according to
-	// the specific Rule.
-	Drainable(*apiv1.Pod) Status
-}
-
-// DefaultRules returns the default list of Rules.
-func DefaultRules() []Rule {
-	return []Rule{
-		NewMirrorPodRule(),
-	}
 }

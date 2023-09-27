@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
@@ -29,7 +30,6 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 
 	klog "k8s.io/klog/v2"
 )
@@ -117,7 +117,7 @@ func (r *RemovalSimulator) FindNodesToRemove(
 	candidates []string,
 	destinations []string,
 	timestamp time.Time,
-	pdbs []*policyv1.PodDisruptionBudget,
+	remainingPdbTracker pdb.RemainingPdbTracker,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*UnremovableNode) {
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*UnremovableNode, 0)
@@ -128,7 +128,7 @@ func (r *RemovalSimulator) FindNodesToRemove(
 	}
 
 	for _, nodeName := range candidates {
-		rn, urn := r.SimulateNodeRemoval(nodeName, destinationMap, timestamp, pdbs)
+		rn, urn := r.SimulateNodeRemoval(nodeName, destinationMap, timestamp, remainingPdbTracker)
 		if rn != nil {
 			result = append(result, *rn)
 		} else if urn != nil {
@@ -146,7 +146,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	nodeName string,
 	destinationMap map[string]bool,
 	timestamp time.Time,
-	pdbs []*policyv1.PodDisruptionBudget,
+	remainingPdbTracker pdb.RemainingPdbTracker,
 ) (*NodeToBeRemoved, *UnremovableNode) {
 	nodeInfo, err := r.clusterSnapshot.NodeInfos().Get(nodeName)
 	if err != nil {
@@ -159,7 +159,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
-	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.listers, pdbs, timestamp)
+	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
 		klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
 		if blockingPod != nil {

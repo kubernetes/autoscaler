@@ -147,7 +147,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		currentCandidates,
 		destinations,
 		timestamp,
-		sd.context.RemainingPdbTracker.GetPdbs())
+		sd.context.RemainingPdbTracker)
 
 	additionalCandidatesCount := sd.context.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
 	if additionalCandidatesCount > len(currentNonCandidates) {
@@ -169,7 +169,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 				currentNonCandidates[:additionalCandidatesPoolSize],
 				destinations,
 				timestamp,
-				sd.context.RemainingPdbTracker.GetPdbs())
+				sd.context.RemainingPdbTracker)
 		if len(additionalNodesToRemove) > additionalCandidatesCount {
 			additionalNodesToRemove = additionalNodesToRemove[:additionalCandidatesCount]
 		}
@@ -317,7 +317,7 @@ func (sd *ScaleDown) NodesToDelete(currentTime time.Time) (_, drain []*apiv1.Nod
 		candidateNames,
 		allNodeNames,
 		time.Now(),
-		sd.context.RemainingPdbTracker.GetPdbs())
+		sd.context.RemainingPdbTracker)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
 
 	for _, unremovableNode := range unremovable {

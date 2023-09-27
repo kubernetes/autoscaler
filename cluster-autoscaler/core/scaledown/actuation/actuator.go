@@ -21,7 +21,6 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -30,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/budgets"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -223,7 +223,7 @@ func (a *Actuator) deleteAsyncDrain(NodeGroupViews []*budgets.NodeGroupView) (re
 }
 
 func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider.NodeGroup, drain bool, batchSize int) {
-	var pdbs []*policyv1.PodDisruptionBudget
+	var remainingPdbTracker pdb.RemainingPdbTracker
 	var registry kube_util.ListerRegistry
 
 	if len(nodes) == 0 {
@@ -246,7 +246,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 	}
 
 	if drain {
-		pdbs, err = a.ctx.PodDisruptionBudgetLister().List()
+		pdbs, err := a.ctx.PodDisruptionBudgetLister().List()
 		if err != nil {
 			klog.Errorf("Scale-down: couldn't fetch pod disruption budgets, err: %v", err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "podDisruptionBudgetLister.List returned error %v", err)}
@@ -255,7 +255,8 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 			}
 			return
 		}
-
+		remainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
+		remainingPdbTracker.SetPdbs(pdbs)
 		registry = a.ctx.ListerRegistry
 	}
 
@@ -272,7 +273,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 			continue
 		}
 
-		podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, registry, pdbs, time.Now())
+		podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, registry, remainingPdbTracker, time.Now())
 		if err != nil {
 			klog.Errorf("Scale-down: couldn't delete node %q, err: %v", node.Name, err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "GetPodsToMove for %q returned error: %v", node.Name, err)}
