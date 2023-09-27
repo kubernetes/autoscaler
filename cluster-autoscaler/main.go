@@ -198,7 +198,7 @@ var (
 	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up. Can be increased for individual pods through annotation 'cluster-autoscaler.kubernetes.io/pod-scale-up-delay'.")
 
 	ignoreTaintsFlag          = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Deprecated, use startup-taints instead)")
-	startupTaintFlag          = multiStringFlag("startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
+	startupTaintsFlag         = multiStringFlag("startup-taint", "Specifies a taint to ignore in node templates when considering to scale a node group (Equivalent to ignore-taint)")
 	statusTaintsFlag          = multiStringFlag("status-taint", "Specifies a taint to ignore in node templates when considering to scale a node group but nodes will not be treated as unready")
 	balancingIgnoreLabelsFlag = multiStringFlag("balancing-ignore-label", "Specifies a label to ignore in addition to the basic and cloud-provider set of labels when comparing if two node groups are similar")
 	balancingLabelsFlag       = multiStringFlag("balancing-label", "Specifies a label to use for comparing if two node groups are similar, rather than the built in heuristics. Setting this flag disables all other comparison logic, and cannot be combined with --balancing-ignore-label.")
@@ -348,7 +348,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
-		StartupTaints:                    append(*ignoreTaintsFlag, *startupTaintFlag...),
+		StartupTaints:                    append(*ignoreTaintsFlag, *startupTaintsFlag...),
 		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
