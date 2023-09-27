@@ -25,7 +25,9 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -179,7 +181,7 @@ func TestGetPodsToMove(t *testing.T) {
 		desc         string
 		pods         []*apiv1.Pod
 		pdbs         []*policyv1.PodDisruptionBudget
-		rules        []drainability.Rule
+		rules        []rules.Rule
 		wantPods     []*apiv1.Pod
 		wantDs       []*apiv1.Pod
 		wantBlocking *drain.BlockingPod
@@ -256,19 +258,19 @@ func TestGetPodsToMove(t *testing.T) {
 		{
 			desc:     "Rule allows",
 			pods:     []*apiv1.Pod{unreplicatedPod},
-			rules:    []drainability.Rule{alwaysDrain{}},
+			rules:    []rules.Rule{alwaysDrain{}},
 			wantPods: []*apiv1.Pod{unreplicatedPod},
 		},
 		{
 			desc:     "Second rule allows",
 			pods:     []*apiv1.Pod{unreplicatedPod},
-			rules:    []drainability.Rule{cantDecide{}, alwaysDrain{}},
+			rules:    []rules.Rule{cantDecide{}, alwaysDrain{}},
 			wantPods: []*apiv1.Pod{unreplicatedPod},
 		},
 		{
 			desc:    "Rule blocks",
 			pods:    []*apiv1.Pod{rsPod},
-			rules:   []drainability.Rule{neverDrain{}},
+			rules:   []rules.Rule{neverDrain{}},
 			wantErr: true,
 			wantBlocking: &drain.BlockingPod{
 				Pod:    rsPod,
@@ -278,7 +280,7 @@ func TestGetPodsToMove(t *testing.T) {
 		{
 			desc:    "Second rule blocks",
 			pods:    []*apiv1.Pod{rsPod},
-			rules:   []drainability.Rule{cantDecide{}, neverDrain{}},
+			rules:   []rules.Rule{cantDecide{}, neverDrain{}},
 			wantErr: true,
 			wantBlocking: &drain.BlockingPod{
 				Pod:    rsPod,
@@ -288,7 +290,7 @@ func TestGetPodsToMove(t *testing.T) {
 		{
 			desc:    "Undecisive rule fallback to default logic: Unreplicated pod",
 			pods:    []*apiv1.Pod{unreplicatedPod},
-			rules:   []drainability.Rule{cantDecide{}},
+			rules:   []rules.Rule{cantDecide{}},
 			wantErr: true,
 			wantBlocking: &drain.BlockingPod{
 				Pod:    unreplicatedPod,
@@ -298,7 +300,7 @@ func TestGetPodsToMove(t *testing.T) {
 		{
 			desc:     "Undecisive rule fallback to default logic: Replicated pod",
 			pods:     []*apiv1.Pod{rsPod},
-			rules:    []drainability.Rule{cantDecide{}},
+			rules:    []rules.Rule{cantDecide{}},
 			wantPods: []*apiv1.Pod{rsPod},
 		},
 	}
@@ -311,7 +313,9 @@ func TestGetPodsToMove(t *testing.T) {
 				SkipNodesWithCustomControllerPods: true,
 				DrainabilityRules:                 tc.rules,
 			}
-			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, nil, tc.pdbs, testTime)
+			tracker := pdb.NewBasicRemainingPdbTracker()
+			tracker.SetPdbs(tc.pdbs)
+			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, nil, tracker, testTime)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -326,18 +330,18 @@ func TestGetPodsToMove(t *testing.T) {
 
 type alwaysDrain struct{}
 
-func (a alwaysDrain) Drainable(*apiv1.Pod) drainability.Status {
+func (a alwaysDrain) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
 	return drainability.NewDrainableStatus()
 }
 
 type neverDrain struct{}
 
-func (n neverDrain) Drainable(*apiv1.Pod) drainability.Status {
+func (n neverDrain) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
 	return drainability.NewBlockedStatus(drain.UnexpectedError, fmt.Errorf("nope"))
 }
 
 type cantDecide struct{}
 
-func (c cantDecide) Drainable(*apiv1.Pod) drainability.Status {
+func (c cantDecide) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
 	return drainability.NewUndefinedStatus()
 }

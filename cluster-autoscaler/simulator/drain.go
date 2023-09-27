@@ -25,7 +25,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -44,7 +46,7 @@ type NodeDeleteOptions struct {
 	// to allow their pods deletion in scale down
 	MinReplicaCount int
 	// DrainabilityRules contain a list of checks that are used to verify whether a pod can be drained from node.
-	DrainabilityRules []drainability.Rule
+	DrainabilityRules rules.Rules
 }
 
 // NewNodeDeleteOptions returns new node delete options extracted from autoscaling options
@@ -54,7 +56,7 @@ func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
 		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
 		MinReplicaCount:                   opts.MinReplicaCount,
 		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
-		DrainabilityRules:                 drainability.DefaultRules(),
+		DrainabilityRules:                 rules.Default(),
 	}
 }
 
@@ -67,16 +69,22 @@ func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
 // still exist.
 // TODO(x13n): Rewrite GetPodsForDeletionOnNodeDrain into a set of DrainabilityRules.
 func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDeleteOptions, listers kube_util.ListerRegistry,
-	pdbs []*policyv1.PodDisruptionBudget, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
+	remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	var drainPods, drainDs []*apiv1.Pod
 	drainabilityRules := deleteOptions.DrainabilityRules
 	if drainabilityRules == nil {
-		drainabilityRules = drainability.DefaultRules()
+		drainabilityRules = rules.Default()
+	}
+	if remainingPdbTracker == nil {
+		remainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
+	}
+	drainCtx := &drainability.DrainContext{
+		RemainingPdbTracker: remainingPdbTracker,
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		pod := podInfo.Pod
-		d := drainabilityStatus(pod, drainabilityRules)
-		switch d.Outcome {
+		status := drainabilityRules.Drainable(drainCtx, pod)
+		switch status.Outcome {
 		case drainability.UndefinedOutcome:
 			pods = append(pods, podInfo.Pod)
 		case drainability.DrainOk:
@@ -86,15 +94,18 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDele
 				drainPods = append(drainPods, pod)
 			}
 		case drainability.BlockDrain:
-			blockingPod = &drain.BlockingPod{pod, d.BlockingReason}
-			err = d.Error
+			blockingPod = &drain.BlockingPod{
+				Pod:    pod,
+				Reason: status.BlockingReason,
+			}
+			err = status.Error
 			return
-		case drainability.SkipDrain:
 		}
 	}
+
 	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
 		pods,
-		pdbs,
+		remainingPdbTracker.GetPdbs(),
 		deleteOptions.SkipNodesWithSystemPods,
 		deleteOptions.SkipNodesWithLocalStorage,
 		deleteOptions.SkipNodesWithCustomControllerPods,
@@ -106,7 +117,7 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions NodeDele
 	if err != nil {
 		return pods, daemonSetPods, blockingPod, err
 	}
-	if pdbBlockingPod, err := checkPdbs(pods, pdbs); err != nil {
+	if pdbBlockingPod, err := checkPdbs(pods, remainingPdbTracker.GetPdbs()); err != nil {
 		return []*apiv1.Pod{}, []*apiv1.Pod{}, pdbBlockingPod, err
 	}
 
@@ -130,15 +141,4 @@ func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.
 		}
 	}
 	return nil, nil
-}
-
-func drainabilityStatus(pod *apiv1.Pod, dr []drainability.Rule) drainability.Status {
-	for _, f := range dr {
-		if d := f.Drainable(pod); d.Outcome != drainability.UndefinedOutcome {
-			return d
-		}
-	}
-	return drainability.Status{
-		Outcome: drainability.UndefinedOutcome,
-	}
 }
