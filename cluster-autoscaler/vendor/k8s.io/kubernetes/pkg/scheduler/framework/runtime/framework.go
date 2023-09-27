@@ -302,7 +302,7 @@ func NewFramework(ctx context.Context, r Registry, profile *config.KubeScheduler
 				Args: args,
 			})
 		}
-		p, err := factory(args, f)
+		p, err := factory(ctx, args, f)
 		if err != nil {
 			return nil, fmt.Errorf("initializing plugin %q: %w", name, err)
 		}
@@ -632,12 +632,13 @@ func (f *frameworkImpl) QueueSortFunc() framework.LessFunc {
 // If a non-success status is returned, then the scheduling cycle is aborted.
 func (f *frameworkImpl) RunPreFilterPlugins(ctx context.Context, state *framework.CycleState, pod *v1.Pod) (_ *framework.PreFilterResult, status *framework.Status) {
 	startTime := time.Now()
+	skipPlugins := sets.New[string]()
 	defer func() {
+		state.SkipFilterPlugins = skipPlugins
 		metrics.FrameworkExtensionPointDuration.WithLabelValues(metrics.PreFilter, status.Code().String(), f.profileName).Observe(metrics.SinceInSeconds(startTime))
 	}()
 	var result *framework.PreFilterResult
 	var pluginsWithNodes []string
-	skipPlugins := sets.New[string]()
 	logger := klog.FromContext(ctx)
 	logger = klog.LoggerWithName(logger, "PreFilter")
 	// TODO(knelasevero): Remove duplicated keys from log entry calls
@@ -671,7 +672,6 @@ func (f *frameworkImpl) RunPreFilterPlugins(ctx context.Context, state *framewor
 			return nil, framework.NewStatus(framework.Unschedulable, msg)
 		}
 	}
-	state.SkipFilterPlugins = skipPlugins
 	return result, nil
 }
 
@@ -969,10 +969,11 @@ func (f *frameworkImpl) RunPreScorePlugins(
 	nodes []*v1.Node,
 ) (status *framework.Status) {
 	startTime := time.Now()
+	skipPlugins := sets.New[string]()
 	defer func() {
+		state.SkipScorePlugins = skipPlugins
 		metrics.FrameworkExtensionPointDuration.WithLabelValues(metrics.PreScore, status.Code().String(), f.profileName).Observe(metrics.SinceInSeconds(startTime))
 	}()
-	skipPlugins := sets.New[string]()
 	logger := klog.FromContext(ctx)
 	logger = klog.LoggerWithName(logger, "PreScore")
 	// TODO(knelasevero): Remove duplicated keys from log entry calls
@@ -991,7 +992,6 @@ func (f *frameworkImpl) RunPreScorePlugins(
 			return framework.AsStatus(fmt.Errorf("running PreScore plugin %q: %w", pl.Name(), status.AsError()))
 		}
 	}
-	state.SkipScorePlugins = skipPlugins
 	return nil
 }
 
