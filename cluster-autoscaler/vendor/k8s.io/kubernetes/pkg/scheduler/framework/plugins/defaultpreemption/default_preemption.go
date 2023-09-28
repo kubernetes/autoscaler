@@ -63,7 +63,7 @@ func (pl *DefaultPreemption) Name() string {
 }
 
 // New initializes a new plugin and returns it.
-func New(dpArgs runtime.Object, fh framework.Handle, fts feature.Features) (framework.Plugin, error) {
+func New(_ context.Context, dpArgs runtime.Object, fh framework.Handle, fts feature.Features) (framework.Plugin, error) {
 	args, ok := dpArgs.(*config.DefaultPreemptionArgs)
 	if !ok {
 		return nil, fmt.Errorf("got args of type %T, want *DefaultPreemptionArgs", dpArgs)
@@ -97,8 +97,9 @@ func (pl *DefaultPreemption) PostFilter(ctx context.Context, state *framework.Cy
 	}
 
 	result, status := pe.Preempt(ctx, pod, m)
-	if status.Message() != "" {
-		return result, framework.NewStatus(status.Code(), "preemption: "+status.Message())
+	msg := status.Message()
+	if len(msg) > 0 {
+		return result, framework.NewStatus(status.Code(), "preemption: "+msg)
 	}
 	return result, status
 }
