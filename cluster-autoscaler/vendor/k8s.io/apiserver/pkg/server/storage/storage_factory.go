@@ -19,15 +19,13 @@ package storage
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apiserver/pkg/features"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
-	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/klog/v2"
 )
 
@@ -156,7 +154,7 @@ func NewDefaultStorageFactory(
 	resourceConfig APIResourceConfigSource,
 	specialDefaultResourcePrefixes map[schema.GroupResource]string,
 ) *DefaultStorageFactory {
-	config.Paging = utilfeature.DefaultFeatureGate.Enabled(features.APIListChunking)
+	config.Paging = true
 	if len(defaultMediaType) == 0 {
 		defaultMediaType = runtime.ContentTypeJSON
 	}
@@ -182,14 +180,6 @@ func (s *DefaultStorageFactory) SetEtcdLocation(groupResource schema.GroupResour
 func (s *DefaultStorageFactory) SetEtcdPrefix(groupResource schema.GroupResource, prefix string) {
 	overrides := s.Overrides[groupResource]
 	overrides.etcdPrefix = prefix
-	s.Overrides[groupResource] = overrides
-}
-
-// SetDisableAPIListChunking allows a specific resource to disable paging at the storage layer, to prevent
-// exposure of key names in continuations. This may be overridden by feature gates.
-func (s *DefaultStorageFactory) SetDisableAPIListChunking(groupResource schema.GroupResource) {
-	overrides := s.Overrides[groupResource]
-	overrides.disablePaging = true
 	s.Overrides[groupResource] = overrides
 }
 
@@ -337,7 +327,7 @@ func backends(storageConfig storagebackend.Config, grOverrides map[schema.GroupR
 		}
 	}
 	if len(storageConfig.Transport.TrustedCAFile) > 0 {
-		if caCert, err := ioutil.ReadFile(storageConfig.Transport.TrustedCAFile); err != nil {
+		if caCert, err := os.ReadFile(storageConfig.Transport.TrustedCAFile); err != nil {
 			klog.Errorf("failed to read ca file while getting backends: %s", err)
 		} else {
 			caPool := x509.NewCertPool()
