@@ -35,6 +35,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -47,7 +49,8 @@ type Actuator struct {
 	clusterState          *clusterstate.ClusterStateRegistry
 	nodeDeletionTracker   *deletiontracker.NodeDeletionTracker
 	nodeDeletionScheduler *GroupDeletionScheduler
-	deleteOptions         simulator.NodeDeleteOptions
+	deleteOptions         options.NodeDeleteOptions
+	drainabilityRules     rules.Rules
 	// TODO: Move budget processor to scaledown planner, potentially merge into PostFilteringScaleDownNodeProcessor
 	// This is a larger change to the code structure which impacts some existing actuator unit tests
 	// as well as Cluster Autoscaler implementations that may override ScaleDownSetProcessor
@@ -64,15 +67,16 @@ type actuatorNodeGroupConfigGetter interface {
 }
 
 // NewActuator returns a new instance of Actuator.
-func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions, configGetter actuatorNodeGroupConfigGetter) *Actuator {
+func NewActuator(ctx *context.AutoscalingContext, csr *clusterstate.ClusterStateRegistry, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, configGetter actuatorNodeGroupConfigGetter) *Actuator {
 	ndb := NewNodeDeletionBatcher(ctx, csr, ndt, ctx.NodeDeletionBatcherInterval)
 	return &Actuator{
 		ctx:                       ctx,
 		clusterState:              csr,
 		nodeDeletionTracker:       ndt,
-		nodeDeletionScheduler:     NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, ndt)),
+		nodeDeletionScheduler:     NewGroupDeletionScheduler(ctx, ndt, ndb, NewDefaultEvictor(deleteOptions, drainabilityRules, ndt)),
 		budgetProcessor:           budgets.NewScaleDownBudgetProcessor(ctx),
 		deleteOptions:             deleteOptions,
+		drainabilityRules:         drainabilityRules,
 		configGetter:              configGetter,
 		nodeDeleteDelayAfterTaint: ctx.NodeDeleteDelayAfterTaint,
 	}
@@ -273,7 +277,7 @@ func (a *Actuator) deleteNodesAsync(nodes []*apiv1.Node, nodeGroup cloudprovider
 			continue
 		}
 
-		podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, registry, remainingPdbTracker, time.Now())
+		podsToRemove, _, _, err := simulator.GetPodsToMove(nodeInfo, a.deleteOptions, a.drainabilityRules, registry, remainingPdbTracker, time.Now())
 		if err != nil {
 			klog.Errorf("Scale-down: couldn't delete node %q, err: %v", node.Name, err)
 			nodeDeleteResult := status.NodeDeleteResult{ResultType: status.NodeDeleteErrorInternal, Err: errors.NewAutoscalerError(errors.InternalError, "GetPodsToMove for %q returned error: %v", node.Name, err)}

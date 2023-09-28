@@ -34,6 +34,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodes"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -77,7 +79,7 @@ type Planner struct {
 }
 
 // New creates a new Planner object.
-func New(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions simulator.NodeDeleteOptions) *Planner {
+func New(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules) *Planner {
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	minUpdateInterval := context.AutoscalingOptions.NodeGroupDefaults.ScaleDownUnneededTime
 	if minUpdateInterval == 0*time.Nanosecond {
@@ -87,7 +89,7 @@ func New(context *context.AutoscalingContext, processors *processors.Autoscaling
 		context:               context,
 		unremovableNodes:      unremovable.NewNodes(),
 		unneededNodes:         unneeded.NewNodes(processors.NodeGroupConfigProcessor, resourceLimitsFinder),
-		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, true),
+		rs:                    simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, simulator.NewUsageTracker(), deleteOptions, drainabilityRules, true),
 		actuationInjector:     scheduling.NewHintingSimulator(context.PredicateChecker),
 		eligibilityChecker:    eligibility.NewChecker(processors.NodeGroupConfigProcessor),
 		nodeUtilizationMap:    make(map[string]utilization.Info),

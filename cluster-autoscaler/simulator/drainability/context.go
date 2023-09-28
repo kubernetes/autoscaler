@@ -18,9 +18,11 @@ package drainability
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 )
 
 // DrainContext contains parameters for drainability rules.
 type DrainContext struct {
 	RemainingPdbTracker pdb.RemainingPdbTracker
+	DeleteOptions       options.NodeDeleteOptions
 }
