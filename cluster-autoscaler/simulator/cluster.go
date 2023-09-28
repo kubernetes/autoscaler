@@ -22,6 +22,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/scheduling"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
@@ -95,19 +97,21 @@ type RemovalSimulator struct {
 	clusterSnapshot     clustersnapshot.ClusterSnapshot
 	usageTracker        *UsageTracker
 	canPersist          bool
-	deleteOptions       NodeDeleteOptions
+	deleteOptions       options.NodeDeleteOptions
+	drainabilityRules   rules.Rules
 	schedulingSimulator *scheduling.HintingSimulator
 }
 
 // NewRemovalSimulator returns a new RemovalSimulator.
 func NewRemovalSimulator(listers kube_util.ListerRegistry, clusterSnapshot clustersnapshot.ClusterSnapshot, predicateChecker predicatechecker.PredicateChecker,
-	usageTracker *UsageTracker, deleteOptions NodeDeleteOptions, persistSuccessfulSimulations bool) *RemovalSimulator {
+	usageTracker *UsageTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, persistSuccessfulSimulations bool) *RemovalSimulator {
 	return &RemovalSimulator{
 		listers:             listers,
 		clusterSnapshot:     clusterSnapshot,
 		usageTracker:        usageTracker,
 		canPersist:          persistSuccessfulSimulations,
 		deleteOptions:       deleteOptions,
+		drainabilityRules:   drainabilityRules,
 		schedulingSimulator: scheduling.NewHintingSimulator(predicateChecker),
 	}
 }
@@ -159,7 +163,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
 	}
 
-	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.listers, remainingPdbTracker, timestamp)
+	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
 		klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)
 		if blockingPod != nil {
@@ -193,7 +197,7 @@ func (r *RemovalSimulator) FindEmptyNodesToRemove(candidates []string, timestamp
 			continue
 		}
 		// Should block on all pods
-		podsToRemove, _, _, err := GetPodsToMove(nodeInfo, r.deleteOptions, nil, nil, timestamp)
+		podsToRemove, _, _, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, nil, nil, timestamp)
 		if err == nil && len(podsToRemove) == 0 {
 			result = append(result, node)
 		}

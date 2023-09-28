@@ -32,6 +32,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
@@ -55,9 +57,9 @@ type ScaleDown struct {
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, ndt *deletiontracker.NodeDeletionTracker, deleteOptions simulator.NodeDeleteOptions) *ScaleDown {
+func NewScaleDown(context *context.AutoscalingContext, processors *processors.AutoscalingProcessors, ndt *deletiontracker.NodeDeletionTracker, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules) *ScaleDown {
 	usageTracker := simulator.NewUsageTracker()
-	removalSimulator := simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, usageTracker, deleteOptions, false)
+	removalSimulator := simulator.NewRemovalSimulator(context.ListerRegistry, context.ClusterSnapshot, context.PredicateChecker, usageTracker, deleteOptions, drainabilityRules, false)
 	unremovableNodes := unremovable.NewNodes()
 	resourceLimitsFinder := resource.NewLimitsFinder(processors.CustomResourcesProcessor)
 	return &ScaleDown{

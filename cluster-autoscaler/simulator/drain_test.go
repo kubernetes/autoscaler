@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -306,16 +307,14 @@ func TestGetPodsToMove(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.desc, func(t *testing.T) {
-			deleteOptions := NodeDeleteOptions{
+			deleteOptions := options.NodeDeleteOptions{
 				SkipNodesWithSystemPods:           true,
 				SkipNodesWithLocalStorage:         true,
-				MinReplicaCount:                   0,
 				SkipNodesWithCustomControllerPods: true,
-				DrainabilityRules:                 tc.rules,
 			}
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
-			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, nil, tracker, testTime)
+			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, tc.rules, nil, tracker, testTime)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {

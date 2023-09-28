@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	autoscaler_errors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -1287,14 +1288,13 @@ func newWrapperForTesting(ctx *context.AutoscalingContext, clusterStateRegistry 
 	if ndt == nil {
 		ndt = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 	}
-	deleteOptions := simulator.NodeDeleteOptions{
+	deleteOptions := options.NodeDeleteOptions{
 		SkipNodesWithSystemPods:           true,
 		SkipNodesWithLocalStorage:         true,
-		MinReplicaCount:                   0,
 		SkipNodesWithCustomControllerPods: true,
 	}
 	processors := NewTestProcessors(ctx)
-	sd := NewScaleDown(ctx, processors, ndt, deleteOptions)
-	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions, processors.NodeGroupConfigProcessor)
+	sd := NewScaleDown(ctx, processors, ndt, deleteOptions, nil)
+	actuator := actuation.NewActuator(ctx, clusterStateRegistry, ndt, deleteOptions, nil, processors.NodeGroupConfigProcessor)
 	return NewScaleDownWrapper(sd, actuator)
 }
