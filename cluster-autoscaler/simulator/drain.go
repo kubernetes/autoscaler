@@ -21,9 +21,6 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
@@ -90,28 +87,10 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 	if err != nil {
 		return pods, daemonSetPods, blockingPod, err
 	}
-	if pdbBlockingPod, err := checkPdbs(pods, remainingPdbTracker.GetPdbs()); err != nil {
-		return []*apiv1.Pod{}, []*apiv1.Pod{}, pdbBlockingPod, err
+	if canRemove, _, blockingPodInfo := remainingPdbTracker.CanRemovePods(pods); !canRemove {
+		pod := blockingPodInfo.Pod
+		return []*apiv1.Pod{}, []*apiv1.Pod{}, blockingPodInfo, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
 	}
 
 	return pods, daemonSetPods, nil, nil
-}
-
-func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (*drain.BlockingPod, error) {
-	// TODO: remove it after deprecating legacy scale down.
-	// RemainingPdbTracker.CanRemovePods() to replace this function.
-	for _, pdb := range pdbs {
-		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
-		if err != nil {
-			return nil, err
-		}
-		for _, pod := range pods {
-			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
-				if pdb.Status.DisruptionsAllowed < 1 {
-					return &drain.BlockingPod{Pod: pod, Reason: drain.NotEnoughPdb}, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
-				}
-			}
-		}
-	}
-	return nil, nil
 }
