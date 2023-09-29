@@ -14,4 +14,4 @@ reviewers:
 - shysank
 
 labels:
-- area/provider/clusterapi
+- area/provider/cluster-api
