@@ -29,10 +29,6 @@ import (
 	"syscall"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
-
 	"github.com/spf13/pflag"
 
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -45,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
+	"k8s.io/autoscaler/cluster-autoscaler/debuggingsnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -55,6 +52,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -68,7 +68,7 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
-	"k8s.io/component-base/config/options"
+	componentopts "k8s.io/component-base/config/options"
 	"k8s.io/component-base/logs"
 	logsapi "k8s.io/component-base/logs/api/v1"
 	_ "k8s.io/component-base/logs/json/register"
@@ -461,7 +461,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	if err != nil {
 		return nil, err
 	}
-	deleteOptions := simulator.NewNodeDeleteOptions(autoscalingOptions)
+	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
@@ -481,7 +481,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	if autoscalingOptions.ParallelDrain {
 		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
 		scaleDownCandidatesComparers = []scaledowncandidates.CandidatesComparer{
-			emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions),
+			emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, rules.Default()),
 			sdCandidatesSorting,
 		}
 		opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
@@ -575,7 +575,7 @@ func main() {
 
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
-	options.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
+	componentopts.BindLeaderElectionFlags(&leaderElection, pflag.CommandLine)
 
 	featureGate := utilfeature.DefaultMutableFeatureGate
 	loggingConfig := logsapi.NewLoggingConfiguration()

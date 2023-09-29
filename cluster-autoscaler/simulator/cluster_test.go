@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -30,7 +31,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -59,7 +59,7 @@ func TestFindEmptyNodes(t *testing.T) {
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
 	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
-	r := NewRemovalSimulator(nil, clusterSnapshot, nil, nil, testDeleteOptions(), false)
+	r := NewRemovalSimulator(nil, clusterSnapshot, nil, nil, testDeleteOptions(), nil, false)
 	emptyNodes := r.FindEmptyNodesToRemove(nodeNames, testTime)
 	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
 }
@@ -206,8 +206,8 @@ func TestFindNodesToRemove(t *testing.T) {
 				destinations = append(destinations, node.Name)
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
-			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), false)
-			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), []*policyv1.PodDisruptionBudget{})
+			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), nil, false)
+			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), nil)
 			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
 			assert.Equal(t, toRemove, test.toRemove)
 			assert.Equal(t, unremovable, test.unremovable)
@@ -215,11 +215,10 @@ func TestFindNodesToRemove(t *testing.T) {
 	}
 }
 
-func testDeleteOptions() NodeDeleteOptions {
-	return NodeDeleteOptions{
+func testDeleteOptions() options.NodeDeleteOptions {
+	return options.NodeDeleteOptions{
 		SkipNodesWithSystemPods:           true,
 		SkipNodesWithLocalStorage:         true,
-		MinReplicaCount:                   0,
 		SkipNodesWithCustomControllerPods: true,
 	}
 }
