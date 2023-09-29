@@ -40,17 +40,16 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment recommender-externalmetrics-deployment"
-TEST_COMPONENTS=(recommender-externalmetrics-deployment)
+COMPONENTS="vpa-v1-crd-gen vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
 
 function script_path {
   # Regular components have deployment yaml files under /deploy/.  But some components only have
-  # test deployment yaml files that are under hack/e2e.  If $1 is one of ${TEST_COMPONENTS}, use
-  # the hack/e2e subdir instead of deploy.
-  if printf '%s\0' "${TEST_COMPONENTS[@]}" | grep -Fqxz -- $1; then
-    echo "${SCRIPT_ROOT}/hack/e2e/${1}.yaml"
-  else
+  # test deployment yaml files that are under hack/e2e. Check the main deploy directory before
+  # using the e2e subdirectory.
+  if test -f "${SCRIPT_ROOT}/deploy/${1}.yaml"; then
     echo "${SCRIPT_ROOT}/deploy/${1}.yaml"
+  else
+    echo "${SCRIPT_ROOT}/hack/e2e/${1}.yaml"
   fi
 }
 
