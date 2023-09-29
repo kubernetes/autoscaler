@@ -569,11 +569,10 @@ func main() {
 	featureGate.AddFlag(pflag.CommandLine)
 	kube_flag.InitFlags()
 
+	logs.InitLogs()
 	if err := logsapi.ValidateAndApply(loggingConfig, featureGate); err != nil {
 		klog.Fatalf("Failed to validate and apply logging configuration: %v", err)
 	}
-
-	logs.InitLogs()
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
