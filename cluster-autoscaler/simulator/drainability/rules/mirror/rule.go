@@ -14,26 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package drainability
+package mirror
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/utils/pod"
-
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
-// MirrorPodRule is a drainability rule on how to handle mirror pods.
-type MirrorPodRule struct{}
+// Rule is a drainability rule on how to handle mirror pods.
+type Rule struct{}
 
-// NewMirrorPodRule creates a new MirrorPodRule.
-func NewMirrorPodRule() *MirrorPodRule {
-	return &MirrorPodRule{}
+// New creates a new Rule.
+func New() *Rule {
+	return &Rule{}
 }
 
 // Drainable decides what to do with mirror pods on node drain.
-func (m *MirrorPodRule) Drainable(p *apiv1.Pod) Status {
-	if pod.IsMirrorPod(p) {
-		return NewSkipStatus()
+func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+	if pod_util.IsMirrorPod(pod) {
+		return drainability.NewSkipStatus()
 	}
-	return NewUndefinedStatus()
+	return drainability.NewUndefinedStatus()
 }

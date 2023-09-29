@@ -45,6 +45,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupconfig"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -149,9 +151,9 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 	return args.Error(0)
 }
 
-func setUpScaleDownActuator(ctx *context.AutoscalingContext, options config.AutoscalingOptions) {
-	deleteOptions := simulator.NewNodeDeleteOptions(options)
-	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, NewTestProcessors(ctx).NodeGroupConfigProcessor)
+func setUpScaleDownActuator(ctx *context.AutoscalingContext, autoscalingOptions config.AutoscalingOptions) {
+	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
+	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(), NewTestProcessors(ctx).NodeGroupConfigProcessor)
 }
 
 func TestStaticAutoscalerRunOnce(t *testing.T) {
@@ -1447,11 +1449,11 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 		kubernetes.NewTestPodLister(nil),
 		kubernetes.NewTestPodDisruptionBudgetLister(nil), daemonSetLister, nil, nil, nil, nil)
 
-	// Create context with minimal options that guarantee we reach the tested logic.
-	// We're only testing the input to UpdateClusterState which should be called whenever scale-down is enabled, other options shouldn't matter.
-	options := config.AutoscalingOptions{ScaleDownEnabled: true}
+	// Create context with minimal autoscalingOptions that guarantee we reach the tested logic.
+	// We're only testing the input to UpdateClusterState which should be called whenever scale-down is enabled, other autoscalingOptions shouldn't matter.
+	autoscalingOptions := config.AutoscalingOptions{ScaleDownEnabled: true}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
-	ctx, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil)
+	ctx, err := NewScaleTestAutoscalingContext(autoscalingOptions, &fake.Clientset{}, listerRegistry, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	// Create CSR with unhealthy cluster protection effectively disabled, to guarantee we reach the tested logic.
@@ -1459,7 +1461,7 @@ func TestStaticAutoscalerUpcomingScaleDownCandidates(t *testing.T) {
 	csr := clusterstate.NewClusterStateRegistry(provider, csrConfig, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
 
 	// Setting the Actuator is necessary for testing any scale-down logic, it shouldn't have anything to do in this test.
-	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), simulator.NodeDeleteOptions{}, NewTestProcessors(&ctx).NodeGroupConfigProcessor)
+	actuator := actuation.NewActuator(&ctx, csr, deletiontracker.NewNodeDeletionTracker(0*time.Second), options.NodeDeleteOptions{}, nil, NewTestProcessors(&ctx).NodeGroupConfigProcessor)
 	ctx.ScaleDownActuator = actuator
 
 	// Fake planner that keeps track of the scale-down candidates passed to UpdateClusterState.
@@ -1847,15 +1849,14 @@ func newScaleDownPlannerAndActuator(t *testing.T, ctx *context.AutoscalingContex
 	ctx.MaxDrainParallelism = 1
 	ctx.NodeDeletionBatcherInterval = 0 * time.Second
 	ctx.NodeDeleteDelayAfterTaint = 1 * time.Second
-	deleteOptions := simulator.NodeDeleteOptions{
+	deleteOptions := options.NodeDeleteOptions{
 		SkipNodesWithSystemPods:           true,
 		SkipNodesWithLocalStorage:         true,
-		MinReplicaCount:                   0,
 		SkipNodesWithCustomControllerPods: true,
 	}
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	sd := legacy.NewScaleDown(ctx, p, ndt, deleteOptions)
-	actuator := actuation.NewActuator(ctx, cs, ndt, deleteOptions, p.NodeGroupConfigProcessor)
+	sd := legacy.NewScaleDown(ctx, p, ndt, deleteOptions, nil)
+	actuator := actuation.NewActuator(ctx, cs, ndt, deleteOptions, nil, p.NodeGroupConfigProcessor)
 	wrapper := legacy.NewScaleDownWrapper(sd, actuator)
 	return wrapper, wrapper
 }

@@ -51,6 +51,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -142,7 +144,8 @@ func NewStaticAutoscaler(
 	debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter,
 	remainingPdbTracker pdb.RemainingPdbTracker,
 	scaleUpOrchestrator scaleup.Orchestrator,
-	deleteOptions simulator.NodeDeleteOptions) *StaticAutoscaler {
+	deleteOptions options.NodeDeleteOptions,
+	drainabilityRules rules.Rules) *StaticAutoscaler {
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -169,14 +172,14 @@ func NewStaticAutoscaler(
 	// TODO: Populate the ScaleDownActuator/Planner fields in AutoscalingContext
 	// during the struct creation rather than here.
 	ndt := deletiontracker.NewNodeDeletionTracker(0 * time.Second)
-	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, ndt, deleteOptions)
-	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions, processors.NodeGroupConfigProcessor)
+	scaleDown := legacy.NewScaleDown(autoscalingContext, processors, ndt, deleteOptions, drainabilityRules)
+	actuator := actuation.NewActuator(autoscalingContext, clusterStateRegistry, ndt, deleteOptions, drainabilityRules, processors.NodeGroupConfigProcessor)
 	autoscalingContext.ScaleDownActuator = actuator
 
 	var scaleDownPlanner scaledown.Planner
 	var scaleDownActuator scaledown.Actuator
 	if opts.ParallelDrain {
-		scaleDownPlanner = planner.New(autoscalingContext, processors, deleteOptions)
+		scaleDownPlanner = planner.New(autoscalingContext, processors, deleteOptions, drainabilityRules)
 		scaleDownActuator = actuator
 	} else {
 		// TODO: Remove the wrapper once the legacy implementation becomes obsolete.

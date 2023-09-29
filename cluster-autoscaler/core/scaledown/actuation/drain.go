@@ -23,7 +23,6 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,6 +32,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
@@ -62,11 +63,12 @@ type Evictor struct {
 	DsEvictionEmptyNodeTimeout time.Duration
 	PodEvictionHeadroom        time.Duration
 	evictionRegister           evictionRegister
-	deleteOptions              simulator.NodeDeleteOptions
+	deleteOptions              options.NodeDeleteOptions
+	drainabilityRules          rules.Rules
 }
 
 // NewDefaultEvictor returns an instance of Evictor using the default parameters.
-func NewDefaultEvictor(deleteOptions simulator.NodeDeleteOptions, evictionRegister evictionRegister) Evictor {
+func NewDefaultEvictor(deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, evictionRegister evictionRegister) Evictor {
 	return Evictor{
 		EvictionRetryTime:          DefaultEvictionRetryTime,
 		DsEvictionRetryTime:        DefaultDsEvictionRetryTime,
@@ -74,6 +76,7 @@ func NewDefaultEvictor(deleteOptions simulator.NodeDeleteOptions, evictionRegist
 		PodEvictionHeadroom:        DefaultPodEvictionHeadroom,
 		evictionRegister:           evictionRegister,
 		deleteOptions:              deleteOptions,
+		drainabilityRules:          drainabilityRules,
 	}
 }
 
@@ -177,7 +180,7 @@ func (e Evictor) DrainNodeWithPods(ctx *acontext.AutoscalingContext, node *apiv1
 // EvictDaemonSetPods creates eviction objects for all DaemonSet pods on the node.
 func (e Evictor) EvictDaemonSetPods(ctx *acontext.AutoscalingContext, nodeInfo *framework.NodeInfo, timeNow time.Time) error {
 	nodeToDelete := nodeInfo.Node()
-	_, daemonSetPods, _, err := simulator.GetPodsToMove(nodeInfo, e.deleteOptions, nil, []*policyv1.PodDisruptionBudget{}, timeNow)
+	_, daemonSetPods, _, err := simulator.GetPodsToMove(nodeInfo, e.deleteOptions, e.drainabilityRules, nil, nil, timeNow)
 	if err != nil {
 		return fmt.Errorf("failed to get DaemonSet pods for %s (error: %v)", nodeToDelete.Name, err)
 	}
