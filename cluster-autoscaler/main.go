@@ -35,6 +35,7 @@ import (
 
 	"github.com/spf13/pflag"
 
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apiserver/pkg/server/mux"
 	"k8s.io/apiserver/pkg/server/routes"
@@ -444,7 +445,15 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
 	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
 	kubeClient := createKubeClient(kubeClientConfig)
-	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
+
+	// Informer transform to trim ManagedFields for memory efficiency.
+	trim := func(obj interface{}) (interface{}, error) {
+		if accessor, err := meta.Accessor(obj); err == nil {
+			accessor.SetManagedFields(nil)
+		}
+		return obj, nil
+	}
+	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
 
 	eventsKubeClient := createKubeClient(getKubeConfig())
 
