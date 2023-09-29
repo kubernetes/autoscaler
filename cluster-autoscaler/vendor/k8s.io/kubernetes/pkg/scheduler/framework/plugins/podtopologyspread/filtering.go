@@ -20,8 +20,6 @@ import (
 	"context"
 	"fmt"
 	"math"
-	"os"
-	"sync"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -313,41 +311,6 @@ func (pl *PodTopologySpread) calPreFilterState(ctx context.Context, pod *v1.Pod)
 			s.TpPairToMatchNum[tp] += count
 		}
 	}
-
-	// backward compatibility with k8s < v1.24: also count (for skew evaluation) pods matching
-	// the spread label selector yet running on nodes not supported by this pod's node affinities
-	matchingPodsCountOnNonAffinityNodes := make(map[topologyPair]int, len(allNodes))
-	var matchingPodsCountOnNonAffinityNodesMu sync.Mutex
-	pl.parallelizer.Until(ctx, len(allNodes), func(i int) {
-		if len(tpCountsByNode[i]) > 0 {
-			return // already accounted (nodes matching our pods' nodeaffinity)
-		}
-		if os.Getenv("SPREADTOPOLOGY_SKEW_FILTERS_NODEAFFINITY") != "disabled" {
-			return // we should only set that to "disabled" on k8s < 1.24
-		}
-		nodeInfo := allNodes[i]
-		node := nodeInfo.Node()
-		if !nodeLabelsMatchSpreadConstraints(node.Labels, constraints) {
-			return // node not having the spreadconstraint key/label
-		}
-		for _, constraint := range constraints {
-			pair := topologyPair{key: constraint.TopologyKey, value: node.Labels[constraint.TopologyKey]}
-			if _, ok := s.TpPairToMatchNum[pair]; !ok {
-				// ignore spreadconstraint values (eg. zone names) that are not provided
-				// by any node running pods that match the spreadconstraint label selector
-				// AND that satisfy the pods' nodeaffinity (k8s < 1.24 behaviour).
-				continue
-			}
-			count := countPodsMatchSelector(nodeInfo.Pods, constraint.Selector, pod.Namespace)
-			matchingPodsCountOnNonAffinityNodesMu.Lock()
-			matchingPodsCountOnNonAffinityNodes[pair] += count
-			matchingPodsCountOnNonAffinityNodesMu.Unlock()
-		}
-	}, pl.Name())
-	for pair, count := range matchingPodsCountOnNonAffinityNodes {
-		s.TpPairToMatchNum[pair] += count
-	}
-
 	if pl.enableMinDomainsInPodTopologySpread {
 		s.TpKeyToDomainsNum = make(map[string]int, len(constraints))
 		for tp := range s.TpPairToMatchNum {
