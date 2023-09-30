@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/localstorage"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/notsafetoevict"
+	pdbrule "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
 )
@@ -44,6 +45,7 @@ func Default() Rules {
 		system.New(),
 		notsafetoevict.New(),
 		localstorage.New(),
+		pdbrule.New(),
 	}
 }
 
