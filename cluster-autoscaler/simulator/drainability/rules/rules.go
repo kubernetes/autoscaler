@@ -20,7 +20,11 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/localstorage"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/notsafetoevict"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
 )
 
 // Rule determines whether a given pod can be drained or not.
@@ -36,6 +40,10 @@ type Rule interface {
 func Default() Rules {
 	return []Rule{
 		mirror.New(),
+		replicated.New(),
+		system.New(),
+		notsafetoevict.New(),
+		localstorage.New(),
 	}
 }
 
