@@ -182,7 +182,7 @@ func TestGetPodsToMove(t *testing.T) {
 		desc         string
 		pods         []*apiv1.Pod
 		pdbs         []*policyv1.PodDisruptionBudget
-		rules        []rules.Rule
+		rules        rules.Rules
 		wantPods     []*apiv1.Pod
 		wantDs       []*apiv1.Pod
 		wantBlocking *drain.BlockingPod
@@ -312,9 +312,10 @@ func TestGetPodsToMove(t *testing.T) {
 				SkipNodesWithLocalStorage:         true,
 				SkipNodesWithCustomControllerPods: true,
 			}
+			rules := append(tc.rules, rules.Default()...)
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
-			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, tc.rules, nil, tracker, testTime)
+			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, rules, nil, tracker, testTime)
 			if tc.wantErr {
 				assert.Error(t, err)
 			} else {

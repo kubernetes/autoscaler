@@ -26,10 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	v1appslister "k8s.io/client-go/listers/apps/v1"
-	v1lister "k8s.io/client-go/listers/core/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -41,10 +38,8 @@ type testOpts struct {
 	pdbs                []*policyv1.PodDisruptionBudget
 	rcs                 []*apiv1.ReplicationController
 	replicaSets         []*appsv1.ReplicaSet
-	expectFatal         bool
 	expectPods          []*apiv1.Pod
 	expectDaemonSetPods []*apiv1.Pod
-	expectBlockingPod   *BlockingPod
 	// TODO(vadasambar): remove this when we get rid of scaleDownNodesWithCustomControllerPods
 	skipNodesWithCustomControllerPods bool
 }
@@ -214,93 +209,6 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
-	nakedPod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bar",
-			Namespace: "default",
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-		},
-	}
-
-	emptydirPod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
-	emptyDirSafeToEvictVolumeSingleVal := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				SafeToEvictLocalVolumesKey: "scratch",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
-	emptyDirSafeToEvictLocalVolumeSingleValEmpty := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				SafeToEvictLocalVolumesKey: "",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
-	emptyDirSafeToEvictLocalVolumeSingleValNonMatching := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				SafeToEvictLocalVolumesKey: "scratch-2",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch-1",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
 	emptyDirSafeToEvictLocalVolumeMultiValAllMatching := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            "bar",
@@ -308,90 +216,6 @@ func TestDrain(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
 			Annotations: map[string]string{
 				SafeToEvictLocalVolumesKey: "scratch-1,scratch-2,scratch-3",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch-1",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-				{
-					Name:         "scratch-2",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-				{
-					Name:         "scratch-3",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
-	emptyDirSafeToEvictLocalVolumeMultiValNonMatching := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				SafeToEvictLocalVolumesKey: "scratch-1,scratch-2,scratch-5",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch-1",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-				{
-					Name:         "scratch-2",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-				{
-					Name:         "scratch-3",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
-	emptyDirSafeToEvictLocalVolumeMultiValSomeMatchingVals := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				SafeToEvictLocalVolumesKey: "scratch-1,scratch-2",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-			Volumes: []apiv1.Volume{
-				{
-					Name:         "scratch-1",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-				{
-					Name:         "scratch-2",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-				{
-					Name:         "scratch-3",
-					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-				},
-			},
-		},
-	}
-
-	emptyDirSafeToEvictLocalVolumeMultiValEmpty := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				SafeToEvictLocalVolumesKey: ",",
 			},
 		},
 		Spec: apiv1.PodSpec{
@@ -503,44 +327,6 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
-	unsafeRcPod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-			Annotations: map[string]string{
-				PodSafeToEvictKey: "false",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-		},
-	}
-
-	unsafeJobPod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:            "bar",
-			Namespace:       "default",
-			OwnerReferences: GenerateOwnerReferences(job.Name, "Job", "batch/v1", ""),
-			Annotations: map[string]string{
-				PodSafeToEvictKey: "false",
-			},
-		},
-	}
-
-	unsafeNakedPod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "bar",
-			Namespace: "default",
-			Annotations: map[string]string{
-				PodSafeToEvictKey: "false",
-			},
-		},
-		Spec: apiv1.PodSpec{
-			NodeName: "node",
-		},
-	}
-
 	kubeSystemSafePod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -588,39 +374,12 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
-	kubeSystemFakePDB := &policyv1.PodDisruptionBudget{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "kube-system",
-		},
-		Spec: policyv1.PodDisruptionBudgetSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"k8s-app": "foo",
-				},
-			},
-		},
-	}
-
-	defaultNamespacePDB := &policyv1.PodDisruptionBudget{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-		},
-		Spec: policyv1.PodDisruptionBudgetSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"k8s-app": "PDB-managed pod",
-				},
-			},
-		},
-	}
-
 	sharedTests := []testOpts{
 		{
 			description:         "RC-managed pod",
 			pods:                []*apiv1.Pod{rcPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{rcPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -628,7 +387,6 @@ func TestDrain(t *testing.T) {
 			description:         "DS-managed pod",
 			pods:                []*apiv1.Pod{dsPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{},
 			expectDaemonSetPods: []*apiv1.Pod{dsPod},
 		},
@@ -636,7 +394,6 @@ func TestDrain(t *testing.T) {
 			description:         "DS-managed pod by a custom Daemonset",
 			pods:                []*apiv1.Pod{cdsPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{},
 			expectDaemonSetPods: []*apiv1.Pod{cdsPod},
 		},
@@ -645,7 +402,6 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{jobPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{jobPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -654,7 +410,6 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{ssPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{ssPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -663,7 +418,6 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{rsPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			replicaSets:         []*appsv1.ReplicaSet{&rs},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{rsPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -672,57 +426,7 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{rsPodDeleted},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			replicaSets:         []*appsv1.ReplicaSet{&rs},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "naked pod",
-			pods:                []*apiv1.Pod{nakedPod},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: nakedPod, Reason: NotReplicated},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir",
-			pods:                []*apiv1.Pod{emptydirPod},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: emptydirPod, Reason: LocalStorageRequested},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation",
-			pods:                []*apiv1.Pod{emptyDirSafeToEvictVolumeSingleVal},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
-			expectPods:          []*apiv1.Pod{emptyDirSafeToEvictVolumeSingleVal},
-			expectBlockingPod:   &BlockingPod{},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir and empty value for SafeToEvictLocalVolumesKey annotation",
-			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeSingleValEmpty},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeSingleValEmpty, Reason: LocalStorageRequested},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir and non-matching value for SafeToEvictLocalVolumesKey annotation",
-			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeSingleValNonMatching},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeSingleValNonMatching, Reason: LocalStorageRequested},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
@@ -730,46 +434,13 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValAllMatching},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValAllMatching},
-			expectBlockingPod:   &BlockingPod{},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation with non-matching values",
-			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValNonMatching},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeMultiValNonMatching, Reason: LocalStorageRequested},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation with some matching values",
-			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValSomeMatchingVals},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeMultiValSomeMatchingVals, Reason: LocalStorageRequested},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation empty values",
-			pods:                []*apiv1.Pod{emptyDirSafeToEvictLocalVolumeMultiValEmpty},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: emptyDirSafeToEvictLocalVolumeMultiValEmpty, Reason: LocalStorageRequested},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
 			description:         "failed pod",
 			pods:                []*apiv1.Pod{failedPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{failedPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -778,7 +449,6 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{longTerminatingPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -787,7 +457,6 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{longTerminatingPodWithExtendedGracePeriod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{longTerminatingPodWithExtendedGracePeriod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -795,7 +464,6 @@ func TestDrain(t *testing.T) {
 			description:         "evicted pod",
 			pods:                []*apiv1.Pod{evictedPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{evictedPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -803,7 +471,6 @@ func TestDrain(t *testing.T) {
 			description:         "pod in terminal state",
 			pods:                []*apiv1.Pod{terminalPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{terminalPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -811,7 +478,6 @@ func TestDrain(t *testing.T) {
 			description:         "pod with PodSafeToEvict annotation",
 			pods:                []*apiv1.Pod{safePod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{safePod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -819,7 +485,6 @@ func TestDrain(t *testing.T) {
 			description:         "kube-system pod with PodSafeToEvict annotation",
 			pods:                []*apiv1.Pod{kubeSystemSafePod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{kubeSystemSafePod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -827,37 +492,7 @@ func TestDrain(t *testing.T) {
 			description:         "pod with EmptyDir and PodSafeToEvict annotation",
 			pods:                []*apiv1.Pod{emptydirSafePod},
 			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{emptydirSafePod},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "RC-managed pod with PodSafeToEvict=false annotation",
-			pods:                []*apiv1.Pod{unsafeRcPod},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: unsafeRcPod, Reason: NotSafeToEvictAnnotation},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "Job-managed pod with PodSafeToEvict=false annotation",
-			pods:                []*apiv1.Pod{unsafeJobPod},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: unsafeJobPod, Reason: NotSafeToEvictAnnotation},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "naked pod with PodSafeToEvict=false annotation",
-			pods:                []*apiv1.Pod{unsafeNakedPod},
-			pdbs:                []*policyv1.PodDisruptionBudget{},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: unsafeNakedPod, Reason: NotSafeToEvictAnnotation},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
@@ -865,7 +500,6 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{rcPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{emptyPDB},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{rcPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
@@ -874,18 +508,7 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{kubeSystemRcPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{kubeSystemPDB},
 			rcs:                 []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{kubeSystemRcPod},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "kube-system PDB with non-matching kube-system pod",
-			pods:                []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:                []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
-			rcs:                 []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 		{
@@ -893,18 +516,7 @@ func TestDrain(t *testing.T) {
 			pods:                []*apiv1.Pod{rcPod},
 			pdbs:                []*policyv1.PodDisruptionBudget{kubeSystemPDB},
 			rcs:                 []*apiv1.ReplicationController{&rc},
-			expectFatal:         false,
 			expectPods:          []*apiv1.Pod{rcPod},
-			expectDaemonSetPods: []*apiv1.Pod{},
-		},
-		{
-			description:         "default namespace PDB with matching labels kube-system pod",
-			pods:                []*apiv1.Pod{kubeSystemRcPod},
-			pdbs:                []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
-			rcs:                 []*apiv1.ReplicationController{&kubeSystemRc},
-			expectFatal:         true,
-			expectPods:          []*apiv1.Pod{},
-			expectBlockingPod:   &BlockingPod{Pod: kubeSystemRcPod, Reason: UnmovableKubeSystemPod},
 			expectDaemonSetPods: []*apiv1.Pod{},
 		},
 	}
@@ -913,90 +525,33 @@ func TestDrain(t *testing.T) {
 	// Note: be careful about modifying the underlying reference values for sharedTest
 	// since they are shared (changing it once will change it for all shallow copies of sharedTest)
 	for _, sharedTest := range sharedTests {
-		// make sure you shallow copy the test like this
-		// before you modify it
-		// (so that modifying one test doesn't affect another)
-		enabledTest := sharedTest
-		disabledTest := sharedTest
-
-		// to execute the same shared tests for when the skipNodesWithCustomControllerPods flag is true
-		// and when the flag is false
-		enabledTest.skipNodesWithCustomControllerPods = true
-		enabledTest.description = fmt.Sprintf("%s with skipNodesWithCustomControllerPods:%v",
-			enabledTest.description, enabledTest.skipNodesWithCustomControllerPods)
-		allTests = append(allTests, enabledTest)
-
-		disabledTest.skipNodesWithCustomControllerPods = false
-		disabledTest.description = fmt.Sprintf("%s with skipNodesWithCustomControllerPods:%v",
-			disabledTest.description, disabledTest.skipNodesWithCustomControllerPods)
-		allTests = append(allTests, disabledTest)
+		for _, skipNodesWithCustomControllerPods := range []bool{true, false} {
+			// Copy test to prevent side effects.
+			test := sharedTest
+			test.skipNodesWithCustomControllerPods = skipNodesWithCustomControllerPods
+			test.description = fmt.Sprintf("%s with skipNodesWithCustomControllerPods:%t", test.description, skipNodesWithCustomControllerPods)
+			allTests = append(allTests, test)
+		}
 	}
 
 	allTests = append(allTests, testOpts{
-		description:                       "Custom-controller-managed blocking pod",
-		pods:                              []*apiv1.Pod{customControllerPod},
-		pdbs:                              []*policyv1.PodDisruptionBudget{},
-		expectFatal:                       true,
-		expectPods:                        []*apiv1.Pod{},
-		expectBlockingPod:                 &BlockingPod{Pod: customControllerPod, Reason: NotReplicated},
-		expectDaemonSetPods:               []*apiv1.Pod{},
-		skipNodesWithCustomControllerPods: true,
-	})
-
-	allTests = append(allTests, testOpts{
-		description:                       "Custom-controller-managed non-blocking pod",
-		pods:                              []*apiv1.Pod{customControllerPod},
-		pdbs:                              []*policyv1.PodDisruptionBudget{},
-		expectFatal:                       false,
-		expectPods:                        []*apiv1.Pod{customControllerPod},
-		expectBlockingPod:                 &BlockingPod{},
-		expectDaemonSetPods:               []*apiv1.Pod{},
-		skipNodesWithCustomControllerPods: false,
+		description:         "Custom-controller-managed non-blocking pod",
+		pods:                []*apiv1.Pod{customControllerPod},
+		pdbs:                []*policyv1.PodDisruptionBudget{},
+		expectPods:          []*apiv1.Pod{customControllerPod},
+		expectDaemonSetPods: []*apiv1.Pod{},
 	})
 
 	for _, test := range allTests {
-		var err error
-		var rcLister v1lister.ReplicationControllerLister
-		if len(test.rcs) > 0 {
-			rcLister, err = kube_util.NewTestReplicationControllerLister(test.rcs)
-			assert.NoError(t, err)
-		}
-		var rsLister v1appslister.ReplicaSetLister
-		if len(test.replicaSets) > 0 {
-			rsLister, err = kube_util.NewTestReplicaSetLister(test.replicaSets)
-			assert.NoError(t, err)
-		}
+		t.Run(test.description, func(t *testing.T) {
+			pods, daemonSetPods := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, test.skipNodesWithCustomControllerPods, testTime)
 
-		dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{&ds})
-		assert.NoError(t, err)
-		jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
-		assert.NoError(t, err)
-		ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
-		assert.NoError(t, err)
-
-		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
-
-		pods, daemonSetPods, blockingPod, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, test.skipNodesWithCustomControllerPods, registry, 0, testTime)
-
-		if test.expectFatal {
-			assert.Equal(t, test.expectBlockingPod, blockingPod)
-			if err == nil {
-				t.Fatalf("%s: unexpected non-error", test.description)
+			if len(pods) != len(test.expectPods) {
+				t.Fatal("wrong pod list content")
 			}
-		}
 
-		if !test.expectFatal {
-			assert.Nil(t, blockingPod)
-			if err != nil {
-				t.Fatalf("%s: error occurred: %v", test.description, err)
-			}
-		}
-
-		if len(pods) != len(test.expectPods) {
-			t.Fatalf("Wrong pod list content: %v", test.description)
-		}
-
-		assert.ElementsMatch(t, test.expectDaemonSetPods, daemonSetPods)
+			assert.ElementsMatch(t, test.expectDaemonSetPods, daemonSetPods)
+		})
 	}
 }
 

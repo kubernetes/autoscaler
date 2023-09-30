@@ -50,6 +50,8 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 	drainCtx := &drainability.DrainContext{
 		RemainingPdbTracker: remainingPdbTracker,
 		DeleteOptions:       deleteOptions,
+		Listers:             listers,
+		Timestamp:           timestamp,
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		pod := podInfo.Pod
@@ -73,20 +75,16 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 		}
 	}
 
-	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
+	pods, daemonSetPods = drain.GetPodsForDeletionOnNodeDrain(
 		pods,
 		remainingPdbTracker.GetPdbs(),
 		deleteOptions.SkipNodesWithSystemPods,
 		deleteOptions.SkipNodesWithLocalStorage,
 		deleteOptions.SkipNodesWithCustomControllerPods,
-		listers,
-		int32(deleteOptions.MinReplicaCount),
 		timestamp)
 	pods = append(pods, drainPods...)
 	daemonSetPods = append(daemonSetPods, drainDs...)
-	if err != nil {
-		return pods, daemonSetPods, blockingPod, err
-	}
+
 	if canRemove, _, blockingPodInfo := remainingPdbTracker.CanRemovePods(pods); !canRemove {
 		pod := blockingPodInfo.Pod
 		return []*apiv1.Pod{}, []*apiv1.Pod{}, blockingPodInfo, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)

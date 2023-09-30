@@ -42,7 +42,7 @@ func NewNodeDeleteOptions(opts config.AutoscalingOptions) NodeDeleteOptions {
 	return NodeDeleteOptions{
 		SkipNodesWithSystemPods:           opts.SkipNodesWithSystemPods,
 		SkipNodesWithLocalStorage:         opts.SkipNodesWithLocalStorage,
-		MinReplicaCount:                   opts.MinReplicaCount,
 		SkipNodesWithCustomControllerPods: opts.SkipNodesWithCustomControllerPods,
+		MinReplicaCount:                   opts.MinReplicaCount,
 	}
 }
