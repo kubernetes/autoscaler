@@ -63,6 +63,16 @@ func (t *basicRemainingPdbTracker) GetPdbs() []*policyv1.PodDisruptionBudget {
 	return pdbs
 }
 
+func (t *basicRemainingPdbTracker) MatchingPdbs(pod *apiv1.Pod) []*policyv1.PodDisruptionBudget {
+	var pdbs []*policyv1.PodDisruptionBudget
+	for _, pdbInfo := range t.pdbInfos {
+		if pod.Namespace == pdbInfo.pdb.Namespace && pdbInfo.selector.Matches(labels.Set(pod.Labels)) {
+			pdbs = append(pdbs, pdbInfo.pdb)
+		}
+	}
+	return pdbs
+}
+
 func (t *basicRemainingPdbTracker) CanRemovePods(pods []*apiv1.Pod) (canRemove, inParallel bool, blockingPod *drain.BlockingPod) {
 	inParallel = true
 	for _, pdbInfo := range t.pdbInfos {
