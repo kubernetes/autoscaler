@@ -323,10 +323,11 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 			}
 
 			if lifecycle != nil &&
+				*lifecycle == autoscaling.LifecycleStateTerminated ||
 				*lifecycle == autoscaling.LifecycleStateTerminating ||
 				*lifecycle == autoscaling.LifecycleStateTerminatingWait ||
 				*lifecycle == autoscaling.LifecycleStateTerminatingProceed {
-				klog.V(2).Infof("instance %s is already terminating, will skip instead", instance.Name)
+				klog.V(2).Infof("instance %s is already terminating in state %s, will skip instead", instance.Name, *lifecycle)
 				continue
 			}
 
