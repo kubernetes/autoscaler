@@ -26,7 +26,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -407,13 +406,10 @@ func TestDrain(t *testing.T) {
 			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
 			drainCtx := &drainability.DrainContext{
-				DeleteOptions: options.NodeDeleteOptions{
-					SkipNodesWithCustomControllerPods: test.skipNodesWithCustomControllerPods,
-				},
 				Listers:   registry,
 				Timestamp: testTime,
 			}
-			status := New().Drainable(drainCtx, test.pod)
+			status := New(test.skipNodesWithCustomControllerPods, 0).Drainable(drainCtx, test.pod)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

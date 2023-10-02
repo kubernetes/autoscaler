@@ -153,7 +153,7 @@ func (m *onNodeGroupDeleteMock) Delete(id string) error {
 
 func setUpScaleDownActuator(ctx *context.AutoscalingContext, autoscalingOptions config.AutoscalingOptions) {
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
-	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(), NewTestProcessors(ctx).NodeGroupConfigProcessor)
+	ctx.ScaleDownActuator = actuation.NewActuator(ctx, nil, deletiontracker.NewNodeDeletionTracker(0*time.Second), deleteOptions, rules.Default(deleteOptions), NewTestProcessors(ctx).NodeGroupConfigProcessor)
 }
 
 func TestStaticAutoscalerRunOnce(t *testing.T) {

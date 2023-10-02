@@ -26,6 +26,7 @@ import (
 	pdbrule "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 )
 
 // Rule determines whether a given pod can be drained or not.
@@ -38,13 +39,13 @@ type Rule interface {
 }
 
 // Default returns the default list of Rules.
-func Default() Rules {
+func Default(deleteOptions options.NodeDeleteOptions) Rules {
 	return []Rule{
 		mirror.New(),
-		replicated.New(),
-		system.New(),
+		replicated.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount),
+		system.New(deleteOptions.SkipNodesWithSystemPods),
 		notsafetoevict.New(),
-		localstorage.New(),
+		localstorage.New(deleteOptions.SkipNodesWithLocalStorage),
 		pdbrule.New(),
 	}
 }

@@ -26,7 +26,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -217,11 +216,12 @@ func TestDrain(t *testing.T) {
 	)
 
 	for _, test := range []struct {
-		desc string
-		pod  *apiv1.Pod
-		rcs  []*apiv1.ReplicationController
-		rss  []*appsv1.ReplicaSet
-		pdbs []*policyv1.PodDisruptionBudget
+		desc        string
+		pod         *apiv1.Pod
+		rcs         []*apiv1.ReplicationController
+		rss         []*appsv1.ReplicaSet
+		pdbs        []*policyv1.PodDisruptionBudget
+		disableRule bool
 
 		wantReason drain.BlockingPodReason
 		wantError  bool
@@ -265,6 +265,13 @@ func TestDrain(t *testing.T) {
 			wantError:  true,
 		},
 		{
+			desc:        "default namespace PDB with matching labels kube-system pod and rule disabled",
+			pod:         kubeSystemRcPod,
+			rcs:         []*apiv1.ReplicationController{&kubeSystemRc},
+			pdbs:        []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
+			disableRule: true,
+		},
+		{
 			desc: "kube-system failed pod",
 			pod:  kubeSystemFailedPod,
 		},
@@ -295,12 +302,9 @@ func TestDrain(t *testing.T) {
 
 			drainCtx := &drainability.DrainContext{
 				RemainingPdbTracker: tracker,
-				DeleteOptions: options.NodeDeleteOptions{
-					SkipNodesWithSystemPods: true,
-				},
-				Timestamp: testTime,
+				Timestamp:           testTime,
 			}
-			status := New().Drainable(drainCtx, test.pod)
+			status := New(!test.disableRule).Drainable(drainCtx, test.pod)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

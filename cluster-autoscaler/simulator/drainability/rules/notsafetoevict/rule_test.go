@@ -25,7 +25,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -266,9 +265,6 @@ func TestDrain(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			drainCtx := &drainability.DrainContext{
-				DeleteOptions: options.NodeDeleteOptions{
-					SkipNodesWithSystemPods: true,
-				},
 				Timestamp: testTime,
 			}
 			status := New().Drainable(drainCtx, test.pod)
