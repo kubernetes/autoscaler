@@ -27,15 +27,21 @@ import (
 )
 
 // Rule is a drainability rule on how to handle replicated pods.
-type Rule struct{}
+type Rule struct {
+	skipNodesWithCustomControllerPods bool
+	minReplicaCount                   int
+}
 
 // New creates a new Rule.
-func New() *Rule {
-	return &Rule{}
+func New(skipNodesWithCustomControllerPods bool, minReplicaCount int) *Rule {
+	return &Rule{
+		skipNodesWithCustomControllerPods: skipNodesWithCustomControllerPods,
+		minReplicaCount:                   minReplicaCount,
+	}
 }
 
 // Drainable decides what to do with replicated pods on node drain.
-func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if drain.IsPodLongTerminating(pod, drainCtx.Timestamp) {
 		return drainability.NewUndefinedStatus()
 	}
@@ -43,9 +49,9 @@ func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drain
 	controllerRef := drain.ControllerRef(pod)
 	replicated := controllerRef != nil
 
-	if drainCtx.DeleteOptions.SkipNodesWithCustomControllerPods {
+	if r.skipNodesWithCustomControllerPods {
 		// TODO(vadasambar): remove this when we get rid of skipNodesWithCustomControllerPods
-		if status := legacyCheck(drainCtx, pod); status.Outcome != drainability.UndefinedOutcome {
+		if status := legacyCheck(drainCtx, pod, r.minReplicaCount); status.Outcome != drainability.UndefinedOutcome {
 			return status
 		}
 		replicated = replicated && replicatedKind[controllerRef.Kind]
@@ -66,7 +72,7 @@ var replicatedKind = map[string]bool{
 	"StatefulSet":           true,
 }
 
-func legacyCheck(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+func legacyCheck(drainCtx *drainability.DrainContext, pod *apiv1.Pod, minReplicaCount int) drainability.Status {
 	if drainCtx.Listers == nil {
 		return drainability.NewUndefinedStatus()
 	}
@@ -89,8 +95,8 @@ func legacyCheck(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainabili
 		}
 
 		// TODO: Replace the minReplica check with PDB.
-		if rc.Spec.Replicas != nil && int(*rc.Spec.Replicas) < drainCtx.DeleteOptions.MinReplicaCount {
-			return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rc.Spec.Replicas, drainCtx.DeleteOptions.MinReplicaCount))
+		if rc.Spec.Replicas != nil && int(*rc.Spec.Replicas) < minReplicaCount {
+			return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rc.Spec.Replicas, minReplicaCount))
 		}
 	} else if pod_util.IsDaemonSetPod(pod) {
 		if refKind == "DaemonSet" {
@@ -118,8 +124,8 @@ func legacyCheck(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainabili
 
 		if err == nil && rs != nil {
 			// Assume the only reason for an error is because the RS is gone/missing.
-			if rs.Spec.Replicas != nil && int(*rs.Spec.Replicas) < drainCtx.DeleteOptions.MinReplicaCount {
-				return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rs.Spec.Replicas, drainCtx.DeleteOptions.MinReplicaCount))
+			if rs.Spec.Replicas != nil && int(*rs.Spec.Replicas) < minReplicaCount {
+				return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rs.Spec.Replicas, minReplicaCount))
 			}
 		} else {
 			return drainability.NewBlockedStatus(drain.ControllerNotFound, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err))

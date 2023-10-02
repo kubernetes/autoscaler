@@ -26,22 +26,19 @@ import (
 )
 
 // Rule is a drainability rule on how to handle system pods.
-type Rule struct{}
+type Rule struct {
+	enabled bool
+}
 
 // New creates a new Rule.
-func New() *Rule {
-	return &Rule{}
+func New(enabled bool) *Rule {
+	return &Rule{enabled: enabled}
 }
 
 // Drainable decides what to do with system pods on node drain.
-func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
-	if drain.IsPodLongTerminating(pod, drainCtx.Timestamp) || pod_util.IsDaemonSetPod(pod) || drain.HasSafeToEvictAnnotation(pod) || drain.IsPodTerminal(pod) {
-		return drainability.NewUndefinedStatus()
-	}
-
-	if drainCtx.DeleteOptions.SkipNodesWithSystemPods && pod.Namespace == "kube-system" && len(drainCtx.RemainingPdbTracker.MatchingPdbs(pod)) == 0 {
+func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
+	if r.enabled && !drain.IsPodLongTerminating(pod, drainCtx.Timestamp) && !pod_util.IsDaemonSetPod(pod) && !drain.HasSafeToEvictAnnotation(pod) && !drain.IsPodTerminal(pod) && pod.Namespace == "kube-system" && len(drainCtx.RemainingPdbTracker.MatchingPdbs(pod)) == 0 {
 		return drainability.NewBlockedStatus(drain.UnmovableKubeSystemPod, fmt.Errorf("non-daemonset, non-mirrored, non-pdb-assigned kube-system pod present: %s", pod.Name))
 	}
-
 	return drainability.NewUndefinedStatus()
 }

@@ -35,13 +35,8 @@ func New() *Rule {
 
 // Drainable decides what to do with not safe to evict pods on node drain.
 func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
-	if drain.IsPodLongTerminating(pod, drainCtx.Timestamp) || pod_util.IsDaemonSetPod(pod) || drain.HasSafeToEvictAnnotation(pod) || drain.IsPodTerminal(pod) {
-		return drainability.NewUndefinedStatus()
-	}
-
-	if drain.HasNotSafeToEvictAnnotation(pod) {
+	if !drain.IsPodLongTerminating(pod, drainCtx.Timestamp) && !pod_util.IsDaemonSetPod(pod) && !drain.HasSafeToEvictAnnotation(pod) && !drain.IsPodTerminal(pod) && drain.HasNotSafeToEvictAnnotation(pod) {
 		return drainability.NewBlockedStatus(drain.NotSafeToEvictAnnotation, fmt.Errorf("pod annotated as not safe to evict present: %s", pod.Name))
 	}
-
 	return drainability.NewUndefinedStatus()
 }

@@ -312,7 +312,7 @@ func TestGetPodsToMove(t *testing.T) {
 				SkipNodesWithLocalStorage:         true,
 				SkipNodesWithCustomControllerPods: true,
 			}
-			rules := append(tc.rules, rules.Default()...)
+			rules := append(tc.rules, rules.Default(deleteOptions)...)
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
 			p, d, b, err := GetPodsToMove(schedulerframework.NewNodeInfo(tc.pods...), deleteOptions, rules, nil, tracker, testTime)

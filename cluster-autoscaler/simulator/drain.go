@@ -41,14 +41,13 @@ import (
 func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
 	var drainPods, drainDs []*apiv1.Pod
 	if drainabilityRules == nil {
-		drainabilityRules = rules.Default()
+		drainabilityRules = rules.Default(deleteOptions)
 	}
 	if remainingPdbTracker == nil {
 		remainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 	drainCtx := &drainability.DrainContext{
 		RemainingPdbTracker: remainingPdbTracker,
-		DeleteOptions:       deleteOptions,
 		Listers:             listers,
 		Timestamp:           timestamp,
 	}

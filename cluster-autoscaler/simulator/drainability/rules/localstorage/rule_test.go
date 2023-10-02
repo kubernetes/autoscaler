@@ -24,7 +24,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -357,10 +356,11 @@ func TestDrain(t *testing.T) {
 	)
 
 	for _, test := range []struct {
-		desc string
-		pod  *apiv1.Pod
-		rcs  []*apiv1.ReplicationController
-		rss  []*appsv1.ReplicaSet
+		desc         string
+		pod          *apiv1.Pod
+		rcs          []*apiv1.ReplicationController
+		rss          []*appsv1.ReplicaSet
+		disabledRule bool
 
 		wantReason drain.BlockingPodReason
 		wantError  bool
@@ -417,7 +417,12 @@ func TestDrain(t *testing.T) {
 			wantReason: drain.LocalStorageRequested,
 			wantError:  true,
 		},
-
+		{
+			desc:         "pod with EmptyDir and SafeToEvictLocalVolumesKey annotation empty values and rule disabled",
+			pod:          emptyDirSafeToEvictLocalVolumeMultiValEmpty,
+			rcs:          []*apiv1.ReplicationController{&rc},
+			disabledRule: true,
+		},
 		{
 			desc: "EmptyDir failed pod",
 			pod:  emptyDirFailedPod,
@@ -445,12 +450,9 @@ func TestDrain(t *testing.T) {
 	} {
 		t.Run(test.desc, func(t *testing.T) {
 			drainCtx := &drainability.DrainContext{
-				DeleteOptions: options.NodeDeleteOptions{
-					SkipNodesWithLocalStorage: true,
-				},
 				Timestamp: testTime,
 			}
-			status := New().Drainable(drainCtx, test.pod)
+			status := New(!test.disabledRule).Drainable(drainCtx, test.pod)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})
