@@ -25,7 +25,6 @@ import (
 	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -37,9 +36,9 @@ type FakeMachineSets struct {
 	ns   string
 }
 
-var machinesetsResource = schema.GroupVersionResource{Group: "machine.sapcloud.io", Version: "v1alpha1", Resource: "machinesets"}
+var machinesetsResource = v1alpha1.SchemeGroupVersion.WithResource("machinesets")
 
-var machinesetsKind = schema.GroupVersionKind{Group: "machine.sapcloud.io", Version: "v1alpha1", Kind: "MachineSet"}
+var machinesetsKind = v1alpha1.SchemeGroupVersion.WithKind("MachineSet")
 
 // Get takes name of the machineSet, and returns the corresponding machineSet object, and an error if there is any.
 func (c *FakeMachineSets) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MachineSet, err error) {

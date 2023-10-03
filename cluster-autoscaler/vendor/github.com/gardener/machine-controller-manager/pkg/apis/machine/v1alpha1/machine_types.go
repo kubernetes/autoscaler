@@ -122,6 +122,10 @@ type LastOperation struct {
 	// Description of the current operation
 	Description string `json:"description,omitempty"`
 
+	// ErrorCode of the current operation if any
+	// +optional
+	ErrorCode string `json:"errorCode,omitempty"`
+
 	// Last update time of current operation
 	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty"`
 
@@ -188,7 +192,7 @@ const (
 	// MachineOperationHealthCheck indicates that the operation was a create
 	MachineOperationHealthCheck MachineOperationType = "HealthCheck"
 
-	// MachineOperationDelete indicates that the operation was a create
+	// MachineOperationDelete indicates that the operation was a delete
 	MachineOperationDelete MachineOperationType = "Delete"
 )
 

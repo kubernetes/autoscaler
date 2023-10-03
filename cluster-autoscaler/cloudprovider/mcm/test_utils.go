@@ -18,10 +18,11 @@ package mcm
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/client-go/tools/cache"
 	"testing"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/client-go/tools/cache"
 
 	machineinternal "github.com/gardener/machine-controller-manager/pkg/apis/machine"
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
@@ -102,14 +103,19 @@ func newMachineSets(
 
 func newMachine(
 	name string,
-	providerIdGenerateName string,
+	providerId string,
 	statusTemplate *v1alpha1.MachineStatus,
 	mdName, msName string,
 	priorityAnnotationValue string,
-	setDeletionTimeStamp bool,
+	setDeletionTimeStamp,
+	setNodeLabel bool,
 ) *v1alpha1.Machine {
-	m := newMachines(1, providerIdGenerateName, statusTemplate, mdName, msName, []string{priorityAnnotationValue}, []bool{setDeletionTimeStamp})[0]
+	m := newMachines(1, providerId, statusTemplate, mdName, msName, []string{priorityAnnotationValue}, []bool{setDeletionTimeStamp})[0]
 	m.Name = name
+	m.Spec.ProviderID = providerId
+	if !setNodeLabel {
+		delete(m.Labels, "node")
+	}
 	return m
 }
 
@@ -141,7 +147,10 @@ func newMachines(
 				Annotations:       map[string]string{priorityAnnotationKey: priorityAnnotationValues[i]},
 				CreationTimestamp: metav1.Now(),
 			},
-			Spec: v1alpha1.MachineSpec{ProviderID: fmt.Sprintf("%s/i%d", providerIdGenerateName, i+1)},
+		}
+
+		if providerIdGenerateName != "" {
+			m.Spec = v1alpha1.MachineSpec{ProviderID: fmt.Sprintf("%s/i%d", providerIdGenerateName, i+1)}
 		}
 
 		m.Labels["node"] = fmt.Sprintf("node-%d", i+1)

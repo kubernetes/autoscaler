@@ -13,7 +13,7 @@ require (
 	github.com/Azure/skewer v0.0.14
 	github.com/aws/aws-sdk-go v1.44.241
 	github.com/digitalocean/godo v1.27.0
-	github.com/gardener/machine-controller-manager v0.49.0
+	github.com/gardener/machine-controller-manager v0.50.0
 	github.com/gardener/machine-controller-manager-provider-aws v0.17.0
 	github.com/gardener/machine-controller-manager-provider-azure v0.10.0
 	github.com/ghodss/yaml v1.0.0
@@ -41,13 +41,13 @@ require (
 	google.golang.org/protobuf v1.30.0
 	gopkg.in/gcfg.v1 v1.2.3
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.27.1
-	k8s.io/apimachinery v0.27.1
-	k8s.io/apiserver v0.27.1
-	k8s.io/client-go v0.27.1
+	k8s.io/api v0.27.2
+	k8s.io/apimachinery v0.27.2
+	k8s.io/apiserver v0.27.2
+	k8s.io/client-go v0.27.2
 	k8s.io/cloud-provider v0.27.1
 	k8s.io/cloud-provider-aws v1.27.1
-	k8s.io/component-base v0.27.1
+	k8s.io/component-base v0.27.2
 	k8s.io/component-helpers v0.27.1
 	k8s.io/klog/v2 v2.90.1
 	k8s.io/kubelet v0.27.1
@@ -186,7 +186,7 @@ require (
 	k8s.io/csi-translation-lib v0.27.0 // indirect
 	k8s.io/dynamic-resource-allocation v0.0.0 // indirect
 	k8s.io/kms v0.27.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230327201221-f5883ff37f0c // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/kube-proxy v0.0.0 // indirect
 	k8s.io/kube-scheduler v0.0.0 // indirect
 	k8s.io/kubectl v0.0.0 // indirect

@@ -26,12 +26,12 @@ import (
 type MachineTemplateSpec struct {
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// Standard object's metadata.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// Specification of the desired behavior of the machine.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 	// +optional
 	Spec MachineSpec `json:"spec,omitempty"`
 }

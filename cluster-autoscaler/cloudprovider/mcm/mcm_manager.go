@@ -27,7 +27,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"math/rand"
 	"net/http"
 	"os"
@@ -41,6 +40,7 @@ import (
 	machineapi "github.com/gardener/machine-controller-manager/pkg/client/clientset/versioned/typed/machine/v1alpha1"
 	machineinformers "github.com/gardener/machine-controller-manager/pkg/client/informers/externalversions"
 	machinelisters "github.com/gardener/machine-controller-manager/pkg/client/listers/machine/v1alpha1"
+	machinecodes "github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	apiv1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
@@ -55,6 +55,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/client-go/discovery"
 	coreinformers "k8s.io/client-go/informers"
 	corelisters "k8s.io/client-go/listers/core/v1"
@@ -602,43 +603,70 @@ func (m *McmManager) retry(fn func(ctx context.Context) (bool, error), resourceT
 	}
 }
 
-// GetMachineDeploymentNodes returns the set of Nodes which belongs to the MachineDeployment.
-func (m *McmManager) GetMachineDeploymentNodes(machinedeployment *MachineDeployment) ([]string, error) {
-	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machinedeployment.Name)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch MachineDeployment object %s, Error: %v", machinedeployment.Name, err)
-	}
+// GetInstancesForMachineDeployment returns list of cloudprovider.Instance for machines which belongs to the MachineDeployment.
+func (m *McmManager) GetInstancesForMachineDeployment(machinedeployment *MachineDeployment) ([]cloudprovider.Instance, error) {
+	var (
+		list     = []string{machinedeployment.Name}
+		selector = labels.NewSelector()
+		req, _   = labels.NewRequirement("name", selection.Equals, list)
+	)
 
-	machineList, err := m.machineLister.Machines(m.namespace).List(labels.Everything())
+	selector = selector.Add(*req)
+	machineList, err := m.machineLister.Machines(m.namespace).List(selector)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch list of Machine objects %v", err)
+		return nil, fmt.Errorf("unable to fetch list of Machine objects %v for machinedeployment %q", err, machinedeployment.Name)
 	}
 
 	nodeList, err := m.nodeLister.List(labels.Everything())
 	if err != nil {
-		return nil, fmt.Errorf("Unable to fetch list of Nodes %v", err)
+		return nil, fmt.Errorf("unable to fetch list of Nodes %v", err)
 	}
 
-	var nodes []string
+	instances := make([]cloudprovider.Instance, 0, len(machineList))
 	// Bearing O(n2) complexity, assuming we will not have lot of nodes/machines, open for optimisations.
 	for _, machine := range machineList {
-		if strings.Contains(machine.Name, md.Name) {
-			var found bool
-			for _, node := range nodeList {
-				if machine.Labels["node"] == node.Name {
-					nodes = append(nodes, node.Spec.ProviderID)
-					found = true
-					break
-				}
-			}
-			if !found {
-				// No node found - either the machine has not registered yet or AWS is unable to fulfill the request.
-				// Report a special ID so that the autoscaler can track it as an unregistered node.
-				nodes = append(nodes, fmt.Sprintf("requested://%s", machine.Name))
-			}
+		instance := findMatchingInstance(nodeList, machine)
+		instances = append(instances, instance)
+	}
+	return instances, nil
+}
+
+func findMatchingInstance(nodes []*v1.Node, machine *v1alpha1.Machine) cloudprovider.Instance {
+	for _, node := range nodes {
+		if machine.Labels["node"] == node.Name {
+			return cloudprovider.Instance{Id: node.Spec.ProviderID}
 		}
 	}
-	return nodes, nil
+	// No k8s node found , one of the following cases possible
+	//  - MCM is unable to fulfill the request to create VM.
+	//  - VM is being created
+	//	- the VM is up but has not registered yet
+
+	// Report instance with a special placeholder ID so that the autoscaler can track it as an unregistered node.
+	// Report InstanceStatus only for `ResourceExhausted` errors
+	return cloudprovider.Instance{
+		Id:     placeholderInstanceIDForMachineObj(machine.Name),
+		Status: checkAndGetResourceExhaustedInstanceStatus(machine),
+	}
+}
+
+func placeholderInstanceIDForMachineObj(name string) string {
+	return fmt.Sprintf("requested://%s", name)
+}
+
+// checkAndGetResourceExhaustedInstanceStatus returns cloudprovider.InstanceStatus for the machine obj
+func checkAndGetResourceExhaustedInstanceStatus(machine *v1alpha1.Machine) *cloudprovider.InstanceStatus {
+	if machine.Status.LastOperation.Type == v1alpha1.MachineOperationCreate && machine.Status.LastOperation.State == v1alpha1.MachineStateFailed && machine.Status.LastOperation.ErrorCode == machinecodes.ResourceExhausted.String() {
+		return &cloudprovider.InstanceStatus{
+			State: cloudprovider.InstanceCreating,
+			ErrorInfo: &cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OutOfResourcesErrorClass,
+				ErrorCode:    machinecodes.ResourceExhausted.String(),
+				ErrorMessage: machine.Status.LastOperation.Description,
+			},
+		}
+	}
+	return nil
 }
 
 // validateNodeTemplate function validates the NodeTemplate object of the MachineClass

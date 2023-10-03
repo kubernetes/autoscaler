@@ -434,7 +434,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
-	// NOTE: Commented this code as it removes `Registered but long not Ready` nodes which causes issues like scaling below minimum size and removing ready nodes during meltdown scenario
+
+	// FORK-CHANGE: Commented this code as it removes `Registered but long not Ready` nodes which causes issues like scaling below minimum size and removing ready nodes during meltdown scenario
 	//fixedSomething, err := fixNodeGroupSize(autoscalingContext, a.clusterStateRegistry, currentTime)
 	//if err != nil {
 	//	klog.Errorf("Failed to fix node group sizes: %v", err)
@@ -621,7 +622,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
 
-		klog.V(4).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
+		// FORK-CHANGE: Updated log V(4) -> V(2). This helps in debugging
+		klog.V(2).Infof("Scale down status: lastScaleUpTime=%s lastScaleDownDeleteTime=%v "+
 			"lastScaleDownFailTime=%s scaleDownForbidden=%v scaleDownInCooldown=%v",
 			a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
 			a.processorCallbacks.disableScaleDownForLoop, scaleDownInCooldown)

@@ -20,14 +20,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
+	"strings"
+	"testing"
+
+	machinecodes "github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	customfake "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mcm/fakeclient"
+
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	customfake "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mcm/fakeclient"
-	"math"
-	"testing"
 )
 
 const (
@@ -375,7 +380,7 @@ func TestRefresh(t *testing.T) {
 				nodeGroups: []string{nodeGroup2},
 			},
 			expect{
-				machines: []*v1alpha1.Machine{newMachine("machine-1", "fakeID", nil, "machinedeployment-1", "machineset-1", "1", false)},
+				machines: []*v1alpha1.Machine{newMachine("machine-1", "fakeID-1", nil, "machinedeployment-1", "machineset-1", "1", false, true)},
 				err:      errors.Join(fmt.Errorf("could not reset priority annotation on machine machine-1, Error: %v", mcUpdateErrorMsg)),
 			},
 		},
@@ -410,6 +415,128 @@ func TestRefresh(t *testing.T) {
 				machine, err := m.machineClient.Machines(m.namespace).Get(context.TODO(), mc.Name, metav1.GetOptions{})
 				g.Expect(err).To(BeNil())
 				g.Expect(mc.Annotations[priorityAnnotationKey]).To(Equal(machine.Annotations[priorityAnnotationKey]))
+			}
+		})
+	}
+}
+
+// Different kinds of cases possible and expected cloudprovider.Instance returned for them
+// (mobj, mobjPid, nodeobj)   				    -> instance(nodeobj.pid,_)
+// (mobj, mobjPid, _)         				    -> instance("requested://<machine-name>",_)
+// (mobj, _,_)                 				    -> instance("requested://<machine-name>",_)
+// (mobj, _,_) with quota error 				-> instance("requested://<machine-name>",status{'creating',{'outofResourcesClass','ResourceExhausted','<message>'}})
+// (mobj, _,_) with invalid credentials error   -> instance("requested://<machine-name>",_)
+
+// Example machine.status.lastOperation for a `ResourceExhausted` error
+//
+//		lastOperation: {
+//			type: Creating
+//			state: Failed
+//			errorCode: ResourceExhausted
+//			description: "Cloud provider message - machine codes error: code = [ResourceExhausted] message = [Create machine "shoot--ddci--cbc-sys-tests03-pool-c32m256-3b-z1-575b9-hlvj6" failed: The following errors occurred: [{QUOTA_EXCEEDED  Quota 'N2_CPUS' exceeded.  Limit: 6000.0 in region europe-west3. [] []}]]."
+//		}
+//	}
+func TestNodes(t *testing.T) {
+	const (
+		outOfQuotaMachineStatusErrorDescription         = "Cloud provider message - machine codes error: code = [ResourceExhausted] message = [Create machine \"machine-with-vm-create-error-out-of-quota\" failed: The following errors occurred: [{QUOTA_EXCEEDED  Quota 'N2_CPUS' exceeded.  Limit: 6000.0 in region europe-west3. [] []}]]"
+		invalidCredentialsMachineStatusErrorDescription = "Cloud provider message - machine codes error: code = [Internal] message = [user is not authorized to perform this action]"
+	)
+	type expectationPerInstance struct {
+		providerID           string
+		instanceState        cloudprovider.InstanceState
+		instanceErrorClass   cloudprovider.InstanceErrorClass
+		instanceErrorCode    string
+		instanceErrorMessage string
+	}
+	type expect struct {
+		expectationPerInstanceList []expectationPerInstance
+	}
+	type data struct {
+		name   string
+		setup  setup
+		expect expect
+	}
+	table := []data{
+		{
+			"Correct instances should be returned for machine objects under the machinedeployment",
+			setup{
+				nodes: []*corev1.Node{newNode("node-1", "fakeID-1", false)},
+				machines: func() []*v1alpha1.Machine {
+					allMachines := make([]*v1alpha1.Machine, 0, 5)
+					allMachines = append(allMachines, newMachine("machine-with-registered-node", "fakeID-1", nil, "machinedeployment-1", "", "", false, true))
+					allMachines = append(allMachines, newMachine("machine-with-vm-but-no-node", "fakeID-2", nil, "machinedeployment-1", "", "", false, false))
+					allMachines = append(allMachines, newMachine("machine-with-vm-creating", "", nil, "machinedeployment-1", "", "", false, false))
+					allMachines = append(allMachines, newMachine("machine-with-vm-create-error-out-of-quota", "", &v1alpha1.MachineStatus{LastOperation: v1alpha1.LastOperation{Type: v1alpha1.MachineOperationCreate, State: v1alpha1.MachineStateFailed, ErrorCode: machinecodes.ResourceExhausted.String(), Description: outOfQuotaMachineStatusErrorDescription}}, "machinedeployment-1", "", "", false, false))
+					allMachines = append(allMachines, newMachine("machine-with-vm-create-error-invalid-credentials", "", &v1alpha1.MachineStatus{LastOperation: v1alpha1.LastOperation{Type: v1alpha1.MachineOperationCreate, State: v1alpha1.MachineStateFailed, ErrorCode: machinecodes.Internal.String(), Description: invalidCredentialsMachineStatusErrorDescription}}, "machinedeployment-1", "", "", false, false))
+					return allMachines
+				}(),
+				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
+				nodeGroups:         []string{nodeGroup1},
+			},
+			expect{
+				expectationPerInstanceList: []expectationPerInstance{
+					{"fakeID-1", cloudprovider.InstanceState(-1), cloudprovider.InstanceErrorClass(-1), "", ""},
+					{placeholderInstanceIDForMachineObj("machine-with-vm-but-no-node"), cloudprovider.InstanceState(-1), cloudprovider.InstanceErrorClass(-1), "", ""},
+					{placeholderInstanceIDForMachineObj("machine-with-vm-creating"), cloudprovider.InstanceState(-1), cloudprovider.InstanceErrorClass(-1), "", ""},
+					{placeholderInstanceIDForMachineObj("machine-with-vm-create-error-out-of-quota"), cloudprovider.InstanceCreating, cloudprovider.OutOfResourcesErrorClass, machinecodes.ResourceExhausted.String(), outOfQuotaMachineStatusErrorDescription},
+					// invalid credentials error is mapped to Internal code as it can't be fixed by trying another zone
+					{placeholderInstanceIDForMachineObj("machine-with-vm-create-error-invalid-credentials"), cloudprovider.InstanceState(-1), cloudprovider.InstanceErrorClass(-1), "", ""},
+				},
+			},
+		},
+	}
+
+	for _, entry := range table {
+		entry := entry // have a shallow copy of the entry for parallelization of tests
+		t.Run(entry.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			stop := make(chan struct{})
+			defer close(stop)
+			controlMachineObjects, targetCoreObjects := setupEnv(&entry.setup)
+			m, trackers, hasSyncedCacheFns := createMcmManager(t, stop, testNamespace, nil, controlMachineObjects, targetCoreObjects)
+			defer trackers.Stop()
+			waitForCacheSync(t, stop, hasSyncedCacheFns)
+
+			if entry.setup.targetCoreFakeResourceActions != nil {
+				trackers.TargetCore.SetFailAtFakeResourceActions(entry.setup.targetCoreFakeResourceActions)
+			}
+			if entry.setup.controlMachineFakeResourceActions != nil {
+				trackers.ControlMachine.SetFailAtFakeResourceActions(entry.setup.controlMachineFakeResourceActions)
+			}
+
+			md, err := buildMachineDeploymentFromSpec(entry.setup.nodeGroups[0], m)
+			g.Expect(err).To(BeNil())
+
+			returnedInstances, err := md.Nodes()
+			g.Expect(err).To(BeNil())
+			g.Expect(len(returnedInstances)).To(BeNumerically("==", len(entry.expect.expectationPerInstanceList)))
+
+			for _, expectedInstance := range entry.expect.expectationPerInstanceList {
+				found := false
+				for _, gotInstance := range returnedInstances {
+					g.Expect(gotInstance.Id).ToNot(BeEmpty())
+					if expectedInstance.providerID == gotInstance.Id {
+						if !strings.Contains(gotInstance.Id, "requested://") {
+							// must be a machine obj whose node is registered (ready or notReady)
+							g.Expect(gotInstance.Status).To(BeNil())
+						} else {
+							if int(expectedInstance.instanceState) != -1 {
+								g.Expect(gotInstance.Status).ToNot(BeNil())
+								g.Expect(gotInstance.Status.State).To(Equal(expectedInstance.instanceState))
+							}
+							if int(expectedInstance.instanceErrorClass) != -1 || expectedInstance.instanceErrorCode != "" || expectedInstance.instanceErrorMessage != "" {
+								g.Expect(gotInstance.Status.ErrorInfo).ToNot(BeNil())
+								g.Expect(gotInstance.Status.ErrorInfo.ErrorClass).To(Equal(expectedInstance.instanceErrorClass))
+								g.Expect(gotInstance.Status.ErrorInfo.ErrorCode).To(Equal(expectedInstance.instanceErrorCode))
+								g.Expect(gotInstance.Status.ErrorInfo.ErrorMessage).To(Equal(expectedInstance.instanceErrorMessage))
+							}
+						}
+						found = true
+						break
+					}
+				}
+				g.Expect(found).To(BeTrue())
 			}
 		})
 	}

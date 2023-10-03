@@ -87,11 +87,11 @@ type NodeTemplateSpec struct {
 // MachineTemplateSpec describes the data a machine should have when created from a template
 type MachineTemplateSpec struct {
 	// Standard object's metadata.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	metav1.ObjectMeta
 
 	// Specification of the desired behavior of the machine.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 	Spec MachineSpec
 }
 
@@ -121,11 +121,11 @@ type MachineTemplate struct {
 	metav1.TypeMeta
 
 	// Standard object's metadata.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
 	metav1.ObjectMeta
 
 	// Template defines the machines that will be created from this machine template.
-	// https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
+	// https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#spec-and-status
 	Template MachineTemplateSpec
 }
 
@@ -136,7 +136,7 @@ type MachineTemplateList struct {
 	metav1.TypeMeta
 
 	// Standard list metadata.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
 	metav1.ListMeta
 
 	// List of machine templates
@@ -186,6 +186,10 @@ type MachineStatus struct {
 type LastOperation struct {
 	// Description of the current operation
 	Description string
+
+	// ErrorCode of the current operation if any
+	// +optional
+	ErrorCode string
 
 	// Last update time of current operation
 	LastUpdateTime metav1.Time
