@@ -516,8 +516,7 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 		Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
 	})
 
-	// Look up the current number of instances...
-	var expectedInstancesCount int64 = 2
+	expectedInstancesCount := 2
 	a.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
@@ -526,17 +525,18 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), autoscaling.LifecycleStateTerminated), false)
-		// we expect the instance count to be 1 after the call to DeleteNodes
-		expectedInstancesCount = 1
+		fn(testSetASGInstanceLifecycle(testNamedDescribeAutoScalingGroupsOutput("test-asg", int64(expectedInstancesCount), "test-instance-id", "second-test-instance-id"), autoscaling.LifecycleStateTerminated), false)
 	}).Return(nil)
 
+	// load ASG state into cache
 	provider.Refresh()
 
 	initialSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, initialSize)
+	assert.Equal(t, expectedInstancesCount, initialSize)
 
+	// try deleting a node, but all of them are already in a
+	// Terminated state, so we should see no calls to Terminate.
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id",
@@ -544,12 +544,17 @@ func TestDeleteNodesTerminatedInstances(t *testing.T) {
 	}
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
-	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0) // instances which are terminating don't need to be terminated again
+	// we expect no calls to TerminateInstanceInAutoScalingGroup,
+	// because the Node we tried to Delete was already terminating.
+	a.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 0)
 	a.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, newSize)
+	// we expect TargetSize to stay the same, even though there are
+	// two instances in Terminated state - TargetSize was already
+	// adjusted for them in a previous loop.
+	assert.Equal(t, initialSize, newSize)
 }
 
 func TestDeleteNodesWithPlaceholder(t *testing.T) {
