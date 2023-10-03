@@ -42,7 +42,7 @@ Edit the OIDC provider suffix and change it from :aud to :sub.
 Replace sts.amazonaws.com to your service account ID.
 - Update trust policy to finish. 
 
-D) Set up [Cluster Autoscaler Auto-Discovery] using the [tutorial] . 
+D) Set up [Cluster Autoscaler Auto-Discovery] using the [tutorial](README.md#auto-discovery-setup) . 
 - Open the Amazon EC2 console, and then choose EKS worker node Auto Scaling Groups from the navigation pane.
 - In the "Add/Edit Auto Scaling Group Tags" window, please make sure you enter the following tags by replacing 'awsExampleClusterName' with the name of your EKS cluster. Then, choose "Save".
 
@@ -174,7 +174,6 @@ I1025 13:48:42.975037       1 scale_up.go:529] Final scale-up plan: [{eksctl-xxx
    [IAM OIDC]: <https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html> 
    [IAM policy]: <https://docs.aws.amazon.com/eks/latest/userguide/create-service-account-iam-policy-and-role.html>
    [documentation]: <https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html> 
-   [tutorial]: <https://aws.amazon.com/premiumsupport/knowledge-center/eks-cluster-autoscaler-setup/>
 
    
    
