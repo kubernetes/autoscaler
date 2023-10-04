@@ -27,12 +27,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDrain(t *testing.T) {
+func TestDrainable(t *testing.T) {
 	var (
 		testTime = time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
 		replicas = int32(5)
@@ -52,7 +52,7 @@ func TestDrain(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            "bar",
 				Namespace:       "default",
-				OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+				OwnerReferences: test.GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
 			},
 			Spec: apiv1.PodSpec{
 				NodeName: "node",
@@ -74,7 +74,7 @@ func TestDrain(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{
 				Name:            "bar",
 				Namespace:       "kube-system",
-				OwnerReferences: GenerateOwnerReferences(kubeSystemRc.Name, "ReplicationController", "core/v1", ""),
+				OwnerReferences: test.GenerateOwnerReferences(kubeSystemRc.Name, "ReplicationController", "core/v1", ""),
 				Labels: map[string]string{
 					"k8s-app": "bar",
 				},
@@ -124,99 +124,9 @@ func TestDrain(t *testing.T) {
 				},
 			},
 		}
-
-		kubeSystemFailedPod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "bar",
-				Namespace: "kube-system",
-			},
-			Spec: apiv1.PodSpec{
-				NodeName:      "node",
-				RestartPolicy: apiv1.RestartPolicyNever,
-			},
-			Status: apiv1.PodStatus{
-				Phase: apiv1.PodFailed,
-			},
-		}
-
-		kubeSystemTerminalPod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "bar",
-				Namespace: "kube-system",
-			},
-			Spec: apiv1.PodSpec{
-				NodeName:      "node",
-				RestartPolicy: apiv1.RestartPolicyOnFailure,
-			},
-			Status: apiv1.PodStatus{
-				Phase: apiv1.PodSucceeded,
-			},
-		}
-
-		kubeSystemEvictedPod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "bar",
-				Namespace: "kube-system",
-			},
-			Spec: apiv1.PodSpec{
-				NodeName:      "node",
-				RestartPolicy: apiv1.RestartPolicyAlways,
-			},
-			Status: apiv1.PodStatus{
-				Phase: apiv1.PodFailed,
-			},
-		}
-
-		kubeSystemSafePod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "bar",
-				Namespace: "kube-system",
-				Annotations: map[string]string{
-					drain.PodSafeToEvictKey: "true",
-				},
-			},
-			Spec: apiv1.PodSpec{
-				NodeName: "node",
-			},
-		}
-
-		zeroGracePeriod              = int64(0)
-		kubeSystemLongTerminatingPod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:              "bar",
-				Namespace:         "kube-system",
-				DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * drain.PodLongTerminatingExtraThreshold)},
-			},
-			Spec: apiv1.PodSpec{
-				NodeName:                      "node",
-				RestartPolicy:                 apiv1.RestartPolicyOnFailure,
-				TerminationGracePeriodSeconds: &zeroGracePeriod,
-			},
-			Status: apiv1.PodStatus{
-				Phase: apiv1.PodUnknown,
-			},
-		}
-
-		extendedGracePeriod                                 = int64(6 * 60) // 6 minutes
-		kubeSystemLongTerminatingPodWithExtendedGracePeriod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:              "bar",
-				Namespace:         "kube-system",
-				DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * time.Duration(extendedGracePeriod) * time.Second)},
-			},
-			Spec: apiv1.PodSpec{
-				NodeName:                      "node",
-				RestartPolicy:                 apiv1.RestartPolicyOnFailure,
-				TerminationGracePeriodSeconds: &extendedGracePeriod,
-			},
-			Status: apiv1.PodStatus{
-				Phase: apiv1.PodUnknown,
-			},
-		}
 	)
 
-	for _, test := range []struct {
-		desc        string
+	for desc, test := range map[string]struct {
 		pod         *apiv1.Pod
 		rcs         []*apiv1.ReplicationController
 		rss         []*appsv1.ReplicaSet
@@ -226,77 +136,43 @@ func TestDrain(t *testing.T) {
 		wantReason drain.BlockingPodReason
 		wantError  bool
 	}{
-		{
-			desc: "kube-system pod with PodSafeToEvict annotation",
-			pod:  kubeSystemSafePod,
-		},
-		{
-			desc: "empty PDB with RC-managed pod",
+		"empty PDB with RC-managed pod": {
 			pod:  rcPod,
 			rcs:  []*apiv1.ReplicationController{&rc},
 			pdbs: []*policyv1.PodDisruptionBudget{emptyPDB},
 		},
-		{
-			desc: "kube-system PDB with matching kube-system pod",
+		"kube-system PDB with matching kube-system pod": {
 			pod:  kubeSystemRcPod,
 			rcs:  []*apiv1.ReplicationController{&kubeSystemRc},
 			pdbs: []*policyv1.PodDisruptionBudget{kubeSystemPDB},
 		},
-		{
-			desc:       "kube-system PDB with non-matching kube-system pod",
+		"kube-system PDB with non-matching kube-system pod": {
 			pod:        kubeSystemRcPod,
 			rcs:        []*apiv1.ReplicationController{&kubeSystemRc},
 			pdbs:       []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
 			wantReason: drain.UnmovableKubeSystemPod,
 			wantError:  true,
 		},
-		{
-			desc: "kube-system PDB with default namespace pod",
+		"kube-system PDB with default namespace pod": {
 			pod:  rcPod,
 			rcs:  []*apiv1.ReplicationController{&rc},
 			pdbs: []*policyv1.PodDisruptionBudget{kubeSystemPDB},
 		},
-		{
-			desc:       "default namespace PDB with matching labels kube-system pod",
+		"default namespace PDB with matching labels kube-system pod": {
 			pod:        kubeSystemRcPod,
 			rcs:        []*apiv1.ReplicationController{&kubeSystemRc},
 			pdbs:       []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
 			wantReason: drain.UnmovableKubeSystemPod,
 			wantError:  true,
 		},
-		{
-			desc:        "default namespace PDB with matching labels kube-system pod and rule disabled",
+		"default namespace PDB with matching labels kube-system pod and rule disabled": {
 			pod:         kubeSystemRcPod,
 			rcs:         []*apiv1.ReplicationController{&kubeSystemRc},
 			pdbs:        []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
 			disableRule: true,
 		},
-		{
-			desc: "kube-system failed pod",
-			pod:  kubeSystemFailedPod,
-		},
-		{
-			desc: "kube-system terminal pod",
-			pod:  kubeSystemTerminalPod,
-		},
-		{
-			desc: "kube-system evicted pod",
-			pod:  kubeSystemEvictedPod,
-		},
-		{
-			desc: "kube-system pod with PodSafeToEvict annotation",
-			pod:  kubeSystemSafePod,
-		},
-		{
-			desc: "kube-system long terminating pod with 0 grace period",
-			pod:  kubeSystemLongTerminatingPod,
-		},
-		{
-			desc: "kube-system long terminating pod with extended grace period",
-			pod:  kubeSystemLongTerminatingPodWithExtendedGracePeriod,
-		},
 	} {
-		t.Run(test.desc, func(t *testing.T) {
+		t.Run(desc, func(t *testing.T) {
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(test.pdbs)
 

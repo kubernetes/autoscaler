@@ -28,22 +28,19 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 )
 
-func TestRule(t *testing.T) {
+func TestDrainable(t *testing.T) {
 	one := intstr.FromInt(1)
 
-	testCases := []struct {
-		desc        string
+	for desc, tc := range map[string]struct {
 		pod         *apiv1.Pod
 		pdbs        []*policyv1.PodDisruptionBudget
 		wantOutcome drainability.OutcomeType
 		wantReason  drain.BlockingPodReason
 	}{
-		{
-			desc: "no pdbs",
-			pod:  &apiv1.Pod{},
+		"no pdbs": {
+			pod: &apiv1.Pod{},
 		},
-		{
-			desc: "no matching pdbs",
+		"no matching pdbs": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "happy",
@@ -82,8 +79,7 @@ func TestRule(t *testing.T) {
 				},
 			},
 		},
-		{
-			desc: "pdb prevents scale-down",
+		"pdb prevents scale-down": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "sad",
@@ -137,9 +133,8 @@ func TestRule(t *testing.T) {
 			wantOutcome: drainability.BlockDrain,
 			wantReason:  drain.NotEnoughPdb,
 		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+	} {
+		t.Run(desc, func(t *testing.T) {
 			tracker := pdb.NewBasicRemainingPdbTracker()
 			tracker.SetPdbs(tc.pdbs)
 			drainCtx := &drainability.DrainContext{

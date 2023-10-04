@@ -48,6 +48,23 @@ type Status struct {
 	BlockingReason drain.BlockingPodReason
 	// Error contains an optional error message.
 	Error error
+	// Interrupted means that the Rule returning the status exited early and that
+	// additional Rules should not be run.
+	Interrupted bool
+}
+
+// Option is used to modify a Status.
+type Option func(*Status)
+
+// Interrupt implies no additional Rules should be run.
+func Interrupt(s *Status) {
+	s.Interrupted = true
+}
+
+func applyOptions(s *Status, opts []Option) {
+	for _, opt := range opts {
+		opt(s)
+	}
 }
 
 // NewDrainableStatus returns a new Status indicating that a pod can be drained.
@@ -74,6 +91,8 @@ func NewSkipStatus() Status {
 }
 
 // NewUndefinedStatus returns a new Status that doesn't contain a decision.
-func NewUndefinedStatus() Status {
-	return Status{}
+func NewUndefinedStatus(opts ...Option) Status {
+	s := Status{}
+	applyOptions(&s, opts)
+	return s
 }
