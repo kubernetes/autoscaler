@@ -156,7 +156,7 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	if err != nil {
 		klog.Errorf("Can't retrieve node %s from snapshot, err: %v", nodeName, err)
 	}
-	klog.V(2).Infof("%s for removal", nodeName)
+	klog.V(2).Infof("Simulating node %s for removal", nodeName)
 
 	if _, found := destinationMap[nodeName]; !found {
 		klog.V(2).Infof("nodeInfo for %s not found", nodeName)
