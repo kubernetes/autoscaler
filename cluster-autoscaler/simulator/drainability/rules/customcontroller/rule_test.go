@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package replicated
+package customcontroller
 
 import (
 	"fmt"
@@ -81,35 +81,18 @@ func TestDrainable(t *testing.T) {
 				Replicas: &replicas,
 			},
 		}
-		customControllerPod = &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "bar",
-				Namespace: "default",
-				// Using names like FooController is discouraged
-				// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#naming-conventions
-				// vadasambar: I am using it here just because `FooController``
-				// is easier to understand than say `FooSet`
-				OwnerReferences: test.GenerateOwnerReferences("Foo", "FooController", "apps/v1", ""),
-			},
-			Spec: apiv1.PodSpec{
-				NodeName: "node",
-			},
-		}
 	)
 
-	type testCase struct {
-		pod *apiv1.Pod
-		rcs []*apiv1.ReplicationController
-		rss []*appsv1.ReplicaSet
-
-		// TODO(vadasambar): remove this when we get rid of scaleDownNodesWithCustomControllerPods
-		skipNodesWithCustomControllerPods bool
+	for desc, test := range map[string]struct {
+		desc    string
+		pod     *apiv1.Pod
+		rcs     []*apiv1.ReplicationController
+		rss     []*appsv1.ReplicaSet
+		enabled bool
 
 		wantReason drain.BlockingPodReason
 		wantError  bool
-	}
-
-	sharedTests := map[string]testCase{
+	}{
 		"RC-managed pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
@@ -122,6 +105,33 @@ func TestDrainable(t *testing.T) {
 				},
 			},
 			rcs: []*apiv1.ReplicationController{&rc},
+		},
+		"DS-managed pod": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+		},
+		"DS-managed pod by a custom Daemonset": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences(ds.Name, "CustomDaemonSet", "crd/v1", ""),
+					Annotations: map[string]string{
+						"cluster-autoscaler.kubernetes.io/daemonset-pod": "true",
+					},
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
 		},
 		"Job-managed pod": {
 			pod: &apiv1.Pod{
@@ -170,70 +180,39 @@ func TestDrainable(t *testing.T) {
 			},
 			rss: []*appsv1.ReplicaSet{&rs},
 		},
-		"naked pod": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "bar",
-					Namespace: "default",
-				},
-				Spec: apiv1.PodSpec{
-					NodeName: "node",
-				},
-			},
-			wantReason: drain.NotReplicated,
-			wantError:  true,
-		},
-	}
+	} {
+		for _, enabled := range []bool{true, false} {
+			desc = fmt.Sprintf("%s with skipNodesWithCustomControllerPods:%t", test.desc, enabled)
 
-	tests := make(map[string]testCase)
-	for desc, test := range sharedTests {
-		for _, skipNodesWithCustomControllerPods := range []bool{true, false} {
-			// Copy test to prevent side effects.
-			test := test
-			test.skipNodesWithCustomControllerPods = skipNodesWithCustomControllerPods
-			desc := fmt.Sprintf("%s with skipNodesWithCustomControllerPods:%t", desc, skipNodesWithCustomControllerPods)
-			tests[desc] = test
+			t.Run(desc, func(t *testing.T) {
+				var err error
+				var rcLister v1lister.ReplicationControllerLister
+				if len(test.rcs) > 0 {
+					rcLister, err = kube_util.NewTestReplicationControllerLister(test.rcs)
+					assert.NoError(t, err)
+				}
+				var rsLister v1appslister.ReplicaSetLister
+				if len(test.rss) > 0 {
+					rsLister, err = kube_util.NewTestReplicaSetLister(test.rss)
+					assert.NoError(t, err)
+				}
+				dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{&ds})
+				assert.NoError(t, err)
+				jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
+				assert.NoError(t, err)
+				ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
+				assert.NoError(t, err)
+
+				registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
+
+				drainCtx := &drainability.DrainContext{
+					Listers:   registry,
+					Timestamp: testTime,
+				}
+				status := New(enabled, 0).Drainable(drainCtx, test.pod)
+				assert.Equal(t, test.wantReason, status.BlockingReason)
+				assert.Equal(t, test.wantError, status.Error != nil)
+			})
 		}
-	}
-	tests["custom-controller-managed non-blocking pod"] = testCase{
-		pod: customControllerPod,
-	}
-	tests["custom-controller-managed blocking pod"] = testCase{
-		pod:                               customControllerPod,
-		skipNodesWithCustomControllerPods: true,
-		wantReason:                        drain.NotReplicated,
-		wantError:                         true,
-	}
-
-	for desc, test := range tests {
-		t.Run(desc, func(t *testing.T) {
-			var err error
-			var rcLister v1lister.ReplicationControllerLister
-			if len(test.rcs) > 0 {
-				rcLister, err = kube_util.NewTestReplicationControllerLister(test.rcs)
-				assert.NoError(t, err)
-			}
-			var rsLister v1appslister.ReplicaSetLister
-			if len(test.rss) > 0 {
-				rsLister, err = kube_util.NewTestReplicaSetLister(test.rss)
-				assert.NoError(t, err)
-			}
-			dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{&ds})
-			assert.NoError(t, err)
-			jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
-			assert.NoError(t, err)
-			ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
-			assert.NoError(t, err)
-
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
-
-			drainCtx := &drainability.DrainContext{
-				Listers:   registry,
-				Timestamp: testTime,
-			}
-			status := New(test.skipNodesWithCustomControllerPods, 0).Drainable(drainCtx, test.pod)
-			assert.Equal(t, test.wantReason, status.BlockingReason)
-			assert.Equal(t, test.wantError, status.Error != nil)
-		})
 	}
 }

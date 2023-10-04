@@ -20,12 +20,17 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/customcontroller"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/localstorage"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/longterminating"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/notsafetoevict"
 	pdbrule "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/safetoevict"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/terminal"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 )
 
@@ -42,6 +47,15 @@ type Rule interface {
 func Default(deleteOptions options.NodeDeleteOptions) Rules {
 	return []Rule{
 		mirror.New(),
+		longterminating.New(),
+		customcontroller.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount),
+
+		// Interrupting checks
+		daemonset.New(),
+		safetoevict.New(),
+		terminal.New(),
+
+		// Blocking checks
 		replicated.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount),
 		system.New(deleteOptions.SkipNodesWithSystemPods),
 		notsafetoevict.New(),
@@ -64,7 +78,8 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 	}
 
 	for _, r := range rs {
-		if d := r.Drainable(drainCtx, pod); d.Outcome != drainability.UndefinedOutcome {
+		d := r.Drainable(drainCtx, pod)
+		if d.Interrupted || d.Outcome != drainability.UndefinedOutcome {
 			return d
 		}
 	}

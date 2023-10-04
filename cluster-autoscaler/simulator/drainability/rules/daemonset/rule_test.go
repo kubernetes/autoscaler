@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mirror
+package daemonset
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/kubernetes/pkg/kubelet/types"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestDrainable(t *testing.T) {
@@ -33,23 +33,21 @@ func TestDrainable(t *testing.T) {
 		"regular pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "regularPod",
+					Name:      "pod",
 					Namespace: "ns",
 				},
 			},
 			want: drainability.NewUndefinedStatus(),
 		},
-		"mirror pod": {
+		"daemonset pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "manifestPod",
-					Namespace: "kube-system",
-					Annotations: map[string]string{
-						types.ConfigMirrorAnnotationKey: "something",
-					},
+					Name:            "pod",
+					Namespace:       "ns",
+					OwnerReferences: test.GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", ""),
 				},
 			},
-			want: drainability.NewSkipStatus(),
+			want: drainability.NewUndefinedStatus(drainability.Interrupt),
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {

@@ -22,7 +22,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 // Rule is a drainability rule on how to handle local storage pods.
@@ -39,7 +38,7 @@ func New(enabled bool) *Rule {
 
 // Drainable decides what to do with local storage pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
-	if r.enabled && !drain.IsPodLongTerminating(pod, drainCtx.Timestamp) && !pod_util.IsDaemonSetPod(pod) && !drain.HasSafeToEvictAnnotation(pod) && !drain.IsPodTerminal(pod) && drain.HasBlockingLocalStorage(pod) {
+	if r.enabled && drain.HasBlockingLocalStorage(pod) {
 		return drainability.NewBlockedStatus(drain.LocalStorageRequested, fmt.Errorf("pod with local storage present: %s", pod.Name))
 	}
 	return drainability.NewUndefinedStatus()
