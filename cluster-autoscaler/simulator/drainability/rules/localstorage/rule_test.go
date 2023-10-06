@@ -48,10 +48,9 @@ func TestDrainable(t *testing.T) {
 	)
 
 	for desc, test := range map[string]struct {
-		pod          *apiv1.Pod
-		rcs          []*apiv1.ReplicationController
-		rss          []*appsv1.ReplicaSet
-		disabledRule bool
+		pod *apiv1.Pod
+		rcs []*apiv1.ReplicationController
+		rss []*appsv1.ReplicaSet
 
 		wantReason drain.BlockingPodReason
 		wantError  bool
@@ -273,43 +272,12 @@ func TestDrainable(t *testing.T) {
 			wantReason: drain.LocalStorageRequested,
 			wantError:  true,
 		},
-		"pod with EmptyDir and SafeToEvictLocalVolumesKey annotation empty values and rule disabled": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "bar",
-					Namespace:       "default",
-					OwnerReferences: test.GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
-					Annotations: map[string]string{
-						drain.SafeToEvictLocalVolumesKey: ",",
-					},
-				},
-				Spec: apiv1.PodSpec{
-					NodeName: "node",
-					Volumes: []apiv1.Volume{
-						{
-							Name:         "scratch-1",
-							VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-						},
-						{
-							Name:         "scratch-2",
-							VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-						},
-						{
-							Name:         "scratch-3",
-							VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
-						},
-					},
-				},
-			},
-			rcs:          []*apiv1.ReplicationController{&rc},
-			disabledRule: true,
-		},
 	} {
 		t.Run(desc, func(t *testing.T) {
 			drainCtx := &drainability.DrainContext{
 				Timestamp: testTime,
 			}
-			status := New(!test.disabledRule).Drainable(drainCtx, test.pod)
+			status := New().Drainable(drainCtx, test.pod)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

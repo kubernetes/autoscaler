@@ -17,7 +17,6 @@ limitations under the License.
 package customcontroller
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -84,11 +83,10 @@ func TestDrainable(t *testing.T) {
 	)
 
 	for desc, test := range map[string]struct {
-		desc    string
-		pod     *apiv1.Pod
-		rcs     []*apiv1.ReplicationController
-		rss     []*appsv1.ReplicaSet
-		enabled bool
+		desc string
+		pod  *apiv1.Pod
+		rcs  []*apiv1.ReplicationController
+		rss  []*appsv1.ReplicaSet
 
 		wantReason drain.BlockingPodReason
 		wantError  bool
@@ -181,38 +179,34 @@ func TestDrainable(t *testing.T) {
 			rss: []*appsv1.ReplicaSet{&rs},
 		},
 	} {
-		for _, enabled := range []bool{true, false} {
-			desc = fmt.Sprintf("%s with skipNodesWithCustomControllerPods:%t", test.desc, enabled)
-
-			t.Run(desc, func(t *testing.T) {
-				var err error
-				var rcLister v1lister.ReplicationControllerLister
-				if len(test.rcs) > 0 {
-					rcLister, err = kube_util.NewTestReplicationControllerLister(test.rcs)
-					assert.NoError(t, err)
-				}
-				var rsLister v1appslister.ReplicaSetLister
-				if len(test.rss) > 0 {
-					rsLister, err = kube_util.NewTestReplicaSetLister(test.rss)
-					assert.NoError(t, err)
-				}
-				dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{&ds})
+		t.Run(desc, func(t *testing.T) {
+			var err error
+			var rcLister v1lister.ReplicationControllerLister
+			if len(test.rcs) > 0 {
+				rcLister, err = kube_util.NewTestReplicationControllerLister(test.rcs)
 				assert.NoError(t, err)
-				jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
+			}
+			var rsLister v1appslister.ReplicaSetLister
+			if len(test.rss) > 0 {
+				rsLister, err = kube_util.NewTestReplicaSetLister(test.rss)
 				assert.NoError(t, err)
-				ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
-				assert.NoError(t, err)
+			}
+			dsLister, err := kube_util.NewTestDaemonSetLister([]*appsv1.DaemonSet{&ds})
+			assert.NoError(t, err)
+			jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
+			assert.NoError(t, err)
+			ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
+			assert.NoError(t, err)
 
-				registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
-				drainCtx := &drainability.DrainContext{
-					Listers:   registry,
-					Timestamp: testTime,
-				}
-				status := New(enabled, 0).Drainable(drainCtx, test.pod)
-				assert.Equal(t, test.wantReason, status.BlockingReason)
-				assert.Equal(t, test.wantError, status.Error != nil)
-			})
-		}
+			drainCtx := &drainability.DrainContext{
+				Listers:   registry,
+				Timestamp: testTime,
+			}
+			status := New(0).Drainable(drainCtx, test.pod)
+			assert.Equal(t, test.wantReason, status.BlockingReason)
+			assert.Equal(t, test.wantError, status.Error != nil)
+		})
 	}
 }
