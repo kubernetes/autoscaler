@@ -136,14 +136,11 @@ func TestFindNodesToRemove(t *testing.T) {
 	fullNodeInfo.AddPod(pod4)
 
 	emptyNodeToRemove := NodeToBeRemoved{
-		Node:             emptyNode,
-		PodsToReschedule: []*apiv1.Pod{},
-		DaemonSetPods:    []*apiv1.Pod{},
+		Node: emptyNode,
 	}
 	drainableNodeToRemove := NodeToBeRemoved{
 		Node:             drainableNode,
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
-		DaemonSetPods:    []*apiv1.Pod{},
 	}
 
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
@@ -153,19 +150,16 @@ func TestFindNodesToRemove(t *testing.T) {
 
 	tests := []findNodesToRemoveTestConfig{
 		{
-			name:        "just an empty node, should be removed",
-			pods:        []*apiv1.Pod{},
-			candidates:  []string{emptyNode.Name},
-			allNodes:    []*apiv1.Node{emptyNode},
-			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
-			unremovable: []*UnremovableNode{},
+			name:       "just an empty node, should be removed",
+			candidates: []string{emptyNode.Name},
+			allNodes:   []*apiv1.Node{emptyNode},
+			toRemove:   []NodeToBeRemoved{emptyNodeToRemove},
 		},
 		{
 			name:        "just a drainable node, but nowhere for pods to go to",
 			pods:        []*apiv1.Pod{pod1, pod2},
 			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode},
-			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
 		{
@@ -181,16 +175,14 @@ func TestFindNodesToRemove(t *testing.T) {
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
 			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
-			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
 		{
-			name:        "4 nodes, 1 empty, 1 drainable",
-			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			candidates:  []string{emptyNode.Name, drainableNode.Name},
-			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
-			unremovable: []*UnremovableNode{},
+			name:       "4 nodes, 1 empty, 1 drainable",
+			pods:       []*apiv1.Pod{pod1, pod2, pod3, pod4},
+			candidates: []string{emptyNode.Name, drainableNode.Name},
+			allNodes:   []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			toRemove:   []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 		},
 	}
 

@@ -33,7 +33,7 @@ func New() *Rule {
 // Drainable decides what to do with daemon set pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if pod_util.IsDaemonSetPod(pod) {
-		return drainability.NewUndefinedStatus(drainability.Interrupt)
+		return drainability.NewDrainableStatus()
 	}
 	return drainability.NewUndefinedStatus()
 }

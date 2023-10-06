@@ -49,7 +49,7 @@ func TestDrainable(t *testing.T) {
 					},
 				},
 			},
-			want: drainability.NewUndefinedStatus(drainability.Interrupt),
+			want: drainability.NewDrainableStatus(),
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {

@@ -88,7 +88,7 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 
 	for _, r := range rs {
 		d := r.Drainable(drainCtx, pod)
-		if d.Interrupted || d.Outcome != drainability.UndefinedOutcome {
+		if d.Outcome != drainability.UndefinedOutcome {
 			return d
 		}
 	}

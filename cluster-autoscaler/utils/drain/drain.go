@@ -21,9 +21,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 const (
@@ -69,37 +67,6 @@ const (
 	// UnexpectedError - pod is blocking scale down because of an unexpected error.
 	UnexpectedError
 )
-
-// GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node
-// drain as well as some extra information about possibly problematic pods
-// (unreplicated and DaemonSets).
-//
-// This function assumes that default drainability rules have already been run
-// to verify pod drainability.
-func GetPodsForDeletionOnNodeDrain(
-	podList []*apiv1.Pod,
-	pdbs []*policyv1.PodDisruptionBudget,
-	skipNodesWithSystemPods bool,
-	skipNodesWithLocalStorage bool,
-	skipNodesWithCustomControllerPods bool,
-	currentTime time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod) {
-
-	pods = []*apiv1.Pod{}
-	daemonSetPods = []*apiv1.Pod{}
-
-	for _, pod := range podList {
-		if IsPodLongTerminating(pod, currentTime) {
-			continue
-		}
-
-		if pod_util.IsDaemonSetPod(pod) {
-			daemonSetPods = append(daemonSetPods, pod)
-		} else {
-			pods = append(pods, pod)
-		}
-	}
-	return pods, daemonSetPods
-}
 
 // ControllerRef returns the OwnerReference to pod's controller.
 func ControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {

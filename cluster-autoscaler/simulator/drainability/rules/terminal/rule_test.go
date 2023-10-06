@@ -51,7 +51,7 @@ func TestDrainable(t *testing.T) {
 					Phase: apiv1.PodSucceeded,
 				},
 			},
-			want: drainability.NewUndefinedStatus(drainability.Interrupt),
+			want: drainability.NewDrainableStatus(),
 		},
 		"failed pod": {
 			pod: &apiv1.Pod{
@@ -66,7 +66,7 @@ func TestDrainable(t *testing.T) {
 					Phase: apiv1.PodFailed,
 				},
 			},
-			want: drainability.NewUndefinedStatus(drainability.Interrupt),
+			want: drainability.NewDrainableStatus(),
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {

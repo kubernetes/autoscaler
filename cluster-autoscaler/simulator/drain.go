@@ -39,7 +39,6 @@ import (
 // If listers is not nil it checks whether RC, DS, Jobs and RS that created
 // these pods still exist.
 func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
-	var drainPods, drainDs []*apiv1.Pod
 	if drainabilityRules == nil {
 		drainabilityRules = rules.Default(deleteOptions)
 	}
@@ -55,31 +54,21 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 		pod := podInfo.Pod
 		status := drainabilityRules.Drainable(drainCtx, pod)
 		switch status.Outcome {
-		case drainability.UndefinedOutcome:
-			pods = append(pods, podInfo.Pod)
-		case drainability.DrainOk:
+		case drainability.UndefinedOutcome, drainability.DrainOk:
+			if drain.IsPodLongTerminating(pod, timestamp) {
+				continue
+			}
 			if pod_util.IsDaemonSetPod(pod) {
-				drainDs = append(drainDs, pod)
+				daemonSetPods = append(daemonSetPods, pod)
 			} else {
-				drainPods = append(drainPods, pod)
+				pods = append(pods, pod)
 			}
 		case drainability.BlockDrain:
-			blockingPod = &drain.BlockingPod{
+			return nil, nil, &drain.BlockingPod{
 				Pod:    pod,
 				Reason: status.BlockingReason,
-			}
-			err = status.Error
-			return
+			}, status.Error
 		}
 	}
-
-	pods, daemonSetPods = drain.GetPodsForDeletionOnNodeDrain(
-		pods,
-		remainingPdbTracker.GetPdbs(),
-		deleteOptions.SkipNodesWithSystemPods,
-		deleteOptions.SkipNodesWithLocalStorage,
-		deleteOptions.SkipNodesWithCustomControllerPods,
-		timestamp)
-
-	return append(pods, drainPods...), append(daemonSetPods, drainDs...), nil, nil
+	return pods, daemonSetPods, nil, nil
 }

@@ -47,7 +47,7 @@ func TestDrainable(t *testing.T) {
 					OwnerReferences: test.GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", ""),
 				},
 			},
-			want: drainability.NewUndefinedStatus(drainability.Interrupt),
+			want: drainability.NewDrainableStatus(),
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {
