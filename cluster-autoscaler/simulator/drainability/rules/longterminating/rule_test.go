@@ -61,7 +61,7 @@ func TestDrainable(t *testing.T) {
 					Phase: apiv1.PodUnknown,
 				},
 			},
-			want: drainability.NewUndefinedStatus(drainability.Interrupt),
+			want: drainability.NewDrainableStatus(),
 		},
 		"long terminating pod with extended grace period": {
 			pod: &apiv1.Pod{
@@ -78,7 +78,7 @@ func TestDrainable(t *testing.T) {
 					Phase: apiv1.PodUnknown,
 				},
 			},
-			want: drainability.NewUndefinedStatus(drainability.Interrupt),
+			want: drainability.NewDrainableStatus(),
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {
