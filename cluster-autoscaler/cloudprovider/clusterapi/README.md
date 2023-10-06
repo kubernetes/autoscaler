@@ -239,8 +239,8 @@ If you are using the opt-in support for scaling from zero as defined by the
 Cluster API infrastructure provider, you will need to add the infrastructure
 machine template types to your role permissions for the service account
 associated with the cluster autoscaler deployment. The service account will
-need permission to `get` and `list` the infrastructure machine templates for
-your infrastructure provider.
+need permission to `get`, `list`, and `watch` the infrastructure machine
+templates for your infrastructure provider.
 
 For example, when using the [Kubemark provider](https://github.com/kubernetes-sigs/cluster-api-provider-kubemark)
 you will need to set the following permissions:
@@ -254,6 +254,7 @@ rules:
     verbs:
     - get
     - list
+    - watch
 ```
 
 #### Pre-defined labels and taints on nodes scaled from zero
