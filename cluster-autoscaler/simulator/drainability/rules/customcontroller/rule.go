@@ -28,21 +28,19 @@ import (
 
 // Rule is a drainability rule on how to handle replicated pods.
 type Rule struct {
-	enabled         bool
 	minReplicaCount int
 }
 
 // New creates a new Rule.
-func New(enabled bool, minReplicaCount int) *Rule {
+func New(minReplicaCount int) *Rule {
 	return &Rule{
-		enabled:         enabled,
 		minReplicaCount: minReplicaCount,
 	}
 }
 
 // Drainable decides what to do with replicated pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
-	if !r.enabled || drainCtx.Listers == nil {
+	if drainCtx.Listers == nil {
 		return drainability.NewUndefinedStatus()
 	}
 

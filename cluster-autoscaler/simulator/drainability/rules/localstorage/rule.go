@@ -25,20 +25,16 @@ import (
 )
 
 // Rule is a drainability rule on how to handle local storage pods.
-type Rule struct {
-	enabled bool
-}
+type Rule struct{}
 
 // New creates a new Rule.
-func New(enabled bool) *Rule {
-	return &Rule{
-		enabled: enabled,
-	}
+func New() *Rule {
+	return &Rule{}
 }
 
 // Drainable decides what to do with local storage pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
-	if r.enabled && drain.HasBlockingLocalStorage(pod) {
+	if drain.HasBlockingLocalStorage(pod) {
 		return drainability.NewBlockedStatus(drain.LocalStorageRequested, fmt.Errorf("pod with local storage present: %s", pod.Name))
 	}
 	return drainability.NewUndefinedStatus()

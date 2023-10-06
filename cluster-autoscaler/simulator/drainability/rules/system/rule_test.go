@@ -127,11 +127,10 @@ func TestDrainable(t *testing.T) {
 	)
 
 	for desc, test := range map[string]struct {
-		pod         *apiv1.Pod
-		rcs         []*apiv1.ReplicationController
-		rss         []*appsv1.ReplicaSet
-		pdbs        []*policyv1.PodDisruptionBudget
-		disableRule bool
+		pod  *apiv1.Pod
+		rcs  []*apiv1.ReplicationController
+		rss  []*appsv1.ReplicaSet
+		pdbs []*policyv1.PodDisruptionBudget
 
 		wantReason drain.BlockingPodReason
 		wantError  bool
@@ -165,12 +164,6 @@ func TestDrainable(t *testing.T) {
 			wantReason: drain.UnmovableKubeSystemPod,
 			wantError:  true,
 		},
-		"default namespace PDB with matching labels kube-system pod and rule disabled": {
-			pod:         kubeSystemRcPod,
-			rcs:         []*apiv1.ReplicationController{&kubeSystemRc},
-			pdbs:        []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
-			disableRule: true,
-		},
 	} {
 		t.Run(desc, func(t *testing.T) {
 			tracker := pdb.NewBasicRemainingPdbTracker()
@@ -180,7 +173,7 @@ func TestDrainable(t *testing.T) {
 				RemainingPdbTracker: tracker,
 				Timestamp:           testTime,
 			}
-			status := New(!test.disableRule).Drainable(drainCtx, test.pod)
+			status := New().Drainable(drainCtx, test.pod)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

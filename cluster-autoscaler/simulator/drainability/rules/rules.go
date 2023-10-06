@@ -45,23 +45,32 @@ type Rule interface {
 
 // Default returns the default list of Rules.
 func Default(deleteOptions options.NodeDeleteOptions) Rules {
-	return []Rule{
-		mirror.New(),
-		longterminating.New(),
-		customcontroller.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount),
+	var rules Rules
+	for _, r := range []struct {
+		rule Rule
+		skip bool
+	}{
+		{rule: mirror.New()},
+		{rule: longterminating.New()},
+		{rule: customcontroller.New(deleteOptions.MinReplicaCount), skip: !deleteOptions.SkipNodesWithCustomControllerPods},
 
 		// Interrupting checks
-		daemonset.New(),
-		safetoevict.New(),
-		terminal.New(),
+		{rule: daemonset.New()},
+		{rule: safetoevict.New()},
+		{rule: terminal.New()},
 
 		// Blocking checks
-		replicated.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount),
-		system.New(deleteOptions.SkipNodesWithSystemPods),
-		notsafetoevict.New(),
-		localstorage.New(deleteOptions.SkipNodesWithLocalStorage),
-		pdbrule.New(),
+		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount)},
+		{rule: system.New(), skip: !deleteOptions.SkipNodesWithSystemPods},
+		{rule: notsafetoevict.New()},
+		{rule: localstorage.New(), skip: !deleteOptions.SkipNodesWithLocalStorage},
+		{rule: pdbrule.New()},
+	} {
+		if !r.skip {
+			rules = append(rules, r.rule)
+		}
 	}
+	return rules
 }
 
 // Rules defines operations on a collections of rules.
