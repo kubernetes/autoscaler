@@ -25,8 +25,9 @@ import (
 // BinpackingLimiter processes expansion options to stop binpacking early.
 type BinpackingLimiter interface {
 	InitBinpacking(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup)
-	StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option) bool
 	MarkProcessed(context *context.AutoscalingContext, nodegroupId string)
+	StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option) bool
+	FinalizeBinpacking(context *context.AutoscalingContext, finalOptions []expander.Option)
 }
 
 // NoOpBinpackingLimiter returns true without processing expansion options.
@@ -42,11 +43,15 @@ func NewDefaultBinpackingLimiter() BinpackingLimiter {
 func (p *NoOpBinpackingLimiter) InitBinpacking(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup) {
 }
 
+// MarkProcessed marks the nodegroup as processed.
+func (p *NoOpBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
+}
+
 // StopBinpacking is used to make decsions on the evaluated expansion options.
 func (p *NoOpBinpackingLimiter) StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	return false
 }
 
-// MarkProcessed marks the nodegroup as processed.
-func (p *NoOpBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
+// FinalizeBinpacking is called to finalize the BinpackingLimiter.
+func (p *NoOpBinpackingLimiter) FinalizeBinpacking(context *context.AutoscalingContext, finalOptions []expander.Option) {
 }

@@ -357,14 +357,17 @@ func (p *MockBinpackingLimiter) InitBinpacking(context *context.AutoscalingConte
 	p.requiredExpansionOptions = 1
 }
 
+// MarkProcessed is here to satisfy the interface.
+func (p *MockBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
+}
+
 // StopBinpacking stops the binpacking early, if we already have requiredExpansionOptions i.e. 1.
 func (p *MockBinpackingLimiter) StopBinpacking(context *context.AutoscalingContext, evaluatedOptions []expander.Option) bool {
 	return len(evaluatedOptions) == p.requiredExpansionOptions
 }
 
-// MarkProcessed is here to satisfy the interface.
-func (p *MockBinpackingLimiter) MarkProcessed(context *context.AutoscalingContext, nodegroupId string) {
-
+// FinalizeBinpacking is here to satisfy the interface.
+func (p *MockBinpackingLimiter) FinalizeBinpacking(context *context.AutoscalingContext, finalOptions []expander.Option) {
 }
 
 // NewBackoff creates a new backoff object

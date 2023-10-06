@@ -164,6 +164,9 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		}
 	}
 
+	// Finalize binpacking limiter.
+	o.processors.BinpackingLimiter.FinalizeBinpacking(o.autoscalingContext, options)
+
 	if len(options) == 0 {
 		klog.V(1).Info("No expansion options")
 		return &status.ScaleUpStatus{
