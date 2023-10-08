@@ -221,8 +221,12 @@ type AutoscalingOptions struct {
 	AWSUseStaticInstanceList bool
 	// GCEOptions contain autoscaling options specific to GCE cloud provider.
 	GCEOptions GCEOptions
+	// Kubernetes master location.
+	Kubernetes string
 	// Path to kube configuration if available
 	KubeConfigPath string
+	// Content type of requests sent to APIServer.
+	KubeAPIContentType string
 	// Burst setting for kubernetes client
 	KubeClientBurst int
 	// QPS setting for kubernetes client
