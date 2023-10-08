@@ -177,8 +177,8 @@ func newKamateraCloudProvider(config io.Reader, rl *cloudprovider.ResourceLimite
 }
 
 func getKubeConfig(opts config.AutoscalingOptions) *rest.Config {
-	klog.V(1).Infof("Using kubeconfig file: %s", opts.KubeConfigPath)
-	kubeConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeConfigPath)
+	klog.V(1).Infof("Using kubeconfig file: %s", opts.KubeClientOpts.KubeConfigPath)
+	kubeConfig, err := clientcmd.BuildConfigFromFlags("", opts.KubeClientOpts.KubeConfigPath)
 	if err != nil {
 		klog.Fatalf("Failed to build kubeConfig: %v", err)
 	}
