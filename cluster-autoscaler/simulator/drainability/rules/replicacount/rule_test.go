@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package customcontroller
+package replicacount
 
 import (
 	"testing"
@@ -104,6 +104,21 @@ func TestDrainable(t *testing.T) {
 			},
 			rcs: []*apiv1.ReplicationController{&rc},
 		},
+		"RC-managed pod with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "ReplicationController", "core/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+			rcs:        []*apiv1.ReplicationController{&rc},
+			wantReason: drain.ControllerNotFound,
+			wantError:  true,
+		},
 		"DS-managed pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
@@ -116,12 +131,41 @@ func TestDrainable(t *testing.T) {
 				},
 			},
 		},
+		"DS-managed pod with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "DaemonSet", "apps/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+			wantReason: drain.ControllerNotFound,
+			wantError:  true,
+		},
 		"DS-managed pod by a custom Daemonset": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:            "bar",
 					Namespace:       "default",
 					OwnerReferences: test.GenerateOwnerReferences(ds.Name, "CustomDaemonSet", "crd/v1", ""),
+					Annotations: map[string]string{
+						"cluster-autoscaler.kubernetes.io/daemonset-pod": "true",
+					},
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+		},
+		"DS-managed pod by a custom Daemonset with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "CustomDaemonSet", "crd/v1", ""),
 					Annotations: map[string]string{
 						"cluster-autoscaler.kubernetes.io/daemonset-pod": "true",
 					},
@@ -141,6 +185,18 @@ func TestDrainable(t *testing.T) {
 			},
 			rcs: []*apiv1.ReplicationController{&rc},
 		},
+		"Job-managed pod with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "Job", "batch/v1", ""),
+				},
+			},
+			rcs:        []*apiv1.ReplicationController{&rc},
+			wantReason: drain.ControllerNotFound,
+			wantError:  true,
+		},
 		"SS-managed pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
@@ -150,6 +206,18 @@ func TestDrainable(t *testing.T) {
 				},
 			},
 			rcs: []*apiv1.ReplicationController{&rc},
+		},
+		"SS-managed pod with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "StatefulSet", "apps/v1", ""),
+				},
+			},
+			rcs:        []*apiv1.ReplicationController{&rc},
+			wantReason: drain.ControllerNotFound,
+			wantError:  true,
 		},
 		"RS-managed pod": {
 			pod: &apiv1.Pod{
@@ -177,6 +245,21 @@ func TestDrainable(t *testing.T) {
 				},
 			},
 			rss: []*appsv1.ReplicaSet{&rs},
+		},
+		"RS-managed pod with missing reference": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:            "bar",
+					Namespace:       "default",
+					OwnerReferences: test.GenerateOwnerReferences("missing", "ReplicaSet", "apps/v1", ""),
+				},
+				Spec: apiv1.PodSpec{
+					NodeName: "node",
+				},
+			},
+			rss:        []*appsv1.ReplicaSet{&rs},
+			wantReason: drain.ControllerNotFound,
+			wantError:  true,
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package customcontroller
+package replicacount
 
 import (
 	"fmt"
@@ -66,7 +66,7 @@ func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) dr
 			return drainability.NewBlockedStatus(drain.MinReplicasReached, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d", pod.Namespace, pod.Name, rc.Spec.Replicas, r.minReplicaCount))
 		}
 	} else if pod_util.IsDaemonSetPod(pod) {
-		if refKind == "DaemonSet" {
+		if refKind != "DaemonSet" {
 			// We don't have a listener for the other DaemonSet kind.
 			// TODO: Use a generic client for checking the reference.
 			return drainability.NewUndefinedStatus()

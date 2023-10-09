@@ -20,13 +20,13 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/customcontroller"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/localstorage"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/longterminating"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/notsafetoevict"
 	pdbrule "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/pdb"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicacount"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/safetoevict"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
@@ -52,7 +52,7 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 	}{
 		{rule: mirror.New()},
 		{rule: longterminating.New()},
-		{rule: customcontroller.New(deleteOptions.MinReplicaCount), skip: !deleteOptions.SkipNodesWithCustomControllerPods},
+		{rule: replicacount.New(deleteOptions.MinReplicaCount), skip: !deleteOptions.SkipNodesWithCustomControllerPods},
 
 		// Interrupting checks
 		{rule: daemonset.New()},
@@ -60,7 +60,7 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 		{rule: terminal.New()},
 
 		// Blocking checks
-		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount)},
+		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods)},
 		{rule: system.New(), skip: !deleteOptions.SkipNodesWithSystemPods},
 		{rule: notsafetoevict.New()},
 		{rule: localstorage.New(), skip: !deleteOptions.SkipNodesWithLocalStorage},

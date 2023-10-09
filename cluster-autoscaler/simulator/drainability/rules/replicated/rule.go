@@ -27,14 +27,12 @@ import (
 // Rule is a drainability rule on how to handle replicated pods.
 type Rule struct {
 	skipNodesWithCustomControllerPods bool
-	minReplicaCount                   int
 }
 
 // New creates a new Rule.
-func New(skipNodesWithCustomControllerPods bool, minReplicaCount int) *Rule {
+func New(skipNodesWithCustomControllerPods bool) *Rule {
 	return &Rule{
 		skipNodesWithCustomControllerPods: skipNodesWithCustomControllerPods,
-		minReplicaCount:                   minReplicaCount,
 	}
 }
 
