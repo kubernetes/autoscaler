@@ -47,6 +47,7 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
         "autoscaling:DescribeTags",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeLaunchTemplateVersions"
@@ -411,7 +412,7 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 
 ## Using the AWS SDK vendored in the AWS cloudprovider
 
-If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider. 
+If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
 
 The current version vendored is `v1.44.24`.
 
@@ -432,12 +433,12 @@ If you want to use custom AWS cloud config e.g. endpoint urls
 2. Add the following in your `values.yaml`:
     ```yaml
     cloudConfigPath: config/cloud.conf
-    
+
     extraVolumes:
       - name: cloud-config
         configMap:
           name: cloud-config
-    
+
     extraVolumeMounts:
       - name: cloud-config
         mountPath: config
@@ -450,7 +451,7 @@ Please note: it is also possible to mount the cloud config file from host:
       - name: cloud-config
         hostPath:
           path: /path/to/file/on/host
-    
+
     extraVolumeMounts:
       - name: cloud-config
         mountPath: config/cloud.conf
