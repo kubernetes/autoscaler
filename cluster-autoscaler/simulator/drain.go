@@ -55,9 +55,6 @@ func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.
 		status := drainabilityRules.Drainable(drainCtx, pod)
 		switch status.Outcome {
 		case drainability.UndefinedOutcome, drainability.DrainOk:
-			if drain.IsPodLongTerminating(pod, timestamp) {
-				continue
-			}
 			if pod_util.IsDaemonSetPod(pod) {
 				daemonSetPods = append(daemonSetPods, pod)
 			} else {

@@ -51,6 +51,23 @@ func TestDrainable(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              "bar",
 					Namespace:         "default",
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(drain.PodLongTerminatingExtraThreshold / 2)},
+				},
+				Spec: apiv1.PodSpec{
+					RestartPolicy:                 apiv1.RestartPolicyOnFailure,
+					TerminationGracePeriodSeconds: &zeroGracePeriod,
+				},
+				Status: apiv1.PodStatus{
+					Phase: apiv1.PodUnknown,
+				},
+			},
+			want: drainability.NewUndefinedStatus(),
+		},
+		"expired long terminating pod with 0 grace period": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:              "bar",
+					Namespace:         "default",
 					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-2 * drain.PodLongTerminatingExtraThreshold)},
 				},
 				Spec: apiv1.PodSpec{
@@ -64,6 +81,23 @@ func TestDrainable(t *testing.T) {
 			want: drainability.NewSkipStatus(),
 		},
 		"long terminating pod with extended grace period": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:              "bar",
+					Namespace:         "default",
+					DeletionTimestamp: &metav1.Time{Time: testTime.Add(time.Duration(extendedGracePeriod) / 2 * time.Second)},
+				},
+				Spec: apiv1.PodSpec{
+					RestartPolicy:                 apiv1.RestartPolicyOnFailure,
+					TerminationGracePeriodSeconds: &extendedGracePeriod,
+				},
+				Status: apiv1.PodStatus{
+					Phase: apiv1.PodUnknown,
+				},
+			},
+			want: drainability.NewUndefinedStatus(),
+		},
+		"expired long terminating pod with extended grace period": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:              "bar",
