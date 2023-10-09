@@ -47,6 +47,7 @@ should be updated to restrict the resources/add conditionals:
         "autoscaling:DescribeAutoScalingGroups",
         "autoscaling:DescribeAutoScalingInstances",
         "autoscaling:DescribeLaunchConfigurations",
+        "autoscaling:DescribeScalingActivities",
         "ec2:DescribeInstanceTypes",
         "ec2:DescribeLaunchTemplateVersions"
       ],
@@ -407,7 +408,7 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 
 ## Using the AWS SDK vendored in the AWS cloudprovider
 
-If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider. 
+If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
 
 The current version vendored is `v1.44.24`.
 
