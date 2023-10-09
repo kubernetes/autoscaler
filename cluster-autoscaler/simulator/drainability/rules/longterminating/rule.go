@@ -33,7 +33,7 @@ func New() *Rule {
 // Drainable decides what to do with long terminating pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if drain.IsPodLongTerminating(pod, drainCtx.Timestamp) {
-		return drainability.NewDrainableStatus()
+		return drainability.NewSkipStatus()
 	}
 	return drainability.NewUndefinedStatus()
 }
