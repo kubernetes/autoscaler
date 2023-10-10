@@ -191,9 +191,12 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 		klog.Fatalf("Failed to create Hetzner cloud provider: %v", err)
 	}
 
+	if manager.clusterConfig.IsUsingNewFormat && len(manager.clusterConfig.NodeConfigs) == 0 {
+		klog.Fatalf("No cluster config present provider: %v", err)
+	}
+
 	validNodePoolName := regexp.MustCompile(`^[a-z0-9A-Z]+[a-z0-9A-Z\-\.\_]*[a-z0-9A-Z]+$|^[a-z0-9A-Z]{1}$`)
 	clusterUpdateLock := sync.Mutex{}
-
 	for _, nodegroupSpec := range do.NodeGroupSpecs {
 		spec, err := createNodePoolSpec(nodegroupSpec)
 		if err != nil {
@@ -204,6 +207,13 @@ func BuildHetzner(_ config.AutoscalingOptions, do cloudprovider.NodeGroupDiscove
 		servers, err := manager.allServers(spec.name)
 		if err != nil {
 			klog.Fatalf("Failed to get servers for for node pool %s error: %v", nodegroupSpec, err)
+		}
+
+		if manager.clusterConfig.IsUsingNewFormat {
+			_, ok := manager.clusterConfig.NodeConfigs[spec.name]
+			if !ok {
+				klog.Fatalf("No node config present for node group id `%s` error: %v", spec.name, err)
+			}
 		}
 
 		manager.nodeGroups[spec.name] = &hetznerNodeGroup{
