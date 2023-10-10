@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,53 +16,29 @@ limitations under the License.
 
 package tencentcloud
 
-import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
+import "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/tencentcloud/tencentcloud-sdk-go/common/profile"
 
 // Tencent Cloud Service Http Endpoint
 const (
 	ASHttpEndpoint  = "as.tencentcloudapi.com"
 	VPCHttpEndpoint = "vpc.tencentcloudapi.com"
 	CVMHttpEndpoint = "cvm.tencentcloudapi.com"
-	TKEHttpEndpoint = "tke.tencentcloudapi.com"
-
-	TestASHttpEndpoint  = "as.test.tencentcloudapi.com"
-	TestVPCHttpEndpoint = "vpc.test.tencentcloudapi.com"
-	TestCVMHttpEndpoint = "cvm.test.tencentcloudapi.com"
-	TestTKEHttpEndpoint = "tke.test.tencentcloudapi.com"
 )
 
 func newASClientProfile() *profile.ClientProfile {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = ASHttpEndpoint
-	if cloudConfig.IsTest {
-		cpf.HttpProfile.Endpoint = TestASHttpEndpoint
-	}
 	return cpf
 }
 
 func newVPCClientProfile() *profile.ClientProfile {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = VPCHttpEndpoint
-	if cloudConfig.IsTest {
-		cpf.HttpProfile.Endpoint = TestVPCHttpEndpoint
-	}
 	return cpf
 }
 
 func newCVMClientProfile() *profile.ClientProfile {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = CVMHttpEndpoint
-	if cloudConfig.IsTest {
-		cpf.HttpProfile.Endpoint = TestCVMHttpEndpoint
-	}
-	return cpf
-}
-
-func newTKEClientProfile() *profile.ClientProfile {
-	cpf := profile.NewClientProfile()
-	cpf.HttpProfile.Endpoint = TKEHttpEndpoint
-	if cloudConfig.IsTest {
-		cpf.HttpProfile.Endpoint = TestTKEHttpEndpoint
-	}
 	return cpf
 }
