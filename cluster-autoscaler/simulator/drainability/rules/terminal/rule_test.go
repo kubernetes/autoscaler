@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mirror
+package terminal
 
 import (
 	"testing"
@@ -22,7 +22,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
-	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
 func TestDrainable(t *testing.T) {
@@ -33,23 +32,41 @@ func TestDrainable(t *testing.T) {
 		"regular pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "regularPod",
+					Name:      "pod",
 					Namespace: "ns",
 				},
 			},
 			want: drainability.NewUndefinedStatus(),
 		},
-		"mirror pod": {
+		"terminal pod": {
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      "manifestPod",
-					Namespace: "kube-system",
-					Annotations: map[string]string{
-						types.ConfigMirrorAnnotationKey: "something",
-					},
+					Name:      "bar",
+					Namespace: "default",
+				},
+				Spec: apiv1.PodSpec{
+					RestartPolicy: apiv1.RestartPolicyOnFailure,
+				},
+				Status: apiv1.PodStatus{
+					Phase: apiv1.PodSucceeded,
 				},
 			},
-			want: drainability.NewSkipStatus(),
+			want: drainability.NewDrainableStatus(),
+		},
+		"failed pod": {
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "bar",
+					Namespace: "default",
+				},
+				Spec: apiv1.PodSpec{
+					RestartPolicy: apiv1.RestartPolicyNever,
+				},
+				Status: apiv1.PodStatus{
+					Phase: apiv1.PodFailed,
+				},
+			},
+			want: drainability.NewDrainableStatus(),
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {

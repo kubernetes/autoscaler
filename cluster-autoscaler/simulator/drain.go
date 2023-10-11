@@ -17,7 +17,6 @@ limitations under the License.
 package simulator
 
 import (
-	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -31,66 +30,42 @@ import (
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
-// GetPodsToMove returns a list of pods that should be moved elsewhere
-// and a list of DaemonSet pods that should be evicted if the node
-// is drained. Raises error if there is an unreplicated pod.
-// Based on kubectl drain code. If listers is nil it makes an assumption that RC, DS, Jobs and RS were deleted
-// along with their pods (no abandoned pods with dangling created-by annotation).
-// If listers is not nil it checks whether RC, DS, Jobs and RS that created these pods
-// still exist.
-// TODO(x13n): Rewrite GetPodsForDeletionOnNodeDrain into a set of DrainabilityRules.
+// GetPodsToMove returns a list of pods that should be moved elsewhere and a
+// list of DaemonSet pods that should be evicted if the node is drained.
+// Raises error if there is an unreplicated pod.
+// Based on kubectl drain code. If listers is nil it makes an assumption that
+// RC, DS, Jobs and RS were deleted along with their pods (no abandoned pods
+// with dangling created-by annotation).
+// If listers is not nil it checks whether RC, DS, Jobs and RS that created
+// these pods still exist.
 func GetPodsToMove(nodeInfo *schedulerframework.NodeInfo, deleteOptions options.NodeDeleteOptions, drainabilityRules rules.Rules, listers kube_util.ListerRegistry, remainingPdbTracker pdb.RemainingPdbTracker, timestamp time.Time) (pods []*apiv1.Pod, daemonSetPods []*apiv1.Pod, blockingPod *drain.BlockingPod, err error) {
-	var drainPods, drainDs []*apiv1.Pod
 	if drainabilityRules == nil {
-		drainabilityRules = rules.Default()
+		drainabilityRules = rules.Default(deleteOptions)
 	}
 	if remainingPdbTracker == nil {
 		remainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 	drainCtx := &drainability.DrainContext{
 		RemainingPdbTracker: remainingPdbTracker,
-		DeleteOptions:       deleteOptions,
+		Listers:             listers,
+		Timestamp:           timestamp,
 	}
 	for _, podInfo := range nodeInfo.Pods {
 		pod := podInfo.Pod
 		status := drainabilityRules.Drainable(drainCtx, pod)
 		switch status.Outcome {
-		case drainability.UndefinedOutcome:
-			pods = append(pods, podInfo.Pod)
-		case drainability.DrainOk:
+		case drainability.UndefinedOutcome, drainability.DrainOk:
 			if pod_util.IsDaemonSetPod(pod) {
-				drainDs = append(drainDs, pod)
+				daemonSetPods = append(daemonSetPods, pod)
 			} else {
-				drainPods = append(drainPods, pod)
+				pods = append(pods, pod)
 			}
 		case drainability.BlockDrain:
-			blockingPod = &drain.BlockingPod{
+			return nil, nil, &drain.BlockingPod{
 				Pod:    pod,
 				Reason: status.BlockingReason,
-			}
-			err = status.Error
-			return
+			}, status.Error
 		}
 	}
-
-	pods, daemonSetPods, blockingPod, err = drain.GetPodsForDeletionOnNodeDrain(
-		pods,
-		remainingPdbTracker.GetPdbs(),
-		deleteOptions.SkipNodesWithSystemPods,
-		deleteOptions.SkipNodesWithLocalStorage,
-		deleteOptions.SkipNodesWithCustomControllerPods,
-		listers,
-		int32(deleteOptions.MinReplicaCount),
-		timestamp)
-	pods = append(pods, drainPods...)
-	daemonSetPods = append(daemonSetPods, drainDs...)
-	if err != nil {
-		return pods, daemonSetPods, blockingPod, err
-	}
-	if canRemove, _, blockingPodInfo := remainingPdbTracker.CanRemovePods(pods); !canRemove {
-		pod := blockingPodInfo.Pod
-		return []*apiv1.Pod{}, []*apiv1.Pod{}, blockingPodInfo, fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
-	}
-
 	return pods, daemonSetPods, nil, nil
 }

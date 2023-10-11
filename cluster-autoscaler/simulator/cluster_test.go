@@ -136,14 +136,11 @@ func TestFindNodesToRemove(t *testing.T) {
 	fullNodeInfo.AddPod(pod4)
 
 	emptyNodeToRemove := NodeToBeRemoved{
-		Node:             emptyNode,
-		PodsToReschedule: []*apiv1.Pod{},
-		DaemonSetPods:    []*apiv1.Pod{},
+		Node: emptyNode,
 	}
 	drainableNodeToRemove := NodeToBeRemoved{
 		Node:             drainableNode,
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
-		DaemonSetPods:    []*apiv1.Pod{},
 	}
 
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
@@ -152,25 +149,19 @@ func TestFindNodesToRemove(t *testing.T) {
 	tracker := NewUsageTracker()
 
 	tests := []findNodesToRemoveTestConfig{
-		// just an empty node, should be removed
 		{
-			name:        "just an empty node, should be removed",
-			pods:        []*apiv1.Pod{},
-			candidates:  []string{emptyNode.Name},
-			allNodes:    []*apiv1.Node{emptyNode},
-			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
-			unremovable: []*UnremovableNode{},
+			name:       "just an empty node, should be removed",
+			candidates: []string{emptyNode.Name},
+			allNodes:   []*apiv1.Node{emptyNode},
+			toRemove:   []NodeToBeRemoved{emptyNodeToRemove},
 		},
-		// just a drainable node, but nowhere for pods to go to
 		{
 			name:        "just a drainable node, but nowhere for pods to go to",
 			pods:        []*apiv1.Pod{pod1, pod2},
 			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode},
-			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
-		// drainable node, and a mostly empty node that can take its pods
 		{
 			name:        "drainable node, and a mostly empty node that can take its pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3},
@@ -179,23 +170,19 @@ func TestFindNodesToRemove(t *testing.T) {
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
 			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
 		},
-		// drainable node, and a full node that cannot fit anymore pods
 		{
 			name:        "drainable node, and a full node that cannot fit anymore pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
 			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
-			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
-		// 4 nodes, 1 empty, 1 drainable
 		{
-			name:        "4 nodes, 1 empty, 1 drainable",
-			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			candidates:  []string{emptyNode.Name, drainableNode.Name},
-			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
-			unremovable: []*UnremovableNode{},
+			name:       "4 nodes, 1 empty, 1 drainable",
+			pods:       []*apiv1.Pod{pod1, pod2, pod3, pod4},
+			candidates: []string{emptyNode.Name, drainableNode.Name},
+			allNodes:   []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			toRemove:   []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 		},
 	}
 
@@ -209,8 +196,8 @@ func TestFindNodesToRemove(t *testing.T) {
 			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), nil, false)
 			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), nil)
 			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
-			assert.Equal(t, toRemove, test.toRemove)
-			assert.Equal(t, unremovable, test.unremovable)
+			assert.Equal(t, test.toRemove, toRemove)
+			assert.Equal(t, test.unremovable, unremovable)
 		})
 	}
 }
