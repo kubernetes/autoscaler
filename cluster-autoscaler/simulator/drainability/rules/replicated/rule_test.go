@@ -109,83 +109,222 @@ func TestDrainable(t *testing.T) {
 		wantError  bool
 	}
 
-	sharedTests := map[string]testCase{
-		"RC-managed pod": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "bar",
-					Namespace:       "default",
-					OwnerReferences: test.GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+	var (
+		sharedTests = map[string]testCase{
+			"RC-managed pod": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences(rc.Name, "ReplicationController", "core/v1", ""),
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
 				},
-				Spec: apiv1.PodSpec{
-					NodeName: "node",
-				},
+				rcs: []*apiv1.ReplicationController{&rc},
 			},
-			rcs: []*apiv1.ReplicationController{&rc},
-		},
-		"Job-managed pod": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "bar",
-					Namespace:       "default",
-					OwnerReferences: test.GenerateOwnerReferences(job.Name, "Job", "batch/v1", ""),
+			"Job-managed pod": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences(job.Name, "Job", "batch/v1", ""),
+					},
 				},
+				rcs: []*apiv1.ReplicationController{&rc},
 			},
-			rcs: []*apiv1.ReplicationController{&rc},
-		},
-		"SS-managed pod": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "bar",
-					Namespace:       "default",
-					OwnerReferences: test.GenerateOwnerReferences(statefulset.Name, "StatefulSet", "apps/v1", ""),
+			"SS-managed pod": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences(statefulset.Name, "StatefulSet", "apps/v1", ""),
+					},
 				},
+				rcs: []*apiv1.ReplicationController{&rc},
 			},
-			rcs: []*apiv1.ReplicationController{&rc},
-		},
-		"RS-managed pod": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:            "bar",
-					Namespace:       "default",
-					OwnerReferences: test.GenerateOwnerReferences(rs.Name, "ReplicaSet", "apps/v1", ""),
+			"RS-managed pod": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences(rs.Name, "ReplicaSet", "apps/v1", ""),
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
 				},
-				Spec: apiv1.PodSpec{
-					NodeName: "node",
-				},
+				rss: []*appsv1.ReplicaSet{&rs},
 			},
-			rss: []*appsv1.ReplicaSet{&rs},
-		},
-		"RS-managed pod that is being deleted": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:              "bar",
-					Namespace:         "default",
-					OwnerReferences:   test.GenerateOwnerReferences(rs.Name, "ReplicaSet", "apps/v1", ""),
-					DeletionTimestamp: &metav1.Time{Time: testTime.Add(-time.Hour)},
+			"RS-managed pod that is being deleted": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "bar",
+						Namespace:         "default",
+						OwnerReferences:   test.GenerateOwnerReferences(rs.Name, "ReplicaSet", "apps/v1", ""),
+						DeletionTimestamp: &metav1.Time{Time: testTime.Add(-time.Hour)},
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
 				},
-				Spec: apiv1.PodSpec{
-					NodeName: "node",
-				},
+				rss: []*appsv1.ReplicaSet{&rs},
 			},
-			rss: []*appsv1.ReplicaSet{&rs},
-		},
-		"naked pod": {
-			pod: &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "bar",
-					Namespace: "default",
+			"naked pod": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "bar",
+						Namespace: "default",
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
 				},
-				Spec: apiv1.PodSpec{
-					NodeName: "node",
-				},
+				wantReason: drain.NotReplicated,
+				wantError:  true,
 			},
-			wantReason: drain.NotReplicated,
-			wantError:  true,
-		},
-	}
+		}
 
-	tests := make(map[string]testCase)
+		customTests = map[string]testCase{
+			"RC-managed pod with missing reference": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences("missing", "ReplicationController", "core/v1", ""),
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
+				},
+				skipNodesWithCustomControllerPods: true,
+				rcs:                               []*apiv1.ReplicationController{&rc},
+				wantReason:                        drain.ControllerNotFound,
+				wantError:                         true,
+			},
+			"DS-managed pod": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ""),
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
+				},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.NotReplicated,
+				wantError:                         true,
+			},
+			"DS-managed pod with missing reference": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences("missing", "DaemonSet", "apps/v1", ""),
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
+				},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.ControllerNotFound,
+				wantError:                         true,
+			},
+			"DS-managed pod by a custom Daemonset": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences(ds.Name, "CustomDaemonSet", "crd/v1", ""),
+						Annotations: map[string]string{
+							"cluster-autoscaler.kubernetes.io/daemonset-pod": "true",
+						},
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
+				},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.NotReplicated,
+				wantError:                         true,
+			},
+			"DS-managed pod by a custom Daemonset with missing reference": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences("missing", "CustomDaemonSet", "crd/v1", ""),
+						Annotations: map[string]string{
+							"cluster-autoscaler.kubernetes.io/daemonset-pod": "true",
+						},
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
+				},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.NotReplicated,
+				wantError:                         true,
+			},
+			"Job-managed pod with missing reference": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences("missing", "Job", "batch/v1", ""),
+					},
+				},
+				rcs:                               []*apiv1.ReplicationController{&rc},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.ControllerNotFound,
+				wantError:                         true,
+			},
+			"SS-managed pod with missing reference": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences("missing", "StatefulSet", "apps/v1", ""),
+					},
+				},
+				rcs:                               []*apiv1.ReplicationController{&rc},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.ControllerNotFound,
+				wantError:                         true,
+			},
+			"RS-managed pod with missing reference": {
+				pod: &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:            "bar",
+						Namespace:       "default",
+						OwnerReferences: test.GenerateOwnerReferences("missing", "ReplicaSet", "apps/v1", ""),
+					},
+					Spec: apiv1.PodSpec{
+						NodeName: "node",
+					},
+				},
+				rss:                               []*appsv1.ReplicaSet{&rs},
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.ControllerNotFound,
+				wantError:                         true,
+			},
+			"custom-controller-managed non-blocking pod": {
+				pod: customControllerPod,
+			},
+			"custom-controller-managed blocking pod": {
+				pod:                               customControllerPod,
+				skipNodesWithCustomControllerPods: true,
+				wantReason:                        drain.NotReplicated,
+				wantError:                         true,
+			},
+		}
+
+		tests = make(map[string]testCase)
+	)
+
 	for desc, test := range sharedTests {
 		for _, skipNodesWithCustomControllerPods := range []bool{true, false} {
 			// Copy test to prevent side effects.
@@ -195,14 +334,8 @@ func TestDrainable(t *testing.T) {
 			tests[desc] = test
 		}
 	}
-	tests["custom-controller-managed non-blocking pod"] = testCase{
-		pod: customControllerPod,
-	}
-	tests["custom-controller-managed blocking pod"] = testCase{
-		pod:                               customControllerPod,
-		skipNodesWithCustomControllerPods: true,
-		wantReason:                        drain.NotReplicated,
-		wantError:                         true,
+	for desc, test := range customTests {
+		tests[desc] = test
 	}
 
 	for desc, test := range tests {
@@ -231,7 +364,7 @@ func TestDrainable(t *testing.T) {
 				Listers:   registry,
 				Timestamp: testTime,
 			}
-			status := New(test.skipNodesWithCustomControllerPods).Drainable(drainCtx, test.pod)
+			status := New(test.skipNodesWithCustomControllerPods, 0).Drainable(drainCtx, test.pod)
 			assert.Equal(t, test.wantReason, status.BlockingReason)
 			assert.Equal(t, test.wantError, status.Error != nil)
 		})

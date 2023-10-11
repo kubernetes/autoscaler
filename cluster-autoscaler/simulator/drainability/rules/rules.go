@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/mirror"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/notsafetoevict"
 	pdbrule "k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/pdb"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicacount"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/replicated"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/safetoevict"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
@@ -50,17 +49,17 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 		rule Rule
 		skip bool
 	}{
+		// Skip
 		{rule: mirror.New()},
 		{rule: longterminating.New()},
-		{rule: replicacount.New(deleteOptions.MinReplicaCount), skip: !deleteOptions.SkipNodesWithCustomControllerPods},
 
-		// Interrupting checks
+		// Drain
 		{rule: daemonset.New()},
 		{rule: safetoevict.New()},
 		{rule: terminal.New()},
 
-		// Blocking checks
-		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods)},
+		// Block
+		{rule: replicated.New(deleteOptions.SkipNodesWithCustomControllerPods, deleteOptions.MinReplicaCount)},
 		{rule: system.New(), skip: !deleteOptions.SkipNodesWithSystemPods},
 		{rule: notsafetoevict.New()},
 		{rule: localstorage.New(), skip: !deleteOptions.SkipNodesWithLocalStorage},
@@ -73,11 +72,20 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 	return rules
 }
 
+// Outcomes are ordered by the priority in which they will be returned.
+var orderedOutcomes = []drainability.OutcomeType{
+	drainability.SkipDrain,
+	drainability.DrainOk,
+	drainability.BlockDrain,
+	drainability.UndefinedOutcome,
+}
+
 // Rules defines operations on a collections of rules.
 type Rules []Rule
 
 // Drainable determines whether a given pod is drainable according to the
-// specified set of rules.
+// specified set of rules. All rules are executed and the first occurrence of
+// the highest priority status is returned.
 func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if drainCtx == nil {
 		drainCtx = &drainability.DrainContext{}
@@ -86,10 +94,18 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 		drainCtx.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 
-	for _, r := range rs {
-		d := r.Drainable(drainCtx, pod)
-		if d.Outcome != drainability.UndefinedOutcome {
-			return d
+	rulings := make(map[drainability.OutcomeType]drainability.Status)
+
+	for _, rule := range rs {
+		status := rule.Drainable(drainCtx, pod)
+		if _, ok := rulings[status.Outcome]; !ok {
+			rulings[status.Outcome] = status
+		}
+	}
+
+	for _, outcome := range orderedOutcomes {
+		if status, ok := rulings[outcome]; ok {
+			return status
 		}
 	}
 	return drainability.NewUndefinedStatus()
