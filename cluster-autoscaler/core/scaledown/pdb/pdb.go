@@ -28,6 +28,8 @@ type RemainingPdbTracker interface {
 	SetPdbs(pdbs []*policyv1.PodDisruptionBudget) error
 	// GetPdbs returns the current remaining PDBs.
 	GetPdbs() []*policyv1.PodDisruptionBudget
+	// MatchingPdbs returns all PDBs matching the pod.
+	MatchingPdbs(pod *apiv1.Pod) []*policyv1.PodDisruptionBudget
 
 	// CanRemovePods checks if the set of pods can be removed.
 	// inParallel indicates if the pods can be removed in parallel. If it is false

@@ -17,12 +17,15 @@ limitations under the License.
 package drainability
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
 // DrainContext contains parameters for drainability rules.
 type DrainContext struct {
 	RemainingPdbTracker pdb.RemainingPdbTracker
-	DeleteOptions       options.NodeDeleteOptions
+	Listers             kube_util.ListerRegistry
+	Timestamp           time.Time
 }
