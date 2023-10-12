@@ -56,7 +56,9 @@ func createEquinixMetalManager(configReader io.Reader, discoverOpts cloudprovide
 	// For now get manager from env var, can consider adding flag later
 	manager, ok := os.LookupEnv("EQUINIX_METAL_MANAGER")
 	if !ok {
-		manager = defaultManager
+		if manager, ok = os.LookupEnv("PACKET_MANAGER"); !ok {
+			manager = defaultManager
+		}
 	}
 
 	switch manager {
