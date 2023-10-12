@@ -17,6 +17,7 @@ limitations under the License.
 package clusterapi
 
 import (
+	"net/http"
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
@@ -28,7 +29,8 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/clientcmd"
-	klog "k8s.io/klog/v2"
+	"k8s.io/client-go/transport"
+	"k8s.io/klog/v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -159,11 +161,41 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatalf("cannot build management cluster config: %v", err)
 	}
 
+	if managementConfig.BearerToken != "" {
+		var rt http.RoundTripper
+		if managementConfig.WrapTransport != nil {
+			rt = managementConfig.WrapTransport(rt)
+		}
+
+		var err error
+
+		if rt, err = transport.NewBearerAuthWithRefreshRoundTripper(managementConfig.BearerToken, managementConfig.BearerTokenFile, rt); err != nil {
+			klog.Fatalf("cannot build management token refresher roundtripper: %v", err)
+		}
+
+		managementConfig.Transport = rt
+	}
+
 	workloadKubeconfig := opts.KubeConfigPath
 
 	workloadConfig, err := clientcmd.BuildConfigFromFlags("", workloadKubeconfig)
 	if err != nil {
 		klog.Fatalf("cannot build workload cluster config: %v", err)
+	}
+
+	if workloadConfig.BearerToken != "" {
+		var rt http.RoundTripper
+		if workloadConfig.WrapTransport != nil {
+			rt = workloadConfig.WrapTransport(rt)
+		}
+
+		var err error
+
+		if rt, err = transport.NewBearerAuthWithRefreshRoundTripper(workloadConfig.BearerToken, workloadConfig.BearerTokenFile, rt); err != nil {
+			klog.Fatalf("cannot build workload token refresher roundtripper: %v", err)
+		}
+
+		workloadConfig.Transport = rt
 	}
 
 	// Grab a dynamic interface that we can create informers from
