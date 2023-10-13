@@ -43,6 +43,12 @@ type Status struct {
 	// Outcome indicates what can happen when it comes to draining a
 	// specific pod.
 	Outcome OutcomeType
+	// Overrides specifies Outcomes that should be trumped by this Status.
+	// If Overrides is empty, this Status is returned immediately.
+	// If Overrides is non-empty, we continue running the remaining Rules. If a
+	// Rule is encountered that matches one of the Outcomes specified by this
+	// field, this Status will will be returned instead.
+	Overrides []OutcomeType
 	// Reason contains the reason why a pod is blocking node drain. It is
 	// set only when Outcome is BlockDrain.
 	BlockingReason drain.BlockingPodReason
