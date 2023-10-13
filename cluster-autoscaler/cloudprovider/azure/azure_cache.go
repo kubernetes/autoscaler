@@ -205,7 +205,10 @@ func (m *azureCache) fetchVirtualMachines() (map[string][]compute.VirtualMachine
 		}
 
 		tags := instance.Tags
-		vmPoolName := tags["poolName"]
+		vmPoolName := tags[aksManagedPoolNameTag]
+		if vmPoolName == nil {
+			vmPoolName = tags[legacyAKSPoolNameTag]
+		}
 		if vmPoolName == nil {
 			continue
 		}
