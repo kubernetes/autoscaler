@@ -86,10 +86,23 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 		drainCtx.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 
+	var candidates []drainability.Status
+
 	for _, r := range rs {
-		d := r.Drainable(drainCtx, pod)
-		if d.Outcome != drainability.UndefinedOutcome {
-			return d
+		status := r.Drainable(drainCtx, pod)
+		if len(status.Overrides) > 0 {
+			candidates = append(candidates, status)
+			continue
+		}
+		for _, candidate := range candidates {
+			for _, override := range candidate.Overrides {
+				if status.Outcome == override {
+					return candidate
+				}
+			}
+		}
+		if status.Outcome != drainability.UndefinedOutcome {
+			return status
 		}
 	}
 	return drainability.NewUndefinedStatus()

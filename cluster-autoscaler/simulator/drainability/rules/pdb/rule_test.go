@@ -26,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDrainable(t *testing.T) {
@@ -142,9 +144,8 @@ func TestDrainable(t *testing.T) {
 			}
 
 			got := New().Drainable(drainCtx, tc.pod)
-			if got.Outcome != tc.wantOutcome || got.BlockingReason != tc.wantReason {
-				t.Errorf("Rule.Drainable(%s) = (outcome: %v, reason: %v), want (outcome: %v, reason: %v)", tc.pod.Name, got.Outcome, got.BlockingReason, tc.wantOutcome, tc.wantReason)
-			}
+			assert.Equal(t, tc.wantReason, got.BlockingReason)
+			assert.Equal(t, tc.wantOutcome, got.Outcome)
 		})
 	}
 }
