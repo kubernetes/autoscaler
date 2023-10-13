@@ -501,6 +501,17 @@ func (csr *ClusterStateRegistry) IsNodeGroupScalingUp(nodeGroupName string) bool
 	return found
 }
 
+// HasNodeGroupStartedScaleUp returns true if the node group has started scale up regardless
+// of whether there are any upcoming nodes. This is useful in the case when the node group's
+// size reverts back to its previous size before the next UpdatesCall and we want to know
+// if a scale up for node group has started.
+func (csr *ClusterStateRegistry) HasNodeGroupStartedScaleUp(nodeGroupName string) bool {
+	csr.Lock()
+	defer csr.Unlock()
+	_, found := csr.scaleUpRequests[nodeGroupName]
+	return found
+}
+
 // AcceptableRange contains information about acceptable size of a node group.
 type AcceptableRange struct {
 	// MinNodes is the minimum number of nodes in the group.

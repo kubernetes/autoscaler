@@ -122,6 +122,7 @@ func TestEmptyOK(t *testing.T) {
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+	assert.False(t, clusterstate.HasNodeGroupStartedScaleUp("ng1"))
 
 	provider.AddNodeGroup("ng1", 0, 10, 3)
 	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), 3, now.Add(-3*time.Second))
@@ -133,6 +134,48 @@ func TestEmptyOK(t *testing.T) {
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.True(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+	assert.True(t, clusterstate.HasNodeGroupStartedScaleUp("ng1"))
+}
+
+func TestHasNodeGroupStartedScaleUp(t *testing.T) {
+	tests := map[string]struct {
+		initialSize int
+		delta       int
+	}{
+		"Target size reverts back to zero": {
+			initialSize: 0,
+			delta:       3,
+		},
+	}
+	for tn, tc := range tests {
+		t.Run(tn, func(t *testing.T) {
+			now := time.Now()
+			provider := testprovider.NewTestCloudProvider(nil, nil)
+			provider.AddNodeGroup("ng1", 0, 5, tc.initialSize)
+			fakeClient := &fake.Clientset{}
+			fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+			clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+				MaxTotalUnreadyPercentage: 10,
+				OkTotalUnreadyCount:       1,
+			}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: time.Minute}))
+			err := clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now.Add(-5*time.Second))
+			assert.NoError(t, err)
+			assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+			assert.False(t, clusterstate.HasNodeGroupStartedScaleUp("ng1"))
+
+			provider.AddNodeGroup("ng1", 0, 5, tc.initialSize+tc.delta)
+			clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), tc.delta, now.Add(-3*time.Second))
+			err = clusterstate.UpdateNodes([]*apiv1.Node{}, nil, now)
+			assert.NoError(t, err)
+			assert.True(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+			assert.True(t, clusterstate.HasNodeGroupStartedScaleUp("ng1"))
+
+			provider.AddNodeGroup("ng1", 0, 5, tc.initialSize)
+			clusterstate.Recalculate()
+			assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+			assert.True(t, clusterstate.HasNodeGroupStartedScaleUp("ng1"))
+		})
+	}
 }
 
 func TestOKOneUnreadyNode(t *testing.T) {
