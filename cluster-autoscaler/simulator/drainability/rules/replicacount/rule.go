@@ -38,6 +38,11 @@ func New(minReplicaCount int) *Rule {
 	}
 }
 
+// Name returns the name of the rule.
+func (r *Rule) Name() string {
+	return "ReplicaCount"
+}
+
 // Drainable decides what to do with replicated pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if drainCtx.Listers == nil {

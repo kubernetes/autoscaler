@@ -111,7 +111,7 @@ func TestDrainable(t *testing.T) {
 		},
 	} {
 		t.Run(desc, func(t *testing.T) {
-			got := tc.rules.Drainable(nil, nil)
+			got := tc.rules.Drainable(nil, &apiv1.Pod{})
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Drainable(): got status diff (-want +got):\n%s", diff)
 			}
@@ -121,6 +121,10 @@ func TestDrainable(t *testing.T) {
 
 type fakeRule struct {
 	status drainability.Status
+}
+
+func (r fakeRule) Name() string {
+	return "FakeRule"
 }
 
 func (r fakeRule) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {

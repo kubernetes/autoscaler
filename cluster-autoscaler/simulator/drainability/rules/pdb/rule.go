@@ -32,6 +32,11 @@ func New() *Rule {
 	return &Rule{}
 }
 
+// Name returns the name of the rule.
+func (r *Rule) Name() string {
+	return "PDB"
+}
+
 // Drainable decides how to handle pods with pdbs on node drain.
 func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	for _, pdb := range drainCtx.RemainingPdbTracker.MatchingPdbs(pod) {
