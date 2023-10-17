@@ -60,9 +60,7 @@ func NewLimitsRangeCalculator(f informers.SharedInformerFactory) (*limitsChecker
 	go informer.Run(stopCh)
 	ok := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 	if !ok {
-		if !f.Core().V1().LimitRanges().Informer().HasSynced() {
-			return nil, fmt.Errorf("informer did not sync")
-		}
+		return nil, fmt.Errorf("informer did not sync")
 	}
 	return &limitsChecker{limitRangeLister}, nil
 }
