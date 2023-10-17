@@ -5,10 +5,10 @@ author: kisieland
 ## Background
 
 Currently CA does not provide any way to express that a group of pods would like
-to have a capacity available.  
+to have a capacity available.
 This is caused by the fact that each CA loop picks a group of unschedulable pods
 and works on provisioning capacity for them, meaning that the grouping is random
-(as it depends on the kube-scheduler and CA loop interactions).  
+(as it depends on the kube-scheduler and CA loop interactions).
 This is especially problematic in couple of cases:
 
   - Users would like to have all-or-nothing semantics for their workloads.
@@ -25,11 +25,11 @@ This is especially problematic in couple of cases:
 ### High level
 
 Provisioning Request (abbr. ProvReq) is a new namespaced Custom Resource that
-aims to allow users to ask CA for capacity for groups of pods.  
+aims to allow users to ask CA for capacity for groups of pods.
 It allows users to express the fact that group of pods is connected and should
-be threated as one entity.  
+be threated as one entity.
 This AEP proposes an API that can have multiple provisioning classes and can be
-extended by cloud provider specific ones.  
+extended by cloud provider specific ones.
 This object is meant as one-shot request to CA, so that if CA fails to provision
 the capacity it is up to users to retry (such retry functionality can be added
 later on).
@@ -105,8 +105,8 @@ type ProvisioningRequestSpec struct {
 }
 
 type PodSet struct {
-	// PodTemplateRef is a reference to a PodTemplate object that is representing pods 
-	// that will consume this reservation (must be within the same namespace). 
+	// PodTemplateRef is a reference to a PodTemplate object that is representing pods
+	// that will consume this reservation (must be within the same namespace).
 	// Users need to make sure that the  fields relevant to scheduler (e.g. node selector tolerations)
 	// are consistent between this template and actual pods consuming the Provisioning Request.
 	//
@@ -178,19 +178,21 @@ value of `--scale-down-unneeded-time` flag.
 ### Adding pods that consume given ProvisioningRequest
 
 To avoid generating double scale-ups and exclude pods that are meant to consume
-given capacity CA should be able to differentiate those from all other pods.  
-To do so users need to specify the following pod annotation (it is not required
-in ProvReq’s template, though it can be specified):
+given capacity CA should be able to differentiate those from all other pods.
+To achieve this users need to specify the following pod annotations (those are
+not required in ProvReq’s template, though can be specified):
 
 ```yaml
 annotations:
+    "cluster-autoscaler.kubernetes.io/provisioning-class-name": "provreq-class-name"
     "cluster-autoscaler.kubernetes.io/consume-provisioning-request": "provreq-name"
 ```
 
-If it is provided for the pods that consume the ProvReq with `check-capacity.kubernetes.io` class,
-the CA will not provision the capacity, even if it was needed (as some other pods might have been 
+If those are provided for the pods that consume the ProvReq with `check-capacity.kubernetes.io` class,
+the CA will not provision the capacity, even if it was needed (as some other pods might have been
 scheduled on it) and will result in visibility events passed to the ProvReq and pods.
-If it is not passed the CA will behave normally and just provision the capacity if it needed.
+If those are not passed the CA will behave normally and just provision the capacity if it needed.
+Both annotation are required and CA will not work correctly if only one of them is passed.
 
 Note: CA will match all pods with this annotation to a corresponding ProvReq and
 ignore them when executing a scale-up loop (so that is up to users to make sure
@@ -312,9 +314,9 @@ Possible CRD definition:
 ```go
 // ProvisioningClass is a way to express provisioning classes available in the cluster.
 type ProvisioningClass struct {
-	// Name denotes the name of the object, which is to be used in the ProvisioningClass 
+	// Name denotes the name of the object, which is to be used in the ProvisioningClass
 	// field in Provisioning Request CRD.
-	// 
+	//
 	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 
