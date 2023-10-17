@@ -20,11 +20,14 @@ import (
 	"reflect"
 
 	apiv1 "k8s.io/api/core/v1"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	klog "k8s.io/klog/v2"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 )
 
 // PreFilteringScaleDownNodeProcessor filters out scale down candidates from nodegroup with
@@ -56,6 +59,20 @@ func (n *PreFilteringScaleDownNodeProcessor) GetScaleDownCandidates(ctx *context
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			klog.V(4).Infof("Node %s should not be processed by cluster autoscaler (no node group config)", node.Name)
 			continue
+		}
+		nr, err := kube_util.GetNodeReadiness(node)
+		if err != nil {
+			klog.Errorf("Unable to determine node %s readiness, err: %v", node.Name, err)
+		}
+		if !nr.Ready {
+			if cloudprovider.IsNodeGroupHibernateEnabled(nodeGroup) {
+				if !taints.HasShutdownTaint(node) {
+					continue
+				}
+			} else {
+				klog.Infof("Node %s should not be processed by cluster autoscaler (NotReady)", node.Name)
+				continue
+			}
 		}
 		size, found := nodeGroupSize[nodeGroup.Id()]
 		if !found {

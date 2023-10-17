@@ -621,11 +621,13 @@ func TestDeleteNodes(t *testing.T) {
 		assert.Equal(t, 1, targetSize)
 
 		// Ensure that the status for the instances is Deleting
-		instance0, found := scaleSet.getInstanceByProviderID(nodesToDelete[0].Spec.ProviderID)
+		instance0, found, err := scaleSet.getInstanceByProviderID(nodesToDelete[0].Spec.ProviderID)
+		assert.NoError(t, err)
 		assert.True(t, found, true)
 		assert.Equal(t, instance0.Status.State, cloudprovider.InstanceDeleting)
 
-		instance2, found := scaleSet.getInstanceByProviderID(nodesToDelete[1].Spec.ProviderID)
+		instance2, found, err := scaleSet.getInstanceByProviderID(nodesToDelete[1].Spec.ProviderID)
+		assert.NoError(t, err)
 		assert.True(t, found, true)
 		assert.Equal(t, instance2.Status.State, cloudprovider.InstanceDeleting)
 	}
@@ -734,7 +736,8 @@ func TestDeleteNodeUnregistered(t *testing.T) {
 		assert.Equal(t, 2, targetSize)
 
 		// Ensure that the status for the instances is Deleting
-		instance0, found := scaleSet.getInstanceByProviderID(nodesToDelete[0].Spec.ProviderID)
+		instance0, found, err := scaleSet.getInstanceByProviderID(nodesToDelete[0].Spec.ProviderID)
+		assert.NoError(t, err)
 		assert.True(t, found, true)
 		assert.Equal(t, instance0.Status.State, cloudprovider.InstanceDeleting)
 	}

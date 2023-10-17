@@ -200,4 +200,9 @@ spec:
                 secretKeyRef:
                   key: VMType
                   name: cluster-autoscaler-azure
+            - name: AZURE_SCALE_DOWN_POLICY
+              valueFrom:
+                secretKeyRef:
+                  key: ScaleDownPolicy
+                  name: cluster-autoscaler-azure
       restartPolicy: Always

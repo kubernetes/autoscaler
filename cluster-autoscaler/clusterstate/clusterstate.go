@@ -401,9 +401,18 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 	defer csr.Unlock()
 
 	totalUnready := len(csr.totalReadiness.Unready)
+	// initialize nonHibernatingUnready to totalUnready
+	nonHibernatingUnready := totalUnready
 
-	if totalUnready > csr.config.OkTotalUnreadyCount &&
-		float64(totalUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*float64(len(csr.nodes)) {
+	// if any of our node groups is enabled for Hibernate, we recalculate nonHibernatingUnready
+	if cloudprovider.HasAnyHibernateEnabledNodeGroup(csr.cloudProvider.NodeGroups()) {
+		hibernatingNodes := len(csr.totalReadiness.Hibernating)
+		nonHibernatingUnready = hibernatingNodes - totalUnready
+		klog.V(5).Infof("IsClusterHealthy - totalUnready: %d, hibernatingNodes: %d", totalUnready, hibernatingNodes)
+	}
+
+	if nonHibernatingUnready > csr.config.OkTotalUnreadyCount &&
+		float64(nonHibernatingUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*float64(len(csr.nodes)) {
 		return false
 	}
 
@@ -411,7 +420,8 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 }
 
 // IsNodeGroupHealthy returns true if the node group health is within the acceptable limits
-func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
+func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroup cloudprovider.NodeGroup) bool {
+	nodeGroupName := nodeGroup.Id()
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
 		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
@@ -432,6 +442,9 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	// Too few nodes, something is missing. Below the expected node count.
 	if len(readiness.Ready) < acceptable.MinNodes {
 		unjustifiedUnready += acceptable.MinNodes - len(readiness.Ready)
+	}
+	if cloudprovider.IsNodeGroupHibernateEnabled(nodeGroup) {
+		unjustifiedUnready -= len(readiness.Hibernating)
 	}
 	// TODO: verify against max nodes as well.
 	if unjustifiedUnready > csr.config.OkTotalUnreadyCount &&
@@ -467,7 +480,7 @@ func (csr *ClusterStateRegistry) BackoffStatusForNodeGroup(nodeGroup cloudprovid
 
 // NodeGroupScaleUpSafety returns information about node group safety to be scaled up now.
 func (csr *ClusterStateRegistry) NodeGroupScaleUpSafety(nodeGroup cloudprovider.NodeGroup, now time.Time) NodeGroupScalingSafety {
-	isHealthy := csr.IsNodeGroupHealthy(nodeGroup.Id())
+	isHealthy := csr.IsNodeGroupHealthy(nodeGroup)
 	backoffStatus := csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
 	return NodeGroupScalingSafety{SafeToScale: isHealthy && !backoffStatus.IsBackedOff, Healthy: isHealthy, BackoffStatus: backoffStatus}
 }
@@ -591,6 +604,8 @@ type Readiness struct {
 	LongUnregistered []string
 	// Names of nodes that haven't yet registered.
 	Unregistered []string
+	// Number of hibernated nodes that exist in K8s
+	Hibernating []string
 	// Time when the readiness was measured.
 	Time time.Time
 	// Names of nodes that are Unready due to missing resources.
@@ -603,7 +618,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	perNodeGroup := make(map[string]Readiness)
 	total := Readiness{Time: currentTime}
 
-	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness) Readiness {
+	update := func(current Readiness, node *apiv1.Node, nr kube_util.NodeReadiness, nodeGroup cloudprovider.NodeGroup) Readiness {
 		current.Registered = append(current.Registered, node.Name)
 		if _, isDeleted := csr.deletedNodes[node.Name]; isDeleted {
 			current.Deleted = append(current.Deleted, node.Name)
@@ -611,6 +626,9 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			current.Ready = append(current.Ready, node.Name)
 		} else if node.CreationTimestamp.Time.Add(MaxNodeStartupTime).After(currentTime) {
 			current.NotStarted = append(current.NotStarted, node.Name)
+		} else if cloudprovider.IsNodeGroupHibernateEnabled(nodeGroup) && taints.HasShutdownTaint(node) || taints.HasUnreachableTaint(node) {
+			current.Hibernating = append(current.Hibernating, node.Name)
+			current.Unready = append(current.Unready, node.Name)
 		} else {
 			current.Unready = append(current.Unready, node.Name)
 			if nr.Reason == kube_util.ResourceUnready {
@@ -633,9 +651,9 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 				klog.Warningf("Failed to get readiness info for %s: %v", node.Name, errReady)
 			}
 		} else {
-			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, nr)
+			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, nr, nodeGroup)
 		}
-		total = update(total, node, nr)
+		total = update(total, node, nr, nodeGroup)
 	}
 
 	for _, unregistered := range csr.unregisteredNodes {
@@ -784,7 +802,7 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 
 		// Health.
 		nodeGroupStatus.Health = buildHealthStatusNodeGroup(
-			csr.IsNodeGroupHealthy(nodeGroup.Id()), readiness, acceptable, nodeGroup.MinSize(), nodeGroup.MaxSize(), nodeGroupLastStatus.Health)
+			csr.IsNodeGroupHealthy(nodeGroup), readiness, acceptable, nodeGroup.MinSize(), nodeGroup.MaxSize(), nodeGroupLastStatus.Health)
 
 		// Scale up.
 		nodeGroupStatus.ScaleUp = csr.buildScaleUpStatusNodeGroup(
@@ -985,6 +1003,12 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() (upcomingCounts map[string]i
 		ar := csr.acceptableRanges[id]
 		// newNodes is the number of nodes that
 		newNodes := ar.CurrentTarget - (len(readiness.Ready) + len(readiness.Unready) + len(readiness.LongUnregistered))
+		if cloudprovider.IsNodeGroupHibernateEnabled(nodeGroup) {
+			newNodes -= len(readiness.Hibernating)
+		}
+		klog.V(3).Infof("newNodes: %d, currentTarget: %d, hibernating: %d, readinessReady: %d, readinessUnready: %d, "+
+			"readiness.LongUnregistered: %d for nodeGroup %s", newNodes, ar.CurrentTarget, len(readiness.Hibernating), len(readiness.Ready),
+			len(readiness.Unready), len(readiness.LongUnregistered), id)
 		if newNodes <= 0 {
 			// Negative value is unlikely but theoretically possible.
 			continue

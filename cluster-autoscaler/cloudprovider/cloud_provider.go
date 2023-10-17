@@ -247,6 +247,23 @@ type NodeGroup interface {
 	GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error)
 }
 
+// PolicyNodeGroup is a wrapper for a nodegroup that can have scaling policies
+type PolicyNodeGroup interface {
+	// ScaleDownPolicy returns whether this nodegroup instances will be deleted or hibernated on scale down
+	ScaleDownPolicy() ScaleDownPolicy
+}
+
+// ScaleDownPolicy is a string representation of the ScaleDownPolicy
+type ScaleDownPolicy string
+
+const (
+	// Delete means that on scale down, nodes will be deleted
+	Delete ScaleDownPolicy = "Delete"
+	// Hibernate means that on scale down, node infrastructure will be stopped
+	// and on scale-up they will be prioritized and restarted
+	Hibernate ScaleDownPolicy = "Hibernate"
+)
+
 // Instance represents a cloud-provider node. The node does not necessarily map to k8s node
 // i.e it does not have to be registered in k8s cluster despite being returned by NodeGroup.Nodes()
 // method. Also it is sane to have Instance object for nodes which are being created or deleted.
@@ -276,6 +293,10 @@ const (
 	InstanceCreating InstanceState = 2
 	// InstanceDeleting means instance is being deleted
 	InstanceDeleting InstanceState = 3
+	// InstanceHibernated means that the instance is hibernated for future scale up
+	InstanceHibernated InstanceState = 4
+	// InstanceHibernating means the instance is currently being hibernated
+	InstanceHibernating InstanceState = 5
 )
 
 // InstanceErrorInfo provides information about error condition on instance
@@ -350,6 +371,27 @@ func IsCustomResource(resourceName string) bool {
 func ContainsCustomResources(resources []string) bool {
 	for _, resource := range resources {
 		if IsCustomResource(resource) {
+			return true
+		}
+	}
+	return false
+}
+
+func IsNodeGroupHibernateEnabled(ng NodeGroup) bool {
+	if policyNg, ok := ng.(PolicyNodeGroup); ok && policyNg.ScaleDownPolicy() == Hibernate {
+		return true
+	}
+	return false
+}
+
+// HasAnyHibernateEnabledNodeGroup returns true iff any nodegroup has a ScaleDown policy of Hibernate
+func HasAnyHibernateEnabledNodeGroup(ngs []NodeGroup) bool {
+	for _, ng := range ngs {
+		policyNg, ok := ng.(PolicyNodeGroup)
+		if !ok {
+			return false
+		}
+		if policyNg.ScaleDownPolicy() == Hibernate {
 			return true
 		}
 	}

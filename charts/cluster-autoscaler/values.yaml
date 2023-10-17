@@ -110,6 +110,10 @@ azureVMType: "vmss"
 # azureEnableForceDelete -- Whether to force delete VMs or VMSS instances when scaling down.
 azureEnableForceDelete: false
 
+# azureScaleDownPolicy -- Azure ScaleDownPolicy, either "Delete" (default) or "Hibernate"
+# Only relevant if `cloudProvider=azure`
+azureScaleDownPolicy: "Delete"
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
 
