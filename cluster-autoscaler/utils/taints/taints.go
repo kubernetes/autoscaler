@@ -19,6 +19,7 @@ package taints
 import (
 	"context"
 	"fmt"
+	"maps"
 	"strconv"
 	"strings"
 	"time"
@@ -54,40 +55,16 @@ const (
 
 	// AWS: Indicates that a node has volumes stuck in attaching state and hence it is not fit for scheduling more pods
 	awsNodeWithImpairedVolumesTaint = "NodeWithImpairedVolumes"
+
+	// statusNodeTaintReportedType is the value used when reporting node taint count defined as status taint in given taintConfig.
+	statusNodeTaintReportedType = "status-taint"
+
+	// startupNodeTaintReportedType is the value used when reporting node taint count defined as startup taint in given taintConfig.
+	startupNodeTaintReportedType = "startup-taint"
+
+	// unlistedNodeTaintReportedType is the value used when reporting node taint count in case taint key is other than defined in explicitlyReportedNodeTaints and taintConfig.
+	unlistedNodeTaintReportedType = "other"
 )
-
-// TaintKeySet is a set of taint key
-type TaintKeySet map[string]bool
-
-// TaintConfig is a config of taints that require special handling
-type TaintConfig struct {
-	StartupTaints        TaintKeySet
-	StatusTaints         TaintKeySet
-	StartupTaintPrefixes []string
-	StatusTaintPrefixes  []string
-}
-
-// NewTaintConfig returns the taint config extracted from options
-func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
-	startupTaints := make(TaintKeySet)
-	for _, taintKey := range opts.StartupTaints {
-		klog.V(4).Infof("Startup taint %s on all NodeGroups", taintKey)
-		startupTaints[taintKey] = true
-	}
-
-	statusTaints := make(TaintKeySet)
-	for _, taintKey := range opts.StatusTaints {
-		klog.V(4).Infof("Status taint %s on all NodeGroups", taintKey)
-		statusTaints[taintKey] = true
-	}
-
-	return TaintConfig{
-		StartupTaints:        startupTaints,
-		StatusTaints:         statusTaints,
-		StartupTaintPrefixes: []string{IgnoreTaintPrefix, StartupTaintPrefix},
-		StatusTaintPrefixes:  []string{StatusTaintPrefix},
-	}
-}
 
 var (
 	// NodeConditionTaints lists taint keys used as node conditions
@@ -109,6 +86,68 @@ var (
 	maxRetryDeadline      time.Duration = 5 * time.Second
 	conflictRetryInterval time.Duration = 750 * time.Millisecond
 )
+
+// TaintKeySet is a set of taint key
+type TaintKeySet map[string]bool
+
+// TaintConfig is a config of taints that require special handling
+type TaintConfig struct {
+	startupTaints            TaintKeySet
+	statusTaints             TaintKeySet
+	startupTaintPrefixes     []string
+	statusTaintPrefixes      []string
+	explicitlyReportedTaints TaintKeySet
+}
+
+// NewTaintConfig returns the taint config extracted from options
+func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
+	startupTaints := make(TaintKeySet)
+	for _, taintKey := range opts.StartupTaints {
+		klog.V(4).Infof("Startup taint %s on all NodeGroups", taintKey)
+		startupTaints[taintKey] = true
+	}
+
+	statusTaints := make(TaintKeySet)
+	for _, taintKey := range opts.StatusTaints {
+		klog.V(4).Infof("Status taint %s on all NodeGroups", taintKey)
+		statusTaints[taintKey] = true
+	}
+
+	explicitlyReportedTaints := TaintKeySet{
+		ToBeDeletedTaint:       true,
+		DeletionCandidateTaint: true,
+	}
+	maps.Copy(explicitlyReportedTaints, NodeConditionTaints)
+
+	return TaintConfig{
+		startupTaints:            startupTaints,
+		statusTaints:             statusTaints,
+		startupTaintPrefixes:     []string{IgnoreTaintPrefix, StartupTaintPrefix},
+		statusTaintPrefixes:      []string{StatusTaintPrefix},
+		explicitlyReportedTaints: explicitlyReportedTaints,
+	}
+}
+
+// IsStartupTaint checks whether given taint is a startup taint.
+func (tc TaintConfig) IsStartupTaint(taint string) bool {
+	if _, ok := tc.startupTaints[taint]; ok {
+		return true
+	}
+	return matchesAnyPrefix(tc.startupTaintPrefixes, taint)
+}
+
+// IsStatusTaint checks whether given taint is a status taint.
+func (tc TaintConfig) IsStatusTaint(taint string) bool {
+	if _, ok := tc.statusTaints[taint]; ok {
+		return true
+	}
+	return matchesAnyPrefix(tc.statusTaintPrefixes, taint)
+}
+
+func (tc TaintConfig) isExplicitlyReportedTaint(taint string) bool {
+	_, ok := tc.explicitlyReportedTaints[taint]
+	return ok
+}
 
 // getKeyShortName converts taint key to short name for logging
 func getKeyShortName(key string) string {
@@ -361,18 +400,8 @@ func SanitizeTaints(taints []apiv1.Taint, taintConfig TaintConfig) []apiv1.Taint
 			continue
 		}
 
-		if _, exists := taintConfig.StartupTaints[taint.Key]; exists {
-			klog.V(4).Infof("Removing startup taint %s, when creating template from node", taint.Key)
-			continue
-		}
-		shouldRemoveBasedOnPrefix := matchesAnyPrefix(taintConfig.StartupTaintPrefixes, taint.Key) || matchesAnyPrefix(taintConfig.StatusTaintPrefixes, taint.Key)
-		if shouldRemoveBasedOnPrefix {
-			klog.V(4).Infof("Removing taint %s based on prefix, when creation template from node", taint.Key)
-			continue
-		}
-
-		if _, exists := taintConfig.StatusTaints[taint.Key]; exists {
-			klog.V(4).Infof("Removing status taint %s, when creating template from node", taint.Key)
+		if taintConfig.IsStartupTaint(taint.Key) || taintConfig.IsStatusTaint(taint.Key) {
+			klog.V(4).Infof("Removing taint %s, when creating template from node", taint.Key)
 			continue
 		}
 
@@ -394,8 +423,7 @@ func FilterOutNodesWithStartupTaints(taintConfig TaintConfig, allNodes, readyNod
 		}
 		ready := true
 		for _, t := range node.Spec.Taints {
-			_, hasStartupTaint := taintConfig.StartupTaints[t.Key]
-			if hasStartupTaint || matchesAnyPrefix(taintConfig.StartupTaintPrefixes, t.Key) {
+			if taintConfig.IsStartupTaint(t.Key) {
 				ready = false
 				nodesWithStartupTaints[node.Name] = kubernetes.GetUnreadyNodeCopy(node, kubernetes.StartupNodes)
 				klog.V(3).Infof("Overriding status of node %v, which seems to have startup taint %q", node.Name, t.Key)
@@ -415,4 +443,34 @@ func FilterOutNodesWithStartupTaints(taintConfig TaintConfig, allNodes, readyNod
 		}
 	}
 	return newAllNodes, newReadyNodes
+}
+
+// CountNodeTaints counts used node taints.
+func CountNodeTaints(nodes []*apiv1.Node, taintConfig TaintConfig) map[string]int {
+	foundTaintsCount := make(map[string]int)
+	for _, node := range nodes {
+		for _, taint := range node.Spec.Taints {
+			key := getTaintTypeToReport(taint.Key, taintConfig)
+			foundTaintsCount[key] += 1
+		}
+	}
+	return foundTaintsCount
+}
+
+func getTaintTypeToReport(key string, taintConfig TaintConfig) string {
+	// Track deprecated taints.
+	if strings.HasPrefix(key, IgnoreTaintPrefix) {
+		return IgnoreTaintPrefix
+	}
+
+	if taintConfig.isExplicitlyReportedTaint(key) {
+		return key
+	}
+	if taintConfig.IsStartupTaint(key) {
+		return startupNodeTaintReportedType
+	}
+	if taintConfig.IsStatusTaint(key) {
+		return statusNodeTaintReportedType
+	}
+	return unlistedNodeTaintReportedType
 }

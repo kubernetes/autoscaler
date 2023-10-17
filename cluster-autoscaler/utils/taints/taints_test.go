@@ -24,6 +24,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -472,8 +473,8 @@ func TestFilterOutNodesWithStartupTaints(t *testing.T) {
 				nodes = append(nodes, tc.node)
 			}
 			taintConfig := TaintConfig{
-				StartupTaints:        tc.startupTaints,
-				StartupTaintPrefixes: tc.startupTaintsPrefixes,
+				startupTaints:        tc.startupTaints,
+				startupTaintPrefixes: tc.startupTaintsPrefixes,
 			}
 			allNodes, readyNodes := FilterOutNodesWithStartupTaints(taintConfig, nodes, nodes)
 			assert.Equal(t, tc.allNodes, len(allNodes))
@@ -562,13 +563,112 @@ func TestSanitizeTaints(t *testing.T) {
 		},
 	}
 	taintConfig := TaintConfig{
-		StartupTaints:        map[string]bool{"ignore-me": true},
-		StatusTaints:         map[string]bool{"status-me": true},
-		StartupTaintPrefixes: []string{IgnoreTaintPrefix, StartupTaintPrefix},
+		startupTaints:        map[string]bool{"ignore-me": true},
+		statusTaints:         map[string]bool{"status-me": true},
+		startupTaintPrefixes: []string{IgnoreTaintPrefix, StartupTaintPrefix},
 	}
 
 	newTaints := SanitizeTaints(node.Spec.Taints, taintConfig)
 	require.Equal(t, 2, len(newTaints))
 	assert.Equal(t, newTaints[0].Key, StatusTaintPrefix+"some-taint")
 	assert.Equal(t, newTaints[1].Key, "test-taint")
+}
+
+func TestCountNodeTaints(t *testing.T) {
+	node := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-count-node-taints",
+			CreationTimestamp: metav1.NewTime(time.Now()),
+		},
+		Spec: apiv1.NodeSpec{
+			Taints: []apiv1.Taint{
+				{
+					Key:    IgnoreTaintPrefix + "another-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    StatusTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    StartupTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "test-taint",
+					Value:  "test2",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    ToBeDeletedTaint,
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "ignore-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "status-me",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "node.kubernetes.io/memory-pressure",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "ignore-taint.cluster-autoscaler.kubernetes.io/to-be-ignored",
+					Value:  "myValue2",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{},
+		},
+	}
+	node2 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "node-count-node-taints",
+			CreationTimestamp: metav1.NewTime(time.Now()),
+		},
+		Spec: apiv1.NodeSpec{
+			Taints: []apiv1.Taint{
+				{
+					Key:    StatusTaintPrefix + "some-taint",
+					Value:  "myValue",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+				{
+					Key:    "node.kubernetes.io/unschedulable",
+					Value:  "1",
+					Effect: apiv1.TaintEffectNoSchedule,
+				},
+			},
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{},
+		},
+	}
+	taintConfig := NewTaintConfig(config.AutoscalingOptions{
+		StatusTaints:  []string{"status-me"},
+		StartupTaints: []string{"ignore-me"},
+	})
+	want := map[string]int{
+		"ignore-taint.cluster-autoscaler.kubernetes.io/": 2,
+		"ToBeDeletedByClusterAutoscaler":                 1,
+		"node.kubernetes.io/memory-pressure":             1,
+		"node.kubernetes.io/unschedulable":               1,
+		"other":                                          1,
+		"startup-taint":                                  2,
+		"status-taint":                                   3,
+	}
+	got := CountNodeTaints([]*apiv1.Node{node, node2}, taintConfig)
+	assert.Equal(t, want, got)
 }
