@@ -955,6 +955,7 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 		klog.Errorf("Failed to list ready nodes: %v", err)
 		return nil, nil, caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
+	a.reportTaintsCount(allNodes)
 
 	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
 	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
@@ -976,6 +977,13 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosF
 	core_utils.UpdateClusterStateMetrics(a.clusterStateRegistry)
 
 	return nil
+}
+
+func (a *StaticAutoscaler) reportTaintsCount(nodes []*apiv1.Node) {
+	foundTaints := taints.CountNodeTaints(nodes, a.taintConfig)
+	for taintType, count := range foundTaints {
+		metrics.ObserveNodeTaintsCount(taintType, float64(count))
+	}
 }
 
 func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
