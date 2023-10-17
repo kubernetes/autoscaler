@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/klogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 
 	apiv1 "k8s.io/api/core/v1"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -78,6 +79,21 @@ func (c *Checker) FilterOutUnremovable(context *context.AutoscalingContext, scal
 			klog.Errorf("Can't retrieve scale-down candidate %s from snapshot, err: %v", node.Name, err)
 			ineligible = append(ineligible, &simulator.UnremovableNode{Node: node, Reason: simulator.UnexpectedError})
 			continue
+		}
+
+		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
+			continue
+		}
+		if cloudprovider.IsNodeGroupHibernateEnabled(nodeGroup) {
+			nr, err := kube_util.GetNodeReadiness(node)
+			if err != nil {
+				klog.Errorf("Unable to determine node %s readiness, err: %v", node.Name, err)
+			}
+			if taints.HasShutdownTaint(node) && !nr.Ready {
+				continue
+			}
 		}
 
 		// Skip nodes that were recently checked.

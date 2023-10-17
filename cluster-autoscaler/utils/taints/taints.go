@@ -249,6 +249,16 @@ func HasDeletionCandidateTaint(node *apiv1.Node) bool {
 	return HasTaint(node, DeletionCandidateTaint)
 }
 
+// HasShutdownTaint returns true if cloudprovider node shutdown taint is applied on the node.
+func HasShutdownTaint(node *apiv1.Node) bool {
+	return HasTaint(node, cloudproviderapi.TaintNodeShutdown)
+}
+
+// HasUnreachableTaint returns true if unreachable taint is applied on the node.
+func HasUnreachableTaint(node *apiv1.Node) bool {
+	return HasTaint(node, apiv1.TaintNodeUnreachable)
+}
+
 // HasTaint returns true if the specified taint is applied on the node.
 func HasTaint(node *apiv1.Node, taintKey string) bool {
 	for _, taint := range node.Spec.Taints {

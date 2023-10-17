@@ -33,6 +33,8 @@ import (
 )
 
 const (
+	azurePrefix = "azure://"
+
 	vmTypeVMSS     = "vmss"
 	vmTypeStandard = "standard"
 

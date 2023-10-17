@@ -96,6 +96,10 @@ azureUseWorkloadIdentityExtension: false
 # azureVMType -- Azure VM type.
 azureVMType: "vmss"
 
+# azureScaleDownPolicy -- Azure ScaleDownPolicy, either "Delete" (default) or "Hibernate"
+# Only relevant if `cloudProvider=azure`
+azureScaleDownPolicy: "Delete"
+
 # cloudConfigPath -- Configuration file for cloud provider.
 cloudConfigPath: ""
 
