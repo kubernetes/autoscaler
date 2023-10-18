@@ -156,6 +156,23 @@ func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	return scheduledPods
 }
 
+// UnknownPods is a helper method that returns all pods which are not yet processed by the scheduler
+func UnknownPods(allPods []*apiv1.Pod) []*apiv1.Pod {
+	var unknownPods []*apiv1.Pod
+	for _, pod := range allPods {
+		// Make sure it's not scheduled or deleted
+		if pod.Spec.NodeName != "" || pod.GetDeletionTimestamp() != nil {
+			continue
+		}
+		// Make sure it's not unschedulable
+		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+		if condition == nil || (condition.Status == apiv1.ConditionFalse && condition.Reason == "") {
+			unknownPods = append(unknownPods, pod)
+		}
+	}
+	return unknownPods
+}
+
 // UnschedulablePods is a helper method that returns all unschedulable pods from given pod list.
 func UnschedulablePods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
