@@ -120,9 +120,3 @@ func (b *exponentialBackoff) RemoveStaleBackoffData(currentTime time.Time) {
 		}
 	}
 }
-
-// IsNodeGroupOutOfResources returns true if the given node group is out of resources.
-func (b *exponentialBackoff) IsNodeGroupOutOfResources(nodeGroup cloudprovider.NodeGroup) bool {
-	backoffInfo, found := b.backoffInfo[b.nodeGroupKey(nodeGroup)]
-	return found && backoffInfo.errorClass == cloudprovider.OutOfResourcesErrorClass
-}
