@@ -147,8 +147,9 @@ func NewStaticAutoscaler(
 	drainabilityRules rules.Rules) *StaticAutoscaler {
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
+		MaxTotalUnreadyPercentage:                  opts.MaxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:                        opts.OkTotalUnreadyCount,
+		NodeGroupRemovePersistentErrorBackoffEarly: opts.NodeGroupRemovePersistentErrorBackoffEarly,
 	}
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, autoscalingKubeClients.LogRecorder, backoff, processors.NodeGroupConfigProcessor)
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
