@@ -249,8 +249,8 @@ type AutoscalingOptions struct {
 	MaxNodeGroupBackoffDuration time.Duration
 	// NodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.
 	NodeGroupBackoffResetTimeout time.Duration
-	// NodeGroupKeepBackoffOutOfResources is whether a backoff can be removed before expiration when a scale-up fails due to the cloud provider being out of resources.
-	NodeGroupKeepBackoffOutOfResources bool
+	// NodeGroupRemovePersistentErrorBackoffEarly is whether a backoff can be removed before expiration when a scale-up partially fails due to a likely persistent error.
+	NodeGroupRemovePersistentErrorBackoffEarly bool
 	// MaxScaleDownParallelism is the maximum number of nodes (both empty and needing drain) that can be deleted in parallel.
 	MaxScaleDownParallelism int
 	// MaxDrainParallelism is the maximum number of nodes needing drain, that can be drained and deleted in parallel.

@@ -484,6 +484,95 @@ func TestRegisterScaleDown(t *testing.T) {
 	assert.Empty(t, clusterstate.GetScaleUpFailures())
 }
 
+func TestRemovePersistentErrorBackoffEarlyEnabled(t *testing.T) {
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", ng1_1)
+	assert.NotNil(t, provider)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage:                  10,
+		OkTotalUnreadyCount:                        1,
+		NodeGroupRemovePersistentErrorBackoffEarly: true,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+
+	now := time.Now()
+
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(4)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), 3, now)
+	assert.True(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+
+	// Fail two nodes with a persistent and a non-persistent error
+	clusterstate.registerFailedScaleUpNoLock(provider.GetNodeGroup("ng1"), metrics.CloudProviderError, cloudprovider.OutOfResourcesErrorClass, string(metrics.CloudProviderError), "", "", now)
+	clusterstate.registerFailedScaleUpNoLock(provider.GetNodeGroup("ng1"), metrics.CloudProviderError, cloudprovider.OtherErrorClass, string(metrics.CloudProviderError), "", "", now)
+	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), -2, now)
+	assert.Equal(t, 2, len(clusterstate.scaleUpRequests["ng1"].ErrorClasses))
+	assert.True(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+
+	// Reduce the target size to original value to complete the scale-up and trigger the backoff early removal
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(1)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+	assert.False(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+}
+
+func TestRemovePersistentErrorBackoffEarlyDisabled(t *testing.T) {
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", ng1_1)
+	assert.NotNil(t, provider)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false, "my-cool-configmap")
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage:                  10,
+		OkTotalUnreadyCount:                        1,
+		NodeGroupRemovePersistentErrorBackoffEarly: false,
+	}, fakeLogRecorder, newBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
+
+	now := time.Now()
+
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(3)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), 2, now)
+	assert.True(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+
+	// Fail one node with a persistent error
+	clusterstate.registerFailedScaleUpNoLock(provider.GetNodeGroup("ng1"), metrics.CloudProviderError, cloudprovider.OutOfResourcesErrorClass, string(metrics.CloudProviderError), "", "", now)
+	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), -1, now)
+	assert.True(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+
+	// Confirm the persistent error backoff is not removed early
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(1)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+	assert.True(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+
+	// Remove the backoff and scale up again
+	clusterstate.backoff.RemoveBackoff(provider.GetNodeGroup("ng1"), nil)
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(3)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), 2, now)
+	assert.False(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+	assert.True(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+
+	// Fail one node with a non-persistent error
+	clusterstate.registerFailedScaleUpNoLock(provider.GetNodeGroup("ng1"), metrics.CloudProviderError, cloudprovider.OtherErrorClass, string(metrics.CloudProviderError), "", "", now)
+	clusterstate.RegisterOrUpdateScaleUp(provider.GetNodeGroup("ng1"), -1, now)
+	assert.True(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+
+	// Complete the scale-up and confirm the backoff is removed early
+	provider.GetNodeGroup("ng1").(*testprovider.TestNodeGroup).SetTargetSize(1)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now)
+	assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+	assert.False(t, clusterstate.backoff.IsBackedOff(provider.GetNodeGroup("ng1"), nil, now))
+}
+
 func TestUpcomingNodes(t *testing.T) {
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	now := time.Now()
