@@ -135,12 +135,13 @@ var (
 		}, []string{"node_group_type"},
 	)
 
-	unschedulablePodsCount = k8smetrics.NewGauge(
+	// Unschedulable pod count can be from scheduler-marked-unschedulable pods or not-yet-processed pods (unknown)
+	unschedulablePodsCount = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unschedulable_pods_count",
 			Help:      "Number of unschedulable pods in the cluster.",
-		},
+		}, []string{"count_type"},
 	)
 
 	maxNodesCount = k8smetrics.NewGauge(
@@ -472,8 +473,9 @@ func UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
 }
 
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
-func UpdateUnschedulablePodsCount(podsCount int) {
-	unschedulablePodsCount.Set(float64(podsCount))
+func UpdateUnschedulablePodsCount(uschedulablePodsCount, unknownPodsCount int) {
+	unschedulablePodsCount.WithLabelValues("unschedulable").Set(float64(uschedulablePodsCount))
+	unschedulablePodsCount.WithLabelValues("unknown").Set(float64(unknownPodsCount))
 }
 
 // UpdateMaxNodesCount records the current maximum number of nodes being set for all node groups
