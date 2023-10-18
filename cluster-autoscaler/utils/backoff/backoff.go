@@ -39,6 +39,4 @@ type Backoff interface {
 	RemoveBackoff(nodeGroup cloudprovider.NodeGroup, nodeInfo *schedulerframework.NodeInfo)
 	// RemoveStaleBackoffData removes stale backoff data.
 	RemoveStaleBackoffData(currentTime time.Time)
-	// IsNodeGroupOutOfResources returns true if the given node group is out of resources.
-	IsNodeGroupOutOfResources(nodeGroup cloudprovider.NodeGroup) bool
 }
