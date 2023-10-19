@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability"
@@ -120,8 +121,8 @@ func TestDrainable(t *testing.T) {
 				Timestamp: testTime,
 			}
 			got := New().Drainable(drainCtx, tc.pod)
-			if tc.want != got {
-				t.Errorf("Rule.Drainable(%v) = %v, want %v", tc.pod.Name, got, tc.want)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("Rule.Drainable(%v): got status diff (-want +got):\n%s", tc.pod.Name, diff)
 			}
 		})
 	}

@@ -790,17 +790,29 @@ func TestGetPodsToMove(t *testing.T) {
 
 type alwaysDrain struct{}
 
+func (a alwaysDrain) Name() string {
+	return "AlwaysDrain"
+}
+
 func (a alwaysDrain) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
 	return drainability.NewDrainableStatus()
 }
 
 type neverDrain struct{}
 
+func (n neverDrain) Name() string {
+	return "NeverDrain"
+}
+
 func (n neverDrain) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
 	return drainability.NewBlockedStatus(drain.UnexpectedError, fmt.Errorf("nope"))
 }
 
 type cantDecide struct{}
+
+func (c cantDecide) Name() string {
+	return "CantDecide"
+}
 
 func (c cantDecide) Drainable(*drainability.DrainContext, *apiv1.Pod) drainability.Status {
 	return drainability.NewUndefinedStatus()

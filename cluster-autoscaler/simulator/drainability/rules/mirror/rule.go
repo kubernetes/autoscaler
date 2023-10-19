@@ -30,6 +30,11 @@ func New() *Rule {
 	return &Rule{}
 }
 
+// Name returns the name of the rule.
+func (r *Rule) Name() string {
+	return "Mirror"
+}
+
 // Drainable decides what to do with mirror pods on node drain.
 func (Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if pod_util.IsMirrorPod(pod) {
