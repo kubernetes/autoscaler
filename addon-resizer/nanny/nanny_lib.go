@@ -131,9 +131,9 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	var num uint64
 	var err error
 	if scalingMode == ContainerProportional {
-		num, err = k8s.CountNodes()
-	} else {
 		num, err = k8s.CountContainers()
+	} else {
+		num, err = k8s.CountNodes()
 	}
 
 	if err != nil {
