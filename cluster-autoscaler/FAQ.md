@@ -89,6 +89,7 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
   * are not run on the node by default, *
   * don't have a [pod disruption budget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#how-disruption-budgets-work) set or their PDB is too restrictive (since CA 0.6).
 * Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
+* Pods with a hostPort configuration - causing the scheduler to fit only one of those pods per node. Scale-down might not work as the existing nodes will already have a pod on them and can't schedule the new one.
 * Pods with local storage **. *
     - unless the pod has the following annotation set:
       ```
