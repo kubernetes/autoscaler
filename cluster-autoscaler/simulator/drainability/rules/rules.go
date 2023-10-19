@@ -32,10 +32,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/system"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules/terminal"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
+	"k8s.io/klog/v2"
 )
 
 // Rule determines whether a given pod can be drained or not.
 type Rule interface {
+	// The name of the rule.
+	Name() string
 	// Drainable determines whether a given pod is drainable according to
 	// the specific Rule.
 	//
@@ -86,11 +89,30 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 		drainCtx.RemainingPdbTracker = pdb.NewBasicRemainingPdbTracker()
 	}
 
+	var candidates []overrideCandidate
+
 	for _, r := range rs {
-		d := r.Drainable(drainCtx, pod)
-		if d.Outcome != drainability.UndefinedOutcome {
-			return d
+		status := r.Drainable(drainCtx, pod)
+		if len(status.Overrides) > 0 {
+			candidates = append(candidates, overrideCandidate{r.Name(), status})
+			continue
+		}
+		for _, candidate := range candidates {
+			for _, override := range candidate.status.Overrides {
+				if status.Outcome == override {
+					klog.V(5).Info("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
+					return candidate.status
+				}
+			}
+		}
+		if status.Outcome != drainability.UndefinedOutcome {
+			return status
 		}
 	}
 	return drainability.NewUndefinedStatus()
+}
+
+type overrideCandidate struct {
+	name   string
+	status drainability.Status
 }

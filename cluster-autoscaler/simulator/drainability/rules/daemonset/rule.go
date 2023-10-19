@@ -30,6 +30,11 @@ func New() *Rule {
 	return &Rule{}
 }
 
+// Name returns the name of the rule.
+func (r *Rule) Name() string {
+	return "DaemonSet"
+}
+
 // Drainable decides what to do with daemon set pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if pod_util.IsDaemonSetPod(pod) {

@@ -36,6 +36,11 @@ func New(skipNodesWithCustomControllerPods bool) *Rule {
 	}
 }
 
+// Name returns the name of the rule.
+func (r *Rule) Name() string {
+	return "Replicated"
+}
+
 // Drainable decides what to do with replicated pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	controllerRef := drain.ControllerRef(pod)

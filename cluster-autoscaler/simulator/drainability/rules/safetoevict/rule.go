@@ -30,6 +30,11 @@ func New() *Rule {
 	return &Rule{}
 }
 
+// Name returns the name of the rule.
+func (r *Rule) Name() string {
+	return "SafeToEvict"
+}
+
 // Drainable decides what to do with safe to evict pods on node drain.
 func (r *Rule) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {
 	if drain.HasSafeToEvictAnnotation(pod) {
