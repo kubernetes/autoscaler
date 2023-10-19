@@ -144,6 +144,9 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.Backoff =
 			backoff.NewIdBasedExponentialBackoff(opts.InitialNodeGroupBackoffDuration, opts.MaxNodeGroupBackoffDuration, opts.NodeGroupBackoffResetTimeout)
 	}
+	if opts.DrainabilityRules == nil {
+		opts.DrainabilityRules = rules.Default(opts.DeleteOptions)
+	}
 
 	return nil
 }
