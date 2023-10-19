@@ -350,9 +350,19 @@ func TestNodeVsContainerProportional(t *testing.T) {
 			t.Errorf("updateResources got %d, want %d for test case %d.", gotScaling, tc.wantScaling, i)
 		}
 		if gotScaling == overwrite {
-			wantCPU := "400m"  // 300m + 10 * 10m
-			if gotCPU := k8s.newResources.Requests.Cpu().String(); gotCPU != wantCPU {
-				t.Errorf("updateResources got %q, want %q for test case %d.", gotCPU, wantCPU, i)
+			wantCPU := cpuBase
+			n := 0
+			if tc.scalingMode == ContainerProportional {
+				n = int(tc.containers)
+			} else {
+				n = int(tc.nodes)
+			}
+			for i := 0; i < n; i++ {
+				wantCPU.Add(cpuExtra)
+			}
+
+			if gotCPU := k8s.newResources.Requests.Cpu().String(); gotCPU != wantCPU.String() {
+				t.Errorf("updateResources got %q, want %q for test case %d.", gotCPU, wantCPU.String(), i)
 			}
 		}
 	}
