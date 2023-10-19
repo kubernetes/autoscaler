@@ -462,6 +462,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		return nil, err
 	}
 	deleteOptions := options.NewNodeDeleteOptions(autoscalingOptions)
+	drainabilityRules := rules.Default(deleteOptions)
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
@@ -472,6 +473,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		DebuggingSnapshotter: debuggingSnapshotter,
 		PredicateChecker:     predicateChecker,
 		DeleteOptions:        deleteOptions,
+		DrainabilityRules:    drainabilityRules,
 	}
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
@@ -481,7 +483,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	if autoscalingOptions.ParallelDrain {
 		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
 		scaleDownCandidatesComparers = []scaledowncandidates.CandidatesComparer{
-			emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, rules.Default(deleteOptions)),
+			emptycandidates.NewEmptySortingProcessor(emptycandidates.NewNodeInfoGetter(opts.ClusterSnapshot), deleteOptions, drainabilityRules),
 			sdCandidatesSorting,
 		}
 		opts.Processors.ScaleDownCandidatesNotifier.Register(sdCandidatesSorting)
