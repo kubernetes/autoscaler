@@ -205,6 +205,8 @@ func main() {
 		}
 	} else if useNoStorage {
 		klog.Infof("Running without a history provider")
+	} else {
+		klog.Fatalf("Storage provider option is not set. Supported values: prometheus, none, checkpoint")
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
