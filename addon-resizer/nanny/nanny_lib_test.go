@@ -286,6 +286,88 @@ func TestUpdateResources(t *testing.T) {
 	}
 }
 
+func TestNodeVsContainerProportional(t *testing.T) {
+	// i.e. NodeProportional triggers, but ContainerProportional does not (and vice versa)
+
+	now := time.Now()
+	oneMinuteAgo := now.Add(-time.Minute)
+	testCases := []struct {
+		nodes       uint64
+		containers  uint64
+		scalingMode string
+		wantScaling updateResult
+	}{
+		{
+			nodes: 10,
+			containers: 1,
+			scalingMode: NodeProportional,
+			wantScaling: overwrite,
+		}, {
+			nodes: 10,
+			containers: 1,
+			scalingMode: ContainerProportional,
+			wantScaling: noChange,
+		},
+		{
+			nodes: 1,
+			containers: 10,
+			scalingMode: NodeProportional,
+			wantScaling: noChange,
+		},
+		{
+			nodes: 1,
+			containers: 10,
+			scalingMode: ContainerProportional,
+			wantScaling: overwrite,
+		},
+	}
+
+	threshold := 10
+	cpuBase := resource.MustParse("300m")
+	cpuExtra := resource.MustParse("10m")
+
+	for i, tc := range testCases {
+		resRequests := corev1.ResourceList{
+			"cpu": cpuBase,
+		}
+		resLimits := corev1.ResourceList{
+			"cpu": cpuBase,
+		}
+
+		k8s := newFakeKubernetesClient(tc.nodes, tc.containers, resLimits, resRequests)
+		est := LinearEstimator{
+			Resources: []Resource{
+				{
+					Base:             cpuBase,
+					ExtraPerResource: cpuExtra,
+					Name:             "cpu",
+				},
+			},
+		}
+
+		gotScaling := updateResources(k8s, est, now, oneMinuteAgo, noDelay, oneMinuteDelay, uint64(threshold), noChange, tc.scalingMode)
+		if tc.wantScaling != gotScaling {
+			t.Errorf("updateResources got %d, want %d for test case %d.", gotScaling, tc.wantScaling, i)
+		}
+		if gotScaling == overwrite {
+			wantCPU := cpuBase
+			n := 0
+			if tc.scalingMode == ContainerProportional {
+				n = int(tc.containers)
+			} else {
+				n = int(tc.nodes)
+			}
+			for i := 0; i < n; i++ {
+				wantCPU.Add(cpuExtra)
+			}
+
+			if gotCPU := k8s.newResources.Requests.Cpu().String(); gotCPU != wantCPU.String() {
+				t.Errorf("updateResources got %q, want %q for test case %d.", gotCPU, wantCPU.String(), i)
+			}
+		}
+	}
+}
+
 type fakeKubernetesClient struct {
 	nodes        uint64
 	containers   uint64
