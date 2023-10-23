@@ -789,6 +789,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `cordon-node-before-terminating` | Should CA cordon nodes before terminating during downscale process | false
 | `record-duplicated-events` | Enable the autoscaler to print duplicated events within a 5 minute window. | false
 | `debugging-snapshot-enabled` | Whether the debugging snapshot of cluster autoscaler feature is enabled. | false
+| `node-delete-delay-after-taint` | How long to wait before deleting a node after tainting it. | 5 seconds
 
 # Troubleshooting:
 
