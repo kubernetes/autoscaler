@@ -373,6 +373,15 @@ var (
 			Help:      "Number of node groups deleted by Node Autoprovisioning.",
 		},
 	)
+
+	nodeTaintsCount = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_taints_count",
+			Help:      "Number of taints per type used in the cluster.",
+		},
+		[]string{"type"},
+	)
 )
 
 // RegisterAll registers all metrics.
@@ -407,6 +416,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	legacyregistry.MustRegister(nodeGroupCreationCount)
 	legacyregistry.MustRegister(nodeGroupDeletionCount)
 	legacyregistry.MustRegister(pendingNodeDeletions)
+	legacyregistry.MustRegister(nodeTaintsCount)
 
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
@@ -614,4 +624,9 @@ func RegisterSkippedScaleUpMemory() {
 // ObservePendingNodeDeletions records the current value of nodes_pending_deletion metric
 func ObservePendingNodeDeletions(value int) {
 	pendingNodeDeletions.Set(float64(value))
+}
+
+// ObserveNodeTaintsCount records the node taints count of given type.
+func ObserveNodeTaintsCount(taintType string, count float64) {
+	nodeTaintsCount.WithLabelValues(taintType).Set(count)
 }
