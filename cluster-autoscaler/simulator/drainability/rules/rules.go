@@ -79,6 +79,11 @@ func Default(deleteOptions options.NodeDeleteOptions) Rules {
 // Rules defines operations on a collections of rules.
 type Rules []Rule
 
+// Name returns the name of the rule.
+func (rs *Rules) Name() string {
+	return "Rules"
+}
+
 // Drainable determines whether a given pod is drainable according to the
 // specified set of rules.
 func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) drainability.Status {

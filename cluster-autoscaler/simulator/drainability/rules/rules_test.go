@@ -25,6 +25,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 )
 
+// Ensure that Rules type implements the Rule interface
+var _ Rule = &Rules{}
+
 func TestDrainable(t *testing.T) {
 	for desc, tc := range map[string]struct {
 		rules Rules
