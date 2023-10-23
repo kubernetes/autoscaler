@@ -25,17 +25,18 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	klog "k8s.io/klog/v2"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	klog "k8s.io/klog/v2"
 )
 
 const (
-	// ProviderName is the cloud provider name for Equinix Metal
-	ProviderName = "equinix-metal"
+	// ProviderName is the cloud provider name for Packet cloud provider, now named as equinixmetal
+	ProviderName = "packet"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 	// DefaultControllerNodeLabelKey is the label added to Master/Controller to identify as
@@ -44,7 +45,8 @@ const (
 	// ControllerNodeIdentifierEnv is the string for the environment variable.
 	// Deprecated: This env var is deprecated in the favour packet's acquisition to equinix.
 	// Please use 'ControllerNodeIdentifierMetalEnv'
-	ControllerNodeIdentifierEnv      = "PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL"
+	ControllerNodeIdentifierEnv = "PACKET_CONTROLLER_NODE_IDENTIFIER_LABEL"
+	// ControllerNodeIdentifierMetalEnv is the string for the environment variable of controller node id labels for equinix metal.
 	ControllerNodeIdentifierMetalEnv = "METAL_CONTROLLER_NODE_IDENTIFIER_LABEL"
 )
 
@@ -72,7 +74,7 @@ func buildEquinixMetalCloudProvider(metalManager equinixMetalManager, resourceLi
 
 // Name returns the name of the cloud provider.
 func (pcp *equinixMetalCloudProvider) Name() string {
-	return ProviderName
+	return cloudprovider.EquinixMetalProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

@@ -121,8 +121,7 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return ovhcloud.BuildOVHcloud(opts, do, rl)
 	case cloudprovider.HetznerProviderName:
 		return hetzner.BuildHetzner(opts, do, rl)
-	case cloudprovider.PacketProviderName,
-		cloudprovider.EquinixMetalProviderName:
+	case cloudprovider.PacketProviderName, cloudprovider.EquinixMetalProviderName:
 		return packet.BuildCloudProvider(opts, do, rl)
 	case cloudprovider.ClusterAPIProviderName:
 		return clusterapi.BuildClusterAPI(opts, do, rl)

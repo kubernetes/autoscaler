@@ -28,16 +28,15 @@ import (
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
 	packet.ProviderName,
-	packet.EquinixMetalProviderName,
+	cloudprovider.EquinixMetalProviderName,
 }
 
 // DefaultCloudProvider for Packet-only build is Packet.
-const DefaultCloudProvider = packet.EquinixMetalProviderName
+const DefaultCloudProvider = cloudprovider.EquinixMetalProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case packet.ProviderName,
-		packet.EquinixMetalProviderName:
+	case packet.ProviderName, cloudprovider.EquinixMetalProviderName:
 		return packet.BuildCloudProvider(opts, do, rl)
 	}
 
