@@ -25,6 +25,7 @@ this document:
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpu-usage-based-node-autoscalers)
   * [How does Cluster Autoscaler work with Pod Priority and Preemption?](#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption)
   * [How does Cluster Autoscaler remove nodes?](#how-does-cluster-autoscaler-remove-nodes)
+  * [How does Cluster Autoscaler treat nodes with status/startup/ignore taints?](#how-does-cluster-autoscaler-treat-nodes-with-taints)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
@@ -249,7 +250,37 @@ Cluster Autoscaler terminates the underlying instance in a cloud-provider-depend
 
 It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://kubernetes.io/docs/concepts/architecture/cloud-controller/).
 
+### How does Cluster Autoscaler treat nodes with status/startup/ignore taints?
 
+### Startup taints
+Startup taints are meant to be used when there is an operation that has to complete before any pods can run on the node, e.g. drivers installation.
+
+Cluster Autoscaler treats nodes tainted with `startup taints` as unready, but taken into account during scale up logic, assuming they will become ready shortly.
+
+**However, if the substantial number of nodes are tainted with `startup taints` (and therefore unready) for an extended period of time the Cluster Autoscaler
+might stop working as it might assume the cluster is broken and should not be scaled (creating new nodes doesn't help as they don't become ready).**
+
+Startup taints are defined as:
+- all taints with the prefix `startup-taint.cluster-autoscaler.kubernetes.io/`,
+- all taints defined using `--startup-taint` flag.
+
+### Status taints
+Status taints are meant to be used when a given node should not be used to run pods for the time being.
+
+Cluster Autoscaler internally treats nodes tainted with `status taints` as ready, but filtered out during scale up logic.
+
+This means that even though the node is ready, no pods should run there as long as the node is tainted and if necessary a scale-up should occur. 
+
+Status taints are defined as:
+- all taints with the prefix `status-taint.cluster-autoscaler.kubernetes.io/`,
+- all taints defined using `--status-taint` flag.
+
+### Ignore taints
+Ignore taints are now deprecated and treated as startup taints.
+
+Ignore taints are defined as:
+- all taints with the prefix `ignore-taint.cluster-autoscaler.kubernetes.io/`,
+- all taints defined using `--ignore-taint` flag.
 ****************
 
 # How to?
