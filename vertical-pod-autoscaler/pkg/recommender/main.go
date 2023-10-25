@@ -19,8 +19,10 @@ package main
 import (
 	"context"
 	"flag"
-	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
+	"os"
 	"time"
+
+	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
@@ -72,6 +74,10 @@ var (
 	username            = flag.String("username", "", "The username used in the prometheus server basic auth")
 	password            = flag.String("password", "", "The password used in the prometheus server basic auth")
 	memorySaver         = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
+	authHeader          = flag.Bool("auth-header", false, `If True will use header authentication, If true aslo authHeaderName and authHeaderValueName must be supplied`)
+	authHeaderName      = flag.String("auth-header-name", "", `Header name to use for header based Auth`)
+	authHeaderValueName = flag.String("auth-header-value-name", "", `Env variable name holding the auth header value e.g the value of the bearer token etc..`)
+
 	// external metrics provider config
 	useExternalMetrics   = flag.Bool("use-external-metrics", false, "ALPHA.  Use an external metrics provider instead of metrics_server.")
 	externalCpuMetric    = flag.String("external-metrics-cpu-metric", "", "ALPHA.  Metric to use with external metrics provider for CPU usage.")
@@ -202,6 +208,12 @@ func main() {
 				Username: *username,
 				Password: *password,
 			},
+		}
+		if *authHeader {
+			authValue := os.Getenv(*authHeaderValueName)
+			config.Headers = map[string]string{
+				*authHeaderName: authValue,
+			}
 		}
 		provider, err := history.NewPrometheusHistoryProvider(config)
 		if err != nil {

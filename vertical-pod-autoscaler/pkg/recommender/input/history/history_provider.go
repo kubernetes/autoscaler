@@ -37,11 +37,21 @@ import (
 type PrometheusBasicAuthTransport struct {
 	Username string
 	Password string
+	Headers  *map[string]string
 }
 
 // RoundTrip function injects the username and password in the request's basic auth header
 func (t *PrometheusBasicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.SetBasicAuth(t.Username, t.Password)
+	if t.Username != "" && t.Password != "" {
+		req.SetBasicAuth(t.Username, t.Password)
+	}
+
+	if t.Headers != nil {
+		for k, v := range *t.Headers {
+			req.Header.Set(k, v)
+		}
+	}
+
 	return http.DefaultTransport.RoundTrip(req)
 }
 
@@ -57,6 +67,7 @@ type PrometheusHistoryProviderConfig struct {
 	CadvisorMetricsJobName                           string
 	Namespace                                        string
 	PrometheusBasicAuthTransport
+	Headers map[string]string
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -94,12 +105,13 @@ func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) (Histo
 		Address: config.Address,
 	}
 
-	if config.Username != "" && config.Password != "" {
-		transport := &PrometheusBasicAuthTransport{
+	if (config.Username != "" && config.Password != "") || config.Headers != nil {
+		transport := PrometheusBasicAuthTransport{
 			Username: config.Username,
 			Password: config.Password,
+			Headers:  &config.Headers,
 		}
-		promConfig.RoundTripper = transport
+		promConfig.RoundTripper = &transport
 	}
 
 	promClient, err := promapi.NewClient(promConfig)
