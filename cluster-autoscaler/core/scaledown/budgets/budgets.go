@@ -210,10 +210,3 @@ func (bp *ScaleDownBudgetProcessor) categorize(groups []*NodeGroupView) (individ
 	}
 	return individual, atomic
 }
-
-func min(x, y int) int {
-	if x <= y {
-		return x
-	}
-	return y
-}

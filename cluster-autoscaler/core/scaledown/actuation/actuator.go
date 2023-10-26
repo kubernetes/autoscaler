@@ -369,13 +369,6 @@ func (a *Actuator) createSnapshot(nodes []*apiv1.Node) (clustersnapshot.ClusterS
 	return snapshot, nil
 }
 
-func min(x, y int) int {
-	if x <= y {
-		return x
-	}
-	return y
-}
-
 func joinPodNames(pods []*apiv1.Pod) string {
 	var names []string
 	for _, pod := range pods {
