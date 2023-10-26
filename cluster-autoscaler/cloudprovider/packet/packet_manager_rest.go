@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -49,6 +48,7 @@ const (
 	userAgent                    = "kubernetes/cluster-autoscaler/" + version.ClusterAutoscalerVersion
 	expectedAPIContentTypePrefix = "application/json"
 	prefix                       = "equinixmetal://"
+	metalAuthTokenEnv            = "METAL_AUTH_TOKEN"
 )
 
 type instanceType struct {
@@ -146,7 +146,7 @@ var InstanceTypes = map[string]*instanceType{
 	},
 }
 
-type packetManagerNodePool struct {
+type equinixMetalManagerNodePool struct {
 	baseURL           string
 	clusterName       string
 	projectID         string
@@ -160,9 +160,9 @@ type packetManagerNodePool struct {
 	hostnamePattern   string
 }
 
-type packetManagerRest struct {
-	authToken              string
-	packetManagerNodePools map[string]*packetManagerNodePool
+type equinixMetalManagerRest struct {
+	authToken                    string
+	equinixMetalManagerNodePools map[string]*equinixMetalManagerNodePool
 }
 
 // ConfigNodepool options only include the project-id for now
@@ -185,7 +185,7 @@ type ConfigFile struct {
 	Nodegroupdef        map[string]*ConfigNodepool `gcfg:"nodegroupdef"`
 }
 
-// Device represents a Packet device
+// Device represents an Equinix Metal device
 type Device struct {
 	ID          string   `json:"id"`
 	ShortID     string   `json:"short_id"`
@@ -195,7 +195,7 @@ type Device struct {
 	Tags        []string `json:"tags"`
 }
 
-// Devices represents a list of Packet devices
+// Devices represents a list of an Equinix Metal devices
 type Devices struct {
 	Devices []Device `json:"devices"`
 }
@@ -206,7 +206,7 @@ type IPAddressCreateRequest struct {
 	Public        bool `json:"public"`
 }
 
-// DeviceCreateRequest represents a request to create a new Packet device. Used by createNodes
+// DeviceCreateRequest represents a request to create a new Equinix Metal device. Used by createNodes
 type DeviceCreateRequest struct {
 	Hostname              string                   `json:"hostname"`
 	Plan                  string                   `json:"plan"`
@@ -271,9 +271,9 @@ func Contains(a []string, x string) bool {
 	return false
 }
 
-// createPacketManagerRest sets up the client and returns
-// an packetManagerRest.
-func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (*packetManagerRest, error) {
+// createEquinixMetalManagerRest sets up the client and returns
+// an equinixMetalManagerRest.
+func createEquinixMetalManagerRest(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (*equinixMetalManagerRest, error) {
 	// Initialize ConfigFile instance
 	cfg := ConfigFile{
 		DefaultNodegroupdef: ConfigNodepool{},
@@ -287,8 +287,8 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		}
 	}
 
-	var manager packetManagerRest
-	manager.packetManagerNodePools = make(map[string]*packetManagerNodePool)
+	var manager equinixMetalManagerRest
+	manager.equinixMetalManagerNodePools = make(map[string]*equinixMetalManagerNodePool)
 
 	if _, ok := cfg.Nodegroupdef["default"]; !ok {
 		cfg.Nodegroupdef["default"] = &cfg.DefaultNodegroupdef
@@ -298,12 +298,18 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		klog.Fatalf("No \"default\" or [Global] nodepool definition was found")
 	}
 
-	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	if len(packetAuthToken) == 0 {
-		klog.Fatalf("PACKET_AUTH_TOKEN is required and missing")
+	var metalAuthToken string
+	value, present := os.LookupEnv(metalAuthTokenEnv)
+	if present {
+		metalAuthToken = value
+	} else {
+		metalAuthToken = os.Getenv("PACKET_AUTH_TOKEN")
+		if len(metalAuthToken) == 0 {
+			klog.Fatalf("%s or PACKET_AUTH_TOKEN is required and missing", metalAuthTokenEnv)
+		}
 	}
 
-	manager.authToken = packetAuthToken
+	manager.authToken = metalAuthToken
 
 	for nodepool := range cfg.Nodegroupdef {
 		if opts.ClusterName == "" && cfg.Nodegroupdef[nodepool].ClusterName == "" {
@@ -312,7 +318,7 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 			cfg.Nodegroupdef[nodepool].ClusterName = opts.ClusterName
 		}
 
-		manager.packetManagerNodePools[nodepool] = &packetManagerNodePool{
+		manager.equinixMetalManagerNodePools[nodepool] = &equinixMetalManagerNodePool{
 			baseURL:           "https://api.equinix.com/metal/v1",
 			clusterName:       cfg.Nodegroupdef[nodepool].ClusterName,
 			projectID:         cfg.Nodegroupdef["default"].ProjectID,
@@ -330,7 +336,7 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 	return &manager, nil
 }
 
-func (mgr *packetManagerRest) request(ctx context.Context, method, url string, jsonData []byte) ([]byte, error) {
+func (mgr *equinixMetalManagerRest) request(ctx context.Context, method, url string, jsonData []byte) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
@@ -353,7 +359,7 @@ func (mgr *packetManagerRest) request(ctx context.Context, method, url string, j
 		}
 	}()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
@@ -381,7 +387,7 @@ func (mgr *packetManagerRest) request(ctx context.Context, method, url string, j
 	return nil, errorResponse
 }
 
-func (mgr *packetManagerRest) listPacketDevices(ctx context.Context) (*Devices, error) {
+func (mgr *equinixMetalManagerRest) listMetalDevices(ctx context.Context) (*Devices, error) {
 	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("projects", mgr.getNodePoolDefinition("default").projectID, "devices")
 	klog.Infof("url: %v", url)
 
@@ -398,7 +404,7 @@ func (mgr *packetManagerRest) listPacketDevices(ctx context.Context) (*Devices, 
 	return &devices, nil
 }
 
-func (mgr *packetManagerRest) getPacketDevice(ctx context.Context, id string) (*Device, error) {
+func (mgr *equinixMetalManagerRest) getEquinixMetalDevice(ctx context.Context, id string) (*Device, error) {
 	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("devices", id)
 
 	result, err := mgr.request(ctx, "GET", url, []byte(``))
@@ -414,14 +420,14 @@ func (mgr *packetManagerRest) getPacketDevice(ctx context.Context, id string) (*
 	return &device, nil
 }
 
-func (mgr *packetManagerRest) NodeGroupForNode(labels map[string]string, nodeId string) (string, error) {
+func (mgr *equinixMetalManagerRest) NodeGroupForNode(labels map[string]string, nodeId string) (string, error) {
 	if nodegroup, ok := labels["pool"]; ok {
 		return nodegroup, nil
 	}
 
 	trimmedNodeId := strings.TrimPrefix(nodeId, prefix)
 
-	device, err := mgr.getPacketDevice(context.TODO(), trimmedNodeId)
+	device, err := mgr.getEquinixMetalDevice(context.TODO(), trimmedNodeId)
 	if err != nil {
 		return "", fmt.Errorf("could not find group for node: %s %s", nodeId, err)
 	}
@@ -434,8 +440,8 @@ func (mgr *packetManagerRest) NodeGroupForNode(labels map[string]string, nodeId 
 }
 
 // nodeGroupSize gets the current size of the nodegroup as reported by packet tags.
-func (mgr *packetManagerRest) nodeGroupSize(nodegroup string) (int, error) {
-	devices, err := mgr.listPacketDevices(context.TODO())
+func (mgr *equinixMetalManagerRest) nodeGroupSize(nodegroup string) (int, error) {
+	devices, err := mgr.listMetalDevices(context.TODO())
 	if err != nil {
 		return 0, fmt.Errorf("failed to list devices: %w", err)
 	}
@@ -462,7 +468,7 @@ func randString8() string {
 	return string(b)
 }
 
-func (mgr *packetManagerRest) createNode(ctx context.Context, cloudinit, nodegroup string) error {
+func (mgr *equinixMetalManagerRest) createNode(ctx context.Context, cloudinit, nodegroup string) error {
 	udvars := CloudInitTemplateData{
 		BootstrapTokenID:     os.Getenv("BOOTSTRAP_TOKEN_ID"),
 		BootstrapTokenSecret: os.Getenv("BOOTSTRAP_TOKEN_SECRET"),
@@ -489,13 +495,13 @@ func (mgr *packetManagerRest) createNode(ctx context.Context, cloudinit, nodegro
 		return fmt.Errorf("failed to create device %q in node group %q: %w", hn, nodegroup, err)
 	}
 
-	klog.Infof("Created new node on Packet.")
+	klog.Infof("Created new node on Equinix Metal.")
 
 	return nil
 }
 
 // createNodes provisions new nodes on packet and bootstraps them in the cluster.
-func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
+func (mgr *equinixMetalManagerRest) createNodes(nodegroup string, nodes int) error {
 	klog.Infof("Updating node count to %d for nodegroup %s", nodes, nodegroup)
 
 	cloudinit, err := base64.StdEncoding.DecodeString(mgr.getNodePoolDefinition(nodegroup).cloudinit)
@@ -513,7 +519,7 @@ func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 	return utilerrors.NewAggregate(errList)
 }
 
-func (mgr *packetManagerRest) createDevice(ctx context.Context, hostname, userData, nodegroup string) error {
+func (mgr *equinixMetalManagerRest) createDevice(ctx context.Context, hostname, userData, nodegroup string) error {
 	reservation := ""
 	if mgr.getNodePoolDefinition(nodegroup).reservation == "require" || mgr.getNodePoolDefinition(nodegroup).reservation == "prefer" {
 		reservation = "next-available"
@@ -551,7 +557,7 @@ func isNoAvailableReservationsError(err error) bool {
 	return strings.Contains(err.Error(), " no available hardware reservations ")
 }
 
-func (mgr *packetManagerRest) createDeviceRequest(ctx context.Context, cr *DeviceCreateRequest, nodegroup string) error {
+func (mgr *equinixMetalManagerRest) createDeviceRequest(ctx context.Context, cr *DeviceCreateRequest, nodegroup string) error {
 	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("projects", cr.ProjectID, "devices")
 
 	jsonValue, err := json.Marshal(cr)
@@ -571,9 +577,9 @@ func (mgr *packetManagerRest) createDeviceRequest(ctx context.Context, cr *Devic
 
 // getNodes should return ProviderIDs for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
-func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
+func (mgr *equinixMetalManagerRest) getNodes(nodegroup string) ([]string, error) {
 	// Get node ProviderIDs by getting device IDs from Packet
-	devices, err := mgr.listPacketDevices(context.TODO())
+	devices, err := mgr.listMetalDevices(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list devices: %w", err)
 	}
@@ -591,8 +597,8 @@ func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
 
 // getNodeNames should return Names for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
-func (mgr *packetManagerRest) getNodeNames(nodegroup string) ([]string, error) {
-	devices, err := mgr.listPacketDevices(context.TODO())
+func (mgr *equinixMetalManagerRest) getNodeNames(nodegroup string) ([]string, error) {
+	devices, err := mgr.listMetalDevices(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list devices: %w", err)
 	}
@@ -608,7 +614,7 @@ func (mgr *packetManagerRest) getNodeNames(nodegroup string) ([]string, error) {
 	return nodes, nil
 }
 
-func (mgr *packetManagerRest) deleteDevice(ctx context.Context, nodegroup, id string) error {
+func (mgr *equinixMetalManagerRest) deleteDevice(ctx context.Context, nodegroup, id string) error {
 	url := mgr.getNodePoolDefinition("default").baseURL + "/" + path.Join("devices", id)
 
 	result, err := mgr.request(context.TODO(), "DELETE", url, []byte(""))
@@ -622,14 +628,14 @@ func (mgr *packetManagerRest) deleteDevice(ctx context.Context, nodegroup, id st
 }
 
 // deleteNodes deletes nodes by passing a comma separated list of names or IPs
-func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
+func (mgr *equinixMetalManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
 	klog.Infof("Deleting nodes %v", nodes)
 
 	ctx := context.TODO()
 
 	errList := make([]error, 0, len(nodes))
 
-	devices, err := mgr.listPacketDevices(ctx)
+	devices, err := mgr.listMetalDevices(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to list devices: %w", err)
 	}
@@ -655,7 +661,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 
 				switch {
 				case d.Hostname == n.Name:
-					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
+					klog.V(1).Infof("Matching Equinix Metal Device %s - %s", d.Hostname, d.ID)
 					errList = append(errList, mgr.deleteDevice(ctx, nodegroup, d.ID))
 				case fakeNode && trimmedName == d.ID:
 					klog.V(1).Infof("Fake Node %s", d.ID)
@@ -668,7 +674,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 	return utilerrors.NewAggregate(errList)
 }
 
-// BuildGenericLabels builds basic labels for Packet nodes
+// BuildGenericLabels builds basic labels for equinix metal nodes
 func BuildGenericLabels(nodegroup string, instanceType string) map[string]string {
 	result := make(map[string]string)
 
@@ -681,9 +687,9 @@ func BuildGenericLabels(nodegroup string, instanceType string) map[string]string
 	return result
 }
 
-// templateNodeInfo returns a NodeInfo with a node template based on the packet plan
+// templateNodeInfo returns a NodeInfo with a node template based on the equinix metal plan
 // that is used to create nodes in a given node group.
-func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
+func (mgr *equinixMetalManagerRest) templateNodeInfo(nodegroup string) (*schedulerframework.NodeInfo, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", nodegroup, rand.Int63())
 	node.ObjectMeta = metav1.ObjectMeta{
@@ -695,14 +701,14 @@ func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulerfram
 		Capacity: apiv1.ResourceList{},
 	}
 
-	packetPlan := InstanceTypes[mgr.getNodePoolDefinition(nodegroup).plan]
-	if packetPlan == nil {
-		return nil, fmt.Errorf("packet plan %q not supported", mgr.getNodePoolDefinition(nodegroup).plan)
+	equinixMetalPlan := InstanceTypes[mgr.getNodePoolDefinition(nodegroup).plan]
+	if equinixMetalPlan == nil {
+		return nil, fmt.Errorf("equinix metal plan %q not supported", mgr.getNodePoolDefinition(nodegroup).plan)
 	}
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(packetPlan.CPU, resource.DecimalSI)
-	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(packetPlan.GPU, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(packetPlan.MemoryMb*1024*1024, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(equinixMetalPlan.CPU, resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(equinixMetalPlan.GPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(equinixMetalPlan.MemoryMb*1024*1024, resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
@@ -715,10 +721,10 @@ func (mgr *packetManagerRest) templateNodeInfo(nodegroup string) (*schedulerfram
 	return nodeInfo, nil
 }
 
-func (mgr *packetManagerRest) getNodePoolDefinition(nodegroup string) *packetManagerNodePool {
-	NodePoolDefinition, ok := mgr.packetManagerNodePools[nodegroup]
+func (mgr *equinixMetalManagerRest) getNodePoolDefinition(nodegroup string) *equinixMetalManagerNodePool {
+	NodePoolDefinition, ok := mgr.equinixMetalManagerNodePools[nodegroup]
 	if !ok {
-		NodePoolDefinition, ok = mgr.packetManagerNodePools["default"]
+		NodePoolDefinition, ok = mgr.equinixMetalManagerNodePools["default"]
 		if !ok {
 			klog.Fatalf("No default cloud-config was found")
 		}

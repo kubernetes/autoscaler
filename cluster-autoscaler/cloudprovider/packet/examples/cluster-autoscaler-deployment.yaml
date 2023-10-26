@@ -175,7 +175,7 @@ spec:
                 secretKeyRef:
                   name: bootstrap-token-cluster-autoscaler-packet
                   key: token-secret
-            - name: PACKET_AUTH_TOKEN
+            - name: METAL_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: cluster-autoscaler-packet
