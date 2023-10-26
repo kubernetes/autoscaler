@@ -38,8 +38,8 @@ type NodeRef struct {
 	IPs        []string
 }
 
-// packetManager is an interface for the basic interactions with the cluster.
-type packetManager interface {
+// equinixMetalManager is an interface for the basic interactions with the cluster.
+type equinixMetalManager interface {
 	nodeGroupSize(nodegroup string) (int, error)
 	createNodes(nodegroup string, nodes int) error
 	getNodes(nodegroup string) ([]string, error)
@@ -49,20 +49,22 @@ type packetManager interface {
 	NodeGroupForNode(labels map[string]string, nodeId string) (string, error)
 }
 
-// createPacketManager creates the desired implementation of packetManager.
-// Currently reads the environment variable PACKET_MANAGER to find which to create,
+// createEquinixMetalManager creates the desired implementation of equinixMetalManager.
+// Currently reads the environment variable EQUINIX_METAL_MANAGER to find which to create,
 // and falls back to a default if the variable is not found.
-func createPacketManager(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (packetManager, error) {
+func createEquinixMetalManager(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (equinixMetalManager, error) {
 	// For now get manager from env var, can consider adding flag later
-	manager, ok := os.LookupEnv("PACKET_MANAGER")
+	manager, ok := os.LookupEnv("EQUINIX_METAL_MANAGER")
 	if !ok {
-		manager = defaultManager
+		if manager, ok = os.LookupEnv("PACKET_MANAGER"); !ok {
+			manager = defaultManager
+		}
 	}
 
 	switch manager {
 	case "rest":
-		return createPacketManagerRest(configReader, discoverOpts, opts)
+		return createEquinixMetalManagerRest(configReader, discoverOpts, opts)
 	}
 
-	return nil, fmt.Errorf("packet manager does not exist: %s", manager)
+	return nil, fmt.Errorf("equinix metal manager does not exist: %s", manager)
 }

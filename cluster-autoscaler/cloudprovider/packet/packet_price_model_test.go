@@ -34,7 +34,7 @@ func TestGetNodePrice(t *testing.T) {
 	labelsPool2 := BuildGenericLabels("pool2", "c3.medium.x86")
 	plan2 := InstanceTypes["c3.medium.x86"]
 
-	model := &PacketPriceModel{}
+	model := &Price{}
 	now := time.Now()
 
 	node1 := BuildTestNode("node1", plan1.CPU*1000, plan1.MemoryMb*1024*1024)
@@ -55,7 +55,7 @@ func TestGetPodPrice(t *testing.T) {
 	pod1 := BuildTestPod("pod1", 100, 500*units.MiB)
 	pod2 := BuildTestPod("pod2", 2*100, 2*500*units.MiB)
 
-	model := &PacketPriceModel{}
+	model := &Price{}
 	now := time.Now()
 
 	price1, err := model.PodPrice(pod1, now, now.Add(time.Hour))
