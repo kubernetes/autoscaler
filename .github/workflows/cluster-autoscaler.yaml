@@ -1,0 +1,12 @@
+name: Cluster Autoscaler
+
+on:
+  pull_request:
+
+jobs:
+  build:
+    uses: ./.github/workflows/multi-arch-build.yaml
+    with:
+      image: ghcr.io/kube-hetzner/autoscaler/cluster-autoscaler
+      context: cluster-autoscaler
+      digestName: 'cluster-autoscaler'
