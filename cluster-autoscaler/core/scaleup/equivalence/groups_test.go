@@ -92,7 +92,7 @@ func TestGroupSchedulablePodsForNode(t *testing.T) {
 	p5_2.OwnerReferences = GenerateOwnerReferences(rc4.Name, "ReplicationController", "extensions/v1beta1", rc4.UID)
 	unschedulablePods := []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2, p4_1, p4_2, p5_1, p5_2}
 
-	podGroups := groupPodsBySchedulingProperties(unschedulablePods)
+	podGroups := groupPodsBySchedulingProperties(unschedulablePods, 10)
 	assert.Equal(t, 6, len(podGroups))
 
 	wantedGroups := []struct {
@@ -141,6 +141,7 @@ func TestGroupSchedulablePodsForNode(t *testing.T) {
 }
 
 func TestEquivalenceGroupSizeLimiting(t *testing.T) {
+	maxGroupSize := 10
 	rc := apiv1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
@@ -149,18 +150,18 @@ func TestEquivalenceGroupSizeLimiting(t *testing.T) {
 			UID:       "12345678-1234-1234-1234-123456789012",
 		},
 	}
-	pods := make([]*apiv1.Pod, 0, maxEquivalenceGroupsByController+1)
-	for i := 0; i < maxEquivalenceGroupsByController+1; i += 1 {
+	pods := make([]*apiv1.Pod, 0, maxGroupSize+1)
+	for i := 0; i < maxGroupSize+1; i += 1 {
 		p := BuildTestPod(fmt.Sprintf("p%d", i), 3000, 200000)
 		p.OwnerReferences = GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", rc.UID)
 		label := fmt.Sprintf("l%d", i)
-		if i > maxEquivalenceGroupsByController {
-			label = fmt.Sprintf("l%d", maxEquivalenceGroupsByController)
+		if i > maxGroupSize {
+			label = fmt.Sprintf("l%d", maxGroupSize)
 		}
 		p.Labels = map[string]string{"uniqueLabel": label}
 		pods = append(pods, p)
 	}
-	podGroups := groupPodsBySchedulingProperties(pods)
+	podGroups := groupPodsBySchedulingProperties(pods, maxGroupSize)
 	assert.Equal(t, len(pods), len(podGroups))
 	for i := range podGroups {
 		assert.Equal(t, 1, len(podGroups[i]))
@@ -181,6 +182,6 @@ func TestEquivalenceGroupIgnoresDaemonSets(t *testing.T) {
 	pods[0].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
 	pods[1] = BuildTestPod("p2", 3000, 200000)
 	pods[1].OwnerReferences = GenerateOwnerReferences(ds.Name, "DaemonSet", "apps/v1", ds.UID)
-	podGroups := groupPodsBySchedulingProperties(pods)
+	podGroups := groupPodsBySchedulingProperties(pods, 10)
 	assert.Equal(t, 2, len(podGroups))
 }

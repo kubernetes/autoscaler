@@ -192,6 +192,7 @@ var (
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
+	maxPodsPerGroup                  = flag.Int("max-pods-per-group", 10, "The maximum number of pods per group in scale-up.")
 
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
@@ -345,6 +346,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ClusterName:                      *clusterName,
 		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
+		MaxPodsPerGroup:                  *maxPodsPerGroup,
 		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,

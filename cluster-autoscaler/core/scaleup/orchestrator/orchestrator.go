@@ -105,7 +105,7 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 	klogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 
 	buildPodEquivalenceGroupsStart := time.Now()
-	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods)
+	podEquivalenceGroups := equivalence.BuildPodGroups(unschedulablePods, o.autoscalingContext.MaxPodsPerGroup)
 	metrics.UpdateDurationFromStart(metrics.BuildPodEquivalenceGroups, buildPodEquivalenceGroupsStart)
 
 	upcomingNodes, aErr := o.UpcomingNodes(nodeInfos)

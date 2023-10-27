@@ -36,9 +36,9 @@ type PodGroup struct {
 }
 
 // BuildPodGroups prepares pod groups with equivalent scheduling properties.
-func BuildPodGroups(pods []*apiv1.Pod) []*PodGroup {
+func BuildPodGroups(pods []*apiv1.Pod, maxPodsPerGroup int) []*PodGroup {
 	podEquivalenceGroups := []*PodGroup{}
-	for _, pods := range groupPodsBySchedulingProperties(pods) {
+	for _, pods := range groupPodsBySchedulingProperties(pods, maxPodsPerGroup) {
 		podEquivalenceGroups = append(podEquivalenceGroups, &PodGroup{
 			Pods:             pods,
 			SchedulingErrors: map[string]status.Reasons{},
@@ -54,11 +54,9 @@ type equivalenceGroup struct {
 	representant *apiv1.Pod
 }
 
-const maxEquivalenceGroupsByController = 10
-
 // groupPodsBySchedulingProperties groups pods based on scheduling properties. Group ID is meaningless.
 // TODO(x13n): refactor this to have shared logic with PodSchedulableMap.
-func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][]*apiv1.Pod {
+func groupPodsBySchedulingProperties(pods []*apiv1.Pod, maxPodsPerGroup int) map[equivalenceGroupId][]*apiv1.Pod {
 	podEquivalenceGroups := map[equivalenceGroupId][]*apiv1.Pod{}
 	equivalenceGroupsByController := make(map[types.UID][]equivalenceGroup)
 
@@ -76,7 +74,7 @@ func groupPodsBySchedulingProperties(pods []*apiv1.Pod) map[equivalenceGroupId][
 			podEquivalenceGroups[*gid] = append(podEquivalenceGroups[*gid], pod)
 			continue
 		}
-		if len(egs) < maxEquivalenceGroupsByController {
+		if len(egs) < maxPodsPerGroup {
 			// Avoid too many different pods per owner reference.
 			newGroup := equivalenceGroup{
 				id:           nextGroupId,
