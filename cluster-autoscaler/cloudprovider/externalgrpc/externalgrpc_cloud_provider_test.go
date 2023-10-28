@@ -23,8 +23,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/externalgrpc/protos"
 )
 
@@ -286,6 +289,23 @@ func TestCloudProvider_Pricing(t *testing.T) {
 	_, err = model.NodePrice(apiv1Node3, time.Time{}, time.Time{})
 	assert.Error(t, err)
 
+	// test notImplemented for NodePrice
+	m.On(
+		"PricingNodePrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingNodePriceRequest) bool {
+			return req.Node.Name == "node4"
+		}),
+	).Return(
+		&protos.PricingNodePriceResponse{},
+		status.Error(codes.Unimplemented, "mock error"),
+	)
+
+	apiv1Node4 := &apiv1.Node{}
+	apiv1Node4.Name = "node4"
+
+	_, err = model.NodePrice(apiv1Node4, time.Time{}, time.Time{})
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
 	// test correct PodPrice call
 	m.On(
 		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
@@ -333,6 +353,24 @@ func TestCloudProvider_Pricing(t *testing.T) {
 
 	_, err = model.PodPrice(apiv1Pod3, time.Time{}, time.Time{})
 	assert.Error(t, err)
+
+	// test notImplemented for PodPrice
+	m.On(
+		"PricingPodPrice", mock.Anything, mock.MatchedBy(func(req *protos.PricingPodPriceRequest) bool {
+			return req.Pod.Name == "pod4"
+		}),
+	).Return(
+		&protos.PricingPodPriceResponse{},
+		status.Error(codes.Unimplemented, "mock error"),
+	)
+
+	apiv1Pod4 := &apiv1.Pod{}
+	apiv1Pod4.Name = "pod4"
+
+	_, err = model.PodPrice(apiv1Pod4, time.Time{}, time.Time{})
+	assert.Error(t, err)
+	assert.Equal(t, cloudprovider.ErrNotImplemented, err)
+
 }
 
 func TestCloudProvider_GPULabel(t *testing.T) {

@@ -50,14 +50,33 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
+type nodeGroupViewInfo struct {
+	nodeGroupName string
+	from          int
+	to            int
+}
+
+type scaleDownNodeInfo struct {
+	name        string
+	nodeGroup   string
+	evictedPods []*apiv1.Pod
+	utilInfo    utilization.Info
+}
+
+type scaleDownStatusInfo struct {
+	result          status.ScaleDownResult
+	scaledDownNodes []scaleDownNodeInfo
+}
+
 type startDeletionTestCase struct {
-	emptyNodes            []*budgets.NodeGroupView
-	drainNodes            []*budgets.NodeGroupView
+	nodeGroups            map[string]*testprovider.TestNodeGroup
+	emptyNodes            []nodeGroupViewInfo
+	drainNodes            []nodeGroupViewInfo
 	pods                  map[string][]*apiv1.Pod
 	failedPodDrain        map[string]bool
 	failedNodeDeletion    map[string]bool
 	failedNodeTaint       map[string]bool
-	wantStatus            *status.ScaleDownStatus
+	wantStatus            scaleDownStatusInfo
 	wantErr               error
 	wantDeletedPods       []string
 	wantDeletedNodes      []string
@@ -65,7 +84,7 @@ type startDeletionTestCase struct {
 	wantNodeDeleteResults map[string]status.NodeDeleteResult
 }
 
-func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonSetsUtilization bool, suffix string) map[string]startDeletionTestCase {
+func getStartDeletionTestCases(ignoreDaemonSetsUtilization bool, suffix string) map[string]startDeletionTestCase {
 	toBeDeletedTaint := apiv1.Taint{Key: taints.ToBeDeletedTaint, Effect: apiv1.TaintEffectNoSchedule}
 
 	dsUtilInfo := generateUtilInfo(2./8., 2./8.)
@@ -74,40 +93,33 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 		dsUtilInfo = generateUtilInfo(0./8., 0./8.)
 	}
 
-	atomic2 := sizedNodeGroup("atomic-2", 2, true)
-	atomic4 := sizedNodeGroup("atomic-4", 4, true)
-	// We need separate groups since previous test cases *change state of groups*.
-	// TODO(aleksandra-malinowska): refactor this test to isolate test cases.
-	atomic2pods := sizedNodeGroup("atomic-2-pods", 2, true)
-	atomic4taints := sizedNodeGroup("atomic-4-taints", 4, true)
-	atomic6 := sizedNodeGroup("atomic-6", 6, true)
-	atomic2mixed := sizedNodeGroup("atomic-2-mixed", 2, true)
-	atomic2drain := sizedNodeGroup("atomic-2-drain", 2, true)
-
 	testCases := map[string]startDeletionTestCase{
 		"nothing to delete": {
 			emptyNodes: nil,
 			drainNodes: nil,
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNoNodeDeleted,
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNoNodeDeleted,
 			},
 		},
 		"empty node deletion": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test", 0, 2},
+			},
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:      "test-node-0",
+						nodeGroup: "test",
+						utilInfo:  generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:      "test-node-1",
+						nodeGroup: "test",
+						utilInfo:  generateUtilInfo(0, 0),
 					},
 				},
 			},
@@ -126,25 +138,31 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"empty atomic node deletion": {
-			emptyNodes: generateNodeGroupViewList(atomic2, 0, 2),
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"atomic-2": sizedNodeGroup("atomic-2", 2, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"atomic-2", 0, 2},
+			},
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("atomic-2-node-0"),
-						NodeGroup:   atomic2,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:      "atomic-2-node-0",
+						nodeGroup: "atomic-2",
+						utilInfo:  generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("atomic-2-node-1"),
-						NodeGroup:   atomic2,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:      "atomic-2-node-1",
+						nodeGroup: "atomic-2",
+						utilInfo:  generateUtilInfo(0, 0),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"atomic-2-node-0", "atomic-2-node-1"},
+			wantDeletedNodes: []string{
+				"atomic-2-node-0",
+				"atomic-2-node-1",
+			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"atomic-2-node-0": {
 					{toBeDeletedTaint},
@@ -159,25 +177,30 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"deletion with drain": {
-			drainNodes: generateNodeGroupViewList(testNg, 0, 2),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			drainNodes: []nodeGroupViewInfo{
+				{"test", 0, 2},
+			},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": removablePods(2, "test-node-0"),
 				"test-node-1": removablePods(2, "test-node-1"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-0"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-0"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-1"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-1"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
@@ -197,43 +220,51 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"empty and drain deletion work correctly together": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"test", 0, 2},
+			},
+			drainNodes: []nodeGroupViewInfo{
+				{"test", 2, 4},
+			},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": removablePods(2, "test-node-3"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:      "test-node-0",
+						nodeGroup: "test",
+						utilInfo:  generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:      "test-node-1",
+						nodeGroup: "test",
+						utilInfo:  generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-2"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-2"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-2",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-2"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("test-node-3"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-3"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-3",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-3"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{"test-node-0", "test-node-1", "test-node-2", "test-node-3"},
-			wantDeletedPods:  []string{"test-node-2-pod-0", "test-node-2-pod-1", "test-node-3-pod-0", "test-node-3-pod-1"},
+			wantDeletedNodes: []string{
+				"test-node-0",
+				"test-node-1",
+				"test-node-2", "test-node-3"},
+			wantDeletedPods: []string{"test-node-2-pod-0", "test-node-2-pod-1", "test-node-3-pod-0", "test-node-3-pod-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"test-node-0": {
 					{toBeDeletedTaint},
@@ -256,50 +287,53 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"two atomic groups can be scaled down together": {
-			emptyNodes: generateNodeGroupViewList(atomic2mixed, 1, 2),
-			drainNodes: append(generateNodeGroupViewList(atomic2mixed, 0, 1),
-				generateNodeGroupViewList(atomic2drain, 0, 2)...),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"atomic-2-mixed": sizedNodeGroup("atomic-2-mixed", 2, true, ignoreDaemonSetsUtilization),
+				"atomic-2-drain": sizedNodeGroup("atomic-2-drain", 2, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"atomic-2-mixed", 1, 2},
+			},
+			drainNodes: []nodeGroupViewInfo{
+				{"atomic-2-mixed", 0, 1},
+				{"atomic-2-drain", 0, 2},
+			},
 			pods: map[string][]*apiv1.Pod{
 				"atomic-2-mixed-node-0": removablePods(2, "atomic-2-mixed-node-0"),
 				"atomic-2-drain-node-0": removablePods(1, "atomic-2-drain-node-0"),
 				"atomic-2-drain-node-1": removablePods(2, "atomic-2-drain-node-1"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("atomic-2-mixed-node-1"),
-						NodeGroup:   atomic2mixed,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "atomic-2-mixed-node-1",
+						nodeGroup:   "atomic-2-mixed",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("atomic-2-mixed-node-0"),
-						NodeGroup:   atomic2mixed,
-						EvictedPods: removablePods(2, "atomic-2-mixed-node-0"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "atomic-2-mixed-node-0",
+						nodeGroup:   "atomic-2-mixed",
+						evictedPods: removablePods(2, "atomic-2-mixed-node-0"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("atomic-2-drain-node-0"),
-						NodeGroup:   atomic2drain,
-						EvictedPods: removablePods(1, "atomic-2-drain-node-0"),
-						UtilInfo:    generateUtilInfo(1./8., 1./8.),
+						name:        "atomic-2-drain-node-0",
+						nodeGroup:   "atomic-2-drain",
+						evictedPods: removablePods(1, "atomic-2-drain-node-0"),
+						utilInfo:    generateUtilInfo(1./8., 1./8.),
 					},
 					{
-						Node:        generateNode("atomic-2-drain-node-1"),
-						NodeGroup:   atomic2drain,
-						EvictedPods: removablePods(2, "atomic-2-drain-node-1"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "atomic-2-drain-node-1",
+						nodeGroup:   "atomic-2-drain",
+						evictedPods: removablePods(2, "atomic-2-drain-node-1"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
-			wantDeletedNodes: []string{
-				"atomic-2-mixed-node-0",
-				"atomic-2-mixed-node-1",
-				"atomic-2-drain-node-0",
-				"atomic-2-drain-node-1",
-			},
-			wantDeletedPods: []string{"atomic-2-mixed-node-0-pod-0", "atomic-2-mixed-node-0-pod-1", "atomic-2-drain-node-0-pod-0", "atomic-2-drain-node-1-pod-0", "atomic-2-drain-node-1-pod-1"},
+			wantDeletedNodes: []string{"atomic-2-mixed-node-0", "atomic-2-mixed-node-1", "atomic-2-drain-node-0", "atomic-2-drain-node-1"},
+			wantDeletedPods:  []string{"atomic-2-mixed-node-0-pod-0", "atomic-2-mixed-node-0-pod-1", "atomic-2-drain-node-0-pod-0", "atomic-2-drain-node-1-pod-0", "atomic-2-drain-node-1-pod-1"},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"atomic-2-mixed-node-0": {
 					{toBeDeletedTaint},
@@ -322,38 +356,45 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"atomic empty and drain deletion work correctly together": {
-			emptyNodes: generateNodeGroupViewList(atomic4, 0, 2),
-			drainNodes: generateNodeGroupViewList(atomic4, 2, 4),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"atomic-4": sizedNodeGroup("atomic-4", 4, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{
+				{"atomic-4", 0, 2},
+			},
+			drainNodes: []nodeGroupViewInfo{
+				{"atomic-4", 2, 4},
+			},
 			pods: map[string][]*apiv1.Pod{
 				"atomic-4-node-2": removablePods(2, "atomic-4-node-2"),
 				"atomic-4-node-3": removablePods(2, "atomic-4-node-3"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("atomic-4-node-0"),
-						NodeGroup:   atomic4,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "atomic-4-node-0",
+						nodeGroup:   "atomic-4",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("atomic-4-node-1"),
-						NodeGroup:   atomic4,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "atomic-4-node-1",
+						nodeGroup:   "atomic-4",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("atomic-4-node-2"),
-						NodeGroup:   atomic4,
-						EvictedPods: removablePods(2, "atomic-4-node-2"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "atomic-4-node-2",
+						nodeGroup:   "atomic-4",
+						evictedPods: removablePods(2, "atomic-4-node-2"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("atomic-4-node-3"),
-						NodeGroup:   atomic4,
-						EvictedPods: removablePods(2, "atomic-4-node-3"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "atomic-4-node-3",
+						nodeGroup:   "atomic-4",
+						evictedPods: removablePods(2, "atomic-4-node-3"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
@@ -381,15 +422,17 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"failure to taint empty node stops deletion and cleans already applied taints": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 4),
-			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 4}},
+			drainNodes: []nodeGroupViewInfo{{"test", 4, 5}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-4": removablePods(2, "test-node-4"),
 			},
 			failedNodeTaint: map[string]bool{"test-node-2": true},
-			wantStatus: &status.ScaleDownStatus{
-				Result:          status.ScaleDownError,
-				ScaledDownNodes: nil,
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
 			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
 				"test-node-0": {
@@ -404,22 +447,25 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint empty atomic node stops deletion and cleans already applied taints": {
-			emptyNodes: generateNodeGroupViewList(atomic4taints, 0, 4),
-			drainNodes: generateNodeGroupViewList(testNg, 4, 5),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test":     sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+				"atomic-4": sizedNodeGroup("atomic-4", 4, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"atomic-4", 0, 4}},
+			drainNodes: []nodeGroupViewInfo{{"test", 4, 5}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-4": removablePods(2, "test-node-4"),
 			},
-			failedNodeTaint: map[string]bool{"atomic-4-taints-node-2": true},
-			wantStatus: &status.ScaleDownStatus{
-				Result:          status.ScaleDownError,
-				ScaledDownNodes: nil,
+			failedNodeTaint: map[string]bool{"atomic-4-node-2": true},
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
 			},
 			wantTaintUpdates: map[string][][]apiv1.Taint{
-				"atomic-4-taints-node-0": {
+				"atomic-4-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"atomic-4-taints-node-1": {
+				"atomic-4-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
@@ -427,8 +473,11 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint drain node stops further deletion and cleans already applied taints": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			drainNodes: generateNodeGroupViewList(testNg, 2, 6),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}}, //generateNodeGroupViewList(testNg, 0, 2),
+			drainNodes: []nodeGroupViewInfo{{"test", 2, 6}}, //generateNodeGroupViewList(testNg, 2, 6),
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": removablePods(2, "test-node-3"),
@@ -436,20 +485,20 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"test-node-5": removablePods(2, "test-node-5"),
 			},
 			failedNodeTaint: map[string]bool{"test-node-2": true},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownError,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 				},
 			},
@@ -469,8 +518,12 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			wantErr: cmpopts.AnyError,
 		},
 		"failure to taint drain atomic node stops further deletion and cleans already applied taints": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			drainNodes: generateNodeGroupViewList(atomic6, 0, 6),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test":     sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+				"atomic-6": sizedNodeGroup("atomic-6", 6, true, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}},
+			drainNodes: []nodeGroupViewInfo{{"atomic-6", 0, 6}},
 			pods: map[string][]*apiv1.Pod{
 				"atomic-6-node-0": removablePods(2, "atomic-6-node-0"),
 				"atomic-6-node-1": removablePods(2, "atomic-6-node-1"),
@@ -480,20 +533,20 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"atomic-6-node-5": removablePods(2, "atomic-6-node-5"),
 			},
 			failedNodeTaint: map[string]bool{"atomic-6-node-2": true},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownError,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownError,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 				},
 			},
@@ -513,7 +566,10 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			wantErr: cmpopts.AnyError,
 		},
 		"nodes that failed drain are correctly reported in results": {
-			drainNodes: generateNodeGroupViewList(testNg, 0, 4),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			drainNodes: []nodeGroupViewInfo{{"test", 0, 4}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": removablePods(3, "test-node-0"),
 				"test-node-1": removablePods(3, "test-node-1"),
@@ -525,32 +581,32 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"test-node-0-pod-1": true,
 				"test-node-2-pod-1": true,
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "test-node-0"),
-						UtilInfo:    generateUtilInfo(3./8., 3./8.),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: removablePods(3, "test-node-0"),
+						utilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "test-node-1"),
-						UtilInfo:    generateUtilInfo(3./8., 3./8.),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: removablePods(3, "test-node-1"),
+						utilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
-						Node:        generateNode("test-node-2"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "test-node-2"),
-						UtilInfo:    generateUtilInfo(3./8., 3./8.),
+						name:        "test-node-2",
+						nodeGroup:   "test",
+						evictedPods: removablePods(3, "test-node-2"),
+						utilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 					{
-						Node:        generateNode("test-node-3"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(3, "test-node-3"),
-						UtilInfo:    generateUtilInfo(3./8., 3./8.),
+						name:        "test-node-3",
+						nodeGroup:   "test",
+						evictedPods: removablePods(3, "test-node-3"),
+						utilInfo:    generateUtilInfo(3./8., 3./8.),
 					},
 				},
 			},
@@ -601,8 +657,11 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"nodes that failed deletion are correctly reported in results": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}},
+			drainNodes: []nodeGroupViewInfo{{"test", 2, 4}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": removablePods(2, "test-node-3"),
@@ -611,32 +670,32 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 				"test-node-1": true,
 				"test-node-3": true,
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-2"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-2"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-2",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-2"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("test-node-3"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-3"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-3",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-3"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
@@ -669,26 +728,29 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"DS pods are evicted from empty nodes, but don't block deletion on error": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": generateDsPods(2, "test-node-0"),
 				"test-node-1": generateDsPods(2, "test-node-1"),
 			},
 			failedPodDrain: map[string]bool{"test-node-1-ds-pod-0": true},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    dsUtilInfo,
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    dsUtilInfo,
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    dsUtilInfo,
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    dsUtilInfo,
 					},
 				},
 			},
@@ -708,29 +770,32 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"DS pods and deletion with drain": {
-			drainNodes: generateNodeGroupViewList(testNg, 0, 2),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			drainNodes: []nodeGroupViewInfo{{"test", 0, 2}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": generateDsPods(2, "test-node-0"),
 				"test-node-1": generateDsPods(2, "test-node-1"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:      generateNode("test-node-0"),
-						NodeGroup: testNg,
+						name:      "test-node-0",
+						nodeGroup: "test",
 						// this is nil because DaemonSetEvictionForOccupiedNodes is
 						// not enabled for drained nodes in this test suite
-						EvictedPods: nil,
-						UtilInfo:    dsUtilInfo,
+						evictedPods: nil,
+						utilInfo:    dsUtilInfo,
 					},
 					{
-						Node:      generateNode("test-node-1"),
-						NodeGroup: testNg,
+						name:      "test-node-1",
+						nodeGroup: "test",
 						// this is nil because DaemonSetEvictionForOccupiedNodes is
 						// not enabled for drained nodes in this test suite
-						EvictedPods: nil,
-						UtilInfo:    dsUtilInfo,
+						evictedPods: nil,
+						utilInfo:    dsUtilInfo,
 					},
 				},
 			},
@@ -751,40 +816,41 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"DS pods and empty and drain deletion work correctly together": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
-			drainNodes: generateNodeGroupViewList(testNg, 2, 4),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}},
+			drainNodes: []nodeGroupViewInfo{{"test", 2, 4}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-2": removablePods(2, "test-node-2"),
 				"test-node-3": generateDsPods(2, "test-node-3"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-2"),
-						NodeGroup:   testNg,
-						EvictedPods: removablePods(2, "test-node-2"),
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-2",
+						nodeGroup:   "test",
+						evictedPods: removablePods(2, "test-node-2"),
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:      generateNode("test-node-3"),
-						NodeGroup: testNg,
-						// this is nil because DaemonSetEvictionForOccupiedNodes is
-						// not enabled for drained nodes in this test suite
-						EvictedPods: nil,
-						UtilInfo:    dsUtilInfo,
+						name:        "test-node-3",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    dsUtilInfo,
 					},
 				},
 			},
@@ -813,25 +879,28 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"nodes with pods are not deleted if the node is passed as empty": {
-			emptyNodes: generateNodeGroupViewList(testNg, 0, 2),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test": sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+			},
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}},
 			pods: map[string][]*apiv1.Pod{
 				"test-node-0": removablePods(2, "test-node-0"),
 				"test-node-1": removablePods(2, "test-node-1"),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
@@ -853,40 +922,41 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 			},
 		},
 		"atomic nodes with pods are not deleted if the node is passed as empty": {
-			emptyNodes: append(
-				generateNodeGroupViewList(testNg, 0, 2),
-				generateNodeGroupViewList(atomic2pods, 0, 2)...,
-			),
-			pods: map[string][]*apiv1.Pod{
-				"test-node-1":          removablePods(2, "test-node-1"),
-				"atomic-2-pods-node-1": removablePods(2, "atomic-2-pods-node-1"),
+			nodeGroups: map[string]*testprovider.TestNodeGroup{
+				"test":     sizedNodeGroup("test", 3, false, ignoreDaemonSetsUtilization),
+				"atomic-2": sizedNodeGroup("atomic-2", 2, true, ignoreDaemonSetsUtilization),
 			},
-			wantStatus: &status.ScaleDownStatus{
-				Result: status.ScaleDownNodeDeleteStarted,
-				ScaledDownNodes: []*status.ScaleDownNode{
+			emptyNodes: []nodeGroupViewInfo{{"test", 0, 2}, {"atomic-2", 0, 2}},
+			pods: map[string][]*apiv1.Pod{
+				"test-node-1":     removablePods(2, "test-node-1"),
+				"atomic-2-node-1": removablePods(2, "atomic-2-node-1"),
+			},
+			wantStatus: scaleDownStatusInfo{
+				result: status.ScaleDownNodeDeleteStarted,
+				scaledDownNodes: []scaleDownNodeInfo{
 					{
-						Node:        generateNode("test-node-0"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "test-node-0",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("test-node-1"),
-						NodeGroup:   testNg,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "test-node-1",
+						nodeGroup:   "test",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 					{
-						Node:        generateNode("atomic-2-pods-node-0"),
-						NodeGroup:   atomic2pods,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(0, 0),
+						name:        "atomic-2-node-0",
+						nodeGroup:   "atomic-2",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(0, 0),
 					},
 					{
-						Node:        generateNode("atomic-2-pods-node-1"),
-						NodeGroup:   atomic2pods,
-						EvictedPods: nil,
-						UtilInfo:    generateUtilInfo(2./8., 2./8.),
+						name:        "atomic-2-node-1",
+						nodeGroup:   "atomic-2",
+						evictedPods: nil,
+						utilInfo:    generateUtilInfo(2./8., 2./8.),
 					},
 				},
 			},
@@ -900,20 +970,20 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 					{toBeDeletedTaint},
 					{},
 				},
-				"atomic-2-pods-node-0": {
+				"atomic-2-node-0": {
 					{toBeDeletedTaint},
 					{},
 				},
-				"atomic-2-pods-node-1": {
+				"atomic-2-node-1": {
 					{toBeDeletedTaint},
 					{},
 				},
 			},
 			wantNodeDeleteResults: map[string]status.NodeDeleteResult{
-				"test-node-0":          {ResultType: status.NodeDeleteOk},
-				"test-node-1":          {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
-				"atomic-2-pods-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
-				"atomic-2-pods-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"test-node-0":     {ResultType: status.NodeDeleteOk},
+				"test-node-1":     {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
+				"atomic-2-node-0": {ResultType: status.NodeDeleteErrorFailedToDelete, Err: cmpopts.AnyError},
+				"atomic-2-node-1": {ResultType: status.NodeDeleteErrorInternal, Err: cmpopts.AnyError},
 			},
 		},
 	}
@@ -927,22 +997,11 @@ func getStartDeletionTestCases(testNg *testprovider.TestNodeGroup, ignoreDaemonS
 }
 
 func TestStartDeletion(t *testing.T) {
-	testNg1 := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
-	opts1 := &config.NodeGroupAutoscalingOptions{
-		IgnoreDaemonSetsUtilization: false,
-	}
-	testNg1.SetOptions(opts1)
-	testNg2 := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
-	opts2 := &config.NodeGroupAutoscalingOptions{
-		IgnoreDaemonSetsUtilization: true,
-	}
-	testNg2.SetOptions(opts2)
-
 	testSets := []map[string]startDeletionTestCase{
 		// IgnoreDaemonSetsUtilization is false
-		getStartDeletionTestCases(testNg1, opts1.IgnoreDaemonSetsUtilization, "testNg1"),
+		getStartDeletionTestCases(false, "testNg1"),
 		// IgnoreDaemonSetsUtilization is true
-		getStartDeletionTestCases(testNg2, opts2.IgnoreDaemonSetsUtilization, "testNg2"),
+		getStartDeletionTestCases(true, "testNg2"),
 	}
 
 	for _, testSet := range testSets {
@@ -952,16 +1011,26 @@ func TestStartDeletion(t *testing.T) {
 				// of a single test case, and the goroutines eventually access tc in fakeClient hooks below.
 				tc := tc
 				// Insert all nodes into a map to support live node updates and GETs.
+				emptyNodeGroupViews, drainNodeGroupViews := []*budgets.NodeGroupView{}, []*budgets.NodeGroupView{}
 				allEmptyNodes, allDrainNodes := []*apiv1.Node{}, []*apiv1.Node{}
 				nodesByName := make(map[string]*apiv1.Node)
 				nodesLock := sync.Mutex{}
-				for _, bucket := range tc.emptyNodes {
+				for _, ngvInfo := range tc.emptyNodes {
+					ngv := generateNodeGroupViewList(tc.nodeGroups[ngvInfo.nodeGroupName], ngvInfo.from, ngvInfo.to)
+					emptyNodeGroupViews = append(emptyNodeGroupViews, ngv...)
+				}
+				for _, bucket := range emptyNodeGroupViews {
 					allEmptyNodes = append(allEmptyNodes, bucket.Nodes...)
-					for _, node := range allEmptyNodes {
+					for _, node := range bucket.Nodes {
 						nodesByName[node.Name] = node
 					}
 				}
-				for _, bucket := range tc.drainNodes {
+
+				for _, ngvInfo := range tc.drainNodes {
+					ngv := generateNodeGroupViewList(tc.nodeGroups[ngvInfo.nodeGroupName], ngvInfo.from, ngvInfo.to)
+					drainNodeGroupViews = append(drainNodeGroupViews, ngv...)
+				}
+				for _, bucket := range drainNodeGroupViews {
 					allDrainNodes = append(allDrainNodes, bucket.Nodes...)
 					for _, node := range bucket.Nodes {
 						nodesByName[node.Name] = node
@@ -1042,14 +1111,14 @@ func TestStartDeletion(t *testing.T) {
 					deletedNodes <- node
 					return nil
 				})
-				for _, bucket := range tc.emptyNodes {
+				for _, bucket := range emptyNodeGroupViews {
 					bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 					provider.InsertNodeGroup(bucket.Group)
 					for _, node := range bucket.Nodes {
 						provider.AddNode(bucket.Group.Id(), node)
 					}
 				}
-				for _, bucket := range tc.drainNodes {
+				for _, bucket := range drainNodeGroupViews {
 					bucket.Group.(*testprovider.TestNodeGroup).SetCloudProvider(provider)
 					provider.InsertNodeGroup(bucket.Group)
 					for _, node := range bucket.Nodes {
@@ -1078,13 +1147,13 @@ func TestStartDeletion(t *testing.T) {
 					t.Fatalf("Couldn't create daemonset lister")
 				}
 
-				registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, dsLister, nil, nil, nil, nil)
+				registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
 				ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 				if err != nil {
 					t.Fatalf("Couldn't set up autoscaling context: %v", err)
 				}
 				csr := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, ctx.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(config.NodeGroupAutoscalingOptions{MaxNodeProvisionTime: 15 * time.Minute}))
-				for _, bucket := range tc.emptyNodes {
+				for _, bucket := range emptyNodeGroupViews {
 					for _, node := range bucket.Nodes {
 						err := ctx.ClusterSnapshot.AddNodeWithPods(node, tc.pods[node.Name])
 						if err != nil {
@@ -1092,7 +1161,7 @@ func TestStartDeletion(t *testing.T) {
 						}
 					}
 				}
-				for _, bucket := range tc.drainNodes {
+				for _, bucket := range drainNodeGroupViews {
 					for _, node := range bucket.Nodes {
 						pods, found := tc.pods[node.Name]
 						if !found {
@@ -1103,6 +1172,19 @@ func TestStartDeletion(t *testing.T) {
 							t.Fatalf("Couldn't add node %q to snapshot: %v", node.Name, err)
 						}
 					}
+				}
+
+				wantScaleDownStatus := &status.ScaleDownStatus{
+					Result: tc.wantStatus.result,
+				}
+				for _, scaleDownNodeInfo := range tc.wantStatus.scaledDownNodes {
+					statusScaledDownNode := &status.ScaleDownNode{
+						Node:        generateNode(scaleDownNodeInfo.name),
+						NodeGroup:   tc.nodeGroups[scaleDownNodeInfo.nodeGroup],
+						EvictedPods: scaleDownNodeInfo.evictedPods,
+						UtilInfo:    scaleDownNodeInfo.utilInfo,
+					}
+					wantScaleDownStatus.ScaledDownNodes = append(wantScaleDownStatus.ScaledDownNodes, statusScaledDownNode)
 				}
 
 				// Create Actuator, run StartDeletion, and verify the error.
@@ -1125,7 +1207,7 @@ func TestStartDeletion(t *testing.T) {
 				ignoreTimestamps := cmpopts.IgnoreFields(status.ScaleDownStatus{}, "NodeDeleteResultsAsOf")
 				cmpNg := cmp.Comparer(func(a, b *testprovider.TestNodeGroup) bool { return a.Id() == b.Id() })
 				statusCmpOpts := cmp.Options{ignoreSdNodeOrder, ignoreTimestamps, cmpNg, cmpopts.EquateEmpty()}
-				if diff := cmp.Diff(tc.wantStatus, gotStatus, statusCmpOpts); diff != "" {
+				if diff := cmp.Diff(wantScaleDownStatus, gotStatus, statusCmpOpts); diff != "" {
 					t.Errorf("StartDeletion status diff (-want +got):\n%s", diff)
 				}
 
@@ -1178,8 +1260,8 @@ func TestStartDeletion(t *testing.T) {
 						break taintsLoop
 					}
 				}
-				ignoreTaintValue := cmpopts.IgnoreFields(apiv1.Taint{}, "Value")
-				if diff := cmp.Diff(tc.wantTaintUpdates, gotTaintUpdates, ignoreTaintValue, cmpopts.EquateEmpty()); diff != "" {
+				startupTaintValue := cmpopts.IgnoreFields(apiv1.Taint{}, "Value")
+				if diff := cmp.Diff(tc.wantTaintUpdates, gotTaintUpdates, startupTaintValue, cmpopts.EquateEmpty()); diff != "" {
 					t.Errorf("taintUpdates diff (-want +got):\n%s", diff)
 				}
 
@@ -1336,7 +1418,7 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 
 			podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
 			pdbLister := kube_util.NewTestPodDisruptionBudgetLister([]*policyv1.PodDisruptionBudget{})
-			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, nil, nil, nil, nil, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, nil, nil, nil, nil, nil)
 			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)
@@ -1380,10 +1462,11 @@ func TestStartDeletionInBatchBasic(t *testing.T) {
 	}
 }
 
-func sizedNodeGroup(id string, size int, atomic bool) cloudprovider.NodeGroup {
-	ng := testprovider.NewTestNodeGroup(id, 10000, 0, size, true, false, "n1-standard-2", nil, nil)
+func sizedNodeGroup(id string, size int, atomic, ignoreDaemonSetUtil bool) *testprovider.TestNodeGroup {
+	ng := testprovider.NewTestNodeGroup(id, 1000, 0, size, true, false, "n1-standard-2", nil, nil)
 	ng.SetOptions(&config.NodeGroupAutoscalingOptions{
-		ZeroOrMaxNodeScaling: atomic,
+		ZeroOrMaxNodeScaling:        atomic,
+		IgnoreDaemonSetsUtilization: ignoreDaemonSetUtil,
 	})
 	return ng
 }

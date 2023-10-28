@@ -19,6 +19,7 @@ package hetzner
 import (
 	"context"
 	"fmt"
+	"maps"
 	"math/rand"
 	"strings"
 	"sync"
@@ -241,6 +242,16 @@ func (n *hetznerNodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, err
 	}
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, nodeGroupLabels)
 
+	if n.manager.clusterConfig.IsUsingNewFormat && n.id != drainingNodePoolId {
+		for _, taint := range n.manager.clusterConfig.NodeConfigs[n.id].Taints {
+			node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
+				Key:    taint.Key,
+				Value:  taint.Value,
+				Effect: taint.Effect,
+			})
+		}
+	}
+
 	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.id))
 	nodeInfo.SetNode(&node)
 
@@ -325,14 +336,23 @@ func buildNodeGroupLabels(n *hetznerNodeGroup) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	klog.V(4).Infof("Build node group label for %s", n.id)
 
-	return map[string]string{
+	labels := map[string]string{
 		apiv1.LabelInstanceType:      n.instanceType,
 		apiv1.LabelTopologyRegion:    n.region,
 		apiv1.LabelArchStable:        archLabel,
 		"csi.hetzner.cloud/location": n.region,
 		nodeGroupLabel:               n.id,
-	}, nil
+	}
+
+	if n.manager.clusterConfig.IsUsingNewFormat && n.id != drainingNodePoolId {
+		maps.Copy(labels, n.manager.clusterConfig.NodeConfigs[n.id].Labels)
+	}
+
+	klog.V(4).Infof("%s nodegroup labels: %s", n.id, labels)
+
+	return labels, nil
 }
 
 func getMachineTypeResourceList(m *hetznerManager, instanceType string) (apiv1.ResourceList, error) {
@@ -392,10 +412,16 @@ func createServer(n *hetznerNodeGroup) error {
 		return err
 	}
 
+	cloudInit := n.manager.clusterConfig.LegacyConfig.CloudInit
+
+	if n.manager.clusterConfig.IsUsingNewFormat {
+		cloudInit = n.manager.clusterConfig.NodeConfigs[n.id].CloudInit
+	}
+
 	StartAfterCreate := true
 	opts := hcloud.ServerCreateOpts{
 		Name:             newNodeName(n),
-		UserData:         n.manager.cloudInit,
+		UserData:         cloudInit,
 		Location:         &hcloud.Location{Name: n.region},
 		ServerType:       serverType,
 		Image:            image,
@@ -443,7 +469,18 @@ func createServer(n *hetznerNodeGroup) error {
 // server.
 func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Image, error) {
 	// Select correct image based on server type architecture
-	image, _, err := n.manager.client.Image.GetForArchitecture(context.TODO(), n.manager.image, serverType.Architecture)
+	imageName := n.manager.clusterConfig.LegacyConfig.ImageName
+	if n.manager.clusterConfig.IsUsingNewFormat {
+		if serverType.Architecture == hcloud.ArchitectureARM {
+			imageName = n.manager.clusterConfig.ImagesForArch.Arm64
+		}
+
+		if serverType.Architecture == hcloud.ArchitectureX86 {
+			imageName = n.manager.clusterConfig.ImagesForArch.Amd64
+		}
+	}
+
+	image, _, err := n.manager.client.Image.GetForArchitecture(context.TODO(), imageName, serverType.Architecture)
 	if err != nil {
 		// Keep looking for label if image was not found by id or name
 		if !strings.HasPrefix(err.Error(), "image not found") {
@@ -462,12 +499,12 @@ func findImage(n *hetznerNodeGroup, serverType *hcloud.ServerType) (*hcloud.Imag
 		Sort:         []string{"created:desc"},
 		Architecture: []hcloud.Architecture{serverType.Architecture},
 		ListOpts: hcloud.ListOpts{
-			LabelSelector: n.manager.image,
+			LabelSelector: imageName,
 		},
 	})
 
 	if err != nil || len(images) == 0 {
-		return nil, fmt.Errorf("unable to find image %s with architecture %s: %v", n.manager.image, serverType.Architecture, err)
+		return nil, fmt.Errorf("unable to find image %s with architecture %s: %v", imageName, serverType.Architecture, err)
 	}
 
 	return images[0], nil

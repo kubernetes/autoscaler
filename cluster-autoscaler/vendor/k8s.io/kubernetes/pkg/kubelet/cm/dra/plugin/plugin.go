@@ -54,52 +54,12 @@ func (h *RegistrationHandler) RegisterPlugin(pluginName string, endpoint string,
 	// Storing endpoint of newly registered DRA Plugin into the map, where plugin name will be the key
 	// all other DRA components will be able to get the actual socket of DRA plugins by its name.
 	draPlugins.Set(pluginName, &Plugin{
+		conn:                    nil,
 		endpoint:                endpoint,
 		highestSupportedVersion: highestSupportedVersion,
 	})
 
 	return nil
-}
-
-// Return the highest supported version.
-func highestSupportedVersion(versions []string) (*utilversion.Version, error) {
-	if len(versions) == 0 {
-		return nil, errors.New(log("DRA plugin reporting empty array for supported versions"))
-	}
-
-	var highestSupportedVersion *utilversion.Version
-
-	var theErr error
-
-	for i := len(versions) - 1; i >= 0; i-- {
-		currentHighestVer, err := utilversion.ParseGeneric(versions[i])
-		if err != nil {
-			theErr = err
-
-			continue
-		}
-
-		if currentHighestVer.Major() > 1 {
-			// DRA currently only has version 1.x
-			continue
-		}
-
-		if highestSupportedVersion == nil || highestSupportedVersion.LessThan(currentHighestVer) {
-			highestSupportedVersion = currentHighestVer
-		}
-	}
-
-	if highestSupportedVersion == nil {
-		return nil, fmt.Errorf(
-			"could not find a highest supported version from versions (%v) reported by this plugin: %+v",
-			versions, theErr)
-	}
-
-	if highestSupportedVersion.Major() != 1 {
-		return nil, fmt.Errorf("highest supported version reported by plugin is %v, must be v1.x", highestSupportedVersion)
-	}
-
-	return highestSupportedVersion, nil
 }
 
 func (h *RegistrationHandler) validateVersions(
@@ -118,7 +78,7 @@ func (h *RegistrationHandler) validateVersions(
 	}
 
 	// Validate version
-	newPluginHighestVersion, err := highestSupportedVersion(versions)
+	newPluginHighestVersion, err := utilversion.HighestSupportedVersion(versions)
 	if err != nil {
 		return nil, errors.New(
 			log(

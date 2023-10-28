@@ -24,7 +24,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -32,11 +31,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/deletiontracker"
+	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/pdb"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/status"
 	"k8s.io/autoscaler/cluster-autoscaler/core/scaledown/unremovable"
 	. "k8s.io/autoscaler/cluster-autoscaler/core/test"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/utilization"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
@@ -481,7 +482,7 @@ func TestUpdateClusterState(t *testing.T) {
 			}
 			rsLister, err := kube_util.NewTestReplicaSetLister(tc.replicasSets)
 			assert.NoError(t, err)
-			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 			provider := testprovider.NewTestCloudProvider(nil, nil)
 			context, err := NewScaleTestAutoscalingContext(config.AutoscalingOptions{
 				NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
@@ -492,8 +493,8 @@ func TestUpdateClusterState(t *testing.T) {
 			}, &fake.Clientset{}, registry, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, tc.nodes, tc.pods)
-			deleteOptions := simulator.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions)
+			deleteOptions := options.NodeDeleteOptions{}
+			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(tc.eligible)}
 			if tc.isSimulationTimeout {
 				context.AutoscalingOptions.ScaleDownSimulationTimeout = 1 * time.Second
@@ -611,8 +612,8 @@ func TestUpdateClusterStatUnneededNodesLimit(t *testing.T) {
 			}, &fake.Clientset{}, nil, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, nodes, nil)
-			deleteOptions := simulator.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions)
+			deleteOptions := options.NodeDeleteOptions{}
+			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
 			p.eligibilityChecker = &fakeEligibilityChecker{eligible: asMap(nodeNames(nodes))}
 			p.minUpdateInterval = tc.updateInterval
 			p.unneededNodes.Update(previouslyUnneeded, time.Now())
@@ -779,8 +780,8 @@ func TestNodesToDelete(t *testing.T) {
 			}, &fake.Clientset{}, nil, provider, nil, nil)
 			assert.NoError(t, err)
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, context.ClusterSnapshot, allNodes, nil)
-			deleteOptions := simulator.NodeDeleteOptions{}
-			p := New(&context, NewTestProcessors(&context), deleteOptions)
+			deleteOptions := options.NodeDeleteOptions{}
+			p := New(&context, NewTestProcessors(&context), deleteOptions, nil)
 			p.latestUpdate = time.Now()
 			p.actuationStatus = deletiontracker.NewNodeDeletionTracker(0 * time.Second)
 			p.unneededNodes.Update(allRemovables, time.Now().Add(-1*time.Hour))
@@ -901,7 +902,7 @@ type fakeRemovalSimulator struct {
 
 func (r *fakeRemovalSimulator) DropOldHints() {}
 
-func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]bool, _ time.Time, _ []*policyv1.PodDisruptionBudget) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode) {
+func (r *fakeRemovalSimulator) SimulateNodeRemoval(name string, _ map[string]bool, _ time.Time, _ pdb.RemainingPdbTracker) (*simulator.NodeToBeRemoved, *simulator.UnremovableNode) {
 	time.Sleep(r.sleep)
 	node := &apiv1.Node{}
 	for _, n := range r.nodes {

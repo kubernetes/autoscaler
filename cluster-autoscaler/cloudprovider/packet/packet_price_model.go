@@ -24,8 +24,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
-// PacketPriceModel implements PriceModel interface for Packet.
-type PacketPriceModel struct {
+// Price implements Price interface for Equinix Metal.
+type Price struct {
 }
 
 const (
@@ -34,28 +34,25 @@ const (
 )
 
 var instancePrices = map[string]float64{
-	"c1.large.arm":  0.5000,
-	"c1.small.x86":  0.4000,
-	"c1.xlarge.x86": 1.7500,
-	"c2.large.arm":  1.0000,
-	"c2.medium.x86": 1.0000,
-	"c3.medium.x86": 1.1000,
-	"c3.small.x86":  0.5000,
-	"g2.large.x86":  5.0000,
-	"m1.xlarge.x86": 1.7000,
-	"m2.xlarge.x86": 2.0000,
-	"n2.xlarge.x86": 2.2500,
-	"s1.large.x86":  1.5000,
-	"s3.xlarge.x86": 1.8500,
-	"t1.small.x86":  0.0700,
-	"t3.small.x86":  0.3500,
-	"x1.small.x86":  0.4000,
-	"x2.xlarge.x86": 2.5000,
+	"a3.large.x86":   7.5000,
+	"c2.medium.x86":  1.0000,
+	"c3.large.arm64": 2.5000,
+	"c3.medium.x86":  1.3500,
+	"c3.small.x86":   0.7500,
+	"g2.large.x86":   5.0000,
+	"m2.xlarge.x86":  2.9000,
+	"m3.large.x86":   3.1000,
+	"m3.small.x86":   1.0500,
+	"n2.xlarge.x86":  3.2500,
+	"n3.xlarge.x86":  4.5000,
+	"s3.xlarge.x86":  2.9500,
+	"t3.small.x86":   0.3500,
+	"x2.xlarge.x86":  2.5000,
 }
 
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices are in USD.
-func (model *PacketPriceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
+func (model *Price) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	if node.Labels != nil {
 		if machineType, found := node.Labels[apiv1.LabelInstanceType]; found {
@@ -75,7 +72,7 @@ func getHours(startTime time.Time, endTime time.Time) float64 {
 
 // PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
-func (model *PacketPriceModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
+func (model *Price) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0
 	for _, container := range pod.Spec.Containers {
 		price += getBasePrice(container.Resources.Requests, startTime, endTime)

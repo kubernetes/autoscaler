@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -30,7 +31,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
@@ -59,7 +59,7 @@ func TestFindEmptyNodes(t *testing.T) {
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
 	clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, []*apiv1.Node{nodes[0], nodes[1], nodes[2], nodes[3]}, []*apiv1.Pod{pod1, pod2})
 	testTime := time.Date(2020, time.December, 18, 17, 0, 0, 0, time.UTC)
-	r := NewRemovalSimulator(nil, clusterSnapshot, nil, nil, testDeleteOptions(), false)
+	r := NewRemovalSimulator(nil, clusterSnapshot, nil, nil, testDeleteOptions(), nil, false)
 	emptyNodes := r.FindEmptyNodesToRemove(nodeNames, testTime)
 	assert.Equal(t, []string{nodeNames[0], nodeNames[2], nodeNames[3]}, emptyNodes)
 }
@@ -113,7 +113,7 @@ func TestFindNodesToRemove(t *testing.T) {
 	}
 	rsLister, err := kube_util.NewTestReplicaSetLister(replicaSets)
 	assert.NoError(t, err)
-	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, rsLister, nil)
 
 	ownerRefs := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
 
@@ -136,14 +136,11 @@ func TestFindNodesToRemove(t *testing.T) {
 	fullNodeInfo.AddPod(pod4)
 
 	emptyNodeToRemove := NodeToBeRemoved{
-		Node:             emptyNode,
-		PodsToReschedule: []*apiv1.Pod{},
-		DaemonSetPods:    []*apiv1.Pod{},
+		Node: emptyNode,
 	}
 	drainableNodeToRemove := NodeToBeRemoved{
 		Node:             drainableNode,
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
-		DaemonSetPods:    []*apiv1.Pod{},
 	}
 
 	clusterSnapshot := clustersnapshot.NewBasicClusterSnapshot()
@@ -152,25 +149,19 @@ func TestFindNodesToRemove(t *testing.T) {
 	tracker := NewUsageTracker()
 
 	tests := []findNodesToRemoveTestConfig{
-		// just an empty node, should be removed
 		{
-			name:        "just an empty node, should be removed",
-			pods:        []*apiv1.Pod{},
-			candidates:  []string{emptyNode.Name},
-			allNodes:    []*apiv1.Node{emptyNode},
-			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
-			unremovable: []*UnremovableNode{},
+			name:       "just an empty node, should be removed",
+			candidates: []string{emptyNode.Name},
+			allNodes:   []*apiv1.Node{emptyNode},
+			toRemove:   []NodeToBeRemoved{emptyNodeToRemove},
 		},
-		// just a drainable node, but nowhere for pods to go to
 		{
 			name:        "just a drainable node, but nowhere for pods to go to",
 			pods:        []*apiv1.Pod{pod1, pod2},
 			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode},
-			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
-		// drainable node, and a mostly empty node that can take its pods
 		{
 			name:        "drainable node, and a mostly empty node that can take its pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod3},
@@ -179,23 +170,19 @@ func TestFindNodesToRemove(t *testing.T) {
 			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
 			unremovable: []*UnremovableNode{{Node: nonDrainableNode, Reason: BlockedByPod, BlockingPod: &drain.BlockingPod{Pod: pod3, Reason: drain.NotReplicated}}},
 		},
-		// drainable node, and a full node that cannot fit anymore pods
 		{
 			name:        "drainable node, and a full node that cannot fit anymore pods",
 			pods:        []*apiv1.Pod{pod1, pod2, pod4},
 			candidates:  []string{drainableNode.Name},
 			allNodes:    []*apiv1.Node{drainableNode, fullNode},
-			toRemove:    []NodeToBeRemoved{},
 			unremovable: []*UnremovableNode{{Node: drainableNode, Reason: NoPlaceToMovePods}},
 		},
-		// 4 nodes, 1 empty, 1 drainable
 		{
-			name:        "4 nodes, 1 empty, 1 drainable",
-			pods:        []*apiv1.Pod{pod1, pod2, pod3, pod4},
-			candidates:  []string{emptyNode.Name, drainableNode.Name},
-			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
-			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
-			unremovable: []*UnremovableNode{},
+			name:       "4 nodes, 1 empty, 1 drainable",
+			pods:       []*apiv1.Pod{pod1, pod2, pod3, pod4},
+			candidates: []string{emptyNode.Name, drainableNode.Name},
+			allNodes:   []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			toRemove:   []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 		},
 	}
 
@@ -206,20 +193,19 @@ func TestFindNodesToRemove(t *testing.T) {
 				destinations = append(destinations, node.Name)
 			}
 			clustersnapshot.InitializeClusterSnapshotOrDie(t, clusterSnapshot, test.allNodes, test.pods)
-			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), false)
-			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), []*policyv1.PodDisruptionBudget{})
+			r := NewRemovalSimulator(registry, clusterSnapshot, predicateChecker, tracker, testDeleteOptions(), nil, false)
+			toRemove, unremovable := r.FindNodesToRemove(test.candidates, destinations, time.Now(), nil)
 			fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
-			assert.Equal(t, toRemove, test.toRemove)
-			assert.Equal(t, unremovable, test.unremovable)
+			assert.Equal(t, test.toRemove, toRemove)
+			assert.Equal(t, test.unremovable, unremovable)
 		})
 	}
 }
 
-func testDeleteOptions() NodeDeleteOptions {
-	return NodeDeleteOptions{
+func testDeleteOptions() options.NodeDeleteOptions {
+	return options.NodeDeleteOptions{
 		SkipNodesWithSystemPods:           true,
 		SkipNodesWithLocalStorage:         true,
-		MinReplicaCount:                   0,
 		SkipNodesWithCustomControllerPods: true,
 	}
 }

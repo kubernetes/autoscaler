@@ -55,6 +55,7 @@ The current default version is Vertical Pod Autoscaler 0.14.0
 
 | VPA version     | Kubernetes version |
 |-----------------|--------------------|
+| 1.0             | 1.25+              |
 | 0.14            | 1.25+              |
 | 0.13            | 1.25+              |
 | 0.12            | 1.25+              |
@@ -304,7 +305,7 @@ For example you could have 3 profiles: [frugal](deploy/recommender-deployment-lo
 use different TargetCPUPercentile (50, 90 and 95) to calculate their recommendations.
 
 Please note the usage of the following arguments to override default names and percentiles:
-- --name=performance
+- --recommender-name=performance
 - --target-cpu-percentile=0.95
 
 You can then choose which recommender to use by setting `recommenders` inside the `VerticalPodAutoscaler` spec.

@@ -185,7 +185,7 @@ func BuildTencentcloud(opts config.AutoscalingOptions, do cloudprovider.NodeGrou
 		defer config.Close()
 	}
 
-	manager, err := CreateTencentcloudManager(config, do, opts.Regional)
+	manager, err := CreateTencentcloudManager(do, opts.Regional)
 	if err != nil {
 		klog.Fatalf("Failed to create Tencentcloud Manager: %v", err)
 	}

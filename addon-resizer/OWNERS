@@ -1,6 +1,8 @@
 approvers:
+- kwiesmueller
 - jbartosik
 reviewers:
+- kwiesmueller
 - jbartosik
 emeritus_approvers:
 - bskiba # 2022-09-30

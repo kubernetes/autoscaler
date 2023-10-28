@@ -22,13 +22,10 @@ import (
 
 	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
-	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
-	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	recommender_metrics "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
+	"k8s.io/klog/v2"
+	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
 // ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
@@ -51,31 +48,25 @@ type MetricsClient interface {
 }
 
 type metricsClient struct {
-	metricsGetter resourceclient.PodMetricsesGetter
-	namespace     string
-	clientName    string
+	source     PodMetricsLister
+	namespace  string
+	clientName string
 }
 
 // NewMetricsClient creates new instance of MetricsClient, which is used by recommender.
 // namespace limits queries to particular namespace, use k8sapiv1.NamespaceAll to select all namespaces.
-func NewMetricsClient(config *rest.Config, namespace, clientName string) MetricsClient {
-	metricsGetter := resourceclient.NewForConfigOrDie(config)
-	return newMetricsClient(metricsGetter, namespace, clientName)
-}
-
-func newMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, namespace, clientName string) MetricsClient {
+func NewMetricsClient(source PodMetricsLister, namespace, clientName string) MetricsClient {
 	return &metricsClient{
-		metricsGetter: metricsGetter,
-		namespace:     namespace,
-		clientName:    clientName,
+		source:     source,
+		namespace:  namespace,
+		clientName: clientName,
 	}
 }
 
 func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, error) {
 	var metricsSnapshots []*ContainerMetricsSnapshot
 
-	podMetricsInterface := c.metricsGetter.PodMetricses(c.namespace)
-	podMetricsList, err := podMetricsInterface.List(context.TODO(), metav1.ListOptions{})
+	podMetricsList, err := c.source.List(context.TODO(), c.namespace, metav1.ListOptions{})
 	recommender_metrics.RecordMetricsServerResponse(err, c.clientName)
 	if err != nil {
 		return nil, err

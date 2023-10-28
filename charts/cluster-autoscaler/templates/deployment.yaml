@@ -80,7 +80,7 @@ spec:
             - --node-group-auto-discovery=mig:namePrefix={{ .name }},min={{ .minSize }},max={{ .maxSize }}
             {{- end }}
           {{- end }}
-          {{- if eq .Values.cloudProvider "oci-oke" }}
+          {{- if eq .Values.cloudProvider "oci" }}
             {{- if .Values.cloudConfigPath }}
             - --nodes={{ .minSize }}:{{ .maxSize }}:{{ .name }}
             - --balance-similar-node-groups
@@ -132,36 +132,36 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: AwsAccessKeyId
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
             {{- if .Values.awsSecretAccessKey }}
             - name: AWS_SECRET_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   key: AwsSecretAccessKey
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "azure" }}
             - name: ARM_SUBSCRIPTION_ID
               valueFrom:
                 secretKeyRef:
                   key: SubscriptionID
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: ARM_RESOURCE_GROUP
               valueFrom:
                 secretKeyRef:
                   key: ResourceGroup
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: ARM_VM_TYPE
               valueFrom:
                 secretKeyRef:
                   key: VMType
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: AZURE_CLUSTER_NAME
               valueFrom:
                 secretKeyRef:
                   key: ClusterName
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- if .Values.azureUseWorkloadIdentityExtension }}
             - name: ARM_USE_WORKLOAD_IDENTITY_EXTENSION
               value: "true"
@@ -173,22 +173,22 @@ spec:
               valueFrom:
                 secretKeyRef:
                   key: TenantID
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: ARM_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   key: ClientID
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: ARM_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   key: ClientSecret
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             - name: AZURE_NODE_RESOURCE_GROUP
               valueFrom:
                 secretKeyRef:
                   key: NodeResourceGroup
-                  name: {{ template "cluster-autoscaler.fullname" . }}
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}

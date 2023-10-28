@@ -41,13 +41,13 @@ service CloudProvider {
 
   // PricingNodePrice returns a theoretical minimum price of running a node for
   // a given period of time on a perfectly matching machine.
-  // Implementation optional.
+  // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
   rpc PricingNodePrice(PricingNodePriceRequest)
     returns (PricingNodePriceResponse) {}
 
   // PricingPodPrice returns a theoretical minimum price of running a pod for a given
   // period of time on a perfectly matching machine.
-  // Implementation optional.
+  // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
   rpc PricingPodPrice(PricingPodPriceRequest)
     returns (PricingPodPriceResponse) {}
 
@@ -103,13 +103,13 @@ service CloudProvider {
   // NodeGroupTemplateNodeInfo returns a structure of an empty (as if just started) node,
   // with all of the labels, capacity and allocatable information. This will be used in
   // scale-up simulations to predict what would a new node look like if a node group was expanded.
-  // Implementation optional.
+  // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
   rpc NodeGroupTemplateNodeInfo(NodeGroupTemplateNodeInfoRequest)
     returns (NodeGroupTemplateNodeInfoResponse) {}
 
   // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
-  // NodeGroup. Returning a grpc error will result in using default options.
-  // Implementation optional.
+  // NodeGroup.
+  // Implementation optional: if unimplemented return error code 12 (for `Unimplemented`)
   rpc NodeGroupGetOptions(NodeGroupAutoscalingOptionsRequest)
     returns (NodeGroupAutoscalingOptionsResponse) {}
 }
@@ -354,6 +354,9 @@ message NodeGroupAutoscalingOptions {
   // ScaleDownUnreadyTime represents how long an unready node should be
   // unneeded before it is eligible for scale down.
   k8s.io.apimachinery.pkg.apis.meta.v1.Duration scaleDownUnreadyTime = 4;
+
+  // MaxNodeProvisionTime time CA waits for node to be provisioned
+	k8s.io.apimachinery.pkg.apis.meta.v1.Duration MaxNodeProvisionTime = 5;
 }
 
 message NodeGroupAutoscalingOptionsRequest {
@@ -368,4 +371,3 @@ message NodeGroupAutoscalingOptionsResponse {
   // autoscaling options for the requested node.
   NodeGroupAutoscalingOptions nodeGroupAutoscalingOptions = 1;
 }
-

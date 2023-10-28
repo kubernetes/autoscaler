@@ -334,13 +334,6 @@ func (ng *brightboxNodeGroup) findServerType() (*brightbox.ServerType, error) {
 	return nil, fmt.Errorf("ServerType with handle '%s' doesn't exist", handle)
 }
 
-func max(x, y int64) int64 {
-	if x > y {
-		return x
-	}
-	return y
-}
-
 func applyFudgeFactor(capacity *schedulerframework.Resource) *schedulerframework.Resource {
 	allocatable := capacity.Clone()
 	allocatable.Memory = max(0, capacity.Memory-max(capacity.Memory*memoryReservePercent/100, minimumMemoryReserve))

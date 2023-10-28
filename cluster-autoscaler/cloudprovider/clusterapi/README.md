@@ -20,6 +20,7 @@ cluster.
   * [Scale from zero support](#scale-from-zero-support)
     * [RBAC changes for scaling from zero](#rbac-changes-for-scaling-from-zero)
     * [Pre-defined labels and taints on nodes scaled from zero](#pre-defined-labels-and-taints-on-nodes-scaled-from-zero)
+    * [CPU Architecture awareness for single-arch clusters](#cpu-architecture-awareness-for-single-arch-clusters)
 * [Specifying a Custom Resource Group](#specifying-a-custom-resource-group)
 * [Specifying a Custom Resource Version](#specifying-a-custom-resource-version)
 * [Sample manifest](#sample-manifest)
@@ -239,8 +240,8 @@ If you are using the opt-in support for scaling from zero as defined by the
 Cluster API infrastructure provider, you will need to add the infrastructure
 machine template types to your role permissions for the service account
 associated with the cluster autoscaler deployment. The service account will
-need permission to `get` and `list` the infrastructure machine templates for
-your infrastructure provider.
+need permission to `get`, `list`, and `watch` the infrastructure machine
+templates for your infrastructure provider.
 
 For example, when using the [Kubemark provider](https://github.com/kubernetes-sigs/cluster-api-provider-kubemark)
 you will need to set the following permissions:
@@ -254,6 +255,7 @@ rules:
     verbs:
     - get
     - list
+    - watch
 ```
 
 #### Pre-defined labels and taints on nodes scaled from zero
@@ -274,6 +276,16 @@ metadata:
     capacity.cluster-autoscaler.kubernetes.io/labels: "key1=value1,key2=value2"
     capacity.cluster-autoscaler.kubernetes.io/taints: "key1=value1:NoSchedule,key2=value2:NoExecute"
 ```
+
+#### CPU Architecture awareness for single-arch clusters 
+
+Users of single-arch non-amd64 clusters who are using scale from zero 
+support should also set the `CAPI_SCALE_ZERO_DEFAULT_ARCH` environment variable
+to set the architecture of the nodes they want to default the node group templates to.
+The autoscaler will default to `amd64` if it is not set, and the node 
+group templates may not match the nodes' architecture, specifically when 
+the workload triggering the scale-up uses a node affinity predicate checking 
+for the node's architecture.
 
 ## Specifying a Custom Resource Group
 

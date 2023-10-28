@@ -17,11 +17,12 @@ limitations under the License.
 package routines
 
 import (
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"strings"
 )
 
 // IntegerCPUPostProcessor ensures that the recommendation delivers an integer value for CPU
@@ -40,7 +41,7 @@ var _ RecommendationPostProcessor = &IntegerCPUPostProcessor{}
 
 // Process apply the capping post-processing to the recommendation.
 // For this post processor the CPU value is rounded up to an integer
-func (p *IntegerCPUPostProcessor) Process(vpa *model.Vpa, recommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
+func (p *IntegerCPUPostProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedPodResources {
 
 	amendedRecommendation := recommendation.DeepCopy()
 

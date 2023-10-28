@@ -17,13 +17,15 @@ limitations under the License.
 package routines
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	"testing"
 )
 
 func TestExtractContainerName(t *testing.T) {
@@ -73,15 +75,17 @@ func TestExtractContainerName(t *testing.T) {
 func TestIntegerCPUPostProcessor_Process(t *testing.T) {
 	tests := []struct {
 		name           string
-		vpa            *model.Vpa
+		vpa            *vpa_types.VerticalPodAutoscaler
 		recommendation *vpa_types.RecommendedPodResources
 		want           *vpa_types.RecommendedPodResources
 	}{
 		{
 			name: "No containers match",
-			vpa: &model.Vpa{Annotations: map[string]string{
-				vpaPostProcessorPrefix + "container-other" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
-			}},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{
+					Annotations: map[string]string{
+						vpaPostProcessorPrefix + "container-other" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
+					}}},
 			recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					test.Recommendation().WithContainer("container1").WithTarget("8.6", "200Mi").GetContainerResources(),
@@ -97,9 +101,10 @@ func TestIntegerCPUPostProcessor_Process(t *testing.T) {
 		},
 		{
 			name: "2 containers, 1 matching only",
-			vpa: &model.Vpa{Annotations: map[string]string{
-				vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
-			}},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{Annotations: map[string]string{
+					vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
+				}}},
 			recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					test.Recommendation().WithContainer("container1").WithTarget("8.6", "200Mi").GetContainerResources(),
@@ -115,10 +120,11 @@ func TestIntegerCPUPostProcessor_Process(t *testing.T) {
 		},
 		{
 			name: "2 containers, 2 matching",
-			vpa: &model.Vpa{Annotations: map[string]string{
-				vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
-				vpaPostProcessorPrefix + "container2" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
-			}},
+			vpa: &vpa_types.VerticalPodAutoscaler{
+				ObjectMeta: metav1.ObjectMeta{Annotations: map[string]string{
+					vpaPostProcessorPrefix + "container1" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
+					vpaPostProcessorPrefix + "container2" + vpaPostProcessorIntegerCPUSuffix: vpaPostProcessorIntegerCPUValue,
+				}}},
 			recommendation: &vpa_types.RecommendedPodResources{
 				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 					test.Recommendation().WithContainer("container1").WithTarget("8.6", "200Mi").GetContainerResources(),
@@ -136,7 +142,7 @@ func TestIntegerCPUPostProcessor_Process(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := IntegerCPUPostProcessor{}
-			got := c.Process(tt.vpa, tt.recommendation, nil)
+			got := c.Process(tt.vpa, tt.recommendation)
 			assert.True(t, equalRecommendedPodResources(tt.want, got), "Process(%v, %v, nil)", tt.vpa, tt.recommendation)
 		})
 	}

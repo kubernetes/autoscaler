@@ -39,9 +39,9 @@ import (
 )
 
 func TestScheduleDeletion(t *testing.T) {
-	testNg := testprovider.NewTestNodeGroup("test", 0, 100, 3, true, false, "n1-standard-2", nil, nil)
-	atomic2 := sizedNodeGroup("atomic-2", 2, true)
-	atomic4 := sizedNodeGroup("atomic-4", 4, true)
+	testNg := testprovider.NewTestNodeGroup("test", 100, 0, 3, true, false, "n1-standard-2", nil, nil)
+	atomic2 := sizedNodeGroup("atomic-2", 2, true, false)
+	atomic4 := sizedNodeGroup("atomic-4", 4, true, false)
 
 	testCases := []struct {
 		name                  string
@@ -121,7 +121,7 @@ func TestScheduleDeletion(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Couldn't create daemonset lister")
 			}
-			registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, pdbLister, dsLister, nil, nil, nil, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, podLister, pdbLister, dsLister, nil, nil, nil, nil)
 			ctx, err := NewScaleTestAutoscalingContext(opts, fakeClient, registry, provider, nil, nil)
 			if err != nil {
 				t.Fatalf("Couldn't set up autoscaling context: %v", err)

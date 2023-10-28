@@ -31,11 +31,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/drainability/rules"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/options"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator/predicatechecker"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 )
 
@@ -44,6 +46,7 @@ type AutoscalerOptions struct {
 	config.AutoscalingOptions
 	KubeClient             kube_client.Interface
 	EventsKubeClient       kube_client.Interface
+	InformerFactory        informers.SharedInformerFactory
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	PredicateChecker       predicatechecker.PredicateChecker
@@ -55,7 +58,8 @@ type AutoscalerOptions struct {
 	DebuggingSnapshotter   debuggingsnapshot.DebuggingSnapshotter
 	RemainingPdbTracker    pdb.RemainingPdbTracker
 	ScaleUpOrchestrator    scaleup.Orchestrator
-	DeleteOptions          simulator.NodeDeleteOptions
+	DeleteOptions          options.NodeDeleteOptions
+	DrainabilityRules      rules.Rules
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -88,7 +92,9 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.DebuggingSnapshotter,
 		opts.RemainingPdbTracker,
 		opts.ScaleUpOrchestrator,
-		opts.DeleteOptions), nil
+		opts.DeleteOptions,
+		opts.DrainabilityRules,
+	), nil
 }
 
 // Initialize default options if not provided.
@@ -97,7 +103,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
+		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient, opts.InformerFactory)
 	}
 	if opts.ClusterSnapshot == nil {
 		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
@@ -137,6 +143,9 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	if opts.Backoff == nil {
 		opts.Backoff =
 			backoff.NewIdBasedExponentialBackoff(opts.InitialNodeGroupBackoffDuration, opts.MaxNodeGroupBackoffDuration, opts.NodeGroupBackoffResetTimeout)
+	}
+	if opts.DrainabilityRules == nil {
+		opts.DrainabilityRules = rules.Default(opts.DeleteOptions)
 	}
 
 	return nil

@@ -44,25 +44,6 @@ func NewTestPodLister(pods []*apiv1.Pod) PodLister {
 	return TestPodLister{pods: pods}
 }
 
-// TestScheduledAndUnschedulablePodLister is used in tests involving scheduledAndUnschedulablePodListers
-type TestScheduledAndUnschedulablePodLister struct {
-	scheduledPods     []*apiv1.Pod
-	unschedulablePods []*apiv1.Pod
-}
-
-// List returns all scheduled and unschedulable pods in test lister.
-func (lister TestScheduledAndUnschedulablePodLister) List() (scheduledPods []*apiv1.Pod, unschedulablePods []*apiv1.Pod, err error) {
-	return lister.scheduledPods, lister.unschedulablePods, nil
-}
-
-// NewTestScheduledAndUnschedulablePodLister returns a lister that returns provided pods
-func NewTestScheduledAndUnschedulablePodLister(scheduledPods []*apiv1.Pod, unschedulabePods []*apiv1.Pod) ScheduledAndUnschedulablePodLister {
-	return TestScheduledAndUnschedulablePodLister{
-		scheduledPods:     scheduledPods,
-		unschedulablePods: unschedulabePods,
-	}
-}
-
 // TestPodDisruptionBudgetLister is used in tests involving listers
 type TestPodDisruptionBudgetLister struct {
 	pdbs []*policyv1.PodDisruptionBudget

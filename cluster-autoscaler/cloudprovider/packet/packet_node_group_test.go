@@ -29,36 +29,36 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-const createPacketDeviceResponsePool2 = ``
-const deletePacketDeviceResponsePool2 = ``
+const createMetalDeviceResponsePool2 = ``
+const deleteMetalDeviceResponsePool2 = ``
 
-const createPacketDeviceResponsePool3 = ``
-const deletePacketDeviceResponsePool3 = ``
+const createMetalDeviceResponsePool3 = ``
+const deleteMetalDeviceResponsePool3 = ``
 
 func TestIncreaseDecreaseSize(t *testing.T) {
-	var m *packetManagerRest
+	var m *equinixMetalManagerRest
 	server := NewHttpServerMock(MockFieldContentType, MockFieldResponse)
 	defer server.Close()
 	assert.Equal(t, true, true)
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If auth token set in env, hit the actual Packet API
-		m = newTestPacketManagerRest(t, "https://api.packet.net")
+		m = newTestMetalManagerRest(t, "https://api.equinix.com/metal/v1")
 	} else {
 		// Set up a mock Packet API
-		m = newTestPacketManagerRest(t, server.URL)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(3)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", createPacketDeviceResponsePool3).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool3).Times(2)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", createPacketDeviceResponsePool2).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool2).Times(3)
-		server.On("handle", "/devices/0f5609af-1c27-451b-8edd-a1283f2c9440").Return("application/json", deletePacketDeviceResponsePool2).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponseAfterIncreasePool3).Times(3)
-		server.On("handle", "/devices/8fa90049-e715-4794-ba31-81c1c78cee84").Return("application/json", deletePacketDeviceResponsePool3).Times(1)
-		server.On("handle", "/projects/"+m.packetManagerNodePools["default"].projectID+"/devices").Return("application/json", listPacketDevicesResponse).Times(3)
+		m = newTestMetalManagerRest(t, server.URL)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponse).Times(3)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", createMetalDeviceResponsePool3).Times(1)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponseAfterIncreasePool3).Times(2)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", createMetalDeviceResponsePool2).Times(1)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponseAfterIncreasePool2).Times(3)
+		server.On("handle", "/devices/0f5609af-1c27-451b-8edd-a1283f2c9440").Return("application/json", deleteMetalDeviceResponsePool2).Times(1)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponseAfterIncreasePool3).Times(3)
+		server.On("handle", "/devices/8fa90049-e715-4794-ba31-81c1c78cee84").Return("application/json", deleteMetalDeviceResponsePool3).Times(1)
+		server.On("handle", "/projects/"+m.equinixMetalManagerNodePools["default"].projectID+"/devices").Return("application/json", listMetalDevicesResponse).Times(3)
 	}
 	clusterUpdateLock := sync.Mutex{}
-	ngPool2 := &packetNodeGroup{
-		packetManager:       m,
+	ngPool2 := &equinixMetalNodeGroup{
+		equinixMetalManager: m,
 		id:                  "pool2",
 		clusterUpdateMutex:  &clusterUpdateLock,
 		minSize:             0,
@@ -68,8 +68,8 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 		deleteBatchingDelay: 2 * time.Second,
 	}
 
-	ngPool3 := &packetNodeGroup{
-		packetManager:       m,
+	ngPool3 := &equinixMetalNodeGroup{
+		equinixMetalManager: m,
 		id:                  "pool3",
 		clusterUpdateMutex:  &clusterUpdateLock,
 		minSize:             0,
@@ -79,11 +79,11 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 		deleteBatchingDelay: 2 * time.Second,
 	}
 
-	n1Pool2, err := ngPool2.packetManager.getNodeNames(ngPool2.id)
+	n1Pool2, err := ngPool2.equinixMetalManager.getNodeNames(ngPool2.id)
 	assert.NoError(t, err)
 	assert.Equal(t, int(0), len(n1Pool2))
 
-	n1Pool3, err := ngPool3.packetManager.getNodeNames(ngPool3.id)
+	n1Pool3, err := ngPool3.equinixMetalManager.getNodeNames(ngPool3.id)
 	assert.NoError(t, err)
 	assert.Equal(t, int(1), len(n1Pool3))
 
@@ -106,12 +106,12 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	err = ngPool3.IncreaseSize(1)
 	assert.NoError(t, err)
 
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If testing with actual API give it some time until the nodes bootstrap
 		time.Sleep(420 * time.Second)
 	}
 
-	n2Pool3, err := ngPool3.packetManager.getNodeNames(ngPool3.id)
+	n2Pool3, err := ngPool3.equinixMetalManager.getNodeNames(ngPool3.id)
 	assert.NoError(t, err)
 	// Assert that the nodepool3 size is now 2
 	assert.Equal(t, int(2), len(n2Pool3))
@@ -120,12 +120,12 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	err = ngPool2.IncreaseSize(1)
 	assert.NoError(t, err)
 
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		// If testing with actual API give it some time until the nodes bootstrap
 		time.Sleep(420 * time.Second)
 	}
 
-	n2Pool2, err := ngPool2.packetManager.getNodeNames(ngPool2.id)
+	n2Pool2, err := ngPool2.equinixMetalManager.getNodeNames(ngPool2.id)
 	assert.NoError(t, err)
 	// Assert that the nodepool2 size is now 1
 	assert.Equal(t, int(1), len(n2Pool2))
@@ -151,17 +151,17 @@ func TestIncreaseDecreaseSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Wait a few seconds if talking to the actual Packet API
-	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 {
+	if len(os.Getenv("PACKET_AUTH_TOKEN")) > 0 || len(os.Getenv(metalAuthTokenEnv)) > 0 {
 		time.Sleep(10 * time.Second)
 	}
 
 	// Make sure that there were no errors and the nodepool2 size is once again 0
-	n3Pool2, err := ngPool2.packetManager.getNodeNames(ngPool2.id)
+	n3Pool2, err := ngPool2.equinixMetalManager.getNodeNames(ngPool2.id)
 	assert.NoError(t, err)
 	assert.Equal(t, int(0), len(n3Pool2))
 
 	// Make sure that there were no errors and the nodepool3 size is once again 1
-	n3Pool3, err := ngPool3.packetManager.getNodeNames(ngPool3.id)
+	n3Pool3, err := ngPool3.equinixMetalManager.getNodeNames(ngPool3.id)
 	assert.NoError(t, err)
 	assert.Equal(t, int(1), len(n3Pool3))
 	mock.AssertExpectationsForObjects(t, server)

@@ -20,10 +20,11 @@ import (
 	"fmt"
 
 	core "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/klog/v2"
 )
 
 // Provider gets current recommendation, annotations and vpaName for the given pod.
@@ -109,5 +110,13 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod, vpa
 		resourcePolicy = vpa.Spec.ResourcePolicy
 	}
 	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, false, annotations)
+
+	// Ensure that we are not propagating empty resource key if any.
+	for _, resource := range containerResources {
+		if resource.RemoveEmptyResourceKeyIfAny() {
+			klog.Infof("An empty resource key was found and purged for pod=%s/%s with vpa=", pod.Namespace, pod.Name, vpa.Name)
+		}
+	}
+
 	return containerResources, annotations, nil
 }
