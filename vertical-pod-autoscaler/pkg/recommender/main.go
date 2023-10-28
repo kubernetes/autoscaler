@@ -19,8 +19,9 @@ package main
 import (
 	"context"
 	"flag"
-	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 	"time"
+
+	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/informers"
@@ -56,8 +57,8 @@ var (
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
 	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 
+	storage = flag.String("storage", "checkpoint", `Specifies storage mode. Supported values: prometheus, none, checkpoint`)
 	// prometheus history provider configs
-	storage             = flag.String("storage", "checkpoint", `Specifies storage mode. Supported values: prometheus, none, checkpoint`)
 	historyLength       = flag.String("history-length", "8d", `How much time back prometheus have to be queried to get historical metrics`)
 	historyResolution   = flag.String("history-resolution", "1h", `Resolution at which Prometheus is queried for historical metrics`)
 	queryTimeout        = flag.String("prometheus-query-timeout", "5m", `How long to wait before killing long queries`)
@@ -123,18 +124,6 @@ func main() {
 	metrics_recommender.Register()
 	metrics_quality.Register()
 
-	var usePrometheus, useCheckpoints, useNoStorage bool
-	switch *storage {
-	case "checkpoint":
-		useCheckpoints = true
-	case "prometheus":
-		usePrometheus = true
-	case "none":
-		useNoStorage = true
-	default:
-		klog.Fatalf("Storage option '%s' is not supported. Supported values: prometheus, none, checkpoint", *storage)
-	}
-
 	var postProcessors []routines.RecommendationPostProcessor
 	if *postProcessorCPUasInteger {
 		postProcessors = append(postProcessors, &routines.IntegerCPUPostProcessor{})
@@ -159,6 +148,35 @@ func main() {
 		source = input_metrics.NewPodMetricsesSource(resourceclient.NewForConfigOrDie(config))
 	}
 
+	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
+	if err != nil {
+		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
+	}
+	promHistoryConfig := history.PrometheusHistoryProviderConfig{
+		Address:                *prometheusAddress,
+		QueryTimeout:           promQueryTimeout,
+		HistoryLength:          *historyLength,
+		HistoryResolution:      *historyResolution,
+		PodLabelPrefix:         *podLabelPrefix,
+		PodLabelsMetricName:    *podLabelsMetricName,
+		PodNamespaceLabel:      *podNamespaceLabel,
+		PodNameLabel:           *podNameLabel,
+		CtrNamespaceLabel:      *ctrNamespaceLabel,
+		CtrPodNameLabel:        *ctrPodNameLabel,
+		CtrNameLabel:           *ctrNameLabel,
+		CadvisorMetricsJobName: *prometheusJobName,
+		Namespace:              *vpaObjectNamespace,
+		PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
+			Username: *username,
+			Password: *password,
+		},
+	}
+
+	historySource, err := input.GetHistorySourceFromArg(*storage)
+	if err != nil {
+		klog.Fatalf("Could not initialize history source: %v", err)
+	}
+
 	clusterStateFeeder := input.ClusterStateFeederFactory{
 		PodLister:           podLister,
 		OOMObserver:         oomObserver,
@@ -171,6 +189,8 @@ func main() {
 		MemorySaveMode:      *memorySaver,
 		ControllerFetcher:   controllerFetcher,
 		RecommenderName:     *recommenderName,
+		HistorySource:       historySource,
+		PromHistoryConfig:   promHistoryConfig,
 	}.Make()
 	controllerFetcher.Start(context.Background(), scaleCacheLoopPeriod)
 
@@ -183,52 +203,12 @@ func main() {
 		PodResourceRecommender:       logic.CreatePodResourceRecommender(),
 		RecommendationPostProcessors: postProcessors,
 		CheckpointsGCInterval:        *checkpointsGCInterval,
-		UseCheckpoints:               useCheckpoints,
+		UseCheckpoints:               historySource == input.Checkpoints,
 	}.Make()
 
-	promQueryTimeout, err := time.ParseDuration(*queryTimeout)
-	if err != nil {
-		klog.Fatalf("Could not parse --prometheus-query-timeout as a time.Duration: %v", err)
-	}
-
-	if useCheckpoints {
-		klog.Infof("Using checkpoints as a history provider")
-		recommender.GetClusterStateFeeder().InitFromCheckpoints()
-	} else if usePrometheus {
-		klog.Infof("Using prometheus as a history provider")
-		config := history.PrometheusHistoryProviderConfig{
-			Address:                *prometheusAddress,
-			QueryTimeout:           promQueryTimeout,
-			HistoryLength:          *historyLength,
-			HistoryResolution:      *historyResolution,
-			PodLabelPrefix:         *podLabelPrefix,
-			PodLabelsMetricName:    *podLabelsMetricName,
-			PodNamespaceLabel:      *podNamespaceLabel,
-			PodNameLabel:           *podNameLabel,
-			CtrNamespaceLabel:      *ctrNamespaceLabel,
-			CtrPodNameLabel:        *ctrPodNameLabel,
-			CtrNameLabel:           *ctrNameLabel,
-			CadvisorMetricsJobName: *prometheusJobName,
-			Namespace:              *vpaObjectNamespace,
-			PrometheusBasicAuthTransport: history.PrometheusBasicAuthTransport{
-				Username: *username,
-				Password: *password,
-			},
-		}
-
-		provider, err := history.NewPrometheusHistoryProvider(config)
-		if err != nil {
-			klog.Fatalf("Could not initialize history provider: %v", err)
-		}
-
-		historyInitErr := recommender.GetClusterStateFeeder().InitFromHistoryProvider(provider)
-		if historyInitErr != nil {
-			klog.Fatalf("Failed to load prometheus history")
-		}
-	} else if useNoStorage {
-		klog.Infof("Running without a history provider")
-	} else {
-		klog.Fatalf("Storage provider option is not set. Supported values: prometheus, none, checkpoint")
+	stateFeederInitErr := recommender.GetClusterStateFeeder().Init()
+	if stateFeederInitErr != nil {
+		klog.Fatalf("Could not initialize cluster state feeder: %v", stateFeederInitErr)
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
