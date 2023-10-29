@@ -64,13 +64,6 @@ import (
 )
 
 const (
-	// How old the oldest unschedulable pod should be before starting scale up.
-	unschedulablePodTimeBuffer = 2 * time.Second
-	// How old the oldest unschedulable pod with GPU should be before starting scale up.
-	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
-	// a bit more latency to wait for more pods and make a more informed scale-up decision.
-	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
-
 	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
 	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
 
@@ -553,7 +546,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
-	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
+	} else if a.allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
@@ -986,7 +979,10 @@ func (a *StaticAutoscaler) reportTaintsCount(nodes []*apiv1.Node) {
 	}
 }
 
-func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
+func (a *StaticAutoscaler) allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
+	unschedulablePodTimeBuffer := a.AutoscalingOptions.UnschedulablePodTimeBuffer
+	unschedulablePodWithGpuTimeBuffer := a.AutoscalingOptions.UnschedulablePodWithGpuTimeBuffer
+
 	if core_utils.GetOldestCreateTime(pods).Add(unschedulablePodTimeBuffer).After(currentTime) {
 		return true
 	}

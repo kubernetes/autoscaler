@@ -277,4 +277,10 @@ type AutoscalingOptions struct {
 	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
 	// based on the latency between the CA and the api-server
 	DynamicNodeDeleteDelayAfterTaintEnabled bool
+	// unschedulablePodTimeBuffer is the duration to wait the oldest unschedulable pod before starting scale up.
+	UnschedulablePodTimeBuffer time.Duration
+	// UnschedulablePodWithGpuTimeBuffer is the duration to wait the oldest unschedulable pod with GPU before starting scale up.
+	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
+	// a bit more latency to wait for more pods and make a more informed scale-up decision.
+	UnschedulablePodWithGpuTimeBuffer time.Duration
 }

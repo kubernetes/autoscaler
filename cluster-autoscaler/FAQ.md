@@ -821,6 +821,8 @@ The following startup parameters are supported for cluster autoscaler:
 | `record-duplicated-events` | Enable the autoscaler to print duplicated events within a 5 minute window. | false
 | `debugging-snapshot-enabled` | Whether the debugging snapshot of cluster autoscaler feature is enabled. | false
 | `node-delete-delay-after-taint` | How long to wait before deleting a node after tainting it. | 5 seconds
+| `unschedulable-pod-time-buffer` | How old the oldest unschedulable pod should be before starting scale up. | 2 seconds
+| `unschedulable-pod-with-gpu-time-buffer` | How old the oldest unschedulable pod with GPU should be before starting scale up. | 30 seconds
 
 # Troubleshooting:
 
