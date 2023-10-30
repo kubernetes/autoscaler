@@ -102,5 +102,5 @@ kubectl apply -f ./examples/cluster-autoscaler.yaml
 
 
 [exo-iam]: https://community.exoscale.com/documentation/iam/quick-start/
-[exo-limits]: https://portal.exoscale.com/account/limits
+[exo-limits]: https://portal.exoscale.com/organization/quotas
 [k8s-secrets]: https://kubernetes.io/docs/concepts/configuration/secret/
