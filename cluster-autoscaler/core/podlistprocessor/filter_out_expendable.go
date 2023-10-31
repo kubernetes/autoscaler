@@ -24,17 +24,16 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-type filterOutExpandable struct {
+type filterOutExpendable struct {
 }
 
-// NewFilterOutExpandablePodListProcessor creates a PodListProcessor filtering out expendable pods
-func NewFilterOutExpandablePodListProcessor() *filterOutExpandable {
-	return &filterOutExpandable{}
+// NewFilterOutExpendablePodListProcessor creates a PodListProcessor filtering out expendable pods
+func NewFilterOutExpendablePodListProcessor() *filterOutExpendable {
+	return &filterOutExpendable{}
 }
 
 // Process filters out pods which are expendable and adds pods which is waiting for lower priority pods preemption to the cluster snapshot
-func (p *filterOutExpandable) Process(context *context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
-	klog.V(4).Infof("Filtering out expandable pods")
+func (p *filterOutExpendable) Process(context *context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	nodes, err := context.AllNodeLister().List()
 	if err != nil {
 		return nil, err
@@ -42,25 +41,25 @@ func (p *filterOutExpandable) Process(context *context.AutoscalingContext, pods 
 	expendablePodsPriorityCutoff := context.AutoscalingOptions.ExpendablePodsPriorityCutoff
 
 	unschedulablePods, waitingForLowerPriorityPreemption := core_utils.FilterOutExpendableAndSplit(pods, nodes, expendablePodsPriorityCutoff)
-	if err = p.addPreemptiblePodsToSnapshot(waitingForLowerPriorityPreemption, context); err != nil {
+	if err = p.addPreemptingPodsToSnapshot(waitingForLowerPriorityPreemption, context); err != nil {
 		return nil, err
 	}
 
 	return unschedulablePods, nil
 }
 
-// addPreemptiblePodsToSnapshot modifies the snapshot simulating scheduling of pods waiting for preemption.
+// addPreemptingPodsToSnapshot modifies the snapshot simulating scheduling of pods waiting for preemption.
 // this is not strictly correct as we are not simulating preemption itself but it matches
 // CA logic from before migration to scheduler framework. So let's keep it for now
-func (p *filterOutExpandable) addPreemptiblePodsToSnapshot(pods []*apiv1.Pod, ctx *context.AutoscalingContext) error {
+func (p *filterOutExpendable) addPreemptingPodsToSnapshot(pods []*apiv1.Pod, ctx *context.AutoscalingContext) error {
 	for _, p := range pods {
 		if err := ctx.ClusterSnapshot.AddPod(p, p.Status.NominatedNodeName); err != nil {
-			klog.Errorf("Failed to update snapshot with pod %s waiting for preemption", err)
+			klog.Errorf("Failed to update snapshot with pod %s/%s waiting for preemption: %v", p.Namespace, p.Name, err)
 			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
 		}
 	}
 	return nil
 }
 
-func (p *filterOutExpandable) CleanUp() {
+func (p *filterOutExpendable) CleanUp() {
 }

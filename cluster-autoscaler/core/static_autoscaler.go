@@ -63,6 +63,13 @@ import (
 )
 
 const (
+	// How old the oldest unschedulable pod should be before starting scale up.
+	unschedulablePodTimeBuffer = 2 * time.Second
+	// How old the oldest unschedulable pod with GPU should be before starting scale up.
+	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
+	// a bit more latency to wait for more pods and make a more informed scale-up decision.
+	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
+
 	// NodeUpcomingAnnotation is an annotation CA adds to nodes which are upcoming.
 	NodeUpcomingAnnotation = "cluster-autoscaler.k8s.io/upcoming-node"
 
@@ -301,7 +308,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		klog.Errorf("Failed to list pods: %v", err)
 		return caerrors.ToAutoscalerError(caerrors.ApiCallError, err)
 	}
-	originalScheduledPods, unschedulablePods, unknownPods := kube_util.ScheduledPods(pods), kube_util.UnschedulablePods(pods), kube_util.UnknownPods(pods)
+	originalScheduledPods, unschedulablePods := kube_util.ScheduledPods(pods), kube_util.UnschedulablePods(pods)
+	schedulerUnprocessed := make([]*apiv1.Pod, 0, 0)
+	if a.IgnoreSchedulerProcessing {
+		schedulerUnprocessed = kube_util.SchedulerUnprocessedPods(pods)
+	}
 
 	// Update cluster resource usage metrics
 	coresTotal, memoryTotal := calculateCoresMemoryTotal(allNodes, currentTime)
@@ -443,10 +454,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
-	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods), len(unknownPods))
-	// Treat unknown pods as unschedulable, pod list processor will remove schedulable pods
-	unschedulablePods = append(unschedulablePods, unknownPods...)
-
+	// SchedulerUnprocessed might be zero here if it was disabled
+	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods), len(schedulerUnprocessed))
+	if a.IgnoreSchedulerProcessing {
+		// Treat unknown pods as unschedulable, pod list processor will remove schedulable pods
+		unschedulablePods = append(unschedulablePods, schedulerUnprocessed...)
+	}
 	// Upcoming nodes are recently created nodes that haven't registered in the cluster yet, or haven't become ready yet.
 	upcomingCounts, registeredUpcoming := a.clusterStateRegistry.GetUpcomingNodes()
 	// For each upcoming node we inject a placeholder node faked to appear ready into the cluster snapshot, so that we can pack unschedulable pods on
@@ -530,7 +543,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
-	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime, a.AutoscalingOptions.UnschedulablePodTimeBuffer, a.AutoscalingOptions.UnschedulablePodWithGpuTimeBuffer) {
+	} else if !a.IgnoreSchedulerProcessing && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
@@ -963,7 +976,7 @@ func (a *StaticAutoscaler) reportTaintsCount(nodes []*apiv1.Node) {
 	}
 }
 
-func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time, unschedulablePodTimeBuffer, unschedulablePodWithGpuTimeBuffer time.Duration) bool {
+func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	if core_utils.GetOldestCreateTime(pods).Add(unschedulablePodTimeBuffer).After(currentTime) {
 		return true
 	}

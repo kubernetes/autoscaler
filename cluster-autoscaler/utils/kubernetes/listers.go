@@ -144,11 +144,37 @@ type PodLister interface {
 	List() ([]*apiv1.Pod, error)
 }
 
+func isScheduled(pod *apiv1.Pod) bool {
+	if pod == nil {
+		return false
+	}
+	return pod.Spec.NodeName != ""
+}
+func isDeleted(pod *apiv1.Pod) bool {
+	if pod == nil {
+		return false
+	}
+	return pod.GetDeletionTimestamp() != nil
+}
+func isUnschedulable(pod *apiv1.Pod) bool {
+	if pod == nil {
+		return false
+	}
+	if isScheduled(pod) || isDeleted(pod) {
+		return false
+	}
+	_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+	if condition == nil || condition.Status != apiv1.ConditionFalse || condition.Reason != apiv1.PodReasonUnschedulable {
+		return false
+	}
+	return true
+}
+
 // ScheduledPods is a helper method that returns all scheduled pods from given pod list.
 func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	var scheduledPods []*apiv1.Pod
 	for _, pod := range allPods {
-		if pod.Spec.NodeName != "" {
+		if isScheduled(pod) {
 			scheduledPods = append(scheduledPods, pod)
 			continue
 		}
@@ -156,35 +182,33 @@ func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	return scheduledPods
 }
 
-// UnknownPods is a helper method that returns all pods which are not yet processed by the scheduler
-func UnknownPods(allPods []*apiv1.Pod) []*apiv1.Pod {
-	var unknownPods []*apiv1.Pod
+// SchedulerUnprocessedPods is a helper method that returns all pods which are not yet processed by the scheduler
+func SchedulerUnprocessedPods(allPods []*apiv1.Pod) []*apiv1.Pod {
+	var unprocessedPods []*apiv1.Pod
 	for _, pod := range allPods {
 		// Make sure it's not scheduled or deleted
-		if pod.Spec.NodeName != "" || pod.GetDeletionTimestamp() != nil {
+		if isScheduled(pod) || isDeleted(pod) || isUnschedulable(pod) {
 			continue
 		}
-		// Make sure it's not unschedulable
+		// Make sure that if it's not scheduled it's either
+		// Not processed (condition is nil)
+		// Or Reason is empty (not schedulerError, terminated, ...etc)
 		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 		if condition == nil || (condition.Status == apiv1.ConditionFalse && condition.Reason == "") {
-			unknownPods = append(unknownPods, pod)
+			unprocessedPods = append(unprocessedPods, pod)
 		}
 	}
-	return unknownPods
+	return unprocessedPods
 }
 
 // UnschedulablePods is a helper method that returns all unschedulable pods from given pod list.
 func UnschedulablePods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
 	for _, pod := range allPods {
-		if pod.Spec.NodeName == "" {
-			_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
-			if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonUnschedulable {
-				if pod.GetDeletionTimestamp() == nil {
-					unschedulablePods = append(unschedulablePods, pod)
-				}
-			}
+		if !isUnschedulable(pod) {
+			continue
 		}
+		unschedulablePods = append(unschedulablePods, pod)
 	}
 	return unschedulablePods
 }
