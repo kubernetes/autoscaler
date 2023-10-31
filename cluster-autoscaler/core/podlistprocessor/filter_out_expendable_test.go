@@ -53,51 +53,51 @@ func TestFilterOutExpendable(t *testing.T) {
 		{
 			name: "non-expendable pods with priority >= to cutoff priority",
 			pods: []*apiv1.Pod{
-				test.BuildTestPod("p1", 1000, 1, getPrioritySetter(2)),
-				test.BuildTestPod("p2", 1000, 1, getPrioritySetter(3)),
+				test.BuildTestPod("p1", 1000, 1, priority(2)),
+				test.BuildTestPod("p2", 1000, 1, priority(3)),
 			},
 			wantPods: []*apiv1.Pod{
-				test.BuildTestPod("p1", 1000, 1, getPrioritySetter(2)),
-				test.BuildTestPod("p2", 1000, 1, getPrioritySetter(3)),
+				test.BuildTestPod("p1", 1000, 1, priority(2)),
+				test.BuildTestPod("p2", 1000, 1, priority(3)),
 			},
 			priorityCutoff: 2,
 		},
 		{
 			name: "single expednable pod",
 			pods: []*apiv1.Pod{
-				test.BuildTestPod("p", 1000, 1, getPrioritySetter(2)),
+				test.BuildTestPod("p", 1000, 1, priority(2)),
 			},
 			priorityCutoff: 3,
 		},
 		{
 			name: "single waiting-for-low-priority-preemption pod",
 			pods: []*apiv1.Pod{
-				test.BuildTestPod("p", 1000, 1, getNominatedNodeNameSetter("node-1")),
+				test.BuildTestPod("p", 1000, 1, nominatedNodeName("node-1")),
 			},
 			nodes: []*apiv1.Node{
 				test.BuildTestNode("node-1", 2400, 2400),
 			},
 			wantPodsInSnapshot: []*apiv1.Pod{
-				test.BuildTestPod("p", 1000, 1, getNominatedNodeNameSetter("node-1")),
+				test.BuildTestPod("p", 1000, 1, nominatedNodeName("node-1")),
 			},
 		},
 		{
 			name: "mixed expendable, non-expendable & waiting-for-low-priority-preemption pods",
 			pods: []*apiv1.Pod{
-				test.BuildTestPod("p1", 1000, 1, getPrioritySetter(3)),
-				test.BuildTestPod("p2", 1000, 1, getPrioritySetter(4)),
-				test.BuildTestPod("p3", 1000, 1, getPrioritySetter(1)),
+				test.BuildTestPod("p1", 1000, 1, priority(3)),
+				test.BuildTestPod("p2", 1000, 1, priority(4)),
+				test.BuildTestPod("p3", 1000, 1, priority(1)),
 				test.BuildTestPod("p4", 1000, 1),
-				test.BuildTestPod("p5", 1000, 1, getNominatedNodeNameSetter("node-1")),
+				test.BuildTestPod("p5", 1000, 1, nominatedNodeName("node-1")),
 			},
 			priorityCutoff: 2,
 			wantPods: []*apiv1.Pod{
-				test.BuildTestPod("p1", 1000, 1, getPrioritySetter(3)),
-				test.BuildTestPod("p2", 1000, 1, getPrioritySetter(4)),
+				test.BuildTestPod("p1", 1000, 1, priority(3)),
+				test.BuildTestPod("p2", 1000, 1, priority(4)),
 				test.BuildTestPod("p4", 1000, 1),
 			},
 			wantPodsInSnapshot: []*apiv1.Pod{
-				test.BuildTestPod("p5", 1000, 1, getNominatedNodeNameSetter("node-1")),
+				test.BuildTestPod("p5", 1000, 1, nominatedNodeName("node-1")),
 			},
 			nodes: []*apiv1.Node{
 				test.BuildTestNode("node-1", 2400, 2400),
@@ -107,7 +107,7 @@ func TestFilterOutExpendable(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			processor := NewFilterOutExpandablePodListProcessor()
+			processor := NewFilterOutExpendablePodListProcessor()
 			snapshot := clustersnapshot.NewBasicClusterSnapshot()
 			snapshot.AddNodes(tc.nodes)
 
@@ -141,12 +141,12 @@ func TestFilterOutExpendable(t *testing.T) {
 	}
 }
 
-func getPrioritySetter(priority int32) func(*apiv1.Pod) {
+func priority(priority int32) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.Spec.Priority = &priority
 	}
 }
-func getNominatedNodeNameSetter(nodeName string) func(*apiv1.Pod) {
+func nominatedNodeName(nodeName string) func(*apiv1.Pod) {
 	return func(pod *apiv1.Pod) {
 		pod.Status.NominatedNodeName = nodeName
 	}
