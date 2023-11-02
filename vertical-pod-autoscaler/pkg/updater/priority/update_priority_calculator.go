@@ -153,7 +153,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 
 	result := []*apiv1.Pod{}
 	for _, podPrio := range calc.pods {
-		if admission == nil || admission.Admit(podPrio.pod, podPrio.recommendation) {
+		if admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
 		} else {
 			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)

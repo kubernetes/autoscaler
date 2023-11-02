@@ -104,7 +104,7 @@ func main() {
 		*useAdmissionControllerStatus,
 		admissionControllerStatusNamespace,
 		vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator),
-		nil,
+		priority.NewScalingDirectionPodEvictionAdmission(),
 		targetSelectorFetcher,
 		priority.NewProcessor(),
 		*vpaObjectNamespace,
