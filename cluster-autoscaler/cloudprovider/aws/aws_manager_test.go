@@ -106,6 +106,27 @@ func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
 	assert.Equal(t, resource.NewQuantity(5, resource.DecimalSI).String(), labels["custom-resource"].String())
 }
 
+func TestExtractAllocatableResourcesFromTags(t *testing.T) {
+	tags := map[string]string{
+		"k8s.io/cluster-autoscaler/node-template/resources/cpu":               "100m",
+		"k8s.io/cluster-autoscaler/node-template/resources/memory":            "100M",
+		"k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage": "20G",
+		"k8s.io/cluster-autoscaler/node-template/resources/custom-resource":   "5",
+		"k8s.io/cluster-autoscaler/node-template/resources/error-resource":    "GG",
+	}
+
+	labels := extractAllocatableResourcesFromTags(tags)
+
+	assert.Equal(t, 4, len(labels))
+	assert.NotContains(t, labels, "error-resource")
+	assert.Equal(t, resource.NewMilliQuantity(100, resource.DecimalSI).String(), labels["cpu"].String())
+	expectedMemory := resource.MustParse("100M")
+	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
+	expectedEphemeralStorage := resource.MustParse("20G")
+	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
+	assert.Equal(t, resource.NewQuantity(5, resource.DecimalSI).String(), labels["custom-resource"].String())
+}
+
 func TestGetAsgOptions(t *testing.T) {
 	defaultOptions := config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    0.1,
@@ -215,11 +236,17 @@ func TestBuildNodeFromTemplateWithManagedNodegroup(t *testing.T) {
 		Value:  taintValue2,
 	}
 
+	ephemeralStorageKey := "ephemeral-storage"
+	diskSizeGb := 80
+	tagKey1 := fmt.Sprintf("k8s.io/cluster-autoscaler/node-template/resources/%s", ephemeralStorageKey)
+	tagValue1 := fmt.Sprintf("%dGi", diskSizeGb)
+
 	err := mngCache.Add(managedNodegroupCachedObject{
 		name:        ngNameLabelValue,
 		clusterName: clusterNameLabelValue,
 		taints:      []apiv1.Taint{taint1, taint2},
 		labels:      map[string]string{labelKey1: labelValue1, labelKey2: labelValue2},
+		tags:        map[string]string{tagKey1: tagValue1},
 	})
 	require.NoError(t, err)
 
@@ -242,6 +269,9 @@ func TestBuildNodeFromTemplateWithManagedNodegroup(t *testing.T) {
 		},
 	})
 	assert.NoError(t, observedErr)
+	esValue, esExist := observedNode.Status.Capacity[apiv1.ResourceName(ephemeralStorageKey)]
+	assert.True(t, esExist)
+	assert.Equal(t, int64(diskSizeGb*1024*1024*1024), esValue.Value())
 	assert.GreaterOrEqual(t, len(observedNode.Labels), 4)
 	ngNameValue, ngLabelExist := observedNode.Labels["nodegroup-name"]
 	assert.True(t, ngLabelExist)
