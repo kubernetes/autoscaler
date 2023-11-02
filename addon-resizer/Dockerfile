@@ -16,4 +16,6 @@ FROM BASEIMAGE
 
 COPY pod_nanny /
 
+USER nobody
+
 CMD /pod_nanny
