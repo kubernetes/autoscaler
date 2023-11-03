@@ -66,6 +66,31 @@ The current default version is Vertical Pod Autoscaler 0.14.0
 | 0.4 to 0.7      | 1.11+              |
 | 0.3.X and lower | 1.7+               |
 
+### Notice on CRD update (>=1.0.0)
+**NOTE:** In version 1.0.0, we have updated the CRD definition and added RBAC for the
+status resource. If you are upgrading from version (<=0.14.0), you must update the CRD
+definition and RBAC.
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+```
+Another method is to re-execute the ./hack/vpa-process-yamls.sh script.
+```shell
+git clone https://github.com/kubernetes/autoscaler.git
+cd autoscaler/vertical-pod-autoscaler
+git checkout origin/vpa-release-1.0
+REGISTRY=registry.k8s.io/autoscaling TAG=1.0.0 ./hack/vpa-process-yamls.sh apply
+```
+
+If you need to roll back to version (<=0.14.0), please check out the release for your
+rollback version and execute ./hack/vpa-process-yamls.sh. For example, to rollback to 0.14.0:
+```shell
+git checkout origin/vpa-release-0.14
+REGISTRY=registry.k8s.io/autoscaling TAG=0.14.0 ./hack/vpa-process-yamls.sh apply
+kubectl delete clusterrole system:vpa-status-actor
+kubectl delete clusterrolebinding system:vpa-status-actor
+```
+
 ### Notice on deprecation of v1beta2 version (>=0.13.0)
 **NOTE:** In 0.13.0 we deprecate `autoscaling.k8s.io/v1beta2` API. We plan to
 remove this API version. While for now you can continue to use `v1beta2` API we
