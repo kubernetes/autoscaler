@@ -11,7 +11,7 @@ import (
 
 	"k8s.io/client-go/util/retry"
 
-	gin "github.com/onsi/ginkgo"
+	gin "github.com/onsi/ginkgo/v2"
 	gom "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
 	appv1 "k8s.io/api/apps/v1"
