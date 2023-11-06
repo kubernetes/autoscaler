@@ -42,6 +42,14 @@ spec:
             - containerPort: 8000
             - name: prometheus
               containerPort: 8944
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health-check
+              port: prometheus
+            initialDelaySeconds: 3
+            periodSeconds: 10
+
       volumes:
         - name: tls-certs
           secret:
