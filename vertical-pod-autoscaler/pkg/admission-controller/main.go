@@ -17,10 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -75,6 +79,9 @@ func main() {
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
 
+	ctx, done := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer done()
+
 	healthCheck := metrics.NewHealthCheck(time.Minute, false)
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
@@ -107,7 +114,6 @@ func main() {
 	if namespace != "" {
 		statusNamespace = namespace
 	}
-	stopCh := make(chan struct{})
 	statusUpdater := status.NewUpdater(
 		kubeClient,
 		status.AdmissionControllerStatusName,
@@ -115,7 +121,6 @@ func main() {
 		statusUpdateInterval,
 		hostname,
 	)
-	defer close(stopCh)
 
 	calculators := []patch.Calculator{patch.NewResourceUpdatesCalculator(recommendationProvider), patch.NewObservedContainersCalculator()}
 	as := logic.NewAdmissionServer(podPreprocessor, vpaPreprocessor, limitRangeCalculator, vpaMatcher, calculators)
@@ -133,10 +138,19 @@ func main() {
 			selfRegistration(kubeClient, certs.caCert, namespace, *serviceName, url, *registerByURL, int32(*webhookTimeout))
 		}
 		// Start status updates after the webhook is initialized.
-		statusUpdater.Run(stopCh)
+		statusUpdater.Run(ctx.Done())
 	}()
 
-	if err = server.ListenAndServeTLS("", ""); err != nil {
+	go func() {
+		<-ctx.Done()                                                                           // shutdown gracefully on detect SIGINT or SIGTERM
+		shutdownCtx, shutdownDone := context.WithTimeout(context.Background(), 10*time.Second) // allow 10 seconds to drain.
+		defer shutdownDone()
+		klog.V(1).Info("Server shutting down gracefully")
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			klog.Fatalf("Graceful shutdown failed: %s", err)
+		}
+	}()
+	if err = server.ListenAndServeTLS("", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		klog.Fatalf("HTTPS Error: %s", err)
 	}
 }

@@ -47,11 +47,13 @@ func NewUpdater(c clientset.Interface, statusName, statusNamespace string,
 // Run starts status updates.
 func (su *Updater) Run(stopCh <-chan struct{}) {
 	go func() {
+		ticker := time.NewTicker(su.updateInterval)
+		defer ticker.Stop()
 		for {
 			select {
 			case <-stopCh:
 				return
-			case <-time.After(su.updateInterval):
+			case <-ticker.C:
 				if err := su.client.UpdateStatus(); err != nil {
 					klog.Errorf("Status update by %s failed: %v", su.client.holderIdentity, err)
 				}
