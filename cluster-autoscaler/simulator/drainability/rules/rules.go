@@ -100,7 +100,7 @@ func (rs Rules) Drainable(drainCtx *drainability.DrainContext, pod *apiv1.Pod) d
 		for _, candidate := range candidates {
 			for _, override := range candidate.status.Overrides {
 				if status.Outcome == override {
-					klog.V(5).Info("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
+					klog.V(5).Infof("Overriding pod %s/%s drainability rule %s with rule %s, outcome %v", pod.GetNamespace(), pod.GetName(), r.Name(), candidate.name, candidate.status.Outcome)
 					return candidate.status
 				}
 			}
