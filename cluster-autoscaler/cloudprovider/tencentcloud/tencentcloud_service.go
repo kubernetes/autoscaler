@@ -307,7 +307,7 @@ func (ts *CloudServiceImpl) GetAutoScalingInstances(asgRef TcRef) ([]*as.Instanc
 		}
 		if resp.Response.TotalCount != nil {
 			if totalCount != *resp.Response.TotalCount {
-				klog.Warningf("%s instance totalCount changed: %d->%d, reset request", totalCount, *resp.Response.TotalCount)
+				klog.Warningf("%s instance totalCount changed: %d->%d, reset request", asgRef.ID, totalCount, *resp.Response.TotalCount)
 				totalCount = *resp.Response.TotalCount
 				res = []*as.Instance{}
 			}

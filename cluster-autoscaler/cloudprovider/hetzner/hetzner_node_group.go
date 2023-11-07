@@ -19,11 +19,12 @@ package hetzner
 import (
 	"context"
 	"fmt"
-	"maps"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
+
+	"maps"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -155,7 +156,7 @@ func (n *hetznerNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 
 			err := n.manager.deleteByNode(node)
 			if err != nil {
-				klog.Errorf("failed to delete server ID %d error: %v", node.Name, err)
+				klog.Errorf("failed to delete server ID %s error: %v", node.Name, err)
 			}
 
 			waitGroup.Done()
