@@ -49,7 +49,7 @@ func (t *sngCapacityThreshold) computeNodeGroupCapacity(nodeGroup cloudprovider.
 	nodeGroupTargetSize, err := nodeGroup.TargetSize()
 	// Should not ever happen as only valid node groups are passed to estimator
 	if err != nil {
-		klog.Errorf("Error while computing available capacity of a node group %v: can't get target size of the group", nodeGroup.Id(), err)
+		klog.Errorf("Error while computing available capacity of a node group %v: can't get target size of the group: %v", nodeGroup.Id(), err)
 		return 0
 	}
 	groupCapacity := nodeGroup.MaxSize() - nodeGroupTargetSize

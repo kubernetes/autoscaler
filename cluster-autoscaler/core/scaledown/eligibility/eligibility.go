@@ -122,7 +122,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 
 	nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
 	if err != nil {
-		klog.Warning("Node group not found for node %v: %v", node.Name, err)
+		klog.Warningf("Node group not found for node %v: %v", node.Name, err)
 		return simulator.UnexpectedError, nil
 	}
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
