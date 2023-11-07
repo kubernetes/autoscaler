@@ -56,8 +56,8 @@ To regenerate the gRPC code:
 1. install `protoc` and `protoc-gen-go-grpc`:
 
 ```bash
-go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 ```
 
 2. generate gRPC client and server code:
