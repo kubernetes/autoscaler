@@ -58,7 +58,7 @@ func CreateCloudConfig(cloudConfigPath string, configProvider common.Configurati
 	}
 	if cloudConfig.Global.RefreshInterval == 0 {
 		if os.Getenv(ipconsts.OciRefreshInterval) != "" {
-			klog.V(4).Info("using a custom cache refresh interval %v...", os.Getenv(ipconsts.OciRefreshInterval))
+			klog.V(4).Infof("using a custom cache refresh interval %v...", os.Getenv(ipconsts.OciRefreshInterval))
 			cloudConfig.Global.RefreshInterval, _ = time.ParseDuration(os.Getenv(ipconsts.OciRefreshInterval))
 		} else {
 			if implType == npconsts.OciNodePoolResourceIdent {
