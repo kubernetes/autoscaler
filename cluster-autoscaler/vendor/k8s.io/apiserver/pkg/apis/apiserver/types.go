@@ -172,6 +172,7 @@ type JWTAuthenticator struct {
 	Issuer               Issuer
 	ClaimValidationRules []ClaimValidationRule
 	ClaimMappings        ClaimMappings
+	UserValidationRules  []UserValidationRule
 }
 
 // Issuer provides the configuration for a external provider specific settings.
@@ -185,18 +186,43 @@ type Issuer struct {
 type ClaimValidationRule struct {
 	Claim         string
 	RequiredValue string
+
+	Expression string
+	Message    string
 }
 
 // ClaimMappings provides the configuration for claim mapping
 type ClaimMappings struct {
 	Username PrefixedClaimOrExpression
 	Groups   PrefixedClaimOrExpression
+	UID      ClaimOrExpression
+	Extra    []ExtraMapping
 }
 
 // PrefixedClaimOrExpression provides the configuration for a single prefixed claim or expression.
 type PrefixedClaimOrExpression struct {
 	Claim  string
 	Prefix *string
+
+	Expression string
+}
+
+// ClaimOrExpression provides the configuration for a single claim or expression.
+type ClaimOrExpression struct {
+	Claim      string
+	Expression string
+}
+
+// ExtraMapping provides the configuration for a single extra mapping.
+type ExtraMapping struct {
+	Key             string
+	ValueExpression string
+}
+
+// UserValidationRule provides the configuration for a single user validation rule.
+type UserValidationRule struct {
+	Expression string
+	Message    string
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -212,11 +238,11 @@ type AuthorizationConfiguration struct {
 }
 
 const (
-	TypeWebhook                                      AuthorizerType = "Webhook"
-	FailurePolicyNoOpinion                           string         = "NoOpinion"
-	FailurePolicyDeny                                string         = "Deny"
-	AuthorizationWebhookConnectionInfoTypeKubeConfig string         = "KubeConfigFile"
-	AuthorizationWebhookConnectionInfoTypeInCluster  string         = "InClusterConfig"
+	TypeWebhook                                          AuthorizerType = "Webhook"
+	FailurePolicyNoOpinion                               string         = "NoOpinion"
+	FailurePolicyDeny                                    string         = "Deny"
+	AuthorizationWebhookConnectionInfoTypeKubeConfigFile string         = "KubeConfigFile"
+	AuthorizationWebhookConnectionInfoTypeInCluster      string         = "InClusterConfig"
 )
 
 type AuthorizerType string
@@ -228,18 +254,19 @@ type AuthorizerConfiguration struct {
 	// types like Node, RBAC, ABAC, etc.
 	Type AuthorizerType
 
+	// Name used to describe the webhook
+	// This is explicitly used in monitoring machinery for metrics
+	// Note: Names must be DNS1123 labels like `myauthorizername` or
+	//		 subdomains like `myauthorizer.example.domain`
+	// Required, with no default
+	Name string
+
 	// Webhook defines the configuration for a Webhook authorizer
 	// Must be defined when Type=Webhook
 	Webhook *WebhookConfiguration
 }
 
 type WebhookConfiguration struct {
-	// Name used to describe the webhook
-	// This is explicitly used in monitoring machinery for metrics
-	// Note: Names must be DNS1123 labels like `mywebhookname` or
-	//		 subdomains like `webhookname.example.domain`
-	// Required, with no default
-	Name string
 	// The duration to cache 'authorized' responses from the webhook
 	// authorizer.
 	// Same as setting `--authorization-webhook-cache-authorized-ttl` flag
@@ -294,7 +321,7 @@ type WebhookConfiguration struct {
 type WebhookConnectionInfo struct {
 	// Controls how the webhook should communicate with the server.
 	// Valid values:
-	// - KubeConfig: use the file specified in kubeConfigFile to locate the
+	// - KubeConfigFile: use the file specified in kubeConfigFile to locate the
 	//   server.
 	// - InClusterConfig: use the in-cluster configuration to call the
 	//   SubjectAccessReview API hosted by kube-apiserver. This mode is not
