@@ -107,7 +107,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 func (n *NodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
 		instanceID := toNodeID(node.Spec.ProviderID)
-		klog.V(4).Info("deleteing node: %q", instanceID)
+		klog.V(4).Infof("deleteing node: %q", instanceID)
 		_, err := n.client.DeleteKubernetesClusterPoolInstance(n.clusterID, n.id, instanceID)
 		if err != nil {
 			return fmt.Errorf("deleting node failed for cluster: %q node pool: %q node: %q: %s",

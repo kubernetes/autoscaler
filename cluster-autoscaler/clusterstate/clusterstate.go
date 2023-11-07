@@ -203,7 +203,7 @@ func (csr *ClusterStateRegistry) MaxNodeProvisionTime(nodeGroup cloudprovider.No
 func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
 	maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
 	if err != nil {
-		klog.Warningf("Couldn't update scale up request: failed to get maxNodeProvisionTime for node group %s: %w", nodeGroup.Id(), err)
+		klog.Warningf("Couldn't update scale up request: failed to get maxNodeProvisionTime for node group %s: %v", nodeGroup.Id(), err)
 		return
 	}
 
@@ -628,7 +628,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
 		maxNodeProvisionTime, err := csr.MaxNodeProvisionTime(nodeGroup)
 		if err != nil {
-			klog.Warningf("Failed to get maxNodeProvisionTime for node %s in node group %s: %w", unregistered.Node.Name, nodeGroup.Id(), err)
+			klog.Warningf("Failed to get maxNodeProvisionTime for node %s in node group %s: %v", unregistered.Node.Name, nodeGroup.Id(), err)
 			continue
 		}
 		if unregistered.UnregisteredSince.Add(maxNodeProvisionTime).Before(currentTime) {
