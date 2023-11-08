@@ -336,7 +336,7 @@ func (m *gceManagerImpl) refreshAutoscalingOptions() {
 	for _, mig := range m.migLister.GetMigs() {
 		template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
 		if err != nil {
-			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template", mig.GceRef(), err)
+			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template: %v", mig.GceRef(), err)
 			continue
 		}
 		if template.Properties == nil {
