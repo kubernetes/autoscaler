@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -228,7 +229,7 @@ func (data *internalDeltaSnapshotData) nodeInfoToModify(nodeName string) (*sched
 		if !found {
 			return nil, false
 		}
-		dni = bni.Clone()
+		dni = bni.Snapshot()
 		data.modifiedNodeInfoMap[nodeName] = dni
 		data.clearCaches()
 	}
@@ -258,9 +259,10 @@ func (data *internalDeltaSnapshotData) removePod(namespace, name, nodeName strin
 	}
 
 	podFound := false
+	logger := klog.Background()
 	for _, podInfo := range ni.Pods {
 		if podInfo.Pod.Namespace == namespace && podInfo.Pod.Name == name {
-			if err := ni.RemovePod(podInfo.Pod); err != nil {
+			if err := ni.RemovePod(logger, podInfo.Pod); err != nil {
 				return fmt.Errorf("cannot remove pod; %v", err)
 			}
 			podFound = true

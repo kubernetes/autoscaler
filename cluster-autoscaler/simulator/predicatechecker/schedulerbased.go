@@ -162,10 +162,10 @@ func (p *SchedulerBasedPredicateChecker) CheckPredicates(clusterSnapshot cluster
 	filterStatus := p.framework.RunFilterPlugins(context.TODO(), state, pod, nodeInfo)
 
 	if !filterStatus.IsSuccess() {
-		filterName := filterStatus.FailedPlugin()
+		filterName := filterStatus.Plugin()
 		filterMessage := filterStatus.Message()
 		filterReasons := filterStatus.Reasons()
-		if filterStatus.IsUnschedulable() {
+		if filterStatus.IsRejected() {
 			return NewPredicateError(
 				NotSchedulablePredicateError,
 				filterName,

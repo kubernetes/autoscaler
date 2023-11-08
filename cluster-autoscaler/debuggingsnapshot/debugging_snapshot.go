@@ -136,7 +136,7 @@ func (s *DebuggingSnapshotImpl) SetStartTimestamp(t time.Time) {
 func (s *DebuggingSnapshotImpl) GetOutputBytes() ([]byte, bool) {
 	errMsgSet := false
 	if s.Error != "" {
-		klog.Errorf("Debugging snapshot found with error message set when GetOutputBytes() is called. - ", s.Error)
+		klog.Errorf("Debugging snapshot found with error message set when GetOutputBytes() is called: %v", s.Error)
 		errMsgSet = true
 	}
 

@@ -545,7 +545,22 @@ func (f *frameworkImpl) expandMultiPointPlugins(logger klog.Logger, profile *con
 	return nil
 }
 
+func shouldHaveEnqueueExtensions(p framework.Plugin) bool {
+	switch p.(type) {
+	// Only PreEnqueue, PreFilter, Filter, Reserve, and Permit plugins can (should) have EnqueueExtensions.
+	// See the comment of EnqueueExtensions for more detailed reason here.
+	case framework.PreEnqueuePlugin, framework.PreFilterPlugin, framework.FilterPlugin, framework.ReservePlugin, framework.PermitPlugin:
+		return true
+	}
+	return false
+}
+
 func (f *frameworkImpl) fillEnqueueExtensions(p framework.Plugin) {
+	if !shouldHaveEnqueueExtensions(p) {
+		// Ignore EnqueueExtensions from plugin which isn't PreEnqueue, PreFilter, Filter, Reserve, and Permit.
+		return
+	}
+
 	ext, ok := p.(framework.EnqueueExtensions)
 	if !ok {
 		// If interface EnqueueExtensions is not implemented, register the default enqueue extensions
@@ -654,11 +669,11 @@ func (f *frameworkImpl) RunPreFilterPlugins(ctx context.Context, state *framewor
 			continue
 		}
 		if !s.IsSuccess() {
-			s.SetFailedPlugin(pl.Name())
-			if s.IsUnschedulable() {
+			s.SetPlugin(pl.Name())
+			if s.IsRejected() {
 				return nil, s
 			}
-			return nil, framework.AsStatus(fmt.Errorf("running PreFilter plugin %q: %w", pl.Name(), s.AsError())).WithFailedPlugin(pl.Name())
+			return nil, framework.AsStatus(fmt.Errorf("running PreFilter plugin %q: %w", pl.Name(), s.AsError())).WithPlugin(pl.Name())
 		}
 		if !r.AllNodes() {
 			pluginsWithNodes = append(pluginsWithNodes, pl.Name())
@@ -795,12 +810,12 @@ func (f *frameworkImpl) RunFilterPlugins(
 			continue
 		}
 		if status := f.runFilterPlugin(ctx, pl, state, pod, nodeInfo); !status.IsSuccess() {
-			if !status.IsUnschedulable() {
+			if !status.IsRejected() {
 				// Filter plugins are not supposed to return any status other than
 				// Success or Unschedulable.
 				status = framework.AsStatus(fmt.Errorf("running %q filter plugin: %w", pl.Name(), status.AsError()))
 			}
-			status.SetFailedPlugin(pl.Name())
+			status.SetPlugin(pl.Name())
 			return status
 		}
 	}
@@ -836,7 +851,7 @@ func (f *frameworkImpl) RunPostFilterPlugins(ctx context.Context, state *framewo
 	// `result` records the last meaningful(non-noop) PostFilterResult.
 	var result *framework.PostFilterResult
 	var reasons []string
-	var failedPlugin string
+	var rejectorPlugin string
 	for _, pl := range f.postFilterPlugins {
 		logger := klog.LoggerWithName(logger, pl.Name())
 		ctx := klog.NewContext(ctx, logger)
@@ -844,10 +859,10 @@ func (f *frameworkImpl) RunPostFilterPlugins(ctx context.Context, state *framewo
 		if s.IsSuccess() {
 			return r, s
 		} else if s.Code() == framework.UnschedulableAndUnresolvable {
-			return r, s.WithFailedPlugin(pl.Name())
-		} else if !s.IsUnschedulable() {
+			return r, s.WithPlugin(pl.Name())
+		} else if !s.IsRejected() {
 			// Any status other than Success, Unschedulable or UnschedulableAndUnresolvable is Error.
-			return nil, framework.AsStatus(s.AsError()).WithFailedPlugin(pl.Name())
+			return nil, framework.AsStatus(s.AsError()).WithPlugin(pl.Name())
 		} else if r != nil && r.Mode() != framework.ModeNoop {
 			result = r
 		}
@@ -855,12 +870,12 @@ func (f *frameworkImpl) RunPostFilterPlugins(ctx context.Context, state *framewo
 		reasons = append(reasons, s.Reasons()...)
 		// Record the first failed plugin unless we proved that
 		// the latter is more relevant.
-		if len(failedPlugin) == 0 {
-			failedPlugin = pl.Name()
+		if len(rejectorPlugin) == 0 {
+			rejectorPlugin = pl.Name()
 		}
 	}
 
-	return result, framework.NewStatus(framework.Unschedulable, reasons...).WithFailedPlugin(failedPlugin)
+	return result, framework.NewStatus(framework.Unschedulable, reasons...).WithPlugin(rejectorPlugin)
 }
 
 func (f *frameworkImpl) runPostFilterPlugin(ctx context.Context, pl framework.PostFilterPlugin, state *framework.CycleState, pod *v1.Pod, filteredNodeStatusMap framework.NodeToStatusMap) (*framework.PostFilterResult, *framework.Status) {
@@ -922,7 +937,7 @@ func (f *frameworkImpl) RunFilterPluginsWithNominatedPods(ctx context.Context, s
 		}
 
 		status = f.RunFilterPlugins(ctx, stateToUse, pod, nodeInfoToUse)
-		if !status.IsSuccess() && !status.IsUnschedulable() {
+		if !status.IsSuccess() && !status.IsRejected() {
 			return status
 		}
 	}
@@ -942,7 +957,7 @@ func addNominatedPods(ctx context.Context, fh framework.Handle, pod *v1.Pod, sta
 	if len(nominatedPodInfos) == 0 {
 		return false, state, nodeInfo, nil
 	}
-	nodeInfoOut := nodeInfo.Clone()
+	nodeInfoOut := nodeInfo.Snapshot()
 	stateOut := state.Clone()
 	podsAdded := false
 	for _, pi := range nominatedPodInfos {
@@ -1015,7 +1030,7 @@ func (f *frameworkImpl) RunScorePlugins(ctx context.Context, state *framework.Cy
 		metrics.FrameworkExtensionPointDuration.WithLabelValues(metrics.Score, status.Code().String(), f.profileName).Observe(metrics.SinceInSeconds(startTime))
 	}()
 	allNodePluginScores := make([]framework.NodePluginScores, len(nodes))
-	numPlugins := len(f.scorePlugins) - state.SkipScorePlugins.Len()
+	numPlugins := len(f.scorePlugins)
 	plugins := make([]framework.ScorePlugin, 0, numPlugins)
 	pluginToNodeScores := make(map[string]framework.NodeScoreList, numPlugins)
 	for _, pl := range f.scorePlugins {
@@ -1151,9 +1166,9 @@ func (f *frameworkImpl) RunPreBindPlugins(ctx context.Context, state *framework.
 		ctx := klog.NewContext(ctx, logger)
 		status = f.runPreBindPlugin(ctx, pl, state, pod, nodeName)
 		if !status.IsSuccess() {
-			if status.IsUnschedulable() {
+			if status.IsRejected() {
 				logger.V(4).Info("Pod rejected by PreBind plugin", "pod", klog.KObj(pod), "node", nodeName, "plugin", pl.Name(), "status", status.Message())
-				status.SetFailedPlugin(pl.Name())
+				status.SetPlugin(pl.Name())
 				return status
 			}
 			err := status.AsError()
@@ -1197,9 +1212,9 @@ func (f *frameworkImpl) RunBindPlugins(ctx context.Context, state *framework.Cyc
 			continue
 		}
 		if !status.IsSuccess() {
-			if status.IsUnschedulable() {
+			if status.IsRejected() {
 				logger.V(4).Info("Pod rejected by Bind plugin", "pod", klog.KObj(pod), "node", nodeName, "plugin", pl.Name(), "status", status.Message())
-				status.SetFailedPlugin(pl.Name())
+				status.SetPlugin(pl.Name())
 				return status
 			}
 			err := status.AsError()
@@ -1271,9 +1286,9 @@ func (f *frameworkImpl) RunReservePluginsReserve(ctx context.Context, state *fra
 		ctx := klog.NewContext(ctx, logger)
 		status = f.runReservePluginReserve(ctx, pl, state, pod, nodeName)
 		if !status.IsSuccess() {
-			if status.IsUnschedulable() {
+			if status.IsRejected() {
 				logger.V(4).Info("Pod rejected by plugin", "pod", klog.KObj(pod), "plugin", pl.Name(), "status", status.Message())
-				status.SetFailedPlugin(pl.Name())
+				status.SetPlugin(pl.Name())
 				return status
 			}
 			err := status.AsError()
@@ -1350,9 +1365,9 @@ func (f *frameworkImpl) RunPermitPlugins(ctx context.Context, state *framework.C
 		ctx := klog.NewContext(ctx, logger)
 		status, timeout := f.runPermitPlugin(ctx, pl, state, pod, nodeName)
 		if !status.IsSuccess() {
-			if status.IsUnschedulable() {
+			if status.IsRejected() {
 				logger.V(4).Info("Pod rejected by plugin", "pod", klog.KObj(pod), "plugin", pl.Name(), "status", status.Message())
-				return status.WithFailedPlugin(pl.Name())
+				return status.WithPlugin(pl.Name())
 			}
 			if status.IsWait() {
 				// Not allowed to be greater than maxTimeout.
@@ -1364,7 +1379,7 @@ func (f *frameworkImpl) RunPermitPlugins(ctx context.Context, state *framework.C
 			} else {
 				err := status.AsError()
 				logger.Error(err, "Plugin failed", "plugin", pl.Name(), "pod", klog.KObj(pod))
-				return framework.AsStatus(fmt.Errorf("running Permit plugin %q: %w", pl.Name(), err)).WithFailedPlugin(pl.Name())
+				return framework.AsStatus(fmt.Errorf("running Permit plugin %q: %w", pl.Name(), err)).WithPlugin(pl.Name())
 			}
 		}
 	}
@@ -1404,13 +1419,13 @@ func (f *frameworkImpl) WaitOnPermit(ctx context.Context, pod *v1.Pod) *framewor
 	metrics.PermitWaitDuration.WithLabelValues(s.Code().String()).Observe(metrics.SinceInSeconds(startTime))
 
 	if !s.IsSuccess() {
-		if s.IsUnschedulable() {
+		if s.IsRejected() {
 			logger.V(4).Info("Pod rejected while waiting on permit", "pod", klog.KObj(pod), "status", s.Message())
 			return s
 		}
 		err := s.AsError()
 		logger.Error(err, "Failed waiting on permit for pod", "pod", klog.KObj(pod))
-		return framework.AsStatus(fmt.Errorf("waiting on permit for pod: %w", err)).WithFailedPlugin(s.FailedPlugin())
+		return framework.AsStatus(fmt.Errorf("waiting on permit for pod: %w", err)).WithPlugin(s.Plugin())
 	}
 	return nil
 }

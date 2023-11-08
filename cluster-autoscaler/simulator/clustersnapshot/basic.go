@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -126,7 +127,7 @@ func newInternalBasicSnapshotData() *internalBasicSnapshotData {
 func (data *internalBasicSnapshotData) clone() *internalBasicSnapshotData {
 	clonedNodeInfoMap := make(map[string]*schedulerframework.NodeInfo)
 	for k, v := range data.nodeInfoMap {
-		clonedNodeInfoMap[k] = v.Clone()
+		clonedNodeInfoMap[k] = v.Snapshot()
 	}
 	clonedPvcNamespaceNodeMap := make(map[string]map[string]bool)
 	for k, v := range data.pvcNamespacePodMap {
@@ -185,10 +186,11 @@ func (data *internalBasicSnapshotData) removePod(namespace, podName, nodeName st
 	if !found {
 		return ErrNodeNotFound
 	}
+	logger := klog.Background()
 	for _, podInfo := range nodeInfo.Pods {
 		if podInfo.Pod.Namespace == namespace && podInfo.Pod.Name == podName {
 			data.removePvcUsedByPod(podInfo.Pod)
-			err := nodeInfo.RemovePod(podInfo.Pod)
+			err := nodeInfo.RemovePod(logger, podInfo.Pod)
 			if err != nil {
 				data.addPvcUsedByPod(podInfo.Pod)
 				return fmt.Errorf("cannot remove pod; %v", err)
