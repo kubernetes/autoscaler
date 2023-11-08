@@ -992,6 +992,9 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 }
 
 func TestStaticAutoscalerRunOnceWithSchedulerProcessingIgnored(t *testing.T) {
+	ignoredScheduler := "ignored-scheduler"
+	nonIgnoredScheduler := "non-ignored-scheduler"
+
 	readyNodeLister := kubernetes.NewTestNodeLister(nil)
 	allNodeLister := kubernetes.NewTestNodeLister(nil)
 	allPodListerMock := &podListerMock{}
@@ -1010,7 +1013,9 @@ func TestStaticAutoscalerRunOnceWithSchedulerProcessingIgnored(t *testing.T) {
 	p1 := BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
 	p2 := BuildTestPod("p2", 600, 100, MarkUnschedulable())
-	p3 := BuildTestPod("p3", 600, 100) // Not yet processed by scheduler
+	p3 := BuildTestPod("p3", 600, 100, AddSchedulerName(apiv1.DefaultSchedulerName)) // Not yet processed by scheduler, default scheduler is ignored
+	p4 := BuildTestPod("p4", 600, 100, AddSchedulerName(ignoredScheduler))           // non-default scheduler & ignored, expects a scale-up
+	p5 := BuildTestPod("p5", 600, 100, AddSchedulerName(nonIgnoredScheduler))        // non-default scheduler & not ignored, shouldn't cause a scale-up
 
 	provider := testprovider.NewTestCloudProvider(
 		func(id string, delta int) error {
@@ -1041,6 +1046,10 @@ func TestStaticAutoscalerRunOnceWithSchedulerProcessingIgnored(t *testing.T) {
 		MaxCoresTotal:             10,
 		MaxMemoryTotal:            100000,
 		IgnoreSchedulerProcessing: true,
+		IgnoredSchedulers: map[string]bool{
+			apiv1.DefaultSchedulerName: true,
+			ignoredScheduler:           true,
+		},
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
@@ -1083,10 +1092,10 @@ func TestStaticAutoscalerRunOnceWithSchedulerProcessingIgnored(t *testing.T) {
 	// Scale up.
 	readyNodeLister.SetNodes([]*apiv1.Node{n1})
 	allNodeLister.SetNodes([]*apiv1.Node{n1})
-	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2, p3}, nil).Twice()
+	allPodListerMock.On("List").Return([]*apiv1.Pod{p1, p2, p3, p4, p5}, nil).Twice()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
-	onScaleUpMock.On("ScaleUp", "ng1", 2).Return(nil).Once()
+	onScaleUpMock.On("ScaleUp", "ng1", 3).Return(nil).Once()
 
 	err = autoscaler.RunOnce(later.Add(time.Hour))
 	assert.NoError(t, err)

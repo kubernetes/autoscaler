@@ -311,7 +311,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	originalScheduledPods, unschedulablePods := kube_util.ScheduledPods(pods), kube_util.UnschedulablePods(pods)
 	schedulerUnprocessed := make([]*apiv1.Pod, 0, 0)
 	if a.IgnoreSchedulerProcessing {
-		schedulerUnprocessed = kube_util.SchedulerUnprocessedPods(pods)
+		schedulerUnprocessed = kube_util.SchedulerUnprocessedPods(pods, a.IgnoredSchedulers)
 	}
 
 	// Update cluster resource usage metrics

@@ -281,4 +281,7 @@ type AutoscalingOptions struct {
 	//for scheduler to mark pods as unschedulable and will process both marked & non-marked pods
 	//it will also signal whether we enable/disable waiting for pod time buffers before triggering a scale-up.
 	IgnoreSchedulerProcessing bool
+	//IgnoredSchedulers are used to specify which schedulers to ignore their processing
+	//if IgnoreSchedulerProcessing is set to true
+	IgnoredSchedulers map[string]bool
 }
