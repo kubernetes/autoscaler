@@ -147,3 +147,12 @@ func ConfigFromPath(path string) (*scheduler_config.KubeSchedulerConfiguration, 
 
 	return cfgObj, nil
 }
+
+// GetIgnoredSchedulersMap returns a map of scheduler names that should be ignored as keys, and values are set to true
+func GetIgnoredSchedulersMap(ignoredSchedulers []string) map[string]bool {
+	ignoredSchedulersMap := make(map[string]bool, len(ignoredSchedulers))
+	for _, scheduler := range ignoredSchedulers {
+		ignoredSchedulersMap[scheduler] = true
+	}
+	return ignoredSchedulersMap
+}

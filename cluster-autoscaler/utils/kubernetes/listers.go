@@ -144,18 +144,23 @@ type PodLister interface {
 	List() ([]*apiv1.Pod, error)
 }
 
+// isScheduled checks whether a pod is scheduled on a node or not
 func isScheduled(pod *apiv1.Pod) bool {
 	if pod == nil {
 		return false
 	}
 	return pod.Spec.NodeName != ""
 }
+
+// isDeleted checks whether a pod is deleted not
 func isDeleted(pod *apiv1.Pod) bool {
 	if pod == nil {
 		return false
 	}
 	return pod.GetDeletionTimestamp() != nil
 }
+
+// isUnschedulable checks whether a pod is unschedulable or not
 func isUnschedulable(pod *apiv1.Pod) bool {
 	if pod == nil {
 		return false
@@ -170,6 +175,12 @@ func isUnschedulable(pod *apiv1.Pod) bool {
 	return true
 }
 
+// getIsDefaultSchedulerIgnored checks if the default scheduler should be ignored or not
+func getIsDefaultSchedulerIgnored(ignoredSchedulers map[string]bool) bool {
+	ignored, ok := ignoredSchedulers[apiv1.DefaultSchedulerName]
+	return ignored && ok
+}
+
 // ScheduledPods is a helper method that returns all scheduled pods from given pod list.
 func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	var scheduledPods []*apiv1.Pod
@@ -182,10 +193,20 @@ func ScheduledPods(allPods []*apiv1.Pod) []*apiv1.Pod {
 	return scheduledPods
 }
 
-// SchedulerUnprocessedPods is a helper method that returns all pods which are not yet processed by the scheduler
-func SchedulerUnprocessedPods(allPods []*apiv1.Pod) []*apiv1.Pod {
+// SchedulerUnprocessedPods is a helper method that returns all pods which are not yet processed by the specified ignored schedulers
+func SchedulerUnprocessedPods(allPods []*apiv1.Pod, ignoredSchedulers map[string]bool) []*apiv1.Pod {
 	var unprocessedPods []*apiv1.Pod
+
+	isDefaultSchedulerIgnored := getIsDefaultSchedulerIgnored(ignoredSchedulers)
+
 	for _, pod := range allPods {
+		// Don't add a pod with a scheduler that isn't specified by the user
+		if !isDefaultSchedulerIgnored && pod.Spec.SchedulerName == "" {
+			continue
+		}
+		if isIgnored, found := ignoredSchedulers[pod.Spec.SchedulerName]; !found || !isIgnored {
+			continue
+		}
 		// Make sure it's not scheduled or deleted
 		if isScheduled(pod) || isDeleted(pod) || isUnschedulable(pod) {
 			continue
