@@ -19,7 +19,6 @@ package taints
 import (
 	"context"
 	"fmt"
-	"maps"
 	"strconv"
 	"strings"
 	"time"
@@ -117,7 +116,10 @@ func NewTaintConfig(opts config.AutoscalingOptions) TaintConfig {
 		ToBeDeletedTaint:       true,
 		DeletionCandidateTaint: true,
 	}
-	maps.Copy(explicitlyReportedTaints, NodeConditionTaints)
+
+	for k, v := range NodeConditionTaints {
+		explicitlyReportedTaints[k] = v
+	}
 
 	return TaintConfig{
 		startupTaints:            startupTaints,
