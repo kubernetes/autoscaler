@@ -18,14 +18,14 @@ limitations under the License.
  * This test checks that various VolumeSources are working.
  *
  * There are two ways, how to test the volumes:
- * 1) With containerized server (NFS, Ceph, Gluster, iSCSI, ...)
+ * 1) With containerized server (NFS, Ceph, iSCSI, ...)
  * The test creates a server pod, exporting simple 'index.html' file.
  * Then it uses appropriate VolumeSource to import this file into a client pod
  * and checks that the pod can see the file. It does so by importing the file
  * into web server root and loading the index.html from it.
  *
  * These tests work only when privileged containers are allowed, exporting
- * various filesystems (NFS, GlusterFS, ...) usually needs some mounting or
+ * various filesystems (ex: NFS) usually needs some mounting or
  * other privileged magic in the server pod.
  *
  * Note that the server containers are for testing purposes only and should not
@@ -37,12 +37,11 @@ limitations under the License.
  * and checks, that Kubernetes can use it as a volume.
  */
 
-// GlusterFS test is duplicated from test/e2e/volumes.go.  Any changes made there
-// should be duplicated here
-
 package storage
 
 import (
+	"context"
+
 	v1 "k8s.io/api/core/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -56,7 +55,7 @@ import (
 // TODO(#99468): Check if these tests are still needed.
 var _ = SIGDescribe("Volumes", func() {
 	f := framework.NewDefaultFramework("volume")
-	f.NamespacePodSecurityEnforceLevel = admissionapi.LevelPrivileged
+	f.NamespacePodSecurityLevel = admissionapi.LevelPrivileged
 
 	// note that namespace deletion is handled by delete-namespace flag
 	// filled in BeforeEach
@@ -74,9 +73,9 @@ var _ = SIGDescribe("Volumes", func() {
 	// NFS
 	////////////////////////////////////////////////////////////////////////
 	ginkgo.Describe("NFSv4", func() {
-		ginkgo.It("should be mountable for NFSv4", func() {
-			config, _, serverHost := e2evolume.NewNFSServer(c, namespace.Name, []string{})
-			defer e2evolume.TestServerCleanup(f, config)
+		ginkgo.It("should be mountable for NFSv4", func(ctx context.Context) {
+			config, _, serverHost := e2evolume.NewNFSServer(ctx, c, namespace.Name, []string{})
+			ginkgo.DeferCleanup(e2evolume.TestServerCleanup, f, config)
 
 			tests := []e2evolume.Test{
 				{
@@ -93,14 +92,14 @@ var _ = SIGDescribe("Volumes", func() {
 			}
 
 			// Must match content of test/images/volumes-tester/nfs/index.html
-			e2evolume.TestVolumeClient(f, config, nil, "" /* fsType */, tests)
+			e2evolume.TestVolumeClient(ctx, f, config, nil, "" /* fsType */, tests)
 		})
 	})
 
 	ginkgo.Describe("NFSv3", func() {
-		ginkgo.It("should be mountable for NFSv3", func() {
-			config, _, serverHost := e2evolume.NewNFSServer(c, namespace.Name, []string{})
-			defer e2evolume.TestServerCleanup(f, config)
+		ginkgo.It("should be mountable for NFSv3", func(ctx context.Context) {
+			config, _, serverHost := e2evolume.NewNFSServer(ctx, c, namespace.Name, []string{})
+			ginkgo.DeferCleanup(e2evolume.TestServerCleanup, f, config)
 
 			tests := []e2evolume.Test{
 				{
@@ -116,7 +115,7 @@ var _ = SIGDescribe("Volumes", func() {
 				},
 			}
 			// Must match content of test/images/volume-tester/nfs/index.html
-			e2evolume.TestVolumeClient(f, config, nil, "" /* fsType */, tests)
+			e2evolume.TestVolumeClient(ctx, f, config, nil, "" /* fsType */, tests)
 		})
 	})
 })
