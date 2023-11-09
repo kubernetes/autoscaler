@@ -91,13 +91,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
-	// From now on we only care about unschedulable pods that were marked after the newest
-	// node became available for the scheduler.
-	if len(unschedulablePods) == 0 {
-		klog.V(1).Info("No unschedulable pods")
-		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
-	}
-
 	loggingQuota := klogx.PodsLoggingQuota()
 	for _, pod := range unschedulablePods {
 		klogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
