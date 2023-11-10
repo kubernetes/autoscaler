@@ -168,17 +168,17 @@ spec:
             - name: BOOTSTRAP_TOKEN_ID
               valueFrom:
                 secretKeyRef:
-                  name: bootstrap-token-cluster-autoscaler-packet
+                  name: bootstrap-token-cluster-autoscaler-equinixmetal
                   key: token-id
             - name: BOOTSTRAP_TOKEN_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: bootstrap-token-cluster-autoscaler-packet
+                  name: bootstrap-token-cluster-autoscaler-equinixmetal
                   key: token-secret
             - name: METAL_AUTH_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: cluster-autoscaler-packet
+                  name: cluster-autoscaler-equinixmetal
                   key: authtoken
           # You can take advantage of multiple nodepools by adding
           # extra arguments on the cluster-autoscaler command.
@@ -190,7 +190,7 @@ spec:
             - --alsologtostderr
             - --cluster-name=cluster1
             - --cloud-config=/config/cloud-config
-            - --cloud-provider=packet
+            - --cloud-provider=equinixmetal
             - --expander=price
             - --nodes=0:10:pool1
             - --nodes=0:10:pool2

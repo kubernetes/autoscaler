@@ -25,7 +25,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [ClusterAPI](./cloudprovider/clusterapi/README.md)
 * [DigitalOcean](./cloudprovider/digitalocean/README.md)
 * [Exoscale](./cloudprovider/exoscale/README.md)
-* [Equinix Metal](./cloudprovider/packet/README.md#notes)
+* [Equinix Metal](cloudprovider/equinixmetal/README.md#notes)
 * [External gRPC](./cloudprovider/externalgrpc/README.md)
 * [Hetzner](./cloudprovider/hetzner/README.md)
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
