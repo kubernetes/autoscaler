@@ -17,11 +17,18 @@ limitations under the License.
 package nanny
 
 import (
-	"testing"
 	"time"
 
+	"os"
+	"path/filepath"
+	"testing"
+
 	corev1 "k8s.io/api/core/v1"
+
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
+	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 )
 
 var (
@@ -174,7 +181,10 @@ func TestCheckResources(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		gotOverwrite, gotOp := checkResource(tc.th, tc.x, tc.y, tc.res)
+		n := &Nanny{
+			Threshold: uint64(tc.th),
+		}
+		gotOverwrite, gotOp := n.checkResource(tc.x, tc.y, tc.res)
 		if tc.wantOverwrite != gotOverwrite || tc.wantOp != gotOp {
 			t.Errorf("checkResource got (%t, %v), want (%t, %v) for test case %d.", gotOverwrite, gotOp, tc.wantOverwrite, tc.wantOp, i)
 		}
@@ -218,8 +228,10 @@ func TestShouldOverwriteResources(t *testing.T) {
 		{10, noStorage, siNoStorage, false, unknown},
 	}
 	for i, tc := range testCases {
-
-		gotOverwrite, gotOp := shouldOverwriteResources(tc.th, tc.x, tc.x, tc.y, tc.x)
+		n := &Nanny{
+			Threshold: uint64(tc.th),
+		}
+		gotOverwrite, gotOp := n.shouldOverwriteResources(tc.x, tc.x, tc.y, tc.x)
 		if tc.wantOverwrite != gotOverwrite || tc.wantOp != gotOp {
 			t.Errorf("shouldOverwriteResources got (%t, %v), want (%t, %v) for test case %d.", gotOverwrite, gotOp, tc.wantOverwrite, tc.wantOp, i)
 		}
@@ -276,7 +288,14 @@ func TestUpdateResources(t *testing.T) {
 	for i, tc := range testCases {
 		k8s := newFakeKubernetesClient(10, 50, tc.x, tc.x)
 		est := newFakeResourceEstimator(tc.y, tc.x)
-		got := updateResources(k8s, est, now, tc.lc, tc.sdd, tc.sud, tc.th, noChange, tc.scalingMode)
+		n := &Nanny{
+			Client:         k8s,
+			estimator:      est,
+			ScaleDownDelay: tc.sdd,
+			ScaleUpDelay:   tc.sud,
+			Threshold:      tc.th,
+		}
+		got := n.updateResources(now, tc.lc, noChange)
 		if tc.want != got {
 			t.Errorf("updateResources got %d, want %d for test case %d.", got, tc.want, i)
 		}
@@ -419,4 +438,53 @@ func newFakeResourceEstimator(limits, reqs corev1.ResourceList) *fakeResourceEst
 
 func (f *fakeResourceEstimator) scale(clusterSize uint64) *corev1.ResourceRequirements {
 	return f.resources
+}
+
+func TestConfigureAndRunNanny(t *testing.T) {
+	f, err := os.Create("NannyConfiguration")
+	defer os.Remove(f.Name())
+	assert.NoError(t, err)
+
+	configDir, err := filepath.Abs(filepath.Dir(f.Name()))
+	assert.NoError(t, err)
+
+	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
+		BaseCPU:       "300m",
+		CPUPerNode:    "350m",
+		BaseMemory:    "200Mi",
+		MemoryPerNode: "20Mi",
+	}
+	estimator := "linear"
+	baseStorage := nannyconfig.NoValue
+	n := Nanny{
+		EstimatorType:      estimator,
+		BaseStorage:        baseStorage,
+		ConfigurationFlags: *nannyConfigurationFromFlags,
+		ConfigDir:          configDir,
+	}
+
+	_, err = f.WriteString(`
+apiVersion: nannyconfig/v1alpha1
+kind: NannyConfiguration
+baseCPU: 264m	
+`)
+	assert.NoError(t, err)
+
+	expectedEstimator := LinearEstimator{
+		Resources: []Resource{
+			{
+				Name:             "cpu",
+				Base:             resource.MustParse("264m"),
+				ExtraPerResource: resource.MustParse("350m"),
+			},
+			{
+				Base:             resource.MustParse("200Mi"),
+				ExtraPerResource: resource.MustParse("20Mi"),
+				Name:             "memory",
+			},
+		},
+	}
+	nannyEstimator, err := n.getEstimator()
+	assert.NoError(t, err)
+	assert.Equal(t, expectedEstimator, nannyEstimator)
 }

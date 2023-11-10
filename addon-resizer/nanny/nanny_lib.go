@@ -22,12 +22,21 @@ package nanny
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
 	"time"
 
 	log "github.com/golang/glog"
 	inf "gopkg.in/inf.v0"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/autoscaler/addon-resizer/healthcheck"
+	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
+	nannyscheme "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/scheme"
+	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
 )
 
 type operation int
@@ -48,8 +57,25 @@ const (
 	overwrite updateResult = iota
 )
 
+type Nanny struct {
+	StopChan       chan struct{}
+	Client         KubernetesClient
+	PollPeriod     time.Duration
+	ScaleDownDelay time.Duration
+	ScaleUpDelay   time.Duration
+	ScalingMode    string
+	NannyCfdFlags  nannyconfigalpha.NannyConfiguration
+	ConfigDir      string
+	BaseStorage    string
+	EstimatorType  string
+	MinClusterSize uint64
+	Threshold      uint64
+	HealthCheck    *healthcheck.HealthCheck
+	estimator      ResourceEstimator
+}
+
 // checkResource determines whether a specific resource needs to be over-written and determines type of the operation.
-func checkResource(threshold int64, actual, expected corev1.ResourceList, res corev1.ResourceName) (bool, operation) {
+func (n *Nanny) checkResource(actual, expected corev1.ResourceList, res corev1.ResourceName) (bool, operation) {
 	val, ok := actual[res]
 	expVal, expOk := expected[res]
 	if ok != expOk {
@@ -59,8 +85,8 @@ func checkResource(threshold int64, actual, expected corev1.ResourceList, res co
 		return false, unknown
 	}
 	q := new(inf.Dec).QuoRound(val.AsDec(), expVal.AsDec(), 2, inf.RoundDown)
-	lower := inf.NewDec(100-threshold, 2)
-	upper := inf.NewDec(100+threshold, 2)
+	lower := inf.NewDec(100-int64(n.Threshold), 2)
+	upper := inf.NewDec(100+int64(n.Threshold), 2)
 	if q.Cmp(lower) == -1 {
 		return true, scaleUp
 	}
@@ -73,13 +99,13 @@ func checkResource(threshold int64, actual, expected corev1.ResourceList, res co
 // shouldOverwriteResources determines if we should over-write the container's resource limits and determines type of the operation.
 // We'll over-write the resource limits if the limited resources are different, or if any limit is violated by a threshold.
 // Returned operation type (scale up/down or unknown) is calculated based on values taken from the first resource which requires overwrite.
-func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs corev1.ResourceList) (bool, operation) {
+func (n *Nanny) shouldOverwriteResources(limits, reqs, expLimits, expReqs corev1.ResourceList) (bool, operation) {
 	for _, resourceType := range []corev1.ResourceName{corev1.ResourceCPU, corev1.ResourceMemory, corev1.ResourceStorage} {
-		overwrite, op := checkResource(threshold, limits, expLimits, resourceType)
+		overwrite, op := n.checkResource(limits, expLimits, resourceType)
 		if overwrite {
 			return true, op
 		}
-		overwrite, op = checkResource(threshold, reqs, expReqs, resourceType)
+		overwrite, op = n.checkResource(reqs, expReqs, resourceType)
 		if overwrite {
 			return true, op
 		}
@@ -103,20 +129,147 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the size of the cluster, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.HealthCheck, pollPeriod, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, scalingMode string) {
+func (n *Nanny) pollAPIServer() {
 	lastChange := time.Now()
 	lastResult := noChange
 
 	for i := 0; true; i++ {
-		if i != 0 {
-			// Sleep for the poll period.
-			time.Sleep(pollPeriod)
-		}
+		select {
+		case <-n.StopChan:
+			return
+		default:
+			if i != 0 {
+				// Sleep for the poll period.
+				time.Sleep(n.PollPeriod)
+			}
 
-		if lastResult = updateResources(k8s, est, time.Now(), lastChange, scaleDownDelay, scaleUpDelay, threshold, lastResult, scalingMode); lastResult == overwrite {
-			lastChange = time.Now()
+			if lastResult = n.updateResources(time.Now(), lastChange, lastResult); lastResult == overwrite {
+				lastChange = time.Now()
+			}
+			n.HealthCheck.UpdateLastActivity()
 		}
-		hc.UpdateLastActivity()
+	}
+}
+
+// Run would trigger the nanny to get the estimator based on the command line flags and configuration file
+// and then trigger the API polling which periodically counts the number of nodes, estimates the expected
+// ResourceRequirements, compares them to the actual ResourceRequirements, and
+// updates the deployment with the expected ResourceRequirements if necessary.
+func (n *Nanny) Run() {
+	estimator, err := n.getEstimator()
+	if err != nil {
+		log.Fatal(err)
+	}
+	n.estimator = estimator
+	go n.pollAPIServer()
+}
+
+func (n *Nanny) loadConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {
+	path := filepath.Join(configDir, "NannyConfiguration")
+	_, codecs, err := nannyscheme.NewSchemeAndCodecs()
+	if err != nil {
+		return nil, err
+	}
+	// overwrite defaults with flag-specified parameters
+	nannyconfigalpha.SetDefaults_NannyConfiguration(defaultConfig)
+	// retrieve config map parameters if present
+	configMapConfig := &nannyconfigalpha.NannyConfiguration{}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		log.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
+	} else if configMapConfig, err = n.decodeConfiguration(data, codecs); err != nil {
+		configMapConfig = &nannyconfigalpha.NannyConfiguration{}
+		log.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
+	}
+	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
+	// overwrite defaults with config map parameters
+	nannyconfigalpha.FillInDefaults_NannyConfiguration(configMapConfig, defaultConfig)
+	return n.convertConfiguration(configMapConfig), nil
+}
+
+func (n *Nanny) convertConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration) *nannyconfig.NannyConfiguration {
+	if configAlpha == nil {
+		return nil
+	}
+	return &nannyconfig.NannyConfiguration{
+		TypeMeta:      configAlpha.TypeMeta,
+		BaseCPU:       configAlpha.BaseCPU,
+		CPUPerNode:    configAlpha.CPUPerNode,
+		BaseMemory:    configAlpha.BaseMemory,
+		MemoryPerNode: configAlpha.MemoryPerNode,
+	}
+}
+
+func (n *Nanny) decodeConfiguration(data []byte, codecs *serializer.CodecFactory) (*nannyconfigalpha.NannyConfiguration, error) {
+	obj, err := runtime.Decode(codecs.UniversalDecoder(nannyconfigalpha.SchemeGroupVersion), data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode, error: %v", err)
+	}
+	externalHC, ok := obj.(*nannyconfigalpha.NannyConfiguration)
+	if !ok {
+		return nil, fmt.Errorf("failed to cast object to NannyConfiguration, object: %#v", obj)
+	}
+	return externalHC, nil
+}
+
+func (n *Nanny) getEstimator() (ResourceEstimator, error) {
+	nannycfg, err := n.loadConfiguration(n.ConfigDir, &n.ConfigurationFlags)
+	if err != nil {
+		return nil, err
+	}
+	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
+
+	var resources []Resource
+
+	// Monitor only the resources specified.
+	if nannycfg.BaseCPU != nannyconfig.NoValue {
+		resources = append(resources, Resource{
+			Base:             resource.MustParse(nannycfg.BaseCPU),
+			ExtraPerResource: resource.MustParse(nannycfg.CPUPerNode),
+			Name:             "cpu",
+		})
+	}
+
+	if nannycfg.BaseMemory != nannyconfig.NoValue {
+		resources = append(resources, Resource{
+			Base:             resource.MustParse(nannycfg.BaseMemory),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "memory",
+		})
+	}
+
+	if n.BaseStorage != nannyconfig.NoValue {
+		resources = append(resources, Resource{
+			Base:             resource.MustParse(n.BaseStorage),
+			ExtraPerResource: resource.MustParse(nannycfg.MemoryPerNode),
+			Name:             "storage",
+		})
+	}
+
+	log.Infof("Resources: %+v", resources)
+
+	var est ResourceEstimator
+	if n.EstimatorType == "linear" {
+		est = LinearEstimator{
+			Resources: resources,
+		}
+	} else if n.EstimatorType == "exponential" {
+		est = ExponentialEstimator{
+			Resources:      resources,
+			ScaleFactor:    1.5,
+			MinClusterSize: n.MinClusterSize,
+		}
+	} else {
+		log.Fatalf("Estimator %s not supported", n.EstimatorType)
+	}
+
+	return est, nil
+}
+
+func (n *Nanny) Stop() {
+	select {
+	case n.StopChan <- struct{}{}:
+	default:
 	}
 }
 
@@ -126,14 +279,14 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, hc *healthcheck.
 // It returns overwrite if deployment has been updated, postpone if the change
 // could not be applied due to scale up/down delay and noChange if the estimated
 // expected ResourceRequirements are in line with the actual ResourceRequirements.
-func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChange time.Time, scaleDownDelay, scaleUpDelay time.Duration, threshold uint64, prevResult updateResult, scalingMode string) updateResult {
+func (n *Nanny) updateResources(now, lastChange time.Time, prevResult updateResult) updateResult {
 	// Query the apiserver for the cluster size.
 	var num uint64
 	var err error
-	if scalingMode == ContainerProportional {
-		num, err = k8s.CountContainers()
+	if n.ScalingMode == ContainerProportional {
+		num, err = n.Client.CountContainers()
 	} else {
-		num, err = k8s.CountNodes()
+		num, err = n.Client.CountNodes()
 	}
 
 	if err != nil {
@@ -143,17 +296,17 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	log.V(4).Infof("The cluster size is %d", num)
 
 	// Query the apiserver for this pod's information.
-	resources, err := k8s.ContainerResources()
+	resources, err := n.Client.ContainerResources()
 	if err != nil {
 		log.Errorf("Error while querying apiserver for resources: %v", err)
 		return noChange
 	}
 
 	// Get the expected resource limits.
-	expResources := est.scale(num)
+	expResources := n.estimator.scale(num)
 
 	// If there's a difference, go ahead and set the new values.
-	overwriteRes, op := shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests)
+	overwriteRes, op := n.shouldOverwriteResources(resources.Limits, resources.Requests, expResources.Limits, expResources.Requests)
 	if !overwriteRes {
 		if log.V(4) {
 			log.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", jsonOrValue(*resources), jsonOrValue(*expResources))
@@ -161,8 +314,8 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 		return noChange
 	}
 
-	if (op == scaleDown && now.Before(lastChange.Add(scaleDownDelay))) ||
-		(op == scaleUp && now.Before(lastChange.Add(scaleUpDelay))) {
+	if (op == scaleDown && now.Before(lastChange.Add(n.ScaleDownDelay))) ||
+		(op == scaleUp && now.Before(lastChange.Add(n.ScaleUpDelay))) {
 		if prevResult != postpone {
 			log.Infof("Resources are not within the expected limits, Actual: %+v, accepted range: %+v. Skipping resource update because of scale up/down delay", jsonOrValue(*resources), jsonOrValue(*expResources))
 		}
@@ -170,7 +323,7 @@ func updateResources(k8s KubernetesClient, est ResourceEstimator, now, lastChang
 	}
 
 	log.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v Expected: %+v. Resource will be updated.", jsonOrValue(*resources), jsonOrValue(*expResources))
-	if err := k8s.UpdateDeployment(expResources); err != nil {
+	if err := n.Client.UpdateDeployment(expResources); err != nil {
 		log.Error(err)
 		return noChange
 	}
