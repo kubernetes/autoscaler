@@ -413,6 +413,7 @@ vpa:
 | resources | object | `{}` | Pod resource requests and limits. |
 | secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
+| selectorLabels | object | `{}` | Selector Match Labels to add to deployment. |
 | service.annotations | object | `{}` | Annotations to add to service |
 | service.create | bool | `true` | If `true`, a Service will be created. |
 | service.externalIPs | list | `[]` | List of IP addresses at which the service is available. Ref: https://kubernetes.io/docs/user-guide/services/#external-ips. |
