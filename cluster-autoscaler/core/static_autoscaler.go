@@ -228,6 +228,8 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if allNodes, err := a.AllNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
+	} else if allNodes, err = filterNodeGroups(a.CloudProvider, allNodes...); err != nil {
+		klog.Errorf("Failed to filter nodes based on selected node groups: %v", err)
 	} else {
 		taints.CleanAllToBeDeleted(allNodes,
 			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
@@ -665,6 +667,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				taintableNodes := a.scaleDownPlanner.UnneededNodes()
+				allNodes, err := filterNodeGroups(a.CloudProvider, allNodes...)
+				if err != nil {
+					klog.Warningf("Failed filtering nodes based on selected node groups: %v", err)
+				}
+				// REVIEW: Shall we do the below calls if there's an error? This is essentially gonna mean that untaintableNodes is empty since allNodes is empty.
 				untaintableNodes := subtractNodes(allNodes, taintableNodes)
 				actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
 			}
@@ -965,6 +972,19 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	allNodes, readyNodes = a.processors.CustomResourcesProcessor.FilterOutNodesWithUnreadyResources(a.AutoscalingContext, allNodes, readyNodes)
 	allNodes, readyNodes = taints.FilterOutNodesWithStartupTaints(a.taintConfig, allNodes, readyNodes)
 	return allNodes, readyNodes, nil
+}
+
+func filterNodeGroups(cp cloudprovider.CloudProvider, nodes ...*apiv1.Node) ([]*apiv1.Node, caerrors.AutoscalerError) {
+	filtered := make([]*apiv1.Node, 0, len(nodes))
+	for _, n := range nodes {
+		if ng, err := cp.NodeGroupForNode(n); err != nil {
+			klog.Errorf("Failed to get node groupe from node: %v", err)
+			return nil, caerrors.ToAutoscalerError(caerrors.CloudProviderError, err)
+		} else if ng != nil {
+			filtered = append(filtered, n)
+		}
+	}
+	return filtered, nil
 }
 
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulerframework.NodeInfo, currentTime time.Time) caerrors.AutoscalerError {
