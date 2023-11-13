@@ -18,6 +18,7 @@ package core
 
 import (
 	"bytes"
+	stdcontext "context"
 	"flag"
 	"fmt"
 	"os"
@@ -172,6 +173,13 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	SetNodeReadyState(n2, true, time.Now())
 	n3 := BuildTestNode("n3", 1000, 1000)
 	n4 := BuildTestNode("n4", 1000, 1000)
+	n5 := BuildTestNode("n5", 1000, 1000)
+	n5.Spec.Taints = append(n5.Spec.Taints, apiv1.Taint{
+		Key:    taints.DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	})
+	SetNodeReadyState(n5, true, time.Now())
 
 	p1 := BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
@@ -214,7 +222,11 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
+	clientset := fake.NewSimpleClientset(n1, n2, n3, n4, n5)
+	newN5, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n5.Name, metav1.GetOptions{})
+	fmt.Println("#################################", newN5, err)
+
+	context, err := NewScaleTestAutoscalingContext(options, clientset, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&context, options)
@@ -328,7 +340,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 
-	// Scale up to node gorup min size.
+	// Scale up to node group min size.
 	readyNodeLister.SetNodes([]*apiv1.Node{n4})
 	allNodeLister.SetNodes([]*apiv1.Node{n4})
 	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
@@ -342,6 +354,22 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, onScaleUpMock)
+
+	// Node from non-selected node groups should keep their taints.
+	autoscaler.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount = 10
+	autoscaler.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintTime = 3 * time.Second
+
+	readyNodeLister.SetNodes([]*apiv1.Node{n5})
+	allNodeLister.SetNodes([]*apiv1.Node{n5})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+
+	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+	assert.NoError(t, err)
+	newN5, err = clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n5.Name, metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.Equal(t, n5.Spec.Taints, newN5.Spec.Taints)
 }
 
 func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
