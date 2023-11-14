@@ -48,6 +48,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
@@ -478,7 +479,8 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
-	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+	nfp := podlistprocessor.NewFilterOutNoPreemptionPodsListProcessor()
+	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker, []pods.PodListProcessor{nfp})
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
 	if autoscalingOptions.ParallelDrain {
 		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()

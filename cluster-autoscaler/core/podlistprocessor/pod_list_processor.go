@@ -29,13 +29,19 @@ type defaultPodListProcessor struct {
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *defaultPodListProcessor {
+func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker, extraProcessors []pods.PodListProcessor) *defaultPodListProcessor {
+
+	processors := []pods.PodListProcessor{
+		NewCurrentlyDrainedNodesPodListProcessor(),
+		NewFilterOutSchedulablePodListProcessor(predicateChecker),
+		NewFilterOutDaemonSetPodListProcessor(),
+		NewFilterOutNoPreemptionPodsListProcessor(),
+	}
+
+	processors = append(processors, extraProcessors...)
+
 	return &defaultPodListProcessor{
-		processors: []pods.PodListProcessor{
-			NewCurrentlyDrainedNodesPodListProcessor(),
-			NewFilterOutSchedulablePodListProcessor(predicateChecker),
-			NewFilterOutDaemonSetPodListProcessor(),
-		},
+		processors: processors,
 	}
 }
 
