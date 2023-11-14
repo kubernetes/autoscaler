@@ -60,8 +60,6 @@ type GCEOptions struct {
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
-	// ExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
-	ExpanderEphemeralStorageSupport bool
 }
 
 const (
