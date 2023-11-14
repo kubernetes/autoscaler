@@ -163,8 +163,8 @@ func testRunOnceBase(
 	vpaObj := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
 		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
+		WithMinAllowed(containerName, "1", "100M").
+		WithMaxAllowed(containerName, "3", "1G").
 		Get()
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
@@ -176,6 +176,7 @@ func testRunOnceBase(
 		podLister:                    podLister,
 		evictionFactory:              factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		selectorFetcher:              mockSelectorFetcher,
 		useAdmissionControllerStatus: true,
@@ -202,6 +203,7 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 		podLister:                    podLister,
 		evictionFactory:              factory,
 		evictionRateLimiter:          rate.NewLimiter(rate.Inf, 0),
+		evictionAdmission:            priority.NewDefaultPodEvictionAdmission(),
 		recommendationProcessor:      &test.FakeRecommendationProcessor{},
 		useAdmissionControllerStatus: true,
 		statusValidator:              newFakeValidator(true),

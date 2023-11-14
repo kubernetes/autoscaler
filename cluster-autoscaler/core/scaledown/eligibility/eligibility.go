@@ -122,7 +122,7 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 
 	nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
 	if err != nil {
-		klog.Warning("Node group not found for node %v: %v", node.Name, err)
+		klog.Warningf("Node group not found for node %v: %v", node.Name, err)
 		return simulator.UnexpectedError, nil
 	}
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
@@ -159,11 +159,11 @@ func (c *Checker) unremovableReasonAndNodeUtilization(context *context.Autoscali
 		return simulator.UnexpectedError, nil
 	}
 	if !underutilized {
-		klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+		klog.V(4).Infof("Node %s unremovable: %s requested (%.6g%% of allocatable) is above the scale-down utilization threshold", node.Name, utilInfo.ResourceName, utilInfo.Utilization*100)
 		return simulator.NotUnderutilized, &utilInfo
 	}
 
-	klogx.V(4).UpTo(utilLogsQuota).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
+	klogx.V(4).UpTo(utilLogsQuota).Infof("Node %s - %s requested is %.6g%% of allocatable", node.Name, utilInfo.ResourceName, utilInfo.Utilization*100)
 
 	return simulator.NoReason, &utilInfo
 }

@@ -567,7 +567,7 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for deployment to resize")
 
-	podList, err := framework_deployment.GetPodsForDeployment(c, deployment)
+	podList, err := framework_deployment.GetPodsForDeployment(context.TODO(), c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when listing pods after deployment resize")
 	return podList
 }
