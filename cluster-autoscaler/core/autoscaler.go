@@ -45,7 +45,6 @@ import (
 type AutoscalerOptions struct {
 	config.AutoscalingOptions
 	KubeClient             kube_client.Interface
-	EventsKubeClient       kube_client.Interface
 	InformerFactory        informers.SharedInformerFactory
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
@@ -103,7 +102,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.Processors = ca_processors.DefaultProcessors(opts.AutoscalingOptions)
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient, opts.InformerFactory)
+		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.InformerFactory)
 	}
 	if opts.ClusterSnapshot == nil {
 		opts.ClusterSnapshot = clustersnapshot.NewBasicClusterSnapshot()
