@@ -230,6 +230,32 @@ Additional config parameters available, see the `values.yaml` for more details
 - `clusterAPIWorkloadKubeconfigPath`
 - `clusterAPICloudConfigPath`
 
+### Exoscale
+
+The following parameters are required:
+
+- `cloudProvider=exoscale`
+- `autoDiscovery.clusterName=<CLUSTER NAME>`
+
+Create an Exoscale API key with appropriate permissions as described in [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md).
+A secret of name `<release-name>-exoscale-cluster-autoscaler` needs to be created, containing the api key and secret, as well as the zone.
+
+```console
+$ kubectl create secret generic my-release-exoscale-cluster-autoscaler \
+    --from-literal=api-key="EXOxxxxxxxxxxxxxxxxxxxxxxxx" \
+    --from-literal=api-secret="xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" --from-literal=api-zone="ch-gva-2"
+```
+
+After creating the secret, the chart may be installed:
+
+```console
+$ helm install my-release autoscaler/cluster-autoscaler \
+    --set cloudProvider=exoscale \
+    --set autoDiscovery.clusterName=<CLUSTER NAME>
+```
+
+Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
+
 ## Uninstalling the Chart
 
 To uninstall `my-release`:

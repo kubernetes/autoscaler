@@ -190,6 +190,22 @@ spec:
                   key: NodeResourceGroup
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
+          {{- else if eq .Values.cloudProvider "exoscale" }}
+            - name: EXOSCALE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: EXOSCALE_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: api-secret
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: EXOSCALE_ZONE
+              valueFrom:
+                secretKeyRef:
+                  key: api-zone
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}
