@@ -58,7 +58,7 @@ type instanceType struct {
 	GPU          int64
 }
 
-// InstanceTypes is a map of metal resources
+// InstanceTypes is a map of equinix metal resources
 var InstanceTypes = map[string]*instanceType{
 	"a3.large.x86": {
 		InstanceName: "a3.large.x86",
@@ -578,7 +578,7 @@ func (mgr *equinixMetalManagerRest) createDeviceRequest(ctx context.Context, cr 
 // getNodes should return ProviderIDs for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *equinixMetalManagerRest) getNodes(nodegroup string) ([]string, error) {
-	// Get node ProviderIDs by getting device IDs from metal API
+	// Get node ProviderIDs by getting device IDs from the Equinix Metal API
 	devices, err := mgr.listMetalDevices(context.TODO())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list devices: %w", err)
