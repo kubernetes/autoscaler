@@ -115,6 +115,7 @@ type autoscalingGceClientV1 struct {
 	gceService *gce.Service
 
 	projectId string
+	domainUrl string
 
 	// These can be overridden, e.g. for testing.
 	operationWaitTimeout          time.Duration
@@ -141,7 +142,7 @@ func NewAutoscalingGceClientV1(client *http.Client, projectId string, userAgent 
 
 // NewCustomAutoscalingGceClientV1 creates a new client using custom server url and timeouts
 // for communicating with GCE v1 API.
-func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl, userAgent string,
+func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl, userAgent, domainUrl string,
 	waitTimeout, pollInterval time.Duration, deletionPollInterval time.Duration) (*autoscalingGceClientV1, error) {
 	gceService, err := gce.New(client)
 	if err != nil {
@@ -153,6 +154,7 @@ func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl, 
 	return &autoscalingGceClientV1{
 		projectId:                     projectId,
 		gceService:                    gceService,
+		domainUrl:                     domainUrl,
 		operationWaitTimeout:          waitTimeout,
 		operationPollInterval:         pollInterval,
 		operationDeletionPollInterval: deletionPollInterval,
@@ -295,7 +297,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 		SkipInstancesOnValidationError: true,
 	}
 	for _, i := range instances {
-		req.Instances = append(req.Instances, GenerateInstanceUrl(i))
+		req.Instances = append(req.Instances, GenerateInstanceUrl(client.domainUrl, i))
 	}
 	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
 	if err != nil {
