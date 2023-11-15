@@ -72,6 +72,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 - [GCE](#gce)
 - [Azure AKS](#azure-aks)
 - [OpenStack Magnum](#openstack-magnum)
+- [Cluster API](#cluster-api)
 
 ### AWS - Using auto-discovery of tagged instance groups
 
