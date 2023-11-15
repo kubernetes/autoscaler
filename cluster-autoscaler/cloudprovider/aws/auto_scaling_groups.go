@@ -156,7 +156,7 @@ func (m *asgCache) register(asg *asg) *asg {
 		existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
 		existing.Tags = asg.Tags
 
-		klog.V(4).Infof("Updated ASG %s. min/max/current is %d/%d/%d", asg.AwsRef.Name, existing.minSize, existing.maxSize, existing.curSize)
+		klog.V(4).Infof("Updated ASG cache for %s. min/max/current is %d/%d/%d", asg.AwsRef.Name, existing.minSize, existing.maxSize, existing.curSize)
 
 		return existing
 	}
