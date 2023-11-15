@@ -40,11 +40,14 @@ app.kubernetes.io/name: {{ include "cluster-autoscaler.name" . | quote }}
 
 
 {{/*
-Return labels, including instance and name.
+Return labels, including instance, name and version.
 */}}
 {{- define "cluster-autoscaler.labels" -}}
 {{ include "cluster-autoscaler.instance-name" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
 helm.sh/chart: {{ include "cluster-autoscaler.chart" . | quote }}
 {{- if .Values.additionalLabels }}
 {{ toYaml .Values.additionalLabels }}
