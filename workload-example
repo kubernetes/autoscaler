@@ -17,5 +17,5 @@ spec:
         name: inflate
         resources:
           requests:
-            cpu: "0.5"
+            cpu: "1"
             memory: "4Gi"
