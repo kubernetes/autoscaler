@@ -116,7 +116,7 @@ Return the autodiscoveryparameters for clusterapi.
 */}}
 {{- define "cluster-autoscaler.capiAutodiscoveryConfig" -}}
 {{- if .Values.autoDiscovery.clusterName -}}
-{{- print "clusterName=" -}}{{ .Values.autoDiscovery.clusterName }}
+{{- print "clusterName=" -}}{{ tpl (.Values.autoDiscovery.clusterName) . }}
 {{- end -}}
 {{- if and .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels -}}
 {{- print "," -}}
