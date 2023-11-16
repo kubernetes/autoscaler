@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: example-daemonset
+  name: dsexample
 spec:
   selector:
     matchLabels:
-      name: example-daemonset
+      name: dsexample
   template:
     metadata:
       labels:
-        name: example-daemonset
+        name: dsexample
     spec:
       containers:
       - name: mcr.microsoft.com/oss/kubernetes/pause:3.6
-        image: example-image
+        image: dsimage
         resources:
           requests:
             cpu: "1"
