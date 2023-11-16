@@ -496,11 +496,8 @@ Please note: it is also possible to mount the cloud config file from host:
   enabled, which means it will actively work to balance the number of instances
   between AZs, and possibly terminate instances. If your applications could be
   impacted from sudden termination, you can either suspend the AZRebalance
-  feature, or use a tool for automatic draining upon ASG scale-in such as the
-  [k8s-node-drainer](https://github.com/aws-samples/amazon-k8s-node-drainer). The
-  [AWS Node Termination
-  Handler](https://github.com/aws/aws-node-termination-handler/issues/95) will
-  also support this use-case in the future.
+  feature, or use a tool for automatic draining upon ASG scale-in such as the [AWS Node Termination
+  Handler](https://github.com/aws/aws-node-termination-handler/).
 - By default, cluster autoscaler will not terminate nodes running pods in the
   kube-system namespace. You can override this default behaviour by passing in
   the `--skip-nodes-with-system-pods=false` flag.
