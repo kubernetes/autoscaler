@@ -310,8 +310,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	}
 	originalScheduledPods, unschedulablePods := kube_util.ScheduledPods(pods), kube_util.UnschedulablePods(pods)
 	schedulerUnprocessed := make([]*apiv1.Pod, 0, 0)
-	if a.IgnoreSchedulerProcessing {
-		schedulerUnprocessed = kube_util.SchedulerUnprocessedPods(pods, a.IgnoredSchedulers)
+	isSchedulerProcessingIgnored := len(a.BypassedSchedulers) > 0
+	if isSchedulerProcessingIgnored {
+		schedulerUnprocessed = kube_util.SchedulerUnprocessedPods(pods, a.BypassedSchedulers)
 	}
 
 	// Update cluster resource usage metrics
@@ -456,7 +457,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 
 	// SchedulerUnprocessed might be zero here if it was disabled
 	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods), len(schedulerUnprocessed))
-	if a.IgnoreSchedulerProcessing {
+	if isSchedulerProcessingIgnored {
 		// Treat unknown pods as unschedulable, pod list processor will remove schedulable pods
 		unschedulablePods = append(unschedulablePods, schedulerUnprocessed...)
 	}
@@ -543,7 +544,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		klog.V(1).Info("Max total nodes in cluster reached")
-	} else if !a.IgnoreSchedulerProcessing && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
+	} else if !isSchedulerProcessingIgnored && allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
