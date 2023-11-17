@@ -1,19 +1,24 @@
 apiVersion: apps/v1
 kind: DaemonSet
-metadata:
+metadata:  
   name: example-daemonset
-spec:
-  selector:
-    matchLabels:
-      name: example-daemonset
-  template:
-    metadata:
-      labels:
-        name: example-daemonset
-    spec:
-      containers:
-      - image: mcr.microsoft.com/oss/kubernetes/pause:3.6
-        name: example-container
+spec:  
+  selector:    
+    matchLabels:      
+      name: example-daemonset  
+  template:    
+    metadata:      
+      labels:        
+        name: example-daemonset    
+    spec:      
+      terminationGracePeriodSeconds: 60      
+      containers:      
+      - name: example-container        
+        image: example-image        
+        lifecycle:          
+          preStop:            
+            exec:              
+              command: ["/bin/sh", "-c", "echo 'Gracefully terminating...' && sleep 30"]
         resources:
           requests:
             cpu: "1"
