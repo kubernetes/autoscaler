@@ -36,12 +36,14 @@ func NewFilterOutExpendablePodListProcessor() *filterOutExpendable {
 func (p *filterOutExpendable) Process(context *context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	nodes, err := context.AllNodeLister().List()
 	if err != nil {
+		klog.Warningf("Failed to list all nodes while filtering expendable: %v", err)
 		return nil, err
 	}
 	expendablePodsPriorityCutoff := context.AutoscalingOptions.ExpendablePodsPriorityCutoff
 
 	unschedulablePods, waitingForLowerPriorityPreemption := core_utils.FilterOutExpendableAndSplit(pods, nodes, expendablePodsPriorityCutoff)
 	if err = p.addPreemptingPodsToSnapshot(waitingForLowerPriorityPreemption, context); err != nil {
+		klog.Warningf("Failed to add preempting pods to snapshot: %v", err)
 		return nil, err
 	}
 
