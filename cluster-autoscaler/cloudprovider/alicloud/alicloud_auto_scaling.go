@@ -28,6 +28,7 @@ const (
 	refreshClientInterval   = 60 * time.Minute
 	acsAutogenIncreaseRules = "acs-autogen-increase-rules"
 	defaultAdjustmentType   = "TotalCapacity"
+	defaultRequestPageSize  = 10
 )
 
 // autoScaling define the interface usage in alibaba-cloud-sdk-go.
@@ -166,14 +167,29 @@ func (m autoScalingWrapper) getScalingGroupByName(groupName string) (*ess.Scalin
 }
 
 func (m autoScalingWrapper) getScalingInstancesByGroup(asgId string) ([]ess.ScalingInstance, error) {
-	params := ess.CreateDescribeScalingInstancesRequest()
-	params.ScalingGroupId = asgId
-	resp, err := m.DescribeScalingInstances(params)
-	if err != nil {
-		klog.Errorf("failed to request scaling instances for %s,Because of %s", asgId, err.Error())
-		return nil, err
+	instances := make([]ess.ScalingInstance, 0)
+	pageNumber := 1
+
+	for {
+		params := ess.CreateDescribeScalingInstancesRequest()
+		params.ScalingGroupId = asgId
+		params.PageNumber = requests.NewInteger(pageNumber)
+		params.PageSize = requests.NewInteger(defaultRequestPageSize)
+		resp, err := m.DescribeScalingInstances(params)
+		if err != nil {
+			klog.Errorf("failed to request scaling instances for %s,Because of %s", asgId, err.Error())
+			return nil, err
+		}
+		instances = append(instances, resp.ScalingInstances.ScalingInstance...)
+
+		if pageNumber*defaultRequestPageSize >= resp.TotalCount {
+			break
+		}
+		pageNumber += 1
+		time.Sleep(sdkCoolDownTimeout)
 	}
-	return resp.ScalingInstances.ScalingInstance, nil
+
+	return instances, nil
 }
 
 func (m autoScalingWrapper) setCapcityInstanceSize(groupId string, capcityInstanceSize int64) error {
