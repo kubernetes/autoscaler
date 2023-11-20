@@ -344,9 +344,12 @@ func (ng *nodeGroup) listMachines() ([]unstructured.Unstructured, error) {
 			LabelSelector: fmt.Sprintf("%s=%s-%s", machineDeploymentNameLabelKey, ng.provider.config.ClusterName, ng.name),
 		},
 	)
+	if err != nil {
+		return nil, fmt.Errorf("could not list machines: %w", err)
+	}
 
 	ng.machines = machinesList.Items
-	return machinesList.Items, err
+	return machinesList.Items, nil
 }
 
 func (ng *nodeGroup) machineByName(name string) (*unstructured.Unstructured, error) {
