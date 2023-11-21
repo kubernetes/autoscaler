@@ -60,6 +60,8 @@ type GCEOptions struct {
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
+	// DomainUrl is the GCE url used to make calls to GCE API.
+	DomainUrl string
 }
 
 const (

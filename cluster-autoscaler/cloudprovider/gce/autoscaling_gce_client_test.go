@@ -228,7 +228,7 @@ func TestErrors(t *testing.T) {
 
 func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 	const goodInstanceUrlTempl = "https://content.googleapis.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst_%d"
-	const badInstanceUrl = "https://badurl.com/compute/v1/projects/myprojid/zones/myzone/instances/myinst"
+	const badInstanceUrl = "https://badurl.com/compute/v1/projects3/myprojid/zones/myzone/instances/myinst"
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
