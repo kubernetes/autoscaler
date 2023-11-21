@@ -17,6 +17,8 @@ limitations under the License.
 package podlistprocessor
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
@@ -36,8 +38,7 @@ func NewFilterOutExpendablePodListProcessor() *filterOutExpendable {
 func (p *filterOutExpendable) Process(context *context.AutoscalingContext, pods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	nodes, err := context.AllNodeLister().List()
 	if err != nil {
-		klog.Warningf("Failed to list all nodes while filtering expendable: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("Failed to list all nodes while filtering expendable pods: %v", err)
 	}
 	expendablePodsPriorityCutoff := context.AutoscalingOptions.ExpendablePodsPriorityCutoff
 
