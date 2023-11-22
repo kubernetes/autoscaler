@@ -273,4 +273,6 @@ type AutoscalingOptions struct {
 	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
 	// based on the latency between the CA and the api-server
 	DynamicNodeDeleteDelayAfterTaintEnabled bool
+	// BypassedSchedulers are used to specify which schedulers to bypass their processing
+	BypassedSchedulers map[string]bool
 }
