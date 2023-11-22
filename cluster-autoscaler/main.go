@@ -467,7 +467,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions:   autoscalingOptions,
-		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
+		ClusterSnapshot:      clustersnapshot.NewDefaultClusterSnapshot(),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
 		EventsKubeClient:     eventsKubeClient,

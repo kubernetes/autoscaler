@@ -240,28 +240,6 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	a.initialized = true
 }
 
-func (a *StaticAutoscaler) initializeClusterSnapshot(nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) caerrors.AutoscalerError {
-	a.ClusterSnapshot.Clear()
-
-	knownNodes := make(map[string]bool)
-	for _, node := range nodes {
-		if err := a.ClusterSnapshot.AddNode(node); err != nil {
-			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
-			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
-		}
-		knownNodes[node.Name] = true
-	}
-	for _, pod := range scheduledPods {
-		if knownNodes[pod.Spec.NodeName] {
-			if err := a.ClusterSnapshot.AddPod(pod, pod.Spec.NodeName); err != nil {
-				klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
-				return caerrors.ToAutoscalerError(caerrors.InternalError, err)
-			}
-		}
-	}
-	return nil
-}
-
 func (a *StaticAutoscaler) initializeRemainingPdbTracker() caerrors.AutoscalerError {
 	a.RemainingPdbTracker.Clear()
 
@@ -346,7 +324,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 	}
 	nonExpendableScheduledPods := core_utils.FilterOutExpendablePods(originalScheduledPods, a.ExpendablePodsPriorityCutoff)
 	// Initialize cluster state to ClusterSnapshot
-	if typedErr := a.initializeClusterSnapshot(allNodes, nonExpendableScheduledPods); typedErr != nil {
+	if typedErr := core_utils.InitializeClusterSnapshot(a.ClusterSnapshot, allNodes, nonExpendableScheduledPods); typedErr != nil {
 		return typedErr.AddPrefix("failed to initialize ClusterSnapshot: ")
 	}
 	// Initialize Pod Disruption Budget tracking
@@ -515,6 +493,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 		a.AutoscalingContext.DebuggingSnapshotter.SetClusterNodes(l)
 	}
 
+	a.processors.PodListProcessor.Update(originalScheduledPods, allNodes)
 	unschedulablePodsToHelp, _ := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods)
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)

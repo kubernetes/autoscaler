@@ -24,25 +24,38 @@ import (
 )
 
 type defaultPodListProcessor struct {
-	processors []pods.PodListProcessor
+	processors    []pods.PodListProcessor
+	scheduledPods []*apiv1.Pod
+	allNodes      []*apiv1.Node
 }
 
 // NewDefaultPodListProcessor returns a default implementation of the pod list
 // processor, which wraps and sequentially runs other sub-processors.
-func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker, extraProcessors []pods.PodListProcessor) *defaultPodListProcessor {
+func NewDefaultPodListProcessor(predicateChecker predicatechecker.PredicateChecker) *defaultPodListProcessor {
 
 	processors := []pods.PodListProcessor{
 		NewCurrentlyDrainedNodesPodListProcessor(),
 		NewFilterOutSchedulablePodListProcessor(predicateChecker),
 		NewFilterOutDaemonSetPodListProcessor(),
-		NewFilterOutNoPreemptionPodsListProcessor(),
 	}
-
-	processors = append(processors, extraProcessors...)
 
 	return &defaultPodListProcessor{
 		processors: processors,
 	}
+}
+
+// Update updates the state of defaultPodListProcessor with extra info which can be passed
+// down to the pod list processors (if they need it)
+func (p *defaultPodListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
+	p.allNodes = allNodes
+	p.scheduledPods = scheduledPods
+
+	f, err := NewFilterOutNoPreemptionPodsListProcessor(p.scheduledPods, p.allNodes)
+	if err != nil {
+		return err
+	}
+	p.processors = append(p.processors, f)
+	return nil
 }
 
 // Process runs sub-processors sequentially

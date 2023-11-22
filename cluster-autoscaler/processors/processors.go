@@ -18,7 +18,6 @@ package processors
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/core/podlistprocessor"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/actionablecluster"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/binpacking"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/customresources"
@@ -68,8 +67,6 @@ type AutoscalingProcessors struct {
 	ActionableClusterProcessor actionablecluster.ActionableClusterProcessor
 	// ScaleDownCandidatesNotifier  is used to Update and Register new scale down candidates observer.
 	ScaleDownCandidatesNotifier *scaledowncandidates.ObserversList
-	// ScheduledPodsNotifier is used to update registered processors with the latest scheduled pods
-	ScheduledPodsNotifier *podlistprocessor.ScheduledPodsNotifier
 }
 
 // DefaultProcessors returns default set of processors.
@@ -100,7 +97,6 @@ func DefaultProcessors(options config.AutoscalingOptions) *AutoscalingProcessors
 		ActionableClusterProcessor:  actionablecluster.NewDefaultActionableClusterProcessor(),
 		TemplateNodeInfoProvider:    nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nil, false),
 		ScaleDownCandidatesNotifier: scaledowncandidates.NewObserversList(),
-		ScheduledPodsNotifier:       podlistprocessor.NewScheduledPodsNotifier(),
 	}
 }
 

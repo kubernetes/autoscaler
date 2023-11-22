@@ -50,5 +50,9 @@ func (p *filterOutDaemonSetPodListProcessor) Process(context *context.Autoscalin
 	return nonDaemonSetPods, nil
 }
 
+func (p *filterOutDaemonSetPodListProcessor) Update(_ []*apiv1.Pod, _ []*apiv1.Node) error {
+	return nil
+}
+
 func (p *filterOutDaemonSetPodListProcessor) CleanUp() {
 }

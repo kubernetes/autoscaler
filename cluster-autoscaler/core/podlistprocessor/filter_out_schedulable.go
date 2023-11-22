@@ -42,6 +42,10 @@ func NewFilterOutSchedulablePodListProcessor(predicateChecker predicatechecker.P
 	}
 }
 
+func (p *filterOutSchedulablePodListProcessor) Update(_ []*apiv1.Pod, _ []*apiv1.Node) error {
+	return nil
+}
+
 // Process filters out pods which are schedulable from list of unschedulable pods.
 func (p *filterOutSchedulablePodListProcessor) Process(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	// We need to check whether pods marked as unschedulable are actually unschedulable.

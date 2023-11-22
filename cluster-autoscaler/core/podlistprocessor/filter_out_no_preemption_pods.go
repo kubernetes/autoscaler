@@ -19,44 +19,33 @@ package podlistprocessor
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
+	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 )
 
 type filterOutNoPreemptionPodsListProcessor struct {
-	scheduledPods []*apiv1.Pod
+	clusterSnapshot clustersnapshot.ClusterSnapshot
 }
 
-type ScheduledPodsNotifier interface {
-	Update(scheduledPods []*apiv1.Pod)
-	Register(pods.PodListProcessor)
+func NewFilterOutNoPreemptionPodsListProcessor(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) (*filterOutNoPreemptionPodsListProcessor, error) {
+	f := filterOutNoPreemptionPodsListProcessor{
+		clusterSnapshot: clustersnapshot.NewDefaultClusterSnapshot(),
+	}
+
+	if err := core_utils.InitializeClusterSnapshot(f.clusterSnapshot, allNodes, scheduledPods); err != nil {
+		return nil, err
+	}
+	return &f, nil
 }
 
-type scheduledPodsNotifier struct {
-	// CONTINUE HERE
-	processors []pods.PodListProcessor
-}
-
-func NewScheduledPodsNotifier() *scheduledPodsNotifier {
-	return &scheduledPodsNotifier{}
-}
-
-func (s *scheduledPodsNotifier) Update(scheduledPods []*apiv1.Pod) {
-	s.Update(scheduledPods)
-}
-
-func NewFilterOutNoPreemptionPodsListProcessor() *filterOutNoPreemptionPodsListProcessor {
-	return &filterOutNoPreemptionPodsListProcessor{}
+func (p *filterOutNoPreemptionPodsListProcessor) Update(_ []*apiv1.Pod, _ []*apiv1.Node) error {
+	return nil
 }
 
 func (p *filterOutNoPreemptionPodsListProcessor) Process(
 	context *context.AutoscalingContext,
 	unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
 	return []*apiv1.Pod{}, nil
-}
-
-func (p *filterOutNoPreemptionPodsListProcessor) Update(
-	scheduledPods []*apiv1.Pod) {
-	p.scheduledPods = scheduledPods
 }
 
 func (p *filterOutNoPreemptionPodsListProcessor) CleanUp() {

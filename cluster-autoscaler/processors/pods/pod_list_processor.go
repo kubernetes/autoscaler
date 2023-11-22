@@ -26,6 +26,7 @@ type PodListProcessor interface {
 	Process(
 		context *context.AutoscalingContext,
 		unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error)
+	Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error
 	CleanUp()
 }
 
@@ -36,6 +37,11 @@ type NoOpPodListProcessor struct {
 // NewDefaultPodListProcessor creates an instance of PodListProcessor.
 func NewDefaultPodListProcessor() PodListProcessor {
 	return &NoOpPodListProcessor{}
+}
+
+// Update updates internal state of the processor
+func (p *NoOpPodListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
+	return nil
 }
 
 // Process processes lists of unschedulable and scheduled pods before scaling of the cluster.

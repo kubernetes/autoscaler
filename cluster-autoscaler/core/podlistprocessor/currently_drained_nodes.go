@@ -41,6 +41,10 @@ func (p *currentlyDrainedNodesPodListProcessor) Process(context *context.Autosca
 func (p *currentlyDrainedNodesPodListProcessor) CleanUp() {
 }
 
+func (p *currentlyDrainedNodesPodListProcessor) Update(scheduledPods []*apiv1.Pod, allNodes []*apiv1.Node) error {
+	return nil
+}
+
 func currentlyDrainedPods(context *context.AutoscalingContext) []*apiv1.Pod {
 	var pods []*apiv1.Pod
 	_, nodeNames := context.ScaleDownActuator.CheckStatus().DeletionsInProgress()

@@ -27,11 +27,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator/clustersnapshot"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	caerrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
+	klog "k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 )
 
@@ -205,4 +208,26 @@ func GetOldestCreateTimeWithGpu(pods []*apiv1.Pod) (bool, time.Time) {
 		}
 	}
 	return gpuFound, oldest
+}
+
+func InitializeClusterSnapshot(c clustersnapshot.ClusterSnapshot, nodes []*apiv1.Node, scheduledPods []*apiv1.Pod) caerrors.AutoscalerError {
+	c.Clear()
+
+	knownNodes := make(map[string]bool)
+	for _, node := range nodes {
+		if err := c.AddNode(node); err != nil {
+			klog.Errorf("Failed to add node %s to cluster snapshot: %v", node.Name, err)
+			return caerrors.ToAutoscalerError(caerrors.InternalError, err)
+		}
+		knownNodes[node.Name] = true
+	}
+	for _, pod := range scheduledPods {
+		if knownNodes[pod.Spec.NodeName] {
+			if err := c.AddPod(pod, pod.Spec.NodeName); err != nil {
+				klog.Errorf("Failed to add pod %s scheduled to node %s to cluster snapshot: %v", pod.Name, pod.Spec.NodeName, err)
+				return caerrors.ToAutoscalerError(caerrors.InternalError, err)
+			}
+		}
+	}
+	return nil
 }
