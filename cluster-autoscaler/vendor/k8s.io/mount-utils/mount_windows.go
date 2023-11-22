@@ -150,12 +150,12 @@ func (mounter *Mounter) MountSensitive(source string, target string, fstype stri
 		mklinkSource = mklinkSource + "\\"
 	}
 
-	output, err := exec.Command("cmd", "/c", "mklink", "/D", target, mklinkSource).CombinedOutput()
+	err := os.Symlink(mklinkSource, target)
 	if err != nil {
-		klog.Errorf("mklink failed: %v, source(%q) target(%q) output: %q", err, mklinkSource, target, string(output))
+		klog.Errorf("symlink failed: %v, source(%q) target(%q)", err, mklinkSource, target)
 		return err
 	}
-	klog.V(2).Infof("mklink source(%q) on target(%q) successfully, output: %q", mklinkSource, target, string(output))
+	klog.V(2).Infof("symlink source(%q) on target(%q) successfully", mklinkSource, target)
 
 	return nil
 }
@@ -219,8 +219,9 @@ func removeSMBMapping(remotepath string) (string, error) {
 func (mounter *Mounter) Unmount(target string) error {
 	klog.V(4).Infof("Unmount target (%q)", target)
 	target = NormalizeWindowsPath(target)
-	if output, err := exec.Command("cmd", "/c", "rmdir", target).CombinedOutput(); err != nil {
-		klog.Errorf("rmdir failed: %v, output: %q", err, string(output))
+
+	if err := os.Remove(target); err != nil {
+		klog.Errorf("removing directory %s failed: %v", target, err)
 		return err
 	}
 	return nil
@@ -287,14 +288,20 @@ func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target
 		fstype = "NTFS"
 	}
 
-	// format disk if it is unformatted(raw)
-	formatOptionsUnwrapped := ""
 	if len(formatOptions) > 0 {
-		formatOptionsUnwrapped = " " + strings.Join(formatOptions, " ")
+		return fmt.Errorf("diskMount: formatOptions are not supported on Windows")
 	}
-	cmd := fmt.Sprintf("Get-Disk -Number %s | Where partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle GPT -PassThru"+
-		" | New-Partition -UseMaximumSize | Format-Volume -FileSystem %s -Confirm:$false%s", source, fstype, formatOptionsUnwrapped)
-	if output, err := mounter.Exec.Command("powershell", "/c", cmd).CombinedOutput(); err != nil {
+
+	cmdString := "Get-Disk -Number $env:source | Where partitionstyle -eq 'raw' | Initialize-Disk -PartitionStyle GPT -PassThru" +
+		" | New-Partition -UseMaximumSize | Format-Volume -FileSystem $env:fstype -Confirm:$false"
+	cmd := mounter.Exec.Command("powershell", "/c", cmdString)
+	env := append(os.Environ(),
+		fmt.Sprintf("source=%s", source),
+		fmt.Sprintf("fstype=%s", fstype),
+	)
+	cmd.SetEnv(env)
+	klog.V(8).Infof("Executing command: %q", cmdString)
+	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("diskMount: format disk failed, error: %v, output: %q", err, string(output))
 	}
 	klog.V(4).Infof("diskMount: Disk successfully formatted, disk: %q, fstype: %q", source, fstype)
@@ -310,8 +317,10 @@ func (mounter *SafeFormatAndMount) formatAndMountSensitive(source string, target
 // ListVolumesOnDisk - returns back list of volumes(volumeIDs) in the disk (requested in diskID).
 func ListVolumesOnDisk(diskID string) (volumeIDs []string, err error) {
 	// If a Disk has multiple volumes, Get-Volume may not return items in the same order.
-	cmd := fmt.Sprintf("(Get-Disk -DeviceId %s | Get-Partition | Get-Volume | Sort-Object -Property UniqueId).UniqueId", diskID)
-	output, err := exec.Command("powershell", "/c", cmd).CombinedOutput()
+	cmd := exec.Command("powershell", "/c", "(Get-Disk -DeviceId $env:diskID | Get-Partition | Get-Volume | Sort-Object -Property UniqueId).UniqueId")
+	cmd.Env = append(os.Environ(), fmt.Sprintf("diskID=%s", diskID))
+	klog.V(8).Infof("Executing command: %q", cmd.String())
+	output, err := cmd.CombinedOutput()
 	klog.V(4).Infof("ListVolumesOnDisk id from %s: %s", diskID, string(output))
 	if err != nil {
 		return []string{}, fmt.Errorf("error list volumes on disk. cmd: %s, output: %s, error: %v", cmd, string(output), err)
