@@ -127,6 +127,9 @@ func ConvertGroupVersionIntoToDiscovery(list []metav1.APIResource) ([]apidiscove
 			apiResourceList = append(apiResourceList, apidiscoveryv2beta1.APIResourceDiscovery{
 				Resource: split[0],
 				Scope:    scope,
+				// avoid nil panics in v0.26.0-v0.26.3 client-go clients
+				// see https://github.com/kubernetes/kubernetes/issues/118361
+				ResponseKind: &metav1.GroupVersionKind{},
 			})
 			parentidx = len(apiResourceList) - 1
 			parentResources[split[0]] = parentidx
@@ -140,6 +143,9 @@ func ConvertGroupVersionIntoToDiscovery(list []metav1.APIResource) ([]apidiscove
 		subresource := apidiscoveryv2beta1.APISubresourceDiscovery{
 			Subresource: split[1],
 			Verbs:       r.Verbs,
+			// avoid nil panics in v0.26.0-v0.26.3 client-go clients
+			// see https://github.com/kubernetes/kubernetes/issues/118361
+			ResponseKind: &metav1.GroupVersionKind{},
 		}
 		if r.Kind != "" {
 			subresource.ResponseKind = &metav1.GroupVersionKind{
@@ -674,28 +680,23 @@ func (a *APIInstaller) registerResourceHandlers(path string, storage rest.Storag
 		reqScope.MetaGroupVersion = *a.group.MetaGroupVersion
 	}
 
-	// Use TypeConverter's nil-ness as a proxy for whether SSA/OpenAPI is enabled
-	// This should be removed in the future and made unconditional
-	// https://github.com/kubernetes/kubernetes/pull/114998
-	if a.group.TypeConverter != nil {
-		var resetFields map[fieldpath.APIVersion]*fieldpath.Set
-		if resetFieldsStrategy, isResetFieldsStrategy := storage.(rest.ResetFieldsStrategy); isResetFieldsStrategy {
-			resetFields = resetFieldsStrategy.GetResetFields()
-		}
+	var resetFields map[fieldpath.APIVersion]*fieldpath.Set
+	if resetFieldsStrategy, isResetFieldsStrategy := storage.(rest.ResetFieldsStrategy); isResetFieldsStrategy {
+		resetFields = resetFieldsStrategy.GetResetFields()
+	}
 
-		reqScope.FieldManager, err = managedfields.NewDefaultFieldManager(
-			a.group.TypeConverter,
-			a.group.UnsafeConvertor,
-			a.group.Defaulter,
-			a.group.Creater,
-			fqKindToRegister,
-			reqScope.HubGroupVersion,
-			subresource,
-			resetFields,
-		)
-		if err != nil {
-			return nil, nil, fmt.Errorf("failed to create field manager: %v", err)
-		}
+	reqScope.FieldManager, err = managedfields.NewDefaultFieldManager(
+		a.group.TypeConverter,
+		a.group.UnsafeConvertor,
+		a.group.Defaulter,
+		a.group.Creater,
+		fqKindToRegister,
+		reqScope.HubGroupVersion,
+		subresource,
+		resetFields,
+	)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to create field manager: %v", err)
 	}
 
 	for _, action := range actions {
