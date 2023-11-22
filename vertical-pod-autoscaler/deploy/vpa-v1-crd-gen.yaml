@@ -283,9 +283,11 @@ spec:
               resourcePolicy:
                 description: Controls how the autoscaler computes recommended resources.
                   The resource policy may be used to set constraints on the recommendations
-                  for individual containers. If not specified, the autoscaler computes
-                  recommended resources for all containers in the pod, without additional
-                  constraints.
+                  for individual containers. If any individual containers need to
+                  be excluded from getting the VPA recommendations, then it must be
+                  disabled explicitly by setting mode to "Off" under containerPolicies.
+                  If not specified, the autoscaler computes recommended resources
+                  for all containers in the pod, without additional constraints.
                 properties:
                   containerPolicies:
                     description: Per-container resource policies.
@@ -397,7 +399,7 @@ spec:
                           - TargetHigherThanRequests
                           - TargetLowerThanRequests
                           type: string
-                        resource:
+                        resources:
                           description: Resources is a list of one or more resources
                             that the condition applies to. If more than one resource
                             is given, the EvictionRequirement is fulfilled if at least
@@ -409,7 +411,7 @@ spec:
                           type: array
                       required:
                       - changeRequirement
-                      - resource
+                      - resources
                       type: object
                     type: array
                   minReplicas:
