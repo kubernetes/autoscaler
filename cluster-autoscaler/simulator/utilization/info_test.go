@@ -21,6 +21,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -34,6 +35,43 @@ func TestCalculate(t *testing.T) {
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
 
+	podWithInitContainers := BuildTestPod("p-init", 100, 200000)
+	restartAlways := apiv1.ContainerRestartPolicyAlways
+	podWithInitContainers.Spec.InitContainers = []apiv1.Container{
+		// restart always
+		{
+			Resources: apiv1.ResourceRequirements{
+				Requests: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewMilliQuantity(50, resource.DecimalSI),
+					apiv1.ResourceMemory: *resource.NewQuantity(100000, resource.DecimalSI),
+				},
+			},
+			RestartPolicy: &restartAlways,
+		},
+		// non-restartable, should be excluded from calculations
+		{
+			Resources: apiv1.ResourceRequirements{
+				Requests: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewMilliQuantity(5, resource.DecimalSI),
+					apiv1.ResourceMemory: *resource.NewQuantity(100, resource.DecimalSI),
+				},
+			},
+		},
+	}
+
+	podWithLargeNonRestartableInitContainers := BuildTestPod("p-large-init", 100, 200000)
+	podWithLargeNonRestartableInitContainers.Spec.InitContainers = []apiv1.Container{
+		// large non-restartable should "overwhelm" the pod utilization calc
+		// see formula: https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/753-sidecar-containers#resources-calculation-for-scheduling-and-pod-admission
+		{
+			Resources: apiv1.ResourceRequirements{
+				Requests: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewMilliQuantity(50000, resource.DecimalSI),
+					apiv1.ResourceMemory: *resource.NewQuantity(100000000, resource.DecimalSI),
+				},
+			},
+		},
+	}
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 	nodeInfo := newNodeInfo(node, pod, pod, pod2)
@@ -42,13 +80,24 @@ func TestCalculate(t *testing.T) {
 	utilInfo, err := Calculate(nodeInfo, false, false, gpuConfig, testTime)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+	assert.Equal(t, 0.1, utilInfo.CpuUtil)
 
-	node2 := BuildTestNode("node1", 2000, -1)
+	node2 := BuildTestNode("node2", 2000, -1)
 	nodeInfo = newNodeInfo(node2, pod, pod, pod2)
 
 	gpuConfig = GetGpuConfigFromNode(nodeInfo.Node())
 	_, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
 	assert.Error(t, err)
+
+	node3 := BuildTestNode("node3", 2000, 2000000)
+	SetNodeReadyState(node3, true, time.Time{})
+	nodeInfo = newNodeInfo(node3, pod, podWithInitContainers, podWithLargeNonRestartableInitContainers)
+
+	gpuConfig = GetGpuConfigFromNode(nodeInfo.Node())
+	utilInfo, err = Calculate(nodeInfo, false, false, gpuConfig, testTime)
+	assert.NoError(t, err)
+	assert.InEpsilon(t, 50.25, utilInfo.Utilization, 0.01)
+	assert.Equal(t, 25.125, utilInfo.CpuUtil)
 
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
 	daemonSetPod3.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "")
