@@ -53,7 +53,6 @@ require (
 	k8s.io/legacy-cloud-providers v0.0.0
 	k8s.io/utils v0.0.0-20230726121419-3b25d923346b
 	sigs.k8s.io/cloud-provider-azure v1.28.0
-	sigs.k8s.io/structured-merge-diff/v4 v4.4.1
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -183,6 +182,7 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.0.0 // indirect
+	k8s.io/code-generator v0.30.0-alpha.3 // indirect
 	k8s.io/controller-manager v0.30.0-alpha.3 // indirect
 	k8s.io/cri-api v0.30.0-alpha.3 // indirect
 	k8s.io/csi-translation-lib v0.27.0 // indirect
@@ -262,3 +262,5 @@ replace k8s.io/dynamic-resource-allocation => k8s.io/dynamic-resource-allocation
 replace k8s.io/kms => k8s.io/kms v0.30.0-alpha.3
 
 replace k8s.io/endpointslice => k8s.io/endpointslice v0.30.0-alpha.3
+
+replace k8s.io/autoscaler/cluster-autoscaler/apis => ./apis
