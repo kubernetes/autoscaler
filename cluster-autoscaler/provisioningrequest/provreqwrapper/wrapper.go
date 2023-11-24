@@ -24,10 +24,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/autoscaler/cluster-autoscaler/provisioningrequest/apis/autoscaling.x-k8s.io/v1beta1"
+	"k8s.io/autoscaler/cluster-autoscaler/apis/provisioningrequest/autoscaling.x-k8s.io/v1beta1"
 )
 
-// ProvisioningRequest wrapper representation of the ProvisisoningRequest
+// ProvisioningRequest wrapper representation of the ProvisioningRequest
 type ProvisioningRequest struct {
 	v1Beta1PR           *v1beta1.ProvisioningRequest
 	v1Beta1PodTemplates []*apiv1.PodTemplate
