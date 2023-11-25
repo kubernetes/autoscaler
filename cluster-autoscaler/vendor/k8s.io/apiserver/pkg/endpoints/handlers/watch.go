@@ -27,13 +27,15 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer/streaming"
 	"k8s.io/apimachinery/pkg/util/httpstream/wsstream"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/apiserver/pkg/endpoints/handlers/negotiation"
 	"k8s.io/apiserver/pkg/endpoints/metrics"
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
+	"k8s.io/apiserver/pkg/features"
+	"k8s.io/apiserver/pkg/storage"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 )
 
 // nothing will ever be sent down this channel
@@ -61,7 +63,7 @@ func (w *realTimeoutFactory) TimeoutCh() (<-chan time.Time, func() bool) {
 
 // serveWatch will serve a watch response.
 // TODO: the functionality in this method and in WatchServer.Serve is not cleanly decoupled.
-func serveWatch(watcher watch.Interface, scope *RequestScope, mediaTypeOptions negotiation.MediaTypeOptions, req *http.Request, w http.ResponseWriter, timeout time.Duration) {
+func serveWatch(watcher watch.Interface, scope *RequestScope, mediaTypeOptions negotiation.MediaTypeOptions, req *http.Request, w http.ResponseWriter, timeout time.Duration, metricsScope string) {
 	defer watcher.Stop()
 
 	options, err := optionsForTransform(mediaTypeOptions, req)
@@ -153,6 +155,8 @@ func serveWatch(watcher watch.Interface, scope *RequestScope, mediaTypeOptions n
 
 		TimeoutFactory:       &realTimeoutFactory{timeout},
 		ServerShuttingDownCh: serverShuttingDownCh,
+
+		metricsScope: metricsScope,
 	}
 
 	server.ServeHTTP(w, req)
@@ -176,6 +180,8 @@ type WatchServer struct {
 
 	TimeoutFactory       TimeoutFactory
 	ServerShuttingDownCh <-chan struct{}
+
+	metricsScope string
 }
 
 // ServeHTTP serves a series of encoded events via HTTP with Transfer-Encoding: chunked
@@ -206,9 +212,6 @@ func (s *WatchServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var e streaming.Encoder
-	e = streaming.NewEncoder(framer, s.Encoder)
-
 	// ensure the connection times out
 	timeoutCh, cleanup := s.TimeoutFactory.TimeoutCh()
 	defer cleanup()
@@ -219,10 +222,7 @@ func (s *WatchServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	flusher.Flush()
 
-	var unknown runtime.Unknown
-	internalEvent := &metav1.InternalEvent{}
-	outEvent := &metav1.WatchEvent{}
-	buf := runtime.NewSpliceBuffer()
+	watchEncoder := newWatchEncoder(req.Context(), kind, s.EmbeddedEncoder, s.Encoder, framer)
 	ch := s.Watching.ResultChan()
 	done := req.Context().Done()
 
@@ -247,41 +247,20 @@ func (s *WatchServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				return
 			}
 			metrics.WatchEvents.WithContext(req.Context()).WithLabelValues(kind.Group, kind.Version, kind.Kind).Inc()
+			isWatchListLatencyRecordingRequired := shouldRecordWatchListLatency(event)
 
-			if err := s.EmbeddedEncoder.Encode(event.Object, buf); err != nil {
-				// unexpected error
-				utilruntime.HandleError(fmt.Errorf("unable to encode watch object %T: %v", event.Object, err))
-				return
-			}
-
-			// ContentType is not required here because we are defaulting to the serializer
-			// type
-			unknown.Raw = buf.Bytes()
-			event.Object = &unknown
-			metrics.WatchEventsSizes.WithContext(req.Context()).WithLabelValues(kind.Group, kind.Version, kind.Kind).Observe(float64(len(unknown.Raw)))
-
-			*outEvent = metav1.WatchEvent{}
-
-			// create the external type directly and encode it.  Clients will only recognize the serialization we provide.
-			// The internal event is being reused, not reallocated so its just a few extra assignments to do it this way
-			// and we get the benefit of using conversion functions which already have to stay in sync
-			*internalEvent = metav1.InternalEvent(event)
-			err := metav1.Convert_v1_InternalEvent_To_v1_WatchEvent(internalEvent, outEvent, nil)
-			if err != nil {
-				utilruntime.HandleError(fmt.Errorf("unable to convert watch object: %v", err))
+			if err := watchEncoder.Encode(event); err != nil {
+				utilruntime.HandleError(err)
 				// client disconnect.
 				return
 			}
-			if err := e.Encode(outEvent); err != nil {
-				utilruntime.HandleError(fmt.Errorf("unable to encode watch object %T: %v (%#v)", outEvent, err, e))
-				// client disconnect.
-				return
-			}
+
 			if len(ch) == 0 {
 				flusher.Flush()
 			}
-
-			buf.Reset()
+			if isWatchListLatencyRecordingRequired {
+				metrics.RecordWatchListLatency(req.Context(), s.Scope.Resource, s.metricsScope)
+			}
 		}
 	}
 }
@@ -359,4 +338,20 @@ func (s *WatchServer) HandleWS(ws *websocket.Conn) {
 			streamBuf.Reset()
 		}
 	}
+}
+
+func shouldRecordWatchListLatency(event watch.Event) bool {
+	if event.Type != watch.Bookmark || !utilfeature.DefaultFeatureGate.Enabled(features.WatchList) {
+		return false
+	}
+	// as of today the initial-events-end annotation is added only to a single event
+	// by the watch cache and only when certain conditions are met
+	//
+	// for more please read https://github.com/kubernetes/enhancements/tree/master/keps/sig-api-machinery/3157-watch-list
+	hasAnnotation, err := storage.HasInitialEventsEndBookmarkAnnotation(event.Object)
+	if err != nil {
+		utilruntime.HandleError(fmt.Errorf("unable to determine if the obj has the required annotation for measuring watchlist latency, obj %T: %v", event.Object, err))
+		return false
+	}
+	return hasAnnotation
 }

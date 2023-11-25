@@ -22,6 +22,7 @@
   - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
   - [Starting multiple recommenders](#starting-multiple-recommenders)
   - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
+  - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
@@ -65,6 +66,31 @@ The current default version is Vertical Pod Autoscaler 0.14.0
 | 0.8             | 1.13+              |
 | 0.4 to 0.7      | 1.11+              |
 | 0.3.X and lower | 1.7+               |
+
+### Notice on CRD update (>=1.0.0)
+**NOTE:** In version 1.0.0, we have updated the CRD definition and added RBAC for the
+status resource. If you are upgrading from version (<=0.14.0), you must update the CRD
+definition and RBAC.
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/vpa-release-1.0/vertical-pod-autoscaler/deploy/vpa-rbac.yaml
+```
+Another method is to re-execute the ./hack/vpa-process-yamls.sh script.
+```shell
+git clone https://github.com/kubernetes/autoscaler.git
+cd autoscaler/vertical-pod-autoscaler
+git checkout origin/vpa-release-1.0
+REGISTRY=registry.k8s.io/autoscaling TAG=1.0.0 ./hack/vpa-process-yamls.sh apply
+```
+
+If you need to roll back to version (<=0.14.0), please check out the release for your
+rollback version and execute ./hack/vpa-process-yamls.sh. For example, to rollback to 0.14.0:
+```shell
+git checkout origin/vpa-release-0.14
+REGISTRY=registry.k8s.io/autoscaling TAG=0.14.0 ./hack/vpa-process-yamls.sh apply
+kubectl delete clusterrole system:vpa-status-actor
+kubectl delete clusterrolebinding system:vpa-status-actor
+```
 
 ### Notice on deprecation of v1beta2 version (>=0.13.0)
 **NOTE:** In 0.13.0 we deprecate `autoscaling.k8s.io/v1beta2` API. We plan to
@@ -266,7 +292,7 @@ It will maintain limit to request ratio specified for all containers.
 
 VPA will try to cap recommendations between min and max of
 [limit ranges](https://kubernetes.io/docs/concepts/policy/limit-range/). If limit range conflicts
-and VPA resource policy conflict, VPA will follow VPA policy (and set values outside the limit
+with VPA resource policy, VPA will follow VPA policy (and set values outside the limit
 range).
 
 To disable getting VPA recommendations for an individual container, set `mode` to `"Off"` in `containerPolicies`.
@@ -336,6 +362,17 @@ The annotation format is the following:
 ```
 vpa-post-processor.kubernetes.io/{containerName}_integerCPU=true
 ```
+
+### Controlling eviction behavior based on scaling direction and resource
+ To limit disruptions caused by evictions, you can put additional constraints on the Updater's eviction behavior by specifying `.updatePolicy.EvictionRequirements` in the VPA spec. An `EvictionRequirement` contains a resource and a `ChangeRequirement`, which is evaluated by comparing a new recommendation against the currently set resources for a container.
+ Here is an example configuration which allows evictions only when CPU or memory get scaled up, but not when they both are scaled down
+ ```
+ updatePolicy:
+   evictionRequirements:
+     - resources: ["cpu", "memory"]
+       changeRequirement: TargetHigherThanRequests
+ ```
+ Note that this doesn't prevent scaling down entirely, as Pods may get recreated for different reasons, resulting in a new recommendation being applied. See [the original AEP](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/enhancements/4831-control-eviction-behavior) for more context and usage information.
 
 # Known limitations
 

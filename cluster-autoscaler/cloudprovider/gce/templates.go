@@ -485,7 +485,7 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 func extractExtendedResourcesFromKubeEnv(kubeEnvValue string) (apiv1.ResourceList, error) {
 	extendedResourcesAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "extended_resources")
 	if err != nil {
-		klog.Warning("error while obtaining extended_resources from AUTOSCALER_ENV_VARS; %v", err)
+		klog.Warningf("error while obtaining extended_resources from AUTOSCALER_ENV_VARS; %v", err)
 		return nil, err
 	}
 
@@ -503,7 +503,7 @@ func extractExtendedResourcesFromKubeEnv(kubeEnvValue string) (apiv1.ResourceLis
 		if q, err := resource.ParseQuantity(quantity); err == nil && q.Sign() >= 0 {
 			extendedResources[apiv1.ResourceName(name)] = q
 		} else if err != nil {
-			klog.Warning("ignoring invalid value in extended_resources defined in AUTOSCALER_ENV_VARS; %v", err)
+			klog.Warningf("ignoring invalid value in extended_resources defined in AUTOSCALER_ENV_VARS; %v", err)
 		}
 	}
 	return extendedResources, nil
@@ -739,7 +739,7 @@ func extractAutoscalingOptionsFromKubeEnv(kubeEnvValue string) (map[string]strin
 func extractEvictionHardFromKubeEnv(kubeEnvValue string) (map[string]string, error) {
 	evictionHardAsString, found, err := extractAutoscalerVarFromKubeEnv(kubeEnvValue, "evictionHard")
 	if err != nil {
-		klog.Warning("error while obtaining eviction-hard from AUTOSCALER_ENV_VARS; %v", err)
+		klog.Warningf("error while obtaining eviction-hard from AUTOSCALER_ENV_VARS; %v", err)
 		return nil, err
 	}
 

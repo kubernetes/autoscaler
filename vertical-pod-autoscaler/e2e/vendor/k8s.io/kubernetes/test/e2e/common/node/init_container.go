@@ -18,6 +18,7 @@ package node
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -160,7 +161,7 @@ func initContainersInvariants(pod *v1.Pod) error {
 
 var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 	f := framework.NewDefaultFramework("init-container")
-	f.NamespacePodSecurityEnforceLevel = admissionapi.LevelBaseline
+	f.NamespacePodSecurityLevel = admissionapi.LevelBaseline
 	var podClient *e2epod.PodClient
 	ginkgo.BeforeEach(func() {
 		podClient = e2epod.NewPodClient(f)
@@ -174,7 +175,7 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 		and the system is not going to restart any of these containers
 		when Pod has restart policy as RestartNever.
 	*/
-	framework.ConformanceIt("should invoke init containers on a RestartNever pod", func() {
+	framework.ConformanceIt("should invoke init containers on a RestartNever pod", func(ctx context.Context) {
 		ginkgo.By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -210,17 +211,17 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 			},
 		}
 		framework.Logf("PodSpec: initContainers in spec.initContainers")
-		startedPod := podClient.Create(pod)
+		startedPod := podClient.Create(ctx, pod)
 
 		fieldSelector := fields.OneTermEqualSelector("metadata.name", startedPod.Name).String()
 		w := &cache.ListWatch{
 			WatchFunc: func(options metav1.ListOptions) (i watch.Interface, e error) {
 				options.FieldSelector = fieldSelector
-				return podClient.Watch(context.TODO(), options)
+				return podClient.Watch(ctx, options)
 			},
 		}
 		var events []watch.Event
-		ctx, cancel := watchtools.ContextWithOptionalTimeout(context.Background(), framework.PodStartTimeout)
+		ctx, cancel := watchtools.ContextWithOptionalTimeout(ctx, framework.PodStartTimeout)
 		defer cancel()
 		event, err := watchtools.Until(ctx, startedPod.ResourceVersion, w,
 			recordEvents(events, conditions.PodCompleted),
@@ -252,7 +253,7 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 		and at least one container is still running or is in the process of being restarted
 		when Pod has restart policy as RestartAlways.
 	*/
-	framework.ConformanceIt("should invoke init containers on a RestartAlways pod", func() {
+	framework.ConformanceIt("should invoke init containers on a RestartAlways pod", func(ctx context.Context) {
 		ginkgo.By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -291,17 +292,17 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 			},
 		}
 		framework.Logf("PodSpec: initContainers in spec.initContainers")
-		startedPod := podClient.Create(pod)
+		startedPod := podClient.Create(ctx, pod)
 
 		fieldSelector := fields.OneTermEqualSelector("metadata.name", startedPod.Name).String()
 		w := &cache.ListWatch{
 			WatchFunc: func(options metav1.ListOptions) (i watch.Interface, e error) {
 				options.FieldSelector = fieldSelector
-				return podClient.Watch(context.TODO(), options)
+				return podClient.Watch(ctx, options)
 			},
 		}
 		var events []watch.Event
-		ctx, cancel := watchtools.ContextWithOptionalTimeout(context.Background(), framework.PodStartTimeout)
+		ctx, cancel := watchtools.ContextWithOptionalTimeout(ctx, framework.PodStartTimeout)
 		defer cancel()
 		event, err := watchtools.Until(ctx, startedPod.ResourceVersion, w, recordEvents(events, conditions.PodRunning))
 		framework.ExpectNoError(err)
@@ -331,7 +332,7 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 		and Pod has restarted for few occurrences
 		and pod has restart policy as RestartAlways.
 	*/
-	framework.ConformanceIt("should not start app containers if init containers fail on a RestartAlways pod", func() {
+	framework.ConformanceIt("should not start app containers if init containers fail on a RestartAlways pod", func(ctx context.Context) {
 		ginkgo.By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -371,18 +372,18 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 			},
 		}
 		framework.Logf("PodSpec: initContainers in spec.initContainers")
-		startedPod := podClient.Create(pod)
+		startedPod := podClient.Create(ctx, pod)
 
 		fieldSelector := fields.OneTermEqualSelector("metadata.name", startedPod.Name).String()
 		w := &cache.ListWatch{
 			WatchFunc: func(options metav1.ListOptions) (i watch.Interface, e error) {
 				options.FieldSelector = fieldSelector
-				return podClient.Watch(context.TODO(), options)
+				return podClient.Watch(ctx, options)
 			},
 		}
 
 		var events []watch.Event
-		ctx, cancel := watchtools.ContextWithOptionalTimeout(context.Background(), framework.PodStartTimeout)
+		ctx, cancel := watchtools.ContextWithOptionalTimeout(ctx, framework.PodStartTimeout)
 		defer cancel()
 		event, err := watchtools.Until(
 			ctx,
@@ -394,10 +395,10 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 				case *v1.Pod:
 					for _, status := range t.Status.ContainerStatuses {
 						if status.State.Waiting == nil {
-							return false, fmt.Errorf("container %q should not be out of waiting: %#v", status.Name, status)
+							return false, fmt.Errorf("container %q should not be out of waiting: %s", status.Name, toDebugJSON(status))
 						}
 						if status.State.Waiting.Reason != "PodInitializing" {
-							return false, fmt.Errorf("container %q should have reason PodInitializing: %#v", status.Name, status)
+							return false, fmt.Errorf("container %q should have reason PodInitializing: %s", status.Name, toDebugJSON(status))
 						}
 					}
 					if len(t.Status.InitContainerStatuses) != 2 {
@@ -405,14 +406,14 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 					}
 					status := t.Status.InitContainerStatuses[1]
 					if status.State.Waiting == nil {
-						return false, fmt.Errorf("second init container should not be out of waiting: %#v", status)
+						return false, fmt.Errorf("second init container should not be out of waiting: %s", toDebugJSON(status))
 					}
 					if status.State.Waiting.Reason != "PodInitializing" {
-						return false, fmt.Errorf("second init container should have reason PodInitializing: %#v", status)
+						return false, fmt.Errorf("second init container should have reason PodInitializing: %s", toDebugJSON(status))
 					}
 					status = t.Status.InitContainerStatuses[0]
 					if status.State.Terminated != nil && status.State.Terminated.ExitCode == 0 {
-						return false, fmt.Errorf("first init container should have exitCode != 0: %#v", status)
+						return false, fmt.Errorf("first init container should have exitCode != 0: %s", toDebugJSON(status))
 					}
 					// continue until we see an attempt to restart the pod
 					return status.LastTerminationState.Terminated != nil, nil
@@ -455,7 +456,7 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 		Description: Ensure that app container is not started
 		when at least one InitContainer fails to start and Pod has restart policy as RestartNever.
 	*/
-	framework.ConformanceIt("should not start app containers and fail the pod if init containers fail on a RestartNever pod", func() {
+	framework.ConformanceIt("should not start app containers and fail the pod if init containers fail on a RestartNever pod", func(ctx context.Context) {
 		ginkgo.By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -496,18 +497,18 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 			},
 		}
 		framework.Logf("PodSpec: initContainers in spec.initContainers")
-		startedPod := podClient.Create(pod)
+		startedPod := podClient.Create(ctx, pod)
 
 		fieldSelector := fields.OneTermEqualSelector("metadata.name", startedPod.Name).String()
 		w := &cache.ListWatch{
 			WatchFunc: func(options metav1.ListOptions) (i watch.Interface, e error) {
 				options.FieldSelector = fieldSelector
-				return podClient.Watch(context.TODO(), options)
+				return podClient.Watch(ctx, options)
 			},
 		}
 
 		var events []watch.Event
-		ctx, cancel := watchtools.ContextWithOptionalTimeout(context.Background(), framework.PodStartTimeout)
+		ctx, cancel := watchtools.ContextWithOptionalTimeout(ctx, framework.PodStartTimeout)
 		defer cancel()
 		event, err := watchtools.Until(
 			ctx, startedPod.ResourceVersion, w,
@@ -518,10 +519,10 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 					case *v1.Pod:
 						for _, status := range t.Status.ContainerStatuses {
 							if status.State.Waiting == nil {
-								return false, fmt.Errorf("container %q should not be out of waiting: %#v", status.Name, status)
+								return false, fmt.Errorf("container %q should not be out of waiting: %s", status.Name, toDebugJSON(status))
 							}
 							if status.State.Waiting.Reason != "PodInitializing" {
-								return false, fmt.Errorf("container %q should have reason PodInitializing: %#v", status.Name, status)
+								return false, fmt.Errorf("container %q should have reason PodInitializing: %s", status.Name, toDebugJSON(status))
 							}
 						}
 						if len(t.Status.InitContainerStatuses) != 2 {
@@ -530,19 +531,19 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 						status := t.Status.InitContainerStatuses[0]
 						if status.State.Terminated == nil {
 							if status.State.Waiting != nil && status.State.Waiting.Reason != "PodInitializing" {
-								return false, fmt.Errorf("second init container should have reason PodInitializing: %#v", status)
+								return false, fmt.Errorf("second init container should have reason PodInitializing: %s", toDebugJSON(status))
 							}
 							return false, nil
 						}
 						if status.State.Terminated != nil && status.State.Terminated.ExitCode != 0 {
-							return false, fmt.Errorf("first init container should have exitCode != 0: %#v", status)
+							return false, fmt.Errorf("first init container should have exitCode != 0: %s", toDebugJSON(status))
 						}
 						status = t.Status.InitContainerStatuses[1]
 						if status.State.Terminated == nil {
 							return false, nil
 						}
 						if status.State.Terminated.ExitCode == 0 {
-							return false, fmt.Errorf("second init container should have failed: %#v", status)
+							return false, fmt.Errorf("second init container should have failed: %s", toDebugJSON(status))
 						}
 						return true, nil
 					default:
@@ -566,3 +567,13 @@ var _ = SIGDescribe("InitContainer [NodeConformance]", func() {
 		gomega.Expect(endPod.Status.ContainerStatuses[0].State.Waiting).ToNot(gomega.BeNil())
 	})
 })
+
+// toDebugJSON converts an object to its JSON representation for debug logging
+// purposes instead of using a struct.
+func toDebugJSON(obj interface{}) string {
+	m, err := json.Marshal(obj)
+	if err != nil {
+		return fmt.Sprintf("<error: %v>", err)
+	}
+	return string(m)
+}

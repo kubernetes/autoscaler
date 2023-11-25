@@ -60,8 +60,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithName(vpaName).
 		WithContainer(containerName).
 		WithTarget("2", "200Mi").
-		WithMinAllowed("1", "100Mi").
-		WithMaxAllowed("3", "1Gi").
+		WithMinAllowed(containerName, "1", "100Mi").
+		WithMaxAllowed(containerName, "3", "1Gi").
 		WithTargetResource("", "666") // Testing that this weird/empty resource will be purged
 	vpa := vpaBuilder.Get()
 
@@ -97,15 +97,15 @@ func TestUpdateResourceRequests(t *testing.T) {
 	limitsNoRequestsPod := test.Pod().WithName("test_initialized").
 		AddContainer(limitsNoRequestsContainer).WithLabels(labels).Get()
 
-	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
-	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
-	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
-	vpaWithExabyteRecommendation := vpaBuilder.WithTarget("1Ei", "1Ei").WithMaxAllowed("1Ei", "1Ei").Get()
+	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed(containerName, "4", "300Mi").WithMaxAllowed(containerName, "5", "1Gi").Get()
+	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed(containerName, "4", "300Mi").WithMaxAllowed(containerName, "5", "1Gi").Get()
+	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMinAllowed(containerName, "", "").WithMaxAllowed(containerName, "3", "3Gi").Get()
+	vpaWithExabyteRecommendation := vpaBuilder.WithTarget("1Ei", "1Ei").WithMinAllowed(containerName, "", "").WithMaxAllowed(containerName, "1Ei", "1Ei").Get()
 
-	resourceRequestsAndLimitsVPA := vpaBuilder.WithControlledValues(vpa_types.ContainerControlledValuesRequestsAndLimits).Get()
-	resourceRequestsOnlyVPA := vpaBuilder.WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).Get()
-	resourceRequestsOnlyVPAHighTarget := vpaBuilder.WithControlledValues(vpa_types.ContainerControlledValuesRequestsOnly).
-		WithTarget("3", "500Mi").WithMaxAllowed("5", "1Gi").Get()
+	resourceRequestsAndLimitsVPA := vpaBuilder.WithControlledValues(containerName, vpa_types.ContainerControlledValuesRequestsAndLimits).Get()
+	resourceRequestsOnlyVPA := vpaBuilder.WithControlledValues(containerName, vpa_types.ContainerControlledValuesRequestsOnly).Get()
+	resourceRequestsOnlyVPAHighTarget := vpaBuilder.WithControlledValues(containerName, vpa_types.ContainerControlledValuesRequestsOnly).
+		WithTarget("3", "500Mi").WithMaxAllowed(containerName, "5", "1Gi").Get()
 
 	vpaWithEmptyRecommendation := vpaBuilder.Get()
 	vpaWithEmptyRecommendation.Status.Recommendation = &vpa_types.RecommendedPodResources{}

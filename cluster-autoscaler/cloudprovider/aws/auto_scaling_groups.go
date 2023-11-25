@@ -139,8 +139,6 @@ func (m *asgCache) register(asg *asg) *asg {
 			return existing
 		}
 
-		klog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
-
 		// Explicit registered groups should always use the manually provided min/max
 		// values and the not the ones returned by the API
 		if !m.explicitlyConfigured[asg.AwsRef] {
@@ -157,6 +155,8 @@ func (m *asgCache) register(asg *asg) *asg {
 		existing.LaunchTemplate = asg.LaunchTemplate
 		existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
 		existing.Tags = asg.Tags
+
+		klog.V(4).Infof("Updated ASG cache for %s. min/max/current is %d/%d/%d", asg.AwsRef.Name, existing.minSize, existing.maxSize, existing.curSize)
 
 		return existing
 	}

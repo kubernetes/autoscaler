@@ -114,6 +114,7 @@ type gceManagerImpl struct {
 
 	location              string
 	projectId             string
+	domainUrl             string
 	templates             *GceTemplateBuilder
 	interrupt             chan struct{}
 	regional              bool
@@ -123,7 +124,7 @@ type gceManagerImpl struct {
 }
 
 // CreateGceManager constructs GceManager object.
-func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool, concurrentGceRefreshes int, userAgent string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
+func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool, concurrentGceRefreshes int, userAgent, domainUrl string, migInstancesMinRefreshWaitTime time.Duration) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -192,6 +193,7 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 		explicitlyConfigured:   make(map[GceRef]bool),
 		concurrentGceRefreshes: concurrentGceRefreshes,
 		reserved:               &GceReserved{},
+		domainUrl:              domainUrl,
 	}
 
 	if err := manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
@@ -336,7 +338,7 @@ func (m *gceManagerImpl) refreshAutoscalingOptions() {
 	for _, mig := range m.migLister.GetMigs() {
 		template, err := m.migInfoProvider.GetMigInstanceTemplate(mig.GceRef())
 		if err != nil {
-			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template", mig.GceRef(), err)
+			klog.Warningf("Not evaluating autoscaling options for %q MIG: failed to find corresponding instance template: %v", mig.GceRef(), err)
 			continue
 		}
 		if template.Properties == nil {
@@ -416,6 +418,7 @@ func (m *gceManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (Mig, error)
 		gceManager: m,
 		minSize:    s.MinSize,
 		maxSize:    s.MaxSize,
+		domainUrl:  m.domainUrl,
 	}
 	return mig, nil
 }

@@ -91,13 +91,6 @@ func (o *ScaleUpOrchestrator) ScaleUp(
 		return scaleUpError(&status.ScaleUpStatus{}, errors.NewAutoscalerError(errors.InternalError, "ScaleUpOrchestrator is not initialized"))
 	}
 
-	// From now on we only care about unschedulable pods that were marked after the newest
-	// node became available for the scheduler.
-	if len(unschedulablePods) == 0 {
-		klog.V(1).Info("No unschedulable pods")
-		return &status.ScaleUpStatus{Result: status.ScaleUpNotNeeded}, nil
-	}
-
 	loggingQuota := klogx.PodsLoggingQuota()
 	for _, pod := range unschedulablePods {
 		klogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
@@ -370,20 +363,20 @@ func (o *ScaleUpOrchestrator) ScaleUpToNodeGroupMinSize(
 		}
 
 		if skipReason := o.IsNodeGroupResourceExceeded(resourcesLeft, ng, nodeInfo, 1); skipReason != nil {
-			klog.Warning("ScaleUpToNodeGroupMinSize: node group resource excceded: %v", skipReason)
+			klog.Warningf("ScaleUpToNodeGroupMinSize: node group resource excceded: %v", skipReason)
 			continue
 		}
 
 		newNodeCount := ng.MinSize() - targetSize
 		newNodeCount, err = o.resourceManager.ApplyLimits(o.autoscalingContext, newNodeCount, resourcesLeft, nodeInfo, ng)
 		if err != nil {
-			klog.Warning("ScaleUpToNodeGroupMinSize: failed to apply resource limits: %v", err)
+			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to apply resource limits: %v", err)
 			continue
 		}
 
 		newNodeCount, err = o.GetCappedNewNodeCount(newNodeCount, targetSize)
 		if err != nil {
-			klog.Warning("ScaleUpToNodeGroupMinSize: failed to get capped node count: %v", err)
+			klog.Warningf("ScaleUpToNodeGroupMinSize: failed to get capped node count: %v", err)
 			continue
 		}
 
