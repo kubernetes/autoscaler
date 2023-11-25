@@ -285,6 +285,7 @@ func (feeder *clusterStateFeeder) initFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
+	return nil
 }
 
 func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
