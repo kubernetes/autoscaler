@@ -253,12 +253,11 @@ func GetHistorySourceFromArg(historySource string) (HistorySource, error) {
 	}
 }
 
-func (feeder *clusterStateFeeder) initFromHistoryProvider(historyProvider history.HistoryProvider) (historyInitError error) {
-	historyInitError = nil
+func (feeder *clusterStateFeeder) initFromHistoryProvider(historyProvider history.HistoryProvider) error {
 	klog.V(3).Info("Initializing VPA from history provider")
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
-		historyInitError = err
+		return err
 	}
 	if len(clusterHistory) == 0 {
 		klog.Warningf("history provider returned no pods")
@@ -286,7 +285,6 @@ func (feeder *clusterStateFeeder) initFromHistoryProvider(historyProvider histor
 			}
 		}
 	}
-	return historyInitError
 }
 
 func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
