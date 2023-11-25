@@ -53,12 +53,17 @@ const (
 	DefaultRecommenderName = "default"
 )
 
+// HistorySource is an enum type for history source
 type HistorySource int
 
 const (
+	// Checkpoints is a history source that uses VPA checkpoints custom resources
 	Checkpoints HistorySource = iota
+	// Prometheus is a history source that uses prometheus
 	Prometheus
+	// None is a history source that doesn't use any history
 	None
+	// Undefined is a history source that is not set
 	Undefined
 )
 
@@ -234,6 +239,7 @@ func (feeder *clusterStateFeeder) Init() error {
 	return nil
 }
 
+// GetHistorySourceFromArg reads the history source from the command line argument and returns the corresponding enum value
 func GetHistorySourceFromArg(historySource string) (HistorySource, error) {
 	switch historySource {
 	case "checkpoint":
