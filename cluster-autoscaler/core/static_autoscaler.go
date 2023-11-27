@@ -936,6 +936,8 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	}
 	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, a.AutoscalingContext.StatusConfigMapName)
 
+	a.CloudProvider.Cleanup()
+
 	a.clusterStateRegistry.Stop()
 }
 
