@@ -511,7 +511,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Create autoscaler.
-	autoscaler, err := core.NewAutoscaler(opts)
+	autoscaler, err := core.NewAutoscaler(opts, informerFactory)
 	if err != nil {
 		return nil, err
 	}

@@ -31,6 +31,7 @@ You should also take a look at the notes and "gotchas" for your specific cloud p
 * [HuaweiCloud](./cloudprovider/huaweicloud/README.md)
 * [IonosCloud](./cloudprovider/ionoscloud/README.md)
 * [Kamatera](./cloudprovider/kamatera/README.md)
+* [Kwok](./cloudprovider/kwok/README.md)
 * [Linode](./cloudprovider/linode/README.md)
 * [Magnum](./cloudprovider/magnum/README.md)
 * [OracleCloud](./cloudprovider/oci/README.md)
