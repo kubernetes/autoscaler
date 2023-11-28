@@ -91,6 +91,7 @@ func (f *FloatingIP) GetDNSPtrForIP(ip net.IP) (string, error) {
 // FloatingIPClient is a client for the Floating IP API.
 type FloatingIPClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a Floating IP by its ID. If the Floating IP does not exist,
@@ -181,7 +182,7 @@ func (c *FloatingIPClient) All(ctx context.Context) ([]*FloatingIP, error) {
 
 // AllWithOpts returns all Floating IPs for the given options.
 func (c *FloatingIPClient) AllWithOpts(ctx context.Context, opts FloatingIPListOpts) ([]*FloatingIP, error) {
-	var allFloatingIPs []*FloatingIP
+	allFloatingIPs := []*FloatingIP{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

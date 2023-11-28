@@ -124,6 +124,9 @@ func ISOFromSchema(s schema.ISO) *ISO {
 		Description: s.Description,
 		Type:        ISOType(s.Type),
 		Deprecated:  s.Deprecated,
+		DeprecatableResource: DeprecatableResource{
+			DeprecationFromSchema(s.Deprecation),
+		},
 	}
 	if s.Architecture != nil {
 		iso.Architecture = Ptr(Architecture(*s.Architecture))
@@ -970,7 +973,7 @@ func loadBalancerCreateOptsToSchema(opts LoadBalancerCreateOpts) schema.LoadBala
 					TLS:      service.HealthCheck.HTTP.TLS,
 				}
 				if service.HealthCheck.HTTP.StatusCodes != nil {
-					schemaHealthCheckHTTP.StatusCodes = &service.HealthCheck.HTTP.StatusCodes
+					schemaHealthCheckHTTP.StatusCodes = &service.HealthCheck.HTTP.StatusCodes //nolint:gosec // does not result in bug
 				}
 				schemaHealthCheck.HTTP = schemaHealthCheckHTTP
 			}
