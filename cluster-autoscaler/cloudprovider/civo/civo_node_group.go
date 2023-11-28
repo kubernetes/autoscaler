@@ -46,6 +46,7 @@ type NodeGroup struct {
 	nodeTemplate *CivoNodeTemplate
 }
 
+// CivoNodeTemplate reference to implements TemplateNodeInfo
 type CivoNodeTemplate struct {
 	CPUCores      int    `json:"cpu_cores,omitempty"`
 	RAMMegabytes  int    `json:"ram_mb,omitempty"`
@@ -280,6 +281,7 @@ func toInstanceStatus(nodeState string) *cloudprovider.InstanceStatus {
 	return st
 }
 
+// buildNodeFromTemplate returns a Node object from the given template
 func (n *NodeGroup) buildNodeFromTemplate(name string, template *CivoNodeTemplate) (*apiv1.Node, error) {
 	node := &apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-nodegroup-%d", name, rand.Int63())
