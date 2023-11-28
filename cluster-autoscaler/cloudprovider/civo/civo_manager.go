@@ -151,8 +151,8 @@ func (m *Manager) Refresh() error {
 			pool := m.getNodeGroupConfig(spec, pools)
 			if pool != nil {
 				poolGroups = append(poolGroups, pool)
+				klog.V(4).Infof("found configuration for pool node group: min: %d max: %d", pool.minSize, pool.maxSize)
 			}
-			klog.V(4).Infof("found configuration for pool node group: min: %d max: %d", minSize, maxSize)
 		}
 	}
 
@@ -164,12 +164,13 @@ func (m *Manager) Refresh() error {
 			klog.V(4).Infof("adding node pool: %q", nodePool.ID)
 
 			workerGroups = append(workerGroups, &NodeGroup{
-				id:        nodePool.ID,
-				clusterID: m.clusterID,
-				client:    m.client,
-				nodePool:  &np,
-				minSize:   minSize,
-				maxSize:   maxSize,
+				id:           nodePool.ID,
+				clusterID:    m.clusterID,
+				client:       m.client,
+				nodePool:     &np,
+				minSize:      minSize,
+				maxSize:      maxSize,
+				nodeTemplate: getCivoNodeTemplate(nodePool),
 			})
 		}
 		m.nodeGroups = workerGroups
@@ -197,14 +198,33 @@ func (m *Manager) getNodeGroupConfig(spec *dynamic.NodeGroupSpec, pools []civocl
 			klog.V(4).Infof("adding node pool: %q min: %d max: %d", nodePool.ID, spec.MinSize, spec.MaxSize)
 
 			return &NodeGroup{
-				id:        nodePool.ID,
-				clusterID: m.clusterID,
-				client:    m.client,
-				nodePool:  &np,
-				minSize:   spec.MinSize,
-				maxSize:   spec.MaxSize,
+				id:           nodePool.ID,
+				clusterID:    m.clusterID,
+				client:       m.client,
+				nodePool:     &np,
+				minSize:      spec.MinSize,
+				maxSize:      spec.MaxSize,
+				nodeTemplate: getCivoNodeTemplate(nodePool),
 			}
 		}
 	}
 	return nil
+}
+
+// getCivoNodeTemplate returns the CivoNodeTemplate for the given node pool
+func getCivoNodeTemplate(pool civocloud.KubernetesPool) *CivoNodeTemplate {
+	if len(pool.Instances) == 0 {
+		return &CivoNodeTemplate{
+			CPUCores:      2,
+			RAMMegabytes:  2,
+			DiskGigabytes: 2,
+		}
+	}
+
+	return &CivoNodeTemplate{
+		CPUCores:      pool.Instances[0].CPUCores,
+		RAMMegabytes:  pool.Instances[0].RAMMegabytes,
+		DiskGigabytes: pool.Instances[0].DiskGigabytes,
+		Region:        pool.Instances[0].Region,
+	}
 }
