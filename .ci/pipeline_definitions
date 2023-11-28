@@ -63,3 +63,88 @@ autoscaler:
               slack_cfg_name: 'scp_workspace'
         component_descriptor:
           snapshot_ctx_repository: gardener-public
+vertical-pod-autoscaler:
+  template: 'default'
+  base_definition:
+    repo:
+      source_labels:
+      - name: 'cloud.gardener.cnudie/dso/scanning-hints/source_analysis/v1'
+        value:
+          policy: 'scan'
+          path_config:
+            exclude_paths:
+              - '^vendor/.*'
+              - '.*/vendor/.*'
+              - '^addon-resizer/.*'
+              - '^balancer/.*'
+              - '^cluster-autoscaler/.*'
+    traits:
+      version:
+        inject_effective_version: true
+        read_callback: .ci/read-vpa-version.sh
+        write_callback: .ci/write-vpa-version.sh
+      publish:
+        oci-builder: docker-buildx
+        platforms:
+        - linux/amd64
+        - linux/arm64
+        dockerimages:
+          vpa-recommender:
+            inputs:
+              repos:
+                source: ~ # default
+              steps:
+                build: ~
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-recommender'
+            dockerfile: './vertical-pod-autoscaler/pkg/recommender/Dockerfile'
+          vpa-updater:
+            inputs:
+              repos:
+                source: ~ # default
+              steps:
+                build: ~
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-updater'
+            dockerfile: './vertical-pod-autoscaler/pkg/updater/Dockerfile'
+          vpa-admission-controller:
+            inputs:
+              repos:
+                source: ~ # default
+              steps:
+                build: ~
+            registry: 'gcr-readwrite'
+            image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-admission-controller'
+            dockerfile: './vertical-pod-autoscaler/pkg/admission-controller/Dockerfile'
+    steps:
+      test:
+        image: 'golang:1.20.5'
+      build:
+        image: 'golang:1.20.5'
+        output_dir: 'binary'
+  jobs:
+    head-update:
+      traits:
+        component_descriptor:
+          snapshot_ctx_repository: gardener-public
+        draft_release: ~
+    pull-request:
+      traits:
+        pull-request: ~
+    release:
+      traits:
+        version:
+          preprocess: 'finalize'
+        release:
+          nextversion: 'bump_minor'
+          git_tags:
+            - ref_template: refs/tags/vpa-{VERSION}
+          on_tag_conflict: 'fail'
+        slack:
+          default_channel: 'internal_scp_workspace'
+          channel_cfgs:
+            internal_scp_workspace:
+              channel_name: 'C017KSLTF4H' # gardener-autoscaling
+              slack_cfg_name: 'scp_workspace'
+        component_descriptor:
+          snapshot_ctx_repository: gardener-public
