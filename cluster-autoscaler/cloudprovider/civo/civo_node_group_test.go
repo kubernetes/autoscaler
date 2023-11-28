@@ -398,9 +398,34 @@ func TestNodeGroup_Exist(t *testing.T) {
 	})
 }
 
+func TestNodeGroup_TemplateNodeInfo(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		client := &civoClientMock{}
+
+		ng := testNodeGroup(client, &civocloud.KubernetesPool{
+			ID: "id",
+			Instances: []civocloud.KubernetesInstance{
+				{
+					CPUCores:      1,
+					RAMMegabytes:  250,
+					DiskGigabytes: 20,
+					Region:        "Test",
+				},
+			},
+		}, 1, 10)
+
+		nodeInfo, err := ng.TemplateNodeInfo()
+		assert.NoError(t, err)
+		assert.Equal(t, len(nodeInfo.Pods), 1, "should have one template pod")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.Cpu().ToDec().Value(), int64(1000), "should have one template pod")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.Memory().ToDec().Value(), int64(268435456000), "should have one template pod")
+		assert.Equal(t, nodeInfo.Node().Status.Capacity.StorageEphemeral().ToDec().Value(), int64(21474836480), "should have one template pod")
+	})
+}
+
 func testNodeGroup(client nodeGroupClient, np *civocloud.KubernetesPool, min int, max int) *NodeGroup {
 	Region = "test"
-	return &NodeGroup{
+	ng := NodeGroup{
 		id:        "1",
 		clusterID: "1",
 		client:    client,
@@ -408,4 +433,10 @@ func testNodeGroup(client nodeGroupClient, np *civocloud.KubernetesPool, min int
 		minSize:   min,
 		maxSize:   max,
 	}
+
+	if np != nil {
+		ng.nodeTemplate = getCivoNodeTemplate(*np)
+	}
+
+	return &ng
 }
