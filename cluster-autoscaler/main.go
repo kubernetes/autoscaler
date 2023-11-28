@@ -250,6 +250,7 @@ var (
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
+	ignoreMinCountForUnregisteredNodes = flag.Bool("ignore-min-count-for-unregistered-nodes", false, "Toggle for deletion of unregistered nodes and having them not be considered in min count")
 )
 
 func isFlagPassed(name string) bool {
@@ -365,6 +366,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
 		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
 		DrainPriorityConfig:              drainPriorityConfigMap,
+		IgnoreMinCountForUnregisteredNodes: *ignoreMinCountForUnregisteredNodes,
 		SchedulerConfig:                  parsedSchedConfig,
 		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
 		StatusConfigMapName:              *statusConfigMapName,

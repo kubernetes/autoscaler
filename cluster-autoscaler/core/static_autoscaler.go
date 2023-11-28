@@ -758,6 +758,7 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			klog.Warningf("Failed to get node group size; nodeGroup=%v; err=%v", nodeGroup.Id(), err)
 			continue
 		}
+		if !a.IgnoreMinCountForUnregisteredNodes {
 		possibleToDelete := size - nodeGroup.MinSize()
 		if possibleToDelete <= 0 {
 			klog.Warningf("Node group %s min size reached, skipping removal of %v unregistered nodes", nodeGroupId, len(unregisteredNodesToDelete))
@@ -767,8 +768,9 @@ func (a *StaticAutoscaler) removeOldUnregisteredNodes(allUnregisteredNodes []clu
 			klog.Warningf("Capping node group %s unregistered node removal to %d nodes, removing all %d would exceed min size constaint", nodeGroupId, possibleToDelete, len(unregisteredNodesToDelete))
 			unregisteredNodesToDelete = unregisteredNodesToDelete[:possibleToDelete]
 		}
-		nodesToDelete := toNodes(unregisteredNodesToDelete)
+	}
 
+		nodesToDelete := toNodes(unregisteredNodesToDelete)
 		opts, err := nodeGroup.GetOptions(a.NodeGroupDefaults)
 		if err != nil {
 			klog.Warningf("Failed to get node group options for %s: %s", nodeGroupId, err)
