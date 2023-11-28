@@ -91,6 +91,7 @@ type FirewallResourceLabelSelector struct {
 // FirewallClient is a client for the Firewalls API.
 type FirewallClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a Firewall by its ID. If the Firewall does not exist, nil is returned.
@@ -180,7 +181,7 @@ func (c *FirewallClient) All(ctx context.Context) ([]*Firewall, error) {
 
 // AllWithOpts returns all Firewalls for the given options.
 func (c *FirewallClient) AllWithOpts(ctx context.Context, opts FirewallListOpts) ([]*Firewall, error) {
-	var allFirewalls []*Firewall
+	allFirewalls := []*Firewall{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
