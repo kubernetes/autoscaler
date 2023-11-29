@@ -180,6 +180,12 @@ const (
 	// The current state of the cache security group does not allow deletion.
 	ErrCodeInvalidCacheSecurityGroupStateFault = "InvalidCacheSecurityGroupState"
 
+	// ErrCodeInvalidCredentialsException for service response error code
+	// "InvalidCredentialsException".
+	//
+	// You must enter valid credentials.
+	ErrCodeInvalidCredentialsException = "InvalidCredentialsException"
+
 	// ErrCodeInvalidGlobalReplicationGroupStateFault for service response error code
 	// "InvalidGlobalReplicationGroupState".
 	//
@@ -209,6 +215,19 @@ const (
 	//
 	// The requested replication group is not in the available state.
 	ErrCodeInvalidReplicationGroupStateFault = "InvalidReplicationGroupState"
+
+	// ErrCodeInvalidServerlessCacheSnapshotStateFault for service response error code
+	// "InvalidServerlessCacheSnapshotStateFault".
+	//
+	// The state of the serverless cache snapshot was not received. Available for
+	// Redis only.
+	ErrCodeInvalidServerlessCacheSnapshotStateFault = "InvalidServerlessCacheSnapshotStateFault"
+
+	// ErrCodeInvalidServerlessCacheStateFault for service response error code
+	// "InvalidServerlessCacheStateFault".
+	//
+	// The account for these credentials is not currently active.
+	ErrCodeInvalidServerlessCacheStateFault = "InvalidServerlessCacheStateFault"
 
 	// ErrCodeInvalidSnapshotStateFault for service response error code
 	// "InvalidSnapshotState".
@@ -325,6 +344,45 @@ const (
 	//
 	// The requested cache node offering does not exist.
 	ErrCodeReservedCacheNodesOfferingNotFoundFault = "ReservedCacheNodesOfferingNotFound"
+
+	// ErrCodeServerlessCacheAlreadyExistsFault for service response error code
+	// "ServerlessCacheAlreadyExistsFault".
+	//
+	// A serverless cache with this name already exists.
+	ErrCodeServerlessCacheAlreadyExistsFault = "ServerlessCacheAlreadyExistsFault"
+
+	// ErrCodeServerlessCacheNotFoundFault for service response error code
+	// "ServerlessCacheNotFoundFault".
+	//
+	// The serverless cache was not found or does not exist.
+	ErrCodeServerlessCacheNotFoundFault = "ServerlessCacheNotFoundFault"
+
+	// ErrCodeServerlessCacheQuotaForCustomerExceededFault for service response error code
+	// "ServerlessCacheQuotaForCustomerExceededFault".
+	//
+	// The number of serverless caches exceeds the customer quota.
+	ErrCodeServerlessCacheQuotaForCustomerExceededFault = "ServerlessCacheQuotaForCustomerExceededFault"
+
+	// ErrCodeServerlessCacheSnapshotAlreadyExistsFault for service response error code
+	// "ServerlessCacheSnapshotAlreadyExistsFault".
+	//
+	// A serverless cache snapshot with this name already exists. Available for
+	// Redis only.
+	ErrCodeServerlessCacheSnapshotAlreadyExistsFault = "ServerlessCacheSnapshotAlreadyExistsFault"
+
+	// ErrCodeServerlessCacheSnapshotNotFoundFault for service response error code
+	// "ServerlessCacheSnapshotNotFoundFault".
+	//
+	// This serverless cache snapshot could not be found or does not exist. Available
+	// for Redis only.
+	ErrCodeServerlessCacheSnapshotNotFoundFault = "ServerlessCacheSnapshotNotFoundFault"
+
+	// ErrCodeServerlessCacheSnapshotQuotaExceededFault for service response error code
+	// "ServerlessCacheSnapshotQuotaExceededFault".
+	//
+	// The number of serverless cache snapshots exceeds the customer snapshot quota.
+	// Available for Redis only.
+	ErrCodeServerlessCacheSnapshotQuotaExceededFault = "ServerlessCacheSnapshotQuotaExceededFault"
 
 	// ErrCodeServiceLinkedRoleNotFoundFault for service response error code
 	// "ServiceLinkedRoleNotFoundFault".

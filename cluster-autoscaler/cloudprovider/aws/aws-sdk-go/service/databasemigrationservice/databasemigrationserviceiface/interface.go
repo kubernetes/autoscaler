@@ -68,9 +68,17 @@ type DatabaseMigrationServiceAPI interface {
 	ApplyPendingMaintenanceActionWithContext(aws.Context, *databasemigrationservice.ApplyPendingMaintenanceActionInput, ...request.Option) (*databasemigrationservice.ApplyPendingMaintenanceActionOutput, error)
 	ApplyPendingMaintenanceActionRequest(*databasemigrationservice.ApplyPendingMaintenanceActionInput) (*request.Request, *databasemigrationservice.ApplyPendingMaintenanceActionOutput)
 
+	BatchStartRecommendations(*databasemigrationservice.BatchStartRecommendationsInput) (*databasemigrationservice.BatchStartRecommendationsOutput, error)
+	BatchStartRecommendationsWithContext(aws.Context, *databasemigrationservice.BatchStartRecommendationsInput, ...request.Option) (*databasemigrationservice.BatchStartRecommendationsOutput, error)
+	BatchStartRecommendationsRequest(*databasemigrationservice.BatchStartRecommendationsInput) (*request.Request, *databasemigrationservice.BatchStartRecommendationsOutput)
+
 	CancelReplicationTaskAssessmentRun(*databasemigrationservice.CancelReplicationTaskAssessmentRunInput) (*databasemigrationservice.CancelReplicationTaskAssessmentRunOutput, error)
 	CancelReplicationTaskAssessmentRunWithContext(aws.Context, *databasemigrationservice.CancelReplicationTaskAssessmentRunInput, ...request.Option) (*databasemigrationservice.CancelReplicationTaskAssessmentRunOutput, error)
 	CancelReplicationTaskAssessmentRunRequest(*databasemigrationservice.CancelReplicationTaskAssessmentRunInput) (*request.Request, *databasemigrationservice.CancelReplicationTaskAssessmentRunOutput)
+
+	CreateDataProvider(*databasemigrationservice.CreateDataProviderInput) (*databasemigrationservice.CreateDataProviderOutput, error)
+	CreateDataProviderWithContext(aws.Context, *databasemigrationservice.CreateDataProviderInput, ...request.Option) (*databasemigrationservice.CreateDataProviderOutput, error)
+	CreateDataProviderRequest(*databasemigrationservice.CreateDataProviderInput) (*request.Request, *databasemigrationservice.CreateDataProviderOutput)
 
 	CreateEndpoint(*databasemigrationservice.CreateEndpointInput) (*databasemigrationservice.CreateEndpointOutput, error)
 	CreateEndpointWithContext(aws.Context, *databasemigrationservice.CreateEndpointInput, ...request.Option) (*databasemigrationservice.CreateEndpointOutput, error)
@@ -79,6 +87,22 @@ type DatabaseMigrationServiceAPI interface {
 	CreateEventSubscription(*databasemigrationservice.CreateEventSubscriptionInput) (*databasemigrationservice.CreateEventSubscriptionOutput, error)
 	CreateEventSubscriptionWithContext(aws.Context, *databasemigrationservice.CreateEventSubscriptionInput, ...request.Option) (*databasemigrationservice.CreateEventSubscriptionOutput, error)
 	CreateEventSubscriptionRequest(*databasemigrationservice.CreateEventSubscriptionInput) (*request.Request, *databasemigrationservice.CreateEventSubscriptionOutput)
+
+	CreateFleetAdvisorCollector(*databasemigrationservice.CreateFleetAdvisorCollectorInput) (*databasemigrationservice.CreateFleetAdvisorCollectorOutput, error)
+	CreateFleetAdvisorCollectorWithContext(aws.Context, *databasemigrationservice.CreateFleetAdvisorCollectorInput, ...request.Option) (*databasemigrationservice.CreateFleetAdvisorCollectorOutput, error)
+	CreateFleetAdvisorCollectorRequest(*databasemigrationservice.CreateFleetAdvisorCollectorInput) (*request.Request, *databasemigrationservice.CreateFleetAdvisorCollectorOutput)
+
+	CreateInstanceProfile(*databasemigrationservice.CreateInstanceProfileInput) (*databasemigrationservice.CreateInstanceProfileOutput, error)
+	CreateInstanceProfileWithContext(aws.Context, *databasemigrationservice.CreateInstanceProfileInput, ...request.Option) (*databasemigrationservice.CreateInstanceProfileOutput, error)
+	CreateInstanceProfileRequest(*databasemigrationservice.CreateInstanceProfileInput) (*request.Request, *databasemigrationservice.CreateInstanceProfileOutput)
+
+	CreateMigrationProject(*databasemigrationservice.CreateMigrationProjectInput) (*databasemigrationservice.CreateMigrationProjectOutput, error)
+	CreateMigrationProjectWithContext(aws.Context, *databasemigrationservice.CreateMigrationProjectInput, ...request.Option) (*databasemigrationservice.CreateMigrationProjectOutput, error)
+	CreateMigrationProjectRequest(*databasemigrationservice.CreateMigrationProjectInput) (*request.Request, *databasemigrationservice.CreateMigrationProjectOutput)
+
+	CreateReplicationConfig(*databasemigrationservice.CreateReplicationConfigInput) (*databasemigrationservice.CreateReplicationConfigOutput, error)
+	CreateReplicationConfigWithContext(aws.Context, *databasemigrationservice.CreateReplicationConfigInput, ...request.Option) (*databasemigrationservice.CreateReplicationConfigOutput, error)
+	CreateReplicationConfigRequest(*databasemigrationservice.CreateReplicationConfigInput) (*request.Request, *databasemigrationservice.CreateReplicationConfigOutput)
 
 	CreateReplicationInstance(*databasemigrationservice.CreateReplicationInstanceInput) (*databasemigrationservice.CreateReplicationInstanceOutput, error)
 	CreateReplicationInstanceWithContext(aws.Context, *databasemigrationservice.CreateReplicationInstanceInput, ...request.Option) (*databasemigrationservice.CreateReplicationInstanceOutput, error)
@@ -100,6 +124,10 @@ type DatabaseMigrationServiceAPI interface {
 	DeleteConnectionWithContext(aws.Context, *databasemigrationservice.DeleteConnectionInput, ...request.Option) (*databasemigrationservice.DeleteConnectionOutput, error)
 	DeleteConnectionRequest(*databasemigrationservice.DeleteConnectionInput) (*request.Request, *databasemigrationservice.DeleteConnectionOutput)
 
+	DeleteDataProvider(*databasemigrationservice.DeleteDataProviderInput) (*databasemigrationservice.DeleteDataProviderOutput, error)
+	DeleteDataProviderWithContext(aws.Context, *databasemigrationservice.DeleteDataProviderInput, ...request.Option) (*databasemigrationservice.DeleteDataProviderOutput, error)
+	DeleteDataProviderRequest(*databasemigrationservice.DeleteDataProviderInput) (*request.Request, *databasemigrationservice.DeleteDataProviderOutput)
+
 	DeleteEndpoint(*databasemigrationservice.DeleteEndpointInput) (*databasemigrationservice.DeleteEndpointOutput, error)
 	DeleteEndpointWithContext(aws.Context, *databasemigrationservice.DeleteEndpointInput, ...request.Option) (*databasemigrationservice.DeleteEndpointOutput, error)
 	DeleteEndpointRequest(*databasemigrationservice.DeleteEndpointInput) (*request.Request, *databasemigrationservice.DeleteEndpointOutput)
@@ -107,6 +135,26 @@ type DatabaseMigrationServiceAPI interface {
 	DeleteEventSubscription(*databasemigrationservice.DeleteEventSubscriptionInput) (*databasemigrationservice.DeleteEventSubscriptionOutput, error)
 	DeleteEventSubscriptionWithContext(aws.Context, *databasemigrationservice.DeleteEventSubscriptionInput, ...request.Option) (*databasemigrationservice.DeleteEventSubscriptionOutput, error)
 	DeleteEventSubscriptionRequest(*databasemigrationservice.DeleteEventSubscriptionInput) (*request.Request, *databasemigrationservice.DeleteEventSubscriptionOutput)
+
+	DeleteFleetAdvisorCollector(*databasemigrationservice.DeleteFleetAdvisorCollectorInput) (*databasemigrationservice.DeleteFleetAdvisorCollectorOutput, error)
+	DeleteFleetAdvisorCollectorWithContext(aws.Context, *databasemigrationservice.DeleteFleetAdvisorCollectorInput, ...request.Option) (*databasemigrationservice.DeleteFleetAdvisorCollectorOutput, error)
+	DeleteFleetAdvisorCollectorRequest(*databasemigrationservice.DeleteFleetAdvisorCollectorInput) (*request.Request, *databasemigrationservice.DeleteFleetAdvisorCollectorOutput)
+
+	DeleteFleetAdvisorDatabases(*databasemigrationservice.DeleteFleetAdvisorDatabasesInput) (*databasemigrationservice.DeleteFleetAdvisorDatabasesOutput, error)
+	DeleteFleetAdvisorDatabasesWithContext(aws.Context, *databasemigrationservice.DeleteFleetAdvisorDatabasesInput, ...request.Option) (*databasemigrationservice.DeleteFleetAdvisorDatabasesOutput, error)
+	DeleteFleetAdvisorDatabasesRequest(*databasemigrationservice.DeleteFleetAdvisorDatabasesInput) (*request.Request, *databasemigrationservice.DeleteFleetAdvisorDatabasesOutput)
+
+	DeleteInstanceProfile(*databasemigrationservice.DeleteInstanceProfileInput) (*databasemigrationservice.DeleteInstanceProfileOutput, error)
+	DeleteInstanceProfileWithContext(aws.Context, *databasemigrationservice.DeleteInstanceProfileInput, ...request.Option) (*databasemigrationservice.DeleteInstanceProfileOutput, error)
+	DeleteInstanceProfileRequest(*databasemigrationservice.DeleteInstanceProfileInput) (*request.Request, *databasemigrationservice.DeleteInstanceProfileOutput)
+
+	DeleteMigrationProject(*databasemigrationservice.DeleteMigrationProjectInput) (*databasemigrationservice.DeleteMigrationProjectOutput, error)
+	DeleteMigrationProjectWithContext(aws.Context, *databasemigrationservice.DeleteMigrationProjectInput, ...request.Option) (*databasemigrationservice.DeleteMigrationProjectOutput, error)
+	DeleteMigrationProjectRequest(*databasemigrationservice.DeleteMigrationProjectInput) (*request.Request, *databasemigrationservice.DeleteMigrationProjectOutput)
+
+	DeleteReplicationConfig(*databasemigrationservice.DeleteReplicationConfigInput) (*databasemigrationservice.DeleteReplicationConfigOutput, error)
+	DeleteReplicationConfigWithContext(aws.Context, *databasemigrationservice.DeleteReplicationConfigInput, ...request.Option) (*databasemigrationservice.DeleteReplicationConfigOutput, error)
+	DeleteReplicationConfigRequest(*databasemigrationservice.DeleteReplicationConfigInput) (*request.Request, *databasemigrationservice.DeleteReplicationConfigOutput)
 
 	DeleteReplicationInstance(*databasemigrationservice.DeleteReplicationInstanceInput) (*databasemigrationservice.DeleteReplicationInstanceOutput, error)
 	DeleteReplicationInstanceWithContext(aws.Context, *databasemigrationservice.DeleteReplicationInstanceInput, ...request.Option) (*databasemigrationservice.DeleteReplicationInstanceOutput, error)
@@ -149,6 +197,17 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeConnectionsPages(*databasemigrationservice.DescribeConnectionsInput, func(*databasemigrationservice.DescribeConnectionsOutput, bool) bool) error
 	DescribeConnectionsPagesWithContext(aws.Context, *databasemigrationservice.DescribeConnectionsInput, func(*databasemigrationservice.DescribeConnectionsOutput, bool) bool, ...request.Option) error
 
+	DescribeConversionConfiguration(*databasemigrationservice.DescribeConversionConfigurationInput) (*databasemigrationservice.DescribeConversionConfigurationOutput, error)
+	DescribeConversionConfigurationWithContext(aws.Context, *databasemigrationservice.DescribeConversionConfigurationInput, ...request.Option) (*databasemigrationservice.DescribeConversionConfigurationOutput, error)
+	DescribeConversionConfigurationRequest(*databasemigrationservice.DescribeConversionConfigurationInput) (*request.Request, *databasemigrationservice.DescribeConversionConfigurationOutput)
+
+	DescribeDataProviders(*databasemigrationservice.DescribeDataProvidersInput) (*databasemigrationservice.DescribeDataProvidersOutput, error)
+	DescribeDataProvidersWithContext(aws.Context, *databasemigrationservice.DescribeDataProvidersInput, ...request.Option) (*databasemigrationservice.DescribeDataProvidersOutput, error)
+	DescribeDataProvidersRequest(*databasemigrationservice.DescribeDataProvidersInput) (*request.Request, *databasemigrationservice.DescribeDataProvidersOutput)
+
+	DescribeDataProvidersPages(*databasemigrationservice.DescribeDataProvidersInput, func(*databasemigrationservice.DescribeDataProvidersOutput, bool) bool) error
+	DescribeDataProvidersPagesWithContext(aws.Context, *databasemigrationservice.DescribeDataProvidersInput, func(*databasemigrationservice.DescribeDataProvidersOutput, bool) bool, ...request.Option) error
+
 	DescribeEndpointSettings(*databasemigrationservice.DescribeEndpointSettingsInput) (*databasemigrationservice.DescribeEndpointSettingsOutput, error)
 	DescribeEndpointSettingsWithContext(aws.Context, *databasemigrationservice.DescribeEndpointSettingsInput, ...request.Option) (*databasemigrationservice.DescribeEndpointSettingsOutput, error)
 	DescribeEndpointSettingsRequest(*databasemigrationservice.DescribeEndpointSettingsInput) (*request.Request, *databasemigrationservice.DescribeEndpointSettingsOutput)
@@ -170,6 +229,13 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeEndpointsPages(*databasemigrationservice.DescribeEndpointsInput, func(*databasemigrationservice.DescribeEndpointsOutput, bool) bool) error
 	DescribeEndpointsPagesWithContext(aws.Context, *databasemigrationservice.DescribeEndpointsInput, func(*databasemigrationservice.DescribeEndpointsOutput, bool) bool, ...request.Option) error
 
+	DescribeEngineVersions(*databasemigrationservice.DescribeEngineVersionsInput) (*databasemigrationservice.DescribeEngineVersionsOutput, error)
+	DescribeEngineVersionsWithContext(aws.Context, *databasemigrationservice.DescribeEngineVersionsInput, ...request.Option) (*databasemigrationservice.DescribeEngineVersionsOutput, error)
+	DescribeEngineVersionsRequest(*databasemigrationservice.DescribeEngineVersionsInput) (*request.Request, *databasemigrationservice.DescribeEngineVersionsOutput)
+
+	DescribeEngineVersionsPages(*databasemigrationservice.DescribeEngineVersionsInput, func(*databasemigrationservice.DescribeEngineVersionsOutput, bool) bool) error
+	DescribeEngineVersionsPagesWithContext(aws.Context, *databasemigrationservice.DescribeEngineVersionsInput, func(*databasemigrationservice.DescribeEngineVersionsOutput, bool) bool, ...request.Option) error
+
 	DescribeEventCategories(*databasemigrationservice.DescribeEventCategoriesInput) (*databasemigrationservice.DescribeEventCategoriesOutput, error)
 	DescribeEventCategoriesWithContext(aws.Context, *databasemigrationservice.DescribeEventCategoriesInput, ...request.Option) (*databasemigrationservice.DescribeEventCategoriesOutput, error)
 	DescribeEventCategoriesRequest(*databasemigrationservice.DescribeEventCategoriesInput) (*request.Request, *databasemigrationservice.DescribeEventCategoriesOutput)
@@ -188,6 +254,97 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeEventsPages(*databasemigrationservice.DescribeEventsInput, func(*databasemigrationservice.DescribeEventsOutput, bool) bool) error
 	DescribeEventsPagesWithContext(aws.Context, *databasemigrationservice.DescribeEventsInput, func(*databasemigrationservice.DescribeEventsOutput, bool) bool, ...request.Option) error
 
+	DescribeExtensionPackAssociations(*databasemigrationservice.DescribeExtensionPackAssociationsInput) (*databasemigrationservice.DescribeExtensionPackAssociationsOutput, error)
+	DescribeExtensionPackAssociationsWithContext(aws.Context, *databasemigrationservice.DescribeExtensionPackAssociationsInput, ...request.Option) (*databasemigrationservice.DescribeExtensionPackAssociationsOutput, error)
+	DescribeExtensionPackAssociationsRequest(*databasemigrationservice.DescribeExtensionPackAssociationsInput) (*request.Request, *databasemigrationservice.DescribeExtensionPackAssociationsOutput)
+
+	DescribeExtensionPackAssociationsPages(*databasemigrationservice.DescribeExtensionPackAssociationsInput, func(*databasemigrationservice.DescribeExtensionPackAssociationsOutput, bool) bool) error
+	DescribeExtensionPackAssociationsPagesWithContext(aws.Context, *databasemigrationservice.DescribeExtensionPackAssociationsInput, func(*databasemigrationservice.DescribeExtensionPackAssociationsOutput, bool) bool, ...request.Option) error
+
+	DescribeFleetAdvisorCollectors(*databasemigrationservice.DescribeFleetAdvisorCollectorsInput) (*databasemigrationservice.DescribeFleetAdvisorCollectorsOutput, error)
+	DescribeFleetAdvisorCollectorsWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorCollectorsInput, ...request.Option) (*databasemigrationservice.DescribeFleetAdvisorCollectorsOutput, error)
+	DescribeFleetAdvisorCollectorsRequest(*databasemigrationservice.DescribeFleetAdvisorCollectorsInput) (*request.Request, *databasemigrationservice.DescribeFleetAdvisorCollectorsOutput)
+
+	DescribeFleetAdvisorCollectorsPages(*databasemigrationservice.DescribeFleetAdvisorCollectorsInput, func(*databasemigrationservice.DescribeFleetAdvisorCollectorsOutput, bool) bool) error
+	DescribeFleetAdvisorCollectorsPagesWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorCollectorsInput, func(*databasemigrationservice.DescribeFleetAdvisorCollectorsOutput, bool) bool, ...request.Option) error
+
+	DescribeFleetAdvisorDatabases(*databasemigrationservice.DescribeFleetAdvisorDatabasesInput) (*databasemigrationservice.DescribeFleetAdvisorDatabasesOutput, error)
+	DescribeFleetAdvisorDatabasesWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorDatabasesInput, ...request.Option) (*databasemigrationservice.DescribeFleetAdvisorDatabasesOutput, error)
+	DescribeFleetAdvisorDatabasesRequest(*databasemigrationservice.DescribeFleetAdvisorDatabasesInput) (*request.Request, *databasemigrationservice.DescribeFleetAdvisorDatabasesOutput)
+
+	DescribeFleetAdvisorDatabasesPages(*databasemigrationservice.DescribeFleetAdvisorDatabasesInput, func(*databasemigrationservice.DescribeFleetAdvisorDatabasesOutput, bool) bool) error
+	DescribeFleetAdvisorDatabasesPagesWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorDatabasesInput, func(*databasemigrationservice.DescribeFleetAdvisorDatabasesOutput, bool) bool, ...request.Option) error
+
+	DescribeFleetAdvisorLsaAnalysis(*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisInput) (*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisOutput, error)
+	DescribeFleetAdvisorLsaAnalysisWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorLsaAnalysisInput, ...request.Option) (*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisOutput, error)
+	DescribeFleetAdvisorLsaAnalysisRequest(*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisInput) (*request.Request, *databasemigrationservice.DescribeFleetAdvisorLsaAnalysisOutput)
+
+	DescribeFleetAdvisorLsaAnalysisPages(*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisInput, func(*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisOutput, bool) bool) error
+	DescribeFleetAdvisorLsaAnalysisPagesWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorLsaAnalysisInput, func(*databasemigrationservice.DescribeFleetAdvisorLsaAnalysisOutput, bool) bool, ...request.Option) error
+
+	DescribeFleetAdvisorSchemaObjectSummary(*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryInput) (*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryOutput, error)
+	DescribeFleetAdvisorSchemaObjectSummaryWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryInput, ...request.Option) (*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryOutput, error)
+	DescribeFleetAdvisorSchemaObjectSummaryRequest(*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryInput) (*request.Request, *databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryOutput)
+
+	DescribeFleetAdvisorSchemaObjectSummaryPages(*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryInput, func(*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryOutput, bool) bool) error
+	DescribeFleetAdvisorSchemaObjectSummaryPagesWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryInput, func(*databasemigrationservice.DescribeFleetAdvisorSchemaObjectSummaryOutput, bool) bool, ...request.Option) error
+
+	DescribeFleetAdvisorSchemas(*databasemigrationservice.DescribeFleetAdvisorSchemasInput) (*databasemigrationservice.DescribeFleetAdvisorSchemasOutput, error)
+	DescribeFleetAdvisorSchemasWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorSchemasInput, ...request.Option) (*databasemigrationservice.DescribeFleetAdvisorSchemasOutput, error)
+	DescribeFleetAdvisorSchemasRequest(*databasemigrationservice.DescribeFleetAdvisorSchemasInput) (*request.Request, *databasemigrationservice.DescribeFleetAdvisorSchemasOutput)
+
+	DescribeFleetAdvisorSchemasPages(*databasemigrationservice.DescribeFleetAdvisorSchemasInput, func(*databasemigrationservice.DescribeFleetAdvisorSchemasOutput, bool) bool) error
+	DescribeFleetAdvisorSchemasPagesWithContext(aws.Context, *databasemigrationservice.DescribeFleetAdvisorSchemasInput, func(*databasemigrationservice.DescribeFleetAdvisorSchemasOutput, bool) bool, ...request.Option) error
+
+	DescribeInstanceProfiles(*databasemigrationservice.DescribeInstanceProfilesInput) (*databasemigrationservice.DescribeInstanceProfilesOutput, error)
+	DescribeInstanceProfilesWithContext(aws.Context, *databasemigrationservice.DescribeInstanceProfilesInput, ...request.Option) (*databasemigrationservice.DescribeInstanceProfilesOutput, error)
+	DescribeInstanceProfilesRequest(*databasemigrationservice.DescribeInstanceProfilesInput) (*request.Request, *databasemigrationservice.DescribeInstanceProfilesOutput)
+
+	DescribeInstanceProfilesPages(*databasemigrationservice.DescribeInstanceProfilesInput, func(*databasemigrationservice.DescribeInstanceProfilesOutput, bool) bool) error
+	DescribeInstanceProfilesPagesWithContext(aws.Context, *databasemigrationservice.DescribeInstanceProfilesInput, func(*databasemigrationservice.DescribeInstanceProfilesOutput, bool) bool, ...request.Option) error
+
+	DescribeMetadataModelAssessments(*databasemigrationservice.DescribeMetadataModelAssessmentsInput) (*databasemigrationservice.DescribeMetadataModelAssessmentsOutput, error)
+	DescribeMetadataModelAssessmentsWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelAssessmentsInput, ...request.Option) (*databasemigrationservice.DescribeMetadataModelAssessmentsOutput, error)
+	DescribeMetadataModelAssessmentsRequest(*databasemigrationservice.DescribeMetadataModelAssessmentsInput) (*request.Request, *databasemigrationservice.DescribeMetadataModelAssessmentsOutput)
+
+	DescribeMetadataModelAssessmentsPages(*databasemigrationservice.DescribeMetadataModelAssessmentsInput, func(*databasemigrationservice.DescribeMetadataModelAssessmentsOutput, bool) bool) error
+	DescribeMetadataModelAssessmentsPagesWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelAssessmentsInput, func(*databasemigrationservice.DescribeMetadataModelAssessmentsOutput, bool) bool, ...request.Option) error
+
+	DescribeMetadataModelConversions(*databasemigrationservice.DescribeMetadataModelConversionsInput) (*databasemigrationservice.DescribeMetadataModelConversionsOutput, error)
+	DescribeMetadataModelConversionsWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelConversionsInput, ...request.Option) (*databasemigrationservice.DescribeMetadataModelConversionsOutput, error)
+	DescribeMetadataModelConversionsRequest(*databasemigrationservice.DescribeMetadataModelConversionsInput) (*request.Request, *databasemigrationservice.DescribeMetadataModelConversionsOutput)
+
+	DescribeMetadataModelConversionsPages(*databasemigrationservice.DescribeMetadataModelConversionsInput, func(*databasemigrationservice.DescribeMetadataModelConversionsOutput, bool) bool) error
+	DescribeMetadataModelConversionsPagesWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelConversionsInput, func(*databasemigrationservice.DescribeMetadataModelConversionsOutput, bool) bool, ...request.Option) error
+
+	DescribeMetadataModelExportsAsScript(*databasemigrationservice.DescribeMetadataModelExportsAsScriptInput) (*databasemigrationservice.DescribeMetadataModelExportsAsScriptOutput, error)
+	DescribeMetadataModelExportsAsScriptWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelExportsAsScriptInput, ...request.Option) (*databasemigrationservice.DescribeMetadataModelExportsAsScriptOutput, error)
+	DescribeMetadataModelExportsAsScriptRequest(*databasemigrationservice.DescribeMetadataModelExportsAsScriptInput) (*request.Request, *databasemigrationservice.DescribeMetadataModelExportsAsScriptOutput)
+
+	DescribeMetadataModelExportsAsScriptPages(*databasemigrationservice.DescribeMetadataModelExportsAsScriptInput, func(*databasemigrationservice.DescribeMetadataModelExportsAsScriptOutput, bool) bool) error
+	DescribeMetadataModelExportsAsScriptPagesWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelExportsAsScriptInput, func(*databasemigrationservice.DescribeMetadataModelExportsAsScriptOutput, bool) bool, ...request.Option) error
+
+	DescribeMetadataModelExportsToTarget(*databasemigrationservice.DescribeMetadataModelExportsToTargetInput) (*databasemigrationservice.DescribeMetadataModelExportsToTargetOutput, error)
+	DescribeMetadataModelExportsToTargetWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelExportsToTargetInput, ...request.Option) (*databasemigrationservice.DescribeMetadataModelExportsToTargetOutput, error)
+	DescribeMetadataModelExportsToTargetRequest(*databasemigrationservice.DescribeMetadataModelExportsToTargetInput) (*request.Request, *databasemigrationservice.DescribeMetadataModelExportsToTargetOutput)
+
+	DescribeMetadataModelExportsToTargetPages(*databasemigrationservice.DescribeMetadataModelExportsToTargetInput, func(*databasemigrationservice.DescribeMetadataModelExportsToTargetOutput, bool) bool) error
+	DescribeMetadataModelExportsToTargetPagesWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelExportsToTargetInput, func(*databasemigrationservice.DescribeMetadataModelExportsToTargetOutput, bool) bool, ...request.Option) error
+
+	DescribeMetadataModelImports(*databasemigrationservice.DescribeMetadataModelImportsInput) (*databasemigrationservice.DescribeMetadataModelImportsOutput, error)
+	DescribeMetadataModelImportsWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelImportsInput, ...request.Option) (*databasemigrationservice.DescribeMetadataModelImportsOutput, error)
+	DescribeMetadataModelImportsRequest(*databasemigrationservice.DescribeMetadataModelImportsInput) (*request.Request, *databasemigrationservice.DescribeMetadataModelImportsOutput)
+
+	DescribeMetadataModelImportsPages(*databasemigrationservice.DescribeMetadataModelImportsInput, func(*databasemigrationservice.DescribeMetadataModelImportsOutput, bool) bool) error
+	DescribeMetadataModelImportsPagesWithContext(aws.Context, *databasemigrationservice.DescribeMetadataModelImportsInput, func(*databasemigrationservice.DescribeMetadataModelImportsOutput, bool) bool, ...request.Option) error
+
+	DescribeMigrationProjects(*databasemigrationservice.DescribeMigrationProjectsInput) (*databasemigrationservice.DescribeMigrationProjectsOutput, error)
+	DescribeMigrationProjectsWithContext(aws.Context, *databasemigrationservice.DescribeMigrationProjectsInput, ...request.Option) (*databasemigrationservice.DescribeMigrationProjectsOutput, error)
+	DescribeMigrationProjectsRequest(*databasemigrationservice.DescribeMigrationProjectsInput) (*request.Request, *databasemigrationservice.DescribeMigrationProjectsOutput)
+
+	DescribeMigrationProjectsPages(*databasemigrationservice.DescribeMigrationProjectsInput, func(*databasemigrationservice.DescribeMigrationProjectsOutput, bool) bool) error
+	DescribeMigrationProjectsPagesWithContext(aws.Context, *databasemigrationservice.DescribeMigrationProjectsInput, func(*databasemigrationservice.DescribeMigrationProjectsOutput, bool) bool, ...request.Option) error
+
 	DescribeOrderableReplicationInstances(*databasemigrationservice.DescribeOrderableReplicationInstancesInput) (*databasemigrationservice.DescribeOrderableReplicationInstancesOutput, error)
 	DescribeOrderableReplicationInstancesWithContext(aws.Context, *databasemigrationservice.DescribeOrderableReplicationInstancesInput, ...request.Option) (*databasemigrationservice.DescribeOrderableReplicationInstancesOutput, error)
 	DescribeOrderableReplicationInstancesRequest(*databasemigrationservice.DescribeOrderableReplicationInstancesInput) (*request.Request, *databasemigrationservice.DescribeOrderableReplicationInstancesOutput)
@@ -202,9 +359,30 @@ type DatabaseMigrationServiceAPI interface {
 	DescribePendingMaintenanceActionsPages(*databasemigrationservice.DescribePendingMaintenanceActionsInput, func(*databasemigrationservice.DescribePendingMaintenanceActionsOutput, bool) bool) error
 	DescribePendingMaintenanceActionsPagesWithContext(aws.Context, *databasemigrationservice.DescribePendingMaintenanceActionsInput, func(*databasemigrationservice.DescribePendingMaintenanceActionsOutput, bool) bool, ...request.Option) error
 
+	DescribeRecommendationLimitations(*databasemigrationservice.DescribeRecommendationLimitationsInput) (*databasemigrationservice.DescribeRecommendationLimitationsOutput, error)
+	DescribeRecommendationLimitationsWithContext(aws.Context, *databasemigrationservice.DescribeRecommendationLimitationsInput, ...request.Option) (*databasemigrationservice.DescribeRecommendationLimitationsOutput, error)
+	DescribeRecommendationLimitationsRequest(*databasemigrationservice.DescribeRecommendationLimitationsInput) (*request.Request, *databasemigrationservice.DescribeRecommendationLimitationsOutput)
+
+	DescribeRecommendationLimitationsPages(*databasemigrationservice.DescribeRecommendationLimitationsInput, func(*databasemigrationservice.DescribeRecommendationLimitationsOutput, bool) bool) error
+	DescribeRecommendationLimitationsPagesWithContext(aws.Context, *databasemigrationservice.DescribeRecommendationLimitationsInput, func(*databasemigrationservice.DescribeRecommendationLimitationsOutput, bool) bool, ...request.Option) error
+
+	DescribeRecommendations(*databasemigrationservice.DescribeRecommendationsInput) (*databasemigrationservice.DescribeRecommendationsOutput, error)
+	DescribeRecommendationsWithContext(aws.Context, *databasemigrationservice.DescribeRecommendationsInput, ...request.Option) (*databasemigrationservice.DescribeRecommendationsOutput, error)
+	DescribeRecommendationsRequest(*databasemigrationservice.DescribeRecommendationsInput) (*request.Request, *databasemigrationservice.DescribeRecommendationsOutput)
+
+	DescribeRecommendationsPages(*databasemigrationservice.DescribeRecommendationsInput, func(*databasemigrationservice.DescribeRecommendationsOutput, bool) bool) error
+	DescribeRecommendationsPagesWithContext(aws.Context, *databasemigrationservice.DescribeRecommendationsInput, func(*databasemigrationservice.DescribeRecommendationsOutput, bool) bool, ...request.Option) error
+
 	DescribeRefreshSchemasStatus(*databasemigrationservice.DescribeRefreshSchemasStatusInput) (*databasemigrationservice.DescribeRefreshSchemasStatusOutput, error)
 	DescribeRefreshSchemasStatusWithContext(aws.Context, *databasemigrationservice.DescribeRefreshSchemasStatusInput, ...request.Option) (*databasemigrationservice.DescribeRefreshSchemasStatusOutput, error)
 	DescribeRefreshSchemasStatusRequest(*databasemigrationservice.DescribeRefreshSchemasStatusInput) (*request.Request, *databasemigrationservice.DescribeRefreshSchemasStatusOutput)
+
+	DescribeReplicationConfigs(*databasemigrationservice.DescribeReplicationConfigsInput) (*databasemigrationservice.DescribeReplicationConfigsOutput, error)
+	DescribeReplicationConfigsWithContext(aws.Context, *databasemigrationservice.DescribeReplicationConfigsInput, ...request.Option) (*databasemigrationservice.DescribeReplicationConfigsOutput, error)
+	DescribeReplicationConfigsRequest(*databasemigrationservice.DescribeReplicationConfigsInput) (*request.Request, *databasemigrationservice.DescribeReplicationConfigsOutput)
+
+	DescribeReplicationConfigsPages(*databasemigrationservice.DescribeReplicationConfigsInput, func(*databasemigrationservice.DescribeReplicationConfigsOutput, bool) bool) error
+	DescribeReplicationConfigsPagesWithContext(aws.Context, *databasemigrationservice.DescribeReplicationConfigsInput, func(*databasemigrationservice.DescribeReplicationConfigsOutput, bool) bool, ...request.Option) error
 
 	DescribeReplicationInstanceTaskLogs(*databasemigrationservice.DescribeReplicationInstanceTaskLogsInput) (*databasemigrationservice.DescribeReplicationInstanceTaskLogsOutput, error)
 	DescribeReplicationInstanceTaskLogsWithContext(aws.Context, *databasemigrationservice.DescribeReplicationInstanceTaskLogsInput, ...request.Option) (*databasemigrationservice.DescribeReplicationInstanceTaskLogsOutput, error)
@@ -226,6 +404,13 @@ type DatabaseMigrationServiceAPI interface {
 
 	DescribeReplicationSubnetGroupsPages(*databasemigrationservice.DescribeReplicationSubnetGroupsInput, func(*databasemigrationservice.DescribeReplicationSubnetGroupsOutput, bool) bool) error
 	DescribeReplicationSubnetGroupsPagesWithContext(aws.Context, *databasemigrationservice.DescribeReplicationSubnetGroupsInput, func(*databasemigrationservice.DescribeReplicationSubnetGroupsOutput, bool) bool, ...request.Option) error
+
+	DescribeReplicationTableStatistics(*databasemigrationservice.DescribeReplicationTableStatisticsInput) (*databasemigrationservice.DescribeReplicationTableStatisticsOutput, error)
+	DescribeReplicationTableStatisticsWithContext(aws.Context, *databasemigrationservice.DescribeReplicationTableStatisticsInput, ...request.Option) (*databasemigrationservice.DescribeReplicationTableStatisticsOutput, error)
+	DescribeReplicationTableStatisticsRequest(*databasemigrationservice.DescribeReplicationTableStatisticsInput) (*request.Request, *databasemigrationservice.DescribeReplicationTableStatisticsOutput)
+
+	DescribeReplicationTableStatisticsPages(*databasemigrationservice.DescribeReplicationTableStatisticsInput, func(*databasemigrationservice.DescribeReplicationTableStatisticsOutput, bool) bool) error
+	DescribeReplicationTableStatisticsPagesWithContext(aws.Context, *databasemigrationservice.DescribeReplicationTableStatisticsInput, func(*databasemigrationservice.DescribeReplicationTableStatisticsOutput, bool) bool, ...request.Option) error
 
 	DescribeReplicationTaskAssessmentResults(*databasemigrationservice.DescribeReplicationTaskAssessmentResultsInput) (*databasemigrationservice.DescribeReplicationTaskAssessmentResultsOutput, error)
 	DescribeReplicationTaskAssessmentResultsWithContext(aws.Context, *databasemigrationservice.DescribeReplicationTaskAssessmentResultsInput, ...request.Option) (*databasemigrationservice.DescribeReplicationTaskAssessmentResultsOutput, error)
@@ -255,6 +440,13 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeReplicationTasksPages(*databasemigrationservice.DescribeReplicationTasksInput, func(*databasemigrationservice.DescribeReplicationTasksOutput, bool) bool) error
 	DescribeReplicationTasksPagesWithContext(aws.Context, *databasemigrationservice.DescribeReplicationTasksInput, func(*databasemigrationservice.DescribeReplicationTasksOutput, bool) bool, ...request.Option) error
 
+	DescribeReplications(*databasemigrationservice.DescribeReplicationsInput) (*databasemigrationservice.DescribeReplicationsOutput, error)
+	DescribeReplicationsWithContext(aws.Context, *databasemigrationservice.DescribeReplicationsInput, ...request.Option) (*databasemigrationservice.DescribeReplicationsOutput, error)
+	DescribeReplicationsRequest(*databasemigrationservice.DescribeReplicationsInput) (*request.Request, *databasemigrationservice.DescribeReplicationsOutput)
+
+	DescribeReplicationsPages(*databasemigrationservice.DescribeReplicationsInput, func(*databasemigrationservice.DescribeReplicationsOutput, bool) bool) error
+	DescribeReplicationsPagesWithContext(aws.Context, *databasemigrationservice.DescribeReplicationsInput, func(*databasemigrationservice.DescribeReplicationsOutput, bool) bool, ...request.Option) error
+
 	DescribeSchemas(*databasemigrationservice.DescribeSchemasInput) (*databasemigrationservice.DescribeSchemasOutput, error)
 	DescribeSchemasWithContext(aws.Context, *databasemigrationservice.DescribeSchemasInput, ...request.Option) (*databasemigrationservice.DescribeSchemasOutput, error)
 	DescribeSchemasRequest(*databasemigrationservice.DescribeSchemasInput) (*request.Request, *databasemigrationservice.DescribeSchemasOutput)
@@ -269,6 +461,10 @@ type DatabaseMigrationServiceAPI interface {
 	DescribeTableStatisticsPages(*databasemigrationservice.DescribeTableStatisticsInput, func(*databasemigrationservice.DescribeTableStatisticsOutput, bool) bool) error
 	DescribeTableStatisticsPagesWithContext(aws.Context, *databasemigrationservice.DescribeTableStatisticsInput, func(*databasemigrationservice.DescribeTableStatisticsOutput, bool) bool, ...request.Option) error
 
+	ExportMetadataModelAssessment(*databasemigrationservice.ExportMetadataModelAssessmentInput) (*databasemigrationservice.ExportMetadataModelAssessmentOutput, error)
+	ExportMetadataModelAssessmentWithContext(aws.Context, *databasemigrationservice.ExportMetadataModelAssessmentInput, ...request.Option) (*databasemigrationservice.ExportMetadataModelAssessmentOutput, error)
+	ExportMetadataModelAssessmentRequest(*databasemigrationservice.ExportMetadataModelAssessmentInput) (*request.Request, *databasemigrationservice.ExportMetadataModelAssessmentOutput)
+
 	ImportCertificate(*databasemigrationservice.ImportCertificateInput) (*databasemigrationservice.ImportCertificateOutput, error)
 	ImportCertificateWithContext(aws.Context, *databasemigrationservice.ImportCertificateInput, ...request.Option) (*databasemigrationservice.ImportCertificateOutput, error)
 	ImportCertificateRequest(*databasemigrationservice.ImportCertificateInput) (*request.Request, *databasemigrationservice.ImportCertificateOutput)
@@ -277,6 +473,14 @@ type DatabaseMigrationServiceAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *databasemigrationservice.ListTagsForResourceInput, ...request.Option) (*databasemigrationservice.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*databasemigrationservice.ListTagsForResourceInput) (*request.Request, *databasemigrationservice.ListTagsForResourceOutput)
 
+	ModifyConversionConfiguration(*databasemigrationservice.ModifyConversionConfigurationInput) (*databasemigrationservice.ModifyConversionConfigurationOutput, error)
+	ModifyConversionConfigurationWithContext(aws.Context, *databasemigrationservice.ModifyConversionConfigurationInput, ...request.Option) (*databasemigrationservice.ModifyConversionConfigurationOutput, error)
+	ModifyConversionConfigurationRequest(*databasemigrationservice.ModifyConversionConfigurationInput) (*request.Request, *databasemigrationservice.ModifyConversionConfigurationOutput)
+
+	ModifyDataProvider(*databasemigrationservice.ModifyDataProviderInput) (*databasemigrationservice.ModifyDataProviderOutput, error)
+	ModifyDataProviderWithContext(aws.Context, *databasemigrationservice.ModifyDataProviderInput, ...request.Option) (*databasemigrationservice.ModifyDataProviderOutput, error)
+	ModifyDataProviderRequest(*databasemigrationservice.ModifyDataProviderInput) (*request.Request, *databasemigrationservice.ModifyDataProviderOutput)
+
 	ModifyEndpoint(*databasemigrationservice.ModifyEndpointInput) (*databasemigrationservice.ModifyEndpointOutput, error)
 	ModifyEndpointWithContext(aws.Context, *databasemigrationservice.ModifyEndpointInput, ...request.Option) (*databasemigrationservice.ModifyEndpointOutput, error)
 	ModifyEndpointRequest(*databasemigrationservice.ModifyEndpointInput) (*request.Request, *databasemigrationservice.ModifyEndpointOutput)
@@ -284,6 +488,18 @@ type DatabaseMigrationServiceAPI interface {
 	ModifyEventSubscription(*databasemigrationservice.ModifyEventSubscriptionInput) (*databasemigrationservice.ModifyEventSubscriptionOutput, error)
 	ModifyEventSubscriptionWithContext(aws.Context, *databasemigrationservice.ModifyEventSubscriptionInput, ...request.Option) (*databasemigrationservice.ModifyEventSubscriptionOutput, error)
 	ModifyEventSubscriptionRequest(*databasemigrationservice.ModifyEventSubscriptionInput) (*request.Request, *databasemigrationservice.ModifyEventSubscriptionOutput)
+
+	ModifyInstanceProfile(*databasemigrationservice.ModifyInstanceProfileInput) (*databasemigrationservice.ModifyInstanceProfileOutput, error)
+	ModifyInstanceProfileWithContext(aws.Context, *databasemigrationservice.ModifyInstanceProfileInput, ...request.Option) (*databasemigrationservice.ModifyInstanceProfileOutput, error)
+	ModifyInstanceProfileRequest(*databasemigrationservice.ModifyInstanceProfileInput) (*request.Request, *databasemigrationservice.ModifyInstanceProfileOutput)
+
+	ModifyMigrationProject(*databasemigrationservice.ModifyMigrationProjectInput) (*databasemigrationservice.ModifyMigrationProjectOutput, error)
+	ModifyMigrationProjectWithContext(aws.Context, *databasemigrationservice.ModifyMigrationProjectInput, ...request.Option) (*databasemigrationservice.ModifyMigrationProjectOutput, error)
+	ModifyMigrationProjectRequest(*databasemigrationservice.ModifyMigrationProjectInput) (*request.Request, *databasemigrationservice.ModifyMigrationProjectOutput)
+
+	ModifyReplicationConfig(*databasemigrationservice.ModifyReplicationConfigInput) (*databasemigrationservice.ModifyReplicationConfigOutput, error)
+	ModifyReplicationConfigWithContext(aws.Context, *databasemigrationservice.ModifyReplicationConfigInput, ...request.Option) (*databasemigrationservice.ModifyReplicationConfigOutput, error)
+	ModifyReplicationConfigRequest(*databasemigrationservice.ModifyReplicationConfigInput) (*request.Request, *databasemigrationservice.ModifyReplicationConfigOutput)
 
 	ModifyReplicationInstance(*databasemigrationservice.ModifyReplicationInstanceInput) (*databasemigrationservice.ModifyReplicationInstanceOutput, error)
 	ModifyReplicationInstanceWithContext(aws.Context, *databasemigrationservice.ModifyReplicationInstanceInput, ...request.Option) (*databasemigrationservice.ModifyReplicationInstanceOutput, error)
@@ -309,6 +525,10 @@ type DatabaseMigrationServiceAPI interface {
 	RefreshSchemasWithContext(aws.Context, *databasemigrationservice.RefreshSchemasInput, ...request.Option) (*databasemigrationservice.RefreshSchemasOutput, error)
 	RefreshSchemasRequest(*databasemigrationservice.RefreshSchemasInput) (*request.Request, *databasemigrationservice.RefreshSchemasOutput)
 
+	ReloadReplicationTables(*databasemigrationservice.ReloadReplicationTablesInput) (*databasemigrationservice.ReloadReplicationTablesOutput, error)
+	ReloadReplicationTablesWithContext(aws.Context, *databasemigrationservice.ReloadReplicationTablesInput, ...request.Option) (*databasemigrationservice.ReloadReplicationTablesOutput, error)
+	ReloadReplicationTablesRequest(*databasemigrationservice.ReloadReplicationTablesInput) (*request.Request, *databasemigrationservice.ReloadReplicationTablesOutput)
+
 	ReloadTables(*databasemigrationservice.ReloadTablesInput) (*databasemigrationservice.ReloadTablesOutput, error)
 	ReloadTablesWithContext(aws.Context, *databasemigrationservice.ReloadTablesInput, ...request.Option) (*databasemigrationservice.ReloadTablesOutput, error)
 	ReloadTablesRequest(*databasemigrationservice.ReloadTablesInput) (*request.Request, *databasemigrationservice.ReloadTablesOutput)
@@ -316,6 +536,42 @@ type DatabaseMigrationServiceAPI interface {
 	RemoveTagsFromResource(*databasemigrationservice.RemoveTagsFromResourceInput) (*databasemigrationservice.RemoveTagsFromResourceOutput, error)
 	RemoveTagsFromResourceWithContext(aws.Context, *databasemigrationservice.RemoveTagsFromResourceInput, ...request.Option) (*databasemigrationservice.RemoveTagsFromResourceOutput, error)
 	RemoveTagsFromResourceRequest(*databasemigrationservice.RemoveTagsFromResourceInput) (*request.Request, *databasemigrationservice.RemoveTagsFromResourceOutput)
+
+	RunFleetAdvisorLsaAnalysis(*databasemigrationservice.RunFleetAdvisorLsaAnalysisInput) (*databasemigrationservice.RunFleetAdvisorLsaAnalysisOutput, error)
+	RunFleetAdvisorLsaAnalysisWithContext(aws.Context, *databasemigrationservice.RunFleetAdvisorLsaAnalysisInput, ...request.Option) (*databasemigrationservice.RunFleetAdvisorLsaAnalysisOutput, error)
+	RunFleetAdvisorLsaAnalysisRequest(*databasemigrationservice.RunFleetAdvisorLsaAnalysisInput) (*request.Request, *databasemigrationservice.RunFleetAdvisorLsaAnalysisOutput)
+
+	StartExtensionPackAssociation(*databasemigrationservice.StartExtensionPackAssociationInput) (*databasemigrationservice.StartExtensionPackAssociationOutput, error)
+	StartExtensionPackAssociationWithContext(aws.Context, *databasemigrationservice.StartExtensionPackAssociationInput, ...request.Option) (*databasemigrationservice.StartExtensionPackAssociationOutput, error)
+	StartExtensionPackAssociationRequest(*databasemigrationservice.StartExtensionPackAssociationInput) (*request.Request, *databasemigrationservice.StartExtensionPackAssociationOutput)
+
+	StartMetadataModelAssessment(*databasemigrationservice.StartMetadataModelAssessmentInput) (*databasemigrationservice.StartMetadataModelAssessmentOutput, error)
+	StartMetadataModelAssessmentWithContext(aws.Context, *databasemigrationservice.StartMetadataModelAssessmentInput, ...request.Option) (*databasemigrationservice.StartMetadataModelAssessmentOutput, error)
+	StartMetadataModelAssessmentRequest(*databasemigrationservice.StartMetadataModelAssessmentInput) (*request.Request, *databasemigrationservice.StartMetadataModelAssessmentOutput)
+
+	StartMetadataModelConversion(*databasemigrationservice.StartMetadataModelConversionInput) (*databasemigrationservice.StartMetadataModelConversionOutput, error)
+	StartMetadataModelConversionWithContext(aws.Context, *databasemigrationservice.StartMetadataModelConversionInput, ...request.Option) (*databasemigrationservice.StartMetadataModelConversionOutput, error)
+	StartMetadataModelConversionRequest(*databasemigrationservice.StartMetadataModelConversionInput) (*request.Request, *databasemigrationservice.StartMetadataModelConversionOutput)
+
+	StartMetadataModelExportAsScript(*databasemigrationservice.StartMetadataModelExportAsScriptInput) (*databasemigrationservice.StartMetadataModelExportAsScriptOutput, error)
+	StartMetadataModelExportAsScriptWithContext(aws.Context, *databasemigrationservice.StartMetadataModelExportAsScriptInput, ...request.Option) (*databasemigrationservice.StartMetadataModelExportAsScriptOutput, error)
+	StartMetadataModelExportAsScriptRequest(*databasemigrationservice.StartMetadataModelExportAsScriptInput) (*request.Request, *databasemigrationservice.StartMetadataModelExportAsScriptOutput)
+
+	StartMetadataModelExportToTarget(*databasemigrationservice.StartMetadataModelExportToTargetInput) (*databasemigrationservice.StartMetadataModelExportToTargetOutput, error)
+	StartMetadataModelExportToTargetWithContext(aws.Context, *databasemigrationservice.StartMetadataModelExportToTargetInput, ...request.Option) (*databasemigrationservice.StartMetadataModelExportToTargetOutput, error)
+	StartMetadataModelExportToTargetRequest(*databasemigrationservice.StartMetadataModelExportToTargetInput) (*request.Request, *databasemigrationservice.StartMetadataModelExportToTargetOutput)
+
+	StartMetadataModelImport(*databasemigrationservice.StartMetadataModelImportInput) (*databasemigrationservice.StartMetadataModelImportOutput, error)
+	StartMetadataModelImportWithContext(aws.Context, *databasemigrationservice.StartMetadataModelImportInput, ...request.Option) (*databasemigrationservice.StartMetadataModelImportOutput, error)
+	StartMetadataModelImportRequest(*databasemigrationservice.StartMetadataModelImportInput) (*request.Request, *databasemigrationservice.StartMetadataModelImportOutput)
+
+	StartRecommendations(*databasemigrationservice.StartRecommendationsInput) (*databasemigrationservice.StartRecommendationsOutput, error)
+	StartRecommendationsWithContext(aws.Context, *databasemigrationservice.StartRecommendationsInput, ...request.Option) (*databasemigrationservice.StartRecommendationsOutput, error)
+	StartRecommendationsRequest(*databasemigrationservice.StartRecommendationsInput) (*request.Request, *databasemigrationservice.StartRecommendationsOutput)
+
+	StartReplication(*databasemigrationservice.StartReplicationInput) (*databasemigrationservice.StartReplicationOutput, error)
+	StartReplicationWithContext(aws.Context, *databasemigrationservice.StartReplicationInput, ...request.Option) (*databasemigrationservice.StartReplicationOutput, error)
+	StartReplicationRequest(*databasemigrationservice.StartReplicationInput) (*request.Request, *databasemigrationservice.StartReplicationOutput)
 
 	StartReplicationTask(*databasemigrationservice.StartReplicationTaskInput) (*databasemigrationservice.StartReplicationTaskOutput, error)
 	StartReplicationTaskWithContext(aws.Context, *databasemigrationservice.StartReplicationTaskInput, ...request.Option) (*databasemigrationservice.StartReplicationTaskOutput, error)
@@ -329,6 +585,10 @@ type DatabaseMigrationServiceAPI interface {
 	StartReplicationTaskAssessmentRunWithContext(aws.Context, *databasemigrationservice.StartReplicationTaskAssessmentRunInput, ...request.Option) (*databasemigrationservice.StartReplicationTaskAssessmentRunOutput, error)
 	StartReplicationTaskAssessmentRunRequest(*databasemigrationservice.StartReplicationTaskAssessmentRunInput) (*request.Request, *databasemigrationservice.StartReplicationTaskAssessmentRunOutput)
 
+	StopReplication(*databasemigrationservice.StopReplicationInput) (*databasemigrationservice.StopReplicationOutput, error)
+	StopReplicationWithContext(aws.Context, *databasemigrationservice.StopReplicationInput, ...request.Option) (*databasemigrationservice.StopReplicationOutput, error)
+	StopReplicationRequest(*databasemigrationservice.StopReplicationInput) (*request.Request, *databasemigrationservice.StopReplicationOutput)
+
 	StopReplicationTask(*databasemigrationservice.StopReplicationTaskInput) (*databasemigrationservice.StopReplicationTaskOutput, error)
 	StopReplicationTaskWithContext(aws.Context, *databasemigrationservice.StopReplicationTaskInput, ...request.Option) (*databasemigrationservice.StopReplicationTaskOutput, error)
 	StopReplicationTaskRequest(*databasemigrationservice.StopReplicationTaskInput) (*request.Request, *databasemigrationservice.StopReplicationTaskOutput)
@@ -336,6 +596,10 @@ type DatabaseMigrationServiceAPI interface {
 	TestConnection(*databasemigrationservice.TestConnectionInput) (*databasemigrationservice.TestConnectionOutput, error)
 	TestConnectionWithContext(aws.Context, *databasemigrationservice.TestConnectionInput, ...request.Option) (*databasemigrationservice.TestConnectionOutput, error)
 	TestConnectionRequest(*databasemigrationservice.TestConnectionInput) (*request.Request, *databasemigrationservice.TestConnectionOutput)
+
+	UpdateSubscriptionsToEventBridge(*databasemigrationservice.UpdateSubscriptionsToEventBridgeInput) (*databasemigrationservice.UpdateSubscriptionsToEventBridgeOutput, error)
+	UpdateSubscriptionsToEventBridgeWithContext(aws.Context, *databasemigrationservice.UpdateSubscriptionsToEventBridgeInput, ...request.Option) (*databasemigrationservice.UpdateSubscriptionsToEventBridgeOutput, error)
+	UpdateSubscriptionsToEventBridgeRequest(*databasemigrationservice.UpdateSubscriptionsToEventBridgeInput) (*request.Request, *databasemigrationservice.UpdateSubscriptionsToEventBridgeOutput)
 
 	WaitUntilEndpointDeleted(*databasemigrationservice.DescribeEndpointsInput) error
 	WaitUntilEndpointDeletedWithContext(aws.Context, *databasemigrationservice.DescribeEndpointsInput, ...request.WaiterOption) error

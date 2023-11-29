@@ -88,6 +88,10 @@ type OutpostsAPI interface {
 	GetCatalogItemWithContext(aws.Context, *outposts.GetCatalogItemInput, ...request.Option) (*outposts.GetCatalogItemOutput, error)
 	GetCatalogItemRequest(*outposts.GetCatalogItemInput) (*request.Request, *outposts.GetCatalogItemOutput)
 
+	GetConnection(*outposts.GetConnectionInput) (*outposts.GetConnectionOutput, error)
+	GetConnectionWithContext(aws.Context, *outposts.GetConnectionInput, ...request.Option) (*outposts.GetConnectionOutput, error)
+	GetConnectionRequest(*outposts.GetConnectionInput) (*request.Request, *outposts.GetConnectionOutput)
+
 	GetOrder(*outposts.GetOrderInput) (*outposts.GetOrderOutput, error)
 	GetOrderWithContext(aws.Context, *outposts.GetOrderInput, ...request.Option) (*outposts.GetOrderOutput, error)
 	GetOrderRequest(*outposts.GetOrderInput) (*request.Request, *outposts.GetOrderOutput)
@@ -149,6 +153,10 @@ type OutpostsAPI interface {
 	ListTagsForResource(*outposts.ListTagsForResourceInput) (*outposts.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *outposts.ListTagsForResourceInput, ...request.Option) (*outposts.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*outposts.ListTagsForResourceInput) (*request.Request, *outposts.ListTagsForResourceOutput)
+
+	StartConnection(*outposts.StartConnectionInput) (*outposts.StartConnectionOutput, error)
+	StartConnectionWithContext(aws.Context, *outposts.StartConnectionInput, ...request.Option) (*outposts.StartConnectionOutput, error)
+	StartConnectionRequest(*outposts.StartConnectionInput) (*request.Request, *outposts.StartConnectionOutput)
 
 	TagResource(*outposts.TagResourceInput) (*outposts.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *outposts.TagResourceInput, ...request.Option) (*outposts.TagResourceOutput, error)

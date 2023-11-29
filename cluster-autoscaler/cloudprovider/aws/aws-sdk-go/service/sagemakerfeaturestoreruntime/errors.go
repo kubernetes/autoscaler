@@ -18,7 +18,7 @@ const (
 	// "InternalFailure".
 	//
 	// An internal failure occurred. Try your request again. If the problem persists,
-	// contact AWS customer support.
+	// contact Amazon Web Services customer support.
 	ErrCodeInternalFailure = "InternalFailure"
 
 	// ErrCodeResourceNotFound for service response error code

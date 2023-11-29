@@ -104,6 +104,10 @@ type SNSAPI interface {
 	DeleteTopicWithContext(aws.Context, *sns.DeleteTopicInput, ...request.Option) (*sns.DeleteTopicOutput, error)
 	DeleteTopicRequest(*sns.DeleteTopicInput) (*request.Request, *sns.DeleteTopicOutput)
 
+	GetDataProtectionPolicy(*sns.GetDataProtectionPolicyInput) (*sns.GetDataProtectionPolicyOutput, error)
+	GetDataProtectionPolicyWithContext(aws.Context, *sns.GetDataProtectionPolicyInput, ...request.Option) (*sns.GetDataProtectionPolicyOutput, error)
+	GetDataProtectionPolicyRequest(*sns.GetDataProtectionPolicyInput) (*request.Request, *sns.GetDataProtectionPolicyOutput)
+
 	GetEndpointAttributes(*sns.GetEndpointAttributesInput) (*sns.GetEndpointAttributesOutput, error)
 	GetEndpointAttributesWithContext(aws.Context, *sns.GetEndpointAttributesInput, ...request.Option) (*sns.GetEndpointAttributesOutput, error)
 	GetEndpointAttributesRequest(*sns.GetEndpointAttributesInput) (*request.Request, *sns.GetEndpointAttributesOutput)
@@ -199,6 +203,10 @@ type SNSAPI interface {
 	PublishBatch(*sns.PublishBatchInput) (*sns.PublishBatchOutput, error)
 	PublishBatchWithContext(aws.Context, *sns.PublishBatchInput, ...request.Option) (*sns.PublishBatchOutput, error)
 	PublishBatchRequest(*sns.PublishBatchInput) (*request.Request, *sns.PublishBatchOutput)
+
+	PutDataProtectionPolicy(*sns.PutDataProtectionPolicyInput) (*sns.PutDataProtectionPolicyOutput, error)
+	PutDataProtectionPolicyWithContext(aws.Context, *sns.PutDataProtectionPolicyInput, ...request.Option) (*sns.PutDataProtectionPolicyOutput, error)
+	PutDataProtectionPolicyRequest(*sns.PutDataProtectionPolicyInput) (*request.Request, *sns.PutDataProtectionPolicyOutput)
 
 	RemovePermission(*sns.RemovePermissionInput) (*sns.RemovePermissionOutput, error)
 	RemovePermissionWithContext(aws.Context, *sns.RemovePermissionInput, ...request.Option) (*sns.RemovePermissionOutput, error)

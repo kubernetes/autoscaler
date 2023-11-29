@@ -11,7 +11,7 @@ const (
 	// ErrCodeEmptyUploadException for service response error code
 	// "EmptyUploadException".
 	//
-	// The specified layer upload does not contain any layer parts.
+	// The specified layer upload doesn't contain any layer parts.
 	ErrCodeEmptyUploadException = "EmptyUploadException"
 
 	// ErrCodeImageAlreadyExistsException for service response error code
@@ -24,14 +24,14 @@ const (
 	// ErrCodeImageDigestDoesNotMatchException for service response error code
 	// "ImageDigestDoesNotMatchException".
 	//
-	// The specified image digest does not match the digest that Amazon ECR calculated
+	// The specified image digest doesn't match the digest that Amazon ECR calculated
 	// for the image.
 	ErrCodeImageDigestDoesNotMatchException = "ImageDigestDoesNotMatchException"
 
 	// ErrCodeImageNotFoundException for service response error code
 	// "ImageNotFoundException".
 	//
-	// The image requested does not exist in the specified repository.
+	// The image requested doesn't exist in the specified repository.
 	ErrCodeImageNotFoundException = "ImageNotFoundException"
 
 	// ErrCodeImageTagAlreadyExistsException for service response error code
@@ -44,14 +44,14 @@ const (
 	// ErrCodeInvalidLayerException for service response error code
 	// "InvalidLayerException".
 	//
-	// The layer digest calculation performed by Amazon ECR upon receipt of the
-	// image layer does not match the digest specified.
+	// The layer digest calculation performed by Amazon ECR when the image layer
+	// doesn't match the digest specified.
 	ErrCodeInvalidLayerException = "InvalidLayerException"
 
 	// ErrCodeInvalidLayerPartException for service response error code
 	// "InvalidLayerPartException".
 	//
-	// The layer part size is not valid, or the first byte specified is not consecutive
+	// The layer part size isn't valid, or the first byte specified isn't consecutive
 	// to the last byte of a previous layer part upload.
 	ErrCodeInvalidLayerPartException = "InvalidLayerPartException"
 
@@ -85,14 +85,14 @@ const (
 	// ErrCodeLayersNotFoundException for service response error code
 	// "LayersNotFoundException".
 	//
-	// The specified layers could not be found, or the specified layer is not valid
-	// for this repository.
+	// The specified layers can't be found, or the specified layer isn't valid for
+	// this repository.
 	ErrCodeLayersNotFoundException = "LayersNotFoundException"
 
 	// ErrCodeLimitExceededException for service response error code
 	// "LimitExceededException".
 	//
-	// The operation did not succeed because it would have exceeded a service limit
+	// The operation didn't succeed because it would have exceeded a service limit
 	// for your account. For more information, see Amazon ECR Service Quotas (https://docs.aws.amazon.com/AmazonECR/latest/userguide/service-quotas.html)
 	// in the Amazon Elastic Container Registry User Guide.
 	ErrCodeLimitExceededException = "LimitExceededException"
@@ -100,13 +100,13 @@ const (
 	// ErrCodeReferencedImagesNotFoundException for service response error code
 	// "ReferencedImagesNotFoundException".
 	//
-	// The manifest list is referencing an image that does not exist.
+	// The manifest list is referencing an image that doesn't exist.
 	ErrCodeReferencedImagesNotFoundException = "ReferencedImagesNotFoundException"
 
 	// ErrCodeRegistryNotFoundException for service response error code
 	// "RegistryNotFoundException".
 	//
-	// The registry does not exist.
+	// The registry doesn't exist.
 	ErrCodeRegistryNotFoundException = "RegistryNotFoundException"
 
 	// ErrCodeRepositoryAlreadyExistsException for service response error code
@@ -114,6 +114,12 @@ const (
 	//
 	// The specified repository already exists in the specified registry.
 	ErrCodeRepositoryAlreadyExistsException = "RepositoryAlreadyExistsException"
+
+	// ErrCodeRepositoryCatalogDataNotFoundException for service response error code
+	// "RepositoryCatalogDataNotFoundException".
+	//
+	// The repository catalog data doesn't exist.
+	ErrCodeRepositoryCatalogDataNotFoundException = "RepositoryCatalogDataNotFoundException"
 
 	// ErrCodeRepositoryNotEmptyException for service response error code
 	// "RepositoryNotEmptyException".
@@ -125,14 +131,14 @@ const (
 	// ErrCodeRepositoryNotFoundException for service response error code
 	// "RepositoryNotFoundException".
 	//
-	// The specified repository could not be found. Check the spelling of the specified
-	// repository and ensure that you are performing operations on the correct registry.
+	// The specified repository can't be found. Check the spelling of the specified
+	// repository and ensure that you're performing operations on the correct registry.
 	ErrCodeRepositoryNotFoundException = "RepositoryNotFoundException"
 
 	// ErrCodeRepositoryPolicyNotFoundException for service response error code
 	// "RepositoryPolicyNotFoundException".
 	//
-	// The specified repository and registry combination does not have an associated
+	// The specified repository and registry combination doesn't have an associated
 	// repository policy.
 	ErrCodeRepositoryPolicyNotFoundException = "RepositoryPolicyNotFoundException"
 
@@ -152,39 +158,40 @@ const (
 	// ErrCodeUnsupportedCommandException for service response error code
 	// "UnsupportedCommandException".
 	//
-	// The action is not supported in this Region.
+	// The action isn't supported in this Region.
 	ErrCodeUnsupportedCommandException = "UnsupportedCommandException"
 
 	// ErrCodeUploadNotFoundException for service response error code
 	// "UploadNotFoundException".
 	//
-	// The upload could not be found, or the specified upload ID is not valid for
-	// this repository.
+	// The upload can't be found, or the specified upload ID isn't valid for this
+	// repository.
 	ErrCodeUploadNotFoundException = "UploadNotFoundException"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
-	"EmptyUploadException":              newErrorEmptyUploadException,
-	"ImageAlreadyExistsException":       newErrorImageAlreadyExistsException,
-	"ImageDigestDoesNotMatchException":  newErrorImageDigestDoesNotMatchException,
-	"ImageNotFoundException":            newErrorImageNotFoundException,
-	"ImageTagAlreadyExistsException":    newErrorImageTagAlreadyExistsException,
-	"InvalidLayerException":             newErrorInvalidLayerException,
-	"InvalidLayerPartException":         newErrorInvalidLayerPartException,
-	"InvalidParameterException":         newErrorInvalidParameterException,
-	"InvalidTagParameterException":      newErrorInvalidTagParameterException,
-	"LayerAlreadyExistsException":       newErrorLayerAlreadyExistsException,
-	"LayerPartTooSmallException":        newErrorLayerPartTooSmallException,
-	"LayersNotFoundException":           newErrorLayersNotFoundException,
-	"LimitExceededException":            newErrorLimitExceededException,
-	"ReferencedImagesNotFoundException": newErrorReferencedImagesNotFoundException,
-	"RegistryNotFoundException":         newErrorRegistryNotFoundException,
-	"RepositoryAlreadyExistsException":  newErrorRepositoryAlreadyExistsException,
-	"RepositoryNotEmptyException":       newErrorRepositoryNotEmptyException,
-	"RepositoryNotFoundException":       newErrorRepositoryNotFoundException,
-	"RepositoryPolicyNotFoundException": newErrorRepositoryPolicyNotFoundException,
-	"ServerException":                   newErrorServerException,
-	"TooManyTagsException":              newErrorTooManyTagsException,
-	"UnsupportedCommandException":       newErrorUnsupportedCommandException,
-	"UploadNotFoundException":           newErrorUploadNotFoundException,
+	"EmptyUploadException":                   newErrorEmptyUploadException,
+	"ImageAlreadyExistsException":            newErrorImageAlreadyExistsException,
+	"ImageDigestDoesNotMatchException":       newErrorImageDigestDoesNotMatchException,
+	"ImageNotFoundException":                 newErrorImageNotFoundException,
+	"ImageTagAlreadyExistsException":         newErrorImageTagAlreadyExistsException,
+	"InvalidLayerException":                  newErrorInvalidLayerException,
+	"InvalidLayerPartException":              newErrorInvalidLayerPartException,
+	"InvalidParameterException":              newErrorInvalidParameterException,
+	"InvalidTagParameterException":           newErrorInvalidTagParameterException,
+	"LayerAlreadyExistsException":            newErrorLayerAlreadyExistsException,
+	"LayerPartTooSmallException":             newErrorLayerPartTooSmallException,
+	"LayersNotFoundException":                newErrorLayersNotFoundException,
+	"LimitExceededException":                 newErrorLimitExceededException,
+	"ReferencedImagesNotFoundException":      newErrorReferencedImagesNotFoundException,
+	"RegistryNotFoundException":              newErrorRegistryNotFoundException,
+	"RepositoryAlreadyExistsException":       newErrorRepositoryAlreadyExistsException,
+	"RepositoryCatalogDataNotFoundException": newErrorRepositoryCatalogDataNotFoundException,
+	"RepositoryNotEmptyException":            newErrorRepositoryNotEmptyException,
+	"RepositoryNotFoundException":            newErrorRepositoryNotFoundException,
+	"RepositoryPolicyNotFoundException":      newErrorRepositoryPolicyNotFoundException,
+	"ServerException":                        newErrorServerException,
+	"TooManyTagsException":                   newErrorTooManyTagsException,
+	"UnsupportedCommandException":            newErrorUnsupportedCommandException,
+	"UploadNotFoundException":                newErrorUploadNotFoundException,
 }

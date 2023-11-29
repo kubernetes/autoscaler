@@ -3,25 +3,24 @@
 // Package codecommit provides the client and types for making API
 // requests to AWS CodeCommit.
 //
-// This is the AWS CodeCommit API Reference. This reference provides descriptions
-// of the operations and data types for AWS CodeCommit API along with usage
-// examples.
+// This is the CodeCommit API Reference. This reference provides descriptions
+// of the operations and data types for CodeCommit API along with usage examples.
 //
-// You can use the AWS CodeCommit API to work with the following objects:
+// You can use the CodeCommit API to work with the following objects:
 //
 // Repositories, by calling the following:
 //
 //   - BatchGetRepositories, which returns information about one or more repositories
-//     associated with your AWS account.
+//     associated with your Amazon Web Services account.
 //
-//   - CreateRepository, which creates an AWS CodeCommit repository.
+//   - CreateRepository, which creates an CodeCommit repository.
 //
-//   - DeleteRepository, which deletes an AWS CodeCommit repository.
+//   - DeleteRepository, which deletes an CodeCommit repository.
 //
 //   - GetRepository, which returns information about a specified repository.
 //
-//   - ListRepositories, which lists all AWS CodeCommit repositories associated
-//     with your AWS account.
+//   - ListRepositories, which lists all CodeCommit repositories associated
+//     with your Amazon Web Services account.
 //
 //   - UpdateRepositoryDescription, which sets or updates the description of
 //     the repository.
@@ -54,6 +53,9 @@
 //   - GetFile, which returns the base-64 encoded content of a specified file.
 //
 //   - GetFolder, which returns the contents of a specified folder or directory.
+//
+//   - ListFileCommitHistory, which retrieves a list of commits and changes
+//     to a specified file.
 //
 //   - PutFile, which adds or modifies a single file in a specified repository
 //     and branch.
@@ -142,7 +144,7 @@
 //     of a pull request into the specified destination branch for that pull
 //     request using the squash merge option.
 //
-//   - MergePullRequestByThreeWay. which merges the source destination branch
+//   - MergePullRequestByThreeWay, which merges the source destination branch
 //     of a pull request into the specified destination branch for that pull
 //     request using the three-way merge option.
 //
@@ -169,14 +171,14 @@
 //
 //   - AssociateApprovalRuleTemplateWithRepository, which associates a template
 //     with a specified repository. After the template is associated with a repository,
-//     AWS CodeCommit creates approval rules that match the template conditions
-//     on every pull request created in the specified repository.
+//     CodeCommit creates approval rules that match the template conditions on
+//     every pull request created in the specified repository.
 //
 //   - BatchAssociateApprovalRuleTemplateWithRepositories, which associates
 //     a template with one or more specified repositories. After the template
-//     is associated with a repository, AWS CodeCommit creates approval rules
-//     that match the template conditions on every pull request created in the
-//     specified repositories.
+//     is associated with a repository, CodeCommit creates approval rules that
+//     match the template conditions on every pull request created in the specified
+//     repositories.
 //
 //   - BatchDisassociateApprovalRuleTemplateFromRepositories, which removes
 //     the association between a template and specified repositories so that
@@ -184,8 +186,8 @@
 //     pull requests are created in those repositories.
 //
 //   - CreateApprovalRuleTemplate, which creates a template for approval rules
-//     that can then be associated with one or more repositories in your AWS
-//     account.
+//     that can then be associated with one or more repositories in your Amazon
+//     Web Services account.
 //
 //   - DeleteApprovalRuleTemplate, which deletes the specified template. It
 //     does not remove approval rules on pull requests already created with the
@@ -200,7 +202,7 @@
 //     rule template.
 //
 //   - ListApprovalRuleTemplates, which lists all approval rule templates in
-//     the AWS Region in your AWS account.
+//     the Amazon Web Services Region in your Amazon Web Services account.
 //
 //   - ListAssociatedApprovalRuleTemplatesForRepository, which lists all approval
 //     rule templates that are associated with a specified repository.
@@ -241,15 +243,14 @@
 //   - UpdateComment, which updates the content of a comment on a commit in
 //     a repository.
 //
-// Tags used to tag resources in AWS CodeCommit (not Git tags), by calling the
-// following:
+// Tags used to tag resources in CodeCommit (not Git tags), by calling the following:
 //
-//   - ListTagsForResource, which gets information about AWS tags for a specified
-//     Amazon Resource Name (ARN) in AWS CodeCommit.
+//   - ListTagsForResource, which gets information about Amazon Web Servicestags
+//     for a specified Amazon Resource Name (ARN) in CodeCommit.
 //
-//   - TagResource, which adds or updates tags for a resource in AWS CodeCommit.
+//   - TagResource, which adds or updates tags for a resource in CodeCommit.
 //
-//   - UntagResource, which removes tags for a resource in AWS CodeCommit.
+//   - UntagResource, which removes tags for a resource in CodeCommit.
 //
 // Triggers, by calling the following:
 //
@@ -262,8 +263,8 @@
 //   - TestRepositoryTriggers, which tests the functionality of a repository
 //     trigger by sending data to the trigger target.
 //
-// For information about how to use AWS CodeCommit, see the AWS CodeCommit User
-// Guide (https://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html).
+// For information about how to use CodeCommit, see the CodeCommit User Guide
+// (https://docs.aws.amazon.com/codecommit/latest/userguide/welcome.html).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/codecommit-2015-04-13 for more information on this service.
 //

@@ -124,6 +124,30 @@ const (
 	// "ParameterGroupQuotaExceededFault".
 	ErrCodeParameterGroupQuotaExceededFault = "ParameterGroupQuotaExceededFault"
 
+	// ErrCodeReservedNodeAlreadyExistsFault for service response error code
+	// "ReservedNodeAlreadyExistsFault".
+	//
+	// You already have a reservation with the given identifier.
+	ErrCodeReservedNodeAlreadyExistsFault = "ReservedNodeAlreadyExistsFault"
+
+	// ErrCodeReservedNodeNotFoundFault for service response error code
+	// "ReservedNodeNotFoundFault".
+	//
+	// The requested node does not exist.
+	ErrCodeReservedNodeNotFoundFault = "ReservedNodeNotFoundFault"
+
+	// ErrCodeReservedNodeQuotaExceededFault for service response error code
+	// "ReservedNodeQuotaExceededFault".
+	//
+	// The request cannot be processed because it would exceed the user's node quota.
+	ErrCodeReservedNodeQuotaExceededFault = "ReservedNodeQuotaExceededFault"
+
+	// ErrCodeReservedNodesOfferingNotFoundFault for service response error code
+	// "ReservedNodesOfferingNotFoundFault".
+	//
+	// The requested node offering does not exist.
+	ErrCodeReservedNodesOfferingNotFoundFault = "ReservedNodesOfferingNotFoundFault"
+
 	// ErrCodeServiceLinkedRoleNotFoundFault for service response error code
 	// "ServiceLinkedRoleNotFoundFault".
 	ErrCodeServiceLinkedRoleNotFoundFault = "ServiceLinkedRoleNotFoundFault"
@@ -235,6 +259,10 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ParameterGroupAlreadyExistsFault":     newErrorParameterGroupAlreadyExistsFault,
 	"ParameterGroupNotFoundFault":          newErrorParameterGroupNotFoundFault,
 	"ParameterGroupQuotaExceededFault":     newErrorParameterGroupQuotaExceededFault,
+	"ReservedNodeAlreadyExistsFault":       newErrorReservedNodeAlreadyExistsFault,
+	"ReservedNodeNotFoundFault":            newErrorReservedNodeNotFoundFault,
+	"ReservedNodeQuotaExceededFault":       newErrorReservedNodeQuotaExceededFault,
+	"ReservedNodesOfferingNotFoundFault":   newErrorReservedNodesOfferingNotFoundFault,
 	"ServiceLinkedRoleNotFoundFault":       newErrorServiceLinkedRoleNotFoundFault,
 	"ServiceUpdateNotFoundFault":           newErrorServiceUpdateNotFoundFault,
 	"ShardNotFoundFault":                   newErrorShardNotFoundFault,

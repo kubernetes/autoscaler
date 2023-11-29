@@ -5,10 +5,10 @@
 //
 // Amazon Elastic Container Service (Amazon ECS) is a highly scalable, fast,
 // container management service. It makes it easy to run, stop, and manage Docker
-// containers on a cluster. You can host your cluster on a serverless infrastructure
-// that's managed by Amazon ECS by launching your services or tasks on Fargate.
-// For more control, you can host your tasks on a cluster of Amazon Elastic
-// Compute Cloud (Amazon EC2) instances that you manage.
+// containers. You can host your cluster on a serverless infrastructure that's
+// managed by Amazon ECS by launching your services or tasks on Fargate. For
+// more control, you can host your tasks on a cluster of Amazon Elastic Compute
+// Cloud (Amazon EC2) or External (on-premises) instances that you manage.
 //
 // Amazon ECS makes it easy to launch and stop container-based applications
 // with simple API calls. This makes it easy to get the state of your cluster

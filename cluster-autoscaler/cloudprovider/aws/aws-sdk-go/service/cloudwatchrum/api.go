@@ -13,6 +13,394 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+const opBatchCreateRumMetricDefinitions = "BatchCreateRumMetricDefinitions"
+
+// BatchCreateRumMetricDefinitionsRequest generates a "aws/request.Request" representing the
+// client's request for the BatchCreateRumMetricDefinitions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchCreateRumMetricDefinitions for more information on using the BatchCreateRumMetricDefinitions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchCreateRumMetricDefinitionsRequest method.
+//	req, resp := client.BatchCreateRumMetricDefinitionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/BatchCreateRumMetricDefinitions
+func (c *CloudWatchRUM) BatchCreateRumMetricDefinitionsRequest(input *BatchCreateRumMetricDefinitionsInput) (req *request.Request, output *BatchCreateRumMetricDefinitionsOutput) {
+	op := &request.Operation{
+		Name:       opBatchCreateRumMetricDefinitions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metrics",
+	}
+
+	if input == nil {
+		input = &BatchCreateRumMetricDefinitionsInput{}
+	}
+
+	output = &BatchCreateRumMetricDefinitionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchCreateRumMetricDefinitions API operation for CloudWatch RUM.
+//
+// Specifies the extended metrics and custom metrics that you want a CloudWatch
+// RUM app monitor to send to a destination. Valid destinations include CloudWatch
+// and Evidently.
+//
+// By default, RUM app monitors send some metrics to CloudWatch. These default
+// metrics are listed in CloudWatch metrics that you can collect with CloudWatch
+// RUM (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-metrics.html).
+//
+// In addition to these default metrics, you can choose to send extended metrics
+// or custom metrics or both.
+//
+//   - Extended metrics enable you to send metrics with additional dimensions
+//     not included in the default metrics. You can also send extended metrics
+//     to Evidently as well as CloudWatch. The valid dimension names for the
+//     additional dimensions for extended metrics are BrowserName, CountryCode,
+//     DeviceType, FileType, OSName, and PageId. For more information, see Extended
+//     metrics that you can send to CloudWatch and CloudWatch Evidently (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-vended-metrics.html).
+//
+//   - Custom metrics are metrics that you define. You can send custom metrics
+//     to CloudWatch or to CloudWatch Evidently or to both. With custom metrics,
+//     you can use any metric name and namespace, and to derive the metrics you
+//     can use any custom events, built-in events, custom attributes, or default
+//     attributes. You can't send custom metrics to the AWS/RUM namespace. You
+//     must send custom metrics to a custom namespace that you define. The namespace
+//     that you use can't start with AWS/. CloudWatch RUM prepends RUM/CustomMetrics/
+//     to the custom namespace that you define, so the final namespace for your
+//     metrics in CloudWatch is RUM/CustomMetrics/your-custom-namespace .
+//
+// The maximum number of metric definitions that you can specify in one BatchCreateRumMetricDefinitions
+// operation is 200.
+//
+// The maximum number of metric definitions that one destination can contain
+// is 2000.
+//
+// Extended metrics sent to CloudWatch and RUM custom metrics are charged as
+// CloudWatch custom metrics. Each combination of additional dimension name
+// and dimension value counts as a custom metric. For more information, see
+// Amazon CloudWatch Pricing (https://aws.amazon.com/cloudwatch/pricing/).
+//
+// You must have already created a destination for the metrics before you send
+// them. For more information, see PutRumMetricsDestination (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumMetricsDestination.html).
+//
+// If some metric definitions specified in a BatchCreateRumMetricDefinitions
+// operations are not valid, those metric definitions fail and return errors,
+// but all valid metric definitions in the same operation still succeed.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation BatchCreateRumMetricDefinitions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
+//
+//   - ServiceQuotaExceededException
+//     This request exceeds a service quota.
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/BatchCreateRumMetricDefinitions
+func (c *CloudWatchRUM) BatchCreateRumMetricDefinitions(input *BatchCreateRumMetricDefinitionsInput) (*BatchCreateRumMetricDefinitionsOutput, error) {
+	req, out := c.BatchCreateRumMetricDefinitionsRequest(input)
+	return out, req.Send()
+}
+
+// BatchCreateRumMetricDefinitionsWithContext is the same as BatchCreateRumMetricDefinitions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchCreateRumMetricDefinitions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) BatchCreateRumMetricDefinitionsWithContext(ctx aws.Context, input *BatchCreateRumMetricDefinitionsInput, opts ...request.Option) (*BatchCreateRumMetricDefinitionsOutput, error) {
+	req, out := c.BatchCreateRumMetricDefinitionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchDeleteRumMetricDefinitions = "BatchDeleteRumMetricDefinitions"
+
+// BatchDeleteRumMetricDefinitionsRequest generates a "aws/request.Request" representing the
+// client's request for the BatchDeleteRumMetricDefinitions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchDeleteRumMetricDefinitions for more information on using the BatchDeleteRumMetricDefinitions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchDeleteRumMetricDefinitionsRequest method.
+//	req, resp := client.BatchDeleteRumMetricDefinitionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/BatchDeleteRumMetricDefinitions
+func (c *CloudWatchRUM) BatchDeleteRumMetricDefinitionsRequest(input *BatchDeleteRumMetricDefinitionsInput) (req *request.Request, output *BatchDeleteRumMetricDefinitionsOutput) {
+	op := &request.Operation{
+		Name:       opBatchDeleteRumMetricDefinitions,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metrics",
+	}
+
+	if input == nil {
+		input = &BatchDeleteRumMetricDefinitionsInput{}
+	}
+
+	output = &BatchDeleteRumMetricDefinitionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchDeleteRumMetricDefinitions API operation for CloudWatch RUM.
+//
+// Removes the specified metrics from being sent to an extended metrics destination.
+//
+// If some metric definition IDs specified in a BatchDeleteRumMetricDefinitions
+// operations are not valid, those metric definitions fail and return errors,
+// but all valid metric definition IDs in the same operation are still deleted.
+//
+// The maximum number of metric definitions that you can specify in one BatchDeleteRumMetricDefinitions
+// operation is 200.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation BatchDeleteRumMetricDefinitions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/BatchDeleteRumMetricDefinitions
+func (c *CloudWatchRUM) BatchDeleteRumMetricDefinitions(input *BatchDeleteRumMetricDefinitionsInput) (*BatchDeleteRumMetricDefinitionsOutput, error) {
+	req, out := c.BatchDeleteRumMetricDefinitionsRequest(input)
+	return out, req.Send()
+}
+
+// BatchDeleteRumMetricDefinitionsWithContext is the same as BatchDeleteRumMetricDefinitions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchDeleteRumMetricDefinitions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) BatchDeleteRumMetricDefinitionsWithContext(ctx aws.Context, input *BatchDeleteRumMetricDefinitionsInput, opts ...request.Option) (*BatchDeleteRumMetricDefinitionsOutput, error) {
+	req, out := c.BatchDeleteRumMetricDefinitionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchGetRumMetricDefinitions = "BatchGetRumMetricDefinitions"
+
+// BatchGetRumMetricDefinitionsRequest generates a "aws/request.Request" representing the
+// client's request for the BatchGetRumMetricDefinitions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchGetRumMetricDefinitions for more information on using the BatchGetRumMetricDefinitions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchGetRumMetricDefinitionsRequest method.
+//	req, resp := client.BatchGetRumMetricDefinitionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/BatchGetRumMetricDefinitions
+func (c *CloudWatchRUM) BatchGetRumMetricDefinitionsRequest(input *BatchGetRumMetricDefinitionsInput) (req *request.Request, output *BatchGetRumMetricDefinitionsOutput) {
+	op := &request.Operation{
+		Name:       opBatchGetRumMetricDefinitions,
+		HTTPMethod: "GET",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metrics",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &BatchGetRumMetricDefinitionsInput{}
+	}
+
+	output = &BatchGetRumMetricDefinitionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchGetRumMetricDefinitions API operation for CloudWatch RUM.
+//
+// Retrieves the list of metrics and dimensions that a RUM app monitor is sending
+// to a single destination.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation BatchGetRumMetricDefinitions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/BatchGetRumMetricDefinitions
+func (c *CloudWatchRUM) BatchGetRumMetricDefinitions(input *BatchGetRumMetricDefinitionsInput) (*BatchGetRumMetricDefinitionsOutput, error) {
+	req, out := c.BatchGetRumMetricDefinitionsRequest(input)
+	return out, req.Send()
+}
+
+// BatchGetRumMetricDefinitionsWithContext is the same as BatchGetRumMetricDefinitions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchGetRumMetricDefinitions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) BatchGetRumMetricDefinitionsWithContext(ctx aws.Context, input *BatchGetRumMetricDefinitionsInput, opts ...request.Option) (*BatchGetRumMetricDefinitionsOutput, error) {
+	req, out := c.BatchGetRumMetricDefinitionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// BatchGetRumMetricDefinitionsPages iterates over the pages of a BatchGetRumMetricDefinitions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See BatchGetRumMetricDefinitions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a BatchGetRumMetricDefinitions operation.
+//	pageNum := 0
+//	err := client.BatchGetRumMetricDefinitionsPages(params,
+//	    func(page *cloudwatchrum.BatchGetRumMetricDefinitionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *CloudWatchRUM) BatchGetRumMetricDefinitionsPages(input *BatchGetRumMetricDefinitionsInput, fn func(*BatchGetRumMetricDefinitionsOutput, bool) bool) error {
+	return c.BatchGetRumMetricDefinitionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// BatchGetRumMetricDefinitionsPagesWithContext same as BatchGetRumMetricDefinitionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) BatchGetRumMetricDefinitionsPagesWithContext(ctx aws.Context, input *BatchGetRumMetricDefinitionsInput, fn func(*BatchGetRumMetricDefinitionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *BatchGetRumMetricDefinitionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.BatchGetRumMetricDefinitionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*BatchGetRumMetricDefinitionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opCreateAppMonitor = "CreateAppMonitor"
 
 // CreateAppMonitorRequest generates a "aws/request.Request" representing the
@@ -84,6 +472,9 @@ func (c *CloudWatchRUM) CreateAppMonitorRequest(input *CreateAppMonitorInput) (r
 //
 //   - ServiceQuotaExceededException
 //     This request exceeds a service quota.
+//
+//   - ResourceNotFoundException
+//     Resource not found.
 //
 //   - InternalServerException
 //     Internal service exception.
@@ -210,6 +601,102 @@ func (c *CloudWatchRUM) DeleteAppMonitor(input *DeleteAppMonitorInput) (*DeleteA
 // for more information on using Contexts.
 func (c *CloudWatchRUM) DeleteAppMonitorWithContext(ctx aws.Context, input *DeleteAppMonitorInput, opts ...request.Option) (*DeleteAppMonitorOutput, error) {
 	req, out := c.DeleteAppMonitorRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteRumMetricsDestination = "DeleteRumMetricsDestination"
+
+// DeleteRumMetricsDestinationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteRumMetricsDestination operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteRumMetricsDestination for more information on using the DeleteRumMetricsDestination
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteRumMetricsDestinationRequest method.
+//	req, resp := client.DeleteRumMetricsDestinationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/DeleteRumMetricsDestination
+func (c *CloudWatchRUM) DeleteRumMetricsDestinationRequest(input *DeleteRumMetricsDestinationInput) (req *request.Request, output *DeleteRumMetricsDestinationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteRumMetricsDestination,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metricsdestination",
+	}
+
+	if input == nil {
+		input = &DeleteRumMetricsDestinationInput{}
+	}
+
+	output = &DeleteRumMetricsDestinationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteRumMetricsDestination API operation for CloudWatch RUM.
+//
+// Deletes a destination for CloudWatch RUM extended metrics, so that the specified
+// app monitor stops sending extended metrics to that destination.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation DeleteRumMetricsDestination for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/DeleteRumMetricsDestination
+func (c *CloudWatchRUM) DeleteRumMetricsDestination(input *DeleteRumMetricsDestinationInput) (*DeleteRumMetricsDestinationOutput, error) {
+	req, out := c.DeleteRumMetricsDestinationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteRumMetricsDestinationWithContext is the same as DeleteRumMetricsDestination with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteRumMetricsDestination for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) DeleteRumMetricsDestinationWithContext(ctx aws.Context, input *DeleteRumMetricsDestinationInput, opts ...request.Option) (*DeleteRumMetricsDestinationOutput, error) {
+	req, out := c.DeleteRumMetricsDestinationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -600,6 +1087,154 @@ func (c *CloudWatchRUM) ListAppMonitorsPagesWithContext(ctx aws.Context, input *
 	return p.Err()
 }
 
+const opListRumMetricsDestinations = "ListRumMetricsDestinations"
+
+// ListRumMetricsDestinationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListRumMetricsDestinations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListRumMetricsDestinations for more information on using the ListRumMetricsDestinations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListRumMetricsDestinationsRequest method.
+//	req, resp := client.ListRumMetricsDestinationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/ListRumMetricsDestinations
+func (c *CloudWatchRUM) ListRumMetricsDestinationsRequest(input *ListRumMetricsDestinationsInput) (req *request.Request, output *ListRumMetricsDestinationsOutput) {
+	op := &request.Operation{
+		Name:       opListRumMetricsDestinations,
+		HTTPMethod: "GET",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metricsdestination",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListRumMetricsDestinationsInput{}
+	}
+
+	output = &ListRumMetricsDestinationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListRumMetricsDestinations API operation for CloudWatch RUM.
+//
+// Returns a list of destinations that you have created to receive RUM extended
+// metrics, for the specified app monitor.
+//
+// For more information about extended metrics, see AddRumMetrics (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_AddRumMetrcs.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation ListRumMetricsDestinations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/ListRumMetricsDestinations
+func (c *CloudWatchRUM) ListRumMetricsDestinations(input *ListRumMetricsDestinationsInput) (*ListRumMetricsDestinationsOutput, error) {
+	req, out := c.ListRumMetricsDestinationsRequest(input)
+	return out, req.Send()
+}
+
+// ListRumMetricsDestinationsWithContext is the same as ListRumMetricsDestinations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListRumMetricsDestinations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) ListRumMetricsDestinationsWithContext(ctx aws.Context, input *ListRumMetricsDestinationsInput, opts ...request.Option) (*ListRumMetricsDestinationsOutput, error) {
+	req, out := c.ListRumMetricsDestinationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListRumMetricsDestinationsPages iterates over the pages of a ListRumMetricsDestinations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListRumMetricsDestinations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListRumMetricsDestinations operation.
+//	pageNum := 0
+//	err := client.ListRumMetricsDestinationsPages(params,
+//	    func(page *cloudwatchrum.ListRumMetricsDestinationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *CloudWatchRUM) ListRumMetricsDestinationsPages(input *ListRumMetricsDestinationsInput, fn func(*ListRumMetricsDestinationsOutput, bool) bool) error {
+	return c.ListRumMetricsDestinationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListRumMetricsDestinationsPagesWithContext same as ListRumMetricsDestinationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) ListRumMetricsDestinationsPagesWithContext(ctx aws.Context, input *ListRumMetricsDestinationsInput, fn func(*ListRumMetricsDestinationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListRumMetricsDestinationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListRumMetricsDestinationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListRumMetricsDestinationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -778,6 +1413,106 @@ func (c *CloudWatchRUM) PutRumEvents(input *PutRumEventsInput) (*PutRumEventsOut
 // for more information on using Contexts.
 func (c *CloudWatchRUM) PutRumEventsWithContext(ctx aws.Context, input *PutRumEventsInput, opts ...request.Option) (*PutRumEventsOutput, error) {
 	req, out := c.PutRumEventsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutRumMetricsDestination = "PutRumMetricsDestination"
+
+// PutRumMetricsDestinationRequest generates a "aws/request.Request" representing the
+// client's request for the PutRumMetricsDestination operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutRumMetricsDestination for more information on using the PutRumMetricsDestination
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutRumMetricsDestinationRequest method.
+//	req, resp := client.PutRumMetricsDestinationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/PutRumMetricsDestination
+func (c *CloudWatchRUM) PutRumMetricsDestinationRequest(input *PutRumMetricsDestinationInput) (req *request.Request, output *PutRumMetricsDestinationOutput) {
+	op := &request.Operation{
+		Name:       opPutRumMetricsDestination,
+		HTTPMethod: "POST",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metricsdestination",
+	}
+
+	if input == nil {
+		input = &PutRumMetricsDestinationInput{}
+	}
+
+	output = &PutRumMetricsDestinationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutRumMetricsDestination API operation for CloudWatch RUM.
+//
+// Creates or updates a destination to receive extended metrics from CloudWatch
+// RUM. You can send extended metrics to CloudWatch or to a CloudWatch Evidently
+// experiment.
+//
+// For more information about extended metrics, see BatchCreateRumMetricDefinitions
+// (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_BatchCreateRumMetricDefinitions.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation PutRumMetricsDestination for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/PutRumMetricsDestination
+func (c *CloudWatchRUM) PutRumMetricsDestination(input *PutRumMetricsDestinationInput) (*PutRumMetricsDestinationOutput, error) {
+	req, out := c.PutRumMetricsDestinationRequest(input)
+	return out, req.Send()
+}
+
+// PutRumMetricsDestinationWithContext is the same as PutRumMetricsDestination with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutRumMetricsDestination for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) PutRumMetricsDestinationWithContext(ctx aws.Context, input *PutRumMetricsDestinationInput, opts ...request.Option) (*PutRumMetricsDestinationOutput, error) {
+	req, out := c.PutRumMetricsDestinationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1081,6 +1816,106 @@ func (c *CloudWatchRUM) UpdateAppMonitorWithContext(ctx aws.Context, input *Upda
 	return out, req.Send()
 }
 
+const opUpdateRumMetricDefinition = "UpdateRumMetricDefinition"
+
+// UpdateRumMetricDefinitionRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateRumMetricDefinition operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateRumMetricDefinition for more information on using the UpdateRumMetricDefinition
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateRumMetricDefinitionRequest method.
+//	req, resp := client.UpdateRumMetricDefinitionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/UpdateRumMetricDefinition
+func (c *CloudWatchRUM) UpdateRumMetricDefinitionRequest(input *UpdateRumMetricDefinitionInput) (req *request.Request, output *UpdateRumMetricDefinitionOutput) {
+	op := &request.Operation{
+		Name:       opUpdateRumMetricDefinition,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/rummetrics/{AppMonitorName}/metrics",
+	}
+
+	if input == nil {
+		input = &UpdateRumMetricDefinitionInput{}
+	}
+
+	output = &UpdateRumMetricDefinitionOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateRumMetricDefinition API operation for CloudWatch RUM.
+//
+// Modifies one existing metric definition for CloudWatch RUM extended metrics.
+// For more information about extended metrics, see BatchCreateRumMetricsDefinitions
+// (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_BatchCreateRumMetricsDefinitions.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for CloudWatch RUM's
+// API operation UpdateRumMetricDefinition for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     This operation attempted to create a resource that already exists.
+//
+//   - ServiceQuotaExceededException
+//     This request exceeds a service quota.
+//
+//   - ResourceNotFoundException
+//     Resource not found.
+//
+//   - InternalServerException
+//     Internal service exception.
+//
+//   - ValidationException
+//     One of the arguments for the request is not valid.
+//
+//   - ThrottlingException
+//     The request was throttled because of quota limits.
+//
+//   - AccessDeniedException
+//     You don't have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10/UpdateRumMetricDefinition
+func (c *CloudWatchRUM) UpdateRumMetricDefinition(input *UpdateRumMetricDefinitionInput) (*UpdateRumMetricDefinitionOutput, error) {
+	req, out := c.UpdateRumMetricDefinitionRequest(input)
+	return out, req.Send()
+}
+
+// UpdateRumMetricDefinitionWithContext is the same as UpdateRumMetricDefinition with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateRumMetricDefinition for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchRUM) UpdateRumMetricDefinitionWithContext(ctx aws.Context, input *UpdateRumMetricDefinitionInput, opts ...request.Option) (*UpdateRumMetricDefinitionOutput, error) {
+	req, out := c.UpdateRumMetricDefinitionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // You don't have sufficient permissions to perform this action.
 type AccessDeniedException struct {
 	_            struct{}                  `type:"structure"`
@@ -1157,6 +1992,12 @@ type AppMonitor struct {
 	// The date and time that this app monitor was created.
 	Created *string `min:"19" type:"string"`
 
+	// Specifies whether this app monitor allows the web client to define and send
+	// custom events.
+	//
+	// For more information about custom events, see Send custom events (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html).
+	CustomEvents *CustomEvents `type:"structure"`
+
 	// A structure that contains information about whether this app monitor stores
 	// a copy of the telemetry data that RUM collects using CloudWatch Logs.
 	DataStorage *DataStorage `type:"structure"`
@@ -1208,6 +2049,12 @@ func (s *AppMonitor) SetAppMonitorConfiguration(v *AppMonitorConfiguration) *App
 // SetCreated sets the Created field's value.
 func (s *AppMonitor) SetCreated(v string) *AppMonitor {
 	s.Created = &v
+	return s
+}
+
+// SetCustomEvents sets the CustomEvents field's value.
+func (s *AppMonitor) SetCustomEvents(v *CustomEvents) *AppMonitor {
+	s.CustomEvents = v
 	return s
 }
 
@@ -1276,8 +2123,8 @@ type AppMonitorConfiguration struct {
 	// You can't include both ExcludedPages and IncludedPages in the same operation.
 	ExcludedPages []*string `type:"list"`
 
-	// A list of pages in the CloudWatch RUM console that are to be displayed with
-	// a "favorite" icon.
+	// A list of pages in your application that are to be displayed with a "favorite"
+	// icon in the CloudWatch RUM console.
 	FavoritePages []*string `type:"list"`
 
 	// The ARN of the guest IAM role that is attached to the Amazon Cognito identity
@@ -1291,16 +2138,18 @@ type AppMonitorConfiguration struct {
 	// If this app monitor is to collect data from only certain pages in your application,
 	// this structure lists those pages.
 	//
-	//    <p>You can't include both <code>ExcludedPages</code> and <code>IncludedPages</code>
-	//    in the same operation.</p>
+	// You can't include both ExcludedPages and IncludedPages in the same operation.
 	IncludedPages []*string `type:"list"`
 
-	// Specifies the percentage of user sessions to use for RUM data collection.
-	// Choosing a higher percentage gives you more data but also incurs more costs.
+	// Specifies the portion of user sessions to use for RUM data collection. Choosing
+	// a higher portion gives you more data but also incurs more costs.
 	//
-	// The number you specify is the percentage of user sessions that will be used.
+	// The range for this value is 0 to 1 inclusive. Setting this to 1 means that
+	// 100% of user sessions are sampled, and setting it to 0.1 means that 10% of
+	// user sessions are sampled.
 	//
-	// If you omit this parameter, the default of 10 is used.
+	// If you omit this parameter, the default of 0.1 is used, and 10% of sessions
+	// will be sampled.
 	SessionSampleRate *float64 `type:"double"`
 
 	// An array that lists the types of telemetry data that this app monitor is
@@ -1521,6 +2370,548 @@ func (s *AppMonitorSummary) SetState(v string) *AppMonitorSummary {
 	return s
 }
 
+// A structure that defines one error caused by a BatchCreateRumMetricsDefinitions
+// (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_BatchCreateRumMetricsDefinitions.html)
+// operation.
+type BatchCreateRumMetricDefinitionsError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	//
+	// ErrorCode is a required field
+	ErrorCode *string `type:"string" required:"true"`
+
+	// The error message for this metric definition.
+	//
+	// ErrorMessage is a required field
+	ErrorMessage *string `type:"string" required:"true"`
+
+	// The metric definition that caused this error.
+	//
+	// MetricDefinition is a required field
+	MetricDefinition *MetricDefinitionRequest `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchCreateRumMetricDefinitionsError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchCreateRumMetricDefinitionsError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *BatchCreateRumMetricDefinitionsError) SetErrorCode(v string) *BatchCreateRumMetricDefinitionsError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *BatchCreateRumMetricDefinitionsError) SetErrorMessage(v string) *BatchCreateRumMetricDefinitionsError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetMetricDefinition sets the MetricDefinition field's value.
+func (s *BatchCreateRumMetricDefinitionsError) SetMetricDefinition(v *MetricDefinitionRequest) *BatchCreateRumMetricDefinitionsError {
+	s.MetricDefinition = v
+	return s
+}
+
+type BatchCreateRumMetricDefinitionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the CloudWatch RUM app monitor that is to send the metrics.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// The destination to send the metrics to. Valid values are CloudWatch and Evidently.
+	// If you specify Evidently, you must also specify the ARN of the CloudWatchEvidently
+	// experiment that will receive the metrics and an IAM role that has permission
+	// to write to the experiment.
+	//
+	// Destination is a required field
+	Destination *string `type:"string" required:"true" enum:"MetricDestination"`
+
+	// This parameter is required if Destination is Evidently. If Destination is
+	// CloudWatch, do not use this parameter.
+	//
+	// This parameter specifies the ARN of the Evidently experiment that is to receive
+	// the metrics. You must have already defined this experiment as a valid destination.
+	// For more information, see PutRumMetricsDestination (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumMetricsDestination.html).
+	DestinationArn *string `type:"string"`
+
+	// An array of structures which define the metrics that you want to send.
+	//
+	// MetricDefinitions is a required field
+	MetricDefinitions []*MetricDefinitionRequest `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchCreateRumMetricDefinitionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchCreateRumMetricDefinitionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchCreateRumMetricDefinitionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchCreateRumMetricDefinitionsInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.MetricDefinitions == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDefinitions"))
+	}
+	if s.MetricDefinitions != nil {
+		for i, v := range s.MetricDefinitions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MetricDefinitions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *BatchCreateRumMetricDefinitionsInput) SetAppMonitorName(v string) *BatchCreateRumMetricDefinitionsInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *BatchCreateRumMetricDefinitionsInput) SetDestination(v string) *BatchCreateRumMetricDefinitionsInput {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *BatchCreateRumMetricDefinitionsInput) SetDestinationArn(v string) *BatchCreateRumMetricDefinitionsInput {
+	s.DestinationArn = &v
+	return s
+}
+
+// SetMetricDefinitions sets the MetricDefinitions field's value.
+func (s *BatchCreateRumMetricDefinitionsInput) SetMetricDefinitions(v []*MetricDefinitionRequest) *BatchCreateRumMetricDefinitionsInput {
+	s.MetricDefinitions = v
+	return s
+}
+
+type BatchCreateRumMetricDefinitionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of error objects, if the operation caused any errors.
+	//
+	// Errors is a required field
+	Errors []*BatchCreateRumMetricDefinitionsError `type:"list" required:"true"`
+
+	// An array of structures that define the extended metrics.
+	MetricDefinitions []*MetricDefinition `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchCreateRumMetricDefinitionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchCreateRumMetricDefinitionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrors sets the Errors field's value.
+func (s *BatchCreateRumMetricDefinitionsOutput) SetErrors(v []*BatchCreateRumMetricDefinitionsError) *BatchCreateRumMetricDefinitionsOutput {
+	s.Errors = v
+	return s
+}
+
+// SetMetricDefinitions sets the MetricDefinitions field's value.
+func (s *BatchCreateRumMetricDefinitionsOutput) SetMetricDefinitions(v []*MetricDefinition) *BatchCreateRumMetricDefinitionsOutput {
+	s.MetricDefinitions = v
+	return s
+}
+
+// A structure that defines one error caused by a BatchCreateRumMetricsDefinitions
+// (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_BatchDeleteRumMetricsDefinitions.html)
+// operation.
+type BatchDeleteRumMetricDefinitionsError struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	//
+	// ErrorCode is a required field
+	ErrorCode *string `type:"string" required:"true"`
+
+	// The error message for this metric definition.
+	//
+	// ErrorMessage is a required field
+	ErrorMessage *string `type:"string" required:"true"`
+
+	// The ID of the metric definition that caused this error.
+	//
+	// MetricDefinitionId is a required field
+	MetricDefinitionId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchDeleteRumMetricDefinitionsError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchDeleteRumMetricDefinitionsError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *BatchDeleteRumMetricDefinitionsError) SetErrorCode(v string) *BatchDeleteRumMetricDefinitionsError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *BatchDeleteRumMetricDefinitionsError) SetErrorMessage(v string) *BatchDeleteRumMetricDefinitionsError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetMetricDefinitionId sets the MetricDefinitionId field's value.
+func (s *BatchDeleteRumMetricDefinitionsError) SetMetricDefinitionId(v string) *BatchDeleteRumMetricDefinitionsError {
+	s.MetricDefinitionId = &v
+	return s
+}
+
+type BatchDeleteRumMetricDefinitionsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the CloudWatch RUM app monitor that is sending these metrics.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// Defines the destination where you want to stop sending the specified metrics.
+	// Valid values are CloudWatch and Evidently. If you specify Evidently, you
+	// must also specify the ARN of the CloudWatchEvidently experiment that is to
+	// be the destination and an IAM role that has permission to write to the experiment.
+	//
+	// Destination is a required field
+	Destination *string `location:"querystring" locationName:"destination" type:"string" required:"true" enum:"MetricDestination"`
+
+	// This parameter is required if Destination is Evidently. If Destination is
+	// CloudWatch, do not use this parameter.
+	//
+	// This parameter specifies the ARN of the Evidently experiment that was receiving
+	// the metrics that are being deleted.
+	DestinationArn *string `location:"querystring" locationName:"destinationArn" type:"string"`
+
+	// An array of structures which define the metrics that you want to stop sending.
+	//
+	// MetricDefinitionIds is a required field
+	MetricDefinitionIds []*string `location:"querystring" locationName:"metricDefinitionIds" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchDeleteRumMetricDefinitionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchDeleteRumMetricDefinitionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchDeleteRumMetricDefinitionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchDeleteRumMetricDefinitionsInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.MetricDefinitionIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDefinitionIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *BatchDeleteRumMetricDefinitionsInput) SetAppMonitorName(v string) *BatchDeleteRumMetricDefinitionsInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *BatchDeleteRumMetricDefinitionsInput) SetDestination(v string) *BatchDeleteRumMetricDefinitionsInput {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *BatchDeleteRumMetricDefinitionsInput) SetDestinationArn(v string) *BatchDeleteRumMetricDefinitionsInput {
+	s.DestinationArn = &v
+	return s
+}
+
+// SetMetricDefinitionIds sets the MetricDefinitionIds field's value.
+func (s *BatchDeleteRumMetricDefinitionsInput) SetMetricDefinitionIds(v []*string) *BatchDeleteRumMetricDefinitionsInput {
+	s.MetricDefinitionIds = v
+	return s
+}
+
+type BatchDeleteRumMetricDefinitionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of error objects, if the operation caused any errors.
+	//
+	// Errors is a required field
+	Errors []*BatchDeleteRumMetricDefinitionsError `type:"list" required:"true"`
+
+	// The IDs of the metric definitions that were deleted.
+	MetricDefinitionIds []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchDeleteRumMetricDefinitionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchDeleteRumMetricDefinitionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetErrors sets the Errors field's value.
+func (s *BatchDeleteRumMetricDefinitionsOutput) SetErrors(v []*BatchDeleteRumMetricDefinitionsError) *BatchDeleteRumMetricDefinitionsOutput {
+	s.Errors = v
+	return s
+}
+
+// SetMetricDefinitionIds sets the MetricDefinitionIds field's value.
+func (s *BatchDeleteRumMetricDefinitionsOutput) SetMetricDefinitionIds(v []*string) *BatchDeleteRumMetricDefinitionsOutput {
+	s.MetricDefinitionIds = v
+	return s
+}
+
+type BatchGetRumMetricDefinitionsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the CloudWatch RUM app monitor that is sending the metrics.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// The type of destination that you want to view metrics for. Valid values are
+	// CloudWatch and Evidently.
+	//
+	// Destination is a required field
+	Destination *string `location:"querystring" locationName:"destination" type:"string" required:"true" enum:"MetricDestination"`
+
+	// This parameter is required if Destination is Evidently. If Destination is
+	// CloudWatch, do not use this parameter.
+	//
+	// This parameter specifies the ARN of the Evidently experiment that corresponds
+	// to the destination.
+	DestinationArn *string `location:"querystring" locationName:"destinationArn" type:"string"`
+
+	// The maximum number of results to return in one operation. The default is
+	// 50. The maximum that you can specify is 100.
+	//
+	// To retrieve the remaining results, make another call with the returned NextToken
+	// value.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// Use the token returned by the previous operation to request the next page
+	// of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetRumMetricDefinitionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetRumMetricDefinitionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchGetRumMetricDefinitionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchGetRumMetricDefinitionsInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *BatchGetRumMetricDefinitionsInput) SetAppMonitorName(v string) *BatchGetRumMetricDefinitionsInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *BatchGetRumMetricDefinitionsInput) SetDestination(v string) *BatchGetRumMetricDefinitionsInput {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *BatchGetRumMetricDefinitionsInput) SetDestinationArn(v string) *BatchGetRumMetricDefinitionsInput {
+	s.DestinationArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *BatchGetRumMetricDefinitionsInput) SetMaxResults(v int64) *BatchGetRumMetricDefinitionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *BatchGetRumMetricDefinitionsInput) SetNextToken(v string) *BatchGetRumMetricDefinitionsInput {
+	s.NextToken = &v
+	return s
+}
+
+type BatchGetRumMetricDefinitionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that display information about the metrics that are
+	// sent by the specified app monitor to the specified destination.
+	MetricDefinitions []*MetricDefinition `type:"list"`
+
+	// A token that you can use in a subsequent operation to retrieve the next set
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetRumMetricDefinitionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetRumMetricDefinitionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetMetricDefinitions sets the MetricDefinitions field's value.
+func (s *BatchGetRumMetricDefinitionsOutput) SetMetricDefinitions(v []*MetricDefinition) *BatchGetRumMetricDefinitionsOutput {
+	s.MetricDefinitions = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *BatchGetRumMetricDefinitionsOutput) SetNextToken(v string) *BatchGetRumMetricDefinitionsOutput {
+	s.NextToken = &v
+	return s
+}
+
 // This operation attempted to create a resource that already exists.
 type ConflictException struct {
 	_            struct{}                  `type:"structure"`
@@ -1607,6 +2998,12 @@ type CreateAppMonitorInput struct {
 	// the user sessions.
 	AppMonitorConfiguration *AppMonitorConfiguration `type:"structure"`
 
+	// Specifies whether this app monitor allows the web client to define and send
+	// custom events. If you omit this parameter, custom events are DISABLED.
+	//
+	// For more information about custom events, see Send custom events (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html).
+	CustomEvents *CustomEvents `type:"structure"`
+
 	// Data collected by RUM is kept by RUM for 30 days and then deleted. This parameter
 	// specifies whether RUM sends a copy of this telemetry data to Amazon CloudWatch
 	// Logs in your account. This enables you to keep the telemetry data for more
@@ -1635,9 +3032,9 @@ type CreateAppMonitorInput struct {
 	// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
 	// strictly as strings of characters.
 	//
-	//    <p>You can associate as many as 50 tags with an app monitor.</p> <p>For
-	//    more information, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html">Tagging
-	//    Amazon Web Services resources</a>.</p>
+	// You can associate as many as 50 tags with an app monitor.
+	//
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `type:"map"`
 }
 
@@ -1689,6 +3086,12 @@ func (s *CreateAppMonitorInput) Validate() error {
 // SetAppMonitorConfiguration sets the AppMonitorConfiguration field's value.
 func (s *CreateAppMonitorInput) SetAppMonitorConfiguration(v *AppMonitorConfiguration) *CreateAppMonitorInput {
 	s.AppMonitorConfiguration = v
+	return s
+}
+
+// SetCustomEvents sets the CustomEvents field's value.
+func (s *CreateAppMonitorInput) SetCustomEvents(v *CustomEvents) *CreateAppMonitorInput {
+	s.CustomEvents = v
 	return s
 }
 
@@ -1744,6 +3147,39 @@ func (s CreateAppMonitorOutput) GoString() string {
 // SetId sets the Id field's value.
 func (s *CreateAppMonitorOutput) SetId(v string) *CreateAppMonitorOutput {
 	s.Id = &v
+	return s
+}
+
+// A structure that contains information about custom events for this app monitor.
+type CustomEvents struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether this app monitor allows the web client to define and send
+	// custom events. The default is for custom events to be DISABLED.
+	Status *string `type:"string" enum:"CustomEventsStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CustomEvents) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CustomEvents) GoString() string {
+	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *CustomEvents) SetStatus(v string) *CustomEvents {
+	s.Status = &v
 	return s
 }
 
@@ -1894,6 +3330,103 @@ func (s DeleteAppMonitorOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteAppMonitorOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteRumMetricsDestinationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the app monitor that is sending metrics to the destination that
+	// you want to delete.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// The type of destination to delete. Valid values are CloudWatch and Evidently.
+	//
+	// Destination is a required field
+	Destination *string `location:"querystring" locationName:"destination" type:"string" required:"true" enum:"MetricDestination"`
+
+	// This parameter is required if Destination is Evidently. If Destination is
+	// CloudWatch, do not use this parameter. This parameter specifies the ARN of
+	// the Evidently experiment that corresponds to the destination to delete.
+	DestinationArn *string `location:"querystring" locationName:"destinationArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRumMetricsDestinationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRumMetricsDestinationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteRumMetricsDestinationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteRumMetricsDestinationInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *DeleteRumMetricsDestinationInput) SetAppMonitorName(v string) *DeleteRumMetricsDestinationInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *DeleteRumMetricsDestinationInput) SetDestination(v string) *DeleteRumMetricsDestinationInput {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *DeleteRumMetricsDestinationInput) SetDestinationArn(v string) *DeleteRumMetricsDestinationInput {
+	s.DestinationArn = &v
+	return s
+}
+
+type DeleteRumMetricsDestinationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRumMetricsDestinationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteRumMetricsDestinationOutput) GoString() string {
 	return s.String()
 }
 
@@ -2186,8 +3719,9 @@ func (s *InternalServerException) RequestID() string {
 type ListAppMonitorsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The maximum number of results to return in one operation.
-	MaxResults *int64 `location:"querystring" locationName:"maxResults" type:"integer"`
+	// The maximum number of results to return in one operation. The default is
+	// 50. The maximum that you can specify is 100.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
 
 	// Use the token returned by the previous operation to request the next page
 	// of results.
@@ -2210,6 +3744,19 @@ func (s ListAppMonitorsInput) String() string {
 // value will be replaced with "sensitive".
 func (s ListAppMonitorsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAppMonitorsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAppMonitorsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -2261,6 +3808,124 @@ func (s *ListAppMonitorsOutput) SetAppMonitorSummaries(v []*AppMonitorSummary) *
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListAppMonitorsOutput) SetNextToken(v string) *ListAppMonitorsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListRumMetricsDestinationsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the app monitor associated with the destinations that you want
+	// to retrieve.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// The maximum number of results to return in one operation. The default is
+	// 50. The maximum that you can specify is 100.
+	//
+	// To retrieve the remaining results, make another call with the returned NextToken
+	// value.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// Use the token returned by the previous operation to request the next page
+	// of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRumMetricsDestinationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRumMetricsDestinationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListRumMetricsDestinationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListRumMetricsDestinationsInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *ListRumMetricsDestinationsInput) SetAppMonitorName(v string) *ListRumMetricsDestinationsInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListRumMetricsDestinationsInput) SetMaxResults(v int64) *ListRumMetricsDestinationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRumMetricsDestinationsInput) SetNextToken(v string) *ListRumMetricsDestinationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListRumMetricsDestinationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of CloudWatch RUM extended metrics destinations associated with
+	// the app monitor that you specified.
+	Destinations []*MetricDestinationSummary `type:"list"`
+
+	// A token that you can use in a subsequent operation to retrieve the next set
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRumMetricsDestinationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListRumMetricsDestinationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDestinations sets the Destinations field's value.
+func (s *ListRumMetricsDestinationsOutput) SetDestinations(v []*MetricDestinationSummary) *ListRumMetricsDestinationsOutput {
+	s.Destinations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListRumMetricsDestinationsOutput) SetNextToken(v string) *ListRumMetricsDestinationsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -2358,6 +4023,439 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
+// A structure that displays the definition of one extended metric that RUM
+// sends to CloudWatch or CloudWatch Evidently. For more information, see Additional
+// metrics that you can send to CloudWatch and CloudWatch Evidently (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-vended-metrics.html).
+type MetricDefinition struct {
+	_ struct{} `type:"structure"`
+
+	// This field is a map of field paths to dimension names. It defines the dimensions
+	// to associate with this metric in CloudWatch The value of this field is used
+	// only if the metric destination is CloudWatch. If the metric destination is
+	// Evidently, the value of DimensionKeys is ignored.
+	DimensionKeys map[string]*string `type:"map"`
+
+	// The pattern that defines the metric. RUM checks events that happen in a user's
+	// session against the pattern, and events that match the pattern are sent to
+	// the metric destination.
+	//
+	// If the metrics destination is CloudWatch and the event also matches a value
+	// in DimensionKeys, then the metric is published with the specified dimensions.
+	EventPattern *string `type:"string"`
+
+	// The ID of this metric definition.
+	//
+	// MetricDefinitionId is a required field
+	MetricDefinitionId *string `min:"1" type:"string" required:"true"`
+
+	// The name of the metric that is defined in this structure.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// If this metric definition is for a custom metric instead of an extended metric,
+	// this field displays the metric namespace that the custom metric is published
+	// to.
+	Namespace *string `min:"1" type:"string"`
+
+	// Use this field only if you are sending this metric to CloudWatch. It defines
+	// the CloudWatch metric unit that this metric is measured in.
+	UnitLabel *string `min:"1" type:"string"`
+
+	// The field within the event object that the metric value is sourced from.
+	ValueKey *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDefinition) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDefinition) GoString() string {
+	return s.String()
+}
+
+// SetDimensionKeys sets the DimensionKeys field's value.
+func (s *MetricDefinition) SetDimensionKeys(v map[string]*string) *MetricDefinition {
+	s.DimensionKeys = v
+	return s
+}
+
+// SetEventPattern sets the EventPattern field's value.
+func (s *MetricDefinition) SetEventPattern(v string) *MetricDefinition {
+	s.EventPattern = &v
+	return s
+}
+
+// SetMetricDefinitionId sets the MetricDefinitionId field's value.
+func (s *MetricDefinition) SetMetricDefinitionId(v string) *MetricDefinition {
+	s.MetricDefinitionId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *MetricDefinition) SetName(v string) *MetricDefinition {
+	s.Name = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *MetricDefinition) SetNamespace(v string) *MetricDefinition {
+	s.Namespace = &v
+	return s
+}
+
+// SetUnitLabel sets the UnitLabel field's value.
+func (s *MetricDefinition) SetUnitLabel(v string) *MetricDefinition {
+	s.UnitLabel = &v
+	return s
+}
+
+// SetValueKey sets the ValueKey field's value.
+func (s *MetricDefinition) SetValueKey(v string) *MetricDefinition {
+	s.ValueKey = &v
+	return s
+}
+
+// Use this structure to define one extended metric or custom metric that RUM
+// will send to CloudWatch or CloudWatch Evidently. For more information, see
+// Additional metrics that you can send to CloudWatch and CloudWatch Evidently
+// (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-vended-metrics.html).
+//
+// This structure is validated differently for extended metrics and custom metrics.
+// For extended metrics that are sent to the AWS/RUM namespace, the following
+// validations apply:
+//
+//   - The Namespace parameter must be omitted or set to AWS/RUM.
+//
+//   - Only certain combinations of values for Name, ValueKey, and EventPattern
+//     are valid. In addition to what is displayed in the list below, the EventPattern
+//     can also include information used by the DimensionKeys field. If Name
+//     is PerformanceNavigationDuration, then ValueKeymust be event_details.duration
+//     and the EventPattern must include {"event_type":["com.amazon.rum.performance_navigation_event"]}
+//     If Name is PerformanceResourceDuration, then ValueKeymust be event_details.duration
+//     and the EventPattern must include {"event_type":["com.amazon.rum.performance_resource_event"]}
+//     If Name is NavigationSatisfiedTransaction, then ValueKeymust be null and
+//     the EventPattern must include { "event_type": ["com.amazon.rum.performance_navigation_event"],
+//     "event_details": { "duration": [{ "numeric": [">",2000] }] } } If Name
+//     is NavigationToleratedTransaction, then ValueKeymust be null and the EventPattern
+//     must include { "event_type": ["com.amazon.rum.performance_navigation_event"],
+//     "event_details": { "duration": [{ "numeric": [">=",2000,"<"8000] }] }
+//     } If Name is NavigationFrustratedTransaction, then ValueKeymust be null
+//     and the EventPattern must include { "event_type": ["com.amazon.rum.performance_navigation_event"],
+//     "event_details": { "duration": [{ "numeric": [">=",8000] }] } } If Name
+//     is WebVitalsCumulativeLayoutShift, then ValueKeymust be event_details.value
+//     and the EventPattern must include {"event_type":["com.amazon.rum.cumulative_layout_shift_event"]}
+//     If Name is WebVitalsFirstInputDelay, then ValueKeymust be event_details.value
+//     and the EventPattern must include {"event_type":["com.amazon.rum.first_input_delay_event"]}
+//     If Name is WebVitalsLargestContentfulPaint, then ValueKeymust be event_details.value
+//     and the EventPattern must include {"event_type":["com.amazon.rum.largest_contentful_paint_event"]}
+//     If Name is JsErrorCount, then ValueKeymust be null and the EventPattern
+//     must include {"event_type":["com.amazon.rum.js_error_event"]} If Name
+//     is HttpErrorCount, then ValueKeymust be null and the EventPattern must
+//     include {"event_type":["com.amazon.rum.http_event"]} If Name is SessionCount,
+//     then ValueKeymust be null and the EventPattern must include {"event_type":["com.amazon.rum.session_start_event"]}
+//
+// For custom metrics, the following validation rules apply:
+//
+//   - The namespace can't be omitted and can't be AWS/RUM. You can use the
+//     AWS/RUM namespace only for extended metrics.
+//
+//   - All dimensions listed in the DimensionKeys field must be present in
+//     the value of EventPattern.
+//
+//   - The values that you specify for ValueKey, EventPattern, and DimensionKeys
+//     must be fields in RUM events, so all first-level keys in these fields
+//     must be one of the keys in the list later in this section.
+//
+//   - If you set a value for EventPattern, it must be a JSON object.
+//
+//   - For every non-empty event_details, there must be a non-empty event_type.
+//
+//   - If EventPattern contains an event_details field, it must also contain
+//     an event_type. For every built-in event_type that you use, you must use
+//     a value for event_details that corresponds to that event_type. For information
+//     about event details that correspond to event types, see RUM event details
+//     (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-datacollected.html#CloudWatch-RUM-datacollected-eventDetails).
+//
+//   - In EventPattern, any JSON array must contain only one value.
+//
+// Valid key values for first-level keys in the ValueKey, EventPattern, and
+// DimensionKeys fields:
+//
+//   - account_id
+//
+//   - application_Id
+//
+//   - application_version
+//
+//   - application_name
+//
+//   - batch_id
+//
+//   - event_details
+//
+//   - event_id
+//
+//   - event_interaction
+//
+//   - event_timestamp
+//
+//   - event_type
+//
+//   - event_version
+//
+//   - log_stream
+//
+//   - metadata
+//
+//   - sessionId
+//
+//   - user_details
+//
+//   - userId
+type MetricDefinitionRequest struct {
+	_ struct{} `type:"structure"`
+
+	// Use this field only if you are sending the metric to CloudWatch.
+	//
+	// This field is a map of field paths to dimension names. It defines the dimensions
+	// to associate with this metric in CloudWatch. For extended metrics, valid
+	// values for the entries in this field are the following:
+	//
+	//    * "metadata.pageId": "PageId"
+	//
+	//    * "metadata.browserName": "BrowserName"
+	//
+	//    * "metadata.deviceType": "DeviceType"
+	//
+	//    * "metadata.osName": "OSName"
+	//
+	//    * "metadata.countryCode": "CountryCode"
+	//
+	//    * "event_details.fileType": "FileType"
+	//
+	// For both extended metrics and custom metrics, all dimensions listed in this
+	// field must also be included in EventPattern.
+	DimensionKeys map[string]*string `type:"map"`
+
+	// The pattern that defines the metric, specified as a JSON object. RUM checks
+	// events that happen in a user's session against the pattern, and events that
+	// match the pattern are sent to the metric destination.
+	//
+	// When you define extended metrics, the metric definition is not valid if EventPattern
+	// is omitted.
+	//
+	// Example event patterns:
+	//
+	//    * '{ "event_type": ["com.amazon.rum.js_error_event"], "metadata": { "browserName":
+	//    [ "Chrome", "Safari" ], } }'
+	//
+	//    * '{ "event_type": ["com.amazon.rum.performance_navigation_event"], "metadata":
+	//    { "browserName": [ "Chrome", "Firefox" ] }, "event_details": { "duration":
+	//    [{ "numeric": [ "<", 2000 ] }] } }'
+	//
+	//    * '{ "event_type": ["com.amazon.rum.performance_navigation_event"], "metadata":
+	//    { "browserName": [ "Chrome", "Safari" ], "countryCode": [ "US" ] }, "event_details":
+	//    { "duration": [{ "numeric": [ ">=", 2000, "<", 8000 ] }] } }'
+	//
+	// If the metrics destination' is CloudWatch and the event also matches a value
+	// in DimensionKeys, then the metric is published with the specified dimensions.
+	EventPattern *string `type:"string"`
+
+	// The name for the metric that is defined in this structure. For custom metrics,
+	// you can specify any name that you like. For extended metrics, valid values
+	// are the following:
+	//
+	//    * PerformanceNavigationDuration
+	//
+	//    * PerformanceResourceDuration
+	//
+	//    * NavigationSatisfiedTransaction
+	//
+	//    * NavigationToleratedTransaction
+	//
+	//    * NavigationFrustratedTransaction
+	//
+	//    * WebVitalsCumulativeLayoutShift
+	//
+	//    * WebVitalsFirstInputDelay
+	//
+	//    * WebVitalsLargestContentfulPaint
+	//
+	//    * JsErrorCount
+	//
+	//    * HttpErrorCount
+	//
+	//    * SessionCount
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// If this structure is for a custom metric instead of an extended metrics,
+	// use this parameter to define the metric namespace for that custom metric.
+	// Do not specify this parameter if this structure is for an extended metric.
+	//
+	// You cannot use any string that starts with AWS/ for your namespace.
+	Namespace *string `min:"1" type:"string"`
+
+	// The CloudWatch metric unit to use for this metric. If you omit this field,
+	// the metric is recorded with no unit.
+	UnitLabel *string `min:"1" type:"string"`
+
+	// The field within the event object that the metric value is sourced from.
+	//
+	// If you omit this field, a hardcoded value of 1 is pushed as the metric value.
+	// This is useful if you just want to count the number of events that the filter
+	// catches.
+	//
+	// If this metric is sent to CloudWatch Evidently, this field will be passed
+	// to Evidently raw and Evidently will handle data extraction from the event.
+	ValueKey *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDefinitionRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDefinitionRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MetricDefinitionRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MetricDefinitionRequest"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Namespace != nil && len(*s.Namespace) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Namespace", 1))
+	}
+	if s.UnitLabel != nil && len(*s.UnitLabel) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UnitLabel", 1))
+	}
+	if s.ValueKey != nil && len(*s.ValueKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ValueKey", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDimensionKeys sets the DimensionKeys field's value.
+func (s *MetricDefinitionRequest) SetDimensionKeys(v map[string]*string) *MetricDefinitionRequest {
+	s.DimensionKeys = v
+	return s
+}
+
+// SetEventPattern sets the EventPattern field's value.
+func (s *MetricDefinitionRequest) SetEventPattern(v string) *MetricDefinitionRequest {
+	s.EventPattern = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *MetricDefinitionRequest) SetName(v string) *MetricDefinitionRequest {
+	s.Name = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *MetricDefinitionRequest) SetNamespace(v string) *MetricDefinitionRequest {
+	s.Namespace = &v
+	return s
+}
+
+// SetUnitLabel sets the UnitLabel field's value.
+func (s *MetricDefinitionRequest) SetUnitLabel(v string) *MetricDefinitionRequest {
+	s.UnitLabel = &v
+	return s
+}
+
+// SetValueKey sets the ValueKey field's value.
+func (s *MetricDefinitionRequest) SetValueKey(v string) *MetricDefinitionRequest {
+	s.ValueKey = &v
+	return s
+}
+
+// A structure that displays information about one destination that CloudWatch
+// RUM sends extended metrics to.
+type MetricDestinationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether the destination is CloudWatch or Evidently.
+	Destination *string `type:"string" enum:"MetricDestination"`
+
+	// If the destination is Evidently, this specifies the ARN of the Evidently
+	// experiment that receives the metrics.
+	DestinationArn *string `type:"string"`
+
+	// This field appears only when the destination is Evidently. It specifies the
+	// ARN of the IAM role that is used to write to the Evidently experiment that
+	// receives the metrics.
+	IamRoleArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDestinationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetricDestinationSummary) GoString() string {
+	return s.String()
+}
+
+// SetDestination sets the Destination field's value.
+func (s *MetricDestinationSummary) SetDestination(v string) *MetricDestinationSummary {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *MetricDestinationSummary) SetDestinationArn(v string) *MetricDestinationSummary {
+	s.DestinationArn = &v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *MetricDestinationSummary) SetIamRoleArn(v string) *MetricDestinationSummary {
+	s.IamRoleArn = &v
+	return s
+}
+
 type PutRumEventsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2370,7 +4468,7 @@ type PutRumEventsInput struct {
 	// A unique identifier for this batch of RUM event data.
 	//
 	// BatchId is a required field
-	BatchId *string `type:"string" required:"true"`
+	BatchId *string `min:"36" type:"string" required:"true"`
 
 	// The ID of the app monitor that is sending this data.
 	//
@@ -2416,6 +4514,9 @@ func (s *PutRumEventsInput) Validate() error {
 	if s.BatchId == nil {
 		invalidParams.Add(request.NewErrParamRequired("BatchId"))
 	}
+	if s.BatchId != nil && len(*s.BatchId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("BatchId", 36))
+	}
 	if s.Id == nil {
 		invalidParams.Add(request.NewErrParamRequired("Id"))
 	}
@@ -2436,6 +4537,11 @@ func (s *PutRumEventsInput) Validate() error {
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RumEvents", i), err.(request.ErrInvalidParams))
 			}
+		}
+	}
+	if s.UserDetails != nil {
+		if err := s.UserDetails.Validate(); err != nil {
+			invalidParams.AddNested("UserDetails", err.(request.ErrInvalidParams))
 		}
 	}
 
@@ -2494,6 +4600,118 @@ func (s PutRumEventsOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s PutRumEventsOutput) GoString() string {
+	return s.String()
+}
+
+type PutRumMetricsDestinationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the CloudWatch RUM app monitor that will send the metrics.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// Defines the destination to send the metrics to. Valid values are CloudWatch
+	// and Evidently. If you specify Evidently, you must also specify the ARN of
+	// the CloudWatchEvidently experiment that is to be the destination and an IAM
+	// role that has permission to write to the experiment.
+	//
+	// Destination is a required field
+	Destination *string `type:"string" required:"true" enum:"MetricDestination"`
+
+	// Use this parameter only if Destination is Evidently. This parameter specifies
+	// the ARN of the Evidently experiment that will receive the extended metrics.
+	DestinationArn *string `type:"string"`
+
+	// This parameter is required if Destination is Evidently. If Destination is
+	// CloudWatch, do not use this parameter.
+	//
+	// This parameter specifies the ARN of an IAM role that RUM will assume to write
+	// to the Evidently experiment that you are sending metrics to. This role must
+	// have permission to write to that experiment.
+	IamRoleArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutRumMetricsDestinationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutRumMetricsDestinationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutRumMetricsDestinationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutRumMetricsDestinationInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *PutRumMetricsDestinationInput) SetAppMonitorName(v string) *PutRumMetricsDestinationInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *PutRumMetricsDestinationInput) SetDestination(v string) *PutRumMetricsDestinationInput {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *PutRumMetricsDestinationInput) SetDestinationArn(v string) *PutRumMetricsDestinationInput {
+	s.DestinationArn = &v
+	return s
+}
+
+// SetIamRoleArn sets the IamRoleArn field's value.
+func (s *PutRumMetricsDestinationInput) SetIamRoleArn(v string) *PutRumMetricsDestinationInput {
+	s.IamRoleArn = &v
+	return s
+}
+
+type PutRumMetricsDestinationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutRumMetricsDestinationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutRumMetricsDestinationOutput) GoString() string {
 	return s.String()
 }
 
@@ -2636,7 +4854,7 @@ type RumEvent struct {
 	// A unique ID for this event.
 	//
 	// Id is a required field
-	Id *string `locationName:"id" type:"string" required:"true"`
+	Id *string `locationName:"id" min:"36" type:"string" required:"true"`
 
 	// Metadata about this event, which contains a JSON serialization of the identity
 	// of the user for this session. The user information comes from information
@@ -2681,6 +4899,9 @@ func (s *RumEvent) Validate() error {
 	}
 	if s.Id == nil {
 		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 36))
 	}
 	if s.Timestamp == nil {
 		invalidParams.Add(request.NewErrParamRequired("Timestamp"))
@@ -3101,6 +5322,12 @@ type UpdateAppMonitorInput struct {
 	// Authorize your application to send data to Amazon Web Services (https://docs.aws.amazon.com/monitoring/CloudWatch-RUM-get-started-authorization.html).
 	AppMonitorConfiguration *AppMonitorConfiguration `type:"structure"`
 
+	// Specifies whether this app monitor allows the web client to define and send
+	// custom events. The default is for custom events to be DISABLED.
+	//
+	// For more information about custom events, see Send custom events (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-RUM-custom-events.html).
+	CustomEvents *CustomEvents `type:"structure"`
+
 	// Data collected by RUM is kept by RUM for 30 days and then deleted. This parameter
 	// specifies whether RUM sends a copy of this telemetry data to Amazon CloudWatch
 	// Logs in your account. This enables you to keep the telemetry data for more
@@ -3165,6 +5392,12 @@ func (s *UpdateAppMonitorInput) SetAppMonitorConfiguration(v *AppMonitorConfigur
 	return s
 }
 
+// SetCustomEvents sets the CustomEvents field's value.
+func (s *UpdateAppMonitorInput) SetCustomEvents(v *CustomEvents) *UpdateAppMonitorInput {
+	s.CustomEvents = v
+	return s
+}
+
 // SetCwLogEnabled sets the CwLogEnabled field's value.
 func (s *UpdateAppMonitorInput) SetCwLogEnabled(v bool) *UpdateAppMonitorInput {
 	s.CwLogEnabled = &v
@@ -3205,17 +5438,156 @@ func (s UpdateAppMonitorOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateRumMetricDefinitionInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the CloudWatch RUM app monitor that sends these metrics.
+	//
+	// AppMonitorName is a required field
+	AppMonitorName *string `location:"uri" locationName:"AppMonitorName" min:"1" type:"string" required:"true"`
+
+	// The destination to send the metrics to. Valid values are CloudWatch and Evidently.
+	// If you specify Evidently, you must also specify the ARN of the CloudWatchEvidently
+	// experiment that will receive the metrics and an IAM role that has permission
+	// to write to the experiment.
+	//
+	// Destination is a required field
+	Destination *string `type:"string" required:"true" enum:"MetricDestination"`
+
+	// This parameter is required if Destination is Evidently. If Destination is
+	// CloudWatch, do not use this parameter.
+	//
+	// This parameter specifies the ARN of the Evidently experiment that is to receive
+	// the metrics. You must have already defined this experiment as a valid destination.
+	// For more information, see PutRumMetricsDestination (https://docs.aws.amazon.com/cloudwatchrum/latest/APIReference/API_PutRumMetricsDestination.html).
+	DestinationArn *string `type:"string"`
+
+	// A structure that contains the new definition that you want to use for this
+	// metric.
+	//
+	// MetricDefinition is a required field
+	MetricDefinition *MetricDefinitionRequest `type:"structure" required:"true"`
+
+	// The ID of the metric definition to update.
+	//
+	// MetricDefinitionId is a required field
+	MetricDefinitionId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRumMetricDefinitionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRumMetricDefinitionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateRumMetricDefinitionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateRumMetricDefinitionInput"}
+	if s.AppMonitorName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppMonitorName"))
+	}
+	if s.AppMonitorName != nil && len(*s.AppMonitorName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppMonitorName", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.MetricDefinition == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDefinition"))
+	}
+	if s.MetricDefinitionId == nil {
+		invalidParams.Add(request.NewErrParamRequired("MetricDefinitionId"))
+	}
+	if s.MetricDefinitionId != nil && len(*s.MetricDefinitionId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("MetricDefinitionId", 1))
+	}
+	if s.MetricDefinition != nil {
+		if err := s.MetricDefinition.Validate(); err != nil {
+			invalidParams.AddNested("MetricDefinition", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppMonitorName sets the AppMonitorName field's value.
+func (s *UpdateRumMetricDefinitionInput) SetAppMonitorName(v string) *UpdateRumMetricDefinitionInput {
+	s.AppMonitorName = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *UpdateRumMetricDefinitionInput) SetDestination(v string) *UpdateRumMetricDefinitionInput {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationArn sets the DestinationArn field's value.
+func (s *UpdateRumMetricDefinitionInput) SetDestinationArn(v string) *UpdateRumMetricDefinitionInput {
+	s.DestinationArn = &v
+	return s
+}
+
+// SetMetricDefinition sets the MetricDefinition field's value.
+func (s *UpdateRumMetricDefinitionInput) SetMetricDefinition(v *MetricDefinitionRequest) *UpdateRumMetricDefinitionInput {
+	s.MetricDefinition = v
+	return s
+}
+
+// SetMetricDefinitionId sets the MetricDefinitionId field's value.
+func (s *UpdateRumMetricDefinitionInput) SetMetricDefinitionId(v string) *UpdateRumMetricDefinitionInput {
+	s.MetricDefinitionId = &v
+	return s
+}
+
+type UpdateRumMetricDefinitionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRumMetricDefinitionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRumMetricDefinitionOutput) GoString() string {
+	return s.String()
+}
+
 // A structure that contains information about the user session that this batch
 // of events was collected from.
 type UserDetails struct {
 	_ struct{} `type:"structure"`
 
 	// The session ID that the performance events are from.
-	SessionId *string `locationName:"sessionId" type:"string"`
+	SessionId *string `locationName:"sessionId" min:"36" type:"string"`
 
 	// The ID of the user for this user session. This ID is generated by RUM and
 	// does not include any personally identifiable information about the user.
-	UserId *string `locationName:"userId" type:"string"`
+	UserId *string `locationName:"userId" min:"36" type:"string"`
 }
 
 // String returns the string representation.
@@ -3234,6 +5606,22 @@ func (s UserDetails) String() string {
 // value will be replaced with "sensitive".
 func (s UserDetails) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UserDetails) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UserDetails"}
+	if s.SessionId != nil && len(*s.SessionId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("SessionId", 36))
+	}
+	if s.UserId != nil && len(*s.UserId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("UserId", 36))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetSessionId sets the SessionId field's value.
@@ -3310,6 +5698,38 @@ func (s *ValidationException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+const (
+	// CustomEventsStatusEnabled is a CustomEventsStatus enum value
+	CustomEventsStatusEnabled = "ENABLED"
+
+	// CustomEventsStatusDisabled is a CustomEventsStatus enum value
+	CustomEventsStatusDisabled = "DISABLED"
+)
+
+// CustomEventsStatus_Values returns all elements of the CustomEventsStatus enum
+func CustomEventsStatus_Values() []string {
+	return []string{
+		CustomEventsStatusEnabled,
+		CustomEventsStatusDisabled,
+	}
+}
+
+const (
+	// MetricDestinationCloudWatch is a MetricDestination enum value
+	MetricDestinationCloudWatch = "CloudWatch"
+
+	// MetricDestinationEvidently is a MetricDestination enum value
+	MetricDestinationEvidently = "Evidently"
+)
+
+// MetricDestination_Values returns all elements of the MetricDestination enum
+func MetricDestination_Values() []string {
+	return []string{
+		MetricDestinationCloudWatch,
+		MetricDestinationEvidently,
+	}
 }
 
 const (

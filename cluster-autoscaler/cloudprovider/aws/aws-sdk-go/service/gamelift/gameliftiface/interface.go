@@ -96,6 +96,10 @@ type GameLiftAPI interface {
 	CreateGameSessionQueueWithContext(aws.Context, *gamelift.CreateGameSessionQueueInput, ...request.Option) (*gamelift.CreateGameSessionQueueOutput, error)
 	CreateGameSessionQueueRequest(*gamelift.CreateGameSessionQueueInput) (*request.Request, *gamelift.CreateGameSessionQueueOutput)
 
+	CreateLocation(*gamelift.CreateLocationInput) (*gamelift.CreateLocationOutput, error)
+	CreateLocationWithContext(aws.Context, *gamelift.CreateLocationInput, ...request.Option) (*gamelift.CreateLocationOutput, error)
+	CreateLocationRequest(*gamelift.CreateLocationInput) (*request.Request, *gamelift.CreateLocationOutput)
+
 	CreateMatchmakingConfiguration(*gamelift.CreateMatchmakingConfigurationInput) (*gamelift.CreateMatchmakingConfigurationOutput, error)
 	CreateMatchmakingConfigurationWithContext(aws.Context, *gamelift.CreateMatchmakingConfigurationInput, ...request.Option) (*gamelift.CreateMatchmakingConfigurationOutput, error)
 	CreateMatchmakingConfigurationRequest(*gamelift.CreateMatchmakingConfigurationInput) (*request.Request, *gamelift.CreateMatchmakingConfigurationOutput)
@@ -148,6 +152,10 @@ type GameLiftAPI interface {
 	DeleteGameSessionQueueWithContext(aws.Context, *gamelift.DeleteGameSessionQueueInput, ...request.Option) (*gamelift.DeleteGameSessionQueueOutput, error)
 	DeleteGameSessionQueueRequest(*gamelift.DeleteGameSessionQueueInput) (*request.Request, *gamelift.DeleteGameSessionQueueOutput)
 
+	DeleteLocation(*gamelift.DeleteLocationInput) (*gamelift.DeleteLocationOutput, error)
+	DeleteLocationWithContext(aws.Context, *gamelift.DeleteLocationInput, ...request.Option) (*gamelift.DeleteLocationOutput, error)
+	DeleteLocationRequest(*gamelift.DeleteLocationInput) (*request.Request, *gamelift.DeleteLocationOutput)
+
 	DeleteMatchmakingConfiguration(*gamelift.DeleteMatchmakingConfigurationInput) (*gamelift.DeleteMatchmakingConfigurationOutput, error)
 	DeleteMatchmakingConfigurationWithContext(aws.Context, *gamelift.DeleteMatchmakingConfigurationInput, ...request.Option) (*gamelift.DeleteMatchmakingConfigurationOutput, error)
 	DeleteMatchmakingConfigurationRequest(*gamelift.DeleteMatchmakingConfigurationInput) (*request.Request, *gamelift.DeleteMatchmakingConfigurationOutput)
@@ -172,6 +180,10 @@ type GameLiftAPI interface {
 	DeleteVpcPeeringConnectionWithContext(aws.Context, *gamelift.DeleteVpcPeeringConnectionInput, ...request.Option) (*gamelift.DeleteVpcPeeringConnectionOutput, error)
 	DeleteVpcPeeringConnectionRequest(*gamelift.DeleteVpcPeeringConnectionInput) (*request.Request, *gamelift.DeleteVpcPeeringConnectionOutput)
 
+	DeregisterCompute(*gamelift.DeregisterComputeInput) (*gamelift.DeregisterComputeOutput, error)
+	DeregisterComputeWithContext(aws.Context, *gamelift.DeregisterComputeInput, ...request.Option) (*gamelift.DeregisterComputeOutput, error)
+	DeregisterComputeRequest(*gamelift.DeregisterComputeInput) (*request.Request, *gamelift.DeregisterComputeOutput)
+
 	DeregisterGameServer(*gamelift.DeregisterGameServerInput) (*gamelift.DeregisterGameServerOutput, error)
 	DeregisterGameServerWithContext(aws.Context, *gamelift.DeregisterGameServerInput, ...request.Option) (*gamelift.DeregisterGameServerOutput, error)
 	DeregisterGameServerRequest(*gamelift.DeregisterGameServerInput) (*request.Request, *gamelift.DeregisterGameServerOutput)
@@ -183,6 +195,10 @@ type GameLiftAPI interface {
 	DescribeBuild(*gamelift.DescribeBuildInput) (*gamelift.DescribeBuildOutput, error)
 	DescribeBuildWithContext(aws.Context, *gamelift.DescribeBuildInput, ...request.Option) (*gamelift.DescribeBuildOutput, error)
 	DescribeBuildRequest(*gamelift.DescribeBuildInput) (*request.Request, *gamelift.DescribeBuildOutput)
+
+	DescribeCompute(*gamelift.DescribeComputeInput) (*gamelift.DescribeComputeOutput, error)
+	DescribeComputeWithContext(aws.Context, *gamelift.DescribeComputeInput, ...request.Option) (*gamelift.DescribeComputeOutput, error)
+	DescribeComputeRequest(*gamelift.DescribeComputeInput) (*request.Request, *gamelift.DescribeComputeOutput)
 
 	DescribeEC2InstanceLimits(*gamelift.DescribeEC2InstanceLimitsInput) (*gamelift.DescribeEC2InstanceLimitsOutput, error)
 	DescribeEC2InstanceLimitsWithContext(aws.Context, *gamelift.DescribeEC2InstanceLimitsInput, ...request.Option) (*gamelift.DescribeEC2InstanceLimitsOutput, error)
@@ -330,6 +346,14 @@ type GameLiftAPI interface {
 	DescribeVpcPeeringConnectionsWithContext(aws.Context, *gamelift.DescribeVpcPeeringConnectionsInput, ...request.Option) (*gamelift.DescribeVpcPeeringConnectionsOutput, error)
 	DescribeVpcPeeringConnectionsRequest(*gamelift.DescribeVpcPeeringConnectionsInput) (*request.Request, *gamelift.DescribeVpcPeeringConnectionsOutput)
 
+	GetComputeAccess(*gamelift.GetComputeAccessInput) (*gamelift.GetComputeAccessOutput, error)
+	GetComputeAccessWithContext(aws.Context, *gamelift.GetComputeAccessInput, ...request.Option) (*gamelift.GetComputeAccessOutput, error)
+	GetComputeAccessRequest(*gamelift.GetComputeAccessInput) (*request.Request, *gamelift.GetComputeAccessOutput)
+
+	GetComputeAuthToken(*gamelift.GetComputeAuthTokenInput) (*gamelift.GetComputeAuthTokenOutput, error)
+	GetComputeAuthTokenWithContext(aws.Context, *gamelift.GetComputeAuthTokenInput, ...request.Option) (*gamelift.GetComputeAuthTokenOutput, error)
+	GetComputeAuthTokenRequest(*gamelift.GetComputeAuthTokenInput) (*request.Request, *gamelift.GetComputeAuthTokenOutput)
+
 	GetGameSessionLogUrl(*gamelift.GetGameSessionLogUrlInput) (*gamelift.GetGameSessionLogUrlOutput, error)
 	GetGameSessionLogUrlWithContext(aws.Context, *gamelift.GetGameSessionLogUrlInput, ...request.Option) (*gamelift.GetGameSessionLogUrlOutput, error)
 	GetGameSessionLogUrlRequest(*gamelift.GetGameSessionLogUrlInput) (*request.Request, *gamelift.GetGameSessionLogUrlOutput)
@@ -352,6 +376,13 @@ type GameLiftAPI interface {
 	ListBuildsPages(*gamelift.ListBuildsInput, func(*gamelift.ListBuildsOutput, bool) bool) error
 	ListBuildsPagesWithContext(aws.Context, *gamelift.ListBuildsInput, func(*gamelift.ListBuildsOutput, bool) bool, ...request.Option) error
 
+	ListCompute(*gamelift.ListComputeInput) (*gamelift.ListComputeOutput, error)
+	ListComputeWithContext(aws.Context, *gamelift.ListComputeInput, ...request.Option) (*gamelift.ListComputeOutput, error)
+	ListComputeRequest(*gamelift.ListComputeInput) (*request.Request, *gamelift.ListComputeOutput)
+
+	ListComputePages(*gamelift.ListComputeInput, func(*gamelift.ListComputeOutput, bool) bool) error
+	ListComputePagesWithContext(aws.Context, *gamelift.ListComputeInput, func(*gamelift.ListComputeOutput, bool) bool, ...request.Option) error
+
 	ListFleets(*gamelift.ListFleetsInput) (*gamelift.ListFleetsOutput, error)
 	ListFleetsWithContext(aws.Context, *gamelift.ListFleetsInput, ...request.Option) (*gamelift.ListFleetsOutput, error)
 	ListFleetsRequest(*gamelift.ListFleetsInput) (*request.Request, *gamelift.ListFleetsOutput)
@@ -373,6 +404,13 @@ type GameLiftAPI interface {
 	ListGameServersPages(*gamelift.ListGameServersInput, func(*gamelift.ListGameServersOutput, bool) bool) error
 	ListGameServersPagesWithContext(aws.Context, *gamelift.ListGameServersInput, func(*gamelift.ListGameServersOutput, bool) bool, ...request.Option) error
 
+	ListLocations(*gamelift.ListLocationsInput) (*gamelift.ListLocationsOutput, error)
+	ListLocationsWithContext(aws.Context, *gamelift.ListLocationsInput, ...request.Option) (*gamelift.ListLocationsOutput, error)
+	ListLocationsRequest(*gamelift.ListLocationsInput) (*request.Request, *gamelift.ListLocationsOutput)
+
+	ListLocationsPages(*gamelift.ListLocationsInput, func(*gamelift.ListLocationsOutput, bool) bool) error
+	ListLocationsPagesWithContext(aws.Context, *gamelift.ListLocationsInput, func(*gamelift.ListLocationsOutput, bool) bool, ...request.Option) error
+
 	ListScripts(*gamelift.ListScriptsInput) (*gamelift.ListScriptsOutput, error)
 	ListScriptsWithContext(aws.Context, *gamelift.ListScriptsInput, ...request.Option) (*gamelift.ListScriptsOutput, error)
 	ListScriptsRequest(*gamelift.ListScriptsInput) (*request.Request, *gamelift.ListScriptsOutput)
@@ -387,6 +425,10 @@ type GameLiftAPI interface {
 	PutScalingPolicy(*gamelift.PutScalingPolicyInput) (*gamelift.PutScalingPolicyOutput, error)
 	PutScalingPolicyWithContext(aws.Context, *gamelift.PutScalingPolicyInput, ...request.Option) (*gamelift.PutScalingPolicyOutput, error)
 	PutScalingPolicyRequest(*gamelift.PutScalingPolicyInput) (*request.Request, *gamelift.PutScalingPolicyOutput)
+
+	RegisterCompute(*gamelift.RegisterComputeInput) (*gamelift.RegisterComputeOutput, error)
+	RegisterComputeWithContext(aws.Context, *gamelift.RegisterComputeInput, ...request.Option) (*gamelift.RegisterComputeOutput, error)
+	RegisterComputeRequest(*gamelift.RegisterComputeInput) (*request.Request, *gamelift.RegisterComputeOutput)
 
 	RegisterGameServer(*gamelift.RegisterGameServerInput) (*gamelift.RegisterGameServerOutput, error)
 	RegisterGameServerWithContext(aws.Context, *gamelift.RegisterGameServerInput, ...request.Option) (*gamelift.RegisterGameServerOutput, error)

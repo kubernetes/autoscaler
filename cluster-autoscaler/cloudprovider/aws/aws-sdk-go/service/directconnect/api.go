@@ -1439,6 +1439,13 @@ func (c *DirectConnect) CreateBGPPeerRequest(input *CreateBGPPeerInput) (req *re
 // IPv6 addresses are automatically assigned from the Amazon pool of IPv6 addresses;
 // you cannot specify custom IPv6 addresses.
 //
+// If you let Amazon Web Services auto-assign IPv4 addresses, a /30 CIDR will
+// be allocated from 169.254.0.0/16. Amazon Web Services does not recommend
+// this option if you intend to use the customer router peer IP address as the
+// source and destination for traffic. Instead you should use RFC 1918 or other
+// addressing, and specify the address yourself. For more information about
+// RFC 1918 see Address Allocation for Private Internets (https://datatracker.ietf.org/doc/html/rfc1918).
+//
 // For a public virtual interface, the Autonomous System Number (ASN) must be
 // private or already on the allow list for the virtual interface.
 //
@@ -2310,6 +2317,7 @@ func (c *DirectConnect) CreateTransitVirtualInterfaceRequest(input *CreateTransi
 // 64512 for both your the transit gateway and Direct Connect gateway, the association
 // request fails.
 //
+// A jumbo MTU value must be either 1500 or 8500. No other values will be accepted.
 // Setting the MTU of a virtual interface to 8500 (jumbo frames) can cause an
 // update to the underlying physical connection if it wasn't updated to support
 // jumbo frames. Updating the connection disrupts network connectivity for all
@@ -5615,7 +5623,7 @@ func (c *DirectConnect) UpdateVirtualInterfaceAttributesRequest(input *UpdateVir
 // jumbo frames. Updating the connection disrupts network connectivity for all
 // virtual interfaces associated with the connection for up to 30 seconds. To
 // check whether your connection supports jumbo frames, call DescribeConnections.
-// To check whether your virtual q interface supports jumbo frames, call DescribeVirtualInterfaces.
+// To check whether your virtual interface supports jumbo frames, call DescribeVirtualInterfaces.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7421,7 +7429,7 @@ type Connection struct {
 	// address family (IPv4/IPv6).
 	HasLogicalRedundancy *string `locationName:"hasLogicalRedundancy" type:"string" enum:"HasLogicalRedundancy"`
 
-	// Indicates whether jumbo frames (9001 MTU) are supported.
+	// Indicates whether jumbo frames are supported.
 	JumboFrameCapable *bool `locationName:"jumboFrameCapable" type:"boolean"`
 
 	// The ID of the LAG.
@@ -8304,7 +8312,8 @@ type CreateLagInput struct {
 	Location *string `locationName:"location" type:"string" required:"true"`
 
 	// The number of physical dedicated connections initially provisioned and bundled
-	// by the LAG.
+	// by the LAG. You can have a maximum of four connections when the port speed
+	// is 1G or 10G, or two when the port speed is 100G.
 	//
 	// NumberOfConnections is a required field
 	NumberOfConnections *int64 `locationName:"numberOfConnections" type:"integer" required:"true"`
@@ -11040,6 +11049,10 @@ type GatewayAssociation struct {
 	//    * disassociated: The virtual private gateway or transit gateway is disassociated
 	//    from the Direct Connect gateway. Traffic flow between the Direct Connect
 	//    gateway and virtual private gateway or transit gateway is stopped.
+	//
+	//    * updating: The CIDR blocks for the virtual private gateway or transit
+	//    gateway are currently being updated. This could be new CIDR blocks added
+	//    or current CIDR blocks removed.
 	AssociationState *string `locationName:"associationState" type:"string" enum:"GatewayAssociationState"`
 
 	// The ID of the Direct Connect gateway.
@@ -11381,7 +11394,7 @@ type Interconnect struct {
 	//    * unknown: The state of the interconnect is not available.
 	InterconnectState *string `locationName:"interconnectState" type:"string" enum:"InterconnectState"`
 
-	// Indicates whether jumbo frames (9001 MTU) are supported.
+	// Indicates whether jumbo frames are supported.
 	JumboFrameCapable *bool `locationName:"jumboFrameCapable" type:"boolean"`
 
 	// The ID of the LAG.
@@ -11544,7 +11557,7 @@ type Lag struct {
 	// family (IPv4/IPv6).
 	HasLogicalRedundancy *string `locationName:"hasLogicalRedundancy" type:"string" enum:"HasLogicalRedundancy"`
 
-	// Indicates whether jumbo frames (9001 MTU) are supported.
+	// Indicates whether jumbo frames are supported.
 	JumboFrameCapable *bool `locationName:"jumboFrameCapable" type:"boolean"`
 
 	// The ID of the LAG.
@@ -12780,7 +12793,7 @@ type NewTransitVirtualInterface struct {
 	EnableSiteLink *bool `locationName:"enableSiteLink" type:"boolean"`
 
 	// The maximum transmission unit (MTU), in bytes. The supported values are 1500
-	// and 9001. The default value is 1500.
+	// and 8500. The default value is 1500.
 	Mtu *int64 `locationName:"mtu" type:"integer"`
 
 	// The tags associated with the transitive virtual interface.
@@ -12925,7 +12938,7 @@ type NewTransitVirtualInterfaceAllocation struct {
 	CustomerAddress *string `locationName:"customerAddress" type:"string"`
 
 	// The maximum transmission unit (MTU), in bytes. The supported values are 1500
-	// and 9001. The default value is 1500.
+	// and 8500. The default value is 1500
 	Mtu *int64 `locationName:"mtu" type:"integer"`
 
 	// The tags associated with the transitive virtual interface.
@@ -13260,7 +13273,7 @@ type StartBgpFailoverTestInput struct {
 
 	// The time in minutes that the virtual interface failover test will last.
 	//
-	// Maximum value: 180 minutes (3 hours).
+	// Maximum value: 4,320 minutes (72 hours).
 	//
 	// Default: 180 minutes (3 hours).
 	TestDurationInMinutes *int64 `locationName:"testDurationInMinutes" type:"integer"`
@@ -13854,7 +13867,7 @@ type UpdateConnectionOutput struct {
 	// address family (IPv4/IPv6).
 	HasLogicalRedundancy *string `locationName:"hasLogicalRedundancy" type:"string" enum:"HasLogicalRedundancy"`
 
-	// Indicates whether jumbo frames (9001 MTU) are supported.
+	// Indicates whether jumbo frames are supported.
 	JumboFrameCapable *bool `locationName:"jumboFrameCapable" type:"boolean"`
 
 	// The ID of the LAG.
@@ -14415,14 +14428,14 @@ type UpdateVirtualInterfaceAttributesOutput struct {
 	// The ID of the Direct Connect gateway.
 	DirectConnectGatewayId *string `locationName:"directConnectGatewayId" type:"string"`
 
-	// Indicates whether jumbo frames (9001 MTU) are supported.
+	// Indicates whether jumbo frames are supported.
 	JumboFrameCapable *bool `locationName:"jumboFrameCapable" type:"boolean"`
 
 	// The location of the connection.
 	Location *string `locationName:"location" type:"string"`
 
 	// The maximum transmission unit (MTU), in bytes. The supported values are 1500
-	// and 9001. The default value is 1500.
+	// and 8500. The default value is 1500
 	Mtu *int64 `locationName:"mtu" type:"integer"`
 
 	// The ID of the Amazon Web Services account that owns the virtual interface.
@@ -14760,14 +14773,14 @@ type VirtualInterface struct {
 	// The ID of the Direct Connect gateway.
 	DirectConnectGatewayId *string `locationName:"directConnectGatewayId" type:"string"`
 
-	// Indicates whether jumbo frames (9001 MTU) are supported.
+	// Indicates whether jumbo frames are supported.
 	JumboFrameCapable *bool `locationName:"jumboFrameCapable" type:"boolean"`
 
 	// The location of the connection.
 	Location *string `locationName:"location" type:"string"`
 
 	// The maximum transmission unit (MTU), in bytes. The supported values are 1500
-	// and 9001. The default value is 1500.
+	// and 8500. The default value is 1500
 	Mtu *int64 `locationName:"mtu" type:"integer"`
 
 	// The ID of the Amazon Web Services account that owns the virtual interface.

@@ -39,7 +39,7 @@ type Envelope struct {
 	CEKAlg  string `json:"x-amz-cek-alg"`
 	TagLen  string `json:"x-amz-tag-len"`
 
-	// deprecated: This MD5 hash is no longer populated
+	// Deprecated: This MD5 hash is no longer populated
 	UnencryptedMD5 string `json:"-"`
 
 	UnencryptedContentLen string `json:"x-amz-unencrypted-content-length"`

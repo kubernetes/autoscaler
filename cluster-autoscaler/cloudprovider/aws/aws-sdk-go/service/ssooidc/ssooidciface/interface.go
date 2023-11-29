@@ -64,6 +64,10 @@ type SSOOIDCAPI interface {
 	CreateTokenWithContext(aws.Context, *ssooidc.CreateTokenInput, ...request.Option) (*ssooidc.CreateTokenOutput, error)
 	CreateTokenRequest(*ssooidc.CreateTokenInput) (*request.Request, *ssooidc.CreateTokenOutput)
 
+	CreateTokenWithIAM(*ssooidc.CreateTokenWithIAMInput) (*ssooidc.CreateTokenWithIAMOutput, error)
+	CreateTokenWithIAMWithContext(aws.Context, *ssooidc.CreateTokenWithIAMInput, ...request.Option) (*ssooidc.CreateTokenWithIAMOutput, error)
+	CreateTokenWithIAMRequest(*ssooidc.CreateTokenWithIAMInput) (*request.Request, *ssooidc.CreateTokenWithIAMOutput)
+
 	RegisterClient(*ssooidc.RegisterClientInput) (*ssooidc.RegisterClientOutput, error)
 	RegisterClientWithContext(aws.Context, *ssooidc.RegisterClientInput, ...request.Option) (*ssooidc.RegisterClientOutput, error)
 	RegisterClientRequest(*ssooidc.RegisterClientInput) (*request.Request, *ssooidc.RegisterClientOutput)

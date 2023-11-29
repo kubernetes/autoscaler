@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// AWS SSO Identity Store.
 //	func myFunc(svc identitystoreiface.IdentityStoreAPI) bool {
-//	    // Make svc.DescribeGroup request
+//	    // Make svc.CreateGroup request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockIdentityStoreClient struct {
 //	    identitystoreiface.IdentityStoreAPI
 //	}
-//	func (m *mockIdentityStoreClient) DescribeGroup(input *identitystore.DescribeGroupInput) (*identitystore.DescribeGroupOutput, error) {
+//	func (m *mockIdentityStoreClient) CreateGroup(input *identitystore.CreateGroupInput) (*identitystore.CreateGroupOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,13 +60,71 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type IdentityStoreAPI interface {
+	CreateGroup(*identitystore.CreateGroupInput) (*identitystore.CreateGroupOutput, error)
+	CreateGroupWithContext(aws.Context, *identitystore.CreateGroupInput, ...request.Option) (*identitystore.CreateGroupOutput, error)
+	CreateGroupRequest(*identitystore.CreateGroupInput) (*request.Request, *identitystore.CreateGroupOutput)
+
+	CreateGroupMembership(*identitystore.CreateGroupMembershipInput) (*identitystore.CreateGroupMembershipOutput, error)
+	CreateGroupMembershipWithContext(aws.Context, *identitystore.CreateGroupMembershipInput, ...request.Option) (*identitystore.CreateGroupMembershipOutput, error)
+	CreateGroupMembershipRequest(*identitystore.CreateGroupMembershipInput) (*request.Request, *identitystore.CreateGroupMembershipOutput)
+
+	CreateUser(*identitystore.CreateUserInput) (*identitystore.CreateUserOutput, error)
+	CreateUserWithContext(aws.Context, *identitystore.CreateUserInput, ...request.Option) (*identitystore.CreateUserOutput, error)
+	CreateUserRequest(*identitystore.CreateUserInput) (*request.Request, *identitystore.CreateUserOutput)
+
+	DeleteGroup(*identitystore.DeleteGroupInput) (*identitystore.DeleteGroupOutput, error)
+	DeleteGroupWithContext(aws.Context, *identitystore.DeleteGroupInput, ...request.Option) (*identitystore.DeleteGroupOutput, error)
+	DeleteGroupRequest(*identitystore.DeleteGroupInput) (*request.Request, *identitystore.DeleteGroupOutput)
+
+	DeleteGroupMembership(*identitystore.DeleteGroupMembershipInput) (*identitystore.DeleteGroupMembershipOutput, error)
+	DeleteGroupMembershipWithContext(aws.Context, *identitystore.DeleteGroupMembershipInput, ...request.Option) (*identitystore.DeleteGroupMembershipOutput, error)
+	DeleteGroupMembershipRequest(*identitystore.DeleteGroupMembershipInput) (*request.Request, *identitystore.DeleteGroupMembershipOutput)
+
+	DeleteUser(*identitystore.DeleteUserInput) (*identitystore.DeleteUserOutput, error)
+	DeleteUserWithContext(aws.Context, *identitystore.DeleteUserInput, ...request.Option) (*identitystore.DeleteUserOutput, error)
+	DeleteUserRequest(*identitystore.DeleteUserInput) (*request.Request, *identitystore.DeleteUserOutput)
+
 	DescribeGroup(*identitystore.DescribeGroupInput) (*identitystore.DescribeGroupOutput, error)
 	DescribeGroupWithContext(aws.Context, *identitystore.DescribeGroupInput, ...request.Option) (*identitystore.DescribeGroupOutput, error)
 	DescribeGroupRequest(*identitystore.DescribeGroupInput) (*request.Request, *identitystore.DescribeGroupOutput)
 
+	DescribeGroupMembership(*identitystore.DescribeGroupMembershipInput) (*identitystore.DescribeGroupMembershipOutput, error)
+	DescribeGroupMembershipWithContext(aws.Context, *identitystore.DescribeGroupMembershipInput, ...request.Option) (*identitystore.DescribeGroupMembershipOutput, error)
+	DescribeGroupMembershipRequest(*identitystore.DescribeGroupMembershipInput) (*request.Request, *identitystore.DescribeGroupMembershipOutput)
+
 	DescribeUser(*identitystore.DescribeUserInput) (*identitystore.DescribeUserOutput, error)
 	DescribeUserWithContext(aws.Context, *identitystore.DescribeUserInput, ...request.Option) (*identitystore.DescribeUserOutput, error)
 	DescribeUserRequest(*identitystore.DescribeUserInput) (*request.Request, *identitystore.DescribeUserOutput)
+
+	GetGroupId(*identitystore.GetGroupIdInput) (*identitystore.GetGroupIdOutput, error)
+	GetGroupIdWithContext(aws.Context, *identitystore.GetGroupIdInput, ...request.Option) (*identitystore.GetGroupIdOutput, error)
+	GetGroupIdRequest(*identitystore.GetGroupIdInput) (*request.Request, *identitystore.GetGroupIdOutput)
+
+	GetGroupMembershipId(*identitystore.GetGroupMembershipIdInput) (*identitystore.GetGroupMembershipIdOutput, error)
+	GetGroupMembershipIdWithContext(aws.Context, *identitystore.GetGroupMembershipIdInput, ...request.Option) (*identitystore.GetGroupMembershipIdOutput, error)
+	GetGroupMembershipIdRequest(*identitystore.GetGroupMembershipIdInput) (*request.Request, *identitystore.GetGroupMembershipIdOutput)
+
+	GetUserId(*identitystore.GetUserIdInput) (*identitystore.GetUserIdOutput, error)
+	GetUserIdWithContext(aws.Context, *identitystore.GetUserIdInput, ...request.Option) (*identitystore.GetUserIdOutput, error)
+	GetUserIdRequest(*identitystore.GetUserIdInput) (*request.Request, *identitystore.GetUserIdOutput)
+
+	IsMemberInGroups(*identitystore.IsMemberInGroupsInput) (*identitystore.IsMemberInGroupsOutput, error)
+	IsMemberInGroupsWithContext(aws.Context, *identitystore.IsMemberInGroupsInput, ...request.Option) (*identitystore.IsMemberInGroupsOutput, error)
+	IsMemberInGroupsRequest(*identitystore.IsMemberInGroupsInput) (*request.Request, *identitystore.IsMemberInGroupsOutput)
+
+	ListGroupMemberships(*identitystore.ListGroupMembershipsInput) (*identitystore.ListGroupMembershipsOutput, error)
+	ListGroupMembershipsWithContext(aws.Context, *identitystore.ListGroupMembershipsInput, ...request.Option) (*identitystore.ListGroupMembershipsOutput, error)
+	ListGroupMembershipsRequest(*identitystore.ListGroupMembershipsInput) (*request.Request, *identitystore.ListGroupMembershipsOutput)
+
+	ListGroupMembershipsPages(*identitystore.ListGroupMembershipsInput, func(*identitystore.ListGroupMembershipsOutput, bool) bool) error
+	ListGroupMembershipsPagesWithContext(aws.Context, *identitystore.ListGroupMembershipsInput, func(*identitystore.ListGroupMembershipsOutput, bool) bool, ...request.Option) error
+
+	ListGroupMembershipsForMember(*identitystore.ListGroupMembershipsForMemberInput) (*identitystore.ListGroupMembershipsForMemberOutput, error)
+	ListGroupMembershipsForMemberWithContext(aws.Context, *identitystore.ListGroupMembershipsForMemberInput, ...request.Option) (*identitystore.ListGroupMembershipsForMemberOutput, error)
+	ListGroupMembershipsForMemberRequest(*identitystore.ListGroupMembershipsForMemberInput) (*request.Request, *identitystore.ListGroupMembershipsForMemberOutput)
+
+	ListGroupMembershipsForMemberPages(*identitystore.ListGroupMembershipsForMemberInput, func(*identitystore.ListGroupMembershipsForMemberOutput, bool) bool) error
+	ListGroupMembershipsForMemberPagesWithContext(aws.Context, *identitystore.ListGroupMembershipsForMemberInput, func(*identitystore.ListGroupMembershipsForMemberOutput, bool) bool, ...request.Option) error
 
 	ListGroups(*identitystore.ListGroupsInput) (*identitystore.ListGroupsOutput, error)
 	ListGroupsWithContext(aws.Context, *identitystore.ListGroupsInput, ...request.Option) (*identitystore.ListGroupsOutput, error)
@@ -81,6 +139,14 @@ type IdentityStoreAPI interface {
 
 	ListUsersPages(*identitystore.ListUsersInput, func(*identitystore.ListUsersOutput, bool) bool) error
 	ListUsersPagesWithContext(aws.Context, *identitystore.ListUsersInput, func(*identitystore.ListUsersOutput, bool) bool, ...request.Option) error
+
+	UpdateGroup(*identitystore.UpdateGroupInput) (*identitystore.UpdateGroupOutput, error)
+	UpdateGroupWithContext(aws.Context, *identitystore.UpdateGroupInput, ...request.Option) (*identitystore.UpdateGroupOutput, error)
+	UpdateGroupRequest(*identitystore.UpdateGroupInput) (*request.Request, *identitystore.UpdateGroupOutput)
+
+	UpdateUser(*identitystore.UpdateUserInput) (*identitystore.UpdateUserOutput, error)
+	UpdateUserWithContext(aws.Context, *identitystore.UpdateUserInput, ...request.Option) (*identitystore.UpdateUserOutput, error)
+	UpdateUserRequest(*identitystore.UpdateUserInput) (*request.Request, *identitystore.UpdateUserOutput)
 }
 
 var _ IdentityStoreAPI = (*identitystore.IdentityStore)(nil)

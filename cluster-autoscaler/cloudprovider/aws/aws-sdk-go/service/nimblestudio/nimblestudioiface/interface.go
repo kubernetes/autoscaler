@@ -144,6 +144,10 @@ type NimbleStudioAPI interface {
 	GetStreamingSessionWithContext(aws.Context, *nimblestudio.GetStreamingSessionInput, ...request.Option) (*nimblestudio.GetStreamingSessionOutput, error)
 	GetStreamingSessionRequest(*nimblestudio.GetStreamingSessionInput) (*request.Request, *nimblestudio.GetStreamingSessionOutput)
 
+	GetStreamingSessionBackup(*nimblestudio.GetStreamingSessionBackupInput) (*nimblestudio.GetStreamingSessionBackupOutput, error)
+	GetStreamingSessionBackupWithContext(aws.Context, *nimblestudio.GetStreamingSessionBackupInput, ...request.Option) (*nimblestudio.GetStreamingSessionBackupOutput, error)
+	GetStreamingSessionBackupRequest(*nimblestudio.GetStreamingSessionBackupInput) (*request.Request, *nimblestudio.GetStreamingSessionBackupOutput)
+
 	GetStreamingSessionStream(*nimblestudio.GetStreamingSessionStreamInput) (*nimblestudio.GetStreamingSessionStreamOutput, error)
 	GetStreamingSessionStreamWithContext(aws.Context, *nimblestudio.GetStreamingSessionStreamInput, ...request.Option) (*nimblestudio.GetStreamingSessionStreamOutput, error)
 	GetStreamingSessionStreamRequest(*nimblestudio.GetStreamingSessionStreamInput) (*request.Request, *nimblestudio.GetStreamingSessionStreamOutput)
@@ -194,6 +198,13 @@ type NimbleStudioAPI interface {
 
 	ListStreamingImagesPages(*nimblestudio.ListStreamingImagesInput, func(*nimblestudio.ListStreamingImagesOutput, bool) bool) error
 	ListStreamingImagesPagesWithContext(aws.Context, *nimblestudio.ListStreamingImagesInput, func(*nimblestudio.ListStreamingImagesOutput, bool) bool, ...request.Option) error
+
+	ListStreamingSessionBackups(*nimblestudio.ListStreamingSessionBackupsInput) (*nimblestudio.ListStreamingSessionBackupsOutput, error)
+	ListStreamingSessionBackupsWithContext(aws.Context, *nimblestudio.ListStreamingSessionBackupsInput, ...request.Option) (*nimblestudio.ListStreamingSessionBackupsOutput, error)
+	ListStreamingSessionBackupsRequest(*nimblestudio.ListStreamingSessionBackupsInput) (*request.Request, *nimblestudio.ListStreamingSessionBackupsOutput)
+
+	ListStreamingSessionBackupsPages(*nimblestudio.ListStreamingSessionBackupsInput, func(*nimblestudio.ListStreamingSessionBackupsOutput, bool) bool) error
+	ListStreamingSessionBackupsPagesWithContext(aws.Context, *nimblestudio.ListStreamingSessionBackupsInput, func(*nimblestudio.ListStreamingSessionBackupsOutput, bool) bool, ...request.Option) error
 
 	ListStreamingSessions(*nimblestudio.ListStreamingSessionsInput) (*nimblestudio.ListStreamingSessionsOutput, error)
 	ListStreamingSessionsWithContext(aws.Context, *nimblestudio.ListStreamingSessionsInput, ...request.Option) (*nimblestudio.ListStreamingSessionsOutput, error)

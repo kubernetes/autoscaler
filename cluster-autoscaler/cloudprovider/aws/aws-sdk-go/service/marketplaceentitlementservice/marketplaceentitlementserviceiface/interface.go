@@ -63,6 +63,9 @@ type MarketplaceEntitlementServiceAPI interface {
 	GetEntitlements(*marketplaceentitlementservice.GetEntitlementsInput) (*marketplaceentitlementservice.GetEntitlementsOutput, error)
 	GetEntitlementsWithContext(aws.Context, *marketplaceentitlementservice.GetEntitlementsInput, ...request.Option) (*marketplaceentitlementservice.GetEntitlementsOutput, error)
 	GetEntitlementsRequest(*marketplaceentitlementservice.GetEntitlementsInput) (*request.Request, *marketplaceentitlementservice.GetEntitlementsOutput)
+
+	GetEntitlementsPages(*marketplaceentitlementservice.GetEntitlementsInput, func(*marketplaceentitlementservice.GetEntitlementsOutput, bool) bool) error
+	GetEntitlementsPagesWithContext(aws.Context, *marketplaceentitlementservice.GetEntitlementsInput, func(*marketplaceentitlementservice.GetEntitlementsOutput, bool) bool, ...request.Option) error
 }
 
 var _ MarketplaceEntitlementServiceAPI = (*marketplaceentitlementservice.MarketplaceEntitlementService)(nil)

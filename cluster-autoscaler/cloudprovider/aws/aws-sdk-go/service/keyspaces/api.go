@@ -1149,13 +1149,13 @@ func (c *Keyspaces) RestoreTableRequest(input *RestoreTableInput) (req *request.
 //
 // You can also overwrite these settings during restore:
 //
-// • Read/write capacity mode
+//   - Read/write capacity mode
 //
-// • Provisioned throughput capacity settings
+//   - Provisioned throughput capacity settings
 //
-// • Point-in-time (PITR) settings
+//   - Point-in-time (PITR) settings
 //
-// • Tags
+//   - Tags
 //
 // For more information, see PITR restore settings (https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery_HowItWorks.html#howitworks_backup_settings)
 // in the Amazon Keyspaces Developer Guide.
@@ -1163,12 +1163,12 @@ func (c *Keyspaces) RestoreTableRequest(input *RestoreTableInput) (req *request.
 // Note that the following settings are not restored, and you must configure
 // them manually for the new table:
 //
-// • Automatic scaling policies (for tables that use provisioned capacity
-// mode)
+//   - Automatic scaling policies (for tables that use provisioned capacity
+//     mode)
 //
-// • Identity and Access Management (IAM) policies
+//   - Identity and Access Management (IAM) policies
 //
-// • Amazon CloudWatch metrics and alarms
+//   - Amazon CloudWatch metrics and alarms
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1277,7 +1277,7 @@ func (c *Keyspaces) TagResourceRequest(input *TagResourceInput) (req *request.Re
 //
 // For IAM policy examples that show how to control access to Amazon Keyspaces
 // resources based on tags, see Amazon Keyspaces resource access based on tags
-// (https://docs.aws.amazon.com/keyspaces/latest/devguide/security_iam_id-based-policy-examples-tags)
+// (https://docs.aws.amazon.com/keyspaces/latest/devguide/security_iam_id-based-policy-examples.html#security_iam_id-based-policy-examples-tags)
 // in the Amazon Keyspaces Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1600,9 +1600,9 @@ func (s *AccessDeniedException) RequestID() string {
 // Amazon Keyspaces has two read/write capacity modes for processing reads and
 // writes on your tables:
 //
-// • On-demand (default)
+//   - On-demand (default)
 //
-// • Provisioned
+//   - Provisioned
 //
 // The read/write capacity mode that you choose controls how you are charged
 // for read and write throughput and how table throughput capacity is managed.
@@ -1618,10 +1618,10 @@ type CapacitySpecification struct {
 
 	// The read/write throughput capacity mode for a table. The options are:
 	//
-	// • throughputMode:PAY_PER_REQUEST and
+	//    * throughputMode:PAY_PER_REQUEST and
 	//
-	// • throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
-	// and writeCapacityUnits as input.
+	//    * throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
+	//    and writeCapacityUnits as input.
 	//
 	// The default is throughput_mode:PAY_PER_REQUEST.
 	//
@@ -1693,9 +1693,9 @@ func (s *CapacitySpecification) SetWriteCapacityUnits(v int64) *CapacitySpecific
 
 // The read/write throughput capacity mode for a table. The options are:
 //
-// • throughputMode:PAY_PER_REQUEST and
+//   - throughputMode:PAY_PER_REQUEST and
 //
-// • throughputMode:PROVISIONED.
+//   - throughputMode:PROVISIONED.
 //
 // For more information, see Read/write capacity modes (https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html)
 // in the Amazon Keyspaces Developer Guide.
@@ -1712,10 +1712,10 @@ type CapacitySpecificationSummary struct {
 
 	// The read/write throughput capacity mode for a table. The options are:
 	//
-	// • throughputMode:PAY_PER_REQUEST and
+	//    * throughputMode:PAY_PER_REQUEST and
 	//
-	// • throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
-	// and writeCapacityUnits as input.
+	//    * throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
+	//    and writeCapacityUnits as input.
 	//
 	// The default is throughput_mode:PAY_PER_REQUEST.
 	//
@@ -1769,6 +1769,57 @@ func (s *CapacitySpecificationSummary) SetThroughputMode(v string) *CapacitySpec
 // SetWriteCapacityUnits sets the WriteCapacityUnits field's value.
 func (s *CapacitySpecificationSummary) SetWriteCapacityUnits(v int64) *CapacitySpecificationSummary {
 	s.WriteCapacityUnits = &v
+	return s
+}
+
+// The client-side timestamp setting of the table.
+//
+// For more information, see How it works: Amazon Keyspaces client-side timestamps
+// (https://docs.aws.amazon.com/keyspaces/latest/devguide/client-side-timestamps-how-it-works.html)
+// in the Amazon Keyspaces Developer Guide.
+type ClientSideTimestamps struct {
+	_ struct{} `type:"structure"`
+
+	// Shows how to enable client-side timestamps settings for the specified table.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"ClientSideTimestampsStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClientSideTimestamps) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClientSideTimestamps) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ClientSideTimestamps) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ClientSideTimestamps"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStatus sets the Status field's value.
+func (s *ClientSideTimestamps) SetStatus(v string) *ClientSideTimestamps {
+	s.Status = &v
 	return s
 }
 
@@ -2018,6 +2069,16 @@ type CreateKeyspaceInput struct {
 	// KeyspaceName is a required field
 	KeyspaceName *string `locationName:"keyspaceName" min:"1" type:"string" required:"true"`
 
+	// The replication specification of the keyspace includes:
+	//
+	//    * replicationStrategy - the required value is SINGLE_REGION or MULTI_REGION.
+	//
+	//    * regionList - if the replicationStrategy is MULTI_REGION, the regionList
+	//    requires the current Region and at least one additional Amazon Web Services
+	//    Region where the keyspace is going to be replicated in. The maximum number
+	//    of supported replication Regions including the current Region is six.
+	ReplicationSpecification *ReplicationSpecification `locationName:"replicationSpecification" type:"structure"`
+
 	// A list of key-value pair tags to be attached to the keyspace.
 	//
 	// For more information, see Adding tags and labels to Amazon Keyspaces resources
@@ -2056,6 +2117,11 @@ func (s *CreateKeyspaceInput) Validate() error {
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
 	}
+	if s.ReplicationSpecification != nil {
+		if err := s.ReplicationSpecification.Validate(); err != nil {
+			invalidParams.AddNested("ReplicationSpecification", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Tags != nil {
 		for i, v := range s.Tags {
 			if v == nil {
@@ -2076,6 +2142,12 @@ func (s *CreateKeyspaceInput) Validate() error {
 // SetKeyspaceName sets the KeyspaceName field's value.
 func (s *CreateKeyspaceInput) SetKeyspaceName(v string) *CreateKeyspaceInput {
 	s.KeyspaceName = &v
+	return s
+}
+
+// SetReplicationSpecification sets the ReplicationSpecification field's value.
+func (s *CreateKeyspaceInput) SetReplicationSpecification(v *ReplicationSpecification) *CreateKeyspaceInput {
+	s.ReplicationSpecification = v
 	return s
 }
 
@@ -2125,16 +2197,25 @@ type CreateTableInput struct {
 	// Specifies the read/write throughput capacity mode for the table. The options
 	// are:
 	//
-	// • throughputMode:PAY_PER_REQUEST and
+	//    * throughputMode:PAY_PER_REQUEST and
 	//
-	// • throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
-	// and writeCapacityUnits as input.
+	//    * throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
+	//    and writeCapacityUnits as input.
 	//
 	// The default is throughput_mode:PAY_PER_REQUEST.
 	//
 	// For more information, see Read/write capacity modes (https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html)
 	// in the Amazon Keyspaces Developer Guide.
 	CapacitySpecification *CapacitySpecification `locationName:"capacitySpecification" type:"structure"`
+
+	// Enables client-side timestamps for the table. By default, the setting is
+	// disabled. You can enable client-side timestamps with the following option:
+	//
+	//    * status: "enabled"
+	//
+	// Once client-side timestamps are enabled for a table, this setting cannot
+	// be disabled.
+	ClientSideTimestamps *ClientSideTimestamps `locationName:"clientSideTimestamps" type:"structure"`
 
 	// This parameter allows to enter a description of the table.
 	Comment *Comment `locationName:"comment" type:"structure"`
@@ -2148,11 +2229,11 @@ type CreateTableInput struct {
 	// Specifies how the encryption key for encryption at rest is managed for the
 	// table. You can choose one of the following KMS key (KMS key):
 	//
-	// • type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
+	//    * type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
 	//
-	// • type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
-	// is created, owned, and managed by you. This option requires the kms_key_identifier
-	// of the KMS key in Amazon Resource Name (ARN) format as input.
+	//    * type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
+	//    is created, owned, and managed by you. This option requires the kms_key_identifier
+	//    of the KMS key in Amazon Resource Name (ARN) format as input.
 	//
 	// The default is type:AWS_OWNED_KMS_KEY.
 	//
@@ -2168,11 +2249,11 @@ type CreateTableInput struct {
 	// Specifies if pointInTimeRecovery is enabled or disabled for the table. The
 	// options are:
 	//
-	// • ENABLED
+	//    * status=ENABLED
 	//
-	// • DISABLED
+	//    * status=DISABLED
 	//
-	// If it's not specified, the default is DISABLED.
+	// If it's not specified, the default is status=DISABLED.
 	//
 	// For more information, see Point-in-time recovery (https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html)
 	// in the Amazon Keyspaces Developer Guide.
@@ -2182,34 +2263,33 @@ type CreateTableInput struct {
 	//
 	// For each column to be created:
 	//
-	// • name - The name of the column.
+	//    * name - The name of the column.
 	//
-	// • type - An Amazon Keyspaces data type. For more information, see Data
-	// types (https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types)
-	// in the Amazon Keyspaces Developer Guide.
+	//    * type - An Amazon Keyspaces data type. For more information, see Data
+	//    types (https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types)
+	//    in the Amazon Keyspaces Developer Guide.
 	//
 	// The primary key of the table consists of the following columns:
 	//
-	// • partitionKeys - The partition key can be a single column, or it can be
-	// a compound value composed of two or more columns. The partition key portion
-	// of the primary key is required and determines how Amazon Keyspaces stores
-	// your data.
+	//    * partitionKeys - The partition key can be a single column, or it can
+	//    be a compound value composed of two or more columns. The partition key
+	//    portion of the primary key is required and determines how Amazon Keyspaces
+	//    stores your data.
 	//
-	// • name - The name of each partition key column.
+	//    * name - The name of each partition key column.
 	//
-	// • clusteringKeys - The optional clustering column portion of your primary
-	// key determines how the data is clustered and sorted within each partition.
+	//    * clusteringKeys - The optional clustering column portion of your primary
+	//    key determines how the data is clustered and sorted within each partition.
 	//
-	// • name - The name of the clustering column.
+	//    * name - The name of the clustering column.
 	//
-	// • orderBy - Sets the ascendant (ASC) or descendant (DESC) order modifier.
+	//    * orderBy - Sets the ascendant (ASC) or descendant (DESC) order modifier.
+	//    To define a column as static use staticColumns - Static columns store
+	//    values that are shared by all rows in the same partition:
 	//
-	// To define a column as static use staticColumns - Static columns store values
-	// that are shared by all rows in the same partition:
+	//    * name - The name of the column.
 	//
-	// • name - The name of the column.
-	//
-	// • type - An Amazon Keyspaces data type.
+	//    * type - An Amazon Keyspaces data type.
 	//
 	// SchemaDefinition is a required field
 	SchemaDefinition *SchemaDefinition `locationName:"schemaDefinition" type:"structure" required:"true"`
@@ -2228,9 +2308,9 @@ type CreateTableInput struct {
 
 	// Enables Time to Live custom settings for the table. The options are:
 	//
-	// • status:enabled
+	//    * status:enabled
 	//
-	// • status:disabled
+	//    * status:disabled
 	//
 	// The default is status:disabled. After ttl is enabled, you can't disable it
 	// for the table.
@@ -2288,6 +2368,11 @@ func (s *CreateTableInput) Validate() error {
 			invalidParams.AddNested("CapacitySpecification", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.ClientSideTimestamps != nil {
+		if err := s.ClientSideTimestamps.Validate(); err != nil {
+			invalidParams.AddNested("ClientSideTimestamps", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Comment != nil {
 		if err := s.Comment.Validate(); err != nil {
 			invalidParams.AddNested("Comment", err.(request.ErrInvalidParams))
@@ -2333,6 +2418,12 @@ func (s *CreateTableInput) Validate() error {
 // SetCapacitySpecification sets the CapacitySpecification field's value.
 func (s *CreateTableInput) SetCapacitySpecification(v *CapacitySpecification) *CreateTableInput {
 	s.CapacitySpecification = v
+	return s
+}
+
+// SetClientSideTimestamps sets the ClientSideTimestamps field's value.
+func (s *CreateTableInput) SetClientSideTimestamps(v *ClientSideTimestamps) *CreateTableInput {
+	s.ClientSideTimestamps = v
 	return s
 }
 
@@ -2587,12 +2678,12 @@ func (s DeleteTableOutput) GoString() string {
 // and integrates with Key Management Service for storing and managing the encryption
 // key. You can choose one of the following KMS keys (KMS keys):
 //
-// • Amazon Web Services owned key - This is the default encryption type.
-// The key is owned by Amazon Keyspaces (no additional charge).
+//   - Amazon Web Services owned key - This is the default encryption type.
+//     The key is owned by Amazon Keyspaces (no additional charge).
 //
-// • Customer managed key - This key is stored in your account and is created,
-// owned, and managed by you. You have full control over the customer managed
-// key (KMS charges apply).
+//   - Customer managed key - This key is stored in your account and is created,
+//     owned, and managed by you. You have full control over the customer managed
+//     key (KMS charges apply).
 //
 // For more information about encryption at rest in Amazon Keyspaces, see Encryption
 // at rest (https://docs.aws.amazon.com/keyspaces/latest/devguide/EncryptionAtRest.html)
@@ -2610,11 +2701,11 @@ type EncryptionSpecification struct {
 	// The encryption option specified for the table. You can choose one of the
 	// following KMS keys (KMS keys):
 	//
-	// • type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
+	//    * type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
 	//
-	// • type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
-	// is created, owned, and managed by you. This option requires the kms_key_identifier
-	// of the KMS key in Amazon Resource Name (ARN) format as input.
+	//    * type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
+	//    is created, owned, and managed by you. This option requires the kms_key_identifier
+	//    of the KMS key in Amazon Resource Name (ARN) format as input.
 	//
 	// The default is type:AWS_OWNED_KMS_KEY.
 	//
@@ -2728,7 +2819,17 @@ type GetKeyspaceOutput struct {
 	// KeyspaceName is a required field
 	KeyspaceName *string `locationName:"keyspaceName" min:"1" type:"string" required:"true"`
 
-	// The ARN of the keyspace.
+	// If the replicationStrategy of the keyspace is MULTI_REGION, a list of replication
+	// Regions is returned.
+	ReplicationRegions []*string `locationName:"replicationRegions" min:"2" type:"list"`
+
+	// Returns the replication strategy of the keyspace. The options are SINGLE_REGION
+	// or MULTI_REGION.
+	//
+	// ReplicationStrategy is a required field
+	ReplicationStrategy *string `locationName:"replicationStrategy" min:"1" type:"string" required:"true" enum:"Rs"`
+
+	// Returns the ARN of the keyspace.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `locationName:"resourceArn" min:"20" type:"string" required:"true"`
@@ -2755,6 +2856,18 @@ func (s GetKeyspaceOutput) GoString() string {
 // SetKeyspaceName sets the KeyspaceName field's value.
 func (s *GetKeyspaceOutput) SetKeyspaceName(v string) *GetKeyspaceOutput {
 	s.KeyspaceName = &v
+	return s
+}
+
+// SetReplicationRegions sets the ReplicationRegions field's value.
+func (s *GetKeyspaceOutput) SetReplicationRegions(v []*string) *GetKeyspaceOutput {
+	s.ReplicationRegions = v
+	return s
+}
+
+// SetReplicationStrategy sets the ReplicationStrategy field's value.
+func (s *GetKeyspaceOutput) SetReplicationStrategy(v string) *GetKeyspaceOutput {
+	s.ReplicationStrategy = &v
 	return s
 }
 
@@ -2835,10 +2948,13 @@ type GetTableOutput struct {
 
 	// The read/write throughput capacity mode for a table. The options are:
 	//
-	// • throughputMode:PAY_PER_REQUEST
+	//    * throughputMode:PAY_PER_REQUEST
 	//
-	// • throughputMode:PROVISIONED
+	//    * throughputMode:PROVISIONED
 	CapacitySpecification *CapacitySpecificationSummary `locationName:"capacitySpecification" type:"structure"`
+
+	// The client-side timestamps setting of the table.
+	ClientSideTimestamps *ClientSideTimestamps `locationName:"clientSideTimestamps" type:"structure"`
 
 	// The the description of the specified table.
 	Comment *Comment `locationName:"comment" type:"structure"`
@@ -2846,7 +2962,7 @@ type GetTableOutput struct {
 	// The creation timestamp of the specified table.
 	CreationTimestamp *time.Time `locationName:"creationTimestamp" type:"timestamp"`
 
-	// The default Time to Live settings of the specified table.
+	// The default Time to Live settings in seconds of the specified table.
 	DefaultTimeToLive *int64 `locationName:"defaultTimeToLive" min:"1" type:"integer"`
 
 	// The encryption settings of the specified table.
@@ -2901,6 +3017,12 @@ func (s GetTableOutput) GoString() string {
 // SetCapacitySpecification sets the CapacitySpecification field's value.
 func (s *GetTableOutput) SetCapacitySpecification(v *CapacitySpecificationSummary) *GetTableOutput {
 	s.CapacitySpecification = v
+	return s
+}
+
+// SetClientSideTimestamps sets the ClientSideTimestamps field's value.
+func (s *GetTableOutput) SetClientSideTimestamps(v *ClientSideTimestamps) *GetTableOutput {
+	s.ClientSideTimestamps = v
 	return s
 }
 
@@ -3044,6 +3166,16 @@ type KeyspaceSummary struct {
 	// KeyspaceName is a required field
 	KeyspaceName *string `locationName:"keyspaceName" min:"1" type:"string" required:"true"`
 
+	// If the replicationStrategy of the keyspace is MULTI_REGION, a list of replication
+	// Regions is returned.
+	ReplicationRegions []*string `locationName:"replicationRegions" min:"2" type:"list"`
+
+	// This property specifies if a keyspace is a single Region keyspace or a multi-Region
+	// keyspace. The available values are SINGLE_REGION or MULTI_REGION.
+	//
+	// ReplicationStrategy is a required field
+	ReplicationStrategy *string `locationName:"replicationStrategy" min:"1" type:"string" required:"true" enum:"Rs"`
+
 	// The unique identifier of the keyspace in the format of an Amazon Resource
 	// Name (ARN).
 	//
@@ -3072,6 +3204,18 @@ func (s KeyspaceSummary) GoString() string {
 // SetKeyspaceName sets the KeyspaceName field's value.
 func (s *KeyspaceSummary) SetKeyspaceName(v string) *KeyspaceSummary {
 	s.KeyspaceName = &v
+	return s
+}
+
+// SetReplicationRegions sets the ReplicationRegions field's value.
+func (s *KeyspaceSummary) SetReplicationRegions(v []*string) *KeyspaceSummary {
+	s.ReplicationRegions = v
+	return s
+}
+
+// SetReplicationStrategy sets the ReplicationStrategy field's value.
+func (s *KeyspaceSummary) SetReplicationStrategy(v string) *KeyspaceSummary {
+	s.ReplicationStrategy = &v
 	return s
 }
 
@@ -3480,9 +3624,9 @@ type PointInTimeRecovery struct {
 
 	// The options are:
 	//
-	// • ENABLED
+	//    * status=ENABLED
 	//
-	// • DISABLED
+	//    * status=DISABLED
 	//
 	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true" enum:"PointInTimeRecoveryStatus"`
@@ -3569,6 +3713,75 @@ func (s *PointInTimeRecoverySummary) SetStatus(v string) *PointInTimeRecoverySum
 	return s
 }
 
+// The replication specification of the keyspace includes:
+//
+//   - regionList - up to six Amazon Web Services Regions where the keyspace
+//     is replicated in.
+//
+//   - replicationStrategy - the required value is SINGLE_REGION or MULTI_REGION.
+type ReplicationSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// The regionList can contain up to six Amazon Web Services Regions where the
+	// keyspace is replicated in.
+	RegionList []*string `locationName:"regionList" min:"2" type:"list"`
+
+	// The replicationStrategy of a keyspace, the required value is SINGLE_REGION
+	// or MULTI_REGION.
+	//
+	// ReplicationStrategy is a required field
+	ReplicationStrategy *string `locationName:"replicationStrategy" min:"1" type:"string" required:"true" enum:"Rs"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationSpecification) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationSpecification) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationSpecification"}
+	if s.RegionList != nil && len(s.RegionList) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("RegionList", 2))
+	}
+	if s.ReplicationStrategy == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicationStrategy"))
+	}
+	if s.ReplicationStrategy != nil && len(*s.ReplicationStrategy) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ReplicationStrategy", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRegionList sets the RegionList field's value.
+func (s *ReplicationSpecification) SetRegionList(v []*string) *ReplicationSpecification {
+	s.RegionList = v
+	return s
+}
+
+// SetReplicationStrategy sets the ReplicationStrategy field's value.
+func (s *ReplicationSpecification) SetReplicationStrategy(v string) *ReplicationSpecification {
+	s.ReplicationStrategy = &v
+	return s
+}
+
 // The operation tried to access a keyspace or table that doesn't exist. The
 // resource might not be specified correctly, or its status might not be ACTIVE.
 type ResourceNotFoundException struct {
@@ -3644,10 +3857,10 @@ type RestoreTableInput struct {
 	// Specifies the read/write throughput capacity mode for the target table. The
 	// options are:
 	//
-	// • throughputMode:PAY_PER_REQUEST
+	//    * throughputMode:PAY_PER_REQUEST
 	//
-	// • throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
-	// and writeCapacityUnits as input.
+	//    * throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
+	//    and writeCapacityUnits as input.
 	//
 	// The default is throughput_mode:PAY_PER_REQUEST.
 	//
@@ -3658,11 +3871,11 @@ type RestoreTableInput struct {
 	// Specifies the encryption settings for the target table. You can choose one
 	// of the following KMS key (KMS key):
 	//
-	// • type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
+	//    * type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
 	//
-	// • type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
-	// is created, owned, and managed by you. This option requires the kms_key_identifier
-	// of the KMS key in Amazon Resource Name (ARN) format as input.
+	//    * type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
+	//    is created, owned, and managed by you. This option requires the kms_key_identifier
+	//    of the KMS key in Amazon Resource Name (ARN) format as input.
 	//
 	// The default is type:AWS_OWNED_KMS_KEY.
 	//
@@ -3673,11 +3886,11 @@ type RestoreTableInput struct {
 	// Specifies the pointInTimeRecovery settings for the target table. The options
 	// are:
 	//
-	// • ENABLED
+	//    * status=ENABLED
 	//
-	// • DISABLED
+	//    * status=DISABLED
 	//
-	// If it's not specified, the default is DISABLED.
+	// If it's not specified, the default is status=DISABLED.
 	//
 	// For more information, see Point-in-time recovery (https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html)
 	// in the Amazon Keyspaces Developer Guide.
@@ -4514,26 +4727,35 @@ type UpdateTableInput struct {
 
 	// For each column to be added to the specified table:
 	//
-	// • name - The name of the column.
+	//    * name - The name of the column.
 	//
-	// • type - An Amazon Keyspaces data type. For more information, see Data
-	// types (https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types)
-	// in the Amazon Keyspaces Developer Guide.
+	//    * type - An Amazon Keyspaces data type. For more information, see Data
+	//    types (https://docs.aws.amazon.com/keyspaces/latest/devguide/cql.elements.html#cql.data-types)
+	//    in the Amazon Keyspaces Developer Guide.
 	AddColumns []*ColumnDefinition `locationName:"addColumns" min:"1" type:"list"`
 
 	// Modifies the read/write throughput capacity mode for the table. The options
 	// are:
 	//
-	// • throughputMode:PAY_PER_REQUEST and
+	//    * throughputMode:PAY_PER_REQUEST and
 	//
-	// • throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
-	// and writeCapacityUnits as input.
+	//    * throughputMode:PROVISIONED - Provisioned capacity mode requires readCapacityUnits
+	//    and writeCapacityUnits as input.
 	//
 	// The default is throughput_mode:PAY_PER_REQUEST.
 	//
 	// For more information, see Read/write capacity modes (https://docs.aws.amazon.com/keyspaces/latest/devguide/ReadWriteCapacityMode.html)
 	// in the Amazon Keyspaces Developer Guide.
 	CapacitySpecification *CapacitySpecification `locationName:"capacitySpecification" type:"structure"`
+
+	// Enables client-side timestamps for the table. By default, the setting is
+	// disabled. You can enable client-side timestamps with the following option:
+	//
+	//    * status: "enabled"
+	//
+	// Once client-side timestamps are enabled for a table, this setting cannot
+	// be disabled.
+	ClientSideTimestamps *ClientSideTimestamps `locationName:"clientSideTimestamps" type:"structure"`
 
 	// The default Time to Live setting in seconds for the table.
 	//
@@ -4544,11 +4766,11 @@ type UpdateTableInput struct {
 	// Modifies the encryption settings of the table. You can choose one of the
 	// following KMS key (KMS key):
 	//
-	// • type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
+	//    * type:AWS_OWNED_KMS_KEY - This key is owned by Amazon Keyspaces.
 	//
-	// • type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
-	// is created, owned, and managed by you. This option requires the kms_key_identifier
-	// of the KMS key in Amazon Resource Name (ARN) format as input.
+	//    * type:CUSTOMER_MANAGED_KMS_KEY - This key is stored in your account and
+	//    is created, owned, and managed by you. This option requires the kms_key_identifier
+	//    of the KMS key in Amazon Resource Name (ARN) format as input.
 	//
 	// The default is AWS_OWNED_KMS_KEY.
 	//
@@ -4563,11 +4785,11 @@ type UpdateTableInput struct {
 
 	// Modifies the pointInTimeRecovery settings of the table. The options are:
 	//
-	// • ENABLED
+	//    * status=ENABLED
 	//
-	// • DISABLED
+	//    * status=DISABLED
 	//
-	// If it's not specified, the default is DISABLED.
+	// If it's not specified, the default is status=DISABLED.
 	//
 	// For more information, see Point-in-time recovery (https://docs.aws.amazon.com/keyspaces/latest/devguide/PointInTimeRecovery.html)
 	// in the Amazon Keyspaces Developer Guide.
@@ -4580,9 +4802,9 @@ type UpdateTableInput struct {
 
 	// Modifies Time to Live custom settings for the table. The options are:
 	//
-	// • status:enabled
+	//    * status:enabled
 	//
-	// • status:disabled
+	//    * status:disabled
 	//
 	// The default is status:disabled. After ttl is enabled, you can't disable it
 	// for the table.
@@ -4647,6 +4869,11 @@ func (s *UpdateTableInput) Validate() error {
 			invalidParams.AddNested("CapacitySpecification", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.ClientSideTimestamps != nil {
+		if err := s.ClientSideTimestamps.Validate(); err != nil {
+			invalidParams.AddNested("ClientSideTimestamps", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.EncryptionSpecification != nil {
 		if err := s.EncryptionSpecification.Validate(); err != nil {
 			invalidParams.AddNested("EncryptionSpecification", err.(request.ErrInvalidParams))
@@ -4678,6 +4905,12 @@ func (s *UpdateTableInput) SetAddColumns(v []*ColumnDefinition) *UpdateTableInpu
 // SetCapacitySpecification sets the CapacitySpecification field's value.
 func (s *UpdateTableInput) SetCapacitySpecification(v *CapacitySpecification) *UpdateTableInput {
 	s.CapacitySpecification = v
+	return s
+}
+
+// SetClientSideTimestamps sets the ClientSideTimestamps field's value.
+func (s *UpdateTableInput) SetClientSideTimestamps(v *ClientSideTimestamps) *UpdateTableInput {
+	s.ClientSideTimestamps = v
 	return s
 }
 
@@ -4815,6 +5048,18 @@ func (s *ValidationException) RequestID() string {
 }
 
 const (
+	// ClientSideTimestampsStatusEnabled is a ClientSideTimestampsStatus enum value
+	ClientSideTimestampsStatusEnabled = "ENABLED"
+)
+
+// ClientSideTimestampsStatus_Values returns all elements of the ClientSideTimestampsStatus enum
+func ClientSideTimestampsStatus_Values() []string {
+	return []string{
+		ClientSideTimestampsStatusEnabled,
+	}
+}
+
+const (
 	// EncryptionTypeCustomerManagedKmsKey is a EncryptionType enum value
 	EncryptionTypeCustomerManagedKmsKey = "CUSTOMER_MANAGED_KMS_KEY"
 
@@ -4843,6 +5088,22 @@ func PointInTimeRecoveryStatus_Values() []string {
 	return []string{
 		PointInTimeRecoveryStatusEnabled,
 		PointInTimeRecoveryStatusDisabled,
+	}
+}
+
+const (
+	// RsSingleRegion is a Rs enum value
+	RsSingleRegion = "SINGLE_REGION"
+
+	// RsMultiRegion is a Rs enum value
+	RsMultiRegion = "MULTI_REGION"
+)
+
+// Rs_Values returns all elements of the Rs enum
+func Rs_Values() []string {
+	return []string{
+		RsSingleRegion,
+		RsMultiRegion,
 	}
 }
 

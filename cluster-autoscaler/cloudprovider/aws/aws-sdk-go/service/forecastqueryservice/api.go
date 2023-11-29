@@ -117,6 +117,98 @@ func (c *ForecastQueryService) QueryForecastWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opQueryWhatIfForecast = "QueryWhatIfForecast"
+
+// QueryWhatIfForecastRequest generates a "aws/request.Request" representing the
+// client's request for the QueryWhatIfForecast operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See QueryWhatIfForecast for more information on using the QueryWhatIfForecast
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the QueryWhatIfForecastRequest method.
+//	req, resp := client.QueryWhatIfForecastRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/forecastquery-2018-06-26/QueryWhatIfForecast
+func (c *ForecastQueryService) QueryWhatIfForecastRequest(input *QueryWhatIfForecastInput) (req *request.Request, output *QueryWhatIfForecastOutput) {
+	op := &request.Operation{
+		Name:       opQueryWhatIfForecast,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &QueryWhatIfForecastInput{}
+	}
+
+	output = &QueryWhatIfForecastOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// QueryWhatIfForecast API operation for Amazon Forecast Query Service.
+//
+// Retrieves a what-if forecast.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Forecast Query Service's
+// API operation QueryWhatIfForecast for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     We can't find that resource. Check the information that you've provided and
+//     try again.
+//
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+//   - InvalidInputException
+//     The value is invalid or is too long.
+//
+//   - LimitExceededException
+//     The limit on the number of requests per second has been exceeded.
+//
+//   - InvalidNextTokenException
+//     The token is not valid. Tokens expire after 24 hours.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/forecastquery-2018-06-26/QueryWhatIfForecast
+func (c *ForecastQueryService) QueryWhatIfForecast(input *QueryWhatIfForecastInput) (*QueryWhatIfForecastOutput, error) {
+	req, out := c.QueryWhatIfForecastRequest(input)
+	return out, req.Send()
+}
+
+// QueryWhatIfForecastWithContext is the same as QueryWhatIfForecast with the addition of
+// the ability to pass a context and additional request options.
+//
+// See QueryWhatIfForecast for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ForecastQueryService) QueryWhatIfForecastWithContext(ctx aws.Context, input *QueryWhatIfForecastInput, opts ...request.Option) (*QueryWhatIfForecastOutput, error) {
+	req, out := c.QueryWhatIfForecastRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // The forecast value for a specific date. Part of the Forecast object.
 type DataPoint struct {
 	_ struct{} `type:"structure"`
@@ -172,6 +264,11 @@ type Forecast struct {
 	//    * p50
 	//
 	//    * p90
+	//
+	// The default setting is ["0.1", "0.5", "0.9"]. Use the optional ForecastTypes
+	// parameter of the CreateForecast (https://docs.aws.amazon.com/forecast/latest/dg/API_CreateForecast.html)
+	// operation to change the values. The values will vary depending on how this
+	// is set, with a minimum of 1 and a maximum of 5.
 	Predictions map[string][]*DataPoint `type:"map"`
 }
 
@@ -522,6 +619,142 @@ func (s QueryForecastOutput) GoString() string {
 
 // SetForecast sets the Forecast field's value.
 func (s *QueryForecastOutput) SetForecast(v *Forecast) *QueryForecastOutput {
+	s.Forecast = v
+	return s
+}
+
+type QueryWhatIfForecastInput struct {
+	_ struct{} `type:"structure"`
+
+	// The end date for the what-if forecast. Specify the date using this format:
+	// yyyy-MM-dd'T'HH:mm:ss (ISO 8601 format). For example, 2015-01-01T20:00:00.
+	EndDate *string `type:"string"`
+
+	// The filtering criteria to apply when retrieving the forecast. For example,
+	// to get the forecast for client_21 in the electricity usage dataset, specify
+	// the following:
+	//
+	// {"item_id" : "client_21"}
+	//
+	// To get the full what-if forecast, use the CreateForecastExportJob (https://docs.aws.amazon.com/en_us/forecast/latest/dg/API_CreateWhatIfForecastExport.html)
+	// operation.
+	//
+	// Filters is a required field
+	Filters map[string]*string `min:"1" type:"map" required:"true"`
+
+	// If the result of the previous request was truncated, the response includes
+	// a NextToken. To retrieve the next set of results, use the token in the next
+	// request. Tokens expire after 24 hours.
+	NextToken *string `min:"1" type:"string"`
+
+	// The start date for the what-if forecast. Specify the date using this format:
+	// yyyy-MM-dd'T'HH:mm:ss (ISO 8601 format). For example, 2015-01-01T08:00:00.
+	StartDate *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the what-if forecast to query.
+	//
+	// WhatIfForecastArn is a required field
+	WhatIfForecastArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QueryWhatIfForecastInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QueryWhatIfForecastInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QueryWhatIfForecastInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QueryWhatIfForecastInput"}
+	if s.Filters == nil {
+		invalidParams.Add(request.NewErrParamRequired("Filters"))
+	}
+	if s.Filters != nil && len(s.Filters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Filters", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.WhatIfForecastArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("WhatIfForecastArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndDate sets the EndDate field's value.
+func (s *QueryWhatIfForecastInput) SetEndDate(v string) *QueryWhatIfForecastInput {
+	s.EndDate = &v
+	return s
+}
+
+// SetFilters sets the Filters field's value.
+func (s *QueryWhatIfForecastInput) SetFilters(v map[string]*string) *QueryWhatIfForecastInput {
+	s.Filters = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *QueryWhatIfForecastInput) SetNextToken(v string) *QueryWhatIfForecastInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStartDate sets the StartDate field's value.
+func (s *QueryWhatIfForecastInput) SetStartDate(v string) *QueryWhatIfForecastInput {
+	s.StartDate = &v
+	return s
+}
+
+// SetWhatIfForecastArn sets the WhatIfForecastArn field's value.
+func (s *QueryWhatIfForecastInput) SetWhatIfForecastArn(v string) *QueryWhatIfForecastInput {
+	s.WhatIfForecastArn = &v
+	return s
+}
+
+type QueryWhatIfForecastOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Provides information about a forecast. Returned as part of the QueryForecast
+	// response.
+	Forecast *Forecast `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QueryWhatIfForecastOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QueryWhatIfForecastOutput) GoString() string {
+	return s.String()
+}
+
+// SetForecast sets the Forecast field's value.
+func (s *QueryWhatIfForecastOutput) SetForecast(v *Forecast) *QueryWhatIfForecastOutput {
 	s.Forecast = v
 	return s
 }

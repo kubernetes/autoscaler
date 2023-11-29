@@ -59,7 +59,7 @@ func (c *Organizations) AcceptHandshakeRequest(input *AcceptHandshakeInput) (req
 // Sends a response to the originator of a handshake agreeing to the action
 // proposed by the handshake request.
 //
-// This operation can be called only by the following principals when they also
+// You can only call this operation by the following principals when they also
 // have the relevant IAM permissions:
 //
 //   - Invitation to join or Approve all features request handshakes: only
@@ -68,7 +68,7 @@ func (c *Organizations) AcceptHandshakeRequest(input *AcceptHandshakeInput) (req
 //     If you enabled all features in the organization, the user must also have
 //     the iam:CreateServiceLinkedRole permission so that Organizations can create
 //     the required service-linked role named AWSServiceRoleForOrganizations.
-//     For more information, see Organizations and Service-Linked Roles (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integration_services.html#orgs_integration_service-linked-roles)
+//     For more information, see Organizations and service-linked roles (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integration_services.html#orgs_integrate_services-using_slrs)
 //     in the Organizations User Guide.
 //
 //   - Enable all features final confirmation handshake: only a principal from
@@ -114,7 +114,7 @@ func (c *Organizations) AcceptHandshakeRequest(input *AcceptHandshakeInput) (req
 //     accounts still count toward your limit. If you get this exception immediately
 //     after creating the organization, wait one hour and try again. If after
 //     an hour it continues to fail with this error, contact Amazon Web Services
-//     Support (https://docs.aws.amazon.com/support/home#/).
+//     Support (https://console.aws.amazon.com/support/home#/).
 //
 //   - ALREADY_IN_AN_ORGANIZATION: The handshake request is invalid because
 //     the invited account is already a member of an organization.
@@ -250,8 +250,8 @@ func (c *Organizations) AcceptHandshakeRequest(input *AcceptHandshakeInput) (req
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - AccessDeniedForDependencyException
 //     The operation that you attempted requires you to have the iam:CreateServiceLinkedRole
@@ -336,7 +336,9 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //
 //   - TAG_POLICY (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_tag-policies.html)
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -388,9 +390,13 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -398,7 +404,10 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -465,9 +474,8 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -483,9 +491,8 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -609,8 +616,8 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //   - PolicyTypeNotEnabledException
 //     The specified policy type isn't currently enabled in this root. You can't
 //     attach policies of the specified type to entities in a root until you enable
-//     that type in the root. For more information, see Enabling All Features in
-//     Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
+//     that type in the root. For more information, see Enabling all features in
+//     your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
 //     in the Organizations User Guide.
 //
 //   - ServiceException
@@ -625,8 +632,8 @@ func (c *Organizations) AttachPolicyRequest(input *AttachPolicyInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -829,8 +836,8 @@ func (c *Organizations) CancelHandshakeRequest(input *CancelHandshakeInput) (req
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/CancelHandshake
 func (c *Organizations) CancelHandshake(input *CancelHandshakeInput) (*CancelHandshakeOutput, error) {
@@ -899,7 +906,8 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 // CloseAccount API operation for AWS Organizations.
 //
 // Closes an Amazon Web Services member account within an organization. You
-// can't close the management account with this API. This is an asynchronous
+// can close an account when all features are enabled (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html).
+// You can't close the management account with this API. This is an asynchronous
 // request that Amazon Web Services performs in the background. Because CloseAccount
 // operates asynchronously, it can return a successful completion message even
 // though account closure might still be in progress. You need to wait a few
@@ -917,10 +925,12 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_security_incident-response.html#orgs_cloudtrail-integration)
 //     in the Organizations User Guide.
 //
-//   - You can only close 10% of active member accounts within a rolling 30
-//     day period. This quota is not bound by a calendar month, but starts when
-//     you close an account. Within 30 days of that initial account closure,
-//     you can't exceed the 10% account closure limit.
+//   - You can close only 10% of member accounts, between 10 and 200, within
+//     a rolling 30 day period. This quota is not bound by a calendar month,
+//     but starts when you close an account. After you reach this limit, you
+//     can close additional accounts. For more information, see Closing a member
+//     account in your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html)
+//     in the Organizations User Guide.
 //
 //   - To reinstate a closed account, contact Amazon Web Services Support within
 //     the 90-day grace period while the account is in SUSPENDED status.
@@ -930,10 +940,6 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //     will close both accounts. To learn important pre-closure details, see
 //     Closing an Amazon Web Services GovCloud (US) account (https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/Closing-govcloud-account.html)
 //     in the Amazon Web Services GovCloud User Guide.
-//
-// For more information about closing accounts, see Closing an Amazon Web Services
-// account (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html)
-// in the Organizations User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -997,9 +1003,13 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -1007,7 +1017,10 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -1074,9 +1087,8 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -1092,9 +1104,8 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -1218,8 +1229,8 @@ func (c *Organizations) CloseAccountRequest(input *CloseAccountInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -1297,7 +1308,7 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 // to wait a few minutes before you can successfully access the account. To
 // check the status of the request, do one of the following:
 //
-//   - Use the Id member of the CreateAccountStatus response element from this
+//   - Use the Id value of the CreateAccountStatus response element from this
 //     operation to provide as a parameter to the DescribeCreateAccountStatus
 //     operation.
 //
@@ -1309,7 +1320,7 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 // The user who calls the API to create an account must have the organizations:CreateAccount
 // permission. If you enabled all features in the organization, Organizations
 // creates the required service-linked role named AWSServiceRoleForOrganizations.
-// For more information, see Organizations and Service-Linked Roles (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html#orgs_integrate_services-using_slrs)
+// For more information, see Organizations and service-linked roles (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html#orgs_integrate_services-using_slrs)
 // in the Organizations User Guide.
 //
 // If the request includes tags, then the requester must have the organizations:TagResource
@@ -1323,8 +1334,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //
 // This operation can be called only from the organization's management account.
 //
-// For more information about creating accounts, see Creating an Amazon Web
-// Services account in Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html)
+// For more information about creating accounts, see Creating a member account
+// in your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html)
 // in the Organizations User Guide.
 //
 //   - When you create an account in an organization using the Organizations
@@ -1332,8 +1343,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //     to operate as a standalone account, such as a payment method and signing
 //     the end user license agreement (EULA) is not automatically collected.
 //     If you must remove an account from your organization later, you can do
-//     so only after you provide the missing information. Follow the steps at
-//     To leave an organization as a member account (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     so only after you provide the missing information. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - If you get an exception that indicates that you exceeded your account
@@ -1346,8 +1357,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //   - Using CreateAccount to create multiple temporary accounts isn't recommended.
 //     You can only close an account from the Billing and Cost Management console,
 //     and you must be signed in as the root user. For information on the requirements
-//     and process for closing an account, see Closing an Amazon Web Services
-//     account (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html)
+//     and process for closing an account, see Closing a member account in your
+//     organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html)
 //     in the Organizations User Guide.
 //
 // When you create a member account with this operation, you can choose whether
@@ -1355,8 +1366,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 // switch enabled. If you enable it, IAM users and roles that have appropriate
 // permissions can view billing information for the account. If you disable
 // it, only the account root user can access billing information. For information
-// about how to disable this switch for an account, see Granting Access to Your
-// Billing Information and Tools (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html).
+// about how to disable this switch for an account, see Granting access to your
+// billing information and tools (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/control-access-billing.html#grantaccess).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1408,9 +1419,13 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -1418,7 +1433,10 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -1485,9 +1503,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -1503,9 +1520,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -1635,8 +1651,8 @@ func (c *Organizations) CreateAccountRequest(input *CreateAccountInput) (req *re
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -1723,7 +1739,7 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //
 // Organizations automatically creates the required service-linked role named
 // AWSServiceRoleForOrganizations. For more information, see Organizations and
-// Service-Linked Roles (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html#orgs_integrate_services-using_slrs)
+// service-linked roles (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html#orgs_integrate_services-using_slrs)
 // in the Organizations User Guide.
 //
 // Amazon Web Services automatically enables CloudTrail for Amazon Web Services
@@ -1761,8 +1777,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //     as a parameter to the DescribeCreateAccountStatus operation.
 //
 //   - Check the CloudTrail log for the CreateAccountResult event. For information
-//     on using CloudTrail with Organizations, see Monitoring the Activity in
-//     Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_monitoring.html)
+//     on using CloudTrail with Organizations, see Logging and monitoring in
+//     Organizations (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_security_incident-response.html)
 //     in the Organizations User Guide.
 //
 // When you call the CreateGovCloudAccount action, you create two accounts:
@@ -1783,8 +1799,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 // (https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-organizations.html)
 // in the Amazon Web Services GovCloud User Guide.
 //
-// For more information about creating accounts, see Creating an Amazon Web
-// Services account in Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html)
+// For more information about creating accounts, see Creating a member account
+// in your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_create.html)
 // in the Organizations User Guide.
 //
 //   - When you create an account in an organization using the Organizations
@@ -1792,8 +1808,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //     to operate as a standalone account is not automatically collected. This
 //     includes a payment method and signing the end user license agreement (EULA).
 //     If you must remove an account from your organization later, you can do
-//     so only after you provide the missing information. Follow the steps at
-//     To leave an organization as a member account (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     so only after you provide the missing information. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - If you get an exception that indicates that you exceeded your account
@@ -1807,7 +1823,7 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //     recommended. You can only close an account from the Amazon Web Services
 //     Billing and Cost Management console, and you must be signed in as the
 //     root user. For information on the requirements and process for closing
-//     an account, see Closing an Amazon Web Services account (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html)
+//     an account, see Closing a member account in your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_close.html)
 //     in the Organizations User Guide.
 //
 // When you create a member account with this operation, you can choose whether
@@ -1815,8 +1831,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 // switch enabled. If you enable it, IAM users and roles that have appropriate
 // permissions can view billing information for the account. If you disable
 // it, only the account root user can access billing information. For information
-// about how to disable this switch for an account, see Granting Access to Your
-// Billing Information and Tools (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html).
+// about how to disable this switch for an account, see Granting access to your
+// billing information and tools (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1868,9 +1884,13 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -1878,7 +1898,10 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -1945,9 +1968,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -1963,9 +1985,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -2095,8 +2116,8 @@ func (c *Organizations) CreateGovCloudAccountRequest(input *CreateGovCloudAccoun
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -2179,8 +2200,8 @@ func (c *Organizations) CreateOrganizationRequest(input *CreateOrganizationInput
 // is created with all features enabled and service control policies automatically
 // enabled in the root. If you instead choose to create the organization supporting
 // only the consolidated billing features by setting the FeatureSet parameter
-// to CONSOLIDATED_BILLING", no policy types are enabled by default, and you
-// can't use organization policies
+// to CONSOLIDATED_BILLING, no policy types are enabled by default and you can't
+// use organization policies.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2232,9 +2253,13 @@ func (c *Organizations) CreateOrganizationRequest(input *CreateOrganizationInput
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -2242,7 +2267,10 @@ func (c *Organizations) CreateOrganizationRequest(input *CreateOrganizationInput
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -2309,9 +2337,8 @@ func (c *Organizations) CreateOrganizationRequest(input *CreateOrganizationInput
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -2327,9 +2354,8 @@ func (c *Organizations) CreateOrganizationRequest(input *CreateOrganizationInput
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -2453,8 +2479,8 @@ func (c *Organizations) CreateOrganizationRequest(input *CreateOrganizationInput
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - AccessDeniedForDependencyException
 //     The operation that you attempted requires you to have the iam:CreateServiceLinkedRole
@@ -2532,7 +2558,7 @@ func (c *Organizations) CreateOrganizationalUnitRequest(input *CreateOrganizatio
 // that you can nest OUs is dependent upon the policy types enabled for that
 // root. For service control policies, the limit is five.
 //
-// For more information about OUs, see Managing Organizational Units (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_ous.html)
+// For more information about OUs, see Managing organizational units (OUs) (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_ous.html)
 // in the Organizations User Guide.
 //
 // If the request includes tags, then the requester must have the organizations:TagResource
@@ -2590,9 +2616,13 @@ func (c *Organizations) CreateOrganizationalUnitRequest(input *CreateOrganizatio
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -2600,7 +2630,10 @@ func (c *Organizations) CreateOrganizationalUnitRequest(input *CreateOrganizatio
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -2667,9 +2700,8 @@ func (c *Organizations) CreateOrganizationalUnitRequest(input *CreateOrganizatio
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -2685,9 +2717,8 @@ func (c *Organizations) CreateOrganizationalUnitRequest(input *CreateOrganizatio
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -2817,8 +2848,8 @@ func (c *Organizations) CreateOrganizationalUnitRequest(input *CreateOrganizatio
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/CreateOrganizationalUnit
 func (c *Organizations) CreateOrganizationalUnit(input *CreateOrganizationalUnitInput) (*CreateOrganizationalUnitOutput, error) {
@@ -2888,13 +2919,15 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 // Creates a policy of a specified type that you can attach to a root, an organizational
 // unit (OU), or an individual Amazon Web Services account.
 //
-// For more information about policies and their use, see Managing Organization
-// Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html).
+// For more information about policies and their use, see Managing Organizations
+// policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html).
 //
 // If the request includes tags, then the requester must have the organizations:TagResource
 // permission.
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2946,9 +2979,13 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -2956,7 +2993,10 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -3023,9 +3063,8 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -3041,9 +3080,8 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -3164,14 +3202,14 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 //   - MalformedPolicyDocumentException
 //     The provided policy document doesn't meet the requirements of the specified
 //     policy type. For example, the syntax might be incorrect. For details about
-//     service control policy syntax, see Service Control Policy Syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_scp-syntax.html)
+//     service control policy syntax, see SCP syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_syntax.html)
 //     in the Organizations User Guide.
 //
 //   - PolicyTypeNotAvailableForOrganizationException
 //     You can't use the specified policy type with the feature set currently enabled
 //     for this organization. For example, you can enable SCPs only after you enable
 //     all features in the organization. For more information, see Managing Organizations
-//     Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
+//     policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
 //     the Organizations User Guide.
 //
 //   - ServiceException
@@ -3183,8 +3221,8 @@ func (c *Organizations) CreatePolicyRequest(input *CreatePolicyInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -3384,8 +3422,8 @@ func (c *Organizations) DeclineHandshakeRequest(input *DeclineHandshakeInput) (r
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DeclineHandshake
 func (c *Organizations) DeclineHandshake(input *DeclineHandshakeInput) (*DeclineHandshakeOutput, error) {
@@ -3560,8 +3598,7 @@ func (c *Organizations) DeleteOrganizationRequest(input *DeleteOrganizationInput
 //
 //   - OrganizationNotEmptyException
 //     The organization isn't empty. To delete an organization, you must first remove
-//     all accounts except the management account, delete all OUs, and delete all
-//     policies.
+//     all accounts except the management account.
 //
 //   - ServiceException
 //     Organizations can't complete your request because of an internal service
@@ -3572,8 +3609,8 @@ func (c *Organizations) DeleteOrganizationRequest(input *DeleteOrganizationInput
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DeleteOrganization
 func (c *Organizations) DeleteOrganization(input *DeleteOrganizationInput) (*DeleteOrganizationOutput, error) {
@@ -3764,8 +3801,8 @@ func (c *Organizations) DeleteOrganizationalUnitRequest(input *DeleteOrganizatio
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DeleteOrganizationalUnit
 func (c *Organizations) DeleteOrganizationalUnit(input *DeleteOrganizationalUnitInput) (*DeleteOrganizationalUnitOutput, error) {
@@ -3837,7 +3874,9 @@ func (c *Organizations) DeletePolicyRequest(input *DeletePolicyInput) (req *requ
 // operation, you must first detach the policy from all organizational units
 // (OUs), roots, and accounts.
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3957,8 +3996,8 @@ func (c *Organizations) DeletePolicyRequest(input *DeletePolicyInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -3980,6 +4019,283 @@ func (c *Organizations) DeletePolicy(input *DeletePolicyInput) (*DeletePolicyOut
 // for more information on using Contexts.
 func (c *Organizations) DeletePolicyWithContext(ctx aws.Context, input *DeletePolicyInput, opts ...request.Option) (*DeletePolicyOutput, error) {
 	req, out := c.DeletePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteResourcePolicy = "DeleteResourcePolicy"
+
+// DeleteResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteResourcePolicy for more information on using the DeleteResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DeleteResourcePolicy
+func (c *Organizations) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteResourcePolicyInput{}
+	}
+
+	output = &DeleteResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteResourcePolicy API operation for AWS Organizations.
+//
+// Deletes the resource policy from your organization.
+//
+// You can only call this operation from the organization's management account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Organizations's
+// API operation DeleteResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
+//
+//   - ServiceException
+//     Organizations can't complete your request because of an internal service
+//     error. Try again later.
+//
+//   - UnsupportedAPIEndpointException
+//     This action isn't available in the current Amazon Web Services Region.
+//
+//   - TooManyRequestsException
+//     You have sent too many requests in too short a period of time. The quota
+//     helps protect against denial-of-service attacks. Try again later.
+//
+//     For information about quotas that affect Organizations, see Quotas for Organizations
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
+//
+//   - ConcurrentModificationException
+//     The target of the operation is currently being modified by a different request.
+//     Try again later.
+//
+//   - ConstraintViolationException
+//     Performing this operation violates a minimum or maximum value limit. For
+//     example, attempting to remove the last service control policy (SCP) from
+//     an OU or root, inviting or creating too many accounts to the organization,
+//     or attaching too many policies to an account, OU, or root. This exception
+//     includes a reason that contains additional information about the violated
+//     limit:
+//
+//     Some of the reasons in the following list might not be applicable to this
+//     specific API or operation.
+//
+//   - ACCOUNT_CANNOT_LEAVE_ORGANIZATION: You attempted to remove the management
+//     account from the organization. You can't remove the management account.
+//     Instead, after you remove all member accounts, delete the organization
+//     itself.
+//
+//   - ACCOUNT_CANNOT_LEAVE_WITHOUT_PHONE_VERIFICATION: You attempted to remove
+//     an account from the organization that doesn't yet have enough information
+//     to exist as a standalone account. This account requires you to first complete
+//     phone verification. Follow the steps at Removing a member account from
+//     your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#orgs_manage_accounts_remove-from-master)
+//     in the Organizations User Guide.
+//
+//   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
+//     of accounts that you can create in one day.
+//
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
+//   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
+//     the number of accounts in an organization. If you need more accounts,
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
+//     to request an increase in your limit. Or the number of invitations that
+//     you tried to send would cause you to exceed the limit of accounts in your
+//     organization. Send fewer invitations or contact Amazon Web Services Support
+//     to request an increase in the number of accounts. Deleted and closed accounts
+//     still count toward your limit. If you get this exception when running
+//     a command immediately after creating the organization, wait one hour and
+//     try again. After an hour, if the command continues to fail with this error,
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
+//
+//   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
+//     register the management account of the organization as a delegated administrator
+//     for an Amazon Web Services service integrated with Organizations. You
+//     can designate only a member account as a delegated administrator.
+//
+//   - CANNOT_CLOSE_MANAGEMENT_ACCOUNT: You attempted to close the management
+//     account. To close the management account for the organization, you must
+//     first either remove or close all member accounts in the organization.
+//     Follow standard account closure process using root credentials.​
+//
+//   - CANNOT_REMOVE_DELEGATED_ADMINISTRATOR_FROM_ORG: You attempted to remove
+//     an account that is registered as a delegated administrator for a service
+//     integrated with your organization. To complete this operation, you must
+//     first deregister this account as a delegated administrator.
+//
+//   - CLOSE_ACCOUNT_QUOTA_EXCEEDED: You have exceeded close account quota
+//     for the past 30 days.
+//
+//   - CLOSE_ACCOUNT_REQUESTS_LIMIT_EXCEEDED: You attempted to exceed the number
+//     of accounts that you can close at a time. ​
+//
+//   - CREATE_ORGANIZATION_IN_BILLING_MODE_UNSUPPORTED_REGION: To create an
+//     organization in the specified region, you must enable all features mode.
+//
+//   - DELEGATED_ADMINISTRATOR_EXISTS_FOR_THIS_SERVICE: You attempted to register
+//     an Amazon Web Services account as a delegated administrator for an Amazon
+//     Web Services service that already has a delegated administrator. To complete
+//     this operation, you must first deregister any existing delegated administrators
+//     for this service.
+//
+//   - EMAIL_VERIFICATION_CODE_EXPIRED: The email verification code is only
+//     valid for a limited period of time. You must resubmit the request and
+//     generate a new verfication code.
+//
+//   - HANDSHAKE_RATE_LIMIT_EXCEEDED: You attempted to exceed the number of
+//     handshakes that you can send in one day.
+//
+//   - INVALID_PAYMENT_INSTRUMENT: You cannot remove an account because no
+//     supported payment method is associated with the account. Amazon Web Services
+//     does not support cards issued by financial institutions in Russia or Belarus.
+//     For more information, see Managing your Amazon Web Services payments (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/manage-general.html).
+//
+//   - MASTER_ACCOUNT_ADDRESS_DOES_NOT_MATCH_MARKETPLACE: To create an account
+//     in this organization, you first must migrate the organization's management
+//     account to the marketplace that corresponds to the management account's
+//     address. For example, accounts with India addresses must be associated
+//     with the AISPL marketplace. All accounts in an organization must be associated
+//     with the same marketplace.
+//
+//   - MASTER_ACCOUNT_MISSING_BUSINESS_LICENSE: Applies only to the Amazon
+//     Web Services /> Regions in China. To create an organization, the master
+//     must have a valid business license. For more information, contact customer
+//     support.
+//
+//   - MASTER_ACCOUNT_MISSING_CONTACT_INFO: To complete this operation, you
+//     must first provide a valid contact address and phone number for the management
+//     account. Then try the operation again.
+//
+//   - MASTER_ACCOUNT_NOT_GOVCLOUD_ENABLED: To complete this operation, the
+//     management account must have an associated account in the Amazon Web Services
+//     GovCloud (US-West) Region. For more information, see Organizations (https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-organizations.html)
+//     in the Amazon Web Services GovCloud User Guide.
+//
+//   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
+//     with this management account, you first must associate a valid payment
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
+//     in the Organizations User Guide.
+//
+//   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
+//     to register more delegated administrators than allowed for the service
+//     principal.
+//
+//   - MAX_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to exceed the
+//     number of policies of a certain type that can be attached to an entity
+//     at one time.
+//
+//   - MAX_TAG_LIMIT_EXCEEDED: You have exceeded the number of tags allowed
+//     on this resource.
+//
+//   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
+//     with this member account, you first must associate a valid payment instrument,
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
+//     in the Organizations User Guide.
+//
+//   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
+//     policy from an entity that would cause the entity to have fewer than the
+//     minimum number of policies of a certain type required.
+//
+//   - ORGANIZATION_NOT_IN_ALL_FEATURES_MODE: You attempted to perform an operation
+//     that requires the organization to be configured to support all features.
+//     An organization that supports only consolidated billing features can't
+//     perform this operation.
+//
+//   - OU_DEPTH_LIMIT_EXCEEDED: You attempted to create an OU tree that is
+//     too many levels deep.
+//
+//   - OU_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the number of OUs
+//     that you can have in an organization.
+//
+//   - POLICY_CONTENT_LIMIT_EXCEEDED: You attempted to create a policy that
+//     is larger than the maximum size.
+//
+//   - POLICY_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the number of
+//     policies that you can have in an organization.
+//
+//   - SERVICE_ACCESS_NOT_ENABLED: You attempted to register a delegated administrator
+//     before you enabled service access. Call the EnableAWSServiceAccess API
+//     first.
+//
+//   - TAG_POLICY_VIOLATION: You attempted to create or update a resource with
+//     tags that are not compliant with the tag policy requirements for this
+//     account.
+//
+//   - WAIT_PERIOD_ACTIVE: After you create an Amazon Web Services account,
+//     there is a waiting period before you can remove it from the organization.
+//     If you get an error that indicates that a wait period is required, try
+//     again in a few days.
+//
+//   - AWSOrganizationsNotInUseException
+//     Your account isn't a member of an organization. To make this request, you
+//     must use the credentials of an account that belongs to an organization.
+//
+//   - ResourcePolicyNotFoundException
+//     We can't find a resource policy request with the parameter that you specified.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DeleteResourcePolicy
+func (c *Organizations) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteResourcePolicyWithContext is the same as DeleteResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Organizations) DeleteResourcePolicyWithContext(ctx aws.Context, input *DeleteResourcePolicyInput, opts ...request.Option) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -4104,9 +4420,13 @@ func (c *Organizations) DeregisterDelegatedAdministratorRequest(input *Deregiste
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -4114,7 +4434,10 @@ func (c *Organizations) DeregisterDelegatedAdministratorRequest(input *Deregiste
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -4181,9 +4504,8 @@ func (c *Organizations) DeregisterDelegatedAdministratorRequest(input *Deregiste
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -4199,9 +4521,8 @@ func (c *Organizations) DeregisterDelegatedAdministratorRequest(input *Deregiste
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -4321,8 +4642,8 @@ func (c *Organizations) DeregisterDelegatedAdministratorRequest(input *Deregiste
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - ServiceException
 //     Organizations can't complete your request because of an internal service
@@ -4514,8 +4835,8 @@ func (c *Organizations) DescribeAccountRequest(input *DescribeAccountInput) (req
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeAccount
 func (c *Organizations) DescribeAccount(input *DescribeAccountInput) (*DescribeAccountOutput, error) {
@@ -4699,8 +5020,8 @@ func (c *Organizations) DescribeCreateAccountStatusRequest(input *DescribeCreate
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -4778,13 +5099,11 @@ func (c *Organizations) DescribeEffectivePolicyRequest(input *DescribeEffectiveP
 // This operation applies only to policy types other than service control policies
 // (SCPs).
 //
-// For more information about policy inheritance, see How Policy Inheritance
-// Works (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies-inheritance.html)
+// For more information about policy inheritance, see Understanding management
+// policy inheritance (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_inheritance_mgmt.html)
 // in the Organizations User Guide.
 //
-// This operation can be called only from the organization's management account
-// or by a member account that is a delegated administrator for an Amazon Web
-// Services service.
+// This operation can be called from any account in the organization.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4832,9 +5151,13 @@ func (c *Organizations) DescribeEffectivePolicyRequest(input *DescribeEffectiveP
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -4842,7 +5165,10 @@ func (c *Organizations) DescribeEffectivePolicyRequest(input *DescribeEffectiveP
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -4909,9 +5235,8 @@ func (c *Organizations) DescribeEffectivePolicyRequest(input *DescribeEffectiveP
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -4927,9 +5252,8 @@ func (c *Organizations) DescribeEffectivePolicyRequest(input *DescribeEffectiveP
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -4975,8 +5299,8 @@ func (c *Organizations) DescribeEffectivePolicyRequest(input *DescribeEffectiveP
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - TargetNotFoundException
 //     We can't find a root, OU, account, or policy with the TargetId that you specified.
@@ -5253,8 +5577,8 @@ func (c *Organizations) DescribeHandshakeRequest(input *DescribeHandshakeInput) 
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeHandshake
 func (c *Organizations) DescribeHandshake(input *DescribeHandshakeInput) (*DescribeHandshakeOutput, error) {
@@ -5363,8 +5687,8 @@ func (c *Organizations) DescribeOrganizationRequest(input *DescribeOrganizationI
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeOrganization
 func (c *Organizations) DescribeOrganization(input *DescribeOrganizationInput) (*DescribeOrganizationOutput, error) {
@@ -5547,8 +5871,8 @@ func (c *Organizations) DescribeOrganizationalUnitRequest(input *DescribeOrganiz
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeOrganizationalUnit
 func (c *Organizations) DescribeOrganizationalUnit(input *DescribeOrganizationalUnitInput) (*DescribeOrganizationalUnitOutput, error) {
@@ -5731,8 +6055,8 @@ func (c *Organizations) DescribePolicyRequest(input *DescribePolicyInput) (req *
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -5759,74 +6083,61 @@ func (c *Organizations) DescribePolicyWithContext(ctx aws.Context, input *Descri
 	return out, req.Send()
 }
 
-const opDetachPolicy = "DetachPolicy"
+const opDescribeResourcePolicy = "DescribeResourcePolicy"
 
-// DetachPolicyRequest generates a "aws/request.Request" representing the
-// client's request for the DetachPolicy operation. The "output" return
+// DescribeResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeResourcePolicy operation. The "output" return
 // value will be populated with the request's response once the request completes
 // successfully.
 //
 // Use "Send" method on the returned Request to send the API call to the service.
 // the "output" return value is not valid until after Send returns without error.
 //
-// See DetachPolicy for more information on using the DetachPolicy
+// See DescribeResourcePolicy for more information on using the DescribeResourcePolicy
 // API call, and error handling.
 //
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
-//	// Example sending a request using the DetachPolicyRequest method.
-//	req, resp := client.DetachPolicyRequest(params)
+//	// Example sending a request using the DescribeResourcePolicyRequest method.
+//	req, resp := client.DescribeResourcePolicyRequest(params)
 //
 //	err := req.Send()
 //	if err == nil { // resp is now filled
 //	    fmt.Println(resp)
 //	}
 //
-// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DetachPolicy
-func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *request.Request, output *DetachPolicyOutput) {
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeResourcePolicy
+func (c *Organizations) DescribeResourcePolicyRequest(input *DescribeResourcePolicyInput) (req *request.Request, output *DescribeResourcePolicyOutput) {
 	op := &request.Operation{
-		Name:       opDetachPolicy,
+		Name:       opDescribeResourcePolicy,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
 	}
 
 	if input == nil {
-		input = &DetachPolicyInput{}
+		input = &DescribeResourcePolicyInput{}
 	}
 
-	output = &DetachPolicyOutput{}
+	output = &DescribeResourcePolicyOutput{}
 	req = c.newRequest(op, input, output)
-	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
 	return
 }
 
-// DetachPolicy API operation for AWS Organizations.
+// DescribeResourcePolicy API operation for AWS Organizations.
 //
-// Detaches a policy from a target root, organizational unit (OU), or account.
+// Retrieves information about a resource policy.
 //
-// If the policy being detached is a service control policy (SCP), the changes
-// to permissions for Identity and Access Management (IAM) users and roles in
-// affected accounts are immediate.
-//
-// Every root, OU, and account must have at least one SCP attached. If you want
-// to replace the default FullAWSAccess policy with an SCP that limits the permissions
-// that can be delegated, you must attach the replacement SCP before you can
-// remove the default SCP. This is the authorization strategy of an "allow list
-// (https://docs.aws.amazon.com/organizations/latest/userguide/SCP_strategies.html#orgs_policies_allowlist)".
-// If you instead attach a second SCP and leave the FullAWSAccess SCP still
-// attached, and specify "Effect": "Deny" in the second SCP to override the
-// "Effect": "Allow" in the FullAWSAccess policy (or any other attached SCP),
-// you're using the authorization strategy of a "deny list (https://docs.aws.amazon.com/organizations/latest/userguide/SCP_strategies.html#orgs_policies_denylist)".
-//
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
 //
 // See the AWS API reference guide for AWS Organizations's
-// API operation DetachPolicy for usage and error information.
+// API operation DescribeResourcePolicy for usage and error information.
 //
 // Returned Error Types:
 //
@@ -5837,13 +6148,27 @@ func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *requ
 //     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
 //     in the IAM User Guide.
 //
+//   - ServiceException
+//     Organizations can't complete your request because of an internal service
+//     error. Try again later.
+//
+//   - UnsupportedAPIEndpointException
+//     This action isn't available in the current Amazon Web Services Region.
+//
+//   - TooManyRequestsException
+//     You have sent too many requests in too short a period of time. The quota
+//     helps protect against denial-of-service attacks. Try again later.
+//
+//     For information about quotas that affect Organizations, see Quotas for Organizations
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
+//
 //   - AWSOrganizationsNotInUseException
 //     Your account isn't a member of an organization. To make this request, you
 //     must use the credentials of an account that belongs to an organization.
 //
-//   - ConcurrentModificationException
-//     The target of the operation is currently being modified by a different request.
-//     Try again later.
+//   - ResourcePolicyNotFoundException
+//     We can't find a resource policy request with the parameter that you specified.
 //
 //   - ConstraintViolationException
 //     Performing this operation violates a minimum or maximum value limit. For
@@ -5871,9 +6196,13 @@ func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *requ
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -5881,7 +6210,10 @@ func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *requ
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -5948,9 +6280,8 @@ func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *requ
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -5966,9 +6297,283 @@ func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *requ
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
+//     in the Organizations User Guide.
+//
+//   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
+//     policy from an entity that would cause the entity to have fewer than the
+//     minimum number of policies of a certain type required.
+//
+//   - ORGANIZATION_NOT_IN_ALL_FEATURES_MODE: You attempted to perform an operation
+//     that requires the organization to be configured to support all features.
+//     An organization that supports only consolidated billing features can't
+//     perform this operation.
+//
+//   - OU_DEPTH_LIMIT_EXCEEDED: You attempted to create an OU tree that is
+//     too many levels deep.
+//
+//   - OU_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the number of OUs
+//     that you can have in an organization.
+//
+//   - POLICY_CONTENT_LIMIT_EXCEEDED: You attempted to create a policy that
+//     is larger than the maximum size.
+//
+//   - POLICY_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the number of
+//     policies that you can have in an organization.
+//
+//   - SERVICE_ACCESS_NOT_ENABLED: You attempted to register a delegated administrator
+//     before you enabled service access. Call the EnableAWSServiceAccess API
+//     first.
+//
+//   - TAG_POLICY_VIOLATION: You attempted to create or update a resource with
+//     tags that are not compliant with the tag policy requirements for this
+//     account.
+//
+//   - WAIT_PERIOD_ACTIVE: After you create an Amazon Web Services account,
+//     there is a waiting period before you can remove it from the organization.
+//     If you get an error that indicates that a wait period is required, try
+//     again in a few days.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DescribeResourcePolicy
+func (c *Organizations) DescribeResourcePolicy(input *DescribeResourcePolicyInput) (*DescribeResourcePolicyOutput, error) {
+	req, out := c.DescribeResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DescribeResourcePolicyWithContext is the same as DescribeResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Organizations) DescribeResourcePolicyWithContext(ctx aws.Context, input *DescribeResourcePolicyInput, opts ...request.Option) (*DescribeResourcePolicyOutput, error) {
+	req, out := c.DescribeResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDetachPolicy = "DetachPolicy"
+
+// DetachPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DetachPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DetachPolicy for more information on using the DetachPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DetachPolicyRequest method.
+//	req, resp := client.DetachPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/DetachPolicy
+func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *request.Request, output *DetachPolicyOutput) {
+	op := &request.Operation{
+		Name:       opDetachPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DetachPolicyInput{}
+	}
+
+	output = &DetachPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DetachPolicy API operation for AWS Organizations.
+//
+// Detaches a policy from a target root, organizational unit (OU), or account.
+//
+// If the policy being detached is a service control policy (SCP), the changes
+// to permissions for Identity and Access Management (IAM) users and roles in
+// affected accounts are immediate.
+//
+// Every root, OU, and account must have at least one SCP attached. If you want
+// to replace the default FullAWSAccess policy with an SCP that limits the permissions
+// that can be delegated, you must attach the replacement SCP before you can
+// remove the default SCP. This is the authorization strategy of an "allow list
+// (https://docs.aws.amazon.com/organizations/latest/userguide/SCP_strategies.html#orgs_policies_allowlist)".
+// If you instead attach a second SCP and leave the FullAWSAccess SCP still
+// attached, and specify "Effect": "Deny" in the second SCP to override the
+// "Effect": "Allow" in the FullAWSAccess policy (or any other attached SCP),
+// you're using the authorization strategy of a "deny list (https://docs.aws.amazon.com/organizations/latest/userguide/SCP_strategies.html#orgs_policies_denylist)".
+//
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Organizations's
+// API operation DetachPolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
+//
+//   - AWSOrganizationsNotInUseException
+//     Your account isn't a member of an organization. To make this request, you
+//     must use the credentials of an account that belongs to an organization.
+//
+//   - ConcurrentModificationException
+//     The target of the operation is currently being modified by a different request.
+//     Try again later.
+//
+//   - ConstraintViolationException
+//     Performing this operation violates a minimum or maximum value limit. For
+//     example, attempting to remove the last service control policy (SCP) from
+//     an OU or root, inviting or creating too many accounts to the organization,
+//     or attaching too many policies to an account, OU, or root. This exception
+//     includes a reason that contains additional information about the violated
+//     limit:
+//
+//     Some of the reasons in the following list might not be applicable to this
+//     specific API or operation.
+//
+//   - ACCOUNT_CANNOT_LEAVE_ORGANIZATION: You attempted to remove the management
+//     account from the organization. You can't remove the management account.
+//     Instead, after you remove all member accounts, delete the organization
+//     itself.
+//
+//   - ACCOUNT_CANNOT_LEAVE_WITHOUT_PHONE_VERIFICATION: You attempted to remove
+//     an account from the organization that doesn't yet have enough information
+//     to exist as a standalone account. This account requires you to first complete
+//     phone verification. Follow the steps at Removing a member account from
+//     your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#orgs_manage_accounts_remove-from-master)
+//     in the Organizations User Guide.
+//
+//   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
+//     of accounts that you can create in one day.
+//
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
+//   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
+//     the number of accounts in an organization. If you need more accounts,
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
+//     to request an increase in your limit. Or the number of invitations that
+//     you tried to send would cause you to exceed the limit of accounts in your
+//     organization. Send fewer invitations or contact Amazon Web Services Support
+//     to request an increase in the number of accounts. Deleted and closed accounts
+//     still count toward your limit. If you get this exception when running
+//     a command immediately after creating the organization, wait one hour and
+//     try again. After an hour, if the command continues to fail with this error,
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
+//
+//   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
+//     register the management account of the organization as a delegated administrator
+//     for an Amazon Web Services service integrated with Organizations. You
+//     can designate only a member account as a delegated administrator.
+//
+//   - CANNOT_CLOSE_MANAGEMENT_ACCOUNT: You attempted to close the management
+//     account. To close the management account for the organization, you must
+//     first either remove or close all member accounts in the organization.
+//     Follow standard account closure process using root credentials.​
+//
+//   - CANNOT_REMOVE_DELEGATED_ADMINISTRATOR_FROM_ORG: You attempted to remove
+//     an account that is registered as a delegated administrator for a service
+//     integrated with your organization. To complete this operation, you must
+//     first deregister this account as a delegated administrator.
+//
+//   - CLOSE_ACCOUNT_QUOTA_EXCEEDED: You have exceeded close account quota
+//     for the past 30 days.
+//
+//   - CLOSE_ACCOUNT_REQUESTS_LIMIT_EXCEEDED: You attempted to exceed the number
+//     of accounts that you can close at a time. ​
+//
+//   - CREATE_ORGANIZATION_IN_BILLING_MODE_UNSUPPORTED_REGION: To create an
+//     organization in the specified region, you must enable all features mode.
+//
+//   - DELEGATED_ADMINISTRATOR_EXISTS_FOR_THIS_SERVICE: You attempted to register
+//     an Amazon Web Services account as a delegated administrator for an Amazon
+//     Web Services service that already has a delegated administrator. To complete
+//     this operation, you must first deregister any existing delegated administrators
+//     for this service.
+//
+//   - EMAIL_VERIFICATION_CODE_EXPIRED: The email verification code is only
+//     valid for a limited period of time. You must resubmit the request and
+//     generate a new verfication code.
+//
+//   - HANDSHAKE_RATE_LIMIT_EXCEEDED: You attempted to exceed the number of
+//     handshakes that you can send in one day.
+//
+//   - INVALID_PAYMENT_INSTRUMENT: You cannot remove an account because no
+//     supported payment method is associated with the account. Amazon Web Services
+//     does not support cards issued by financial institutions in Russia or Belarus.
+//     For more information, see Managing your Amazon Web Services payments (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/manage-general.html).
+//
+//   - MASTER_ACCOUNT_ADDRESS_DOES_NOT_MATCH_MARKETPLACE: To create an account
+//     in this organization, you first must migrate the organization's management
+//     account to the marketplace that corresponds to the management account's
+//     address. For example, accounts with India addresses must be associated
+//     with the AISPL marketplace. All accounts in an organization must be associated
+//     with the same marketplace.
+//
+//   - MASTER_ACCOUNT_MISSING_BUSINESS_LICENSE: Applies only to the Amazon
+//     Web Services /> Regions in China. To create an organization, the master
+//     must have a valid business license. For more information, contact customer
+//     support.
+//
+//   - MASTER_ACCOUNT_MISSING_CONTACT_INFO: To complete this operation, you
+//     must first provide a valid contact address and phone number for the management
+//     account. Then try the operation again.
+//
+//   - MASTER_ACCOUNT_NOT_GOVCLOUD_ENABLED: To complete this operation, the
+//     management account must have an associated account in the Amazon Web Services
+//     GovCloud (US-West) Region. For more information, see Organizations (https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-organizations.html)
+//     in the Amazon Web Services GovCloud User Guide.
+//
+//   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
+//     with this management account, you first must associate a valid payment
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
+//     in the Organizations User Guide.
+//
+//   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
+//     to register more delegated administrators than allowed for the service
+//     principal.
+//
+//   - MAX_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to exceed the
+//     number of policies of a certain type that can be attached to an entity
+//     at one time.
+//
+//   - MAX_TAG_LIMIT_EXCEEDED: You have exceeded the number of tags allowed
+//     on this resource.
+//
+//   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
+//     with this member account, you first must associate a valid payment instrument,
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -6101,8 +6706,8 @@ func (c *Organizations) DetachPolicyRequest(input *DetachPolicyInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -6228,8 +6833,8 @@ func (c *Organizations) DisableAWSServiceAccessRequest(input *DisableAWSServiceA
 // can no longer perform operations in your organization's accounts
 //
 // For more information about integrating other services with Organizations,
-// including the list of services that work with Organizations, see Integrating
-// Organizations with Other Amazon Web Services Services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
+// including the list of services that work with Organizations, see Using Organizations
+// with other Amazon Web Services services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
 // in the Organizations User Guide.
 //
 // This operation can be called only from the organization's management account.
@@ -6284,9 +6889,13 @@ func (c *Organizations) DisableAWSServiceAccessRequest(input *DisableAWSServiceA
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -6294,7 +6903,10 @@ func (c *Organizations) DisableAWSServiceAccessRequest(input *DisableAWSServiceA
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -6361,9 +6973,8 @@ func (c *Organizations) DisableAWSServiceAccessRequest(input *DisableAWSServiceA
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -6379,9 +6990,8 @@ func (c *Organizations) DisableAWSServiceAccessRequest(input *DisableAWSServiceA
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -6505,8 +7115,8 @@ func (c *Organizations) DisableAWSServiceAccessRequest(input *DisableAWSServiceA
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -6589,7 +7199,9 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 // first use ListRoots to see the status of policy types for a specified root,
 // and then use this operation.
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // To view the status of available policy types in the organization, use DescribeOrganization.
 //
@@ -6643,9 +7255,13 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -6653,7 +7269,10 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -6720,9 +7339,8 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -6738,9 +7356,8 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -6858,8 +7475,8 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 //   - PolicyTypeNotEnabledException
 //     The specified policy type isn't currently enabled in this root. You can't
 //     attach policies of the specified type to entities in a root until you enable
-//     that type in the root. For more information, see Enabling All Features in
-//     Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
+//     that type in the root. For more information, see Enabling all features in
+//     your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
 //     in the Organizations User Guide.
 //
 //   - RootNotFoundException
@@ -6874,8 +7491,8 @@ func (c *Organizations) DisablePolicyTypeRequest(input *DisablePolicyTypeInput) 
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -6965,10 +7582,10 @@ func (c *Organizations) EnableAWSServiceAccessRequest(input *EnableAWSServiceAcc
 // Web Services service.
 //
 // For more information about enabling services to integrate with Organizations,
-// see Integrating Organizations with Other Amazon Web Services Services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
+// see Using Organizations with other Amazon Web Services services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
 // in the Organizations User Guide.
 //
-// This operation can be called only from the organization's management account
+// You can only call this operation from the organization's management account
 // and only if the organization has enabled all features (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -7021,9 +7638,13 @@ func (c *Organizations) EnableAWSServiceAccessRequest(input *EnableAWSServiceAcc
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -7031,7 +7652,10 @@ func (c *Organizations) EnableAWSServiceAccessRequest(input *EnableAWSServiceAcc
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -7098,9 +7722,8 @@ func (c *Organizations) EnableAWSServiceAccessRequest(input *EnableAWSServiceAcc
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -7116,9 +7739,8 @@ func (c *Organizations) EnableAWSServiceAccessRequest(input *EnableAWSServiceAcc
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -7242,8 +7864,8 @@ func (c *Organizations) EnableAWSServiceAccessRequest(input *EnableAWSServiceAcc
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -7317,8 +7939,8 @@ func (c *Organizations) EnableAllFeaturesRequest(input *EnableAllFeaturesInput) 
 // policies that can restrict the services and actions that can be called in
 // each account. Until you enable all features, you have access only to consolidated
 // billing, and you can't use any of the advanced account administration features
-// that Organizations supports. For more information, see Enabling All Features
-// in Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
+// that Organizations supports. For more information, see Enabling all features
+// in your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
 // in the Organizations User Guide.
 //
 // This operation is required only for organizations that were created explicitly
@@ -7380,7 +8002,7 @@ func (c *Organizations) EnableAllFeaturesRequest(input *EnableAllFeaturesInput) 
 //     accounts still count toward your limit. If you get this exception immediately
 //     after creating the organization, wait one hour and try again. If after
 //     an hour it continues to fail with this error, contact Amazon Web Services
-//     Support (https://docs.aws.amazon.com/support/home#/).
+//     Support (https://console.aws.amazon.com/support/home#/).
 //
 //   - ALREADY_IN_AN_ORGANIZATION: The handshake request is invalid because
 //     the invited account is already a member of an organization.
@@ -7500,8 +8122,8 @@ func (c *Organizations) EnableAllFeaturesRequest(input *EnableAllFeaturesInput) 
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/EnableAllFeatures
 func (c *Organizations) EnableAllFeatures(input *EnableAllFeaturesInput) (*EnableAllFeaturesOutput, error) {
@@ -7577,7 +8199,9 @@ func (c *Organizations) EnablePolicyTypeRequest(input *EnablePolicyTypeInput) (r
 // background. Amazon Web Services recommends that you first use ListRoots to
 // see the status of policy types for a specified root, and then use this operation.
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // You can enable a policy type in a root only if that policy type is available
 // in the organization. To view the status of available policy types in the
@@ -7633,9 +8257,13 @@ func (c *Organizations) EnablePolicyTypeRequest(input *EnablePolicyTypeInput) (r
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -7643,7 +8271,10 @@ func (c *Organizations) EnablePolicyTypeRequest(input *EnablePolicyTypeInput) (r
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -7710,9 +8341,8 @@ func (c *Organizations) EnablePolicyTypeRequest(input *EnablePolicyTypeInput) (r
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -7728,9 +8358,8 @@ func (c *Organizations) EnablePolicyTypeRequest(input *EnablePolicyTypeInput) (r
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -7860,14 +8489,14 @@ func (c *Organizations) EnablePolicyTypeRequest(input *EnablePolicyTypeInput) (r
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - PolicyTypeNotAvailableForOrganizationException
 //     You can't use the specified policy type with the feature set currently enabled
 //     for this organization. For example, you can enable SCPs only after you enable
 //     all features in the organization. For more information, see Managing Organizations
-//     Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
+//     policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
 //     the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
@@ -7953,7 +8582,7 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //     Web Services seller in India, you can invite only other AISPL accounts
 //     to your organization. You can't combine accounts from AISPL and Amazon
 //     Web Services or from any other Amazon Web Services seller. For more information,
-//     see Consolidated Billing in India (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/useconsolidatedbilliing-India.html).
+//     see Consolidated billing in India (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/useconsolidatedbilling-India.html).
 //
 //   - If you receive an exception that indicates that you exceeded your account
 //     limits for the organization or that the operation failed because your
@@ -7989,7 +8618,7 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //   - AccountOwnerNotVerifiedException
 //     You can't invite an existing account to your organization until you verify
 //     that you own the email address associated with the management account. For
-//     more information, see Email Address Verification (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_create.html#about-email-verification)
+//     more information, see Email address verification (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_create.html#about-email-verification)
 //     in the Organizations User Guide.
 //
 //   - ConcurrentModificationException
@@ -8008,7 +8637,7 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //     accounts still count toward your limit. If you get this exception immediately
 //     after creating the organization, wait one hour and try again. If after
 //     an hour it continues to fail with this error, contact Amazon Web Services
-//     Support (https://docs.aws.amazon.com/support/home#/).
+//     Support (https://console.aws.amazon.com/support/home#/).
 //
 //   - ALREADY_IN_AN_ORGANIZATION: The handshake request is invalid because
 //     the invited account is already a member of an organization.
@@ -8074,9 +8703,13 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -8084,7 +8717,10 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -8151,9 +8787,8 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -8169,9 +8804,8 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -8301,8 +8935,8 @@ func (c *Organizations) InviteAccountToOrganizationRequest(input *InviteAccountT
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/InviteAccountToOrganization
 func (c *Organizations) InviteAccountToOrganization(input *InviteAccountToOrganizationInput) (*InviteAccountToOrganizationOutput, error) {
@@ -8393,8 +9027,8 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //     Provide a current payment method Amazon Web Services uses the payment
 //     method to charge for any billable (not free tier) Amazon Web Services
 //     activity that occurs while the account isn't attached to an organization.
-//     Follow the steps at To leave an organization when all required account
-//     information has not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     For more information, see Considerations before removing an account from
+//     an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - The account that you want to leave must not be a delegated administrator
@@ -8404,8 +9038,8 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //     the organization.
 //
 //   - You can leave an organization only after you enable IAM user access
-//     to billing in your account. For more information, see Activating Access
-//     to the Billing and Cost Management Console (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html#ControllingAccessWebsite-Activate)
+//     to billing in your account. For more information, see About IAM access
+//     to the Billing and Cost Management console (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html#ControllingAccessWebsite-Activate)
 //     in the Amazon Web Services Billing and Cost Management User Guide.
 //
 //   - After the account leaves the organization, all tags that were attached
@@ -8415,6 +9049,10 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //   - A newly created account has a waiting period before it can be removed
 //     from its organization. If you get an error that indicates that a wait
 //     period is required, then try again in a few days.
+//
+//   - If you are using an organization principal to call LeaveOrganization
+//     across multiple accounts, you can only do this up to 5 accounts per second
+//     in a single organization.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8471,9 +9109,13 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -8481,7 +9123,10 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -8548,9 +9193,8 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -8566,9 +9210,8 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -8697,8 +9340,8 @@ func (c *Organizations) LeaveOrganizationRequest(input *LeaveOrganizationInput) 
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/LeaveOrganization
 func (c *Organizations) LeaveOrganization(input *LeaveOrganizationInput) (*LeaveOrganizationOutput, error) {
@@ -8778,7 +9421,7 @@ func (c *Organizations) ListAWSServiceAccessForOrganizationRequest(input *ListAW
 //
 // For more information about integrating other services with Organizations,
 // including the list of services that currently work with Organizations, see
-// Integrating Organizations with Other Amazon Web Services Services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
+// Using Organizations with other Amazon Web Services services (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_integrate_services.html)
 // in the Organizations User Guide.
 //
 // This operation can be called only from the organization's management account
@@ -8831,9 +9474,13 @@ func (c *Organizations) ListAWSServiceAccessForOrganizationRequest(input *ListAW
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -8841,7 +9488,10 @@ func (c *Organizations) ListAWSServiceAccessForOrganizationRequest(input *ListAW
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -8908,9 +9558,8 @@ func (c *Organizations) ListAWSServiceAccessForOrganizationRequest(input *ListAW
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -8926,9 +9575,8 @@ func (c *Organizations) ListAWSServiceAccessForOrganizationRequest(input *ListAW
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -9052,8 +9700,8 @@ func (c *Organizations) ListAWSServiceAccessForOrganizationRequest(input *ListAW
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -9300,8 +9948,8 @@ func (c *Organizations) ListAccountsRequest(input *ListAccountsInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListAccounts
 func (c *Organizations) ListAccounts(input *ListAccountsInput) (*ListAccountsOutput, error) {
@@ -9550,8 +10198,8 @@ func (c *Organizations) ListAccountsForParentRequest(input *ListAccountsForParen
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListAccountsForParent
 func (c *Organizations) ListAccountsForParent(input *ListAccountsForParentInput) (*ListAccountsForParentOutput, error) {
@@ -9798,8 +10446,8 @@ func (c *Organizations) ListChildrenRequest(input *ListChildrenInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListChildren
 func (c *Organizations) ListChildren(input *ListChildrenInput) (*ListChildrenOutput, error) {
@@ -10042,8 +10690,8 @@ func (c *Organizations) ListCreateAccountStatusRequest(input *ListCreateAccountS
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -10223,9 +10871,13 @@ func (c *Organizations) ListDelegatedAdministratorsRequest(input *ListDelegatedA
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -10233,7 +10885,10 @@ func (c *Organizations) ListDelegatedAdministratorsRequest(input *ListDelegatedA
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -10300,9 +10955,8 @@ func (c *Organizations) ListDelegatedAdministratorsRequest(input *ListDelegatedA
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -10318,9 +10972,8 @@ func (c *Organizations) ListDelegatedAdministratorsRequest(input *ListDelegatedA
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -10440,8 +11093,8 @@ func (c *Organizations) ListDelegatedAdministratorsRequest(input *ListDelegatedA
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - ServiceException
 //     Organizations can't complete your request because of an internal service
@@ -10634,9 +11287,13 @@ func (c *Organizations) ListDelegatedServicesForAccountRequest(input *ListDelega
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -10644,7 +11301,10 @@ func (c *Organizations) ListDelegatedServicesForAccountRequest(input *ListDelega
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -10711,9 +11371,8 @@ func (c *Organizations) ListDelegatedServicesForAccountRequest(input *ListDelega
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -10729,9 +11388,8 @@ func (c *Organizations) ListDelegatedServicesForAccountRequest(input *ListDelega
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -10851,8 +11509,8 @@ func (c *Organizations) ListDelegatedServicesForAccountRequest(input *ListDelega
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - ServiceException
 //     Organizations can't complete your request because of an internal service
@@ -11104,8 +11762,8 @@ func (c *Organizations) ListHandshakesForAccountRequest(input *ListHandshakesFor
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListHandshakesForAccount
 func (c *Organizations) ListHandshakesForAccount(input *ListHandshakesForAccountInput) (*ListHandshakesForAccountOutput, error) {
@@ -11358,8 +12016,8 @@ func (c *Organizations) ListHandshakesForOrganizationRequest(input *ListHandshak
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListHandshakesForOrganization
 func (c *Organizations) ListHandshakesForOrganization(input *ListHandshakesForOrganizationInput) (*ListHandshakesForOrganizationOutput, error) {
@@ -11604,8 +12262,8 @@ func (c *Organizations) ListOrganizationalUnitsForParentRequest(input *ListOrgan
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListOrganizationalUnitsForParent
 func (c *Organizations) ListOrganizationalUnitsForParent(input *ListOrganizationalUnitsForParentInput) (*ListOrganizationalUnitsForParentOutput, error) {
@@ -11855,8 +12513,8 @@ func (c *Organizations) ListParentsRequest(input *ListParentsInput) (req *reques
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListParents
 func (c *Organizations) ListParents(input *ListParentsInput) (*ListParentsOutput, error) {
@@ -12098,8 +12756,8 @@ func (c *Organizations) ListPoliciesRequest(input *ListPoliciesInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -12349,8 +13007,8 @@ func (c *Organizations) ListPoliciesForTargetRequest(input *ListPoliciesForTarge
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -12601,8 +13259,8 @@ func (c *Organizations) ListRootsRequest(input *ListRootsInput) (req *request.Re
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListRoots
 func (c *Organizations) ListRoots(input *ListRootsInput) (*ListRootsOutput, error) {
@@ -12852,8 +13510,8 @@ func (c *Organizations) ListTagsForResourceRequest(input *ListTagsForResourceInp
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/ListTagsForResource
 func (c *Organizations) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -13099,8 +13757,8 @@ func (c *Organizations) ListTargetsForPolicyRequest(input *ListTargetsForPolicyI
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -13341,8 +13999,8 @@ func (c *Organizations) MoveAccountRequest(input *MoveAccountInput) (req *reques
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - ConcurrentModificationException
 //     The target of the operation is currently being modified by a different request.
@@ -13373,6 +14031,357 @@ func (c *Organizations) MoveAccount(input *MoveAccountInput) (*MoveAccountOutput
 // for more information on using Contexts.
 func (c *Organizations) MoveAccountWithContext(ctx aws.Context, input *MoveAccountInput, opts ...request.Option) (*MoveAccountOutput, error) {
 	req, out := c.MoveAccountRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutResourcePolicy = "PutResourcePolicy"
+
+// PutResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutResourcePolicy for more information on using the PutResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/PutResourcePolicy
+func (c *Organizations) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutResourcePolicyInput{}
+	}
+
+	output = &PutResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutResourcePolicy API operation for AWS Organizations.
+//
+// Creates or updates a resource policy.
+//
+// You can only call this operation from the organization's management account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Organizations's
+// API operation PutResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You don't have permissions to perform the requested operation. The user or
+//     role that is making the request must have at least one IAM permissions policy
+//     attached that grants the required permissions. For more information, see
+//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
+//     in the IAM User Guide.
+//
+//   - ServiceException
+//     Organizations can't complete your request because of an internal service
+//     error. Try again later.
+//
+//   - UnsupportedAPIEndpointException
+//     This action isn't available in the current Amazon Web Services Region.
+//
+//   - TooManyRequestsException
+//     You have sent too many requests in too short a period of time. The quota
+//     helps protect against denial-of-service attacks. Try again later.
+//
+//     For information about quotas that affect Organizations, see Quotas for Organizations
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
+//
+//   - ConcurrentModificationException
+//     The target of the operation is currently being modified by a different request.
+//     Try again later.
+//
+//   - InvalidInputException
+//     The requested operation failed because you provided invalid values for one
+//     or more of the request parameters. This exception includes a reason that
+//     contains additional information about the violated limit:
+//
+//     Some of the reasons in the following list might not be applicable to this
+//     specific API or operation.
+//
+//   - DUPLICATE_TAG_KEY: Tag keys must be unique among the tags attached to
+//     the same entity.
+//
+//   - IMMUTABLE_POLICY: You specified a policy that is managed by Amazon Web
+//     Services and can't be modified.
+//
+//   - INPUT_REQUIRED: You must include a value for all required parameters.
+//
+//   - INVALID_EMAIL_ADDRESS_TARGET: You specified an invalid email address
+//     for the invited account owner.
+//
+//   - INVALID_ENUM: You specified an invalid value.
+//
+//   - INVALID_ENUM_POLICY_TYPE: You specified an invalid policy type string.
+//
+//   - INVALID_FULL_NAME_TARGET: You specified a full name that contains invalid
+//     characters.
+//
+//   - INVALID_LIST_MEMBER: You provided a list to a parameter that contains
+//     at least one invalid value.
+//
+//   - INVALID_PAGINATION_TOKEN: Get the value for the NextToken parameter
+//     from the response to a previous call of the operation.
+//
+//   - INVALID_PARTY_TYPE_TARGET: You specified the wrong type of entity (account,
+//     organization, or email) as a party.
+//
+//   - INVALID_PATTERN: You provided a value that doesn't match the required
+//     pattern.
+//
+//   - INVALID_PATTERN_TARGET_ID: You specified a policy target ID that doesn't
+//     match the required pattern.
+//
+//   - INVALID_ROLE_NAME: You provided a role name that isn't valid. A role
+//     name can't begin with the reserved prefix AWSServiceRoleFor.
+//
+//   - INVALID_SYNTAX_ORGANIZATION_ARN: You specified an invalid Amazon Resource
+//     Name (ARN) for the organization.
+//
+//   - INVALID_SYNTAX_POLICY_ID: You specified an invalid policy ID.
+//
+//   - INVALID_SYSTEM_TAGS_PARAMETER: You specified a tag key that is a system
+//     tag. You can’t add, edit, or delete system tag keys because they're
+//     reserved for Amazon Web Services use. System tags don’t count against
+//     your tags per resource limit.
+//
+//   - MAX_FILTER_LIMIT_EXCEEDED: You can specify only one filter parameter
+//     for the operation.
+//
+//   - MAX_LENGTH_EXCEEDED: You provided a string parameter that is longer
+//     than allowed.
+//
+//   - MAX_VALUE_EXCEEDED: You provided a numeric parameter that has a larger
+//     value than allowed.
+//
+//   - MIN_LENGTH_EXCEEDED: You provided a string parameter that is shorter
+//     than allowed.
+//
+//   - MIN_VALUE_EXCEEDED: You provided a numeric parameter that has a smaller
+//     value than allowed.
+//
+//   - MOVING_ACCOUNT_BETWEEN_DIFFERENT_ROOTS: You can move an account only
+//     between entities in the same root.
+//
+//   - TARGET_NOT_SUPPORTED: You can't perform the specified operation on that
+//     target entity.
+//
+//   - UNRECOGNIZED_SERVICE_PRINCIPAL: You specified a service principal that
+//     isn't recognized.
+//
+//   - ConstraintViolationException
+//     Performing this operation violates a minimum or maximum value limit. For
+//     example, attempting to remove the last service control policy (SCP) from
+//     an OU or root, inviting or creating too many accounts to the organization,
+//     or attaching too many policies to an account, OU, or root. This exception
+//     includes a reason that contains additional information about the violated
+//     limit:
+//
+//     Some of the reasons in the following list might not be applicable to this
+//     specific API or operation.
+//
+//   - ACCOUNT_CANNOT_LEAVE_ORGANIZATION: You attempted to remove the management
+//     account from the organization. You can't remove the management account.
+//     Instead, after you remove all member accounts, delete the organization
+//     itself.
+//
+//   - ACCOUNT_CANNOT_LEAVE_WITHOUT_PHONE_VERIFICATION: You attempted to remove
+//     an account from the organization that doesn't yet have enough information
+//     to exist as a standalone account. This account requires you to first complete
+//     phone verification. Follow the steps at Removing a member account from
+//     your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#orgs_manage_accounts_remove-from-master)
+//     in the Organizations User Guide.
+//
+//   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
+//     of accounts that you can create in one day.
+//
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
+//   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
+//     the number of accounts in an organization. If you need more accounts,
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
+//     to request an increase in your limit. Or the number of invitations that
+//     you tried to send would cause you to exceed the limit of accounts in your
+//     organization. Send fewer invitations or contact Amazon Web Services Support
+//     to request an increase in the number of accounts. Deleted and closed accounts
+//     still count toward your limit. If you get this exception when running
+//     a command immediately after creating the organization, wait one hour and
+//     try again. After an hour, if the command continues to fail with this error,
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
+//
+//   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
+//     register the management account of the organization as a delegated administrator
+//     for an Amazon Web Services service integrated with Organizations. You
+//     can designate only a member account as a delegated administrator.
+//
+//   - CANNOT_CLOSE_MANAGEMENT_ACCOUNT: You attempted to close the management
+//     account. To close the management account for the organization, you must
+//     first either remove or close all member accounts in the organization.
+//     Follow standard account closure process using root credentials.​
+//
+//   - CANNOT_REMOVE_DELEGATED_ADMINISTRATOR_FROM_ORG: You attempted to remove
+//     an account that is registered as a delegated administrator for a service
+//     integrated with your organization. To complete this operation, you must
+//     first deregister this account as a delegated administrator.
+//
+//   - CLOSE_ACCOUNT_QUOTA_EXCEEDED: You have exceeded close account quota
+//     for the past 30 days.
+//
+//   - CLOSE_ACCOUNT_REQUESTS_LIMIT_EXCEEDED: You attempted to exceed the number
+//     of accounts that you can close at a time. ​
+//
+//   - CREATE_ORGANIZATION_IN_BILLING_MODE_UNSUPPORTED_REGION: To create an
+//     organization in the specified region, you must enable all features mode.
+//
+//   - DELEGATED_ADMINISTRATOR_EXISTS_FOR_THIS_SERVICE: You attempted to register
+//     an Amazon Web Services account as a delegated administrator for an Amazon
+//     Web Services service that already has a delegated administrator. To complete
+//     this operation, you must first deregister any existing delegated administrators
+//     for this service.
+//
+//   - EMAIL_VERIFICATION_CODE_EXPIRED: The email verification code is only
+//     valid for a limited period of time. You must resubmit the request and
+//     generate a new verfication code.
+//
+//   - HANDSHAKE_RATE_LIMIT_EXCEEDED: You attempted to exceed the number of
+//     handshakes that you can send in one day.
+//
+//   - INVALID_PAYMENT_INSTRUMENT: You cannot remove an account because no
+//     supported payment method is associated with the account. Amazon Web Services
+//     does not support cards issued by financial institutions in Russia or Belarus.
+//     For more information, see Managing your Amazon Web Services payments (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/manage-general.html).
+//
+//   - MASTER_ACCOUNT_ADDRESS_DOES_NOT_MATCH_MARKETPLACE: To create an account
+//     in this organization, you first must migrate the organization's management
+//     account to the marketplace that corresponds to the management account's
+//     address. For example, accounts with India addresses must be associated
+//     with the AISPL marketplace. All accounts in an organization must be associated
+//     with the same marketplace.
+//
+//   - MASTER_ACCOUNT_MISSING_BUSINESS_LICENSE: Applies only to the Amazon
+//     Web Services /> Regions in China. To create an organization, the master
+//     must have a valid business license. For more information, contact customer
+//     support.
+//
+//   - MASTER_ACCOUNT_MISSING_CONTACT_INFO: To complete this operation, you
+//     must first provide a valid contact address and phone number for the management
+//     account. Then try the operation again.
+//
+//   - MASTER_ACCOUNT_NOT_GOVCLOUD_ENABLED: To complete this operation, the
+//     management account must have an associated account in the Amazon Web Services
+//     GovCloud (US-West) Region. For more information, see Organizations (https://docs.aws.amazon.com/govcloud-us/latest/UserGuide/govcloud-organizations.html)
+//     in the Amazon Web Services GovCloud User Guide.
+//
+//   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
+//     with this management account, you first must associate a valid payment
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
+//     in the Organizations User Guide.
+//
+//   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
+//     to register more delegated administrators than allowed for the service
+//     principal.
+//
+//   - MAX_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to exceed the
+//     number of policies of a certain type that can be attached to an entity
+//     at one time.
+//
+//   - MAX_TAG_LIMIT_EXCEEDED: You have exceeded the number of tags allowed
+//     on this resource.
+//
+//   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
+//     with this member account, you first must associate a valid payment instrument,
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
+//     in the Organizations User Guide.
+//
+//   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
+//     policy from an entity that would cause the entity to have fewer than the
+//     minimum number of policies of a certain type required.
+//
+//   - ORGANIZATION_NOT_IN_ALL_FEATURES_MODE: You attempted to perform an operation
+//     that requires the organization to be configured to support all features.
+//     An organization that supports only consolidated billing features can't
+//     perform this operation.
+//
+//   - OU_DEPTH_LIMIT_EXCEEDED: You attempted to create an OU tree that is
+//     too many levels deep.
+//
+//   - OU_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the number of OUs
+//     that you can have in an organization.
+//
+//   - POLICY_CONTENT_LIMIT_EXCEEDED: You attempted to create a policy that
+//     is larger than the maximum size.
+//
+//   - POLICY_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the number of
+//     policies that you can have in an organization.
+//
+//   - SERVICE_ACCESS_NOT_ENABLED: You attempted to register a delegated administrator
+//     before you enabled service access. Call the EnableAWSServiceAccess API
+//     first.
+//
+//   - TAG_POLICY_VIOLATION: You attempted to create or update a resource with
+//     tags that are not compliant with the tag policy requirements for this
+//     account.
+//
+//   - WAIT_PERIOD_ACTIVE: After you create an Amazon Web Services account,
+//     there is a waiting period before you can remove it from the organization.
+//     If you get an error that indicates that a wait period is required, try
+//     again in a few days.
+//
+//   - AWSOrganizationsNotInUseException
+//     Your account isn't a member of an organization. To make this request, you
+//     must use the credentials of an account that belongs to an organization.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/PutResourcePolicy
+func (c *Organizations) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutResourcePolicyWithContext is the same as PutResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Organizations) PutResourcePolicyWithContext(ctx aws.Context, input *PutResourcePolicyInput, opts ...request.Option) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -13494,9 +14503,13 @@ func (c *Organizations) RegisterDelegatedAdministratorRequest(input *RegisterDel
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -13504,7 +14517,10 @@ func (c *Organizations) RegisterDelegatedAdministratorRequest(input *RegisterDel
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -13571,9 +14587,8 @@ func (c *Organizations) RegisterDelegatedAdministratorRequest(input *RegisterDel
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -13589,9 +14604,8 @@ func (c *Organizations) RegisterDelegatedAdministratorRequest(input *RegisterDel
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -13711,8 +14725,8 @@ func (c *Organizations) RegisterDelegatedAdministratorRequest(input *RegisterDel
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - ServiceException
 //     Organizations can't complete your request because of an internal service
@@ -13802,15 +14816,8 @@ func (c *Organizations) RemoveAccountFromOrganizationRequest(input *RemoveAccoun
 //     is configured with the information required to operate as a standalone
 //     account. When you create an account in an organization using the Organizations
 //     console, API, or CLI commands, the information required of standalone
-//     accounts is not automatically collected. For an account that you want
-//     to make standalone, you must choose a support plan, provide and verify
-//     the required contact information, and provide a current payment method.
-//     Amazon Web Services uses the payment method to charge for any billable
-//     (not free tier) Amazon Web Services activity that occurs while the account
-//     isn't attached to an organization. To remove an account that doesn't yet
-//     have this information, you must sign in as the member account and follow
-//     the steps at To leave an organization when all required account information
-//     has not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     accounts is not automatically collected. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - The account that you want to leave must not be a delegated administrator
@@ -13878,9 +14885,13 @@ func (c *Organizations) RemoveAccountFromOrganizationRequest(input *RemoveAccoun
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -13888,7 +14899,10 @@ func (c *Organizations) RemoveAccountFromOrganizationRequest(input *RemoveAccoun
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -13955,9 +14969,8 @@ func (c *Organizations) RemoveAccountFromOrganizationRequest(input *RemoveAccoun
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -13973,9 +14986,8 @@ func (c *Organizations) RemoveAccountFromOrganizationRequest(input *RemoveAccoun
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -14104,8 +15116,8 @@ func (c *Organizations) RemoveAccountFromOrganizationRequest(input *RemoveAccoun
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/RemoveAccountFromOrganization
 func (c *Organizations) RemoveAccountFromOrganization(input *RemoveAccountFromOrganizationInput) (*RemoveAccountFromOrganizationOutput, error) {
@@ -14185,7 +15197,9 @@ func (c *Organizations) TagResourceRequest(input *TagResourceInput) (req *reques
 //
 //   - Policy (any type)
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14240,9 +15254,13 @@ func (c *Organizations) TagResourceRequest(input *TagResourceInput) (req *reques
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -14250,7 +15268,10 @@ func (c *Organizations) TagResourceRequest(input *TagResourceInput) (req *reques
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -14317,9 +15338,8 @@ func (c *Organizations) TagResourceRequest(input *TagResourceInput) (req *reques
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -14335,9 +15355,8 @@ func (c *Organizations) TagResourceRequest(input *TagResourceInput) (req *reques
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -14461,8 +15480,8 @@ func (c *Organizations) TagResourceRequest(input *TagResourceInput) (req *reques
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/TagResource
 func (c *Organizations) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -14542,7 +15561,9 @@ func (c *Organizations) UntagResourceRequest(input *UntagResourceInput) (req *re
 //
 //   - Policy (any type)
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14597,9 +15618,13 @@ func (c *Organizations) UntagResourceRequest(input *UntagResourceInput) (req *re
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -14607,7 +15632,10 @@ func (c *Organizations) UntagResourceRequest(input *UntagResourceInput) (req *re
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -14674,9 +15702,8 @@ func (c *Organizations) UntagResourceRequest(input *UntagResourceInput) (req *re
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -14692,9 +15719,8 @@ func (c *Organizations) UntagResourceRequest(input *UntagResourceInput) (req *re
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -14818,8 +15844,8 @@ func (c *Organizations) UntagResourceRequest(input *UntagResourceInput) (req *re
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/UntagResource
 func (c *Organizations) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -15009,8 +16035,8 @@ func (c *Organizations) UpdateOrganizationalUnitRequest(input *UpdateOrganizatio
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/organizations-2016-11-28/UpdateOrganizationalUnit
 func (c *Organizations) UpdateOrganizationalUnit(input *UpdateOrganizationalUnitInput) (*UpdateOrganizationalUnitOutput, error) {
@@ -15081,7 +16107,9 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 // don't supply any parameter, that value remains unchanged. You can't change
 // a policy's type.
 //
-// This operation can be called only from the organization's management account.
+// This operation can be called only from the organization's management account
+// or by a member account that is a delegated administrator for an Amazon Web
+// Services service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15133,9 +16161,13 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -15143,7 +16175,10 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -15210,9 +16245,8 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -15228,9 +16262,8 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -15351,7 +16384,7 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 //   - MalformedPolicyDocumentException
 //     The provided policy document doesn't meet the requirements of the specified
 //     policy type. For example, the syntax might be incorrect. For details about
-//     service control policy syntax, see Service Control Policy Syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_scp-syntax.html)
+//     service control policy syntax, see SCP syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_syntax.html)
 //     in the Organizations User Guide.
 //
 //   - PolicyNotFoundException
@@ -15366,8 +16399,8 @@ func (c *Organizations) UpdatePolicyRequest(input *UpdatePolicyInput) (req *requ
 //     helps protect against denial-of-service attacks. Try again later.
 //
 //     For information about quotas that affect Organizations, see Quotas for Organizations
-//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-//     the Organizations User Guide.
+//     (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+//     in the Organizations User Guide.
 //
 //   - UnsupportedAPIEndpointException
 //     This action isn't available in the current Amazon Web Services Region.
@@ -16050,7 +17083,7 @@ func (s *AccountNotRegisteredException) RequestID() string {
 
 // You can't invite an existing account to your organization until you verify
 // that you own the email address associated with the management account. For
-// more information, see Email Address Verification (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_create.html#about-email-verification)
+// more information, see Email address verification (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_create.html#about-email-verification)
 // in the Organizations User Guide.
 type AccountOwnerNotVerifiedException struct {
 	_            struct{}                  `type:"structure"`
@@ -16703,9 +17736,13 @@ func (s *ConflictException) RequestID() string {
 //   - ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 //     of accounts that you can create in one day.
 //
+//   - ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+//     your account isn't fully active. You must complete the account setup before
+//     you create an organization.
+//
 //   - ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 //     the number of accounts in an organization. If you need more accounts,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 //     to request an increase in your limit. Or the number of invitations that
 //     you tried to send would cause you to exceed the limit of accounts in your
 //     organization. Send fewer invitations or contact Amazon Web Services Support
@@ -16713,7 +17750,10 @@ func (s *ConflictException) RequestID() string {
 //     still count toward your limit. If you get this exception when running
 //     a command immediately after creating the organization, wait one hour and
 //     try again. After an hour, if the command continues to fail with this error,
-//     contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+//     contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+//
+//   - CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+//     register a suspended account as a delegated administrator.
 //
 //   - CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 //     register the management account of the organization as a delegated administrator
@@ -16780,9 +17820,8 @@ func (s *ConflictException) RequestID() string {
 //
 //   - MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 //     with this management account, you first must associate a valid payment
-//     instrument, such as a credit card, with the account. Follow the steps
-//     at To leave an organization when all required account information has
-//     not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     instrument, such as a credit card, with the account. For more information,
+//     see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -16798,9 +17837,8 @@ func (s *ConflictException) RequestID() string {
 //
 //   - MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 //     with this member account, you first must associate a valid payment instrument,
-//     such as a credit card, with the account. Follow the steps at To leave
-//     an organization when all required account information has not yet been
-//     provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+//     such as a credit card, with the account. For more information, see Considerations
+//     before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 //     in the Organizations User Guide.
 //
 //   - MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -16951,8 +17989,8 @@ type CreateAccountInput struct {
 	// If set to ALLOW, the new account enables IAM users to access account billing
 	// information if they have the required permissions. If set to DENY, only the
 	// root user of the new account can access account billing information. For
-	// more information, see Activating Access to the Billing and Cost Management
-	// Console (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html#ControllingAccessWebsite-Activate)
+	// more information, see About IAM access to the Billing and Cost Management
+	// console (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html#ControllingAccessWebsite-Activate)
 	// in the Amazon Web Services Billing and Cost Management User Guide.
 	//
 	// If you don't specify this parameter, the value defaults to ALLOW, and IAM
@@ -16960,8 +17998,6 @@ type CreateAccountInput struct {
 	// for the new account.
 	IamUserAccessToBilling *string `type:"string" enum:"IAMUserAccessToBilling"`
 
-	// (Optional)
-	//
 	// The name of an IAM role that Organizations automatically preconfigures in
 	// the new member account. This role trusts the management account, allowing
 	// users in the management account to assume the role, as permitted by the management
@@ -16973,12 +18009,12 @@ type CreateAccountInput struct {
 	// For more information about how to use this role to access the member account,
 	// see the following links:
 	//
-	//    * Accessing and Administering the Member Accounts in Your Organization
+	//    * Creating the OrganizationAccountAccessRole in an invited member account
 	//    (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html#orgs_manage_accounts_create-cross-account-role)
 	//    in the Organizations User Guide
 	//
-	//    * Steps 2 and 3 in Tutorial: Delegate Access Across Amazon Web Services
-	//    accounts Using IAM Roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
+	//    * Steps 2 and 3 in IAM Tutorial: Delegate access across Amazon Web Services
+	//    accounts using IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
 	//    in the IAM User Guide
 	//
 	// The regex pattern (http://wikipedia.org/wiki/regex) that is used to validate
@@ -16992,9 +18028,9 @@ type CreateAccountInput struct {
 	// information about tagging, see Tagging Organizations resources (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_tagging.html)
 	// in the Organizations User Guide.
 	//
-	// If any one of the tags is invalid or if you exceed the maximum allowed number
-	// of tags for an account, then the entire request fails and the account is
-	// not created.
+	// If any one of the tags is not valid or if you exceed the maximum allowed
+	// number of tags for an account, then the entire request fails and the account
+	// is not created.
 	Tags []*Tag `type:"list"`
 }
 
@@ -17087,7 +18123,7 @@ type CreateAccountOutput struct {
 	// returned CreateAccountStatus ID as a parameter to DescribeCreateAccountStatus
 	// to get status about the progress of the request at later times. You can also
 	// check the CloudTrail log for the CreateAccountResult event. For more information,
-	// see Monitoring the Activity in Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_monitoring.html)
+	// see Logging and monitoring in Organizations (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_security_incident-response.html)
 	// in the Organizations User Guide.
 	CreateAccountStatus *CreateAccountStatus `type:"structure"`
 }
@@ -17398,8 +18434,8 @@ type CreateGovCloudAccountInput struct {
 	// If set to ALLOW, the new linked account in the commercial Region enables
 	// IAM users to access account billing information if they have the required
 	// permissions. If set to DENY, only the root user of the new account can access
-	// account billing information. For more information, see Activating Access
-	// to the Billing and Cost Management Console (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html#ControllingAccessWebsite-Activate)
+	// account billing information. For more information, see About IAM access to
+	// the Billing and Cost Management console (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/grantaccess.html#ControllingAccessWebsite-Activate)
 	// in the Amazon Web Services Billing and Cost Management User Guide.
 	//
 	// If you don't specify this parameter, the value defaults to ALLOW, and IAM
@@ -17419,11 +18455,15 @@ type CreateGovCloudAccountInput struct {
 	// If you don't specify this parameter, the role name defaults to OrganizationAccountAccessRole.
 	//
 	// For more information about how to use this role to access the member account,
-	// see Accessing and Administering the Member Accounts in Your Organization
-	// (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html#orgs_manage_accounts_create-cross-account-role)
-	// in the Organizations User Guide and steps 2 and 3 in Tutorial: Delegate Access
-	// Across Amazon Web Services accounts Using IAM Roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
-	// in the IAM User Guide.
+	// see the following links:
+	//
+	//    * Creating the OrganizationAccountAccessRole in an invited member account
+	//    (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_access.html#orgs_manage_accounts_create-cross-account-role)
+	//    in the Organizations User Guide
+	//
+	//    * Steps 2 and 3 in IAM Tutorial: Delegate access across Amazon Web Services
+	//    accounts using IAM roles (https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
+	//    in the IAM User Guide
 	//
 	// The regex pattern (http://wikipedia.org/wiki/regex) that is used to validate
 	// this parameter. The pattern can include uppercase letters, lowercase letters,
@@ -17441,9 +18481,9 @@ type CreateGovCloudAccountInput struct {
 	// information about tagging, see Tagging Organizations resources (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_tagging.html)
 	// in the Organizations User Guide.
 	//
-	// If any one of the tags is invalid or if you exceed the maximum allowed number
-	// of tags for an account, then the entire request fails and the account is
-	// not created.
+	// If any one of the tags is not valid or if you exceed the maximum allowed
+	// number of tags for an account, then the entire request fails and the account
+	// is not created.
 	Tags []*Tag `type:"list"`
 }
 
@@ -17667,7 +18707,7 @@ type CreateOrganizationalUnitInput struct {
 	// about tagging, see Tagging Organizations resources (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_tagging.html)
 	// in the Organizations User Guide.
 	//
-	// If any one of the tags is invalid or if you exceed the allowed number of
+	// If any one of the tags is not valid or if you exceed the allowed number of
 	// tags for an OU, then the entire request fails and the OU is not created.
 	Tags []*Tag `type:"list"`
 }
@@ -17797,7 +18837,7 @@ type CreatePolicyInput struct {
 	// about tagging, see Tagging Organizations resources (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_tagging.html)
 	// in the Organizations User Guide.
 	//
-	// If any one of the tags is invalid or if you exceed the allowed number of
+	// If any one of the tags is not valid or if you exceed the allowed number of
 	// tags for a policy, then the entire request fails and the policy is not created.
 	Tags []*Tag `type:"list"`
 
@@ -18351,6 +19391,50 @@ func (s DeletePolicyOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeletePolicyOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+type DeleteResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) GoString() string {
 	return s.String()
 }
 
@@ -19008,6 +20092,59 @@ func (s DescribePolicyOutput) GoString() string {
 // SetPolicy sets the Policy field's value.
 func (s *DescribePolicyOutput) SetPolicy(v *Policy) *DescribePolicyOutput {
 	s.Policy = v
+	return s
+}
+
+type DescribeResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+type DescribeResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains details about the resource policy.
+	ResourcePolicy *ResourcePolicy `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetResourcePolicy sets the ResourcePolicy field's value.
+func (s *DescribeResourcePolicyOutput) SetResourcePolicy(v *ResourcePolicy) *DescribeResourcePolicyOutput {
+	s.ResourcePolicy = v
 	return s
 }
 
@@ -20374,7 +21511,7 @@ func (s *HandshakeAlreadyInStateException) RequestID() string {
 //     accounts still count toward your limit. If you get this exception immediately
 //     after creating the organization, wait one hour and try again. If after
 //     an hour it continues to fail with this error, contact Amazon Web Services
-//     Support (https://docs.aws.amazon.com/support/home#/).
+//     Support (https://console.aws.amazon.com/support/home#/).
 //
 //   - ALREADY_IN_AN_ORGANIZATION: The handshake request is invalid because
 //     the invited account is already a member of an organization.
@@ -20960,7 +22097,7 @@ type InviteAccountToOrganizationInput struct {
 	// policy changes between the invitation and the acceptance, then that tags
 	// could potentially be non-compliant.
 	//
-	// If any one of the tags is invalid or if you exceed the allowed number of
+	// If any one of the tags is not valid or if you exceed the allowed number of
 	// tags for an account, then the entire request fails and invitations are not
 	// sent.
 	Tags []*Tag `type:"list"`
@@ -23122,7 +24259,7 @@ func (s *ListTargetsForPolicyOutput) SetTargets(v []*PolicyTargetSummary) *ListT
 
 // The provided policy document doesn't meet the requirements of the specified
 // policy type. For example, the syntax might be incorrect. For details about
-// service control policy syntax, see Service Control Policy Syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_scp-syntax.html)
+// service control policy syntax, see SCP syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_syntax.html)
 // in the Organizations User Guide.
 type MalformedPolicyDocumentException struct {
 	_            struct{}                  `type:"structure"`
@@ -23402,7 +24539,7 @@ type Organization struct {
 	// If set to "ALL", then all features are enabled and policies can be applied
 	// to accounts in the organization. If set to "CONSOLIDATED_BILLING", then only
 	// consolidated billing functionality is available. For more information, see
-	// Enabling All Features in Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
+	// Enabling all features in your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
 	// in the Organizations User Guide.
 	FeatureSet *string `type:"string" enum:"OrganizationFeatureSet"`
 
@@ -23496,8 +24633,7 @@ func (s *Organization) SetMasterAccountId(v string) *Organization {
 }
 
 // The organization isn't empty. To delete an organization, you must first remove
-// all accounts except the management account, delete all OUs, and delete all
-// policies.
+// all accounts except the management account.
 type OrganizationNotEmptyException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -24414,7 +25550,7 @@ func (s *PolicyTypeAlreadyEnabledException) RequestID() string {
 // You can't use the specified policy type with the feature set currently enabled
 // for this organization. For example, you can enable SCPs only after you enable
 // all features in the organization. For more information, see Managing Organizations
-// Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
+// policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
 // the Organizations User Guide.
 type PolicyTypeNotAvailableForOrganizationException struct {
 	_            struct{}                  `type:"structure"`
@@ -24481,8 +25617,8 @@ func (s *PolicyTypeNotAvailableForOrganizationException) RequestID() string {
 
 // The specified policy type isn't currently enabled in this root. You can't
 // attach policies of the specified type to entities in a root until you enable
-// that type in the root. For more information, see Enabling All Features in
-// Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
+// that type in the root. For more information, see Enabling all features in
+// your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
 // in the Organizations User Guide.
 type PolicyTypeNotEnabledException struct {
 	_            struct{}                  `type:"structure"`
@@ -24588,6 +25724,117 @@ func (s *PolicyTypeSummary) SetStatus(v string) *PolicyTypeSummary {
 // SetType sets the Type field's value.
 func (s *PolicyTypeSummary) SetType(v string) *PolicyTypeSummary {
 	s.Type = &v
+	return s
+}
+
+type PutResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// If provided, the new content for the resource policy. The text must be correctly
+	// formatted JSON that complies with the syntax for the resource policy's type.
+	// For more information, see SCP syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_syntax.html)
+	// in the Organizations User Guide.
+	//
+	// Content is a required field
+	Content *string `min:"1" type:"string" required:"true"`
+
+	// A list of tags that you want to attach to the newly created resource policy.
+	// For each tag in the list, you must specify both a tag key and a value. You
+	// can set the value to an empty string, but you can't set it to null. For more
+	// information about tagging, see Tagging Organizations resources (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_tagging.html)
+	// in the Organizations User Guide.
+	//
+	// Calls with tags apply to the initial creation of the resource policy, otherwise
+	// an exception is thrown. If any one of the tags is not valid or if you exceed
+	// the allowed number of tags for the resource policy, then the entire request
+	// fails and the resource policy is not created.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutResourcePolicyInput"}
+	if s.Content == nil {
+		invalidParams.Add(request.NewErrParamRequired("Content"))
+	}
+	if s.Content != nil && len(*s.Content) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Content", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContent sets the Content field's value.
+func (s *PutResourcePolicyInput) SetContent(v string) *PutResourcePolicyInput {
+	s.Content = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *PutResourcePolicyInput) SetTags(v []*Tag) *PutResourcePolicyInput {
+	s.Tags = v
+	return s
+}
+
+type PutResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains details about the resource policy.
+	ResourcePolicy *ResourcePolicy `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetResourcePolicy sets the ResourcePolicy field's value.
+func (s *PutResourcePolicyOutput) SetResourcePolicy(v *ResourcePolicy) *PutResourcePolicyOutput {
+	s.ResourcePolicy = v
 	return s
 }
 
@@ -24748,6 +25995,152 @@ func (s RemoveAccountFromOrganizationOutput) String() string {
 // value will be replaced with "sensitive".
 func (s RemoveAccountFromOrganizationOutput) GoString() string {
 	return s.String()
+}
+
+// A structure that contains details about a resource policy.
+type ResourcePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// The policy text of the resource policy.
+	Content *string `min:"1" type:"string"`
+
+	// A structure that contains resource policy ID and Amazon Resource Name (ARN).
+	ResourcePolicySummary *ResourcePolicySummary `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicy) GoString() string {
+	return s.String()
+}
+
+// SetContent sets the Content field's value.
+func (s *ResourcePolicy) SetContent(v string) *ResourcePolicy {
+	s.Content = &v
+	return s
+}
+
+// SetResourcePolicySummary sets the ResourcePolicySummary field's value.
+func (s *ResourcePolicy) SetResourcePolicySummary(v *ResourcePolicySummary) *ResourcePolicy {
+	s.ResourcePolicySummary = v
+	return s
+}
+
+// We can't find a resource policy request with the parameter that you specified.
+type ResourcePolicyNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicyNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourcePolicyNotFoundException(v protocol.ResponseMetadata) error {
+	return &ResourcePolicyNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourcePolicyNotFoundException) Code() string {
+	return "ResourcePolicyNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *ResourcePolicyNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourcePolicyNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourcePolicyNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourcePolicyNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourcePolicyNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// A structure that contains resource policy ID and Amazon Resource Name (ARN).
+type ResourcePolicySummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the resource policy.
+	Arn *string `type:"string"`
+
+	// The unique identifier (ID) of the resource policy.
+	Id *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicySummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicySummary) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *ResourcePolicySummary) SetArn(v string) *ResourcePolicySummary {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ResourcePolicySummary) SetId(v string) *ResourcePolicySummary {
+	s.Id = &v
+	return s
 }
 
 // Contains details about a root. A root is a top-level parent node in the hierarchy
@@ -25123,8 +26516,8 @@ type TagResourceInput struct {
 	// For each tag in the list, you must specify both a tag key and a value. The
 	// value can be an empty string, but you can't set it to null.
 	//
-	// If any one of the tags is invalid or if you exceed the maximum allowed number
-	// of tags for a resource, then the entire request fails.
+	// If any one of the tags is not valid or if you exceed the maximum allowed
+	// number of tags for a resource, then the entire request fails.
 	//
 	// Tags is a required field
 	Tags []*Tag `type:"list" required:"true"`
@@ -25276,8 +26669,8 @@ func (s *TargetNotFoundException) RequestID() string {
 // helps protect against denial-of-service attacks. Try again later.
 //
 // For information about quotas that affect Organizations, see Quotas for Organizations
-// (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-// the Organizations User Guide.
+// (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+// in the Organizations User Guide.
 type TooManyRequestsException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -25607,7 +27000,7 @@ type UpdatePolicyInput struct {
 
 	// If provided, the new content for the policy. The text must be correctly formatted
 	// JSON that complies with the syntax for the policy's type. For more information,
-	// see Service Control Policy Syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_scp-syntax.html)
+	// see SCP syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_syntax.html)
 	// in the Organizations User Guide.
 	Content *string `min:"1" type:"string"`
 
@@ -25911,6 +27304,9 @@ const (
 
 	// ConstraintViolationExceptionReasonInvalidPaymentInstrument is a ConstraintViolationExceptionReason enum value
 	ConstraintViolationExceptionReasonInvalidPaymentInstrument = "INVALID_PAYMENT_INSTRUMENT"
+
+	// ConstraintViolationExceptionReasonAccountCreationNotComplete is a ConstraintViolationExceptionReason enum value
+	ConstraintViolationExceptionReasonAccountCreationNotComplete = "ACCOUNT_CREATION_NOT_COMPLETE"
 )
 
 // ConstraintViolationExceptionReason_Values returns all elements of the ConstraintViolationExceptionReason enum
@@ -25949,6 +27345,7 @@ func ConstraintViolationExceptionReason_Values() []string {
 		ConstraintViolationExceptionReasonCloseAccountRequestsLimitExceeded,
 		ConstraintViolationExceptionReasonServiceAccessNotEnabled,
 		ConstraintViolationExceptionReasonInvalidPaymentInstrument,
+		ConstraintViolationExceptionReasonAccountCreationNotComplete,
 	}
 }
 
@@ -25994,6 +27391,9 @@ const (
 
 	// CreateAccountFailureReasonInvalidPaymentInstrument is a CreateAccountFailureReason enum value
 	CreateAccountFailureReasonInvalidPaymentInstrument = "INVALID_PAYMENT_INSTRUMENT"
+
+	// CreateAccountFailureReasonUpdateExistingResourcePolicyWithTagsNotSupported is a CreateAccountFailureReason enum value
+	CreateAccountFailureReasonUpdateExistingResourcePolicyWithTagsNotSupported = "UPDATE_EXISTING_RESOURCE_POLICY_WITH_TAGS_NOT_SUPPORTED"
 )
 
 // CreateAccountFailureReason_Values returns all elements of the CreateAccountFailureReason enum
@@ -26013,6 +27413,7 @@ func CreateAccountFailureReason_Values() []string {
 		CreateAccountFailureReasonUnknownBusinessValidation,
 		CreateAccountFailureReasonMissingPaymentInstrument,
 		CreateAccountFailureReasonInvalidPaymentInstrument,
+		CreateAccountFailureReasonUpdateExistingResourcePolicyWithTagsNotSupported,
 	}
 }
 
@@ -26284,6 +27685,18 @@ const (
 
 	// InvalidInputExceptionReasonInvalidEmailAddressTarget is a InvalidInputExceptionReason enum value
 	InvalidInputExceptionReasonInvalidEmailAddressTarget = "INVALID_EMAIL_ADDRESS_TARGET"
+
+	// InvalidInputExceptionReasonInvalidResourcePolicyJson is a InvalidInputExceptionReason enum value
+	InvalidInputExceptionReasonInvalidResourcePolicyJson = "INVALID_RESOURCE_POLICY_JSON"
+
+	// InvalidInputExceptionReasonUnsupportedActionInResourcePolicy is a InvalidInputExceptionReason enum value
+	InvalidInputExceptionReasonUnsupportedActionInResourcePolicy = "UNSUPPORTED_ACTION_IN_RESOURCE_POLICY"
+
+	// InvalidInputExceptionReasonUnsupportedPolicyTypeInResourcePolicy is a InvalidInputExceptionReason enum value
+	InvalidInputExceptionReasonUnsupportedPolicyTypeInResourcePolicy = "UNSUPPORTED_POLICY_TYPE_IN_RESOURCE_POLICY"
+
+	// InvalidInputExceptionReasonUnsupportedResourceInResourcePolicy is a InvalidInputExceptionReason enum value
+	InvalidInputExceptionReasonUnsupportedResourceInResourcePolicy = "UNSUPPORTED_RESOURCE_IN_RESOURCE_POLICY"
 )
 
 // InvalidInputExceptionReason_Values returns all elements of the InvalidInputExceptionReason enum
@@ -26313,6 +27726,10 @@ func InvalidInputExceptionReason_Values() []string {
 		InvalidInputExceptionReasonDuplicateTagKey,
 		InvalidInputExceptionReasonTargetNotSupported,
 		InvalidInputExceptionReasonInvalidEmailAddressTarget,
+		InvalidInputExceptionReasonInvalidResourcePolicyJson,
+		InvalidInputExceptionReasonUnsupportedActionInResourcePolicy,
+		InvalidInputExceptionReasonUnsupportedPolicyTypeInResourcePolicy,
+		InvalidInputExceptionReasonUnsupportedResourceInResourcePolicy,
 	}
 }
 

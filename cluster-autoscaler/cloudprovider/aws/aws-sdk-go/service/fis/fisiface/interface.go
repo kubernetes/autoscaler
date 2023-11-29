@@ -64,9 +64,17 @@ type FISAPI interface {
 	CreateExperimentTemplateWithContext(aws.Context, *fis.CreateExperimentTemplateInput, ...request.Option) (*fis.CreateExperimentTemplateOutput, error)
 	CreateExperimentTemplateRequest(*fis.CreateExperimentTemplateInput) (*request.Request, *fis.CreateExperimentTemplateOutput)
 
+	CreateTargetAccountConfiguration(*fis.CreateTargetAccountConfigurationInput) (*fis.CreateTargetAccountConfigurationOutput, error)
+	CreateTargetAccountConfigurationWithContext(aws.Context, *fis.CreateTargetAccountConfigurationInput, ...request.Option) (*fis.CreateTargetAccountConfigurationOutput, error)
+	CreateTargetAccountConfigurationRequest(*fis.CreateTargetAccountConfigurationInput) (*request.Request, *fis.CreateTargetAccountConfigurationOutput)
+
 	DeleteExperimentTemplate(*fis.DeleteExperimentTemplateInput) (*fis.DeleteExperimentTemplateOutput, error)
 	DeleteExperimentTemplateWithContext(aws.Context, *fis.DeleteExperimentTemplateInput, ...request.Option) (*fis.DeleteExperimentTemplateOutput, error)
 	DeleteExperimentTemplateRequest(*fis.DeleteExperimentTemplateInput) (*request.Request, *fis.DeleteExperimentTemplateOutput)
+
+	DeleteTargetAccountConfiguration(*fis.DeleteTargetAccountConfigurationInput) (*fis.DeleteTargetAccountConfigurationOutput, error)
+	DeleteTargetAccountConfigurationWithContext(aws.Context, *fis.DeleteTargetAccountConfigurationInput, ...request.Option) (*fis.DeleteTargetAccountConfigurationOutput, error)
+	DeleteTargetAccountConfigurationRequest(*fis.DeleteTargetAccountConfigurationInput) (*request.Request, *fis.DeleteTargetAccountConfigurationOutput)
 
 	GetAction(*fis.GetActionInput) (*fis.GetActionOutput, error)
 	GetActionWithContext(aws.Context, *fis.GetActionInput, ...request.Option) (*fis.GetActionOutput, error)
@@ -76,9 +84,17 @@ type FISAPI interface {
 	GetExperimentWithContext(aws.Context, *fis.GetExperimentInput, ...request.Option) (*fis.GetExperimentOutput, error)
 	GetExperimentRequest(*fis.GetExperimentInput) (*request.Request, *fis.GetExperimentOutput)
 
+	GetExperimentTargetAccountConfiguration(*fis.GetExperimentTargetAccountConfigurationInput) (*fis.GetExperimentTargetAccountConfigurationOutput, error)
+	GetExperimentTargetAccountConfigurationWithContext(aws.Context, *fis.GetExperimentTargetAccountConfigurationInput, ...request.Option) (*fis.GetExperimentTargetAccountConfigurationOutput, error)
+	GetExperimentTargetAccountConfigurationRequest(*fis.GetExperimentTargetAccountConfigurationInput) (*request.Request, *fis.GetExperimentTargetAccountConfigurationOutput)
+
 	GetExperimentTemplate(*fis.GetExperimentTemplateInput) (*fis.GetExperimentTemplateOutput, error)
 	GetExperimentTemplateWithContext(aws.Context, *fis.GetExperimentTemplateInput, ...request.Option) (*fis.GetExperimentTemplateOutput, error)
 	GetExperimentTemplateRequest(*fis.GetExperimentTemplateInput) (*request.Request, *fis.GetExperimentTemplateOutput)
+
+	GetTargetAccountConfiguration(*fis.GetTargetAccountConfigurationInput) (*fis.GetTargetAccountConfigurationOutput, error)
+	GetTargetAccountConfigurationWithContext(aws.Context, *fis.GetTargetAccountConfigurationInput, ...request.Option) (*fis.GetTargetAccountConfigurationOutput, error)
+	GetTargetAccountConfigurationRequest(*fis.GetTargetAccountConfigurationInput) (*request.Request, *fis.GetTargetAccountConfigurationOutput)
 
 	GetTargetResourceType(*fis.GetTargetResourceTypeInput) (*fis.GetTargetResourceTypeOutput, error)
 	GetTargetResourceTypeWithContext(aws.Context, *fis.GetTargetResourceTypeInput, ...request.Option) (*fis.GetTargetResourceTypeOutput, error)
@@ -90,6 +106,17 @@ type FISAPI interface {
 
 	ListActionsPages(*fis.ListActionsInput, func(*fis.ListActionsOutput, bool) bool) error
 	ListActionsPagesWithContext(aws.Context, *fis.ListActionsInput, func(*fis.ListActionsOutput, bool) bool, ...request.Option) error
+
+	ListExperimentResolvedTargets(*fis.ListExperimentResolvedTargetsInput) (*fis.ListExperimentResolvedTargetsOutput, error)
+	ListExperimentResolvedTargetsWithContext(aws.Context, *fis.ListExperimentResolvedTargetsInput, ...request.Option) (*fis.ListExperimentResolvedTargetsOutput, error)
+	ListExperimentResolvedTargetsRequest(*fis.ListExperimentResolvedTargetsInput) (*request.Request, *fis.ListExperimentResolvedTargetsOutput)
+
+	ListExperimentResolvedTargetsPages(*fis.ListExperimentResolvedTargetsInput, func(*fis.ListExperimentResolvedTargetsOutput, bool) bool) error
+	ListExperimentResolvedTargetsPagesWithContext(aws.Context, *fis.ListExperimentResolvedTargetsInput, func(*fis.ListExperimentResolvedTargetsOutput, bool) bool, ...request.Option) error
+
+	ListExperimentTargetAccountConfigurations(*fis.ListExperimentTargetAccountConfigurationsInput) (*fis.ListExperimentTargetAccountConfigurationsOutput, error)
+	ListExperimentTargetAccountConfigurationsWithContext(aws.Context, *fis.ListExperimentTargetAccountConfigurationsInput, ...request.Option) (*fis.ListExperimentTargetAccountConfigurationsOutput, error)
+	ListExperimentTargetAccountConfigurationsRequest(*fis.ListExperimentTargetAccountConfigurationsInput) (*request.Request, *fis.ListExperimentTargetAccountConfigurationsOutput)
 
 	ListExperimentTemplates(*fis.ListExperimentTemplatesInput) (*fis.ListExperimentTemplatesOutput, error)
 	ListExperimentTemplatesWithContext(aws.Context, *fis.ListExperimentTemplatesInput, ...request.Option) (*fis.ListExperimentTemplatesOutput, error)
@@ -108,6 +135,13 @@ type FISAPI interface {
 	ListTagsForResource(*fis.ListTagsForResourceInput) (*fis.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *fis.ListTagsForResourceInput, ...request.Option) (*fis.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*fis.ListTagsForResourceInput) (*request.Request, *fis.ListTagsForResourceOutput)
+
+	ListTargetAccountConfigurations(*fis.ListTargetAccountConfigurationsInput) (*fis.ListTargetAccountConfigurationsOutput, error)
+	ListTargetAccountConfigurationsWithContext(aws.Context, *fis.ListTargetAccountConfigurationsInput, ...request.Option) (*fis.ListTargetAccountConfigurationsOutput, error)
+	ListTargetAccountConfigurationsRequest(*fis.ListTargetAccountConfigurationsInput) (*request.Request, *fis.ListTargetAccountConfigurationsOutput)
+
+	ListTargetAccountConfigurationsPages(*fis.ListTargetAccountConfigurationsInput, func(*fis.ListTargetAccountConfigurationsOutput, bool) bool) error
+	ListTargetAccountConfigurationsPagesWithContext(aws.Context, *fis.ListTargetAccountConfigurationsInput, func(*fis.ListTargetAccountConfigurationsOutput, bool) bool, ...request.Option) error
 
 	ListTargetResourceTypes(*fis.ListTargetResourceTypesInput) (*fis.ListTargetResourceTypesOutput, error)
 	ListTargetResourceTypesWithContext(aws.Context, *fis.ListTargetResourceTypesInput, ...request.Option) (*fis.ListTargetResourceTypesOutput, error)
@@ -135,6 +169,10 @@ type FISAPI interface {
 	UpdateExperimentTemplate(*fis.UpdateExperimentTemplateInput) (*fis.UpdateExperimentTemplateOutput, error)
 	UpdateExperimentTemplateWithContext(aws.Context, *fis.UpdateExperimentTemplateInput, ...request.Option) (*fis.UpdateExperimentTemplateOutput, error)
 	UpdateExperimentTemplateRequest(*fis.UpdateExperimentTemplateInput) (*request.Request, *fis.UpdateExperimentTemplateOutput)
+
+	UpdateTargetAccountConfiguration(*fis.UpdateTargetAccountConfigurationInput) (*fis.UpdateTargetAccountConfigurationOutput, error)
+	UpdateTargetAccountConfigurationWithContext(aws.Context, *fis.UpdateTargetAccountConfigurationInput, ...request.Option) (*fis.UpdateTargetAccountConfigurationOutput, error)
+	UpdateTargetAccountConfigurationRequest(*fis.UpdateTargetAccountConfigurationInput) (*request.Request, *fis.UpdateTargetAccountConfigurationOutput)
 }
 
 var _ FISAPI = (*fis.FIS)(nil)

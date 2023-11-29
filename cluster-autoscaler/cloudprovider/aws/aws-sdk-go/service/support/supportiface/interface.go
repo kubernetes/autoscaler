@@ -90,6 +90,10 @@ type SupportAPI interface {
 	DescribeCommunicationsPages(*support.DescribeCommunicationsInput, func(*support.DescribeCommunicationsOutput, bool) bool) error
 	DescribeCommunicationsPagesWithContext(aws.Context, *support.DescribeCommunicationsInput, func(*support.DescribeCommunicationsOutput, bool) bool, ...request.Option) error
 
+	DescribeCreateCaseOptions(*support.DescribeCreateCaseOptionsInput) (*support.DescribeCreateCaseOptionsOutput, error)
+	DescribeCreateCaseOptionsWithContext(aws.Context, *support.DescribeCreateCaseOptionsInput, ...request.Option) (*support.DescribeCreateCaseOptionsOutput, error)
+	DescribeCreateCaseOptionsRequest(*support.DescribeCreateCaseOptionsInput) (*request.Request, *support.DescribeCreateCaseOptionsOutput)
+
 	DescribeServices(*support.DescribeServicesInput) (*support.DescribeServicesOutput, error)
 	DescribeServicesWithContext(aws.Context, *support.DescribeServicesInput, ...request.Option) (*support.DescribeServicesOutput, error)
 	DescribeServicesRequest(*support.DescribeServicesInput) (*request.Request, *support.DescribeServicesOutput)
@@ -97,6 +101,10 @@ type SupportAPI interface {
 	DescribeSeverityLevels(*support.DescribeSeverityLevelsInput) (*support.DescribeSeverityLevelsOutput, error)
 	DescribeSeverityLevelsWithContext(aws.Context, *support.DescribeSeverityLevelsInput, ...request.Option) (*support.DescribeSeverityLevelsOutput, error)
 	DescribeSeverityLevelsRequest(*support.DescribeSeverityLevelsInput) (*request.Request, *support.DescribeSeverityLevelsOutput)
+
+	DescribeSupportedLanguages(*support.DescribeSupportedLanguagesInput) (*support.DescribeSupportedLanguagesOutput, error)
+	DescribeSupportedLanguagesWithContext(aws.Context, *support.DescribeSupportedLanguagesInput, ...request.Option) (*support.DescribeSupportedLanguagesOutput, error)
+	DescribeSupportedLanguagesRequest(*support.DescribeSupportedLanguagesInput) (*request.Request, *support.DescribeSupportedLanguagesOutput)
 
 	DescribeTrustedAdvisorCheckRefreshStatuses(*support.DescribeTrustedAdvisorCheckRefreshStatusesInput) (*support.DescribeTrustedAdvisorCheckRefreshStatusesOutput, error)
 	DescribeTrustedAdvisorCheckRefreshStatusesWithContext(aws.Context, *support.DescribeTrustedAdvisorCheckRefreshStatusesInput, ...request.Option) (*support.DescribeTrustedAdvisorCheckRefreshStatusesOutput, error)

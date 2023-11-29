@@ -118,6 +118,129 @@ func (c *ChimeSDKMeetings) BatchCreateAttendeeWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opBatchUpdateAttendeeCapabilitiesExcept = "BatchUpdateAttendeeCapabilitiesExcept"
+
+// BatchUpdateAttendeeCapabilitiesExceptRequest generates a "aws/request.Request" representing the
+// client's request for the BatchUpdateAttendeeCapabilitiesExcept operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchUpdateAttendeeCapabilitiesExcept for more information on using the BatchUpdateAttendeeCapabilitiesExcept
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchUpdateAttendeeCapabilitiesExceptRequest method.
+//	req, resp := client.BatchUpdateAttendeeCapabilitiesExceptRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/BatchUpdateAttendeeCapabilitiesExcept
+func (c *ChimeSDKMeetings) BatchUpdateAttendeeCapabilitiesExceptRequest(input *BatchUpdateAttendeeCapabilitiesExceptInput) (req *request.Request, output *BatchUpdateAttendeeCapabilitiesExceptOutput) {
+	op := &request.Operation{
+		Name:       opBatchUpdateAttendeeCapabilitiesExcept,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/meetings/{MeetingId}/attendees/capabilities?operation=batch-update-except",
+	}
+
+	if input == nil {
+		input = &BatchUpdateAttendeeCapabilitiesExceptInput{}
+	}
+
+	output = &BatchUpdateAttendeeCapabilitiesExceptOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// BatchUpdateAttendeeCapabilitiesExcept API operation for Amazon Chime SDK Meetings.
+//
+// Updates AttendeeCapabilities except the capabilities listed in an ExcludedAttendeeIds
+// table.
+//
+// You use the capabilities with a set of values that control what the capabilities
+// can do, such as SendReceive data. For more information about those values,
+// see .
+//
+// When using capabilities, be aware of these corner cases:
+//
+//   - You can't set content capabilities to SendReceive or Receive unless
+//     you also set video capabilities to SendReceive or Receive. If you don't
+//     set the video capability to receive, the response will contain an HTTP
+//     400 Bad Request status code. However, you can set your video capability
+//     to receive and you set your content capability to not receive.
+//
+//   - When you change an audio capability from None or Receive to Send or
+//     SendReceive , and if the attendee left their microphone unmuted, audio
+//     will flow from the attendee to the other meeting participants.
+//
+//   - When you change a video or content capability from None or Receive to
+//     Send or SendReceive , and if the attendee turned on their video or content
+//     streams, remote attendees can receive those streams, but only after media
+//     renegotiation between the client and the Amazon Chime back-end server.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Meetings's
+// API operation BatchUpdateAttendeeCapabilitiesExcept for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     Multiple instances of the same request have been made simultaneously.
+//
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
+//
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/BatchUpdateAttendeeCapabilitiesExcept
+func (c *ChimeSDKMeetings) BatchUpdateAttendeeCapabilitiesExcept(input *BatchUpdateAttendeeCapabilitiesExceptInput) (*BatchUpdateAttendeeCapabilitiesExceptOutput, error) {
+	req, out := c.BatchUpdateAttendeeCapabilitiesExceptRequest(input)
+	return out, req.Send()
+}
+
+// BatchUpdateAttendeeCapabilitiesExceptWithContext is the same as BatchUpdateAttendeeCapabilitiesExcept with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchUpdateAttendeeCapabilitiesExcept for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKMeetings) BatchUpdateAttendeeCapabilitiesExceptWithContext(ctx aws.Context, input *BatchUpdateAttendeeCapabilitiesExceptInput, opts ...request.Option) (*BatchUpdateAttendeeCapabilitiesExceptOutput, error) {
+	req, out := c.BatchUpdateAttendeeCapabilitiesExceptRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateAttendee = "CreateAttendee"
 
 // CreateAttendeeRequest generates a "aws/request.Request" representing the
@@ -286,6 +409,9 @@ func (c *ChimeSDKMeetings) CreateMeetingRequest(input *CreateMeetingInput) (req 
 //   - BadRequestException
 //     The input parameters don't match the service's restrictions.
 //
+//   - ConflictException
+//     Multiple instances of the same request have been made simultaneously.
+//
 //   - ForbiddenException
 //     The client is permanently forbidden from making the request.
 //
@@ -387,6 +513,9 @@ func (c *ChimeSDKMeetings) CreateMeetingWithAttendeesRequest(input *CreateMeetin
 //
 //   - BadRequestException
 //     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     Multiple instances of the same request have been made simultaneously.
 //
 //   - ForbiddenException
 //     The client is permanently forbidden from making the request.
@@ -988,6 +1117,106 @@ func (c *ChimeSDKMeetings) ListAttendeesPagesWithContext(ctx aws.Context, input 
 	return p.Err()
 }
 
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTagsForResource for more information on using the ListTagsForResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/ListTagsForResource
+func (c *ChimeSDKMeetings) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "GET",
+		HTTPPath:   "/tags",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	output = &ListTagsForResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTagsForResource API operation for Amazon Chime SDK Meetings.
+//
+// Returns a list of the tags available for the specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Meetings's
+// API operation ListTagsForResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
+//
+//   - LimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
+//
+//   - ResourceNotFoundException
+//     The resource that you want to tag couldn't be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/ListTagsForResource
+func (c *ChimeSDKMeetings) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	return out, req.Send()
+}
+
+// ListTagsForResourceWithContext is the same as ListTagsForResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTagsForResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKMeetings) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opStartMeetingTranscription = "StartMeetingTranscription"
 
 // StartMeetingTranscriptionRequest generates a "aws/request.Request" representing the
@@ -1032,7 +1261,20 @@ func (c *ChimeSDKMeetings) StartMeetingTranscriptionRequest(input *StartMeetingT
 
 // StartMeetingTranscription API operation for Amazon Chime SDK Meetings.
 //
-// Starts transcription for the specified meetingId.
+// Starts transcription for the specified meetingId. For more information, refer
+// to Using Amazon Chime SDK live transcription (https://docs.aws.amazon.com/chime-sdk/latest/dg/meeting-transcription.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// If you specify an invalid configuration, a TranscriptFailed event will be
+// sent with the contents of the BadRequestException generated by Amazon Transcribe.
+// For more information on each parameter and which combinations are valid,
+// refer to the StartStreamTranscription (https://docs.aws.amazon.com/transcribe/latest/APIReference/API_streaming_StartStreamTranscription.html)
+// API in the Amazon Transcribe Developer Guide.
+//
+// Amazon Chime SDK live transcription is powered by Amazon Transcribe. Use
+// of Amazon Transcribe is subject to the AWS Service Terms (https://aws.amazon.com/service-terms/),
+// including the terms specific to the AWS Machine Learning and Artificial Intelligence
+// Services.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1137,7 +1379,14 @@ func (c *ChimeSDKMeetings) StopMeetingTranscriptionRequest(input *StopMeetingTra
 
 // StopMeetingTranscription API operation for Amazon Chime SDK Meetings.
 //
-// Stops transcription for the specified meetingId.
+// Stops transcription for the specified meetingId. For more information, refer
+// to Using Amazon Chime SDK live transcription (https://docs.aws.amazon.com/chime-sdk/latest/dg/meeting-transcription.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// Amazon Chime SDK live transcription is powered by Amazon Transcribe. Use
+// of Amazon Transcribe is subject to the AWS Service Terms (https://aws.amazon.com/service-terms/),
+// including the terms specific to the AWS Machine Learning and Artificial Intelligence
+// Services.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1195,6 +1444,355 @@ func (c *ChimeSDKMeetings) StopMeetingTranscriptionWithContext(ctx aws.Context, 
 	return out, req.Send()
 }
 
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TagResource for more information on using the TagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/TagResource
+func (c *ChimeSDKMeetings) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/tags?operation=tag-resource",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	output = &TagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// TagResource API operation for Amazon Chime SDK Meetings.
+//
+// The resource that supports tags.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Meetings's
+// API operation TagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
+//
+//   - LimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
+//
+//   - ResourceNotFoundException
+//     The resource that you want to tag couldn't be found.
+//
+//   - TooManyTagsException
+//     Too many tags were added to the specified resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/TagResource
+func (c *ChimeSDKMeetings) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	return out, req.Send()
+}
+
+// TagResourceWithContext is the same as TagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKMeetings) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UntagResource for more information on using the UntagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/UntagResource
+func (c *ChimeSDKMeetings) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/tags?operation=untag-resource",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	output = &UntagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UntagResource API operation for Amazon Chime SDK Meetings.
+//
+// Removes the specified tags from the specified resources. When you specify
+// a tag key, the action removes both that key and its associated value. The
+// operation succeeds even if you attempt to remove tags from a resource that
+// were already removed. Note the following:
+//
+//   - To remove tags from a resource, you need the necessary permissions for
+//     the service that the resource belongs to as well as permissions for removing
+//     tags. For more information, see the documentation for the service whose
+//     resource you want to untag.
+//
+//   - You can only tag resources that are located in the specified AWS Region
+//     for the calling AWS account.
+//
+// # Minimum permissions
+//
+// In addition to the tag:UntagResources permission required by this operation,
+// you must also have the remove tags permission defined by the service that
+// created the resource. For example, to remove the tags from an Amazon EC2
+// instance using the UntagResources operation, you must have both of the following
+// permissions:
+//
+// tag:UntagResource
+//
+// ChimeSDKMeetings:DeleteTags
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Meetings's
+// API operation UntagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
+//
+//   - LimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
+//
+//   - ResourceNotFoundException
+//     The resource that you want to tag couldn't be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/UntagResource
+func (c *ChimeSDKMeetings) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	return out, req.Send()
+}
+
+// UntagResourceWithContext is the same as UntagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UntagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKMeetings) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateAttendeeCapabilities = "UpdateAttendeeCapabilities"
+
+// UpdateAttendeeCapabilitiesRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAttendeeCapabilities operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAttendeeCapabilities for more information on using the UpdateAttendeeCapabilities
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAttendeeCapabilitiesRequest method.
+//	req, resp := client.UpdateAttendeeCapabilitiesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/UpdateAttendeeCapabilities
+func (c *ChimeSDKMeetings) UpdateAttendeeCapabilitiesRequest(input *UpdateAttendeeCapabilitiesInput) (req *request.Request, output *UpdateAttendeeCapabilitiesOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAttendeeCapabilities,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/meetings/{MeetingId}/attendees/{AttendeeId}/capabilities",
+	}
+
+	if input == nil {
+		input = &UpdateAttendeeCapabilitiesInput{}
+	}
+
+	output = &UpdateAttendeeCapabilitiesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateAttendeeCapabilities API operation for Amazon Chime SDK Meetings.
+//
+// The capabilities that you want to update.
+//
+// You use the capabilities with a set of values that control what the capabilities
+// can do, such as SendReceive data. For more information about those values,
+// see .
+//
+// When using capabilities, be aware of these corner cases:
+//
+//   - You can't set content capabilities to SendReceive or Receive unless
+//     you also set video capabilities to SendReceive or Receive. If you don't
+//     set the video capability to receive, the response will contain an HTTP
+//     400 Bad Request status code. However, you can set your video capability
+//     to receive and you set your content capability to not receive.
+//
+//   - When you change an audio capability from None or Receive to Send or
+//     SendReceive , and if the attendee left their microphone unmuted, audio
+//     will flow from the attendee to the other meeting participants.
+//
+//   - When you change a video or content capability from None or Receive to
+//     Send or SendReceive , and if the attendee turned on their video or content
+//     streams, remote attendees can receive those streams, but only after media
+//     renegotiation between the client and the Amazon Chime back-end server.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Meetings's
+// API operation UpdateAttendeeCapabilities for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     Multiple instances of the same request have been made simultaneously.
+//
+//   - UnauthorizedException
+//     The user isn't authorized to request a resource.
+//
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+//   - ThrottlingException
+//     The number of customer requests exceeds the request rate limit.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-meetings-2021-07-15/UpdateAttendeeCapabilities
+func (c *ChimeSDKMeetings) UpdateAttendeeCapabilities(input *UpdateAttendeeCapabilitiesInput) (*UpdateAttendeeCapabilitiesOutput, error) {
+	req, out := c.UpdateAttendeeCapabilitiesRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAttendeeCapabilitiesWithContext is the same as UpdateAttendeeCapabilities with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAttendeeCapabilities for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKMeetings) UpdateAttendeeCapabilitiesWithContext(ctx aws.Context, input *UpdateAttendeeCapabilitiesInput, opts ...request.Option) (*UpdateAttendeeCapabilitiesOutput, error) {
+	req, out := c.UpdateAttendeeCapabilitiesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // An Amazon Chime SDK meeting attendee. Includes a unique AttendeeId and JoinToken.
 // The JoinToken allows a client to authenticate and join as the specified attendee.
 // The JoinToken expires when the meeting ends, or when DeleteAttendee is called.
@@ -1209,8 +1807,37 @@ type Attendee struct {
 	// The Amazon Chime SDK attendee ID.
 	AttendeeId *string `type:"string"`
 
+	// The capabilities assigned to an attendee: audio, video, or content.
+	//
+	// You use the capabilities with a set of values that control what the capabilities
+	// can do, such as SendReceive data. For more information about those values,
+	// see .
+	//
+	// When using capabilities, be aware of these corner cases:
+	//
+	//    * You can't set content capabilities to SendReceive or Receive unless
+	//    you also set video capabilities to SendReceive or Receive. If you don't
+	//    set the video capability to receive, the response will contain an HTTP
+	//    400 Bad Request status code. However, you can set your video capability
+	//    to receive and you set your content capability to not receive.
+	//
+	//    * When you change an audio capability from None or Receive to Send or
+	//    SendReceive , and if the attendee left their microphone unmuted, audio
+	//    will flow from the attendee to the other meeting participants.
+	//
+	//    * When you change a video or content capability from None or Receive to
+	//    Send or SendReceive , and if the attendee turned on their video or content
+	//    streams, remote attendees can receive those streams, but only after media
+	//    renegotiation between the client and the Amazon Chime back-end server.
+	Capabilities *AttendeeCapabilities `type:"structure"`
+
 	// The Amazon Chime SDK external user ID. An idempotency token. Links the attendee
 	// to an identity managed by a builder application.
+	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix. Case insensitive.
 	//
 	// ExternalUserId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by Attendee's
@@ -1249,6 +1876,12 @@ func (s *Attendee) SetAttendeeId(v string) *Attendee {
 	return s
 }
 
+// SetCapabilities sets the Capabilities field's value.
+func (s *Attendee) SetCapabilities(v *AttendeeCapabilities) *Attendee {
+	s.Capabilities = v
+	return s
+}
+
 // SetExternalUserId sets the ExternalUserId field's value.
 func (s *Attendee) SetExternalUserId(v string) *Attendee {
 	s.ExternalUserId = &v
@@ -1258,6 +1891,149 @@ func (s *Attendee) SetExternalUserId(v string) *Attendee {
 // SetJoinToken sets the JoinToken field's value.
 func (s *Attendee) SetJoinToken(v string) *Attendee {
 	s.JoinToken = &v
+	return s
+}
+
+// The media capabilities of an attendee: audio, video, or content.
+//
+// You use the capabilities with a set of values that control what the capabilities
+// can do, such as SendReceive data. For more information about those values,
+// see .
+//
+// When using capabilities, be aware of these corner cases:
+//
+//   - You can't set content capabilities to SendReceive or Receive unless
+//     you also set video capabilities to SendReceive or Receive. If you don't
+//     set the video capability to receive, the response will contain an HTTP
+//     400 Bad Request status code. However, you can set your video capability
+//     to receive and you set your content capability to not receive.
+//
+//   - When you change an audio capability from None or Receive to Send or
+//     SendReceive , and if the attendee left their microphone unmuted, audio
+//     will flow from the attendee to the other meeting participants.
+//
+//   - When you change a video or content capability from None or Receive to
+//     Send or SendReceive , and if the attendee turned on their video or content
+//     streams, remote attendees can receive those streams, but only after media
+//     renegotiation between the client and the Amazon Chime back-end server.
+type AttendeeCapabilities struct {
+	_ struct{} `type:"structure"`
+
+	// The audio capability assigned to an attendee.
+	//
+	// Audio is a required field
+	Audio *string `type:"string" required:"true" enum:"MediaCapabilities"`
+
+	// The content capability assigned to an attendee.
+	//
+	// Content is a required field
+	Content *string `type:"string" required:"true" enum:"MediaCapabilities"`
+
+	// The video capability assigned to an attendee.
+	//
+	// Video is a required field
+	Video *string `type:"string" required:"true" enum:"MediaCapabilities"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttendeeCapabilities) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttendeeCapabilities) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttendeeCapabilities) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttendeeCapabilities"}
+	if s.Audio == nil {
+		invalidParams.Add(request.NewErrParamRequired("Audio"))
+	}
+	if s.Content == nil {
+		invalidParams.Add(request.NewErrParamRequired("Content"))
+	}
+	if s.Video == nil {
+		invalidParams.Add(request.NewErrParamRequired("Video"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAudio sets the Audio field's value.
+func (s *AttendeeCapabilities) SetAudio(v string) *AttendeeCapabilities {
+	s.Audio = &v
+	return s
+}
+
+// SetContent sets the Content field's value.
+func (s *AttendeeCapabilities) SetContent(v string) *AttendeeCapabilities {
+	s.Content = &v
+	return s
+}
+
+// SetVideo sets the Video field's value.
+func (s *AttendeeCapabilities) SetVideo(v string) *AttendeeCapabilities {
+	s.Video = &v
+	return s
+}
+
+// A structure that contains one or more attendee IDs.
+type AttendeeIdItem struct {
+	_ struct{} `type:"structure"`
+
+	// A list of one or more attendee IDs.
+	//
+	// AttendeeId is a required field
+	AttendeeId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttendeeIdItem) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttendeeIdItem) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttendeeIdItem) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttendeeIdItem"}
+	if s.AttendeeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AttendeeId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttendeeId sets the AttendeeId field's value.
+func (s *AttendeeIdItem) SetAttendeeId(v string) *AttendeeIdItem {
+	s.AttendeeId = &v
 	return s
 }
 
@@ -1480,6 +2256,192 @@ func (s *BatchCreateAttendeeOutput) SetErrors(v []*CreateAttendeeError) *BatchCr
 	return s
 }
 
+type BatchUpdateAttendeeCapabilitiesExceptInput struct {
+	_ struct{} `type:"structure"`
+
+	// The capabilities (audio, video, or content) that you want to update.
+	//
+	// Capabilities is a required field
+	Capabilities *AttendeeCapabilities `type:"structure" required:"true"`
+
+	// The AttendeeIDs that you want to exclude from one or more capabilities.
+	//
+	// ExcludedAttendeeIds is a required field
+	ExcludedAttendeeIds []*AttendeeIdItem `min:"1" type:"list" required:"true"`
+
+	// The ID of the meeting associated with the update request.
+	//
+	// MeetingId is a required field
+	MeetingId *string `location:"uri" locationName:"MeetingId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateAttendeeCapabilitiesExceptInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateAttendeeCapabilitiesExceptInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchUpdateAttendeeCapabilitiesExceptInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchUpdateAttendeeCapabilitiesExceptInput"}
+	if s.Capabilities == nil {
+		invalidParams.Add(request.NewErrParamRequired("Capabilities"))
+	}
+	if s.ExcludedAttendeeIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExcludedAttendeeIds"))
+	}
+	if s.ExcludedAttendeeIds != nil && len(s.ExcludedAttendeeIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExcludedAttendeeIds", 1))
+	}
+	if s.MeetingId == nil {
+		invalidParams.Add(request.NewErrParamRequired("MeetingId"))
+	}
+	if s.MeetingId != nil && len(*s.MeetingId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("MeetingId", 1))
+	}
+	if s.Capabilities != nil {
+		if err := s.Capabilities.Validate(); err != nil {
+			invalidParams.AddNested("Capabilities", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ExcludedAttendeeIds != nil {
+		for i, v := range s.ExcludedAttendeeIds {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "ExcludedAttendeeIds", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCapabilities sets the Capabilities field's value.
+func (s *BatchUpdateAttendeeCapabilitiesExceptInput) SetCapabilities(v *AttendeeCapabilities) *BatchUpdateAttendeeCapabilitiesExceptInput {
+	s.Capabilities = v
+	return s
+}
+
+// SetExcludedAttendeeIds sets the ExcludedAttendeeIds field's value.
+func (s *BatchUpdateAttendeeCapabilitiesExceptInput) SetExcludedAttendeeIds(v []*AttendeeIdItem) *BatchUpdateAttendeeCapabilitiesExceptInput {
+	s.ExcludedAttendeeIds = v
+	return s
+}
+
+// SetMeetingId sets the MeetingId field's value.
+func (s *BatchUpdateAttendeeCapabilitiesExceptInput) SetMeetingId(v string) *BatchUpdateAttendeeCapabilitiesExceptInput {
+	s.MeetingId = &v
+	return s
+}
+
+type BatchUpdateAttendeeCapabilitiesExceptOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateAttendeeCapabilitiesExceptOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchUpdateAttendeeCapabilitiesExceptOutput) GoString() string {
+	return s.String()
+}
+
+// Multiple instances of the same request have been made simultaneously.
+type ConflictException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Code_ *string `locationName:"Code" type:"string"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The ID of the request involved in the conflict.
+	RequestId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) GoString() string {
+	return s.String()
+}
+
+func newErrorConflictException(v protocol.ResponseMetadata) error {
+	return &ConflictException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ConflictException) Code() string {
+	return "ConflictException"
+}
+
+// Message returns the exception's message.
+func (s *ConflictException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ConflictException) OrigErr() error {
+	return nil
+}
+
+func (s *ConflictException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ConflictException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ConflictException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // The list of errors returned when errors are encountered during the BatchCreateAttendee
 // and CreateAttendee actions. This includes external user IDs, error codes,
 // and error messages.
@@ -1494,6 +2456,11 @@ type CreateAttendeeError struct {
 
 	// The Amazon Chime SDK external user ID. An idempotency token. Links the attendee
 	// to an identity managed by a builder application.
+	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix. Case insensitive.
 	//
 	// ExternalUserId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateAttendeeError's
@@ -1540,8 +2507,39 @@ func (s *CreateAttendeeError) SetExternalUserId(v string) *CreateAttendeeError {
 type CreateAttendeeInput struct {
 	_ struct{} `type:"structure"`
 
+	// The capabilities (audio, video, or content) that you want to grant an attendee.
+	// If you don't specify capabilities, all users have send and receive capabilities
+	// on all media channels by default.
+	//
+	// You use the capabilities with a set of values that control what the capabilities
+	// can do, such as SendReceive data. For more information about those values,
+	// see .
+	//
+	// When using capabilities, be aware of these corner cases:
+	//
+	//    * You can't set content capabilities to SendReceive or Receive unless
+	//    you also set video capabilities to SendReceive or Receive. If you don't
+	//    set the video capability to receive, the response will contain an HTTP
+	//    400 Bad Request status code. However, you can set your video capability
+	//    to receive and you set your content capability to not receive.
+	//
+	//    * When you change an audio capability from None or Receive to Send or
+	//    SendReceive , and if the attendee left their microphone unmuted, audio
+	//    will flow from the attendee to the other meeting participants.
+	//
+	//    * When you change a video or content capability from None or Receive to
+	//    Send or SendReceive , and if the attendee turned on their video or content
+	//    streams, remote attendees can receive those streams, but only after media
+	//    renegotiation between the client and the Amazon Chime back-end server.
+	Capabilities *AttendeeCapabilities `type:"structure"`
+
 	// The Amazon Chime SDK external user ID. An idempotency token. Links the attendee
 	// to an identity managed by a builder application.
+	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix.
 	//
 	// ExternalUserId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateAttendeeInput's
@@ -1589,11 +2587,22 @@ func (s *CreateAttendeeInput) Validate() error {
 	if s.MeetingId != nil && len(*s.MeetingId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("MeetingId", 1))
 	}
+	if s.Capabilities != nil {
+		if err := s.Capabilities.Validate(); err != nil {
+			invalidParams.AddNested("Capabilities", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCapabilities sets the Capabilities field's value.
+func (s *CreateAttendeeInput) SetCapabilities(v *AttendeeCapabilities) *CreateAttendeeInput {
+	s.Capabilities = v
+	return s
 }
 
 // SetExternalUserId sets the ExternalUserId field's value.
@@ -1644,8 +2653,16 @@ func (s *CreateAttendeeOutput) SetAttendee(v *Attendee) *CreateAttendeeOutput {
 type CreateAttendeeRequestItem struct {
 	_ struct{} `type:"structure"`
 
+	// A list of one or more capabilities.
+	Capabilities *AttendeeCapabilities `type:"structure"`
+
 	// The Amazon Chime SDK external user ID. An idempotency token. Links the attendee
 	// to an identity managed by a builder application.
+	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix. Case insensitive.
 	//
 	// ExternalUserId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateAttendeeRequestItem's
@@ -1682,11 +2699,22 @@ func (s *CreateAttendeeRequestItem) Validate() error {
 	if s.ExternalUserId != nil && len(*s.ExternalUserId) < 2 {
 		invalidParams.Add(request.NewErrParamMinLen("ExternalUserId", 2))
 	}
+	if s.Capabilities != nil {
+		if err := s.Capabilities.Validate(); err != nil {
+			invalidParams.AddNested("Capabilities", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetCapabilities sets the Capabilities field's value.
+func (s *CreateAttendeeRequestItem) SetCapabilities(v *AttendeeCapabilities) *CreateAttendeeRequestItem {
+	s.Capabilities = v
+	return s
 }
 
 // SetExternalUserId sets the ExternalUserId field's value.
@@ -1707,6 +2735,11 @@ type CreateMeetingInput struct {
 	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true" sensitive:"true"`
 
 	// The external meeting ID.
+	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix. Case insensitive.
 	//
 	// ExternalMeetingId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateMeetingInput's
@@ -1744,6 +2777,52 @@ type CreateMeetingInput struct {
 	// When specified, replicates the media from the primary meeting to the new
 	// meeting.
 	PrimaryMeetingId *string `min:"2" type:"string"`
+
+	// Applies one or more tags to an Amazon Chime SDK meeting. Note the following:
+	//
+	//    * Not all resources have tags. For a list of services with resources that
+	//    support tagging using this operation, see Services that support the Resource
+	//    Groups Tagging API (https://docs.aws.amazon.com/resourcegroupstagging/latest/APIReference/supported-services.html).
+	//    If the resource doesn't yet support this operation, the resource's service
+	//    might support tagging using its own API operations. For more information,
+	//    refer to the documentation for that service.
+	//
+	//    * Each resource can have up to 50 tags. For other limits, see Tag Naming
+	//    and Usage Conventions (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html#tag-conventions)
+	//    in the AWS General Reference.
+	//
+	//    * You can only tag resources that are located in the specified AWS Region
+	//    for the AWS account.
+	//
+	//    * To add tags to a resource, you need the necessary permissions for the
+	//    service that the resource belongs to as well as permissions for adding
+	//    tags. For more information, see the documentation for each service.
+	//
+	// Do not store personally identifiable information (PII) or other confidential
+	// or sensitive information in tags. We use tags to provide you with billing
+	// and administration services. Tags are not intended to be used for private
+	// or sensitive data.
+	//
+	// Minimum permissions
+	//
+	// In addition to the tag:TagResources permission required by this operation,
+	// you must also have the tagging permission defined by the service that created
+	// the resource. For example, to tag a ChimeSDKMeetings instance using the TagResources
+	// operation, you must have both of the following permissions:
+	//
+	// tag:TagResources
+	//
+	// ChimeSDKMeetings:CreateTags
+	//
+	// Some services might have specific requirements for tagging some resources.
+	// For example, to tag an Amazon S3 bucket, you must also have the s3:GetBucketTagging
+	// permission. If the expected minimum permissions don't work, check the documentation
+	// for that service's tagging APIs for more information.
+	Tags []*Tag `type:"list"`
+
+	// A consistent and opaque identifier, created and maintained by the builder
+	// to represent a segment of their users.
+	TenantIds []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -1788,9 +2867,22 @@ func (s *CreateMeetingInput) Validate() error {
 	if s.PrimaryMeetingId != nil && len(*s.PrimaryMeetingId) < 2 {
 		invalidParams.Add(request.NewErrParamMinLen("PrimaryMeetingId", 2))
 	}
+	if s.TenantIds != nil && len(s.TenantIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TenantIds", 1))
+	}
 	if s.NotificationsConfiguration != nil {
 		if err := s.NotificationsConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("NotificationsConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 
@@ -1839,6 +2931,18 @@ func (s *CreateMeetingInput) SetNotificationsConfiguration(v *NotificationsConfi
 // SetPrimaryMeetingId sets the PrimaryMeetingId field's value.
 func (s *CreateMeetingInput) SetPrimaryMeetingId(v string) *CreateMeetingInput {
 	s.PrimaryMeetingId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateMeetingInput) SetTags(v []*Tag) *CreateMeetingInput {
+	s.Tags = v
+	return s
+}
+
+// SetTenantIds sets the TenantIds field's value.
+func (s *CreateMeetingInput) SetTenantIds(v []*string) *CreateMeetingInput {
+	s.TenantIds = v
 	return s
 }
 
@@ -1891,6 +2995,11 @@ type CreateMeetingWithAttendeesInput struct {
 
 	// The external meeting ID.
 	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix. Case insensitive.
+	//
 	// ExternalMeetingId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateMeetingWithAttendeesInput's
 	// String and GoString methods.
@@ -1927,6 +3036,13 @@ type CreateMeetingWithAttendeesInput struct {
 	// When specified, replicates the media from the primary meeting to the new
 	// meeting.
 	PrimaryMeetingId *string `min:"2" type:"string"`
+
+	// The tags in the request.
+	Tags []*Tag `type:"list"`
+
+	// A consistent and opaque identifier, created and maintained by the builder
+	// to represent a segment of their users.
+	TenantIds []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -1977,6 +3093,9 @@ func (s *CreateMeetingWithAttendeesInput) Validate() error {
 	if s.PrimaryMeetingId != nil && len(*s.PrimaryMeetingId) < 2 {
 		invalidParams.Add(request.NewErrParamMinLen("PrimaryMeetingId", 2))
 	}
+	if s.TenantIds != nil && len(s.TenantIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TenantIds", 1))
+	}
 	if s.Attendees != nil {
 		for i, v := range s.Attendees {
 			if v == nil {
@@ -1990,6 +3109,16 @@ func (s *CreateMeetingWithAttendeesInput) Validate() error {
 	if s.NotificationsConfiguration != nil {
 		if err := s.NotificationsConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("NotificationsConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 
@@ -2044,6 +3173,18 @@ func (s *CreateMeetingWithAttendeesInput) SetNotificationsConfiguration(v *Notif
 // SetPrimaryMeetingId sets the PrimaryMeetingId field's value.
 func (s *CreateMeetingWithAttendeesInput) SetPrimaryMeetingId(v string) *CreateMeetingWithAttendeesInput {
 	s.PrimaryMeetingId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateMeetingWithAttendeesInput) SetTags(v []*Tag) *CreateMeetingWithAttendeesInput {
+	s.Tags = v
+	return s
+}
+
+// SetTenantIds sets the TenantIds field's value.
+func (s *CreateMeetingWithAttendeesInput) SetTenantIds(v []*string) *CreateMeetingWithAttendeesInput {
+	s.TenantIds = v
 	return s
 }
 
@@ -2360,70 +3501,165 @@ func (s *EngineTranscribeMedicalSettings) SetVocabularyName(v string) *EngineTra
 	return s
 }
 
-// Settings specific to the Amazon Transcribe engine.
+// Settings specific for Amazon Transcribe as the live transcription engine.
+//
+// If you specify an invalid combination of parameters, a TranscriptFailed event
+// will be sent with the contents of the BadRequestException generated by Amazon
+// Transcribe. For more information on each parameter and which combinations
+// are valid, refer to the StartStreamTranscription (https://docs.aws.amazon.com/transcribe/latest/APIReference/API_streaming_StartStreamTranscription.html)
+// API in the Amazon Transcribe Developer Guide.
 type EngineTranscribeSettings struct {
 	_ struct{} `type:"structure"`
 
-	// Set this field to PII to identify personally identifiable information in
-	// the transcription output.
+	// Labels all personally identifiable information (PII) identified in your transcript.
+	// If you don't include PiiEntityTypes, all PII is identified.
+	//
+	// You can’t set ContentIdentificationType and ContentRedactionType.
 	ContentIdentificationType *string `type:"string" enum:"TranscribeContentIdentificationType"`
 
-	// Set this field to PII to redact personally identifiable information in the
-	// transcription output. Content redaction is performed only upon complete transcription
-	// of the audio segments.
+	// Content redaction is performed at the segment level. If you don't include
+	// PiiEntityTypes, all PII is redacted.
 	//
-	// You can’t set ContentRedactionType and ContentIdentificationType in the
-	// same request. If you set both, your request returns a BadRequestException.
+	// You can’t set ContentRedactionType and ContentIdentificationType.
 	ContentRedactionType *string `type:"string" enum:"TranscribeContentRedactionType"`
 
-	// Generates partial transcription results that are less likely to change as
-	// meeting attendees speak. It does so by only allowing the last few words from
-	// the partial results to change.
+	// Enables partial result stabilization for your transcription. Partial result
+	// stabilization can reduce latency in your output, but may impact accuracy.
 	EnablePartialResultsStabilization *bool `type:"boolean"`
 
-	// Automatically identifies the language spoken in media files.
+	// Enables automatic language identification for your transcription.
+	//
+	// If you include IdentifyLanguage, you can optionally use LanguageOptions to
+	// include a list of language codes that you think may be present in your audio
+	// stream. Including language options can improve transcription accuracy.
+	//
+	// You can also use PreferredLanguage to include a preferred language. Doing
+	// so can help Amazon Transcribe identify the language faster.
+	//
+	// You must include either LanguageCode or IdentifyLanguage.
+	//
+	// Language identification can't be combined with custom language models or
+	// redaction.
 	IdentifyLanguage *bool `type:"boolean"`
 
-	// The language code specified for the Amazon Transcribe engine.
+	// Specify the language code that represents the language spoken.
+	//
+	// If you're unsure of the language spoken in your audio, consider using IdentifyLanguage
+	// to enable automatic language identification.
 	LanguageCode *string `type:"string" enum:"TranscribeLanguageCode"`
 
-	// The name of the language model used during transcription.
+	// Specify the name of the custom language model that you want to use when processing
+	// your transcription. Note that language model names are case sensitive.
+	//
+	// The language of the specified language model must match the language code.
+	// If the languages don't match, the custom language model isn't applied. There
+	// are no errors or warnings associated with a language mismatch.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the custom language model
+	// must be available in Amazon Transcribe in each Region.
 	LanguageModelName *string `min:"1" type:"string"`
 
-	// Language codes for the languages that you want to identify. You must provide
-	// at least 2 codes.
+	// Specify two or more language codes that represent the languages you think
+	// may be present in your media; including more than five is not recommended.
+	// If you're unsure what languages are present, do not include this parameter.
+	//
+	// Including language options can improve the accuracy of language identification.
+	//
+	// If you include LanguageOptions, you must also include IdentifyLanguage.
+	//
+	// You can only include one language dialect per language. For example, you
+	// cannot include en-US and en-AU.
 	LanguageOptions *string `min:"1" type:"string"`
 
-	// The stabity level of a partial results transcription. Determines how stable
-	// you want the transcription results to be. A higher level means the transcription
-	// results are less likely to change.
+	// Specify the level of stability to use when you enable partial results stabilization
+	// (EnablePartialResultsStabilization).
+	//
+	// Low stability provides the highest accuracy. High stability transcribes faster,
+	// but with slightly lower accuracy.
 	PartialResultsStability *string `type:"string" enum:"TranscribePartialResultsStability"`
 
-	// Lists the PII entity types you want to identify or redact. To specify entity
-	// types, you must enable ContentIdentificationType or ContentRedactionType.
+	// Specify which types of personally identifiable information (PII) you want
+	// to redact in your transcript. You can include as many types as you'd like,
+	// or you can select ALL.
 	//
-	// PIIEntityTypes must be comma-separated. The available values are: BANK_ACCOUNT_NUMBER,
-	// BANK_ROUTING, CREDIT_DEBIT_NUMBER, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY,
-	// PIN, EMAIL, ADDRESS, NAME, PHONE, SSN, and ALL.
+	// Values must be comma-separated and can include: ADDRESS, BANK_ACCOUNT_NUMBER,
+	// BANK_ROUTING, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY CREDIT_DEBIT_NUMBER,
+	// EMAIL,NAME, PHONE, PIN, SSN, or ALL.
 	//
-	// PiiEntityTypes is an optional parameter with a default value of ALL.
+	// Note that if you include PiiEntityTypes, you must also include ContentIdentificationType
+	// or ContentRedactionType.
+	//
+	// If you include ContentRedactionType or ContentIdentificationType, but do
+	// not include PiiEntityTypes, all PII is redacted or identified.
 	PiiEntityTypes *string `min:"1" type:"string"`
 
-	// Language code for the preferred language.
+	// Specify a preferred language from the subset of languages codes you specified
+	// in LanguageOptions.
+	//
+	// You can only use this parameter if you include IdentifyLanguage and LanguageOptions.
 	PreferredLanguage *string `type:"string" enum:"TranscribeLanguageCode"`
 
-	// The AWS Region passed to Amazon Transcribe. If you don't specify a Region,
-	// Amazon Chime uses the meeting's Region.
+	// The AWS Region in which to use Amazon Transcribe.
+	//
+	// If you don't specify a Region, then the MediaRegion (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_CreateMeeting.html)
+	// of the meeting is used. However, if Amazon Transcribe is not available in
+	// the MediaRegion, then a TranscriptFailed event is sent.
+	//
+	// Use auto to use Amazon Transcribe in a Region near the meeting’s MediaRegion.
+	// For more information, refer to Choosing a transcription Region (https://docs.aws.amazon.com/chime-sdk/latest/dg/transcription-options.html#choose-region)
+	// in the Amazon Chime SDK Developer Guide.
 	Region *string `type:"string" enum:"TranscribeRegion"`
 
-	// The filtering method passed to Amazon Transcribe.
+	// Specify how you want your vocabulary filter applied to your transcript.
+	//
+	// To replace words with ***, choose mask.
+	//
+	// To delete words, choose remove.
+	//
+	// To flag words without changing them, choose tag.
 	VocabularyFilterMethod *string `type:"string" enum:"TranscribeVocabularyFilterMethod"`
 
-	// The name of the vocabulary filter passed to Amazon Transcribe.
+	// Specify the name of the custom vocabulary filter that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the vocabulary filter must
+	// be available in Amazon Transcribe in each Region.
+	//
+	// If you include IdentifyLanguage and want to use one or more vocabulary filters
+	// with your transcription, use the VocabularyFilterNames parameter instead.
 	VocabularyFilterName *string `type:"string"`
 
-	// The name of the vocabulary passed to Amazon Transcribe.
+	// Specify the names of the custom vocabulary filters that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the vocabulary filter must
+	// be available in Amazon Transcribe in each Region.
+	//
+	// If you're not including IdentifyLanguage and want to use a custom vocabulary
+	// filter with your transcription, use the VocabularyFilterName parameter instead.
+	VocabularyFilterNames *string `min:"1" type:"string"`
+
+	// Specify the name of the custom vocabulary that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
+	//
+	// If you use Amazon Transcribe multiple Regions, the vocabulary must be available
+	// in Amazon Transcribe in each Region.
+	//
+	// If you include IdentifyLanguage and want to use one or more custom vocabularies
+	// with your transcription, use the VocabularyNames parameter instead.
 	VocabularyName *string `type:"string"`
+
+	// Specify the names of the custom vocabularies that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the vocabulary must be
+	// available in Amazon Transcribe in each Region.
+	//
+	// If you don't include IdentifyLanguage and want to use a custom vocabulary
+	// with your transcription, use the VocabularyName parameter instead.
+	VocabularyNames *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -2455,6 +3691,12 @@ func (s *EngineTranscribeSettings) Validate() error {
 	}
 	if s.PiiEntityTypes != nil && len(*s.PiiEntityTypes) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("PiiEntityTypes", 1))
+	}
+	if s.VocabularyFilterNames != nil && len(*s.VocabularyFilterNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VocabularyFilterNames", 1))
+	}
+	if s.VocabularyNames != nil && len(*s.VocabularyNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VocabularyNames", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -2541,9 +3783,21 @@ func (s *EngineTranscribeSettings) SetVocabularyFilterName(v string) *EngineTran
 	return s
 }
 
+// SetVocabularyFilterNames sets the VocabularyFilterNames field's value.
+func (s *EngineTranscribeSettings) SetVocabularyFilterNames(v string) *EngineTranscribeSettings {
+	s.VocabularyFilterNames = &v
+	return s
+}
+
 // SetVocabularyName sets the VocabularyName field's value.
 func (s *EngineTranscribeSettings) SetVocabularyName(v string) *EngineTranscribeSettings {
 	s.VocabularyName = &v
+	return s
+}
+
+// SetVocabularyNames sets the VocabularyNames field's value.
+func (s *EngineTranscribeSettings) SetVocabularyNames(v string) *EngineTranscribeSettings {
+	s.VocabularyNames = &v
 	return s
 }
 
@@ -2972,6 +4226,86 @@ func (s *ListAttendeesOutput) SetNextToken(v string) *ListAttendeesOutput {
 	return s
 }
 
+type ListTagsForResourceInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the resource.
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `location:"querystring" locationName:"arn" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *ListTagsForResourceInput) SetResourceARN(v string) *ListTagsForResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The tags requested for the specified resource.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
 // A set of endpoints used by clients to connect to the media service group
 // for an Amazon Chime SDK meeting.
 type MediaPlacement struct {
@@ -3074,6 +4408,11 @@ type Meeting struct {
 
 	// The external meeting ID.
 	//
+	// Pattern: [-_&@+=,(){}\[\]\/«».:|'"#a-zA-Z0-9À-ÿ\s]*
+	//
+	// Values that begin with aws: are reserved. You can't configure a value that
+	// uses this prefix. Case insensitive.
+	//
 	// ExternalMeetingId is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by Meeting's
 	// String and GoString methods.
@@ -3090,7 +4429,10 @@ type Meeting struct {
 	// Available values in AWS GovCloud (US) Regions: us-gov-east-1, us-gov-west-1.
 	MediaRegion *string `min:"2" type:"string"`
 
-	// The features available to a meeting, such as Amazon Voice Focus.
+	// The ARN of the meeting.
+	MeetingArn *string `min:"1" type:"string"`
+
+	// The features available to a meeting, such as echo reduction.
 	MeetingFeatures *MeetingFeaturesConfiguration `type:"structure"`
 
 	// Reserved.
@@ -3105,6 +4447,9 @@ type Meeting struct {
 
 	// When specified, replicates the media from the primary meeting to this meeting.
 	PrimaryMeetingId *string `min:"2" type:"string"`
+
+	// Array of strings.
+	TenantIds []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -3143,6 +4488,12 @@ func (s *Meeting) SetMediaRegion(v string) *Meeting {
 	return s
 }
 
+// SetMeetingArn sets the MeetingArn field's value.
+func (s *Meeting) SetMeetingArn(v string) *Meeting {
+	s.MeetingArn = &v
+	return s
+}
+
 // SetMeetingFeatures sets the MeetingFeatures field's value.
 func (s *Meeting) SetMeetingFeatures(v *MeetingFeaturesConfiguration) *Meeting {
 	s.MeetingFeatures = v
@@ -3167,7 +4518,13 @@ func (s *Meeting) SetPrimaryMeetingId(v string) *Meeting {
 	return s
 }
 
-// The configuration settings of the features available to a meeting.>
+// SetTenantIds sets the TenantIds field's value.
+func (s *Meeting) SetTenantIds(v []*string) *Meeting {
+	s.TenantIds = v
+	return s
+}
+
+// The configuration settings of the features available to a meeting.
 type MeetingFeaturesConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -3208,7 +4565,7 @@ type NotFoundException struct {
 
 	Message_ *string `locationName:"Message" type:"string"`
 
-	// The request id associated with the call responsible for the exception.
+	// The request ID associated with the call responsible for the exception.
 	RequestId *string `type:"string"`
 }
 
@@ -3350,6 +4707,78 @@ func (s *NotificationsConfiguration) SetSqsQueueArn(v string) *NotificationsConf
 	return s
 }
 
+// The resource that you want to tag couldn't be found.
+type ResourceNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Code_ *string `locationName:"Code" type:"string"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The ID of the resource that couldn't be found.
+	RequestId *string `type:"string"`
+
+	// The name of the resource that couldn't be found.
+	ResourceName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourceNotFoundException(v protocol.ResponseMetadata) error {
+	return &ResourceNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourceNotFoundException) Code() string {
+	return "ResourceNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *ResourceNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourceNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourceNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourceNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourceNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // The service encountered an unexpected error.
 type ServiceFailureException struct {
 	_            struct{}                  `type:"structure"`
@@ -3359,6 +4788,7 @@ type ServiceFailureException struct {
 
 	Message_ *string `locationName:"Message" type:"string"`
 
+	// The ID of the failed request.
 	RequestId *string `type:"string"`
 }
 
@@ -3652,6 +5082,165 @@ func (s StopMeetingTranscriptionOutput) GoString() string {
 	return s.String()
 }
 
+// A key-value pair that you define.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// The tag's key.
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// The tag's value.
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
+type TagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the resource.
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// Lists the requested tags.
+	//
+	// Tags is a required field
+	Tags []*Tag `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *TagResourceInput) SetResourceARN(v string) *TagResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) GoString() string {
+	return s.String()
+}
+
 // The number of customer requests exceeds the request rate limit.
 type ThrottlingException struct {
 	_            struct{}                  `type:"structure"`
@@ -3661,6 +5250,7 @@ type ThrottlingException struct {
 
 	Message_ *string `locationName:"Message" type:"string"`
 
+	// The ID of the request that exceeded the throttling limit.
 	RequestId *string `type:"string"`
 }
 
@@ -3717,6 +5307,78 @@ func (s *ThrottlingException) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *ThrottlingException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Too many tags were added to the specified resource.
+type TooManyTagsException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Code_ *string `locationName:"Code" type:"string"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The ID of the request that contains too many tags.
+	RequestId *string `type:"string"`
+
+	// The name of the resource that received too many tags.
+	ResourceName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TooManyTagsException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TooManyTagsException) GoString() string {
+	return s.String()
+}
+
+func newErrorTooManyTagsException(v protocol.ResponseMetadata) error {
+	return &TooManyTagsException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *TooManyTagsException) Code() string {
+	return "TooManyTagsException"
+}
+
+// Message returns the exception's message.
+func (s *TooManyTagsException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *TooManyTagsException) OrigErr() error {
+	return nil
+}
+
+func (s *TooManyTagsException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *TooManyTagsException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *TooManyTagsException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
@@ -3921,6 +5583,231 @@ func (s *UnprocessableEntityException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type UntagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the resource that you're removing tags from.
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// The tag keys being removed from the resources.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *UntagResourceInput) SetResourceARN(v string) *UntagResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
+}
+
+type UpdateAttendeeCapabilitiesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the attendee associated with the update request.
+	//
+	// AttendeeId is a required field
+	AttendeeId *string `location:"uri" locationName:"AttendeeId" type:"string" required:"true"`
+
+	// The capabilities that you want to update.
+	//
+	// Capabilities is a required field
+	Capabilities *AttendeeCapabilities `type:"structure" required:"true"`
+
+	// The ID of the meeting associated with the update request.
+	//
+	// MeetingId is a required field
+	MeetingId *string `location:"uri" locationName:"MeetingId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAttendeeCapabilitiesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAttendeeCapabilitiesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateAttendeeCapabilitiesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateAttendeeCapabilitiesInput"}
+	if s.AttendeeId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AttendeeId"))
+	}
+	if s.AttendeeId != nil && len(*s.AttendeeId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AttendeeId", 1))
+	}
+	if s.Capabilities == nil {
+		invalidParams.Add(request.NewErrParamRequired("Capabilities"))
+	}
+	if s.MeetingId == nil {
+		invalidParams.Add(request.NewErrParamRequired("MeetingId"))
+	}
+	if s.MeetingId != nil && len(*s.MeetingId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("MeetingId", 1))
+	}
+	if s.Capabilities != nil {
+		if err := s.Capabilities.Validate(); err != nil {
+			invalidParams.AddNested("Capabilities", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttendeeId sets the AttendeeId field's value.
+func (s *UpdateAttendeeCapabilitiesInput) SetAttendeeId(v string) *UpdateAttendeeCapabilitiesInput {
+	s.AttendeeId = &v
+	return s
+}
+
+// SetCapabilities sets the Capabilities field's value.
+func (s *UpdateAttendeeCapabilitiesInput) SetCapabilities(v *AttendeeCapabilities) *UpdateAttendeeCapabilitiesInput {
+	s.Capabilities = v
+	return s
+}
+
+// SetMeetingId sets the MeetingId field's value.
+func (s *UpdateAttendeeCapabilitiesInput) SetMeetingId(v string) *UpdateAttendeeCapabilitiesInput {
+	s.MeetingId = &v
+	return s
+}
+
+type UpdateAttendeeCapabilitiesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The updated attendee data.
+	Attendee *Attendee `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAttendeeCapabilitiesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAttendeeCapabilitiesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAttendee sets the Attendee field's value.
+func (s *UpdateAttendeeCapabilitiesOutput) SetAttendee(v *Attendee) *UpdateAttendeeCapabilitiesOutput {
+	s.Attendee = v
+	return s
+}
+
+const (
+	// MediaCapabilitiesSendReceive is a MediaCapabilities enum value
+	MediaCapabilitiesSendReceive = "SendReceive"
+
+	// MediaCapabilitiesSend is a MediaCapabilities enum value
+	MediaCapabilitiesSend = "Send"
+
+	// MediaCapabilitiesReceive is a MediaCapabilities enum value
+	MediaCapabilitiesReceive = "Receive"
+
+	// MediaCapabilitiesNone is a MediaCapabilities enum value
+	MediaCapabilitiesNone = "None"
+)
+
+// MediaCapabilities_Values returns all elements of the MediaCapabilities enum
+func MediaCapabilities_Values() []string {
+	return []string{
+		MediaCapabilitiesSendReceive,
+		MediaCapabilitiesSend,
+		MediaCapabilitiesReceive,
+		MediaCapabilitiesNone,
+	}
+}
+
 const (
 	// MeetingFeatureStatusAvailable is a MeetingFeatureStatus enum value
 	MeetingFeatureStatusAvailable = "AVAILABLE"
@@ -3997,6 +5884,12 @@ const (
 
 	// TranscribeLanguageCodeZhCn is a TranscribeLanguageCode enum value
 	TranscribeLanguageCodeZhCn = "zh-CN"
+
+	// TranscribeLanguageCodeThTh is a TranscribeLanguageCode enum value
+	TranscribeLanguageCodeThTh = "th-TH"
+
+	// TranscribeLanguageCodeHiIn is a TranscribeLanguageCode enum value
+	TranscribeLanguageCodeHiIn = "hi-IN"
 )
 
 // TranscribeLanguageCode_Values returns all elements of the TranscribeLanguageCode enum
@@ -4014,6 +5907,8 @@ func TranscribeLanguageCode_Values() []string {
 		TranscribeLanguageCodeJaJp,
 		TranscribeLanguageCodeKoKr,
 		TranscribeLanguageCodeZhCn,
+		TranscribeLanguageCodeThTh,
+		TranscribeLanguageCodeHiIn,
 	}
 }
 
@@ -4181,6 +6076,9 @@ const (
 
 	// TranscribeRegionAuto is a TranscribeRegion enum value
 	TranscribeRegionAuto = "auto"
+
+	// TranscribeRegionUsGovWest1 is a TranscribeRegion enum value
+	TranscribeRegionUsGovWest1 = "us-gov-west-1"
 )
 
 // TranscribeRegion_Values returns all elements of the TranscribeRegion enum
@@ -4198,6 +6096,7 @@ func TranscribeRegion_Values() []string {
 		TranscribeRegionEuWest2,
 		TranscribeRegionSaEast1,
 		TranscribeRegionAuto,
+		TranscribeRegionUsGovWest1,
 	}
 }
 

@@ -272,6 +272,16 @@ func (c *ECR) BatchGetImageRequest(input *BatchGetImageInput) (req *request.Requ
 //     The specified repository could not be found. Check the spelling of the specified
 //     repository and ensure that you are performing operations on the correct registry.
 //
+//   - LimitExceededException
+//     The operation did not succeed because it would have exceeded a service limit
+//     for your account. For more information, see Amazon ECR service quotas (https://docs.aws.amazon.com/AmazonECR/latest/userguide/service-quotas.html)
+//     in the Amazon Elastic Container Registry User Guide.
+//
+//   - UnableToGetUpstreamImageException
+//     The image or images were unable to be pulled using the pull through cache
+//     rule. This is usually caused because of an issue with the Secrets Manager
+//     secret containing the credentials for the upstream registry.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/BatchGetImage
 func (c *ECR) BatchGetImage(input *BatchGetImageInput) (*BatchGetImageOutput, error) {
 	req, out := c.BatchGetImageRequest(input)
@@ -544,8 +554,9 @@ func (c *ECR) CreatePullThroughCacheRuleRequest(input *CreatePullThroughCacheRul
 // CreatePullThroughCacheRule API operation for Amazon EC2 Container Registry.
 //
 // Creates a pull through cache rule. A pull through cache rule provides a way
-// to cache images from an external public registry in your Amazon ECR private
-// registry.
+// to cache images from an upstream registry source in your Amazon ECR private
+// registry. For more information, see Using pull through cache rules (https://docs.aws.amazon.com/AmazonECR/latest/userguide/pull-through-cache.html)
+// in the Amazon Elastic Container Registry User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -577,6 +588,18 @@ func (c *ECR) CreatePullThroughCacheRuleRequest(input *CreatePullThroughCacheRul
 //     The operation did not succeed because it would have exceeded a service limit
 //     for your account. For more information, see Amazon ECR service quotas (https://docs.aws.amazon.com/AmazonECR/latest/userguide/service-quotas.html)
 //     in the Amazon Elastic Container Registry User Guide.
+//
+//   - UnableToAccessSecretException
+//     The secret is unable to be accessed. Verify the resource permissions for
+//     the secret and try again.
+//
+//   - SecretNotFoundException
+//     The ARN of the secret specified in the pull through cache rule was not found.
+//     Update the pull through cache rule with a valid secret ARN and try again.
+//
+//   - UnableToDecryptSecretValueException
+//     The secret is accessible but is unable to be decrypted. Verify the resource
+//     permisisons and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/CreatePullThroughCacheRule
 func (c *ECR) CreatePullThroughCacheRule(input *CreatePullThroughCacheRuleInput) (*CreatePullThroughCacheRuleOutput, error) {
@@ -771,6 +794,9 @@ func (c *ECR) DeleteLifecyclePolicyRequest(input *DeleteLifecyclePolicyInput) (r
 //
 //   - LifecyclePolicyNotFoundException
 //     The lifecycle policy could not be found, and no policy is set to the repository.
+//
+//   - ValidationException
+//     There was an exception validating this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/DeleteLifecyclePolicy
 func (c *ECR) DeleteLifecyclePolicy(input *DeleteLifecyclePolicyInput) (*DeleteLifecyclePolicyOutput, error) {
@@ -1016,9 +1042,9 @@ func (c *ECR) DeleteRepositoryRequest(input *DeleteRepositoryInput) (req *reques
 
 // DeleteRepository API operation for Amazon EC2 Container Registry.
 //
-// Deletes a repository. If the repository contains images, you must either
-// delete all images in the repository or use the force option to delete the
-// repository.
+// Deletes a repository. If the repository isn't empty, you must either delete
+// the contents of the repository or use the force option to delete the repository
+// and have Amazon ECR delete all of its contents on your behalf.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2111,6 +2137,10 @@ func (c *ECR) GetDownloadUrlForLayerRequest(input *GetDownloadUrlForLayerInput) 
 //     The specified repository could not be found. Check the spelling of the specified
 //     repository and ensure that you are performing operations on the correct registry.
 //
+//   - UnableToGetUpstreamLayerException
+//     There was an issue getting the upstream layer matching the pull through cache
+//     rule.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/GetDownloadUrlForLayer
 func (c *ECR) GetDownloadUrlForLayer(input *GetDownloadUrlForLayerInput) (*GetDownloadUrlForLayerOutput, error) {
 	req, out := c.GetDownloadUrlForLayerRequest(input)
@@ -2200,6 +2230,9 @@ func (c *ECR) GetLifecyclePolicyRequest(input *GetLifecyclePolicyInput) (req *re
 //
 //   - LifecyclePolicyNotFoundException
 //     The lifecycle policy could not be found, and no policy is set to the repository.
+//
+//   - ValidationException
+//     There was an exception validating this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/GetLifecyclePolicy
 func (c *ECR) GetLifecyclePolicy(input *GetLifecyclePolicyInput) (*GetLifecyclePolicyOutput, error) {
@@ -2297,6 +2330,9 @@ func (c *ECR) GetLifecyclePolicyPreviewRequest(input *GetLifecyclePolicyPreviewI
 //
 //   - LifecyclePolicyPreviewNotFoundException
 //     There is no dry run for this repository.
+//
+//   - ValidationException
+//     There was an exception validating this request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/GetLifecyclePolicyPreview
 func (c *ECR) GetLifecyclePolicyPreview(input *GetLifecyclePolicyPreviewInput) (*GetLifecyclePolicyPreviewOutput, error) {
@@ -3344,6 +3380,9 @@ func (c *ECR) PutLifecyclePolicyRequest(input *PutLifecyclePolicyInput) (req *re
 //     The specified repository could not be found. Check the spelling of the specified
 //     repository and ensure that you are performing operations on the correct registry.
 //
+//   - ValidationException
+//     There was an exception validating this request.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/PutLifecyclePolicy
 func (c *ECR) PutLifecyclePolicy(input *PutLifecyclePolicyInput) (*PutLifecyclePolicyOutput, error) {
 	req, out := c.PutLifecyclePolicyRequest(input)
@@ -3906,6 +3945,9 @@ func (c *ECR) StartLifecyclePolicyPreviewRequest(input *StartLifecyclePolicyPrev
 //     The previous lifecycle policy preview request has not completed. Wait and
 //     try again.
 //
+//   - ValidationException
+//     There was an exception validating this request.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/StartLifecyclePolicyPreview
 func (c *ECR) StartLifecyclePolicyPreview(input *StartLifecyclePolicyPreviewInput) (*StartLifecyclePolicyPreviewOutput, error) {
 	req, out := c.StartLifecyclePolicyPreviewRequest(input)
@@ -4123,6 +4165,108 @@ func (c *ECR) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInpu
 	return out, req.Send()
 }
 
+const opUpdatePullThroughCacheRule = "UpdatePullThroughCacheRule"
+
+// UpdatePullThroughCacheRuleRequest generates a "aws/request.Request" representing the
+// client's request for the UpdatePullThroughCacheRule operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdatePullThroughCacheRule for more information on using the UpdatePullThroughCacheRule
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdatePullThroughCacheRuleRequest method.
+//	req, resp := client.UpdatePullThroughCacheRuleRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/UpdatePullThroughCacheRule
+func (c *ECR) UpdatePullThroughCacheRuleRequest(input *UpdatePullThroughCacheRuleInput) (req *request.Request, output *UpdatePullThroughCacheRuleOutput) {
+	op := &request.Operation{
+		Name:       opUpdatePullThroughCacheRule,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdatePullThroughCacheRuleInput{}
+	}
+
+	output = &UpdatePullThroughCacheRuleOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdatePullThroughCacheRule API operation for Amazon EC2 Container Registry.
+//
+// Updates an existing pull through cache rule.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EC2 Container Registry's
+// API operation UpdatePullThroughCacheRule for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ValidationException
+//     There was an exception validating this request.
+//
+//   - UnableToAccessSecretException
+//     The secret is unable to be accessed. Verify the resource permissions for
+//     the secret and try again.
+//
+//   - PullThroughCacheRuleNotFoundException
+//     The pull through cache rule was not found. Specify a valid pull through cache
+//     rule and try again.
+//
+//   - SecretNotFoundException
+//     The ARN of the secret specified in the pull through cache rule was not found.
+//     Update the pull through cache rule with a valid secret ARN and try again.
+//
+//   - UnableToDecryptSecretValueException
+//     The secret is accessible but is unable to be decrypted. Verify the resource
+//     permisisons and try again.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/UpdatePullThroughCacheRule
+func (c *ECR) UpdatePullThroughCacheRule(input *UpdatePullThroughCacheRuleInput) (*UpdatePullThroughCacheRuleOutput, error) {
+	req, out := c.UpdatePullThroughCacheRuleRequest(input)
+	return out, req.Send()
+}
+
+// UpdatePullThroughCacheRuleWithContext is the same as UpdatePullThroughCacheRule with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdatePullThroughCacheRule for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ECR) UpdatePullThroughCacheRuleWithContext(ctx aws.Context, input *UpdatePullThroughCacheRuleInput, opts ...request.Option) (*UpdatePullThroughCacheRuleOutput, error) {
+	req, out := c.UpdatePullThroughCacheRuleRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUploadLayerPart = "UploadLayerPart"
 
 // UploadLayerPartRequest generates a "aws/request.Request" representing the
@@ -4229,6 +4373,99 @@ func (c *ECR) UploadLayerPart(input *UploadLayerPartInput) (*UploadLayerPartOutp
 // for more information on using Contexts.
 func (c *ECR) UploadLayerPartWithContext(ctx aws.Context, input *UploadLayerPartInput, opts ...request.Option) (*UploadLayerPartOutput, error) {
 	req, out := c.UploadLayerPartRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opValidatePullThroughCacheRule = "ValidatePullThroughCacheRule"
+
+// ValidatePullThroughCacheRuleRequest generates a "aws/request.Request" representing the
+// client's request for the ValidatePullThroughCacheRule operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ValidatePullThroughCacheRule for more information on using the ValidatePullThroughCacheRule
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ValidatePullThroughCacheRuleRequest method.
+//	req, resp := client.ValidatePullThroughCacheRuleRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/ValidatePullThroughCacheRule
+func (c *ECR) ValidatePullThroughCacheRuleRequest(input *ValidatePullThroughCacheRuleInput) (req *request.Request, output *ValidatePullThroughCacheRuleOutput) {
+	op := &request.Operation{
+		Name:       opValidatePullThroughCacheRule,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ValidatePullThroughCacheRuleInput{}
+	}
+
+	output = &ValidatePullThroughCacheRuleOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ValidatePullThroughCacheRule API operation for Amazon EC2 Container Registry.
+//
+// Validates an existing pull through cache rule for an upstream registry that
+// requires authentication. This will retrieve the contents of the Amazon Web
+// Services Secrets Manager secret, verify the syntax, and then validate that
+// authentication to the upstream registry is successful.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EC2 Container Registry's
+// API operation ValidatePullThroughCacheRule for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ValidationException
+//     There was an exception validating this request.
+//
+//   - PullThroughCacheRuleNotFoundException
+//     The pull through cache rule was not found. Specify a valid pull through cache
+//     rule and try again.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ecr-2015-09-21/ValidatePullThroughCacheRule
+func (c *ECR) ValidatePullThroughCacheRule(input *ValidatePullThroughCacheRuleInput) (*ValidatePullThroughCacheRuleOutput, error) {
+	req, out := c.ValidatePullThroughCacheRuleRequest(input)
+	return out, req.Send()
+}
+
+// ValidatePullThroughCacheRuleWithContext is the same as ValidatePullThroughCacheRule with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ValidatePullThroughCacheRule for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ECR) ValidatePullThroughCacheRuleWithContext(ctx aws.Context, input *ValidatePullThroughCacheRuleInput, opts ...request.Option) (*ValidatePullThroughCacheRuleOutput, error) {
+	req, out := c.ValidatePullThroughCacheRuleRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5060,6 +5297,10 @@ func (s *CompleteLayerUploadOutput) SetUploadId(v string) *CompleteLayerUploadOu
 type CreatePullThroughCacheRuleInput struct {
 	_ struct{} `type:"structure"`
 
+	// The Amazon Resource Name (ARN) of the Amazon Web Services Secrets Manager
+	// secret that identifies the credentials to authenticate to the upstream registry.
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string"`
+
 	// The repository name prefix to use when caching images from the source registry.
 	//
 	// EcrRepositoryPrefix is a required field
@@ -5070,8 +5311,24 @@ type CreatePullThroughCacheRuleInput struct {
 	// registry is assumed.
 	RegistryId *string `locationName:"registryId" type:"string"`
 
+	// The name of the upstream registry.
+	UpstreamRegistry *string `locationName:"upstreamRegistry" type:"string" enum:"UpstreamRegistry"`
+
 	// The registry URL of the upstream public registry to use as the source for
-	// the pull through cache rule.
+	// the pull through cache rule. The following is the syntax to use for each
+	// supported upstream registry.
+	//
+	//    * Amazon ECR Public (ecr-public) - public.ecr.aws
+	//
+	//    * Docker Hub (docker-hub) - registry-1.docker.io
+	//
+	//    * Quay (quay) - quay.io
+	//
+	//    * Kubernetes (k8s) - registry.k8s.io
+	//
+	//    * GitHub Container Registry (github-container-registry) - ghcr.io
+	//
+	//    * Microsoft Azure Container Registry (azure-container-registry) - <custom>.azurecr.io
 	//
 	// UpstreamRegistryUrl is a required field
 	UpstreamRegistryUrl *string `locationName:"upstreamRegistryUrl" type:"string" required:"true"`
@@ -5098,6 +5355,9 @@ func (s CreatePullThroughCacheRuleInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreatePullThroughCacheRuleInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreatePullThroughCacheRuleInput"}
+	if s.CredentialArn != nil && len(*s.CredentialArn) < 50 {
+		invalidParams.Add(request.NewErrParamMinLen("CredentialArn", 50))
+	}
 	if s.EcrRepositoryPrefix == nil {
 		invalidParams.Add(request.NewErrParamRequired("EcrRepositoryPrefix"))
 	}
@@ -5114,6 +5374,12 @@ func (s *CreatePullThroughCacheRuleInput) Validate() error {
 	return nil
 }
 
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *CreatePullThroughCacheRuleInput) SetCredentialArn(v string) *CreatePullThroughCacheRuleInput {
+	s.CredentialArn = &v
+	return s
+}
+
 // SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
 func (s *CreatePullThroughCacheRuleInput) SetEcrRepositoryPrefix(v string) *CreatePullThroughCacheRuleInput {
 	s.EcrRepositoryPrefix = &v
@@ -5123,6 +5389,12 @@ func (s *CreatePullThroughCacheRuleInput) SetEcrRepositoryPrefix(v string) *Crea
 // SetRegistryId sets the RegistryId field's value.
 func (s *CreatePullThroughCacheRuleInput) SetRegistryId(v string) *CreatePullThroughCacheRuleInput {
 	s.RegistryId = &v
+	return s
+}
+
+// SetUpstreamRegistry sets the UpstreamRegistry field's value.
+func (s *CreatePullThroughCacheRuleInput) SetUpstreamRegistry(v string) *CreatePullThroughCacheRuleInput {
+	s.UpstreamRegistry = &v
 	return s
 }
 
@@ -5139,11 +5411,19 @@ type CreatePullThroughCacheRuleOutput struct {
 	// rule was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
+	// The Amazon Resource Name (ARN) of the Amazon Web Services Secrets Manager
+	// secret associated with the pull through cache rule.
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string"`
+
 	// The Amazon ECR repository prefix associated with the pull through cache rule.
 	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string"`
 
 	// The registry ID associated with the request.
 	RegistryId *string `locationName:"registryId" type:"string"`
+
+	// The name of the upstream registry associated with the pull through cache
+	// rule.
+	UpstreamRegistry *string `locationName:"upstreamRegistry" type:"string" enum:"UpstreamRegistry"`
 
 	// The upstream registry URL associated with the pull through cache rule.
 	UpstreamRegistryUrl *string `locationName:"upstreamRegistryUrl" type:"string"`
@@ -5173,6 +5453,12 @@ func (s *CreatePullThroughCacheRuleOutput) SetCreatedAt(v time.Time) *CreatePull
 	return s
 }
 
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *CreatePullThroughCacheRuleOutput) SetCredentialArn(v string) *CreatePullThroughCacheRuleOutput {
+	s.CredentialArn = &v
+	return s
+}
+
 // SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
 func (s *CreatePullThroughCacheRuleOutput) SetEcrRepositoryPrefix(v string) *CreatePullThroughCacheRuleOutput {
 	s.EcrRepositoryPrefix = &v
@@ -5182,6 +5468,12 @@ func (s *CreatePullThroughCacheRuleOutput) SetEcrRepositoryPrefix(v string) *Cre
 // SetRegistryId sets the RegistryId field's value.
 func (s *CreatePullThroughCacheRuleOutput) SetRegistryId(v string) *CreatePullThroughCacheRuleOutput {
 	s.RegistryId = &v
+	return s
+}
+
+// SetUpstreamRegistry sets the UpstreamRegistry field's value.
+func (s *CreatePullThroughCacheRuleOutput) SetUpstreamRegistry(v string) *CreatePullThroughCacheRuleOutput {
+	s.UpstreamRegistry = &v
 	return s
 }
 
@@ -5216,6 +5508,9 @@ type CreateRepositoryInput struct {
 	// The name to use for the repository. The repository name may be specified
 	// on its own (such as nginx-web-app) or it can be prepended with a namespace
 	// to group the repository into a category (such as project-a/nginx-web-app).
+	//
+	// The repository name must start with a letter and can only contain lowercase
+	// letters, numbers, hyphens, underscores, and forward slashes.
 	//
 	// RepositoryName is a required field
 	RepositoryName *string `locationName:"repositoryName" min:"2" type:"string" required:"true"`
@@ -5257,6 +5552,16 @@ func (s *CreateRepositoryInput) Validate() error {
 	if s.EncryptionConfiguration != nil {
 		if err := s.EncryptionConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("EncryptionConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
 		}
 	}
 
@@ -5687,6 +5992,10 @@ type DeletePullThroughCacheRuleOutput struct {
 	// The timestamp associated with the pull through cache rule.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
+	// The Amazon Resource Name (ARN) of the Amazon Web Services Secrets Manager
+	// secret associated with the pull through cache rule.
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string"`
+
 	// The Amazon ECR repository prefix associated with the request.
 	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string"`
 
@@ -5718,6 +6027,12 @@ func (s DeletePullThroughCacheRuleOutput) GoString() string {
 // SetCreatedAt sets the CreatedAt field's value.
 func (s *DeletePullThroughCacheRuleOutput) SetCreatedAt(v time.Time) *DeletePullThroughCacheRuleOutput {
 	s.CreatedAt = &v
+	return s
+}
+
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *DeletePullThroughCacheRuleOutput) SetCredentialArn(v string) *DeletePullThroughCacheRuleOutput {
+	s.CredentialArn = &v
 	return s
 }
 
@@ -5804,7 +6119,8 @@ func (s *DeleteRegistryPolicyOutput) SetRegistryId(v string) *DeleteRegistryPoli
 type DeleteRepositoryInput struct {
 	_ struct{} `type:"structure"`
 
-	// If a repository contains images, forces the deletion.
+	// If true, deleting the repository force deletes the contents of the repository.
+	// If false, the repository must be empty before attempting to delete it.
 	Force *bool `locationName:"force" type:"boolean"`
 
 	// The Amazon Web Services account ID associated with the registry that contains
@@ -10445,12 +10761,24 @@ type PullThroughCacheRule struct {
 	// The date and time the pull through cache was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
+	// The ARN of the Secrets Manager secret associated with the pull through cache
+	// rule.
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string"`
+
 	// The Amazon ECR repository prefix associated with the pull through cache rule.
 	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string"`
 
 	// The Amazon Web Services account ID associated with the registry the pull
 	// through cache rule is associated with.
 	RegistryId *string `locationName:"registryId" type:"string"`
+
+	// The date and time, in JavaScript date format, when the pull through cache
+	// rule was last updated.
+	UpdatedAt *time.Time `locationName:"updatedAt" type:"timestamp"`
+
+	// The name of the upstream source registry associated with the pull through
+	// cache rule.
+	UpstreamRegistry *string `locationName:"upstreamRegistry" type:"string" enum:"UpstreamRegistry"`
 
 	// The upstream registry URL associated with the pull through cache rule.
 	UpstreamRegistryUrl *string `locationName:"upstreamRegistryUrl" type:"string"`
@@ -10480,6 +10808,12 @@ func (s *PullThroughCacheRule) SetCreatedAt(v time.Time) *PullThroughCacheRule {
 	return s
 }
 
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *PullThroughCacheRule) SetCredentialArn(v string) *PullThroughCacheRule {
+	s.CredentialArn = &v
+	return s
+}
+
 // SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
 func (s *PullThroughCacheRule) SetEcrRepositoryPrefix(v string) *PullThroughCacheRule {
 	s.EcrRepositoryPrefix = &v
@@ -10489,6 +10823,18 @@ func (s *PullThroughCacheRule) SetEcrRepositoryPrefix(v string) *PullThroughCach
 // SetRegistryId sets the RegistryId field's value.
 func (s *PullThroughCacheRule) SetRegistryId(v string) *PullThroughCacheRule {
 	s.RegistryId = &v
+	return s
+}
+
+// SetUpdatedAt sets the UpdatedAt field's value.
+func (s *PullThroughCacheRule) SetUpdatedAt(v time.Time) *PullThroughCacheRule {
+	s.UpdatedAt = &v
+	return s
+}
+
+// SetUpstreamRegistry sets the UpstreamRegistry field's value.
+func (s *PullThroughCacheRule) SetUpstreamRegistry(v string) *PullThroughCacheRule {
+	s.UpstreamRegistry = &v
 	return s
 }
 
@@ -11644,7 +11990,8 @@ type RegistryScanningRule struct {
 	// The frequency that scans are performed at for a private registry. When the
 	// ENHANCED scan type is specified, the supported scan frequencies are CONTINUOUS_SCAN
 	// and SCAN_ON_PUSH. When the BASIC scan type is specified, the SCAN_ON_PUSH
-	// and MANUAL scan frequencies are supported.
+	// scan frequency is supported. If scan on push is not specified, then the MANUAL
+	// scan frequency is set by default.
 	//
 	// ScanFrequency is a required field
 	ScanFrequency *string `locationName:"scanFrequency" type:"string" required:"true" enum:"ScanFrequency"`
@@ -11969,7 +12316,7 @@ type Repository struct {
 	// The Amazon Resource Name (ARN) that identifies the repository. The ARN contains
 	// the arn:aws:ecr namespace, followed by the region of the repository, Amazon
 	// Web Services account ID of the repository owner, repository namespace, and
-	// repository name. For example, arn:aws:ecr:region:012345678910:repository/test.
+	// repository name. For example, arn:aws:ecr:region:012345678910:repository-namespace/repository-name.
 	RepositoryArn *string `locationName:"repositoryArn" type:"string"`
 
 	// The name of the repository.
@@ -12113,8 +12460,8 @@ func (s *RepositoryAlreadyExistsException) RequestID() string {
 
 // The filter settings used with image replication. Specifying a repository
 // filter to a replication rule provides a method for controlling which repositories
-// in a private registry are replicated. If no repository filter is specified,
-// all images in the repository are replicated.
+// in a private registry are replicated. If no filters are added, the contents
+// of all repositories are replicated.
 type RepositoryFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -12753,6 +13100,71 @@ func (s *ScoreDetails) SetCvss(v *CvssScoreDetails) *ScoreDetails {
 	return s
 }
 
+// The ARN of the secret specified in the pull through cache rule was not found.
+// Update the pull through cache rule with a valid secret ARN and try again.
+type SecretNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SecretNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SecretNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorSecretNotFoundException(v protocol.ResponseMetadata) error {
+	return &SecretNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *SecretNotFoundException) Code() string {
+	return "SecretNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *SecretNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *SecretNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *SecretNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *SecretNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *SecretNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // These errors are usually caused by a server-side issue.
 type ServerException struct {
 	_            struct{}                  `type:"structure"`
@@ -13231,10 +13643,14 @@ type Tag struct {
 
 	// One part of a key-value pair that make up a tag. A key is a general label
 	// that acts like a category for more specific tag values.
-	Key *string `type:"string"`
+	//
+	// Key is a required field
+	Key *string `type:"string" required:"true"`
 
 	// A value acts as a descriptor within a tag category (key).
-	Value *string `type:"string"`
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -13253,6 +13669,22 @@ func (s Tag) String() string {
 // value will be replaced with "sensitive".
 func (s Tag) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetKey sets the Key field's value.
@@ -13310,6 +13742,16 @@ func (s *TagResourceInput) Validate() error {
 	}
 	if s.Tags == nil {
 		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -13414,6 +13856,267 @@ func (s *TooManyTagsException) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *TooManyTagsException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The secret is unable to be accessed. Verify the resource permissions for
+// the secret and try again.
+type UnableToAccessSecretException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToAccessSecretException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToAccessSecretException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnableToAccessSecretException(v protocol.ResponseMetadata) error {
+	return &UnableToAccessSecretException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnableToAccessSecretException) Code() string {
+	return "UnableToAccessSecretException"
+}
+
+// Message returns the exception's message.
+func (s *UnableToAccessSecretException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnableToAccessSecretException) OrigErr() error {
+	return nil
+}
+
+func (s *UnableToAccessSecretException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnableToAccessSecretException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnableToAccessSecretException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The secret is accessible but is unable to be decrypted. Verify the resource
+// permisisons and try again.
+type UnableToDecryptSecretValueException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToDecryptSecretValueException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToDecryptSecretValueException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnableToDecryptSecretValueException(v protocol.ResponseMetadata) error {
+	return &UnableToDecryptSecretValueException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnableToDecryptSecretValueException) Code() string {
+	return "UnableToDecryptSecretValueException"
+}
+
+// Message returns the exception's message.
+func (s *UnableToDecryptSecretValueException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnableToDecryptSecretValueException) OrigErr() error {
+	return nil
+}
+
+func (s *UnableToDecryptSecretValueException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnableToDecryptSecretValueException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnableToDecryptSecretValueException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The image or images were unable to be pulled using the pull through cache
+// rule. This is usually caused because of an issue with the Secrets Manager
+// secret containing the credentials for the upstream registry.
+type UnableToGetUpstreamImageException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToGetUpstreamImageException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToGetUpstreamImageException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnableToGetUpstreamImageException(v protocol.ResponseMetadata) error {
+	return &UnableToGetUpstreamImageException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnableToGetUpstreamImageException) Code() string {
+	return "UnableToGetUpstreamImageException"
+}
+
+// Message returns the exception's message.
+func (s *UnableToGetUpstreamImageException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnableToGetUpstreamImageException) OrigErr() error {
+	return nil
+}
+
+func (s *UnableToGetUpstreamImageException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnableToGetUpstreamImageException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnableToGetUpstreamImageException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// There was an issue getting the upstream layer matching the pull through cache
+// rule.
+type UnableToGetUpstreamLayerException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToGetUpstreamLayerException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnableToGetUpstreamLayerException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnableToGetUpstreamLayerException(v protocol.ResponseMetadata) error {
+	return &UnableToGetUpstreamLayerException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnableToGetUpstreamLayerException) Code() string {
+	return "UnableToGetUpstreamLayerException"
+}
+
+// Message returns the exception's message.
+func (s *UnableToGetUpstreamLayerException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnableToGetUpstreamLayerException) OrigErr() error {
+	return nil
+}
+
+func (s *UnableToGetUpstreamLayerException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnableToGetUpstreamLayerException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnableToGetUpstreamLayerException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
@@ -13626,6 +14329,144 @@ func (s UntagResourceOutput) String() string {
 // value will be replaced with "sensitive".
 func (s UntagResourceOutput) GoString() string {
 	return s.String()
+}
+
+type UpdatePullThroughCacheRuleInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Amazon Web Services Secrets Manager
+	// secret that identifies the credentials to authenticate to the upstream registry.
+	//
+	// CredentialArn is a required field
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string" required:"true"`
+
+	// The repository name prefix to use when caching images from the source registry.
+	//
+	// EcrRepositoryPrefix is a required field
+	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string" required:"true"`
+
+	// The Amazon Web Services account ID associated with the registry associated
+	// with the pull through cache rule. If you do not specify a registry, the default
+	// registry is assumed.
+	RegistryId *string `locationName:"registryId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePullThroughCacheRuleInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePullThroughCacheRuleInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdatePullThroughCacheRuleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdatePullThroughCacheRuleInput"}
+	if s.CredentialArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("CredentialArn"))
+	}
+	if s.CredentialArn != nil && len(*s.CredentialArn) < 50 {
+		invalidParams.Add(request.NewErrParamMinLen("CredentialArn", 50))
+	}
+	if s.EcrRepositoryPrefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("EcrRepositoryPrefix"))
+	}
+	if s.EcrRepositoryPrefix != nil && len(*s.EcrRepositoryPrefix) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("EcrRepositoryPrefix", 2))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *UpdatePullThroughCacheRuleInput) SetCredentialArn(v string) *UpdatePullThroughCacheRuleInput {
+	s.CredentialArn = &v
+	return s
+}
+
+// SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
+func (s *UpdatePullThroughCacheRuleInput) SetEcrRepositoryPrefix(v string) *UpdatePullThroughCacheRuleInput {
+	s.EcrRepositoryPrefix = &v
+	return s
+}
+
+// SetRegistryId sets the RegistryId field's value.
+func (s *UpdatePullThroughCacheRuleInput) SetRegistryId(v string) *UpdatePullThroughCacheRuleInput {
+	s.RegistryId = &v
+	return s
+}
+
+type UpdatePullThroughCacheRuleOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Amazon Web Services Secrets Manager
+	// secret associated with the pull through cache rule.
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string"`
+
+	// The Amazon ECR repository prefix associated with the pull through cache rule.
+	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string"`
+
+	// The registry ID associated with the request.
+	RegistryId *string `locationName:"registryId" type:"string"`
+
+	// The date and time, in JavaScript date format, when the pull through cache
+	// rule was updated.
+	UpdatedAt *time.Time `locationName:"updatedAt" type:"timestamp"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePullThroughCacheRuleOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePullThroughCacheRuleOutput) GoString() string {
+	return s.String()
+}
+
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *UpdatePullThroughCacheRuleOutput) SetCredentialArn(v string) *UpdatePullThroughCacheRuleOutput {
+	s.CredentialArn = &v
+	return s
+}
+
+// SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
+func (s *UpdatePullThroughCacheRuleOutput) SetEcrRepositoryPrefix(v string) *UpdatePullThroughCacheRuleOutput {
+	s.EcrRepositoryPrefix = &v
+	return s
+}
+
+// SetRegistryId sets the RegistryId field's value.
+func (s *UpdatePullThroughCacheRuleOutput) SetRegistryId(v string) *UpdatePullThroughCacheRuleOutput {
+	s.RegistryId = &v
+	return s
+}
+
+// SetUpdatedAt sets the UpdatedAt field's value.
+func (s *UpdatePullThroughCacheRuleOutput) SetUpdatedAt(v time.Time) *UpdatePullThroughCacheRuleOutput {
+	s.UpdatedAt = &v
+	return s
 }
 
 type UploadLayerPartInput struct {
@@ -13872,6 +14713,147 @@ func (s *UploadNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ValidatePullThroughCacheRuleInput struct {
+	_ struct{} `type:"structure"`
+
+	// The repository name prefix associated with the pull through cache rule.
+	//
+	// EcrRepositoryPrefix is a required field
+	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string" required:"true"`
+
+	// The registry ID associated with the pull through cache rule. If you do not
+	// specify a registry, the default registry is assumed.
+	RegistryId *string `locationName:"registryId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidatePullThroughCacheRuleInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidatePullThroughCacheRuleInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ValidatePullThroughCacheRuleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ValidatePullThroughCacheRuleInput"}
+	if s.EcrRepositoryPrefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("EcrRepositoryPrefix"))
+	}
+	if s.EcrRepositoryPrefix != nil && len(*s.EcrRepositoryPrefix) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("EcrRepositoryPrefix", 2))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
+func (s *ValidatePullThroughCacheRuleInput) SetEcrRepositoryPrefix(v string) *ValidatePullThroughCacheRuleInput {
+	s.EcrRepositoryPrefix = &v
+	return s
+}
+
+// SetRegistryId sets the RegistryId field's value.
+func (s *ValidatePullThroughCacheRuleInput) SetRegistryId(v string) *ValidatePullThroughCacheRuleInput {
+	s.RegistryId = &v
+	return s
+}
+
+type ValidatePullThroughCacheRuleOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Amazon Web Services Secrets Manager
+	// secret associated with the pull through cache rule.
+	CredentialArn *string `locationName:"credentialArn" min:"50" type:"string"`
+
+	// The Amazon ECR repository prefix associated with the pull through cache rule.
+	EcrRepositoryPrefix *string `locationName:"ecrRepositoryPrefix" min:"2" type:"string"`
+
+	// The reason the validation failed. For more details about possible causes
+	// and how to address them, see Using pull through cache rules (https://docs.aws.amazon.com/AmazonECR/latest/userguide/pull-through-cache.html)
+	// in the Amazon Elastic Container Registry User Guide.
+	Failure *string `locationName:"failure" type:"string"`
+
+	// Whether or not the pull through cache rule was validated. If true, Amazon
+	// ECR was able to reach the upstream registry and authentication was successful.
+	// If false, there was an issue and validation failed. The failure reason indicates
+	// the cause.
+	IsValid *bool `locationName:"isValid" type:"boolean"`
+
+	// The registry ID associated with the request.
+	RegistryId *string `locationName:"registryId" type:"string"`
+
+	// The upstream registry URL associated with the pull through cache rule.
+	UpstreamRegistryUrl *string `locationName:"upstreamRegistryUrl" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidatePullThroughCacheRuleOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidatePullThroughCacheRuleOutput) GoString() string {
+	return s.String()
+}
+
+// SetCredentialArn sets the CredentialArn field's value.
+func (s *ValidatePullThroughCacheRuleOutput) SetCredentialArn(v string) *ValidatePullThroughCacheRuleOutput {
+	s.CredentialArn = &v
+	return s
+}
+
+// SetEcrRepositoryPrefix sets the EcrRepositoryPrefix field's value.
+func (s *ValidatePullThroughCacheRuleOutput) SetEcrRepositoryPrefix(v string) *ValidatePullThroughCacheRuleOutput {
+	s.EcrRepositoryPrefix = &v
+	return s
+}
+
+// SetFailure sets the Failure field's value.
+func (s *ValidatePullThroughCacheRuleOutput) SetFailure(v string) *ValidatePullThroughCacheRuleOutput {
+	s.Failure = &v
+	return s
+}
+
+// SetIsValid sets the IsValid field's value.
+func (s *ValidatePullThroughCacheRuleOutput) SetIsValid(v bool) *ValidatePullThroughCacheRuleOutput {
+	s.IsValid = &v
+	return s
+}
+
+// SetRegistryId sets the RegistryId field's value.
+func (s *ValidatePullThroughCacheRuleOutput) SetRegistryId(v string) *ValidatePullThroughCacheRuleOutput {
+	s.RegistryId = &v
+	return s
+}
+
+// SetUpstreamRegistryUrl sets the UpstreamRegistryUrl field's value.
+func (s *ValidatePullThroughCacheRuleOutput) SetUpstreamRegistryUrl(v string) *ValidatePullThroughCacheRuleOutput {
+	s.UpstreamRegistryUrl = &v
+	return s
+}
+
 // There was an exception validating this request.
 type ValidationException struct {
 	_            struct{}                  `type:"structure"`
@@ -14112,6 +15094,15 @@ const (
 
 	// ImageFailureCodeKmsError is a ImageFailureCode enum value
 	ImageFailureCodeKmsError = "KmsError"
+
+	// ImageFailureCodeUpstreamAccessDenied is a ImageFailureCode enum value
+	ImageFailureCodeUpstreamAccessDenied = "UpstreamAccessDenied"
+
+	// ImageFailureCodeUpstreamTooManyRequests is a ImageFailureCode enum value
+	ImageFailureCodeUpstreamTooManyRequests = "UpstreamTooManyRequests"
+
+	// ImageFailureCodeUpstreamUnavailable is a ImageFailureCode enum value
+	ImageFailureCodeUpstreamUnavailable = "UpstreamUnavailable"
 )
 
 // ImageFailureCode_Values returns all elements of the ImageFailureCode enum
@@ -14124,6 +15115,9 @@ func ImageFailureCode_Values() []string {
 		ImageFailureCodeMissingDigestAndTag,
 		ImageFailureCodeImageReferencedByManifestList,
 		ImageFailureCodeKmsError,
+		ImageFailureCodeUpstreamAccessDenied,
+		ImageFailureCodeUpstreamTooManyRequests,
+		ImageFailureCodeUpstreamUnavailable,
 	}
 }
 
@@ -14348,5 +15342,37 @@ func TagStatus_Values() []string {
 		TagStatusTagged,
 		TagStatusUntagged,
 		TagStatusAny,
+	}
+}
+
+const (
+	// UpstreamRegistryEcrPublic is a UpstreamRegistry enum value
+	UpstreamRegistryEcrPublic = "ecr-public"
+
+	// UpstreamRegistryQuay is a UpstreamRegistry enum value
+	UpstreamRegistryQuay = "quay"
+
+	// UpstreamRegistryK8s is a UpstreamRegistry enum value
+	UpstreamRegistryK8s = "k8s"
+
+	// UpstreamRegistryDockerHub is a UpstreamRegistry enum value
+	UpstreamRegistryDockerHub = "docker-hub"
+
+	// UpstreamRegistryGithubContainerRegistry is a UpstreamRegistry enum value
+	UpstreamRegistryGithubContainerRegistry = "github-container-registry"
+
+	// UpstreamRegistryAzureContainerRegistry is a UpstreamRegistry enum value
+	UpstreamRegistryAzureContainerRegistry = "azure-container-registry"
+)
+
+// UpstreamRegistry_Values returns all elements of the UpstreamRegistry enum
+func UpstreamRegistry_Values() []string {
+	return []string{
+		UpstreamRegistryEcrPublic,
+		UpstreamRegistryQuay,
+		UpstreamRegistryK8s,
+		UpstreamRegistryDockerHub,
+		UpstreamRegistryGithubContainerRegistry,
+		UpstreamRegistryAzureContainerRegistry,
 	}
 }

@@ -85,6 +85,10 @@ type HealthAPI interface {
 	DescribeEntityAggregatesWithContext(aws.Context, *health.DescribeEntityAggregatesInput, ...request.Option) (*health.DescribeEntityAggregatesOutput, error)
 	DescribeEntityAggregatesRequest(*health.DescribeEntityAggregatesInput) (*request.Request, *health.DescribeEntityAggregatesOutput)
 
+	DescribeEntityAggregatesForOrganization(*health.DescribeEntityAggregatesForOrganizationInput) (*health.DescribeEntityAggregatesForOrganizationOutput, error)
+	DescribeEntityAggregatesForOrganizationWithContext(aws.Context, *health.DescribeEntityAggregatesForOrganizationInput, ...request.Option) (*health.DescribeEntityAggregatesForOrganizationOutput, error)
+	DescribeEntityAggregatesForOrganizationRequest(*health.DescribeEntityAggregatesForOrganizationInput) (*request.Request, *health.DescribeEntityAggregatesForOrganizationOutput)
+
 	DescribeEventAggregates(*health.DescribeEventAggregatesInput) (*health.DescribeEventAggregatesOutput, error)
 	DescribeEventAggregatesWithContext(aws.Context, *health.DescribeEventAggregatesInput, ...request.Option) (*health.DescribeEventAggregatesOutput, error)
 	DescribeEventAggregatesRequest(*health.DescribeEventAggregatesInput) (*request.Request, *health.DescribeEventAggregatesOutput)

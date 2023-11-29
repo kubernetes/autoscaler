@@ -2164,6 +2164,12 @@ func (c *DirectoryService) DescribeClientAuthenticationSettingsRequest(input *De
 		Name:       opDescribeClientAuthenticationSettings,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2229,6 +2235,57 @@ func (c *DirectoryService) DescribeClientAuthenticationSettingsWithContext(ctx a
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeClientAuthenticationSettingsPages iterates over the pages of a DescribeClientAuthenticationSettings operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeClientAuthenticationSettings method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeClientAuthenticationSettings operation.
+//	pageNum := 0
+//	err := client.DescribeClientAuthenticationSettingsPages(params,
+//	    func(page *directoryservice.DescribeClientAuthenticationSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeClientAuthenticationSettingsPages(input *DescribeClientAuthenticationSettingsInput, fn func(*DescribeClientAuthenticationSettingsOutput, bool) bool) error {
+	return c.DescribeClientAuthenticationSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeClientAuthenticationSettingsPagesWithContext same as DescribeClientAuthenticationSettingsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeClientAuthenticationSettingsPagesWithContext(ctx aws.Context, input *DescribeClientAuthenticationSettingsInput, fn func(*DescribeClientAuthenticationSettingsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeClientAuthenticationSettingsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeClientAuthenticationSettingsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClientAuthenticationSettingsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeConditionalForwarders = "DescribeConditionalForwarders"
@@ -2358,6 +2415,12 @@ func (c *DirectoryService) DescribeDirectoriesRequest(input *DescribeDirectories
 		Name:       opDescribeDirectories,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2428,6 +2491,57 @@ func (c *DirectoryService) DescribeDirectoriesWithContext(ctx aws.Context, input
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeDirectoriesPages iterates over the pages of a DescribeDirectories operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeDirectories method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeDirectories operation.
+//	pageNum := 0
+//	err := client.DescribeDirectoriesPages(params,
+//	    func(page *directoryservice.DescribeDirectoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeDirectoriesPages(input *DescribeDirectoriesInput, fn func(*DescribeDirectoriesOutput, bool) bool) error {
+	return c.DescribeDirectoriesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeDirectoriesPagesWithContext same as DescribeDirectoriesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeDirectoriesPagesWithContext(ctx aws.Context, input *DescribeDirectoriesInput, fn func(*DescribeDirectoriesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeDirectoriesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeDirectoriesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeDirectoriesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDescribeDomainControllers = "DescribeDomainControllers"
@@ -2703,6 +2817,12 @@ func (c *DirectoryService) DescribeLDAPSSettingsRequest(input *DescribeLDAPSSett
 		Name:       opDescribeLDAPSSettings,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2767,6 +2887,57 @@ func (c *DirectoryService) DescribeLDAPSSettingsWithContext(ctx aws.Context, inp
 	return out, req.Send()
 }
 
+// DescribeLDAPSSettingsPages iterates over the pages of a DescribeLDAPSSettings operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeLDAPSSettings method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeLDAPSSettings operation.
+//	pageNum := 0
+//	err := client.DescribeLDAPSSettingsPages(params,
+//	    func(page *directoryservice.DescribeLDAPSSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeLDAPSSettingsPages(input *DescribeLDAPSSettingsInput, fn func(*DescribeLDAPSSettingsOutput, bool) bool) error {
+	return c.DescribeLDAPSSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeLDAPSSettingsPagesWithContext same as DescribeLDAPSSettingsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeLDAPSSettingsPagesWithContext(ctx aws.Context, input *DescribeLDAPSSettingsInput, fn func(*DescribeLDAPSSettingsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeLDAPSSettingsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeLDAPSSettingsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeLDAPSSettingsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeRegions = "DescribeRegions"
 
 // DescribeRegionsRequest generates a "aws/request.Request" representing the
@@ -2797,6 +2968,12 @@ func (c *DirectoryService) DescribeRegionsRequest(input *DescribeRegionsInput) (
 		Name:       opDescribeRegions,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2865,6 +3042,151 @@ func (c *DirectoryService) DescribeRegionsWithContext(ctx aws.Context, input *De
 	return out, req.Send()
 }
 
+// DescribeRegionsPages iterates over the pages of a DescribeRegions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeRegions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeRegions operation.
+//	pageNum := 0
+//	err := client.DescribeRegionsPages(params,
+//	    func(page *directoryservice.DescribeRegionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeRegionsPages(input *DescribeRegionsInput, fn func(*DescribeRegionsOutput, bool) bool) error {
+	return c.DescribeRegionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeRegionsPagesWithContext same as DescribeRegionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeRegionsPagesWithContext(ctx aws.Context, input *DescribeRegionsInput, fn func(*DescribeRegionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeRegionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeRegionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeRegionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeSettings = "DescribeSettings"
+
+// DescribeSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeSettings for more information on using the DescribeSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeSettingsRequest method.
+//	req, resp := client.DescribeSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeSettings
+func (c *DirectoryService) DescribeSettingsRequest(input *DescribeSettingsInput) (req *request.Request, output *DescribeSettingsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeSettings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeSettingsInput{}
+	}
+
+	output = &DescribeSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeSettings API operation for AWS Directory Service.
+//
+// Retrieves information about the configurable settings for the specified directory.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Directory Service's
+// API operation DescribeSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
+//
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeSettings
+func (c *DirectoryService) DescribeSettings(input *DescribeSettingsInput) (*DescribeSettingsOutput, error) {
+	req, out := c.DescribeSettingsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeSettingsWithContext is the same as DescribeSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeSettingsWithContext(ctx aws.Context, input *DescribeSettingsInput, opts ...request.Option) (*DescribeSettingsOutput, error) {
+	req, out := c.DescribeSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeSharedDirectories = "DescribeSharedDirectories"
 
 // DescribeSharedDirectoriesRequest generates a "aws/request.Request" representing the
@@ -2895,6 +3217,12 @@ func (c *DirectoryService) DescribeSharedDirectoriesRequest(input *DescribeShare
 		Name:       opDescribeSharedDirectories,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2959,6 +3287,57 @@ func (c *DirectoryService) DescribeSharedDirectoriesWithContext(ctx aws.Context,
 	return out, req.Send()
 }
 
+// DescribeSharedDirectoriesPages iterates over the pages of a DescribeSharedDirectories operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeSharedDirectories method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeSharedDirectories operation.
+//	pageNum := 0
+//	err := client.DescribeSharedDirectoriesPages(params,
+//	    func(page *directoryservice.DescribeSharedDirectoriesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeSharedDirectoriesPages(input *DescribeSharedDirectoriesInput, fn func(*DescribeSharedDirectoriesOutput, bool) bool) error {
+	return c.DescribeSharedDirectoriesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeSharedDirectoriesPagesWithContext same as DescribeSharedDirectoriesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeSharedDirectoriesPagesWithContext(ctx aws.Context, input *DescribeSharedDirectoriesInput, fn func(*DescribeSharedDirectoriesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeSharedDirectoriesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeSharedDirectoriesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSharedDirectoriesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeSnapshots = "DescribeSnapshots"
 
 // DescribeSnapshotsRequest generates a "aws/request.Request" representing the
@@ -2989,6 +3368,12 @@ func (c *DirectoryService) DescribeSnapshotsRequest(input *DescribeSnapshotsInpu
 		Name:       opDescribeSnapshots,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -3057,6 +3442,57 @@ func (c *DirectoryService) DescribeSnapshotsWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+// DescribeSnapshotsPages iterates over the pages of a DescribeSnapshots operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeSnapshots method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotsPages(params,
+//	    func(page *directoryservice.DescribeSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeSnapshotsPages(input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool) error {
+	return c.DescribeSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeSnapshotsPagesWithContext same as DescribeSnapshotsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeSnapshotsPagesWithContext(ctx aws.Context, input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeSnapshotsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeSnapshotsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSnapshotsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeTrusts = "DescribeTrusts"
 
 // DescribeTrustsRequest generates a "aws/request.Request" representing the
@@ -3087,6 +3523,12 @@ func (c *DirectoryService) DescribeTrustsRequest(input *DescribeTrustsInput) (re
 		Name:       opDescribeTrusts,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -3152,6 +3594,208 @@ func (c *DirectoryService) DescribeTrustsWithContext(ctx aws.Context, input *Des
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// DescribeTrustsPages iterates over the pages of a DescribeTrusts operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeTrusts method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeTrusts operation.
+//	pageNum := 0
+//	err := client.DescribeTrustsPages(params,
+//	    func(page *directoryservice.DescribeTrustsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeTrustsPages(input *DescribeTrustsInput, fn func(*DescribeTrustsOutput, bool) bool) error {
+	return c.DescribeTrustsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeTrustsPagesWithContext same as DescribeTrustsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeTrustsPagesWithContext(ctx aws.Context, input *DescribeTrustsInput, fn func(*DescribeTrustsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeTrustsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTrustsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeTrustsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeUpdateDirectory = "DescribeUpdateDirectory"
+
+// DescribeUpdateDirectoryRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeUpdateDirectory operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeUpdateDirectory for more information on using the DescribeUpdateDirectory
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeUpdateDirectoryRequest method.
+//	req, resp := client.DescribeUpdateDirectoryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeUpdateDirectory
+func (c *DirectoryService) DescribeUpdateDirectoryRequest(input *DescribeUpdateDirectoryInput) (req *request.Request, output *DescribeUpdateDirectoryOutput) {
+	op := &request.Operation{
+		Name:       opDescribeUpdateDirectory,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeUpdateDirectoryInput{}
+	}
+
+	output = &DescribeUpdateDirectoryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeUpdateDirectory API operation for AWS Directory Service.
+//
+// Describes the updates of a directory for a particular update type.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Directory Service's
+// API operation DescribeUpdateDirectory for usage and error information.
+//
+// Returned Error Types:
+//
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
+//
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+//   - InvalidNextTokenException
+//     The NextToken value is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/DescribeUpdateDirectory
+func (c *DirectoryService) DescribeUpdateDirectory(input *DescribeUpdateDirectoryInput) (*DescribeUpdateDirectoryOutput, error) {
+	req, out := c.DescribeUpdateDirectoryRequest(input)
+	return out, req.Send()
+}
+
+// DescribeUpdateDirectoryWithContext is the same as DescribeUpdateDirectory with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeUpdateDirectory for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeUpdateDirectoryWithContext(ctx aws.Context, input *DescribeUpdateDirectoryInput, opts ...request.Option) (*DescribeUpdateDirectoryOutput, error) {
+	req, out := c.DescribeUpdateDirectoryRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeUpdateDirectoryPages iterates over the pages of a DescribeUpdateDirectory operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeUpdateDirectory method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeUpdateDirectory operation.
+//	pageNum := 0
+//	err := client.DescribeUpdateDirectoryPages(params,
+//	    func(page *directoryservice.DescribeUpdateDirectoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) DescribeUpdateDirectoryPages(input *DescribeUpdateDirectoryInput, fn func(*DescribeUpdateDirectoryOutput, bool) bool) error {
+	return c.DescribeUpdateDirectoryPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeUpdateDirectoryPagesWithContext same as DescribeUpdateDirectoryPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) DescribeUpdateDirectoryPagesWithContext(ctx aws.Context, input *DescribeUpdateDirectoryInput, fn func(*DescribeUpdateDirectoryOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeUpdateDirectoryInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeUpdateDirectoryRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeUpdateDirectoryOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opDisableClientAuthentication = "DisableClientAuthentication"
@@ -4119,6 +4763,12 @@ func (c *DirectoryService) ListCertificatesRequest(input *ListCertificatesInput)
 		Name:       opListCertificates,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4184,6 +4834,57 @@ func (c *DirectoryService) ListCertificatesWithContext(ctx aws.Context, input *L
 	return out, req.Send()
 }
 
+// ListCertificatesPages iterates over the pages of a ListCertificates operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListCertificates method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListCertificates operation.
+//	pageNum := 0
+//	err := client.ListCertificatesPages(params,
+//	    func(page *directoryservice.ListCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) ListCertificatesPages(input *ListCertificatesInput, fn func(*ListCertificatesOutput, bool) bool) error {
+	return c.ListCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListCertificatesPagesWithContext same as ListCertificatesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) ListCertificatesPagesWithContext(ctx aws.Context, input *ListCertificatesInput, fn func(*ListCertificatesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListCertificatesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListCertificatesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListCertificatesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListIpRoutes = "ListIpRoutes"
 
 // ListIpRoutesRequest generates a "aws/request.Request" representing the
@@ -4214,6 +4915,12 @@ func (c *DirectoryService) ListIpRoutesRequest(input *ListIpRoutesInput) (req *r
 		Name:       opListIpRoutes,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4275,6 +4982,57 @@ func (c *DirectoryService) ListIpRoutesWithContext(ctx aws.Context, input *ListI
 	return out, req.Send()
 }
 
+// ListIpRoutesPages iterates over the pages of a ListIpRoutes operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListIpRoutes method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListIpRoutes operation.
+//	pageNum := 0
+//	err := client.ListIpRoutesPages(params,
+//	    func(page *directoryservice.ListIpRoutesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) ListIpRoutesPages(input *ListIpRoutesInput, fn func(*ListIpRoutesOutput, bool) bool) error {
+	return c.ListIpRoutesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListIpRoutesPagesWithContext same as ListIpRoutesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) ListIpRoutesPagesWithContext(ctx aws.Context, input *ListIpRoutesInput, fn func(*ListIpRoutesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListIpRoutesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListIpRoutesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListIpRoutesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListLogSubscriptions = "ListLogSubscriptions"
 
 // ListLogSubscriptionsRequest generates a "aws/request.Request" representing the
@@ -4305,6 +5063,12 @@ func (c *DirectoryService) ListLogSubscriptionsRequest(input *ListLogSubscriptio
 		Name:       opListLogSubscriptions,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4363,6 +5127,57 @@ func (c *DirectoryService) ListLogSubscriptionsWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+// ListLogSubscriptionsPages iterates over the pages of a ListLogSubscriptions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListLogSubscriptions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListLogSubscriptions operation.
+//	pageNum := 0
+//	err := client.ListLogSubscriptionsPages(params,
+//	    func(page *directoryservice.ListLogSubscriptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) ListLogSubscriptionsPages(input *ListLogSubscriptionsInput, fn func(*ListLogSubscriptionsOutput, bool) bool) error {
+	return c.ListLogSubscriptionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListLogSubscriptionsPagesWithContext same as ListLogSubscriptionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) ListLogSubscriptionsPagesWithContext(ctx aws.Context, input *ListLogSubscriptionsInput, fn func(*ListLogSubscriptionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListLogSubscriptionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListLogSubscriptionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListLogSubscriptionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListSchemaExtensions = "ListSchemaExtensions"
 
 // ListSchemaExtensionsRequest generates a "aws/request.Request" representing the
@@ -4393,6 +5208,12 @@ func (c *DirectoryService) ListSchemaExtensionsRequest(input *ListSchemaExtensio
 		Name:       opListSchemaExtensions,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4451,6 +5272,57 @@ func (c *DirectoryService) ListSchemaExtensionsWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+// ListSchemaExtensionsPages iterates over the pages of a ListSchemaExtensions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListSchemaExtensions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListSchemaExtensions operation.
+//	pageNum := 0
+//	err := client.ListSchemaExtensionsPages(params,
+//	    func(page *directoryservice.ListSchemaExtensionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) ListSchemaExtensionsPages(input *ListSchemaExtensionsInput, fn func(*ListSchemaExtensionsOutput, bool) bool) error {
+	return c.ListSchemaExtensionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListSchemaExtensionsPagesWithContext same as ListSchemaExtensionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) ListSchemaExtensionsPagesWithContext(ctx aws.Context, input *ListSchemaExtensionsInput, fn func(*ListSchemaExtensionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListSchemaExtensionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListSchemaExtensionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListSchemaExtensionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -4481,6 +5353,12 @@ func (c *DirectoryService) ListTagsForResourceRequest(input *ListTagsForResource
 		Name:       opListTagsForResource,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "Limit",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -4540,6 +5418,57 @@ func (c *DirectoryService) ListTagsForResourceWithContext(ctx aws.Context, input
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListTagsForResourcePages iterates over the pages of a ListTagsForResource operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListTagsForResource method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *directoryservice.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *DirectoryService) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
+	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListTagsForResourcePagesWithContext same as ListTagsForResourcePages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) ListTagsForResourcePagesWithContext(ctx aws.Context, input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListTagsForResourceInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListTagsForResourceRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListTagsForResourceOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opRegisterCertificate = "RegisterCertificate"
@@ -5733,6 +6662,112 @@ func (c *DirectoryService) UpdateConditionalForwarderWithContext(ctx aws.Context
 	return out, req.Send()
 }
 
+const opUpdateDirectorySetup = "UpdateDirectorySetup"
+
+// UpdateDirectorySetupRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateDirectorySetup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateDirectorySetup for more information on using the UpdateDirectorySetup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateDirectorySetupRequest method.
+//	req, resp := client.UpdateDirectorySetupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateDirectorySetup
+func (c *DirectoryService) UpdateDirectorySetupRequest(input *UpdateDirectorySetupInput) (req *request.Request, output *UpdateDirectorySetupOutput) {
+	op := &request.Operation{
+		Name:       opUpdateDirectorySetup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateDirectorySetupInput{}
+	}
+
+	output = &UpdateDirectorySetupOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateDirectorySetup API operation for AWS Directory Service.
+//
+// Updates the directory for a particular update type.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Directory Service's
+// API operation UpdateDirectorySetup for usage and error information.
+//
+// Returned Error Types:
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
+//
+//   - DirectoryInDesiredStateException
+//     The directory is already updated to desired update type settings.
+//
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
+//
+//   - SnapshotLimitExceededException
+//     The maximum number of manual snapshots for the directory has been reached.
+//     You can use the GetSnapshotLimits operation to determine the snapshot limits
+//     for a directory.
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
+//
+//   - AccessDeniedException
+//     Client authentication is not available in this region at this time.
+//
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateDirectorySetup
+func (c *DirectoryService) UpdateDirectorySetup(input *UpdateDirectorySetupInput) (*UpdateDirectorySetupOutput, error) {
+	req, out := c.UpdateDirectorySetupRequest(input)
+	return out, req.Send()
+}
+
+// UpdateDirectorySetupWithContext is the same as UpdateDirectorySetup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateDirectorySetup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) UpdateDirectorySetupWithContext(ctx aws.Context, input *UpdateDirectorySetupInput, opts ...request.Option) (*UpdateDirectorySetupOutput, error) {
+	req, out := c.UpdateDirectorySetupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateNumberOfDomainControllers = "UpdateNumberOfDomainControllers"
 
 // UpdateNumberOfDomainControllersRequest generates a "aws/request.Request" representing the
@@ -5922,6 +6957,106 @@ func (c *DirectoryService) UpdateRadius(input *UpdateRadiusInput) (*UpdateRadius
 // for more information on using Contexts.
 func (c *DirectoryService) UpdateRadiusWithContext(ctx aws.Context, input *UpdateRadiusInput, opts ...request.Option) (*UpdateRadiusOutput, error) {
 	req, out := c.UpdateRadiusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateSettings = "UpdateSettings"
+
+// UpdateSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateSettings for more information on using the UpdateSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateSettingsRequest method.
+//	req, resp := client.UpdateSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateSettings
+func (c *DirectoryService) UpdateSettingsRequest(input *UpdateSettingsInput) (req *request.Request, output *UpdateSettingsOutput) {
+	op := &request.Operation{
+		Name:       opUpdateSettings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateSettingsInput{}
+	}
+
+	output = &UpdateSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateSettings API operation for AWS Directory Service.
+//
+// Updates the configurable settings for the specified directory.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Directory Service's
+// API operation UpdateSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - DirectoryDoesNotExistException
+//     The specified directory does not exist in the system.
+//
+//   - UnsupportedOperationException
+//     The operation is not supported.
+//
+//   - DirectoryUnavailableException
+//     The specified directory is unavailable or could not be found.
+//
+//   - IncompatibleSettingsException
+//     The specified directory setting is not compatible with other settings.
+//
+//   - UnsupportedSettingsException
+//     The specified directory setting is not supported.
+//
+//   - InvalidParameterException
+//     One or more parameters are not valid.
+//
+//   - ClientException
+//     A client exception has occurred.
+//
+//   - ServiceException
+//     An exception has occurred in Directory Service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ds-2015-04-16/UpdateSettings
+func (c *DirectoryService) UpdateSettings(input *UpdateSettingsInput) (*UpdateSettingsOutput, error) {
+	req, out := c.UpdateSettingsRequest(input)
+	return out, req.Send()
+}
+
+// UpdateSettingsWithContext is the same as UpdateSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *DirectoryService) UpdateSettingsWithContext(ctx aws.Context, input *UpdateSettingsInput, opts ...request.Option) (*UpdateSettingsOutput, error) {
+	req, out := c.UpdateSettingsRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -10151,6 +11286,127 @@ func (s *DescribeRegionsOutput) SetRegionsDescription(v []*RegionDescription) *D
 	return s
 }
 
+type DescribeSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the directory for which to retrieve information.
+	//
+	// DirectoryId is a required field
+	DirectoryId *string `type:"string" required:"true"`
+
+	// The DescribeSettingsResult.NextToken value from a previous call to DescribeSettings.
+	// Pass null if this is the first call.
+	NextToken *string `type:"string"`
+
+	// The status of the directory settings for which to retrieve information.
+	Status *string `type:"string" enum:"DirectoryConfigurationStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeSettingsInput"}
+	if s.DirectoryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DirectoryId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDirectoryId sets the DirectoryId field's value.
+func (s *DescribeSettingsInput) SetDirectoryId(v string) *DescribeSettingsInput {
+	s.DirectoryId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSettingsInput) SetNextToken(v string) *DescribeSettingsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DescribeSettingsInput) SetStatus(v string) *DescribeSettingsInput {
+	s.Status = &v
+	return s
+}
+
+type DescribeSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the directory.
+	DirectoryId *string `type:"string"`
+
+	// If not null, token that indicates that more results are available. Pass this
+	// value for the NextToken parameter in a subsequent call to DescribeSettings
+	// to retrieve the next set of items.
+	NextToken *string `type:"string"`
+
+	// The list of SettingEntry objects that were retrieved.
+	//
+	// It is possible that this list contains less than the number of items specified
+	// in the Limit member of the request. This occurs if there are less than the
+	// requested number of items left to retrieve, or if the limitations of the
+	// operation have been exceeded.
+	SettingEntries []*SettingEntry `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDirectoryId sets the DirectoryId field's value.
+func (s *DescribeSettingsOutput) SetDirectoryId(v string) *DescribeSettingsOutput {
+	s.DirectoryId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeSettingsOutput) SetNextToken(v string) *DescribeSettingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSettingEntries sets the SettingEntries field's value.
+func (s *DescribeSettingsOutput) SetSettingEntries(v []*SettingEntry) *DescribeSettingsOutput {
+	s.SettingEntries = v
+	return s
+}
+
 type DescribeSharedDirectoriesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10488,6 +11744,129 @@ func (s *DescribeTrustsOutput) SetNextToken(v string) *DescribeTrustsOutput {
 // SetTrusts sets the Trusts field's value.
 func (s *DescribeTrustsOutput) SetTrusts(v []*Trust) *DescribeTrustsOutput {
 	s.Trusts = v
+	return s
+}
+
+type DescribeUpdateDirectoryInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the directory.
+	//
+	// DirectoryId is a required field
+	DirectoryId *string `type:"string" required:"true"`
+
+	// The DescribeUpdateDirectoryResult. NextToken value from a previous call to
+	// DescribeUpdateDirectory. Pass null if this is the first call.
+	NextToken *string `type:"string"`
+
+	// The name of the Region.
+	RegionName *string `min:"8" type:"string"`
+
+	// The type of updates you want to describe for the directory.
+	//
+	// UpdateType is a required field
+	UpdateType *string `type:"string" required:"true" enum:"UpdateType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeUpdateDirectoryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeUpdateDirectoryInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeUpdateDirectoryInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeUpdateDirectoryInput"}
+	if s.DirectoryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DirectoryId"))
+	}
+	if s.RegionName != nil && len(*s.RegionName) < 8 {
+		invalidParams.Add(request.NewErrParamMinLen("RegionName", 8))
+	}
+	if s.UpdateType == nil {
+		invalidParams.Add(request.NewErrParamRequired("UpdateType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDirectoryId sets the DirectoryId field's value.
+func (s *DescribeUpdateDirectoryInput) SetDirectoryId(v string) *DescribeUpdateDirectoryInput {
+	s.DirectoryId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeUpdateDirectoryInput) SetNextToken(v string) *DescribeUpdateDirectoryInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetRegionName sets the RegionName field's value.
+func (s *DescribeUpdateDirectoryInput) SetRegionName(v string) *DescribeUpdateDirectoryInput {
+	s.RegionName = &v
+	return s
+}
+
+// SetUpdateType sets the UpdateType field's value.
+func (s *DescribeUpdateDirectoryInput) SetUpdateType(v string) *DescribeUpdateDirectoryInput {
+	s.UpdateType = &v
+	return s
+}
+
+type DescribeUpdateDirectoryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If not null, more results are available. Pass this value for the NextToken
+	// parameter.
+	NextToken *string `type:"string"`
+
+	// The list of update activities on a directory for the requested update type.
+	UpdateActivities []*UpdateInfoEntry `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeUpdateDirectoryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeUpdateDirectoryOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeUpdateDirectoryOutput) SetNextToken(v string) *DescribeUpdateDirectoryOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetUpdateActivities sets the UpdateActivities field's value.
+func (s *DescribeUpdateDirectoryOutput) SetUpdateActivities(v []*UpdateInfoEntry) *DescribeUpdateDirectoryOutput {
+	s.UpdateActivities = v
 	return s
 }
 
@@ -10851,6 +12230,9 @@ type DirectoryDescription struct {
 	// The fully qualified name of the directory.
 	Name *string `type:"string"`
 
+	// The operating system (OS) version of the directory.
+	OsVersion *string `type:"string" enum:"OSVersion"`
+
 	// Describes the Managed Microsoft AD directory in the directory owner account.
 	OwnerDirectoryDescription *OwnerDirectoryDescription `type:"structure"`
 
@@ -10985,6 +12367,12 @@ func (s *DirectoryDescription) SetLaunchTime(v time.Time) *DirectoryDescription 
 // SetName sets the Name field's value.
 func (s *DirectoryDescription) SetName(v string) *DirectoryDescription {
 	s.Name = &v
+	return s
+}
+
+// SetOsVersion sets the OsVersion field's value.
+func (s *DirectoryDescription) SetOsVersion(v string) *DirectoryDescription {
+	s.OsVersion = &v
 	return s
 }
 
@@ -11143,6 +12531,74 @@ func (s *DirectoryDoesNotExistException) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *DirectoryDoesNotExistException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The directory is already updated to desired update type settings.
+type DirectoryInDesiredStateException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	// The descriptive message for the exception.
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The Amazon Web Services request identifier.
+	RequestId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DirectoryInDesiredStateException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DirectoryInDesiredStateException) GoString() string {
+	return s.String()
+}
+
+func newErrorDirectoryInDesiredStateException(v protocol.ResponseMetadata) error {
+	return &DirectoryInDesiredStateException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *DirectoryInDesiredStateException) Code() string {
+	return "DirectoryInDesiredStateException"
+}
+
+// Message returns the exception's message.
+func (s *DirectoryInDesiredStateException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *DirectoryInDesiredStateException) OrigErr() error {
+	return nil
+}
+
+func (s *DirectoryInDesiredStateException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *DirectoryInDesiredStateException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *DirectoryInDesiredStateException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
@@ -12810,6 +14266,74 @@ func (s *GetSnapshotLimitsOutput) SetSnapshotLimits(v *SnapshotLimits) *GetSnaps
 	return s
 }
 
+// The specified directory setting is not compatible with other settings.
+type IncompatibleSettingsException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	// The descriptive message for the exception.
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The Amazon Web Services request identifier.
+	RequestId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IncompatibleSettingsException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IncompatibleSettingsException) GoString() string {
+	return s.String()
+}
+
+func newErrorIncompatibleSettingsException(v protocol.ResponseMetadata) error {
+	return &IncompatibleSettingsException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *IncompatibleSettingsException) Code() string {
+	return "IncompatibleSettingsException"
+}
+
+// Message returns the exception's message.
+func (s *IncompatibleSettingsException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *IncompatibleSettingsException) OrigErr() error {
+	return nil
+}
+
+func (s *IncompatibleSettingsException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *IncompatibleSettingsException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *IncompatibleSettingsException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // The account does not have sufficient permission to perform the operation.
 type InsufficientPermissionsException struct {
 	_            struct{}                  `type:"structure"`
@@ -14243,6 +15767,38 @@ func (s *NoAvailableCertificateException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// OS version that the directory needs to be updated to.
+type OSUpdateSettings struct {
+	_ struct{} `type:"structure"`
+
+	// OS version that the directory needs to be updated to.
+	OSVersion *string `type:"string" enum:"OSVersion"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OSUpdateSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OSUpdateSettings) GoString() string {
+	return s.String()
+}
+
+// SetOSVersion sets the OSVersion field's value.
+func (s *OSUpdateSettings) SetOSVersion(v string) *OSUpdateSettings {
+	s.OSVersion = &v
+	return s
+}
+
 // Exception encountered while trying to access your Amazon Web Services organization.
 type OrganizationsException struct {
 	_            struct{}                  `type:"structure"`
@@ -15583,6 +17139,209 @@ func (s *ServiceException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Contains information about the configurable settings for a directory.
+type Setting struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the directory setting. For example:
+	//
+	// TLS_1_0
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// The value of the directory setting for which to retrieve information. For
+	// example, for TLS_1_0, the valid values are: Enable and Disable.
+	//
+	// Value is a required field
+	Value *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Setting) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Setting) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Setting) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Setting"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *Setting) SetName(v string) *Setting {
+	s.Name = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Setting) SetValue(v string) *Setting {
+	s.Value = &v
+	return s
+}
+
+// Contains information about the specified configurable setting for a directory.
+type SettingEntry struct {
+	_ struct{} `type:"structure"`
+
+	// The valid range of values for the directory setting. These values depend
+	// on the DataType of your directory.
+	AllowedValues *string `type:"string"`
+
+	// The value of the directory setting that is applied to the directory.
+	AppliedValue *string `min:"1" type:"string"`
+
+	// The data type of a directory setting. This is used to define the AllowedValues
+	// of a setting. For example a data type can be Boolean, DurationInSeconds,
+	// or Enum.
+	DataType *string `type:"string"`
+
+	// The date and time when the request to update a directory setting was last
+	// submitted.
+	LastRequestedDateTime *time.Time `type:"timestamp"`
+
+	// The date and time when the directory setting was last updated.
+	LastUpdatedDateTime *time.Time `type:"timestamp"`
+
+	// The name of the directory setting. For example:
+	//
+	// TLS_1_0
+	Name *string `min:"1" type:"string"`
+
+	// Details about the status of the request to update the directory setting.
+	// If the directory setting is deployed in more than one region, status is returned
+	// for the request in each region where the setting is deployed.
+	RequestDetailedStatus map[string]*string `type:"map"`
+
+	// The overall status of the request to update the directory setting request.
+	// If the directory setting is deployed in more than one region, and the request
+	// fails in any region, the overall status is Failed.
+	RequestStatus *string `type:"string" enum:"DirectoryConfigurationStatus"`
+
+	// The last status message for the directory status request.
+	RequestStatusMessage *string `type:"string"`
+
+	// The value that was last requested for the directory setting.
+	RequestedValue *string `min:"1" type:"string"`
+
+	// The type, or category, of a directory setting. Similar settings have the
+	// same type. For example, Protocol, Cipher, or Certificate-Based Authentication.
+	Type *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SettingEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SettingEntry) GoString() string {
+	return s.String()
+}
+
+// SetAllowedValues sets the AllowedValues field's value.
+func (s *SettingEntry) SetAllowedValues(v string) *SettingEntry {
+	s.AllowedValues = &v
+	return s
+}
+
+// SetAppliedValue sets the AppliedValue field's value.
+func (s *SettingEntry) SetAppliedValue(v string) *SettingEntry {
+	s.AppliedValue = &v
+	return s
+}
+
+// SetDataType sets the DataType field's value.
+func (s *SettingEntry) SetDataType(v string) *SettingEntry {
+	s.DataType = &v
+	return s
+}
+
+// SetLastRequestedDateTime sets the LastRequestedDateTime field's value.
+func (s *SettingEntry) SetLastRequestedDateTime(v time.Time) *SettingEntry {
+	s.LastRequestedDateTime = &v
+	return s
+}
+
+// SetLastUpdatedDateTime sets the LastUpdatedDateTime field's value.
+func (s *SettingEntry) SetLastUpdatedDateTime(v time.Time) *SettingEntry {
+	s.LastUpdatedDateTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *SettingEntry) SetName(v string) *SettingEntry {
+	s.Name = &v
+	return s
+}
+
+// SetRequestDetailedStatus sets the RequestDetailedStatus field's value.
+func (s *SettingEntry) SetRequestDetailedStatus(v map[string]*string) *SettingEntry {
+	s.RequestDetailedStatus = v
+	return s
+}
+
+// SetRequestStatus sets the RequestStatus field's value.
+func (s *SettingEntry) SetRequestStatus(v string) *SettingEntry {
+	s.RequestStatus = &v
+	return s
+}
+
+// SetRequestStatusMessage sets the RequestStatusMessage field's value.
+func (s *SettingEntry) SetRequestStatusMessage(v string) *SettingEntry {
+	s.RequestStatusMessage = &v
+	return s
+}
+
+// SetRequestedValue sets the RequestedValue field's value.
+func (s *SettingEntry) SetRequestedValue(v string) *SettingEntry {
+	s.RequestedValue = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *SettingEntry) SetType(v string) *SettingEntry {
+	s.Type = &v
+	return s
+}
+
 type ShareDirectoryInput struct {
 	_ struct{} `type:"structure"`
 
@@ -16780,6 +18539,74 @@ func (s *UnsupportedOperationException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The specified directory setting is not supported.
+type UnsupportedSettingsException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	// The descriptive message for the exception.
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The Amazon Web Services request identifier.
+	RequestId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnsupportedSettingsException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnsupportedSettingsException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnsupportedSettingsException(v protocol.ResponseMetadata) error {
+	return &UnsupportedSettingsException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnsupportedSettingsException) Code() string {
+	return "UnsupportedSettingsException"
+}
+
+// Message returns the exception's message.
+func (s *UnsupportedSettingsException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnsupportedSettingsException) OrigErr() error {
+	return nil
+}
+
+func (s *UnsupportedSettingsException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnsupportedSettingsException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnsupportedSettingsException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // Updates a conditional forwarder.
 type UpdateConditionalForwarderInput struct {
 	_ struct{} `type:"structure"`
@@ -16879,6 +18706,204 @@ func (s UpdateConditionalForwarderOutput) String() string {
 // value will be replaced with "sensitive".
 func (s UpdateConditionalForwarderOutput) GoString() string {
 	return s.String()
+}
+
+type UpdateDirectorySetupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The boolean that specifies if a snapshot for the directory needs to be taken
+	// before updating the directory.
+	CreateSnapshotBeforeUpdate *bool `type:"boolean"`
+
+	// The identifier of the directory on which you want to perform the update.
+	//
+	// DirectoryId is a required field
+	DirectoryId *string `type:"string" required:"true"`
+
+	// The settings for the OS update that needs to be performed on the directory.
+	OSUpdateSettings *OSUpdateSettings `type:"structure"`
+
+	// The type of update that needs to be performed on the directory. For example,
+	// OS.
+	//
+	// UpdateType is a required field
+	UpdateType *string `type:"string" required:"true" enum:"UpdateType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDirectorySetupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDirectorySetupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateDirectorySetupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateDirectorySetupInput"}
+	if s.DirectoryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DirectoryId"))
+	}
+	if s.UpdateType == nil {
+		invalidParams.Add(request.NewErrParamRequired("UpdateType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCreateSnapshotBeforeUpdate sets the CreateSnapshotBeforeUpdate field's value.
+func (s *UpdateDirectorySetupInput) SetCreateSnapshotBeforeUpdate(v bool) *UpdateDirectorySetupInput {
+	s.CreateSnapshotBeforeUpdate = &v
+	return s
+}
+
+// SetDirectoryId sets the DirectoryId field's value.
+func (s *UpdateDirectorySetupInput) SetDirectoryId(v string) *UpdateDirectorySetupInput {
+	s.DirectoryId = &v
+	return s
+}
+
+// SetOSUpdateSettings sets the OSUpdateSettings field's value.
+func (s *UpdateDirectorySetupInput) SetOSUpdateSettings(v *OSUpdateSettings) *UpdateDirectorySetupInput {
+	s.OSUpdateSettings = v
+	return s
+}
+
+// SetUpdateType sets the UpdateType field's value.
+func (s *UpdateDirectorySetupInput) SetUpdateType(v string) *UpdateDirectorySetupInput {
+	s.UpdateType = &v
+	return s
+}
+
+type UpdateDirectorySetupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDirectorySetupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDirectorySetupOutput) GoString() string {
+	return s.String()
+}
+
+// An entry of update information related to a requested update type.
+type UpdateInfoEntry struct {
+	_ struct{} `type:"structure"`
+
+	// This specifies if the update was initiated by the customer or by the service
+	// team.
+	InitiatedBy *string `type:"string"`
+
+	// The last updated date and time of a particular directory setting.
+	LastUpdatedDateTime *time.Time `type:"timestamp"`
+
+	// The new value of the target setting.
+	NewValue *UpdateValue `type:"structure"`
+
+	// The old value of the target setting.
+	PreviousValue *UpdateValue `type:"structure"`
+
+	// The name of the Region.
+	Region *string `min:"8" type:"string"`
+
+	// The start time of the UpdateDirectorySetup for the particular type.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The status of the update performed on the directory.
+	Status *string `type:"string" enum:"UpdateStatus"`
+
+	// The reason for the current status of the update type activity.
+	StatusReason *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInfoEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInfoEntry) GoString() string {
+	return s.String()
+}
+
+// SetInitiatedBy sets the InitiatedBy field's value.
+func (s *UpdateInfoEntry) SetInitiatedBy(v string) *UpdateInfoEntry {
+	s.InitiatedBy = &v
+	return s
+}
+
+// SetLastUpdatedDateTime sets the LastUpdatedDateTime field's value.
+func (s *UpdateInfoEntry) SetLastUpdatedDateTime(v time.Time) *UpdateInfoEntry {
+	s.LastUpdatedDateTime = &v
+	return s
+}
+
+// SetNewValue sets the NewValue field's value.
+func (s *UpdateInfoEntry) SetNewValue(v *UpdateValue) *UpdateInfoEntry {
+	s.NewValue = v
+	return s
+}
+
+// SetPreviousValue sets the PreviousValue field's value.
+func (s *UpdateInfoEntry) SetPreviousValue(v *UpdateValue) *UpdateInfoEntry {
+	s.PreviousValue = v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *UpdateInfoEntry) SetRegion(v string) *UpdateInfoEntry {
+	s.Region = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *UpdateInfoEntry) SetStartTime(v time.Time) *UpdateInfoEntry {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UpdateInfoEntry) SetStatus(v string) *UpdateInfoEntry {
+	s.Status = &v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *UpdateInfoEntry) SetStatusReason(v string) *UpdateInfoEntry {
+	s.StatusReason = &v
+	return s
 }
 
 type UpdateNumberOfDomainControllersInput struct {
@@ -17056,6 +19081,107 @@ func (s UpdateRadiusOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the directory for which to update settings.
+	//
+	// DirectoryId is a required field
+	DirectoryId *string `type:"string" required:"true"`
+
+	// The list of Setting objects.
+	//
+	// Settings is a required field
+	Settings []*Setting `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateSettingsInput"}
+	if s.DirectoryId == nil {
+		invalidParams.Add(request.NewErrParamRequired("DirectoryId"))
+	}
+	if s.Settings == nil {
+		invalidParams.Add(request.NewErrParamRequired("Settings"))
+	}
+	if s.Settings != nil {
+		for i, v := range s.Settings {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Settings", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDirectoryId sets the DirectoryId field's value.
+func (s *UpdateSettingsInput) SetDirectoryId(v string) *UpdateSettingsInput {
+	s.DirectoryId = &v
+	return s
+}
+
+// SetSettings sets the Settings field's value.
+func (s *UpdateSettingsInput) SetSettings(v []*Setting) *UpdateSettingsInput {
+	s.Settings = v
+	return s
+}
+
+type UpdateSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the directory.
+	DirectoryId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDirectoryId sets the DirectoryId field's value.
+func (s *UpdateSettingsOutput) SetDirectoryId(v string) *UpdateSettingsOutput {
+	s.DirectoryId = &v
+	return s
+}
+
 type UpdateTrustInput struct {
 	_ struct{} `type:"structure"`
 
@@ -17148,6 +19274,38 @@ func (s *UpdateTrustOutput) SetRequestId(v string) *UpdateTrustOutput {
 // SetTrustId sets the TrustId field's value.
 func (s *UpdateTrustOutput) SetTrustId(v string) *UpdateTrustOutput {
 	s.TrustId = &v
+	return s
+}
+
+// The value for a given type of UpdateSettings.
+type UpdateValue struct {
+	_ struct{} `type:"structure"`
+
+	// The OS update related settings.
+	OSUpdateSettings *OSUpdateSettings `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateValue) GoString() string {
+	return s.String()
+}
+
+// SetOSUpdateSettings sets the OSUpdateSettings field's value.
+func (s *UpdateValue) SetOSUpdateSettings(v *OSUpdateSettings) *UpdateValue {
+	s.OSUpdateSettings = v
 	return s
 }
 
@@ -17366,12 +19524,44 @@ func ClientAuthenticationStatus_Values() []string {
 const (
 	// ClientAuthenticationTypeSmartCard is a ClientAuthenticationType enum value
 	ClientAuthenticationTypeSmartCard = "SmartCard"
+
+	// ClientAuthenticationTypeSmartCardOrPassword is a ClientAuthenticationType enum value
+	ClientAuthenticationTypeSmartCardOrPassword = "SmartCardOrPassword"
 )
 
 // ClientAuthenticationType_Values returns all elements of the ClientAuthenticationType enum
 func ClientAuthenticationType_Values() []string {
 	return []string{
 		ClientAuthenticationTypeSmartCard,
+		ClientAuthenticationTypeSmartCardOrPassword,
+	}
+}
+
+const (
+	// DirectoryConfigurationStatusRequested is a DirectoryConfigurationStatus enum value
+	DirectoryConfigurationStatusRequested = "Requested"
+
+	// DirectoryConfigurationStatusUpdating is a DirectoryConfigurationStatus enum value
+	DirectoryConfigurationStatusUpdating = "Updating"
+
+	// DirectoryConfigurationStatusUpdated is a DirectoryConfigurationStatus enum value
+	DirectoryConfigurationStatusUpdated = "Updated"
+
+	// DirectoryConfigurationStatusFailed is a DirectoryConfigurationStatus enum value
+	DirectoryConfigurationStatusFailed = "Failed"
+
+	// DirectoryConfigurationStatusDefault is a DirectoryConfigurationStatus enum value
+	DirectoryConfigurationStatusDefault = "Default"
+)
+
+// DirectoryConfigurationStatus_Values returns all elements of the DirectoryConfigurationStatus enum
+func DirectoryConfigurationStatus_Values() []string {
+	return []string{
+		DirectoryConfigurationStatusRequested,
+		DirectoryConfigurationStatusUpdating,
+		DirectoryConfigurationStatusUpdated,
+		DirectoryConfigurationStatusFailed,
+		DirectoryConfigurationStatusDefault,
 	}
 }
 
@@ -17584,6 +19774,22 @@ const (
 func LDAPSType_Values() []string {
 	return []string{
 		LDAPSTypeClient,
+	}
+}
+
+const (
+	// OSVersionServer2012 is a OSVersion enum value
+	OSVersionServer2012 = "SERVER_2012"
+
+	// OSVersionServer2019 is a OSVersion enum value
+	OSVersionServer2019 = "SERVER_2019"
+)
+
+// OSVersion_Values returns all elements of the OSVersion enum
+func OSVersion_Values() []string {
+	return []string{
+		OSVersionServer2012,
+		OSVersionServer2019,
 	}
 }
 
@@ -17936,5 +20142,37 @@ func TrustType_Values() []string {
 	return []string{
 		TrustTypeForest,
 		TrustTypeExternal,
+	}
+}
+
+const (
+	// UpdateStatusUpdated is a UpdateStatus enum value
+	UpdateStatusUpdated = "Updated"
+
+	// UpdateStatusUpdating is a UpdateStatus enum value
+	UpdateStatusUpdating = "Updating"
+
+	// UpdateStatusUpdateFailed is a UpdateStatus enum value
+	UpdateStatusUpdateFailed = "UpdateFailed"
+)
+
+// UpdateStatus_Values returns all elements of the UpdateStatus enum
+func UpdateStatus_Values() []string {
+	return []string{
+		UpdateStatusUpdated,
+		UpdateStatusUpdating,
+		UpdateStatusUpdateFailed,
+	}
+}
+
+const (
+	// UpdateTypeOs is a UpdateType enum value
+	UpdateTypeOs = "OS"
+)
+
+// UpdateType_Values returns all elements of the UpdateType enum
+func UpdateType_Values() []string {
+	return []string{
+		UpdateTypeOs,
 	}
 }

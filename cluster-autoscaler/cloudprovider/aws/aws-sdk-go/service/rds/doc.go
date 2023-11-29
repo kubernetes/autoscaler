@@ -10,12 +10,12 @@
 // up developers to focus on what makes their applications and businesses unique.
 //
 // Amazon RDS gives you access to the capabilities of a MySQL, MariaDB, PostgreSQL,
-// Microsoft SQL Server, Oracle, or Amazon Aurora database server. These capabilities
-// mean that the code, applications, and tools you already use today with your
-// existing databases work with Amazon RDS without modification. Amazon RDS
-// automatically backs up your database and maintains the database software
-// that powers your DB instance. Amazon RDS is flexible: you can scale your
-// DB instance's compute resources and storage capacity to meet your application's
+// Microsoft SQL Server, Oracle, Db2, or Amazon Aurora database server. These
+// capabilities mean that the code, applications, and tools you already use
+// today with your existing databases work with Amazon RDS without modification.
+// Amazon RDS automatically backs up your database and maintains the database
+// software that powers your DB instance. Amazon RDS is flexible: you can scale
+// your DB instance's compute resources and storage capacity to meet your application's
 // demand. As with all Amazon Web Services, there are no up-front investments,
 // and you pay only for the resources you use.
 //

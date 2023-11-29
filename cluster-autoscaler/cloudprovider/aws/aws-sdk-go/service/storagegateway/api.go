@@ -3354,10 +3354,9 @@ func (c *StorageGateway) DescribeGatewayInformationRequest(input *DescribeGatewa
 
 // DescribeGatewayInformation API operation for AWS Storage Gateway.
 //
-// Returns metadata about a gateway such as its name, network interfaces, configured
-// time zone, and the state (whether the gateway is running or not). To specify
-// which gateway to describe, use the Amazon Resource Name (ARN) of the gateway
-// in your request.
+// Returns metadata about a gateway such as its name, network interfaces, time
+// zone, status, and software version. To specify which gateway to describe,
+// use the Amazon Resource Name (ARN) of the gateway in your request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4985,6 +4984,16 @@ func (c *StorageGateway) JoinDomainRequest(input *JoinDomainInput) (req *request
 // Adds a file gateway to an Active Directory domain. This operation is only
 // supported for file gateways that support the SMB file protocol.
 //
+// Joining a domain creates an Active Directory computer account in the default
+// organizational unit, using the gateway's Gateway ID as the account name (for
+// example, SGW-1234ADE). If your Active Directory environment requires that
+// you pre-stage accounts to facilitate the join domain process, you will need
+// to create this account ahead of time.
+//
+// To create the gateway's computer account in an organizational unit other
+// than the default, you must specify the organizational unit when joining the
+// domain.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -5161,8 +5170,8 @@ func (c *StorageGateway) ListFileSharesRequest(input *ListFileSharesInput) (req 
 // ListFileShares API operation for AWS Storage Gateway.
 //
 // Gets a list of the file shares for a specific S3 File Gateway, or the list
-// of file shares that belong to the calling user account. This operation is
-// only supported for S3 File Gateways.
+// of file shares that belong to the calling Amazon Web Services account. This
+// operation is only supported for S3 File Gateways.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6468,8 +6477,8 @@ func (c *StorageGateway) NotifyWhenUploadedRequest(input *NotifyWhenUploadedInpu
 // event targets such as Amazon SNS or Lambda function. This operation is only
 // supported for S3 File Gateways.
 //
-// For more information, see Getting file upload notification (https://docs.aws.amazon.com/storagegateway/latest/userguide/monitoring-file-gateway.html#get-upload-notification)
-// in the Storage Gateway User Guide.
+// For more information, see Getting file upload notification (https://docs.aws.amazon.com/filegateway/latest/files3/monitoring-file-gateway.html#get-notification)
+// in the Amazon S3 File Gateway User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6581,9 +6590,6 @@ func (c *StorageGateway) RefreshCacheRequest(input *RefreshCacheInput) (req *req
 // in the Storage Gateway User Guide.
 //
 //   - Wait at least 60 seconds between consecutive RefreshCache API requests.
-//
-//   - RefreshCache does not evict cache entries if invoked consecutively within
-//     60 seconds of a previous RefreshCache request.
 //
 //   - If you invoke the RefreshCache API when two requests are already being
 //     processed, any new request will cause an InvalidGatewayRequestException
@@ -7693,8 +7699,9 @@ func (c *StorageGateway) UpdateBandwidthRateLimitScheduleRequest(input *UpdateBa
 // Updates the bandwidth rate limit schedule for a specified gateway. By default,
 // gateways do not have bandwidth rate limit schedules, which means no bandwidth
 // rate limiting is in effect. Use this to initiate or update a gateway's bandwidth
-// rate limit schedule. This operation is supported only for volume, tape and
-// S3 file gateways. FSx file gateways do not support bandwidth rate limits.
+// rate limit schedule. This operation is supported for volume, tape, and S3
+// file gateways. S3 file gateways support bandwidth rate limits for upload
+// only. FSx file gateways do not support bandwidth rate limits.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10151,6 +10158,10 @@ type BandwidthRateLimitInterval struct {
 	// The average upload rate limit component of the bandwidth rate limit interval,
 	// in bits per second. This field does not appear in the response if the upload
 	// rate limit is not set.
+	//
+	// For Tape Gateway and Volume Gateway, the minimum value is 51200.
+	//
+	// For S3 File Gateway and FSx File Gateway, the minimum value is 104857600.
 	AverageUploadRateLimitInBitsPerSec *int64 `min:"51200" type:"long"`
 
 	// The days of the week component of the bandwidth rate limit interval, represented
@@ -14791,6 +14802,9 @@ type DescribeGatewayInformationOutput struct {
 	// Date after which this gateway will not receive software updates for new features.
 	SoftwareUpdatesEndDate *string `min:"1" type:"string"`
 
+	// The version number of the software running on the gateway appliance.
+	SoftwareVersion *string `type:"string"`
+
 	// A list of the metadata cache sizes that the gateway can support based on
 	// its current hardware specifications.
 	SupportedGatewayCapacities []*string `type:"list" enum:"GatewayCapacity"`
@@ -14928,6 +14942,12 @@ func (s *DescribeGatewayInformationOutput) SetNextUpdateAvailabilityDate(v strin
 // SetSoftwareUpdatesEndDate sets the SoftwareUpdatesEndDate field's value.
 func (s *DescribeGatewayInformationOutput) SetSoftwareUpdatesEndDate(v string) *DescribeGatewayInformationOutput {
 	s.SoftwareUpdatesEndDate = &v
+	return s
+}
+
+// SetSoftwareVersion sets the SoftwareVersion field's value.
+func (s *DescribeGatewayInformationOutput) SetSoftwareVersion(v string) *DescribeGatewayInformationOutput {
+	s.SoftwareVersion = &v
 	return s
 }
 
@@ -19331,7 +19351,7 @@ func (s *NFSFileShareInfo) SetVPCEndpointDNSName(v string) *NFSFileShareInfo {
 
 // Describes a gateway's network interface.
 type NetworkInterface struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
 	// The Internet Protocol version 4 (IPv4) address of the interface.
 	Ipv4Address *string `type:"string"`

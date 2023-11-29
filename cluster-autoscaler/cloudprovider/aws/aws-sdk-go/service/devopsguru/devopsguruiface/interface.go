@@ -139,6 +139,13 @@ type DevOpsGuruAPI interface {
 	ListAnomaliesForInsightPages(*devopsguru.ListAnomaliesForInsightInput, func(*devopsguru.ListAnomaliesForInsightOutput, bool) bool) error
 	ListAnomaliesForInsightPagesWithContext(aws.Context, *devopsguru.ListAnomaliesForInsightInput, func(*devopsguru.ListAnomaliesForInsightOutput, bool) bool, ...request.Option) error
 
+	ListAnomalousLogGroups(*devopsguru.ListAnomalousLogGroupsInput) (*devopsguru.ListAnomalousLogGroupsOutput, error)
+	ListAnomalousLogGroupsWithContext(aws.Context, *devopsguru.ListAnomalousLogGroupsInput, ...request.Option) (*devopsguru.ListAnomalousLogGroupsOutput, error)
+	ListAnomalousLogGroupsRequest(*devopsguru.ListAnomalousLogGroupsInput) (*request.Request, *devopsguru.ListAnomalousLogGroupsOutput)
+
+	ListAnomalousLogGroupsPages(*devopsguru.ListAnomalousLogGroupsInput, func(*devopsguru.ListAnomalousLogGroupsOutput, bool) bool) error
+	ListAnomalousLogGroupsPagesWithContext(aws.Context, *devopsguru.ListAnomalousLogGroupsInput, func(*devopsguru.ListAnomalousLogGroupsOutput, bool) bool, ...request.Option) error
+
 	ListEvents(*devopsguru.ListEventsInput) (*devopsguru.ListEventsOutput, error)
 	ListEventsWithContext(aws.Context, *devopsguru.ListEventsInput, ...request.Option) (*devopsguru.ListEventsOutput, error)
 	ListEventsRequest(*devopsguru.ListEventsInput) (*request.Request, *devopsguru.ListEventsOutput)
@@ -152,6 +159,13 @@ type DevOpsGuruAPI interface {
 
 	ListInsightsPages(*devopsguru.ListInsightsInput, func(*devopsguru.ListInsightsOutput, bool) bool) error
 	ListInsightsPagesWithContext(aws.Context, *devopsguru.ListInsightsInput, func(*devopsguru.ListInsightsOutput, bool) bool, ...request.Option) error
+
+	ListMonitoredResources(*devopsguru.ListMonitoredResourcesInput) (*devopsguru.ListMonitoredResourcesOutput, error)
+	ListMonitoredResourcesWithContext(aws.Context, *devopsguru.ListMonitoredResourcesInput, ...request.Option) (*devopsguru.ListMonitoredResourcesOutput, error)
+	ListMonitoredResourcesRequest(*devopsguru.ListMonitoredResourcesInput) (*request.Request, *devopsguru.ListMonitoredResourcesOutput)
+
+	ListMonitoredResourcesPages(*devopsguru.ListMonitoredResourcesInput, func(*devopsguru.ListMonitoredResourcesOutput, bool) bool) error
+	ListMonitoredResourcesPagesWithContext(aws.Context, *devopsguru.ListMonitoredResourcesInput, func(*devopsguru.ListMonitoredResourcesOutput, bool) bool, ...request.Option) error
 
 	ListNotificationChannels(*devopsguru.ListNotificationChannelsInput) (*devopsguru.ListNotificationChannelsOutput, error)
 	ListNotificationChannelsWithContext(aws.Context, *devopsguru.ListNotificationChannelsInput, ...request.Option) (*devopsguru.ListNotificationChannelsOutput, error)

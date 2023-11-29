@@ -103,6 +103,96 @@ func (c *AmplifyUIBuilder) CreateComponentWithContext(ctx aws.Context, input *Cr
 	return out, req.Send()
 }
 
+const opCreateForm = "CreateForm"
+
+// CreateFormRequest generates a "aws/request.Request" representing the
+// client's request for the CreateForm operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateForm for more information on using the CreateForm
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateFormRequest method.
+//	req, resp := client.CreateFormRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/CreateForm
+func (c *AmplifyUIBuilder) CreateFormRequest(input *CreateFormInput) (req *request.Request, output *CreateFormOutput) {
+	op := &request.Operation{
+		Name:       opCreateForm,
+		HTTPMethod: "POST",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/forms",
+	}
+
+	if input == nil {
+		input = &CreateFormInput{}
+	}
+
+	output = &CreateFormOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateForm API operation for AWS Amplify UI Builder.
+//
+// Creates a new form for an Amplify app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation CreateForm for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceQuotaExceededException
+//     You exceeded your service quota. Service quotas, also referred to as limits,
+//     are the maximum number of service resources or operations for your Amazon
+//     Web Services account.
+//
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/CreateForm
+func (c *AmplifyUIBuilder) CreateForm(input *CreateFormInput) (*CreateFormOutput, error) {
+	req, out := c.CreateFormRequest(input)
+	return out, req.Send()
+}
+
+// CreateFormWithContext is the same as CreateForm with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateForm for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) CreateFormWithContext(ctx aws.Context, input *CreateFormInput, opts ...request.Option) (*CreateFormOutput, error) {
+	req, out := c.CreateFormRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateTheme = "CreateTheme"
 
 // CreateThemeRequest generates a "aws/request.Request" representing the
@@ -279,6 +369,92 @@ func (c *AmplifyUIBuilder) DeleteComponentWithContext(ctx aws.Context, input *De
 	return out, req.Send()
 }
 
+const opDeleteForm = "DeleteForm"
+
+// DeleteFormRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteForm operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteForm for more information on using the DeleteForm
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteFormRequest method.
+//	req, resp := client.DeleteFormRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/DeleteForm
+func (c *AmplifyUIBuilder) DeleteFormRequest(input *DeleteFormInput) (req *request.Request, output *DeleteFormOutput) {
+	op := &request.Operation{
+		Name:       opDeleteForm,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/forms/{id}",
+	}
+
+	if input == nil {
+		input = &DeleteFormInput{}
+	}
+
+	output = &DeleteFormOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteForm API operation for AWS Amplify UI Builder.
+//
+// Deletes a form from an Amplify app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation DeleteForm for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/DeleteForm
+func (c *AmplifyUIBuilder) DeleteForm(input *DeleteFormInput) (*DeleteFormOutput, error) {
+	req, out := c.DeleteFormRequest(input)
+	return out, req.Send()
+}
+
+// DeleteFormWithContext is the same as DeleteForm with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteForm for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) DeleteFormWithContext(ctx aws.Context, input *DeleteFormInput, opts ...request.Option) (*DeleteFormOutput, error) {
+	req, out := c.DeleteFormRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteTheme = "DeleteTheme"
 
 // DeleteThemeRequest generates a "aws/request.Request" representing the
@@ -408,7 +584,9 @@ func (c *AmplifyUIBuilder) ExchangeCodeForTokenRequest(input *ExchangeCodeForTok
 
 // ExchangeCodeForToken API operation for AWS Amplify UI Builder.
 //
-// Exchanges an access code for a token.
+// This is for internal use.
+//
+// Amplify uses this action to exchange an access code for a token.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -583,6 +761,146 @@ func (c *AmplifyUIBuilder) ExportComponentsPagesWithContext(ctx aws.Context, inp
 	return p.Err()
 }
 
+const opExportForms = "ExportForms"
+
+// ExportFormsRequest generates a "aws/request.Request" representing the
+// client's request for the ExportForms operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ExportForms for more information on using the ExportForms
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ExportFormsRequest method.
+//	req, resp := client.ExportFormsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExportForms
+func (c *AmplifyUIBuilder) ExportFormsRequest(input *ExportFormsInput) (req *request.Request, output *ExportFormsOutput) {
+	op := &request.Operation{
+		Name:       opExportForms,
+		HTTPMethod: "GET",
+		HTTPPath:   "/export/app/{appId}/environment/{environmentName}/forms",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ExportFormsInput{}
+	}
+
+	output = &ExportFormsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ExportForms API operation for AWS Amplify UI Builder.
+//
+// Exports form configurations to code that is ready to integrate into an Amplify
+// app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation ExportForms for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ExportForms
+func (c *AmplifyUIBuilder) ExportForms(input *ExportFormsInput) (*ExportFormsOutput, error) {
+	req, out := c.ExportFormsRequest(input)
+	return out, req.Send()
+}
+
+// ExportFormsWithContext is the same as ExportForms with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ExportForms for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) ExportFormsWithContext(ctx aws.Context, input *ExportFormsInput, opts ...request.Option) (*ExportFormsOutput, error) {
+	req, out := c.ExportFormsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ExportFormsPages iterates over the pages of a ExportForms operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ExportForms method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ExportForms operation.
+//	pageNum := 0
+//	err := client.ExportFormsPages(params,
+//	    func(page *amplifyuibuilder.ExportFormsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AmplifyUIBuilder) ExportFormsPages(input *ExportFormsInput, fn func(*ExportFormsOutput, bool) bool) error {
+	return c.ExportFormsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ExportFormsPagesWithContext same as ExportFormsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) ExportFormsPagesWithContext(ctx aws.Context, input *ExportFormsInput, fn func(*ExportFormsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ExportFormsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ExportFormsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ExportFormsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opExportThemes = "ExportThemes"
 
 // ExportThemesRequest generates a "aws/request.Request" representing the
@@ -723,6 +1041,94 @@ func (c *AmplifyUIBuilder) ExportThemesPagesWithContext(ctx aws.Context, input *
 	return p.Err()
 }
 
+const opGetCodegenJob = "GetCodegenJob"
+
+// GetCodegenJobRequest generates a "aws/request.Request" representing the
+// client's request for the GetCodegenJob operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetCodegenJob for more information on using the GetCodegenJob
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetCodegenJobRequest method.
+//	req, resp := client.GetCodegenJobRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetCodegenJob
+func (c *AmplifyUIBuilder) GetCodegenJobRequest(input *GetCodegenJobInput) (req *request.Request, output *GetCodegenJobOutput) {
+	op := &request.Operation{
+		Name:       opGetCodegenJob,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/codegen-jobs/{id}",
+	}
+
+	if input == nil {
+		input = &GetCodegenJobInput{}
+	}
+
+	output = &GetCodegenJobOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetCodegenJob API operation for AWS Amplify UI Builder.
+//
+// Returns an existing code generation job.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation GetCodegenJob for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetCodegenJob
+func (c *AmplifyUIBuilder) GetCodegenJob(input *GetCodegenJobInput) (*GetCodegenJobOutput, error) {
+	req, out := c.GetCodegenJobRequest(input)
+	return out, req.Send()
+}
+
+// GetCodegenJobWithContext is the same as GetCodegenJob with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetCodegenJob for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) GetCodegenJobWithContext(ctx aws.Context, input *GetCodegenJobInput, opts ...request.Option) (*GetCodegenJobOutput, error) {
+	req, out := c.GetCodegenJobRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetComponent = "GetComponent"
 
 // GetComponentRequest generates a "aws/request.Request" representing the
@@ -803,6 +1209,173 @@ func (c *AmplifyUIBuilder) GetComponent(input *GetComponentInput) (*GetComponent
 // for more information on using Contexts.
 func (c *AmplifyUIBuilder) GetComponentWithContext(ctx aws.Context, input *GetComponentInput, opts ...request.Option) (*GetComponentOutput, error) {
 	req, out := c.GetComponentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetForm = "GetForm"
+
+// GetFormRequest generates a "aws/request.Request" representing the
+// client's request for the GetForm operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetForm for more information on using the GetForm
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetFormRequest method.
+//	req, resp := client.GetFormRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetForm
+func (c *AmplifyUIBuilder) GetFormRequest(input *GetFormInput) (req *request.Request, output *GetFormOutput) {
+	op := &request.Operation{
+		Name:       opGetForm,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/forms/{id}",
+	}
+
+	if input == nil {
+		input = &GetFormInput{}
+	}
+
+	output = &GetFormOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetForm API operation for AWS Amplify UI Builder.
+//
+// Returns an existing form for an Amplify app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation GetForm for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ResourceNotFoundException
+//     The requested resource does not exist, or access was denied.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetForm
+func (c *AmplifyUIBuilder) GetForm(input *GetFormInput) (*GetFormOutput, error) {
+	req, out := c.GetFormRequest(input)
+	return out, req.Send()
+}
+
+// GetFormWithContext is the same as GetForm with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetForm for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) GetFormWithContext(ctx aws.Context, input *GetFormInput, opts ...request.Option) (*GetFormOutput, error) {
+	req, out := c.GetFormRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetMetadata = "GetMetadata"
+
+// GetMetadataRequest generates a "aws/request.Request" representing the
+// client's request for the GetMetadata operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetMetadata for more information on using the GetMetadata
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetMetadataRequest method.
+//	req, resp := client.GetMetadataRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetMetadata
+func (c *AmplifyUIBuilder) GetMetadataRequest(input *GetMetadataInput) (req *request.Request, output *GetMetadataOutput) {
+	op := &request.Operation{
+		Name:       opGetMetadata,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/metadata",
+	}
+
+	if input == nil {
+		input = &GetMetadataInput{}
+	}
+
+	output = &GetMetadataOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetMetadata API operation for AWS Amplify UI Builder.
+//
+// Returns existing metadata for an Amplify app.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation GetMetadata for usage and error information.
+//
+// Returned Error Types:
+//
+//   - UnauthorizedException
+//     You don't have permission to perform this operation.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/GetMetadata
+func (c *AmplifyUIBuilder) GetMetadata(input *GetMetadataInput) (*GetMetadataOutput, error) {
+	req, out := c.GetMetadataRequest(input)
+	return out, req.Send()
+}
+
+// GetMetadataWithContext is the same as GetMetadata with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetMetadata for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) GetMetadataWithContext(ctx aws.Context, input *GetMetadataInput, opts ...request.Option) (*GetMetadataOutput, error) {
+	req, out := c.GetMetadataRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -891,6 +1464,149 @@ func (c *AmplifyUIBuilder) GetThemeWithContext(ctx aws.Context, input *GetThemeI
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opListCodegenJobs = "ListCodegenJobs"
+
+// ListCodegenJobsRequest generates a "aws/request.Request" representing the
+// client's request for the ListCodegenJobs operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListCodegenJobs for more information on using the ListCodegenJobs
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListCodegenJobsRequest method.
+//	req, resp := client.ListCodegenJobsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListCodegenJobs
+func (c *AmplifyUIBuilder) ListCodegenJobsRequest(input *ListCodegenJobsInput) (req *request.Request, output *ListCodegenJobsOutput) {
+	op := &request.Operation{
+		Name:       opListCodegenJobs,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/codegen-jobs",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListCodegenJobsInput{}
+	}
+
+	output = &ListCodegenJobsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListCodegenJobs API operation for AWS Amplify UI Builder.
+//
+// Retrieves a list of code generation jobs for a specified Amplify app and
+// backend environment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation ListCodegenJobs for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListCodegenJobs
+func (c *AmplifyUIBuilder) ListCodegenJobs(input *ListCodegenJobsInput) (*ListCodegenJobsOutput, error) {
+	req, out := c.ListCodegenJobsRequest(input)
+	return out, req.Send()
+}
+
+// ListCodegenJobsWithContext is the same as ListCodegenJobs with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListCodegenJobs for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) ListCodegenJobsWithContext(ctx aws.Context, input *ListCodegenJobsInput, opts ...request.Option) (*ListCodegenJobsOutput, error) {
+	req, out := c.ListCodegenJobsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListCodegenJobsPages iterates over the pages of a ListCodegenJobs operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListCodegenJobs method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListCodegenJobs operation.
+//	pageNum := 0
+//	err := client.ListCodegenJobsPages(params,
+//	    func(page *amplifyuibuilder.ListCodegenJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AmplifyUIBuilder) ListCodegenJobsPages(input *ListCodegenJobsInput, fn func(*ListCodegenJobsOutput, bool) bool) error {
+	return c.ListCodegenJobsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListCodegenJobsPagesWithContext same as ListCodegenJobsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) ListCodegenJobsPagesWithContext(ctx aws.Context, input *ListCodegenJobsInput, fn func(*ListCodegenJobsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListCodegenJobsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListCodegenJobsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListCodegenJobsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListComponents = "ListComponents"
@@ -1025,6 +1741,145 @@ func (c *AmplifyUIBuilder) ListComponentsPagesWithContext(ctx aws.Context, input
 
 	for p.Next() {
 		if !fn(p.Page().(*ListComponentsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListForms = "ListForms"
+
+// ListFormsRequest generates a "aws/request.Request" representing the
+// client's request for the ListForms operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListForms for more information on using the ListForms
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListFormsRequest method.
+//	req, resp := client.ListFormsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListForms
+func (c *AmplifyUIBuilder) ListFormsRequest(input *ListFormsInput) (req *request.Request, output *ListFormsOutput) {
+	op := &request.Operation{
+		Name:       opListForms,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/forms",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListFormsInput{}
+	}
+
+	output = &ListFormsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListForms API operation for AWS Amplify UI Builder.
+//
+// Retrieves a list of forms for a specified Amplify app and backend environment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation ListForms for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/ListForms
+func (c *AmplifyUIBuilder) ListForms(input *ListFormsInput) (*ListFormsOutput, error) {
+	req, out := c.ListFormsRequest(input)
+	return out, req.Send()
+}
+
+// ListFormsWithContext is the same as ListForms with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListForms for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) ListFormsWithContext(ctx aws.Context, input *ListFormsInput, opts ...request.Option) (*ListFormsOutput, error) {
+	req, out := c.ListFormsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListFormsPages iterates over the pages of a ListForms operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListForms method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListForms operation.
+//	pageNum := 0
+//	err := client.ListFormsPages(params,
+//	    func(page *amplifyuibuilder.ListFormsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *AmplifyUIBuilder) ListFormsPages(input *ListFormsInput, fn func(*ListFormsOutput, bool) bool) error {
+	return c.ListFormsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListFormsPagesWithContext same as ListFormsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) ListFormsPagesWithContext(ctx aws.Context, input *ListFormsInput, fn func(*ListFormsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListFormsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListFormsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListFormsOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -1171,6 +2026,89 @@ func (c *AmplifyUIBuilder) ListThemesPagesWithContext(ctx aws.Context, input *Li
 	return p.Err()
 }
 
+const opPutMetadataFlag = "PutMetadataFlag"
+
+// PutMetadataFlagRequest generates a "aws/request.Request" representing the
+// client's request for the PutMetadataFlag operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutMetadataFlag for more information on using the PutMetadataFlag
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutMetadataFlagRequest method.
+//	req, resp := client.PutMetadataFlagRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/PutMetadataFlag
+func (c *AmplifyUIBuilder) PutMetadataFlagRequest(input *PutMetadataFlagInput) (req *request.Request, output *PutMetadataFlagOutput) {
+	op := &request.Operation{
+		Name:       opPutMetadataFlag,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/metadata/features/{featureName}",
+	}
+
+	if input == nil {
+		input = &PutMetadataFlagInput{}
+	}
+
+	output = &PutMetadataFlagOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutMetadataFlag API operation for AWS Amplify UI Builder.
+//
+// Stores the metadata information about a feature on a form.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation PutMetadataFlag for usage and error information.
+//
+// Returned Error Types:
+//
+//   - UnauthorizedException
+//     You don't have permission to perform this operation.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/PutMetadataFlag
+func (c *AmplifyUIBuilder) PutMetadataFlag(input *PutMetadataFlagInput) (*PutMetadataFlagOutput, error) {
+	req, out := c.PutMetadataFlagRequest(input)
+	return out, req.Send()
+}
+
+// PutMetadataFlagWithContext is the same as PutMetadataFlag with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutMetadataFlag for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) PutMetadataFlagWithContext(ctx aws.Context, input *PutMetadataFlagInput, opts ...request.Option) (*PutMetadataFlagOutput, error) {
+	req, out := c.PutMetadataFlagRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRefreshToken = "RefreshToken"
 
 // RefreshTokenRequest generates a "aws/request.Request" representing the
@@ -1214,7 +2152,10 @@ func (c *AmplifyUIBuilder) RefreshTokenRequest(input *RefreshTokenInput) (req *r
 
 // RefreshToken API operation for AWS Amplify UI Builder.
 //
-// Refreshes a previously issued access token that might have expired.
+// This is for internal use.
+//
+// Amplify uses this action to refresh a previously issued access token that
+// might have expired.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1244,6 +2185,91 @@ func (c *AmplifyUIBuilder) RefreshToken(input *RefreshTokenInput) (*RefreshToken
 // for more information on using Contexts.
 func (c *AmplifyUIBuilder) RefreshTokenWithContext(ctx aws.Context, input *RefreshTokenInput, opts ...request.Option) (*RefreshTokenOutput, error) {
 	req, out := c.RefreshTokenRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opStartCodegenJob = "StartCodegenJob"
+
+// StartCodegenJobRequest generates a "aws/request.Request" representing the
+// client's request for the StartCodegenJob operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartCodegenJob for more information on using the StartCodegenJob
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartCodegenJobRequest method.
+//	req, resp := client.StartCodegenJobRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/StartCodegenJob
+func (c *AmplifyUIBuilder) StartCodegenJobRequest(input *StartCodegenJobInput) (req *request.Request, output *StartCodegenJobOutput) {
+	op := &request.Operation{
+		Name:       opStartCodegenJob,
+		HTTPMethod: "POST",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/codegen-jobs",
+	}
+
+	if input == nil {
+		input = &StartCodegenJobInput{}
+	}
+
+	output = &StartCodegenJobOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartCodegenJob API operation for AWS Amplify UI Builder.
+//
+// Starts a code generation job for a specified Amplify app and backend environment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation StartCodegenJob for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/StartCodegenJob
+func (c *AmplifyUIBuilder) StartCodegenJob(input *StartCodegenJobInput) (*StartCodegenJobOutput, error) {
+	req, out := c.StartCodegenJobRequest(input)
+	return out, req.Send()
+}
+
+// StartCodegenJobWithContext is the same as StartCodegenJob with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartCodegenJob for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) StartCodegenJobWithContext(ctx aws.Context, input *StartCodegenJobInput, opts ...request.Option) (*StartCodegenJobOutput, error) {
+	req, out := c.StartCodegenJobRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1329,6 +2355,91 @@ func (c *AmplifyUIBuilder) UpdateComponent(input *UpdateComponentInput) (*Update
 // for more information on using Contexts.
 func (c *AmplifyUIBuilder) UpdateComponentWithContext(ctx aws.Context, input *UpdateComponentInput, opts ...request.Option) (*UpdateComponentOutput, error) {
 	req, out := c.UpdateComponentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateForm = "UpdateForm"
+
+// UpdateFormRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateForm operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateForm for more information on using the UpdateForm
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateFormRequest method.
+//	req, resp := client.UpdateFormRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/UpdateForm
+func (c *AmplifyUIBuilder) UpdateFormRequest(input *UpdateFormInput) (req *request.Request, output *UpdateFormOutput) {
+	op := &request.Operation{
+		Name:       opUpdateForm,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/app/{appId}/environment/{environmentName}/forms/{id}",
+	}
+
+	if input == nil {
+		input = &UpdateFormInput{}
+	}
+
+	output = &UpdateFormOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateForm API operation for AWS Amplify UI Builder.
+//
+// Updates an existing form.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Amplify UI Builder's
+// API operation UpdateForm for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceConflictException
+//     The resource specified in the request conflicts with an existing resource.
+//
+//   - InternalServerException
+//     An internal error has occurred. Please retry your request.
+//
+//   - InvalidParameterException
+//     An invalid or out-of-range value was supplied for the input parameter.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amplifyuibuilder-2021-08-11/UpdateForm
+func (c *AmplifyUIBuilder) UpdateForm(input *UpdateFormInput) (*UpdateFormOutput, error) {
+	req, out := c.UpdateFormRequest(input)
+	return out, req.Send()
+}
+
+// UpdateFormWithContext is the same as UpdateForm with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateForm for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AmplifyUIBuilder) UpdateFormWithContext(ctx aws.Context, input *UpdateFormInput, opts ...request.Option) (*UpdateFormOutput, error) {
+	req, out := c.UpdateFormRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1584,6 +2695,1029 @@ func (s *ActionParameters) SetType(v *ComponentProperty) *ActionParameters {
 // SetUrl sets the Url field's value.
 func (s *ActionParameters) SetUrl(v *ComponentProperty) *ActionParameters {
 	s.Url = v
+	return s
+}
+
+// Describes the API configuration for a code generation job.
+type ApiConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration for an application using DataStore APIs.
+	DataStoreConfig *DataStoreRenderConfig `locationName:"dataStoreConfig" type:"structure"`
+
+	// The configuration for an application using GraphQL APIs.
+	GraphQLConfig *GraphQLRenderConfig `locationName:"graphQLConfig" type:"structure"`
+
+	// The configuration for an application with no API being used.
+	NoApiConfig *NoApiRenderConfig `locationName:"noApiConfig" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApiConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApiConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ApiConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ApiConfiguration"}
+	if s.GraphQLConfig != nil {
+		if err := s.GraphQLConfig.Validate(); err != nil {
+			invalidParams.AddNested("GraphQLConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDataStoreConfig sets the DataStoreConfig field's value.
+func (s *ApiConfiguration) SetDataStoreConfig(v *DataStoreRenderConfig) *ApiConfiguration {
+	s.DataStoreConfig = v
+	return s
+}
+
+// SetGraphQLConfig sets the GraphQLConfig field's value.
+func (s *ApiConfiguration) SetGraphQLConfig(v *GraphQLRenderConfig) *ApiConfiguration {
+	s.GraphQLConfig = v
+	return s
+}
+
+// SetNoApiConfig sets the NoApiConfig field's value.
+func (s *ApiConfiguration) SetNoApiConfig(v *NoApiRenderConfig) *ApiConfiguration {
+	s.NoApiConfig = v
+	return s
+}
+
+// Dependency package that may be required for the project code to run.
+type CodegenDependency struct {
+	_ struct{} `type:"structure"`
+
+	// Determines if the dependency package is using Semantic versioning. If set
+	// to true, it indicates that the dependency package uses Semantic versioning.
+	IsSemVer *bool `locationName:"isSemVer" type:"boolean"`
+
+	// Name of the dependency package.
+	Name *string `locationName:"name" type:"string"`
+
+	// Indicates the reason to include the dependency package in your project code.
+	Reason *string `locationName:"reason" type:"string"`
+
+	// Indicates the version of the supported dependency package.
+	SupportedVersion *string `locationName:"supportedVersion" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenDependency) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenDependency) GoString() string {
+	return s.String()
+}
+
+// SetIsSemVer sets the IsSemVer field's value.
+func (s *CodegenDependency) SetIsSemVer(v bool) *CodegenDependency {
+	s.IsSemVer = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CodegenDependency) SetName(v string) *CodegenDependency {
+	s.Name = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *CodegenDependency) SetReason(v string) *CodegenDependency {
+	s.Reason = &v
+	return s
+}
+
+// SetSupportedVersion sets the SupportedVersion field's value.
+func (s *CodegenDependency) SetSupportedVersion(v string) *CodegenDependency {
+	s.SupportedVersion = &v
+	return s
+}
+
+// Describes the feature flags that you can specify for a code generation job.
+type CodegenFeatureFlags struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether a code generation job supports non models.
+	IsNonModelSupported *bool `locationName:"isNonModelSupported" type:"boolean"`
+
+	// Specifes whether a code generation job supports data relationships.
+	IsRelationshipSupported *bool `locationName:"isRelationshipSupported" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenFeatureFlags) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenFeatureFlags) GoString() string {
+	return s.String()
+}
+
+// SetIsNonModelSupported sets the IsNonModelSupported field's value.
+func (s *CodegenFeatureFlags) SetIsNonModelSupported(v bool) *CodegenFeatureFlags {
+	s.IsNonModelSupported = &v
+	return s
+}
+
+// SetIsRelationshipSupported sets the IsRelationshipSupported field's value.
+func (s *CodegenFeatureFlags) SetIsRelationshipSupported(v bool) *CodegenFeatureFlags {
+	s.IsRelationshipSupported = &v
+	return s
+}
+
+// Describes the enums in a generic data schema.
+type CodegenGenericDataEnum struct {
+	_ struct{} `type:"structure"`
+
+	// The list of enum values in the generic data schema.
+	//
+	// Values is a required field
+	Values []*string `locationName:"values" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataEnum) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataEnum) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenGenericDataEnum) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenGenericDataEnum"}
+	if s.Values == nil {
+		invalidParams.Add(request.NewErrParamRequired("Values"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetValues sets the Values field's value.
+func (s *CodegenGenericDataEnum) SetValues(v []*string) *CodegenGenericDataEnum {
+	s.Values = v
+	return s
+}
+
+// Describes a field in a generic data schema.
+type CodegenGenericDataField struct {
+	_ struct{} `type:"structure"`
+
+	// The data type for the generic data field.
+	//
+	// DataType is a required field
+	DataType *string `locationName:"dataType" type:"string" required:"true" enum:"CodegenGenericDataFieldDataType"`
+
+	// The value of the data type for the generic data field.
+	//
+	// DataTypeValue is a required field
+	DataTypeValue *string `locationName:"dataTypeValue" type:"string" required:"true"`
+
+	// Specifies whether the generic data field is an array.
+	//
+	// IsArray is a required field
+	IsArray *bool `locationName:"isArray" type:"boolean" required:"true"`
+
+	// Specifies whether the generic data field is read-only.
+	//
+	// ReadOnly is a required field
+	ReadOnly *bool `locationName:"readOnly" type:"boolean" required:"true"`
+
+	// The relationship of the generic data schema.
+	Relationship *CodegenGenericDataRelationshipType `locationName:"relationship" type:"structure"`
+
+	// Specifies whether the generic data field is required.
+	//
+	// Required is a required field
+	Required *bool `locationName:"required" type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataField) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataField) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenGenericDataField) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenGenericDataField"}
+	if s.DataType == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataType"))
+	}
+	if s.DataTypeValue == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataTypeValue"))
+	}
+	if s.IsArray == nil {
+		invalidParams.Add(request.NewErrParamRequired("IsArray"))
+	}
+	if s.ReadOnly == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReadOnly"))
+	}
+	if s.Required == nil {
+		invalidParams.Add(request.NewErrParamRequired("Required"))
+	}
+	if s.Relationship != nil {
+		if err := s.Relationship.Validate(); err != nil {
+			invalidParams.AddNested("Relationship", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDataType sets the DataType field's value.
+func (s *CodegenGenericDataField) SetDataType(v string) *CodegenGenericDataField {
+	s.DataType = &v
+	return s
+}
+
+// SetDataTypeValue sets the DataTypeValue field's value.
+func (s *CodegenGenericDataField) SetDataTypeValue(v string) *CodegenGenericDataField {
+	s.DataTypeValue = &v
+	return s
+}
+
+// SetIsArray sets the IsArray field's value.
+func (s *CodegenGenericDataField) SetIsArray(v bool) *CodegenGenericDataField {
+	s.IsArray = &v
+	return s
+}
+
+// SetReadOnly sets the ReadOnly field's value.
+func (s *CodegenGenericDataField) SetReadOnly(v bool) *CodegenGenericDataField {
+	s.ReadOnly = &v
+	return s
+}
+
+// SetRelationship sets the Relationship field's value.
+func (s *CodegenGenericDataField) SetRelationship(v *CodegenGenericDataRelationshipType) *CodegenGenericDataField {
+	s.Relationship = v
+	return s
+}
+
+// SetRequired sets the Required field's value.
+func (s *CodegenGenericDataField) SetRequired(v bool) *CodegenGenericDataField {
+	s.Required = &v
+	return s
+}
+
+// Describes a model in a generic data schema.
+type CodegenGenericDataModel struct {
+	_ struct{} `type:"structure"`
+
+	// The fields in the generic data model.
+	//
+	// Fields is a required field
+	Fields map[string]*CodegenGenericDataField `locationName:"fields" type:"map" required:"true"`
+
+	// Specifies whether the generic data model is a join table.
+	IsJoinTable *bool `locationName:"isJoinTable" type:"boolean"`
+
+	// The primary keys of the generic data model.
+	//
+	// PrimaryKeys is a required field
+	PrimaryKeys []*string `locationName:"primaryKeys" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataModel) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataModel) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenGenericDataModel) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenGenericDataModel"}
+	if s.Fields == nil {
+		invalidParams.Add(request.NewErrParamRequired("Fields"))
+	}
+	if s.PrimaryKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrimaryKeys"))
+	}
+	if s.Fields != nil {
+		for i, v := range s.Fields {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Fields", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFields sets the Fields field's value.
+func (s *CodegenGenericDataModel) SetFields(v map[string]*CodegenGenericDataField) *CodegenGenericDataModel {
+	s.Fields = v
+	return s
+}
+
+// SetIsJoinTable sets the IsJoinTable field's value.
+func (s *CodegenGenericDataModel) SetIsJoinTable(v bool) *CodegenGenericDataModel {
+	s.IsJoinTable = &v
+	return s
+}
+
+// SetPrimaryKeys sets the PrimaryKeys field's value.
+func (s *CodegenGenericDataModel) SetPrimaryKeys(v []*string) *CodegenGenericDataModel {
+	s.PrimaryKeys = v
+	return s
+}
+
+// Describes a non-model in a generic data schema.
+type CodegenGenericDataNonModel struct {
+	_ struct{} `type:"structure"`
+
+	// The fields in a generic data schema non model.
+	//
+	// Fields is a required field
+	Fields map[string]*CodegenGenericDataField `locationName:"fields" type:"map" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataNonModel) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataNonModel) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenGenericDataNonModel) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenGenericDataNonModel"}
+	if s.Fields == nil {
+		invalidParams.Add(request.NewErrParamRequired("Fields"))
+	}
+	if s.Fields != nil {
+		for i, v := range s.Fields {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Fields", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFields sets the Fields field's value.
+func (s *CodegenGenericDataNonModel) SetFields(v map[string]*CodegenGenericDataField) *CodegenGenericDataNonModel {
+	s.Fields = v
+	return s
+}
+
+// Describes the relationship between generic data models.
+type CodegenGenericDataRelationshipType struct {
+	_ struct{} `type:"structure"`
+
+	// The associated fields of the data relationship.
+	AssociatedFields []*string `locationName:"associatedFields" type:"list"`
+
+	// The value of the belongsTo field on the related data model.
+	BelongsToFieldOnRelatedModel *string `locationName:"belongsToFieldOnRelatedModel" type:"string"`
+
+	// Specifies whether the relationship can unlink the associated model.
+	CanUnlinkAssociatedModel *bool `locationName:"canUnlinkAssociatedModel" type:"boolean"`
+
+	// Specifies whether the @index directive is supported for a hasMany data relationship.
+	IsHasManyIndex *bool `locationName:"isHasManyIndex" type:"boolean"`
+
+	// The name of the related join field in the data relationship.
+	RelatedJoinFieldName *string `locationName:"relatedJoinFieldName" type:"string"`
+
+	// The name of the related join table in the data relationship.
+	RelatedJoinTableName *string `locationName:"relatedJoinTableName" type:"string"`
+
+	// The related model fields in the data relationship.
+	RelatedModelFields []*string `locationName:"relatedModelFields" type:"list"`
+
+	// The name of the related model in the data relationship.
+	//
+	// RelatedModelName is a required field
+	RelatedModelName *string `locationName:"relatedModelName" type:"string" required:"true"`
+
+	// The data relationship type.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true" enum:"GenericDataRelationshipType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataRelationshipType) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenGenericDataRelationshipType) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenGenericDataRelationshipType) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenGenericDataRelationshipType"}
+	if s.RelatedModelName == nil {
+		invalidParams.Add(request.NewErrParamRequired("RelatedModelName"))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociatedFields sets the AssociatedFields field's value.
+func (s *CodegenGenericDataRelationshipType) SetAssociatedFields(v []*string) *CodegenGenericDataRelationshipType {
+	s.AssociatedFields = v
+	return s
+}
+
+// SetBelongsToFieldOnRelatedModel sets the BelongsToFieldOnRelatedModel field's value.
+func (s *CodegenGenericDataRelationshipType) SetBelongsToFieldOnRelatedModel(v string) *CodegenGenericDataRelationshipType {
+	s.BelongsToFieldOnRelatedModel = &v
+	return s
+}
+
+// SetCanUnlinkAssociatedModel sets the CanUnlinkAssociatedModel field's value.
+func (s *CodegenGenericDataRelationshipType) SetCanUnlinkAssociatedModel(v bool) *CodegenGenericDataRelationshipType {
+	s.CanUnlinkAssociatedModel = &v
+	return s
+}
+
+// SetIsHasManyIndex sets the IsHasManyIndex field's value.
+func (s *CodegenGenericDataRelationshipType) SetIsHasManyIndex(v bool) *CodegenGenericDataRelationshipType {
+	s.IsHasManyIndex = &v
+	return s
+}
+
+// SetRelatedJoinFieldName sets the RelatedJoinFieldName field's value.
+func (s *CodegenGenericDataRelationshipType) SetRelatedJoinFieldName(v string) *CodegenGenericDataRelationshipType {
+	s.RelatedJoinFieldName = &v
+	return s
+}
+
+// SetRelatedJoinTableName sets the RelatedJoinTableName field's value.
+func (s *CodegenGenericDataRelationshipType) SetRelatedJoinTableName(v string) *CodegenGenericDataRelationshipType {
+	s.RelatedJoinTableName = &v
+	return s
+}
+
+// SetRelatedModelFields sets the RelatedModelFields field's value.
+func (s *CodegenGenericDataRelationshipType) SetRelatedModelFields(v []*string) *CodegenGenericDataRelationshipType {
+	s.RelatedModelFields = v
+	return s
+}
+
+// SetRelatedModelName sets the RelatedModelName field's value.
+func (s *CodegenGenericDataRelationshipType) SetRelatedModelName(v string) *CodegenGenericDataRelationshipType {
+	s.RelatedModelName = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CodegenGenericDataRelationshipType) SetType(v string) *CodegenGenericDataRelationshipType {
+	s.Type = &v
+	return s
+}
+
+// Describes the configuration for a code generation job that is associated
+// with an Amplify app.
+type CodegenJob struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the Amplify app associated with the code generation job.
+	//
+	// AppId is a required field
+	AppId *string `locationName:"appId" min:"1" type:"string" required:"true"`
+
+	// The CodegenJobAsset to use for the code generation job.
+	Asset *CodegenJobAsset `locationName:"asset" type:"structure"`
+
+	// Specifies whether to autogenerate forms in the code generation job.
+	AutoGenerateForms *bool `locationName:"autoGenerateForms" type:"boolean"`
+
+	// The time that the code generation job was created.
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Lists the dependency packages that may be required for the project code to
+	// run.
+	Dependencies []*CodegenDependency `locationName:"dependencies" type:"list"`
+
+	// The name of the backend environment associated with the code generation job.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `locationName:"environmentName" type:"string" required:"true"`
+
+	// Describes the feature flags that you can specify for a code generation job.
+	Features *CodegenFeatureFlags `locationName:"features" type:"structure"`
+
+	// Describes the data schema for a code generation job.
+	GenericDataSchema *CodegenJobGenericDataSchema `locationName:"genericDataSchema" type:"structure"`
+
+	// The unique ID for the code generation job.
+	//
+	// Id is a required field
+	Id *string `locationName:"id" type:"string" required:"true"`
+
+	// The time that the code generation job was modified.
+	ModifiedAt *time.Time `locationName:"modifiedAt" type:"timestamp" timestampFormat:"iso8601"`
+
+	// Describes the configuration information for rendering the UI component associated
+	// with the code generation job.
+	RenderConfig *CodegenJobRenderConfig `locationName:"renderConfig" type:"structure"`
+
+	// The status of the code generation job.
+	Status *string `locationName:"status" type:"string" enum:"CodegenJobStatus"`
+
+	// The customized status message for the code generation job.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+
+	// One or more key-value pairs to use when tagging the code generation job.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJob) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJob) GoString() string {
+	return s.String()
+}
+
+// SetAppId sets the AppId field's value.
+func (s *CodegenJob) SetAppId(v string) *CodegenJob {
+	s.AppId = &v
+	return s
+}
+
+// SetAsset sets the Asset field's value.
+func (s *CodegenJob) SetAsset(v *CodegenJobAsset) *CodegenJob {
+	s.Asset = v
+	return s
+}
+
+// SetAutoGenerateForms sets the AutoGenerateForms field's value.
+func (s *CodegenJob) SetAutoGenerateForms(v bool) *CodegenJob {
+	s.AutoGenerateForms = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CodegenJob) SetCreatedAt(v time.Time) *CodegenJob {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDependencies sets the Dependencies field's value.
+func (s *CodegenJob) SetDependencies(v []*CodegenDependency) *CodegenJob {
+	s.Dependencies = v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *CodegenJob) SetEnvironmentName(v string) *CodegenJob {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetFeatures sets the Features field's value.
+func (s *CodegenJob) SetFeatures(v *CodegenFeatureFlags) *CodegenJob {
+	s.Features = v
+	return s
+}
+
+// SetGenericDataSchema sets the GenericDataSchema field's value.
+func (s *CodegenJob) SetGenericDataSchema(v *CodegenJobGenericDataSchema) *CodegenJob {
+	s.GenericDataSchema = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *CodegenJob) SetId(v string) *CodegenJob {
+	s.Id = &v
+	return s
+}
+
+// SetModifiedAt sets the ModifiedAt field's value.
+func (s *CodegenJob) SetModifiedAt(v time.Time) *CodegenJob {
+	s.ModifiedAt = &v
+	return s
+}
+
+// SetRenderConfig sets the RenderConfig field's value.
+func (s *CodegenJob) SetRenderConfig(v *CodegenJobRenderConfig) *CodegenJob {
+	s.RenderConfig = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CodegenJob) SetStatus(v string) *CodegenJob {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *CodegenJob) SetStatusMessage(v string) *CodegenJob {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CodegenJob) SetTags(v map[string]*string) *CodegenJob {
+	s.Tags = v
+	return s
+}
+
+// Describes an asset for a code generation job.
+type CodegenJobAsset struct {
+	_ struct{} `type:"structure"`
+
+	// The URL to use to access the asset.
+	DownloadUrl *string `locationName:"downloadUrl" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobAsset) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobAsset) GoString() string {
+	return s.String()
+}
+
+// SetDownloadUrl sets the DownloadUrl field's value.
+func (s *CodegenJobAsset) SetDownloadUrl(v string) *CodegenJobAsset {
+	s.DownloadUrl = &v
+	return s
+}
+
+// Describes the data schema for a code generation job.
+type CodegenJobGenericDataSchema struct {
+	_ struct{} `type:"structure"`
+
+	// The type of the data source for the schema. Currently, the only valid value
+	// is an Amplify DataStore.
+	//
+	// DataSourceType is a required field
+	DataSourceType *string `locationName:"dataSourceType" type:"string" required:"true" enum:"CodegenJobGenericDataSourceType"`
+
+	// The name of a CodegenGenericDataEnum.
+	//
+	// Enums is a required field
+	Enums map[string]*CodegenGenericDataEnum `locationName:"enums" type:"map" required:"true"`
+
+	// The name of a CodegenGenericDataModel.
+	//
+	// Models is a required field
+	Models map[string]*CodegenGenericDataModel `locationName:"models" type:"map" required:"true"`
+
+	// The name of a CodegenGenericDataNonModel.
+	//
+	// NonModels is a required field
+	NonModels map[string]*CodegenGenericDataNonModel `locationName:"nonModels" type:"map" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobGenericDataSchema) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobGenericDataSchema) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenJobGenericDataSchema) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenJobGenericDataSchema"}
+	if s.DataSourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataSourceType"))
+	}
+	if s.Enums == nil {
+		invalidParams.Add(request.NewErrParamRequired("Enums"))
+	}
+	if s.Models == nil {
+		invalidParams.Add(request.NewErrParamRequired("Models"))
+	}
+	if s.NonModels == nil {
+		invalidParams.Add(request.NewErrParamRequired("NonModels"))
+	}
+	if s.Enums != nil {
+		for i, v := range s.Enums {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Enums", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Models != nil {
+		for i, v := range s.Models {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Models", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.NonModels != nil {
+		for i, v := range s.NonModels {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "NonModels", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDataSourceType sets the DataSourceType field's value.
+func (s *CodegenJobGenericDataSchema) SetDataSourceType(v string) *CodegenJobGenericDataSchema {
+	s.DataSourceType = &v
+	return s
+}
+
+// SetEnums sets the Enums field's value.
+func (s *CodegenJobGenericDataSchema) SetEnums(v map[string]*CodegenGenericDataEnum) *CodegenJobGenericDataSchema {
+	s.Enums = v
+	return s
+}
+
+// SetModels sets the Models field's value.
+func (s *CodegenJobGenericDataSchema) SetModels(v map[string]*CodegenGenericDataModel) *CodegenJobGenericDataSchema {
+	s.Models = v
+	return s
+}
+
+// SetNonModels sets the NonModels field's value.
+func (s *CodegenJobGenericDataSchema) SetNonModels(v map[string]*CodegenGenericDataNonModel) *CodegenJobGenericDataSchema {
+	s.NonModels = v
+	return s
+}
+
+// Describes the configuration information for rendering the UI component associated
+// with the code generation job.
+type CodegenJobRenderConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the ReactStartCodegenJobData object.
+	React *ReactStartCodegenJobData `locationName:"react" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobRenderConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobRenderConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CodegenJobRenderConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CodegenJobRenderConfig"}
+	if s.React != nil {
+		if err := s.React.Validate(); err != nil {
+			invalidParams.AddNested("React", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReact sets the React field's value.
+func (s *CodegenJobRenderConfig) SetReact(v *ReactStartCodegenJobData) *CodegenJobRenderConfig {
+	s.React = v
+	return s
+}
+
+// A summary of the basic information about the code generation job.
+type CodegenJobSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The unique ID of the Amplify app associated with the code generation job.
+	//
+	// AppId is a required field
+	AppId *string `locationName:"appId" min:"1" type:"string" required:"true"`
+
+	// The time that the code generation job summary was created.
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp" timestampFormat:"iso8601"`
+
+	// The name of the backend environment associated with the code generation job.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `locationName:"environmentName" type:"string" required:"true"`
+
+	// The unique ID for the code generation job summary.
+	//
+	// Id is a required field
+	Id *string `locationName:"id" type:"string" required:"true"`
+
+	// The time that the code generation job summary was modified.
+	ModifiedAt *time.Time `locationName:"modifiedAt" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CodegenJobSummary) GoString() string {
+	return s.String()
+}
+
+// SetAppId sets the AppId field's value.
+func (s *CodegenJobSummary) SetAppId(v string) *CodegenJobSummary {
+	s.AppId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CodegenJobSummary) SetCreatedAt(v time.Time) *CodegenJobSummary {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *CodegenJobSummary) SetEnvironmentName(v string) *CodegenJobSummary {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *CodegenJobSummary) SetId(v string) *CodegenJobSummary {
+	s.Id = &v
+	return s
+}
+
+// SetModifiedAt sets the ModifiedAt field's value.
+func (s *CodegenJobSummary) SetModifiedAt(v time.Time) *CodegenJobSummary {
+	s.ModifiedAt = &v
 	return s
 }
 
@@ -1872,6 +4006,9 @@ type ComponentBindingPropertiesValueProperties struct {
 	// A list of predicates for binding a component's properties to data.
 	Predicates []*Predicate `locationName:"predicates" type:"list"`
 
+	// The name of a component slot.
+	SlotName *string `locationName:"slotName" type:"string"`
+
 	// An authenticated user attribute.
 	UserAttribute *string `locationName:"userAttribute" type:"string"`
 }
@@ -1927,6 +4064,12 @@ func (s *ComponentBindingPropertiesValueProperties) SetModel(v string) *Componen
 // SetPredicates sets the Predicates field's value.
 func (s *ComponentBindingPropertiesValueProperties) SetPredicates(v []*Predicate) *ComponentBindingPropertiesValueProperties {
 	s.Predicates = v
+	return s
+}
+
+// SetSlotName sets the SlotName field's value.
+func (s *ComponentBindingPropertiesValueProperties) SetSlotName(v string) *ComponentBindingPropertiesValueProperties {
+	s.SlotName = &v
 	return s
 }
 
@@ -3070,6 +5213,318 @@ func (s *CreateComponentOutput) SetEntity(v *Component) *CreateComponentOutput {
 	return s
 }
 
+// Represents all of the information that is required to create a form.
+type CreateFormData struct {
+	_ struct{} `type:"structure"`
+
+	// The FormCTA object that stores the call to action configuration for the form.
+	Cta *FormCTA `locationName:"cta" type:"structure"`
+
+	// The type of data source to use to create the form.
+	//
+	// DataType is a required field
+	DataType *FormDataTypeConfig `locationName:"dataType" type:"structure" required:"true"`
+
+	// The configuration information for the form's fields.
+	//
+	// Fields is a required field
+	Fields map[string]*FieldConfig `locationName:"fields" type:"map" required:"true"`
+
+	// Specifies whether to perform a create or update action on the form.
+	//
+	// FormActionType is a required field
+	FormActionType *string `locationName:"formActionType" type:"string" required:"true" enum:"FormActionType"`
+
+	// Specifies an icon or decoration to display on the form.
+	LabelDecorator *string `locationName:"labelDecorator" type:"string" enum:"LabelDecorator"`
+
+	// The name of the form.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The schema version of the form.
+	//
+	// SchemaVersion is a required field
+	SchemaVersion *string `locationName:"schemaVersion" type:"string" required:"true"`
+
+	// The configuration information for the visual helper elements for the form.
+	// These elements are not associated with any data.
+	//
+	// SectionalElements is a required field
+	SectionalElements map[string]*SectionalElement `locationName:"sectionalElements" type:"map" required:"true"`
+
+	// The configuration for the form's style.
+	//
+	// Style is a required field
+	Style *FormStyle `locationName:"style" type:"structure" required:"true"`
+
+	// One or more key-value pairs to use when tagging the form data.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateFormData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateFormData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateFormData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateFormData"}
+	if s.DataType == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataType"))
+	}
+	if s.Fields == nil {
+		invalidParams.Add(request.NewErrParamRequired("Fields"))
+	}
+	if s.FormActionType == nil {
+		invalidParams.Add(request.NewErrParamRequired("FormActionType"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.SchemaVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("SchemaVersion"))
+	}
+	if s.SectionalElements == nil {
+		invalidParams.Add(request.NewErrParamRequired("SectionalElements"))
+	}
+	if s.Style == nil {
+		invalidParams.Add(request.NewErrParamRequired("Style"))
+	}
+	if s.DataType != nil {
+		if err := s.DataType.Validate(); err != nil {
+			invalidParams.AddNested("DataType", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Fields != nil {
+		for i, v := range s.Fields {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Fields", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.SectionalElements != nil {
+		for i, v := range s.SectionalElements {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "SectionalElements", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCta sets the Cta field's value.
+func (s *CreateFormData) SetCta(v *FormCTA) *CreateFormData {
+	s.Cta = v
+	return s
+}
+
+// SetDataType sets the DataType field's value.
+func (s *CreateFormData) SetDataType(v *FormDataTypeConfig) *CreateFormData {
+	s.DataType = v
+	return s
+}
+
+// SetFields sets the Fields field's value.
+func (s *CreateFormData) SetFields(v map[string]*FieldConfig) *CreateFormData {
+	s.Fields = v
+	return s
+}
+
+// SetFormActionType sets the FormActionType field's value.
+func (s *CreateFormData) SetFormActionType(v string) *CreateFormData {
+	s.FormActionType = &v
+	return s
+}
+
+// SetLabelDecorator sets the LabelDecorator field's value.
+func (s *CreateFormData) SetLabelDecorator(v string) *CreateFormData {
+	s.LabelDecorator = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateFormData) SetName(v string) *CreateFormData {
+	s.Name = &v
+	return s
+}
+
+// SetSchemaVersion sets the SchemaVersion field's value.
+func (s *CreateFormData) SetSchemaVersion(v string) *CreateFormData {
+	s.SchemaVersion = &v
+	return s
+}
+
+// SetSectionalElements sets the SectionalElements field's value.
+func (s *CreateFormData) SetSectionalElements(v map[string]*SectionalElement) *CreateFormData {
+	s.SectionalElements = v
+	return s
+}
+
+// SetStyle sets the Style field's value.
+func (s *CreateFormData) SetStyle(v *FormStyle) *CreateFormData {
+	s.Style = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateFormData) SetTags(v map[string]*string) *CreateFormData {
+	s.Tags = v
+	return s
+}
+
+type CreateFormInput struct {
+	_ struct{} `type:"structure" payload:"FormToCreate"`
+
+	// The unique ID of the Amplify app to associate with the form.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The unique client token.
+	ClientToken *string `location:"querystring" locationName:"clientToken" type:"string" idempotencyToken:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// Represents the configuration of the form to create.
+	//
+	// FormToCreate is a required field
+	FormToCreate *CreateFormData `locationName:"formToCreate" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateFormInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateFormInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateFormInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateFormInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.FormToCreate == nil {
+		invalidParams.Add(request.NewErrParamRequired("FormToCreate"))
+	}
+	if s.FormToCreate != nil {
+		if err := s.FormToCreate.Validate(); err != nil {
+			invalidParams.AddNested("FormToCreate", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *CreateFormInput) SetAppId(v string) *CreateFormInput {
+	s.AppId = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateFormInput) SetClientToken(v string) *CreateFormInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *CreateFormInput) SetEnvironmentName(v string) *CreateFormInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetFormToCreate sets the FormToCreate field's value.
+func (s *CreateFormInput) SetFormToCreate(v *CreateFormData) *CreateFormInput {
+	s.FormToCreate = v
+	return s
+}
+
+type CreateFormOutput struct {
+	_ struct{} `type:"structure" payload:"Entity"`
+
+	// Describes the configuration of the new form.
+	Entity *Form `locationName:"entity" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateFormOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateFormOutput) GoString() string {
+	return s.String()
+}
+
+// SetEntity sets the Entity field's value.
+func (s *CreateFormOutput) SetEntity(v *Form) *CreateFormOutput {
+	s.Entity = v
+	return s
+}
+
 // Represents all of the information that is required to create a theme.
 type CreateThemeData struct {
 	_ struct{} `type:"structure"`
@@ -3278,6 +5733,29 @@ func (s *CreateThemeOutput) SetEntity(v *Theme) *CreateThemeOutput {
 	return s
 }
 
+// Describes the DataStore configuration for an API for a code generation job.
+type DataStoreRenderConfig struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataStoreRenderConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataStoreRenderConfig) GoString() string {
+	return s.String()
+}
+
 type DeleteComponentInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -3380,6 +5858,111 @@ func (s DeleteComponentOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteComponentOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteFormInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID of the Amplify app associated with the form to delete.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The unique ID of the form to delete.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteFormInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteFormInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteFormInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteFormInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *DeleteFormInput) SetAppId(v string) *DeleteFormInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *DeleteFormInput) SetEnvironmentName(v string) *DeleteFormInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *DeleteFormInput) SetId(v string) *DeleteFormInput {
+	s.Id = &v
+	return s
+}
+
+type DeleteFormOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteFormOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteFormOutput) GoString() string {
 	return s.String()
 }
 
@@ -3625,6 +6208,13 @@ func (s *ExchangeCodeForTokenOutput) SetRefreshToken(v string) *ExchangeCodeForT
 type ExchangeCodeForTokenRequestBody struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the client to request the token from.
+	//
+	// ClientId is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ExchangeCodeForTokenRequestBody's
+	// String and GoString methods.
+	ClientId *string `locationName:"clientId" type:"string" sensitive:"true"`
+
 	// The access code to send in the request.
 	//
 	// Code is a sensitive parameter and its value will be
@@ -3672,6 +6262,12 @@ func (s *ExchangeCodeForTokenRequestBody) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientId sets the ClientId field's value.
+func (s *ExchangeCodeForTokenRequestBody) SetClientId(v string) *ExchangeCodeForTokenRequestBody {
+	s.ClientId = &v
+	return s
 }
 
 // SetCode sets the Code field's value.
@@ -3803,6 +6399,123 @@ func (s *ExportComponentsOutput) SetNextToken(v string) *ExportComponentsOutput 
 	return s
 }
 
+type ExportFormsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID of the Amplify app to export forms to.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The token to request the next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExportFormsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExportFormsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExportFormsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExportFormsInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *ExportFormsInput) SetAppId(v string) *ExportFormsInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *ExportFormsInput) SetEnvironmentName(v string) *ExportFormsInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ExportFormsInput) SetNextToken(v string) *ExportFormsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ExportFormsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents the configuration of the exported forms.
+	//
+	// Entities is a required field
+	Entities []*Form `locationName:"entities" type:"list" required:"true"`
+
+	// The pagination token that's included if more results are available.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExportFormsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExportFormsOutput) GoString() string {
+	return s.String()
+}
+
+// SetEntities sets the Entities field's value.
+func (s *ExportFormsOutput) SetEntities(v []*Form) *ExportFormsOutput {
+	s.Entities = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ExportFormsOutput) SetNextToken(v string) *ExportFormsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ExportThemesInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -3920,6 +6633,691 @@ func (s *ExportThemesOutput) SetNextToken(v string) *ExportThemesOutput {
 	return s
 }
 
+// Describes the configuration information for a field in a table.
+type FieldConfig struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether to hide a field.
+	Excluded *bool `locationName:"excluded" type:"boolean"`
+
+	// Describes the configuration for the default input value to display for a
+	// field.
+	InputType *FieldInputConfig `locationName:"inputType" type:"structure"`
+
+	// The label for the field.
+	Label *string `locationName:"label" type:"string"`
+
+	// Specifies the field position.
+	Position *FieldPosition `locationName:"position" type:"structure"`
+
+	// The validations to perform on the value in the field.
+	Validations []*FieldValidationConfiguration `locationName:"validations" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FieldConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FieldConfig"}
+	if s.InputType != nil {
+		if err := s.InputType.Validate(); err != nil {
+			invalidParams.AddNested("InputType", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Validations != nil {
+		for i, v := range s.Validations {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Validations", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExcluded sets the Excluded field's value.
+func (s *FieldConfig) SetExcluded(v bool) *FieldConfig {
+	s.Excluded = &v
+	return s
+}
+
+// SetInputType sets the InputType field's value.
+func (s *FieldConfig) SetInputType(v *FieldInputConfig) *FieldConfig {
+	s.InputType = v
+	return s
+}
+
+// SetLabel sets the Label field's value.
+func (s *FieldConfig) SetLabel(v string) *FieldConfig {
+	s.Label = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *FieldConfig) SetPosition(v *FieldPosition) *FieldConfig {
+	s.Position = v
+	return s
+}
+
+// SetValidations sets the Validations field's value.
+func (s *FieldConfig) SetValidations(v []*FieldValidationConfiguration) *FieldConfig {
+	s.Validations = v
+	return s
+}
+
+// Describes the configuration for the default input values to display for a
+// field.
+type FieldInputConfig struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether a field has a default value.
+	DefaultChecked *bool `locationName:"defaultChecked" type:"boolean"`
+
+	// The default country code for a phone number.
+	DefaultCountryCode *string `locationName:"defaultCountryCode" type:"string"`
+
+	// The default value for the field.
+	DefaultValue *string `locationName:"defaultValue" type:"string"`
+
+	// The text to display to describe the field.
+	DescriptiveText *string `locationName:"descriptiveText" type:"string"`
+
+	// The configuration for the file uploader field.
+	FileUploaderConfig *FileUploaderFieldConfig `locationName:"fileUploaderConfig" type:"structure"`
+
+	// Specifies whether to render the field as an array. This property is ignored
+	// if the dataSourceType for the form is a Data Store.
+	IsArray *bool `locationName:"isArray" type:"boolean"`
+
+	// The maximum value to display for the field.
+	MaxValue *float64 `locationName:"maxValue" type:"float"`
+
+	// The minimum value to display for the field.
+	MinValue *float64 `locationName:"minValue" type:"float"`
+
+	// The name of the field.
+	Name *string `locationName:"name" type:"string"`
+
+	// The text to display as a placeholder for the field.
+	Placeholder *string `locationName:"placeholder" type:"string"`
+
+	// Specifies a read only field.
+	ReadOnly *bool `locationName:"readOnly" type:"boolean"`
+
+	// Specifies a field that requires input.
+	Required *bool `locationName:"required" type:"boolean"`
+
+	// The stepping increment for a numeric value in a field.
+	Step *float64 `locationName:"step" type:"float"`
+
+	// The input type for the field.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true"`
+
+	// The value for the field.
+	Value *string `locationName:"value" type:"string"`
+
+	// The information to use to customize the input fields with data at runtime.
+	ValueMappings *ValueMappings `locationName:"valueMappings" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldInputConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldInputConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FieldInputConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FieldInputConfig"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+	if s.FileUploaderConfig != nil {
+		if err := s.FileUploaderConfig.Validate(); err != nil {
+			invalidParams.AddNested("FileUploaderConfig", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ValueMappings != nil {
+		if err := s.ValueMappings.Validate(); err != nil {
+			invalidParams.AddNested("ValueMappings", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDefaultChecked sets the DefaultChecked field's value.
+func (s *FieldInputConfig) SetDefaultChecked(v bool) *FieldInputConfig {
+	s.DefaultChecked = &v
+	return s
+}
+
+// SetDefaultCountryCode sets the DefaultCountryCode field's value.
+func (s *FieldInputConfig) SetDefaultCountryCode(v string) *FieldInputConfig {
+	s.DefaultCountryCode = &v
+	return s
+}
+
+// SetDefaultValue sets the DefaultValue field's value.
+func (s *FieldInputConfig) SetDefaultValue(v string) *FieldInputConfig {
+	s.DefaultValue = &v
+	return s
+}
+
+// SetDescriptiveText sets the DescriptiveText field's value.
+func (s *FieldInputConfig) SetDescriptiveText(v string) *FieldInputConfig {
+	s.DescriptiveText = &v
+	return s
+}
+
+// SetFileUploaderConfig sets the FileUploaderConfig field's value.
+func (s *FieldInputConfig) SetFileUploaderConfig(v *FileUploaderFieldConfig) *FieldInputConfig {
+	s.FileUploaderConfig = v
+	return s
+}
+
+// SetIsArray sets the IsArray field's value.
+func (s *FieldInputConfig) SetIsArray(v bool) *FieldInputConfig {
+	s.IsArray = &v
+	return s
+}
+
+// SetMaxValue sets the MaxValue field's value.
+func (s *FieldInputConfig) SetMaxValue(v float64) *FieldInputConfig {
+	s.MaxValue = &v
+	return s
+}
+
+// SetMinValue sets the MinValue field's value.
+func (s *FieldInputConfig) SetMinValue(v float64) *FieldInputConfig {
+	s.MinValue = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *FieldInputConfig) SetName(v string) *FieldInputConfig {
+	s.Name = &v
+	return s
+}
+
+// SetPlaceholder sets the Placeholder field's value.
+func (s *FieldInputConfig) SetPlaceholder(v string) *FieldInputConfig {
+	s.Placeholder = &v
+	return s
+}
+
+// SetReadOnly sets the ReadOnly field's value.
+func (s *FieldInputConfig) SetReadOnly(v bool) *FieldInputConfig {
+	s.ReadOnly = &v
+	return s
+}
+
+// SetRequired sets the Required field's value.
+func (s *FieldInputConfig) SetRequired(v bool) *FieldInputConfig {
+	s.Required = &v
+	return s
+}
+
+// SetStep sets the Step field's value.
+func (s *FieldInputConfig) SetStep(v float64) *FieldInputConfig {
+	s.Step = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *FieldInputConfig) SetType(v string) *FieldInputConfig {
+	s.Type = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *FieldInputConfig) SetValue(v string) *FieldInputConfig {
+	s.Value = &v
+	return s
+}
+
+// SetValueMappings sets the ValueMappings field's value.
+func (s *FieldInputConfig) SetValueMappings(v *ValueMappings) *FieldInputConfig {
+	s.ValueMappings = v
+	return s
+}
+
+// Describes the field position.
+type FieldPosition struct {
+	_ struct{} `type:"structure"`
+
+	// The field position is below the field specified by the string.
+	Below *string `locationName:"below" type:"string"`
+
+	// The field position is fixed and doesn't change in relation to other fields.
+	Fixed *string `locationName:"fixed" type:"string" enum:"FixedPosition"`
+
+	// The field position is to the right of the field specified by the string.
+	RightOf *string `locationName:"rightOf" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldPosition) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldPosition) GoString() string {
+	return s.String()
+}
+
+// SetBelow sets the Below field's value.
+func (s *FieldPosition) SetBelow(v string) *FieldPosition {
+	s.Below = &v
+	return s
+}
+
+// SetFixed sets the Fixed field's value.
+func (s *FieldPosition) SetFixed(v string) *FieldPosition {
+	s.Fixed = &v
+	return s
+}
+
+// SetRightOf sets the RightOf field's value.
+func (s *FieldPosition) SetRightOf(v string) *FieldPosition {
+	s.RightOf = &v
+	return s
+}
+
+// Describes the validation configuration for a field.
+type FieldValidationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The validation to perform on a number value.
+	NumValues []*int64 `locationName:"numValues" type:"list"`
+
+	// The validation to perform on a string value.
+	StrValues []*string `locationName:"strValues" type:"list"`
+
+	// The validation to perform on an object type.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true"`
+
+	// The validation message to display.
+	ValidationMessage *string `locationName:"validationMessage" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldValidationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FieldValidationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FieldValidationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FieldValidationConfiguration"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNumValues sets the NumValues field's value.
+func (s *FieldValidationConfiguration) SetNumValues(v []*int64) *FieldValidationConfiguration {
+	s.NumValues = v
+	return s
+}
+
+// SetStrValues sets the StrValues field's value.
+func (s *FieldValidationConfiguration) SetStrValues(v []*string) *FieldValidationConfiguration {
+	s.StrValues = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *FieldValidationConfiguration) SetType(v string) *FieldValidationConfiguration {
+	s.Type = &v
+	return s
+}
+
+// SetValidationMessage sets the ValidationMessage field's value.
+func (s *FieldValidationConfiguration) SetValidationMessage(v string) *FieldValidationConfiguration {
+	s.ValidationMessage = &v
+	return s
+}
+
+// Describes the configuration for the file uploader field.
+type FileUploaderFieldConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The file types that are allowed to be uploaded by the file uploader. Provide
+	// this information in an array of strings specifying the valid file extensions.
+	//
+	// AcceptedFileTypes is a required field
+	AcceptedFileTypes []*string `locationName:"acceptedFileTypes" type:"list" required:"true"`
+
+	// The access level to assign to the uploaded files in the Amazon S3 bucket
+	// where they are stored. The valid values for this property are private, protected,
+	// or public. For detailed information about the permissions associated with
+	// each access level, see File access levels (https://docs.amplify.aws/lib/storage/configureaccess/q/platform/js/)
+	// in the Amplify documentation.
+	//
+	// AccessLevel is a required field
+	AccessLevel *string `locationName:"accessLevel" type:"string" required:"true" enum:"StorageAccessLevel"`
+
+	// Allows the file upload operation to be paused and resumed. The default value
+	// is false.
+	//
+	// When isResumable is set to true, the file uploader uses a multipart upload
+	// to break the files into chunks before upload. The progress of the upload
+	// isn't continuous, because the file uploader uploads a chunk at a time.
+	IsResumable *bool `locationName:"isResumable" type:"boolean"`
+
+	// Specifies the maximum number of files that can be selected to upload. The
+	// default value is an unlimited number of files.
+	MaxFileCount *int64 `locationName:"maxFileCount" type:"integer"`
+
+	// The maximum file size in bytes that the file uploader will accept. The default
+	// value is an unlimited file size.
+	MaxSize *int64 `locationName:"maxSize" type:"integer"`
+
+	// Specifies whether to display or hide the image preview after selecting a
+	// file for upload. The default value is true to display the image preview.
+	ShowThumbnails *bool `locationName:"showThumbnails" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FileUploaderFieldConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FileUploaderFieldConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FileUploaderFieldConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FileUploaderFieldConfig"}
+	if s.AcceptedFileTypes == nil {
+		invalidParams.Add(request.NewErrParamRequired("AcceptedFileTypes"))
+	}
+	if s.AccessLevel == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessLevel"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAcceptedFileTypes sets the AcceptedFileTypes field's value.
+func (s *FileUploaderFieldConfig) SetAcceptedFileTypes(v []*string) *FileUploaderFieldConfig {
+	s.AcceptedFileTypes = v
+	return s
+}
+
+// SetAccessLevel sets the AccessLevel field's value.
+func (s *FileUploaderFieldConfig) SetAccessLevel(v string) *FileUploaderFieldConfig {
+	s.AccessLevel = &v
+	return s
+}
+
+// SetIsResumable sets the IsResumable field's value.
+func (s *FileUploaderFieldConfig) SetIsResumable(v bool) *FileUploaderFieldConfig {
+	s.IsResumable = &v
+	return s
+}
+
+// SetMaxFileCount sets the MaxFileCount field's value.
+func (s *FileUploaderFieldConfig) SetMaxFileCount(v int64) *FileUploaderFieldConfig {
+	s.MaxFileCount = &v
+	return s
+}
+
+// SetMaxSize sets the MaxSize field's value.
+func (s *FileUploaderFieldConfig) SetMaxSize(v int64) *FileUploaderFieldConfig {
+	s.MaxSize = &v
+	return s
+}
+
+// SetShowThumbnails sets the ShowThumbnails field's value.
+func (s *FileUploaderFieldConfig) SetShowThumbnails(v bool) *FileUploaderFieldConfig {
+	s.ShowThumbnails = &v
+	return s
+}
+
+// Contains the configuration settings for a Form user interface (UI) element
+// for an Amplify app. A form is a component you can add to your project by
+// specifying a data source as the default configuration for the form.
+type Form struct {
+	_ struct{} `type:"structure"`
+
+	// The unique ID of the Amplify app associated with the form.
+	//
+	// AppId is a required field
+	AppId *string `locationName:"appId" type:"string" required:"true"`
+
+	// Stores the call to action configuration for the form.
+	Cta *FormCTA `locationName:"cta" type:"structure"`
+
+	// The type of data source to use to create the form.
+	//
+	// DataType is a required field
+	DataType *FormDataTypeConfig `locationName:"dataType" type:"structure" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `locationName:"environmentName" type:"string" required:"true"`
+
+	// Stores the information about the form's fields.
+	//
+	// Fields is a required field
+	Fields map[string]*FieldConfig `locationName:"fields" type:"map" required:"true"`
+
+	// The operation to perform on the specified form.
+	//
+	// FormActionType is a required field
+	FormActionType *string `locationName:"formActionType" type:"string" required:"true" enum:"FormActionType"`
+
+	// The unique ID of the form.
+	//
+	// Id is a required field
+	Id *string `locationName:"id" type:"string" required:"true"`
+
+	// Specifies an icon or decoration to display on the form.
+	LabelDecorator *string `locationName:"labelDecorator" type:"string" enum:"LabelDecorator"`
+
+	// The name of the form.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The schema version of the form when it was imported.
+	//
+	// SchemaVersion is a required field
+	SchemaVersion *string `locationName:"schemaVersion" type:"string" required:"true"`
+
+	// Stores the visual helper elements for the form that are not associated with
+	// any data.
+	//
+	// SectionalElements is a required field
+	SectionalElements map[string]*SectionalElement `locationName:"sectionalElements" type:"map" required:"true"`
+
+	// Stores the configuration for the form's style.
+	//
+	// Style is a required field
+	Style *FormStyle `locationName:"style" type:"structure" required:"true"`
+
+	// One or more key-value pairs to use when tagging the form.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Form) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Form) GoString() string {
+	return s.String()
+}
+
+// SetAppId sets the AppId field's value.
+func (s *Form) SetAppId(v string) *Form {
+	s.AppId = &v
+	return s
+}
+
+// SetCta sets the Cta field's value.
+func (s *Form) SetCta(v *FormCTA) *Form {
+	s.Cta = v
+	return s
+}
+
+// SetDataType sets the DataType field's value.
+func (s *Form) SetDataType(v *FormDataTypeConfig) *Form {
+	s.DataType = v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *Form) SetEnvironmentName(v string) *Form {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetFields sets the Fields field's value.
+func (s *Form) SetFields(v map[string]*FieldConfig) *Form {
+	s.Fields = v
+	return s
+}
+
+// SetFormActionType sets the FormActionType field's value.
+func (s *Form) SetFormActionType(v string) *Form {
+	s.FormActionType = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Form) SetId(v string) *Form {
+	s.Id = &v
+	return s
+}
+
+// SetLabelDecorator sets the LabelDecorator field's value.
+func (s *Form) SetLabelDecorator(v string) *Form {
+	s.LabelDecorator = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Form) SetName(v string) *Form {
+	s.Name = &v
+	return s
+}
+
+// SetSchemaVersion sets the SchemaVersion field's value.
+func (s *Form) SetSchemaVersion(v string) *Form {
+	s.SchemaVersion = &v
+	return s
+}
+
+// SetSectionalElements sets the SectionalElements field's value.
+func (s *Form) SetSectionalElements(v map[string]*SectionalElement) *Form {
+	s.SectionalElements = v
+	return s
+}
+
+// SetStyle sets the Style field's value.
+func (s *Form) SetStyle(v *FormStyle) *Form {
+	s.Style = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Form) SetTags(v map[string]*string) *Form {
+	s.Tags = v
+	return s
+}
+
 // Describes how to bind a component property to form data.
 type FormBindingElement struct {
 	_ struct{} `type:"structure"`
@@ -3978,6 +7376,687 @@ func (s *FormBindingElement) SetElement(v string) *FormBindingElement {
 // SetProperty sets the Property field's value.
 func (s *FormBindingElement) SetProperty(v string) *FormBindingElement {
 	s.Property = &v
+	return s
+}
+
+// Describes the configuration for a button UI element that is a part of a form.
+type FormButton struct {
+	_ struct{} `type:"structure"`
+
+	// Describes the button's properties.
+	Children *string `locationName:"children" type:"string"`
+
+	// Specifies whether the button is visible on the form.
+	Excluded *bool `locationName:"excluded" type:"boolean"`
+
+	// The position of the button.
+	Position *FieldPosition `locationName:"position" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormButton) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormButton) GoString() string {
+	return s.String()
+}
+
+// SetChildren sets the Children field's value.
+func (s *FormButton) SetChildren(v string) *FormButton {
+	s.Children = &v
+	return s
+}
+
+// SetExcluded sets the Excluded field's value.
+func (s *FormButton) SetExcluded(v bool) *FormButton {
+	s.Excluded = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *FormButton) SetPosition(v *FieldPosition) *FormButton {
+	s.Position = v
+	return s
+}
+
+// Describes the call to action button configuration for the form.
+type FormCTA struct {
+	_ struct{} `type:"structure"`
+
+	// Displays a cancel button.
+	Cancel *FormButton `locationName:"cancel" type:"structure"`
+
+	// Displays a clear button.
+	Clear *FormButton `locationName:"clear" type:"structure"`
+
+	// The position of the button.
+	Position *string `locationName:"position" type:"string" enum:"FormButtonsPosition"`
+
+	// Displays a submit button.
+	Submit *FormButton `locationName:"submit" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormCTA) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormCTA) GoString() string {
+	return s.String()
+}
+
+// SetCancel sets the Cancel field's value.
+func (s *FormCTA) SetCancel(v *FormButton) *FormCTA {
+	s.Cancel = v
+	return s
+}
+
+// SetClear sets the Clear field's value.
+func (s *FormCTA) SetClear(v *FormButton) *FormCTA {
+	s.Clear = v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *FormCTA) SetPosition(v string) *FormCTA {
+	s.Position = &v
+	return s
+}
+
+// SetSubmit sets the Submit field's value.
+func (s *FormCTA) SetSubmit(v *FormButton) *FormCTA {
+	s.Submit = v
+	return s
+}
+
+// Describes the data type configuration for the data source associated with
+// a form.
+type FormDataTypeConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The data source type, either an Amplify DataStore model or a custom data
+	// type.
+	//
+	// DataSourceType is a required field
+	DataSourceType *string `locationName:"dataSourceType" type:"string" required:"true" enum:"FormDataSourceType"`
+
+	// The unique name of the data type you are using as the data source for the
+	// form.
+	//
+	// DataTypeName is a required field
+	DataTypeName *string `locationName:"dataTypeName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormDataTypeConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormDataTypeConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FormDataTypeConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FormDataTypeConfig"}
+	if s.DataSourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataSourceType"))
+	}
+	if s.DataTypeName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataTypeName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDataSourceType sets the DataSourceType field's value.
+func (s *FormDataTypeConfig) SetDataSourceType(v string) *FormDataTypeConfig {
+	s.DataSourceType = &v
+	return s
+}
+
+// SetDataTypeName sets the DataTypeName field's value.
+func (s *FormDataTypeConfig) SetDataTypeName(v string) *FormDataTypeConfig {
+	s.DataTypeName = &v
+	return s
+}
+
+// Represents the data binding configuration for a form's input fields at runtime.You
+// can use FormInputBindingPropertiesValue to add exposed properties to a form
+// to allow different values to be entered when a form is reused in different
+// places in an app.
+type FormInputBindingPropertiesValue struct {
+	_ struct{} `type:"structure"`
+
+	// Describes the properties to customize with data at runtime.
+	BindingProperties *FormInputBindingPropertiesValueProperties `locationName:"bindingProperties" type:"structure"`
+
+	// The property type.
+	Type *string `locationName:"type" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputBindingPropertiesValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputBindingPropertiesValue) GoString() string {
+	return s.String()
+}
+
+// SetBindingProperties sets the BindingProperties field's value.
+func (s *FormInputBindingPropertiesValue) SetBindingProperties(v *FormInputBindingPropertiesValueProperties) *FormInputBindingPropertiesValue {
+	s.BindingProperties = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *FormInputBindingPropertiesValue) SetType(v string) *FormInputBindingPropertiesValue {
+	s.Type = &v
+	return s
+}
+
+// Represents the data binding configuration for a specific property using data
+// stored in Amazon Web Services. For Amazon Web Services connected properties,
+// you can bind a property to data stored in an Amplify DataStore model.
+type FormInputBindingPropertiesValueProperties struct {
+	_ struct{} `type:"structure"`
+
+	// An Amplify DataStore model.
+	Model *string `locationName:"model" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputBindingPropertiesValueProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputBindingPropertiesValueProperties) GoString() string {
+	return s.String()
+}
+
+// SetModel sets the Model field's value.
+func (s *FormInputBindingPropertiesValueProperties) SetModel(v string) *FormInputBindingPropertiesValueProperties {
+	s.Model = &v
+	return s
+}
+
+// Describes the configuration for an input field on a form. Use FormInputValueProperty
+// to specify the values to render or bind by default.
+type FormInputValueProperty struct {
+	_ struct{} `type:"structure"`
+
+	// The information to bind fields to data at runtime.
+	BindingProperties *FormInputValuePropertyBindingProperties `locationName:"bindingProperties" type:"structure"`
+
+	// A list of form properties to concatenate to create the value to assign to
+	// this field property.
+	Concat []*FormInputValueProperty `locationName:"concat" type:"list"`
+
+	// The value to assign to the input field.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputValueProperty) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputValueProperty) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FormInputValueProperty) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FormInputValueProperty"}
+	if s.BindingProperties != nil {
+		if err := s.BindingProperties.Validate(); err != nil {
+			invalidParams.AddNested("BindingProperties", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Concat != nil {
+		for i, v := range s.Concat {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Concat", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBindingProperties sets the BindingProperties field's value.
+func (s *FormInputValueProperty) SetBindingProperties(v *FormInputValuePropertyBindingProperties) *FormInputValueProperty {
+	s.BindingProperties = v
+	return s
+}
+
+// SetConcat sets the Concat field's value.
+func (s *FormInputValueProperty) SetConcat(v []*FormInputValueProperty) *FormInputValueProperty {
+	s.Concat = v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *FormInputValueProperty) SetValue(v string) *FormInputValueProperty {
+	s.Value = &v
+	return s
+}
+
+// Associates a form property to a binding property. This enables exposed properties
+// on the top level form to propagate data to the form's property values.
+type FormInputValuePropertyBindingProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The data field to bind the property to.
+	Field *string `locationName:"field" type:"string"`
+
+	// The form property to bind to the data field.
+	//
+	// Property is a required field
+	Property *string `locationName:"property" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputValuePropertyBindingProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormInputValuePropertyBindingProperties) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FormInputValuePropertyBindingProperties) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FormInputValuePropertyBindingProperties"}
+	if s.Property == nil {
+		invalidParams.Add(request.NewErrParamRequired("Property"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetField sets the Field field's value.
+func (s *FormInputValuePropertyBindingProperties) SetField(v string) *FormInputValuePropertyBindingProperties {
+	s.Field = &v
+	return s
+}
+
+// SetProperty sets the Property field's value.
+func (s *FormInputValuePropertyBindingProperties) SetProperty(v string) *FormInputValuePropertyBindingProperties {
+	s.Property = &v
+	return s
+}
+
+// Describes the configuration for the form's style.
+type FormStyle struct {
+	_ struct{} `type:"structure"`
+
+	// The spacing for the horizontal gap.
+	HorizontalGap *FormStyleConfig `locationName:"horizontalGap" type:"structure"`
+
+	// The size of the outer padding for the form.
+	OuterPadding *FormStyleConfig `locationName:"outerPadding" type:"structure"`
+
+	// The spacing for the vertical gap.
+	VerticalGap *FormStyleConfig `locationName:"verticalGap" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormStyle) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormStyle) GoString() string {
+	return s.String()
+}
+
+// SetHorizontalGap sets the HorizontalGap field's value.
+func (s *FormStyle) SetHorizontalGap(v *FormStyleConfig) *FormStyle {
+	s.HorizontalGap = v
+	return s
+}
+
+// SetOuterPadding sets the OuterPadding field's value.
+func (s *FormStyle) SetOuterPadding(v *FormStyleConfig) *FormStyle {
+	s.OuterPadding = v
+	return s
+}
+
+// SetVerticalGap sets the VerticalGap field's value.
+func (s *FormStyle) SetVerticalGap(v *FormStyleConfig) *FormStyle {
+	s.VerticalGap = v
+	return s
+}
+
+// Describes the configuration settings for the form's style properties.
+type FormStyleConfig struct {
+	_ struct{} `type:"structure"`
+
+	// A reference to a design token to use to bind the form's style properties
+	// to an existing theme.
+	TokenReference *string `locationName:"tokenReference" type:"string"`
+
+	// The value of the style setting.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormStyleConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormStyleConfig) GoString() string {
+	return s.String()
+}
+
+// SetTokenReference sets the TokenReference field's value.
+func (s *FormStyleConfig) SetTokenReference(v string) *FormStyleConfig {
+	s.TokenReference = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *FormStyleConfig) SetValue(v string) *FormStyleConfig {
+	s.Value = &v
+	return s
+}
+
+// Describes the basic information about a form.
+type FormSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The unique ID for the app associated with the form summary.
+	//
+	// AppId is a required field
+	AppId *string `locationName:"appId" type:"string" required:"true"`
+
+	// The form's data source type.
+	//
+	// DataType is a required field
+	DataType *FormDataTypeConfig `locationName:"dataType" type:"structure" required:"true"`
+
+	// The name of the backend environment that is part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `locationName:"environmentName" type:"string" required:"true"`
+
+	// The type of operation to perform on the form.
+	//
+	// FormActionType is a required field
+	FormActionType *string `locationName:"formActionType" type:"string" required:"true" enum:"FormActionType"`
+
+	// The ID of the form.
+	//
+	// Id is a required field
+	Id *string `locationName:"id" type:"string" required:"true"`
+
+	// The name of the form.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FormSummary) GoString() string {
+	return s.String()
+}
+
+// SetAppId sets the AppId field's value.
+func (s *FormSummary) SetAppId(v string) *FormSummary {
+	s.AppId = &v
+	return s
+}
+
+// SetDataType sets the DataType field's value.
+func (s *FormSummary) SetDataType(v *FormDataTypeConfig) *FormSummary {
+	s.DataType = v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *FormSummary) SetEnvironmentName(v string) *FormSummary {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetFormActionType sets the FormActionType field's value.
+func (s *FormSummary) SetFormActionType(v string) *FormSummary {
+	s.FormActionType = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *FormSummary) SetId(v string) *FormSummary {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *FormSummary) SetName(v string) *FormSummary {
+	s.Name = &v
+	return s
+}
+
+type GetCodegenJobInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID of the Amplify app associated with the code generation job.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app associated
+	// with the code generation job.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The unique ID of the code generation job.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetCodegenJobInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetCodegenJobInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetCodegenJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetCodegenJobInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *GetCodegenJobInput) SetAppId(v string) *GetCodegenJobInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *GetCodegenJobInput) SetEnvironmentName(v string) *GetCodegenJobInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *GetCodegenJobInput) SetId(v string) *GetCodegenJobInput {
+	s.Id = &v
+	return s
+}
+
+type GetCodegenJobOutput struct {
+	_ struct{} `type:"structure" payload:"Job"`
+
+	// The configuration settings for the code generation job.
+	Job *CodegenJob `locationName:"job" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetCodegenJobOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetCodegenJobOutput) GoString() string {
+	return s.String()
+}
+
+// SetJob sets the Job field's value.
+func (s *GetCodegenJobOutput) SetJob(v *CodegenJob) *GetCodegenJobOutput {
+	s.Job = v
 	return s
 }
 
@@ -4095,6 +8174,219 @@ func (s *GetComponentOutput) SetComponent(v *Component) *GetComponentOutput {
 	return s
 }
 
+type GetFormInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID of the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The name of the backend environment that is part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The unique ID of the form.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetFormInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetFormInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetFormInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetFormInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *GetFormInput) SetAppId(v string) *GetFormInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *GetFormInput) SetEnvironmentName(v string) *GetFormInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *GetFormInput) SetId(v string) *GetFormInput {
+	s.Id = &v
+	return s
+}
+
+type GetFormOutput struct {
+	_ struct{} `type:"structure" payload:"Form"`
+
+	// Represents the configuration settings for the form.
+	Form *Form `locationName:"form" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetFormOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetFormOutput) GoString() string {
+	return s.String()
+}
+
+// SetForm sets the Form field's value.
+func (s *GetFormOutput) SetForm(v *Form) *GetFormOutput {
+	s.Form = v
+	return s
+}
+
+type GetMetadataInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID of the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The name of the backend environment that is part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMetadataInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMetadataInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetMetadataInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetMetadataInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *GetMetadataInput) SetAppId(v string) *GetMetadataInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *GetMetadataInput) SetEnvironmentName(v string) *GetMetadataInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+type GetMetadataOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents the configuration settings for the features metadata.
+	//
+	// Features is a required field
+	Features map[string]*string `locationName:"features" type:"map" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMetadataOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMetadataOutput) GoString() string {
+	return s.String()
+}
+
+// SetFeatures sets the Features field's value.
+func (s *GetMetadataOutput) SetFeatures(v map[string]*string) *GetMetadataOutput {
+	s.Features = v
+	return s
+}
+
 type GetThemeInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4206,6 +8498,112 @@ func (s GetThemeOutput) GoString() string {
 // SetTheme sets the Theme field's value.
 func (s *GetThemeOutput) SetTheme(v *Theme) *GetThemeOutput {
 	s.Theme = v
+	return s
+}
+
+// Describes the GraphQL configuration for an API for a code generation job.
+type GraphQLRenderConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The path to the GraphQL fragments file, relative to the component output
+	// directory.
+	//
+	// FragmentsFilePath is a required field
+	FragmentsFilePath *string `locationName:"fragmentsFilePath" type:"string" required:"true"`
+
+	// The path to the GraphQL mutations file, relative to the component output
+	// directory.
+	//
+	// MutationsFilePath is a required field
+	MutationsFilePath *string `locationName:"mutationsFilePath" type:"string" required:"true"`
+
+	// The path to the GraphQL queries file, relative to the component output directory.
+	//
+	// QueriesFilePath is a required field
+	QueriesFilePath *string `locationName:"queriesFilePath" type:"string" required:"true"`
+
+	// The path to the GraphQL subscriptions file, relative to the component output
+	// directory.
+	//
+	// SubscriptionsFilePath is a required field
+	SubscriptionsFilePath *string `locationName:"subscriptionsFilePath" type:"string" required:"true"`
+
+	// The path to the GraphQL types file, relative to the component output directory.
+	//
+	// TypesFilePath is a required field
+	TypesFilePath *string `locationName:"typesFilePath" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GraphQLRenderConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GraphQLRenderConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GraphQLRenderConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GraphQLRenderConfig"}
+	if s.FragmentsFilePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("FragmentsFilePath"))
+	}
+	if s.MutationsFilePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("MutationsFilePath"))
+	}
+	if s.QueriesFilePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("QueriesFilePath"))
+	}
+	if s.SubscriptionsFilePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubscriptionsFilePath"))
+	}
+	if s.TypesFilePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("TypesFilePath"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFragmentsFilePath sets the FragmentsFilePath field's value.
+func (s *GraphQLRenderConfig) SetFragmentsFilePath(v string) *GraphQLRenderConfig {
+	s.FragmentsFilePath = &v
+	return s
+}
+
+// SetMutationsFilePath sets the MutationsFilePath field's value.
+func (s *GraphQLRenderConfig) SetMutationsFilePath(v string) *GraphQLRenderConfig {
+	s.MutationsFilePath = &v
+	return s
+}
+
+// SetQueriesFilePath sets the QueriesFilePath field's value.
+func (s *GraphQLRenderConfig) SetQueriesFilePath(v string) *GraphQLRenderConfig {
+	s.QueriesFilePath = &v
+	return s
+}
+
+// SetSubscriptionsFilePath sets the SubscriptionsFilePath field's value.
+func (s *GraphQLRenderConfig) SetSubscriptionsFilePath(v string) *GraphQLRenderConfig {
+	s.SubscriptionsFilePath = &v
+	return s
+}
+
+// SetTypesFilePath sets the TypesFilePath field's value.
+func (s *GraphQLRenderConfig) SetTypesFilePath(v string) *GraphQLRenderConfig {
+	s.TypesFilePath = &v
 	return s
 }
 
@@ -4337,6 +8735,135 @@ func (s *InvalidParameterException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ListCodegenJobsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID for the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The maximum number of jobs to retrieve.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token to request the next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCodegenJobsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCodegenJobsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListCodegenJobsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListCodegenJobsInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *ListCodegenJobsInput) SetAppId(v string) *ListCodegenJobsInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *ListCodegenJobsInput) SetEnvironmentName(v string) *ListCodegenJobsInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCodegenJobsInput) SetMaxResults(v int64) *ListCodegenJobsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCodegenJobsInput) SetNextToken(v string) *ListCodegenJobsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCodegenJobsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of code generation jobs for the Amplify app.
+	//
+	// Entities is a required field
+	Entities []*CodegenJobSummary `locationName:"entities" type:"list" required:"true"`
+
+	// The pagination token that's included if more results are available.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCodegenJobsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCodegenJobsOutput) GoString() string {
+	return s.String()
+}
+
+// SetEntities sets the Entities field's value.
+func (s *ListCodegenJobsOutput) SetEntities(v []*CodegenJobSummary) *ListCodegenJobsOutput {
+	s.Entities = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCodegenJobsOutput) SetNextToken(v string) *ListCodegenJobsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListComponentsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4462,6 +8989,135 @@ func (s *ListComponentsOutput) SetEntities(v []*ComponentSummary) *ListComponent
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListComponentsOutput) SetNextToken(v string) *ListComponentsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListFormsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID for the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The maximum number of forms to retrieve.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token to request the next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListFormsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListFormsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListFormsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListFormsInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *ListFormsInput) SetAppId(v string) *ListFormsInput {
+	s.AppId = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *ListFormsInput) SetEnvironmentName(v string) *ListFormsInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListFormsInput) SetMaxResults(v int64) *ListFormsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListFormsInput) SetNextToken(v string) *ListFormsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListFormsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of forms for the Amplify app.
+	//
+	// Entities is a required field
+	Entities []*FormSummary `locationName:"entities" type:"list" required:"true"`
+
+	// The pagination token that's included if more results are available.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListFormsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListFormsOutput) GoString() string {
+	return s.String()
+}
+
+// SetEntities sets the Entities field's value.
+func (s *ListFormsOutput) SetEntities(v []*FormSummary) *ListFormsOutput {
+	s.Entities = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListFormsOutput) SetNextToken(v string) *ListFormsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -4676,6 +9332,29 @@ func (s *MutationActionSetStateParameter) SetSet(v *ComponentProperty) *Mutation
 	return s
 }
 
+// Describes the configuration for an application with no API being used.
+type NoApiRenderConfig struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NoApiRenderConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NoApiRenderConfig) GoString() string {
+	return s.String()
+}
+
 // Stores information for generating Amplify DataStore queries. Use a Predicate
 // to retrieve a subset of the data in a collection.
 type Predicate struct {
@@ -4689,6 +9368,9 @@ type Predicate struct {
 
 	// The value to use when performing the evaluation.
 	Operand *string `locationName:"operand" type:"string"`
+
+	// The type of value to use when performing the evaluation.
+	OperandType *string `locationName:"operandType" type:"string"`
 
 	// The operator to use to perform the evaluation.
 	Operator *string `locationName:"operator" type:"string"`
@@ -4733,6 +9415,12 @@ func (s *Predicate) SetOperand(v string) *Predicate {
 	return s
 }
 
+// SetOperandType sets the OperandType field's value.
+func (s *Predicate) SetOperandType(v string) *Predicate {
+	s.OperandType = &v
+	return s
+}
+
 // SetOperator sets the Operator field's value.
 func (s *Predicate) SetOperator(v string) *Predicate {
 	s.Operator = &v
@@ -4742,6 +9430,280 @@ func (s *Predicate) SetOperator(v string) *Predicate {
 // SetOr sets the Or field's value.
 func (s *Predicate) SetOr(v []*Predicate) *Predicate {
 	s.Or = v
+	return s
+}
+
+// Stores the metadata information about a feature on a form.
+type PutMetadataFlagBody struct {
+	_ struct{} `type:"structure"`
+
+	// The new information to store.
+	//
+	// NewValue is a required field
+	NewValue *string `locationName:"newValue" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutMetadataFlagBody) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutMetadataFlagBody) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutMetadataFlagBody) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutMetadataFlagBody"}
+	if s.NewValue == nil {
+		invalidParams.Add(request.NewErrParamRequired("NewValue"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNewValue sets the NewValue field's value.
+func (s *PutMetadataFlagBody) SetNewValue(v string) *PutMetadataFlagBody {
+	s.NewValue = &v
+	return s
+}
+
+type PutMetadataFlagInput struct {
+	_ struct{} `type:"structure" payload:"Body"`
+
+	// The unique ID for the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The metadata information to store.
+	//
+	// Body is a required field
+	Body *PutMetadataFlagBody `locationName:"body" type:"structure" required:"true"`
+
+	// The name of the backend environment that is part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The name of the feature associated with the metadata.
+	//
+	// FeatureName is a required field
+	FeatureName *string `location:"uri" locationName:"featureName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutMetadataFlagInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutMetadataFlagInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutMetadataFlagInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutMetadataFlagInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.Body == nil {
+		invalidParams.Add(request.NewErrParamRequired("Body"))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.FeatureName == nil {
+		invalidParams.Add(request.NewErrParamRequired("FeatureName"))
+	}
+	if s.FeatureName != nil && len(*s.FeatureName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FeatureName", 1))
+	}
+	if s.Body != nil {
+		if err := s.Body.Validate(); err != nil {
+			invalidParams.AddNested("Body", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *PutMetadataFlagInput) SetAppId(v string) *PutMetadataFlagInput {
+	s.AppId = &v
+	return s
+}
+
+// SetBody sets the Body field's value.
+func (s *PutMetadataFlagInput) SetBody(v *PutMetadataFlagBody) *PutMetadataFlagInput {
+	s.Body = v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *PutMetadataFlagInput) SetEnvironmentName(v string) *PutMetadataFlagInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetFeatureName sets the FeatureName field's value.
+func (s *PutMetadataFlagInput) SetFeatureName(v string) *PutMetadataFlagInput {
+	s.FeatureName = &v
+	return s
+}
+
+type PutMetadataFlagOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutMetadataFlagOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutMetadataFlagOutput) GoString() string {
+	return s.String()
+}
+
+// Describes the code generation job configuration for a React project.
+type ReactStartCodegenJobData struct {
+	_ struct{} `type:"structure"`
+
+	// The API configuration for the code generation job.
+	ApiConfiguration *ApiConfiguration `locationName:"apiConfiguration" type:"structure"`
+
+	// Lists the dependency packages that may be required for the project code to
+	// run.
+	Dependencies map[string]*string `locationName:"dependencies" type:"map"`
+
+	// Specifies whether the code generation job should render inline source maps.
+	InlineSourceMap *bool `locationName:"inlineSourceMap" type:"boolean"`
+
+	// The JavaScript module type.
+	Module *string `locationName:"module" type:"string" enum:"JSModule"`
+
+	// Specifies whether the code generation job should render type declaration
+	// files.
+	RenderTypeDeclarations *bool `locationName:"renderTypeDeclarations" type:"boolean"`
+
+	// The file type to use for a JavaScript project.
+	Script *string `locationName:"script" type:"string" enum:"JSScript"`
+
+	// The ECMAScript specification to use.
+	Target *string `locationName:"target" type:"string" enum:"JSTarget"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReactStartCodegenJobData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReactStartCodegenJobData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReactStartCodegenJobData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReactStartCodegenJobData"}
+	if s.ApiConfiguration != nil {
+		if err := s.ApiConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ApiConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApiConfiguration sets the ApiConfiguration field's value.
+func (s *ReactStartCodegenJobData) SetApiConfiguration(v *ApiConfiguration) *ReactStartCodegenJobData {
+	s.ApiConfiguration = v
+	return s
+}
+
+// SetDependencies sets the Dependencies field's value.
+func (s *ReactStartCodegenJobData) SetDependencies(v map[string]*string) *ReactStartCodegenJobData {
+	s.Dependencies = v
+	return s
+}
+
+// SetInlineSourceMap sets the InlineSourceMap field's value.
+func (s *ReactStartCodegenJobData) SetInlineSourceMap(v bool) *ReactStartCodegenJobData {
+	s.InlineSourceMap = &v
+	return s
+}
+
+// SetModule sets the Module field's value.
+func (s *ReactStartCodegenJobData) SetModule(v string) *ReactStartCodegenJobData {
+	s.Module = &v
+	return s
+}
+
+// SetRenderTypeDeclarations sets the RenderTypeDeclarations field's value.
+func (s *ReactStartCodegenJobData) SetRenderTypeDeclarations(v bool) *ReactStartCodegenJobData {
+	s.RenderTypeDeclarations = &v
+	return s
+}
+
+// SetScript sets the Script field's value.
+func (s *ReactStartCodegenJobData) SetScript(v string) *ReactStartCodegenJobData {
+	s.Script = &v
+	return s
+}
+
+// SetTarget sets the Target field's value.
+func (s *ReactStartCodegenJobData) SetTarget(v string) *ReactStartCodegenJobData {
+	s.Target = &v
 	return s
 }
 
@@ -4865,6 +9827,13 @@ func (s *RefreshTokenOutput) SetExpiresIn(v int64) *RefreshTokenOutput {
 type RefreshTokenRequestBody struct {
 	_ struct{} `type:"structure"`
 
+	// The ID of the client to request the token from.
+	//
+	// ClientId is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RefreshTokenRequestBody's
+	// String and GoString methods.
+	ClientId *string `locationName:"clientId" type:"string" sensitive:"true"`
+
 	// The token to use to refresh a previously issued access token that might have
 	// expired.
 	//
@@ -4905,6 +9874,12 @@ func (s *RefreshTokenRequestBody) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientId sets the ClientId field's value.
+func (s *RefreshTokenRequestBody) SetClientId(v string) *RefreshTokenRequestBody {
+	s.ClientId = &v
+	return s
 }
 
 // SetToken sets the Token field's value.
@@ -5041,6 +10016,103 @@ func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Stores the configuration information for a visual helper element for a form.
+// A sectional element can be a header, a text block, or a divider. These elements
+// are static and not associated with any data.
+type SectionalElement struct {
+	_ struct{} `type:"structure"`
+
+	// Excludes a sectional element that was generated by default for a specified
+	// data model.
+	Excluded *bool `locationName:"excluded" type:"boolean"`
+
+	// Specifies the size of the font for a Heading sectional element. Valid values
+	// are 1 | 2 | 3 | 4 | 5 | 6.
+	Level *int64 `locationName:"level" type:"integer"`
+
+	// Specifies the orientation for a Divider sectional element. Valid values are
+	// horizontal or vertical.
+	Orientation *string `locationName:"orientation" type:"string"`
+
+	// Specifies the position of the text in a field for a Text sectional element.
+	Position *FieldPosition `locationName:"position" type:"structure"`
+
+	// The text for a Text sectional element.
+	Text *string `locationName:"text" type:"string"`
+
+	// The type of sectional element. Valid values are Heading, Text, and Divider.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SectionalElement) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SectionalElement) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SectionalElement) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SectionalElement"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExcluded sets the Excluded field's value.
+func (s *SectionalElement) SetExcluded(v bool) *SectionalElement {
+	s.Excluded = &v
+	return s
+}
+
+// SetLevel sets the Level field's value.
+func (s *SectionalElement) SetLevel(v int64) *SectionalElement {
+	s.Level = &v
+	return s
+}
+
+// SetOrientation sets the Orientation field's value.
+func (s *SectionalElement) SetOrientation(v string) *SectionalElement {
+	s.Orientation = &v
+	return s
+}
+
+// SetPosition sets the Position field's value.
+func (s *SectionalElement) SetPosition(v *FieldPosition) *SectionalElement {
+	s.Position = v
+	return s
+}
+
+// SetText sets the Text field's value.
+func (s *SectionalElement) SetText(v string) *SectionalElement {
+	s.Text = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *SectionalElement) SetType(v string) *SectionalElement {
+	s.Type = &v
+	return s
+}
+
 // You exceeded your service quota. Service quotas, also referred to as limits,
 // are the maximum number of service resources or operations for your Amazon
 // Web Services account.
@@ -5165,6 +10237,226 @@ func (s *SortProperty) SetDirection(v string) *SortProperty {
 // SetField sets the Field field's value.
 func (s *SortProperty) SetField(v string) *SortProperty {
 	s.Field = &v
+	return s
+}
+
+// The code generation job resource configuration.
+type StartCodegenJobData struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether to autogenerate forms in the code generation job.
+	AutoGenerateForms *bool `locationName:"autoGenerateForms" type:"boolean"`
+
+	// The feature flags for a code generation job.
+	Features *CodegenFeatureFlags `locationName:"features" type:"structure"`
+
+	// The data schema to use for a code generation job.
+	GenericDataSchema *CodegenJobGenericDataSchema `locationName:"genericDataSchema" type:"structure"`
+
+	// The code generation configuration for the codegen job.
+	//
+	// RenderConfig is a required field
+	RenderConfig *CodegenJobRenderConfig `locationName:"renderConfig" type:"structure" required:"true"`
+
+	// One or more key-value pairs to use when tagging the code generation job data.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCodegenJobData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCodegenJobData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartCodegenJobData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartCodegenJobData"}
+	if s.RenderConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("RenderConfig"))
+	}
+	if s.GenericDataSchema != nil {
+		if err := s.GenericDataSchema.Validate(); err != nil {
+			invalidParams.AddNested("GenericDataSchema", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.RenderConfig != nil {
+		if err := s.RenderConfig.Validate(); err != nil {
+			invalidParams.AddNested("RenderConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoGenerateForms sets the AutoGenerateForms field's value.
+func (s *StartCodegenJobData) SetAutoGenerateForms(v bool) *StartCodegenJobData {
+	s.AutoGenerateForms = &v
+	return s
+}
+
+// SetFeatures sets the Features field's value.
+func (s *StartCodegenJobData) SetFeatures(v *CodegenFeatureFlags) *StartCodegenJobData {
+	s.Features = v
+	return s
+}
+
+// SetGenericDataSchema sets the GenericDataSchema field's value.
+func (s *StartCodegenJobData) SetGenericDataSchema(v *CodegenJobGenericDataSchema) *StartCodegenJobData {
+	s.GenericDataSchema = v
+	return s
+}
+
+// SetRenderConfig sets the RenderConfig field's value.
+func (s *StartCodegenJobData) SetRenderConfig(v *CodegenJobRenderConfig) *StartCodegenJobData {
+	s.RenderConfig = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *StartCodegenJobData) SetTags(v map[string]*string) *StartCodegenJobData {
+	s.Tags = v
+	return s
+}
+
+type StartCodegenJobInput struct {
+	_ struct{} `type:"structure" payload:"CodegenJobToCreate"`
+
+	// The unique ID for the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" min:"1" type:"string" required:"true"`
+
+	// The idempotency token used to ensure that the code generation job request
+	// completes only once.
+	ClientToken *string `location:"querystring" locationName:"clientToken" type:"string" idempotencyToken:"true"`
+
+	// The code generation job resource configuration.
+	//
+	// CodegenJobToCreate is a required field
+	CodegenJobToCreate *StartCodegenJobData `locationName:"codegenJobToCreate" type:"structure" required:"true"`
+
+	// The name of the backend environment that is a part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCodegenJobInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCodegenJobInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartCodegenJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartCodegenJobInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.CodegenJobToCreate == nil {
+		invalidParams.Add(request.NewErrParamRequired("CodegenJobToCreate"))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.CodegenJobToCreate != nil {
+		if err := s.CodegenJobToCreate.Validate(); err != nil {
+			invalidParams.AddNested("CodegenJobToCreate", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *StartCodegenJobInput) SetAppId(v string) *StartCodegenJobInput {
+	s.AppId = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *StartCodegenJobInput) SetClientToken(v string) *StartCodegenJobInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetCodegenJobToCreate sets the CodegenJobToCreate field's value.
+func (s *StartCodegenJobInput) SetCodegenJobToCreate(v *StartCodegenJobData) *StartCodegenJobInput {
+	s.CodegenJobToCreate = v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *StartCodegenJobInput) SetEnvironmentName(v string) *StartCodegenJobInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+type StartCodegenJobOutput struct {
+	_ struct{} `type:"structure" payload:"Entity"`
+
+	// The code generation job for a UI component that is associated with an Amplify
+	// app.
+	Entity *CodegenJob `locationName:"entity" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCodegenJobOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartCodegenJobOutput) GoString() string {
+	return s.String()
+}
+
+// SetEntity sets the Entity field's value.
+func (s *StartCodegenJobOutput) SetEntity(v *CodegenJob) *StartCodegenJobOutput {
+	s.Entity = v
 	return s
 }
 
@@ -5432,6 +10724,134 @@ func (s *ThemeValues) SetKey(v string) *ThemeValues {
 func (s *ThemeValues) SetValue(v *ThemeValue) *ThemeValues {
 	s.Value = v
 	return s
+}
+
+// The request was denied due to request throttling.
+type ThrottlingException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) GoString() string {
+	return s.String()
+}
+
+func newErrorThrottlingException(v protocol.ResponseMetadata) error {
+	return &ThrottlingException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ThrottlingException) Code() string {
+	return "ThrottlingException"
+}
+
+// Message returns the exception's message.
+func (s *ThrottlingException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ThrottlingException) OrigErr() error {
+	return nil
+}
+
+func (s *ThrottlingException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ThrottlingException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ThrottlingException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// You don't have permission to perform this operation.
+type UnauthorizedException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnauthorizedException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnauthorizedException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnauthorizedException(v protocol.ResponseMetadata) error {
+	return &UnauthorizedException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnauthorizedException) Code() string {
+	return "UnauthorizedException"
+}
+
+// Message returns the exception's message.
+func (s *UnauthorizedException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnauthorizedException) OrigErr() error {
+	return nil
+}
+
+func (s *UnauthorizedException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnauthorizedException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnauthorizedException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // Updates and saves all of the information about a component, based on component
@@ -5767,6 +11187,291 @@ func (s *UpdateComponentOutput) SetEntity(v *Component) *UpdateComponentOutput {
 	return s
 }
 
+// Updates and saves all of the information about a form, based on form ID.
+type UpdateFormData struct {
+	_ struct{} `type:"structure"`
+
+	// The FormCTA object that stores the call to action configuration for the form.
+	Cta *FormCTA `locationName:"cta" type:"structure"`
+
+	// The type of data source to use to create the form.
+	DataType *FormDataTypeConfig `locationName:"dataType" type:"structure"`
+
+	// The configuration information for the form's fields.
+	Fields map[string]*FieldConfig `locationName:"fields" type:"map"`
+
+	// Specifies whether to perform a create or update action on the form.
+	FormActionType *string `locationName:"formActionType" type:"string" enum:"FormActionType"`
+
+	// Specifies an icon or decoration to display on the form.
+	LabelDecorator *string `locationName:"labelDecorator" type:"string" enum:"LabelDecorator"`
+
+	// The name of the form.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The schema version of the form.
+	SchemaVersion *string `locationName:"schemaVersion" type:"string"`
+
+	// The configuration information for the visual helper elements for the form.
+	// These elements are not associated with any data.
+	SectionalElements map[string]*SectionalElement `locationName:"sectionalElements" type:"map"`
+
+	// The configuration for the form's style.
+	Style *FormStyle `locationName:"style" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateFormData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateFormData) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateFormData) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateFormData"}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.DataType != nil {
+		if err := s.DataType.Validate(); err != nil {
+			invalidParams.AddNested("DataType", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Fields != nil {
+		for i, v := range s.Fields {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Fields", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.SectionalElements != nil {
+		for i, v := range s.SectionalElements {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "SectionalElements", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCta sets the Cta field's value.
+func (s *UpdateFormData) SetCta(v *FormCTA) *UpdateFormData {
+	s.Cta = v
+	return s
+}
+
+// SetDataType sets the DataType field's value.
+func (s *UpdateFormData) SetDataType(v *FormDataTypeConfig) *UpdateFormData {
+	s.DataType = v
+	return s
+}
+
+// SetFields sets the Fields field's value.
+func (s *UpdateFormData) SetFields(v map[string]*FieldConfig) *UpdateFormData {
+	s.Fields = v
+	return s
+}
+
+// SetFormActionType sets the FormActionType field's value.
+func (s *UpdateFormData) SetFormActionType(v string) *UpdateFormData {
+	s.FormActionType = &v
+	return s
+}
+
+// SetLabelDecorator sets the LabelDecorator field's value.
+func (s *UpdateFormData) SetLabelDecorator(v string) *UpdateFormData {
+	s.LabelDecorator = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateFormData) SetName(v string) *UpdateFormData {
+	s.Name = &v
+	return s
+}
+
+// SetSchemaVersion sets the SchemaVersion field's value.
+func (s *UpdateFormData) SetSchemaVersion(v string) *UpdateFormData {
+	s.SchemaVersion = &v
+	return s
+}
+
+// SetSectionalElements sets the SectionalElements field's value.
+func (s *UpdateFormData) SetSectionalElements(v map[string]*SectionalElement) *UpdateFormData {
+	s.SectionalElements = v
+	return s
+}
+
+// SetStyle sets the Style field's value.
+func (s *UpdateFormData) SetStyle(v *FormStyle) *UpdateFormData {
+	s.Style = v
+	return s
+}
+
+type UpdateFormInput struct {
+	_ struct{} `type:"structure" payload:"UpdatedForm"`
+
+	// The unique ID for the Amplify app.
+	//
+	// AppId is a required field
+	AppId *string `location:"uri" locationName:"appId" type:"string" required:"true"`
+
+	// The unique client token.
+	ClientToken *string `location:"querystring" locationName:"clientToken" type:"string" idempotencyToken:"true"`
+
+	// The name of the backend environment that is part of the Amplify app.
+	//
+	// EnvironmentName is a required field
+	EnvironmentName *string `location:"uri" locationName:"environmentName" type:"string" required:"true"`
+
+	// The unique ID for the form.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+
+	// The request accepts the following data in JSON format.
+	//
+	// UpdatedForm is a required field
+	UpdatedForm *UpdateFormData `locationName:"updatedForm" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateFormInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateFormInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateFormInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateFormInput"}
+	if s.AppId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppId"))
+	}
+	if s.AppId != nil && len(*s.AppId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AppId", 1))
+	}
+	if s.EnvironmentName == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentName"))
+	}
+	if s.EnvironmentName != nil && len(*s.EnvironmentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentName", 1))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+	if s.UpdatedForm == nil {
+		invalidParams.Add(request.NewErrParamRequired("UpdatedForm"))
+	}
+	if s.UpdatedForm != nil {
+		if err := s.UpdatedForm.Validate(); err != nil {
+			invalidParams.AddNested("UpdatedForm", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppId sets the AppId field's value.
+func (s *UpdateFormInput) SetAppId(v string) *UpdateFormInput {
+	s.AppId = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateFormInput) SetClientToken(v string) *UpdateFormInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetEnvironmentName sets the EnvironmentName field's value.
+func (s *UpdateFormInput) SetEnvironmentName(v string) *UpdateFormInput {
+	s.EnvironmentName = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UpdateFormInput) SetId(v string) *UpdateFormInput {
+	s.Id = &v
+	return s
+}
+
+// SetUpdatedForm sets the UpdatedForm field's value.
+func (s *UpdateFormInput) SetUpdatedForm(v *UpdateFormData) *UpdateFormInput {
+	s.UpdatedForm = v
+	return s
+}
+
+type UpdateFormOutput struct {
+	_ struct{} `type:"structure" payload:"Entity"`
+
+	// Describes the configuration of the updated form.
+	Entity *Form `locationName:"entity" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateFormOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateFormOutput) GoString() string {
+	return s.String()
+}
+
+// SetEntity sets the Entity field's value.
+func (s *UpdateFormOutput) SetEntity(v *Form) *UpdateFormOutput {
+	s.Entity = v
+	return s
+}
+
 // Saves the data binding information for a theme.
 type UpdateThemeData struct {
 	_ struct{} `type:"structure"`
@@ -5986,6 +11691,403 @@ func (s *UpdateThemeOutput) SetEntity(v *Theme) *UpdateThemeOutput {
 	return s
 }
 
+// Associates a complex object with a display value. Use ValueMapping to store
+// how to represent complex objects when they are displayed.
+type ValueMapping struct {
+	_ struct{} `type:"structure"`
+
+	// The value to display for the complex object.
+	DisplayValue *FormInputValueProperty `locationName:"displayValue" type:"structure"`
+
+	// The complex object.
+	//
+	// Value is a required field
+	Value *FormInputValueProperty `locationName:"value" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValueMapping) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValueMapping) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ValueMapping) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ValueMapping"}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.DisplayValue != nil {
+		if err := s.DisplayValue.Validate(); err != nil {
+			invalidParams.AddNested("DisplayValue", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Value != nil {
+		if err := s.Value.Validate(); err != nil {
+			invalidParams.AddNested("Value", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDisplayValue sets the DisplayValue field's value.
+func (s *ValueMapping) SetDisplayValue(v *FormInputValueProperty) *ValueMapping {
+	s.DisplayValue = v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ValueMapping) SetValue(v *FormInputValueProperty) *ValueMapping {
+	s.Value = v
+	return s
+}
+
+// Represents the data binding configuration for a value map.
+type ValueMappings struct {
+	_ struct{} `type:"structure"`
+
+	// The information to bind fields to data at runtime.
+	BindingProperties map[string]*FormInputBindingPropertiesValue `locationName:"bindingProperties" type:"map"`
+
+	// The value and display value pairs.
+	//
+	// Values is a required field
+	Values []*ValueMapping `locationName:"values" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValueMappings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValueMappings) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ValueMappings) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ValueMappings"}
+	if s.Values == nil {
+		invalidParams.Add(request.NewErrParamRequired("Values"))
+	}
+	if s.Values != nil {
+		for i, v := range s.Values {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Values", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBindingProperties sets the BindingProperties field's value.
+func (s *ValueMappings) SetBindingProperties(v map[string]*FormInputBindingPropertiesValue) *ValueMappings {
+	s.BindingProperties = v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *ValueMappings) SetValues(v []*ValueMapping) *ValueMappings {
+	s.Values = v
+	return s
+}
+
+const (
+	// CodegenGenericDataFieldDataTypeId is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeId = "ID"
+
+	// CodegenGenericDataFieldDataTypeString is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeString = "String"
+
+	// CodegenGenericDataFieldDataTypeInt is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeInt = "Int"
+
+	// CodegenGenericDataFieldDataTypeFloat is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeFloat = "Float"
+
+	// CodegenGenericDataFieldDataTypeAwsdate is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsdate = "AWSDate"
+
+	// CodegenGenericDataFieldDataTypeAwstime is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwstime = "AWSTime"
+
+	// CodegenGenericDataFieldDataTypeAwsdateTime is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsdateTime = "AWSDateTime"
+
+	// CodegenGenericDataFieldDataTypeAwstimestamp is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwstimestamp = "AWSTimestamp"
+
+	// CodegenGenericDataFieldDataTypeAwsemail is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsemail = "AWSEmail"
+
+	// CodegenGenericDataFieldDataTypeAwsurl is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsurl = "AWSURL"
+
+	// CodegenGenericDataFieldDataTypeAwsipaddress is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsipaddress = "AWSIPAddress"
+
+	// CodegenGenericDataFieldDataTypeBoolean is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeBoolean = "Boolean"
+
+	// CodegenGenericDataFieldDataTypeAwsjson is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsjson = "AWSJSON"
+
+	// CodegenGenericDataFieldDataTypeAwsphone is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeAwsphone = "AWSPhone"
+
+	// CodegenGenericDataFieldDataTypeEnum is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeEnum = "Enum"
+
+	// CodegenGenericDataFieldDataTypeModel is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeModel = "Model"
+
+	// CodegenGenericDataFieldDataTypeNonModel is a CodegenGenericDataFieldDataType enum value
+	CodegenGenericDataFieldDataTypeNonModel = "NonModel"
+)
+
+// CodegenGenericDataFieldDataType_Values returns all elements of the CodegenGenericDataFieldDataType enum
+func CodegenGenericDataFieldDataType_Values() []string {
+	return []string{
+		CodegenGenericDataFieldDataTypeId,
+		CodegenGenericDataFieldDataTypeString,
+		CodegenGenericDataFieldDataTypeInt,
+		CodegenGenericDataFieldDataTypeFloat,
+		CodegenGenericDataFieldDataTypeAwsdate,
+		CodegenGenericDataFieldDataTypeAwstime,
+		CodegenGenericDataFieldDataTypeAwsdateTime,
+		CodegenGenericDataFieldDataTypeAwstimestamp,
+		CodegenGenericDataFieldDataTypeAwsemail,
+		CodegenGenericDataFieldDataTypeAwsurl,
+		CodegenGenericDataFieldDataTypeAwsipaddress,
+		CodegenGenericDataFieldDataTypeBoolean,
+		CodegenGenericDataFieldDataTypeAwsjson,
+		CodegenGenericDataFieldDataTypeAwsphone,
+		CodegenGenericDataFieldDataTypeEnum,
+		CodegenGenericDataFieldDataTypeModel,
+		CodegenGenericDataFieldDataTypeNonModel,
+	}
+}
+
+const (
+	// CodegenJobGenericDataSourceTypeDataStore is a CodegenJobGenericDataSourceType enum value
+	CodegenJobGenericDataSourceTypeDataStore = "DataStore"
+)
+
+// CodegenJobGenericDataSourceType_Values returns all elements of the CodegenJobGenericDataSourceType enum
+func CodegenJobGenericDataSourceType_Values() []string {
+	return []string{
+		CodegenJobGenericDataSourceTypeDataStore,
+	}
+}
+
+const (
+	// CodegenJobStatusInProgress is a CodegenJobStatus enum value
+	CodegenJobStatusInProgress = "in_progress"
+
+	// CodegenJobStatusFailed is a CodegenJobStatus enum value
+	CodegenJobStatusFailed = "failed"
+
+	// CodegenJobStatusSucceeded is a CodegenJobStatus enum value
+	CodegenJobStatusSucceeded = "succeeded"
+)
+
+// CodegenJobStatus_Values returns all elements of the CodegenJobStatus enum
+func CodegenJobStatus_Values() []string {
+	return []string{
+		CodegenJobStatusInProgress,
+		CodegenJobStatusFailed,
+		CodegenJobStatusSucceeded,
+	}
+}
+
+const (
+	// FixedPositionFirst is a FixedPosition enum value
+	FixedPositionFirst = "first"
+)
+
+// FixedPosition_Values returns all elements of the FixedPosition enum
+func FixedPosition_Values() []string {
+	return []string{
+		FixedPositionFirst,
+	}
+}
+
+const (
+	// FormActionTypeCreate is a FormActionType enum value
+	FormActionTypeCreate = "create"
+
+	// FormActionTypeUpdate is a FormActionType enum value
+	FormActionTypeUpdate = "update"
+)
+
+// FormActionType_Values returns all elements of the FormActionType enum
+func FormActionType_Values() []string {
+	return []string{
+		FormActionTypeCreate,
+		FormActionTypeUpdate,
+	}
+}
+
+const (
+	// FormButtonsPositionTop is a FormButtonsPosition enum value
+	FormButtonsPositionTop = "top"
+
+	// FormButtonsPositionBottom is a FormButtonsPosition enum value
+	FormButtonsPositionBottom = "bottom"
+
+	// FormButtonsPositionTopAndBottom is a FormButtonsPosition enum value
+	FormButtonsPositionTopAndBottom = "top_and_bottom"
+)
+
+// FormButtonsPosition_Values returns all elements of the FormButtonsPosition enum
+func FormButtonsPosition_Values() []string {
+	return []string{
+		FormButtonsPositionTop,
+		FormButtonsPositionBottom,
+		FormButtonsPositionTopAndBottom,
+	}
+}
+
+const (
+	// FormDataSourceTypeDataStore is a FormDataSourceType enum value
+	FormDataSourceTypeDataStore = "DataStore"
+
+	// FormDataSourceTypeCustom is a FormDataSourceType enum value
+	FormDataSourceTypeCustom = "Custom"
+)
+
+// FormDataSourceType_Values returns all elements of the FormDataSourceType enum
+func FormDataSourceType_Values() []string {
+	return []string{
+		FormDataSourceTypeDataStore,
+		FormDataSourceTypeCustom,
+	}
+}
+
+const (
+	// GenericDataRelationshipTypeHasMany is a GenericDataRelationshipType enum value
+	GenericDataRelationshipTypeHasMany = "HAS_MANY"
+
+	// GenericDataRelationshipTypeHasOne is a GenericDataRelationshipType enum value
+	GenericDataRelationshipTypeHasOne = "HAS_ONE"
+
+	// GenericDataRelationshipTypeBelongsTo is a GenericDataRelationshipType enum value
+	GenericDataRelationshipTypeBelongsTo = "BELONGS_TO"
+)
+
+// GenericDataRelationshipType_Values returns all elements of the GenericDataRelationshipType enum
+func GenericDataRelationshipType_Values() []string {
+	return []string{
+		GenericDataRelationshipTypeHasMany,
+		GenericDataRelationshipTypeHasOne,
+		GenericDataRelationshipTypeBelongsTo,
+	}
+}
+
+const (
+	// JSModuleEs2020 is a JSModule enum value
+	JSModuleEs2020 = "es2020"
+
+	// JSModuleEsnext is a JSModule enum value
+	JSModuleEsnext = "esnext"
+)
+
+// JSModule_Values returns all elements of the JSModule enum
+func JSModule_Values() []string {
+	return []string{
+		JSModuleEs2020,
+		JSModuleEsnext,
+	}
+}
+
+const (
+	// JSScriptJsx is a JSScript enum value
+	JSScriptJsx = "jsx"
+
+	// JSScriptTsx is a JSScript enum value
+	JSScriptTsx = "tsx"
+
+	// JSScriptJs is a JSScript enum value
+	JSScriptJs = "js"
+)
+
+// JSScript_Values returns all elements of the JSScript enum
+func JSScript_Values() []string {
+	return []string{
+		JSScriptJsx,
+		JSScriptTsx,
+		JSScriptJs,
+	}
+}
+
+const (
+	// JSTargetEs2015 is a JSTarget enum value
+	JSTargetEs2015 = "es2015"
+
+	// JSTargetEs2020 is a JSTarget enum value
+	JSTargetEs2020 = "es2020"
+)
+
+// JSTarget_Values returns all elements of the JSTarget enum
+func JSTarget_Values() []string {
+	return []string{
+		JSTargetEs2015,
+		JSTargetEs2020,
+	}
+}
+
+const (
+	// LabelDecoratorRequired is a LabelDecorator enum value
+	LabelDecoratorRequired = "required"
+
+	// LabelDecoratorOptional is a LabelDecorator enum value
+	LabelDecoratorOptional = "optional"
+
+	// LabelDecoratorNone is a LabelDecorator enum value
+	LabelDecoratorNone = "none"
+)
+
+// LabelDecorator_Values returns all elements of the LabelDecorator enum
+func LabelDecorator_Values() []string {
+	return []string{
+		LabelDecoratorRequired,
+		LabelDecoratorOptional,
+		LabelDecoratorNone,
+	}
+}
+
 const (
 	// SortDirectionAsc is a SortDirection enum value
 	SortDirectionAsc = "ASC"
@@ -5999,6 +12101,26 @@ func SortDirection_Values() []string {
 	return []string{
 		SortDirectionAsc,
 		SortDirectionDesc,
+	}
+}
+
+const (
+	// StorageAccessLevelPublic is a StorageAccessLevel enum value
+	StorageAccessLevelPublic = "public"
+
+	// StorageAccessLevelProtected is a StorageAccessLevel enum value
+	StorageAccessLevelProtected = "protected"
+
+	// StorageAccessLevelPrivate is a StorageAccessLevel enum value
+	StorageAccessLevelPrivate = "private"
+)
+
+// StorageAccessLevel_Values returns all elements of the StorageAccessLevel enum
+func StorageAccessLevel_Values() []string {
+	return []string{
+		StorageAccessLevelPublic,
+		StorageAccessLevelProtected,
+		StorageAccessLevelPrivate,
 	}
 }
 

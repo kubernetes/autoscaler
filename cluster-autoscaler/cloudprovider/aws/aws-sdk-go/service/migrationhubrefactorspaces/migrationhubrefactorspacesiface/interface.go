@@ -166,6 +166,10 @@ type MigrationHubRefactorSpacesAPI interface {
 	UntagResource(*migrationhubrefactorspaces.UntagResourceInput) (*migrationhubrefactorspaces.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *migrationhubrefactorspaces.UntagResourceInput, ...request.Option) (*migrationhubrefactorspaces.UntagResourceOutput, error)
 	UntagResourceRequest(*migrationhubrefactorspaces.UntagResourceInput) (*request.Request, *migrationhubrefactorspaces.UntagResourceOutput)
+
+	UpdateRoute(*migrationhubrefactorspaces.UpdateRouteInput) (*migrationhubrefactorspaces.UpdateRouteOutput, error)
+	UpdateRouteWithContext(aws.Context, *migrationhubrefactorspaces.UpdateRouteInput, ...request.Option) (*migrationhubrefactorspaces.UpdateRouteOutput, error)
+	UpdateRouteRequest(*migrationhubrefactorspaces.UpdateRouteInput) (*request.Request, *migrationhubrefactorspaces.UpdateRouteOutput)
 }
 
 var _ MigrationHubRefactorSpacesAPI = (*migrationhubrefactorspaces.MigrationHubRefactorSpaces)(nil)
