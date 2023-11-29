@@ -569,13 +569,15 @@ func (o *ScaleUpOrchestrator) UpcomingNodes(nodeInfos map[string]*schedulerframe
 // IsNodeGroupReadyToScaleUp returns nil if node group is ready to be scaled up, otherwise a reason is provided.
 func (o *ScaleUpOrchestrator) IsNodeGroupReadyToScaleUp(nodeGroup cloudprovider.NodeGroup, now time.Time) *SkippedReasons {
 	// Non-existing node groups are created later so skip check for them.
-	if nodeGroup.Exist() && !o.clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup, now) {
-		// Hack that depends on internals of IsNodeGroupSafeToScaleUp.
-		if !o.clusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
+	if !nodeGroup.Exist() {
+		return nil
+	}
+	if scaleUpSafety := o.clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup, now); !scaleUpSafety.SafeToScale {
+		if !scaleUpSafety.Healthy {
 			klog.Warningf("Node group %s is not ready for scaleup - unhealthy", nodeGroup.Id())
 			return NotReadyReason
 		}
-		klog.Warningf("Node group %s is not ready for scaleup - backoff", nodeGroup.Id())
+		klog.Warningf("Node group %s is not ready for scaleup - backoff with status: %v", nodeGroup.Id(), scaleUpSafety.BackoffStatus)
 		return BackoffReason
 	}
 	return nil
@@ -658,7 +660,7 @@ func (o *ScaleUpOrchestrator) ComputeSimilarNodeGroups(
 	var validSimilarNodeGroups []cloudprovider.NodeGroup
 	for _, ng := range similarNodeGroups {
 		// Non-existing node groups are created later so skip check for them.
-		if ng.Exist() && !o.clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng, now) {
+		if ng.Exist() && !o.clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng, now).SafeToScale {
 			klog.V(2).Infof("Ignoring node group %s when balancing: group is not ready for scaleup", ng.Id())
 		} else if similarSchedulablePods, found := schedulablePods[ng.Id()]; found && matchingSchedulablePods(groupSchedulablePods, similarSchedulablePods) {
 			validSimilarNodeGroups = append(validSimilarNodeGroups, ng)
