@@ -24,19 +24,17 @@ package mcm
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/klog/v2"
-	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog/v2"
+	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
+	"strings"
 )
 
 const (
@@ -192,9 +190,29 @@ func (mcm *mcmCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimite
 	return mcm.resourceLimiter, nil
 }
 
+func (mcm *mcmCloudProvider) checkMCMAvailableReplicas() error {
+	namespace := mcm.mcmManager.namespace
+	deployment, err := mcm.mcmManager.deploymentLister.Deployments(namespace).Get("machine-controller-manager")
+	if err != nil {
+		return fmt.Errorf("failed to get machine-controller-manager deployment: %v", err.Error())
+	}
+
+	if deployment.Status.AvailableReplicas == 0 {
+		return fmt.Errorf("machine-controller-manager is offline. Cluster autoscaler operations would be suspended.")
+	}
+
+	return nil
+}
+
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (mcm *mcmCloudProvider) Refresh() error {
+
+	err := mcm.checkMCMAvailableReplicas()
+	if err != nil {
+		return err
+	}
+
 	for _, machineDeployment := range mcm.machinedeployments {
 		err := mcm.mcmManager.resetPriorityForNotToBeDeletedMachines(machineDeployment.Name)
 		if err != nil {

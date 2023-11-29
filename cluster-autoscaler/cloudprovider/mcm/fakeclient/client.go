@@ -415,15 +415,16 @@ func NewMachineClientSet(objects ...runtime.Object) (*fakeuntyped.Clientset, *Fa
 
 // FakeObjectTrackers is a struct containing all the controller fake object trackers
 type FakeObjectTrackers struct {
-	ControlMachine, TargetCore *FakeObjectTracker
+	ControlMachine, TargetCore, ControlApps *FakeObjectTracker
 }
 
 // NewFakeObjectTrackers initializes fakeObjectTrackers initializes the fake object trackers
-func NewFakeObjectTrackers(controlMachine, targetCore *FakeObjectTracker) *FakeObjectTrackers {
+func NewFakeObjectTrackers(controlMachine, targetCore, controlApps *FakeObjectTracker) *FakeObjectTrackers {
 
 	fakeObjectTrackers := &FakeObjectTrackers{
 		ControlMachine: controlMachine,
 		TargetCore:     targetCore,
+		ControlApps:    controlApps,
 	}
 
 	return fakeObjectTrackers
@@ -462,6 +463,37 @@ func NewCoreClientSet(objects ...runtime.Object) (*Clientset, *FakeObjectTracker
 	var codecs = serializer.NewCodecFactory(scheme)
 
 	metav1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1"})
+	_ = k8sfake.AddToScheme(scheme)
+
+	o := &FakeObjectTracker{
+		FakeWatcher: watch.NewFake(),
+		delegatee:   k8stesting.NewObjectTracker(scheme, codecs.UniversalDecoder()),
+	}
+
+	for _, obj := range objects {
+		if err := o.Add(obj); err != nil {
+			panic(err)
+		}
+	}
+
+	cs := &Clientset{Clientset: &k8sfake.Clientset{}}
+	cs.FakeDiscovery = &fakediscovery.FakeDiscovery{Fake: &cs.Fake}
+	cs.Fake.AddReactor("*", "*", k8stesting.ObjectReaction(o))
+	cs.Fake.AddWatchReactor("*", o.watchReactionFunc)
+
+	return cs, o
+}
+
+// NewAppsClientSet returns a clientset that will respond with the provided objects.
+// It's backed by a very simple object tracker that processes creates, updates and deletions as-is,
+// without applying any validations and/or defaults. It shouldn't be considered a replacement
+// for a real clientset and is mostly useful in simple unit tests.
+func NewAppsClientSet(objects ...runtime.Object) (*Clientset, *FakeObjectTracker) {
+
+	var scheme = runtime.NewScheme()
+	var codecs = serializer.NewCodecFactory(scheme)
+
+	metav1.AddToGroupVersion(scheme, schema.GroupVersion{Version: "v1", Group: "apps"})
 	_ = k8sfake.AddToScheme(scheme)
 
 	o := &FakeObjectTracker{

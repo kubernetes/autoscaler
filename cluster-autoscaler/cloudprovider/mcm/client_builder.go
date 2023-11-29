@@ -20,37 +20,26 @@ https://github.com/kubernetes/kubernetes/blob/release-1.8/pkg/controller/client_
 package mcm
 
 import (
-	clientgoclientset "k8s.io/client-go/kubernetes"
 	clientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 
 	"k8s.io/klog/v2"
 )
 
-// CoreClientBuilder allows you to get clients and configs for core controllers
-type CoreClientBuilder interface {
-	Config(name string) (*restclient.Config, error)
-	ConfigOrDie(name string) *restclient.Config
-	Client(name string) (clientset.Interface, error)
-	ClientOrDie(name string) clientset.Interface
-	ClientGoClient(name string) (clientgoclientset.Interface, error)
-	ClientGoClientOrDie(name string) clientgoclientset.Interface
-}
-
-// CoreControllerClientBuilder returns a fixed client with different user agents
-type CoreControllerClientBuilder struct {
+// ClientBuilder returns a fixed client with different user agents
+type ClientBuilder struct {
 	// ClientConfig is a skeleton config to clone and use as the basis for each controller client
 	ClientConfig *restclient.Config
 }
 
 // Config lets you configure the client builder
-func (b CoreControllerClientBuilder) Config(name string) (*restclient.Config, error) {
+func (b ClientBuilder) Config(name string) (*restclient.Config, error) {
 	clientConfig := *b.ClientConfig
 	return restclient.AddUserAgent(&clientConfig, name), nil
 }
 
 // ConfigOrDie either configures or die's while configuring
-func (b CoreControllerClientBuilder) ConfigOrDie(name string) *restclient.Config {
+func (b ClientBuilder) ConfigOrDie(name string) *restclient.Config {
 	clientConfig, err := b.Config(name)
 	if err != nil {
 		klog.Fatal(err)
@@ -59,7 +48,7 @@ func (b CoreControllerClientBuilder) ConfigOrDie(name string) *restclient.Config
 }
 
 // Client builds a new client for clientBuilder
-func (b CoreControllerClientBuilder) Client(name string) (clientset.Interface, error) {
+func (b ClientBuilder) Client(name string) (clientset.Interface, error) {
 	clientConfig, err := b.Config(name)
 	if err != nil {
 		return nil, err
@@ -68,26 +57,8 @@ func (b CoreControllerClientBuilder) Client(name string) (clientset.Interface, e
 }
 
 // ClientOrDie builds a client or die's
-func (b CoreControllerClientBuilder) ClientOrDie(name string) clientset.Interface {
+func (b ClientBuilder) ClientOrDie(name string) clientset.Interface {
 	client, err := b.Client(name)
-	if err != nil {
-		klog.Fatal(err)
-	}
-	return client
-}
-
-// ClientGoClient builds a go client
-func (b CoreControllerClientBuilder) ClientGoClient(name string) (clientgoclientset.Interface, error) {
-	clientConfig, err := b.Config(name)
-	if err != nil {
-		return nil, err
-	}
-	return clientgoclientset.NewForConfig(clientConfig)
-}
-
-// ClientGoClientOrDie builds a go client or die's
-func (b CoreControllerClientBuilder) ClientGoClientOrDie(name string) clientgoclientset.Interface {
-	client, err := b.ClientGoClient(name)
 	if err != nil {
 		klog.Fatal(err)
 	}

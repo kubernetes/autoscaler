@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
+	"k8s.io/utils/pointer"
 	"os"
 	"regexp"
 	"strings"
@@ -391,6 +392,31 @@ func (driver *Driver) controllerTests() {
 				Expect(mc.Annotations[mcmPriorityAnnotation]).To(Equal("3"))
 
 				// For AfterCheck function to clean up the workload, set flag as true
+				flag = true
+			})
+		})
+	})
+	Describe("testing CA behaviour when MCM is offline", func() {
+		Context("When the available replicas of MCM are zero.", func() {
+			It("The CA should suspend it's operations as long as MCM is offline", func() {
+				By("Scaling down the MCM")
+				deployment, err := driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Get(context.Background(), "machine-controller-manager", metav1.GetOptions{})
+				Expect(err).Should(BeNil())
+				deployment.Spec.Replicas = pointer.Int32(0)
+				deployment.ObjectMeta.Annotations[dwdAnnotation] = "true"
+				_, err = driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
+				Expect(err).Should(BeNil())
+				skippedRegexp, _ := regexp.Compile("machine-controller-manager is offline. Cluster autoscaler operations would be suspended.")
+				Eventually(func() bool {
+					data, _ := ioutil.ReadFile(CALogFile)
+					return skippedRegexp.Match(data)
+				}, pollingTimeout, pollingInterval).Should(BeTrue())
+				deployment, err = driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Get(context.Background(), "machine-controller-manager", metav1.GetOptions{})
+				Expect(err).Should(BeNil())
+				deployment.Spec.Replicas = pointer.Int32(1)
+				delete(deployment.ObjectMeta.Annotations, dwdAnnotation)
+				_, err = driver.controlCluster.Clientset.AppsV1().Deployments(controlClusterNamespace).Update(context.Background(), deployment, metav1.UpdateOptions{})
+				Expect(err).Should(BeNil())
 				flag = true
 			})
 		})

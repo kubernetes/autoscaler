@@ -27,6 +27,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	v1appslister "k8s.io/client-go/listers/apps/v1"
 	"math/rand"
 	"net/http"
 	"os"
@@ -57,6 +58,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/taints"
 	"k8s.io/client-go/discovery"
+	appsinformers "k8s.io/client-go/informers"
 	coreinformers "k8s.io/client-go/informers"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
@@ -115,6 +117,7 @@ type McmManager struct {
 	namespace               string
 	interrupt               chan struct{}
 	discoveryOpts           cloudprovider.NodeGroupDiscoveryOptions
+	deploymentLister        v1appslister.DeploymentLister
 	machineClient           machineapi.MachineV1alpha1Interface
 	machineDeploymentLister machinelisters.MachineDeploymentLister
 	machineSetLister        machinelisters.MachineSetLister
@@ -163,14 +166,21 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 		}
 	}
 
-	// Check if control APIServer has all requested resources
-	controlCoreClientBuilder := CoreControllerClientBuilder{
+	controlKubeconfig.Burst = *controlBurst
+	controlKubeconfig.QPS = float32(*controlQPS)
+
+	controlClientBuilder := ClientBuilder{
 		ClientConfig: controlKubeconfig,
 	}
-	availableResources, err := getAvailableResources(controlCoreClientBuilder)
+
+	availableResources, err := getAvailableResources(controlClientBuilder)
 	if err != nil {
 		return nil, err
 	}
+
+	controlAppsClient := controlClientBuilder.ClientOrDie("control-apps-client")
+	appsInformerFactory := appsinformers.NewSharedInformerFactory(controlAppsClient, *minResyncPeriod)
+	deploymentLister := appsInformerFactory.Apps().V1().Deployments().Lister()
 
 	if availableResources[machineGVR] && availableResources[machineSetGVR] && availableResources[machineDeploymentGVR] {
 		var (
@@ -179,8 +189,6 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 		)
 
 		// Initialize control kubeconfig informer factory
-		controlKubeconfig.Burst = *controlBurst
-		controlKubeconfig.QPS = float32(*controlQPS)
 		controlMachineClientBuilder := MachineControllerClientBuilder{
 			ClientConfig: controlKubeconfig,
 		}
@@ -217,7 +225,7 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 		// Initialize target kubeconfig informer factory
 		targetKubeconfig.Burst = *targetBurst
 		targetKubeconfig.QPS = float32(*targetQPS)
-		targetCoreClientBuilder := CoreControllerClientBuilder{
+		targetCoreClientBuilder := ClientBuilder{
 			ClientConfig: targetKubeconfig,
 		}
 		targetCoreInformerFactory := coreinformers.NewSharedInformerFactory(
@@ -232,6 +240,7 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 		m := &McmManager{
 			namespace:               namespace,
 			interrupt:               make(chan struct{}),
+			deploymentLister:        deploymentLister,
 			machineClient:           controlMachineClient,
 			machineClassLister:      machineClassLister,
 			machineLister:           machineSharedInformers.Machines().Lister(),
@@ -245,6 +254,7 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 
 		targetCoreInformerFactory.Start(m.interrupt)
 		controlMachineInformerFactory.Start(m.interrupt)
+		appsInformerFactory.Start(m.interrupt)
 
 		syncFuncs = append(
 			syncFuncs,
@@ -267,7 +277,7 @@ func createMCMManagerInternal(discoveryOpts cloudprovider.NodeGroupDiscoveryOpti
 // TODO: In general, any controller checking this needs to be dynamic so
 // users don't have to restart their controller manager if they change the apiserver.
 // Until we get there, the structure here needs to be exposed for the construction of a proper ControllerContext.
-func getAvailableResources(clientBuilder CoreClientBuilder) (map[schema.GroupVersionResource]bool, error) {
+func getAvailableResources(clientBuilder ClientBuilder) (map[schema.GroupVersionResource]bool, error) {
 	var discoveryClient discovery.DiscoveryInterface
 
 	var healthzContent string
