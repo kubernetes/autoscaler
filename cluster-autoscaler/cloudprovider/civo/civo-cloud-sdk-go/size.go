@@ -38,7 +38,7 @@ type InstanceSize struct {
 	Selectable        bool   `json:"selectable,omitempty"`
 }
 
-// ListInstanceSizes returns all availble sizes of instances
+// ListInstanceSizes returns all available sizes of instances
 // TODO: Rename to Size because this return all size (k8s, vm, database, kfaas)
 func (c *Client) ListInstanceSizes() ([]InstanceSize, error) {
 	resp, err := c.SendGetRequest("/v2/sizes")
