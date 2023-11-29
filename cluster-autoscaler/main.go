@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -61,9 +60,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -354,9 +351,13 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
-		KubeConfigPath:                   *kubeConfigFile,
-		NodeDeletionDelayTimeout:         *nodeDeletionDelayTimeout,
-		AWSUseStaticInstanceList:         *awsUseStaticInstanceList,
+		KubeClientOpts: config.KubeClientOptions{
+			Master:         *kubernetes,
+			KubeConfigPath: *kubeConfigFile,
+			APIContentType: *kubeAPIContentType,
+		},
+		NodeDeletionDelayTimeout: *nodeDeletionDelayTimeout,
+		AWSUseStaticInstanceList: *awsUseStaticInstanceList,
 		GCEOptions: config.GCEOptions{
 			ConcurrentRefreshes:            *concurrentGceRefreshes,
 			MigInstancesMinRefreshWaitTime: *gceMigInstancesMinRefreshWaitTime,
@@ -392,35 +393,6 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	}
 }
 
-func getKubeConfig() *rest.Config {
-	if *kubeConfigFile != "" {
-		klog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
-		// use the current context in kubeconfig
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
-		if err != nil {
-			klog.Fatalf("Failed to build config: %v", err)
-		}
-		return config
-	}
-	url, err := url.Parse(*kubernetes)
-	if err != nil {
-		klog.Fatalf("Failed to parse Kubernetes url: %v", err)
-	}
-
-	kubeConfig, err := config.GetKubeClientConfig(url)
-	if err != nil {
-		klog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
-	}
-
-	kubeConfig.ContentType = *kubeAPIContentType
-
-	return kubeConfig
-}
-
-func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
-	return kube_client.NewForConfigOrDie(kubeConfig)
-}
-
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
@@ -440,7 +412,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 
-	kubeClient := createKubeClient(getKubeConfig())
+	kubeClient := kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts)
 
 	// Informer transform to trim ManagedFields for memory efficiency.
 	trim := func(obj interface{}) (interface{}, error) {
@@ -619,7 +591,7 @@ func main() {
 			klog.Fatalf("Unable to get hostname: %v", err)
 		}
 
-		kubeClient := createKubeClient(getKubeConfig())
+		kubeClient := kube_util.CreateKubeClient(createAutoscalingOptions().KubeClientOpts)
 
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})
