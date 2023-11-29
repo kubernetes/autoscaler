@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 // KubernetesInstance represents a single node/master within a Kubernetes cluster
@@ -47,11 +49,15 @@ type KubernetesInstance struct {
 
 // KubernetesPool represents a single pool within a Kubernetes cluster
 type KubernetesPool struct {
-	ID            string               `json:"id"`
-	Count         int                  `json:"count,omitempty"`
-	Size          string               `json:"size,omitempty"`
-	InstanceNames []string             `json:"instance_names,omitempty"`
-	Instances     []KubernetesInstance `json:"instances,omitempty"`
+	ID               string               `json:"id"`
+	Count            int                  `json:"count,omitempty"`
+	Size             string               `json:"size,omitempty"`
+	InstanceNames    []string             `json:"instance_names,omitempty"`
+	Instances        []KubernetesInstance `json:"instances,omitempty"`
+	Labels           map[string]string    `json:"labels,omitempty"`
+	Taints           []corev1.Taint       `json:"taints,omitempty"`
+	PublicIPNodePool bool                 `json:"public_ip_node_pool,omitempty"`
+	Region           string               `json:"region,omitempty"`
 }
 
 // KubernetesInstalledApplication is an application within our marketplace available for
