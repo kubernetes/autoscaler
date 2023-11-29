@@ -1153,7 +1153,7 @@ Assumption: We assume that the developer executing the below stages wants to syn
 1. Change to checked-out `autoscaler` dir and set `upstream`  and `user` (fork) targets
     1. `git remote add user https://github.com/user/autoscaler`
     1. `git remote add upstream https://github.com/kubernetes/autoscaler.git`
-1. Execute: `git fetch –all`
+1. Execute: `git fetch --all`
 1. Checkout the `releaseBranch`: `git checkout -b upstream-release-1.x.0 upstream/cluster-autoscaler-release-1.x.0`
 1. Hard Reset to the `releaseCommitId`: `git reset --hard releaseCommitId`
 1. Check out and pull the primary branch for gardener fork which is not `master`/`main` but is instead named `machine-controller-manager-provider`:  
