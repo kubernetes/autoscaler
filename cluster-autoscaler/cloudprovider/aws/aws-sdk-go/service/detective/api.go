@@ -73,6 +73,10 @@ func (c *Detective) AcceptInvitationRequest(input *AcceptInvitationInput) (req *
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - ConflictException
 //     The request attempted an invalid action.
 //
@@ -102,6 +106,184 @@ func (c *Detective) AcceptInvitation(input *AcceptInvitationInput) (*AcceptInvit
 // for more information on using Contexts.
 func (c *Detective) AcceptInvitationWithContext(ctx aws.Context, input *AcceptInvitationInput, opts ...request.Option) (*AcceptInvitationOutput, error) {
 	req, out := c.AcceptInvitationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchGetGraphMemberDatasources = "BatchGetGraphMemberDatasources"
+
+// BatchGetGraphMemberDatasourcesRequest generates a "aws/request.Request" representing the
+// client's request for the BatchGetGraphMemberDatasources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchGetGraphMemberDatasources for more information on using the BatchGetGraphMemberDatasources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchGetGraphMemberDatasourcesRequest method.
+//	req, resp := client.BatchGetGraphMemberDatasourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/BatchGetGraphMemberDatasources
+func (c *Detective) BatchGetGraphMemberDatasourcesRequest(input *BatchGetGraphMemberDatasourcesInput) (req *request.Request, output *BatchGetGraphMemberDatasourcesOutput) {
+	op := &request.Operation{
+		Name:       opBatchGetGraphMemberDatasources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/graph/datasources/get",
+	}
+
+	if input == nil {
+		input = &BatchGetGraphMemberDatasourcesInput{}
+	}
+
+	output = &BatchGetGraphMemberDatasourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchGetGraphMemberDatasources API operation for Amazon Detective.
+//
+// Gets data source package information for the behavior graph.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation BatchGetGraphMemberDatasources for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/BatchGetGraphMemberDatasources
+func (c *Detective) BatchGetGraphMemberDatasources(input *BatchGetGraphMemberDatasourcesInput) (*BatchGetGraphMemberDatasourcesOutput, error) {
+	req, out := c.BatchGetGraphMemberDatasourcesRequest(input)
+	return out, req.Send()
+}
+
+// BatchGetGraphMemberDatasourcesWithContext is the same as BatchGetGraphMemberDatasources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchGetGraphMemberDatasources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) BatchGetGraphMemberDatasourcesWithContext(ctx aws.Context, input *BatchGetGraphMemberDatasourcesInput, opts ...request.Option) (*BatchGetGraphMemberDatasourcesOutput, error) {
+	req, out := c.BatchGetGraphMemberDatasourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opBatchGetMembershipDatasources = "BatchGetMembershipDatasources"
+
+// BatchGetMembershipDatasourcesRequest generates a "aws/request.Request" representing the
+// client's request for the BatchGetMembershipDatasources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchGetMembershipDatasources for more information on using the BatchGetMembershipDatasources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the BatchGetMembershipDatasourcesRequest method.
+//	req, resp := client.BatchGetMembershipDatasourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/BatchGetMembershipDatasources
+func (c *Detective) BatchGetMembershipDatasourcesRequest(input *BatchGetMembershipDatasourcesInput) (req *request.Request, output *BatchGetMembershipDatasourcesOutput) {
+	op := &request.Operation{
+		Name:       opBatchGetMembershipDatasources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/membership/datasources/get",
+	}
+
+	if input == nil {
+		input = &BatchGetMembershipDatasourcesInput{}
+	}
+
+	output = &BatchGetMembershipDatasourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchGetMembershipDatasources API operation for Amazon Detective.
+//
+// Gets information on the data source package history for an account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation BatchGetMembershipDatasources for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/BatchGetMembershipDatasources
+func (c *Detective) BatchGetMembershipDatasources(input *BatchGetMembershipDatasourcesInput) (*BatchGetMembershipDatasourcesOutput, error) {
+	req, out := c.BatchGetMembershipDatasourcesRequest(input)
+	return out, req.Send()
+}
+
+// BatchGetMembershipDatasourcesWithContext is the same as BatchGetMembershipDatasources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchGetMembershipDatasources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) BatchGetMembershipDatasourcesWithContext(ctx aws.Context, input *BatchGetMembershipDatasourcesInput, opts ...request.Option) (*BatchGetMembershipDatasourcesOutput, error) {
+	req, out := c.BatchGetMembershipDatasourcesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -180,6 +362,10 @@ func (c *Detective) CreateGraphRequest(input *CreateGraphInput) (req *request.Re
 // API operation CreateGraph for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - ConflictException
 //     The request attempted an invalid action.
@@ -307,6 +493,10 @@ func (c *Detective) CreateMembersRequest(input *CreateMembersInput) (req *reques
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -410,6 +600,10 @@ func (c *Detective) DeleteGraphRequest(input *DeleteGraphInput) (req *request.Re
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -510,6 +704,10 @@ func (c *Detective) DeleteMembersRequest(input *DeleteMembersInput) (req *reques
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - ConflictException
 //     The request attempted an invalid action.
 //
@@ -602,6 +800,10 @@ func (c *Detective) DescribeOrganizationConfigurationRequest(input *DescribeOrga
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -678,12 +880,18 @@ func (c *Detective) DisableOrganizationAdminAccountRequest(input *DisableOrganiz
 
 // DisableOrganizationAdminAccount API operation for Amazon Detective.
 //
-// Removes the Detective administrator account for the organization in the current
-// Region. Deletes the behavior graph for that account.
+// Removes the Detective administrator account in the current Region. Deletes
+// the organization behavior graph.
 //
-// Can only be called by the organization management account. Before you can
-// select a different Detective administrator account, you must remove the Detective
-// administrator account in all Regions.
+// Can only be called by the organization management account.
+//
+// Removing the Detective administrator account does not affect the delegated
+// administrator account for Detective in Organizations.
+//
+// To remove the delegated administrator account in Organizations, use the Organizations
+// API. Removing the delegated administrator account also removes the Detective
+// administrator account in all Regions, except for Regions where the Detective
+// administrator account is the organization management account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -693,6 +901,10 @@ func (c *Detective) DisableOrganizationAdminAccountRequest(input *DisableOrganiz
 // API operation DisableOrganizationAdminAccount for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
@@ -787,6 +999,10 @@ func (c *Detective) DisassociateMembershipRequest(input *DisassociateMembershipI
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - ConflictException
 //     The request attempted an invalid action.
 //
@@ -873,9 +1089,15 @@ func (c *Detective) EnableOrganizationAdminAccountRequest(input *EnableOrganizat
 //
 // Can only be called by the organization management account.
 //
-// The Detective administrator account for an organization must be the same
-// in all Regions. If you already designated a Detective administrator account
-// in another Region, then you must designate the same account.
+// If the organization has a delegated administrator account in Organizations,
+// then the Detective administrator account must be either the delegated administrator
+// account or the organization management account.
+//
+// If the organization does not have a delegated administrator account in Organizations,
+// then you can choose any account in the organization. If you choose an account
+// other than the organization management account, Detective calls Organizations
+// to make that account the delegated administrator account for Detective. The
+// organization management account cannot be the delegated administrator account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -885,6 +1107,10 @@ func (c *Detective) EnableOrganizationAdminAccountRequest(input *EnableOrganizat
 // API operation EnableOrganizationAdminAccount for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
@@ -913,6 +1139,99 @@ func (c *Detective) EnableOrganizationAdminAccount(input *EnableOrganizationAdmi
 // for more information on using Contexts.
 func (c *Detective) EnableOrganizationAdminAccountWithContext(ctx aws.Context, input *EnableOrganizationAdminAccountInput, opts ...request.Option) (*EnableOrganizationAdminAccountOutput, error) {
 	req, out := c.EnableOrganizationAdminAccountRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetInvestigation = "GetInvestigation"
+
+// GetInvestigationRequest generates a "aws/request.Request" representing the
+// client's request for the GetInvestigation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetInvestigation for more information on using the GetInvestigation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetInvestigationRequest method.
+//	req, resp := client.GetInvestigationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/GetInvestigation
+func (c *Detective) GetInvestigationRequest(input *GetInvestigationInput) (req *request.Request, output *GetInvestigationOutput) {
+	op := &request.Operation{
+		Name:       opGetInvestigation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/investigations/getInvestigation",
+	}
+
+	if input == nil {
+		input = &GetInvestigationInput{}
+	}
+
+	output = &GetInvestigationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetInvestigation API operation for Amazon Detective.
+//
+// Returns the investigation results of an investigation for a behavior graph.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation GetInvestigation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - TooManyRequestsException
+//     The request cannot be completed because too many other requests are occurring
+//     at the same time.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/GetInvestigation
+func (c *Detective) GetInvestigation(input *GetInvestigationInput) (*GetInvestigationOutput, error) {
+	req, out := c.GetInvestigationRequest(input)
+	return out, req.Send()
+}
+
+// GetInvestigationWithContext is the same as GetInvestigation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetInvestigation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) GetInvestigationWithContext(ctx aws.Context, input *GetInvestigationInput, opts ...request.Option) (*GetInvestigationOutput, error) {
+	req, out := c.GetInvestigationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -973,6 +1292,10 @@ func (c *Detective) GetMembersRequest(input *GetMembersInput) (req *request.Requ
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -1002,6 +1325,152 @@ func (c *Detective) GetMembersWithContext(ctx aws.Context, input *GetMembersInpu
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opListDatasourcePackages = "ListDatasourcePackages"
+
+// ListDatasourcePackagesRequest generates a "aws/request.Request" representing the
+// client's request for the ListDatasourcePackages operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListDatasourcePackages for more information on using the ListDatasourcePackages
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListDatasourcePackagesRequest method.
+//	req, resp := client.ListDatasourcePackagesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/ListDatasourcePackages
+func (c *Detective) ListDatasourcePackagesRequest(input *ListDatasourcePackagesInput) (req *request.Request, output *ListDatasourcePackagesOutput) {
+	op := &request.Operation{
+		Name:       opListDatasourcePackages,
+		HTTPMethod: "POST",
+		HTTPPath:   "/graph/datasources/list",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListDatasourcePackagesInput{}
+	}
+
+	output = &ListDatasourcePackagesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListDatasourcePackages API operation for Amazon Detective.
+//
+// Lists data source packages in the behavior graph.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation ListDatasourcePackages for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/ListDatasourcePackages
+func (c *Detective) ListDatasourcePackages(input *ListDatasourcePackagesInput) (*ListDatasourcePackagesOutput, error) {
+	req, out := c.ListDatasourcePackagesRequest(input)
+	return out, req.Send()
+}
+
+// ListDatasourcePackagesWithContext is the same as ListDatasourcePackages with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListDatasourcePackages for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) ListDatasourcePackagesWithContext(ctx aws.Context, input *ListDatasourcePackagesInput, opts ...request.Option) (*ListDatasourcePackagesOutput, error) {
+	req, out := c.ListDatasourcePackagesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListDatasourcePackagesPages iterates over the pages of a ListDatasourcePackages operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListDatasourcePackages method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListDatasourcePackages operation.
+//	pageNum := 0
+//	err := client.ListDatasourcePackagesPages(params,
+//	    func(page *detective.ListDatasourcePackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Detective) ListDatasourcePackagesPages(input *ListDatasourcePackagesInput, fn func(*ListDatasourcePackagesOutput, bool) bool) error {
+	return c.ListDatasourcePackagesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListDatasourcePackagesPagesWithContext same as ListDatasourcePackagesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) ListDatasourcePackagesPagesWithContext(ctx aws.Context, input *ListDatasourcePackagesInput, fn func(*ListDatasourcePackagesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListDatasourcePackagesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListDatasourcePackagesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListDatasourcePackagesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListGraphs = "ListGraphs"
@@ -1067,6 +1536,10 @@ func (c *Detective) ListGraphsRequest(input *ListGraphsInput) (req *request.Requ
 // API operation ListGraphs for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
@@ -1147,6 +1620,192 @@ func (c *Detective) ListGraphsPagesWithContext(ctx aws.Context, input *ListGraph
 	return p.Err()
 }
 
+const opListIndicators = "ListIndicators"
+
+// ListIndicatorsRequest generates a "aws/request.Request" representing the
+// client's request for the ListIndicators operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListIndicators for more information on using the ListIndicators
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListIndicatorsRequest method.
+//	req, resp := client.ListIndicatorsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/ListIndicators
+func (c *Detective) ListIndicatorsRequest(input *ListIndicatorsInput) (req *request.Request, output *ListIndicatorsOutput) {
+	op := &request.Operation{
+		Name:       opListIndicators,
+		HTTPMethod: "POST",
+		HTTPPath:   "/investigations/listIndicators",
+	}
+
+	if input == nil {
+		input = &ListIndicatorsInput{}
+	}
+
+	output = &ListIndicatorsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListIndicators API operation for Amazon Detective.
+//
+// # Get the indicators from an investigation
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation ListIndicators for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - TooManyRequestsException
+//     The request cannot be completed because too many other requests are occurring
+//     at the same time.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/ListIndicators
+func (c *Detective) ListIndicators(input *ListIndicatorsInput) (*ListIndicatorsOutput, error) {
+	req, out := c.ListIndicatorsRequest(input)
+	return out, req.Send()
+}
+
+// ListIndicatorsWithContext is the same as ListIndicators with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListIndicators for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) ListIndicatorsWithContext(ctx aws.Context, input *ListIndicatorsInput, opts ...request.Option) (*ListIndicatorsOutput, error) {
+	req, out := c.ListIndicatorsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListInvestigations = "ListInvestigations"
+
+// ListInvestigationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListInvestigations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListInvestigations for more information on using the ListInvestigations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListInvestigationsRequest method.
+//	req, resp := client.ListInvestigationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/ListInvestigations
+func (c *Detective) ListInvestigationsRequest(input *ListInvestigationsInput) (req *request.Request, output *ListInvestigationsOutput) {
+	op := &request.Operation{
+		Name:       opListInvestigations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/investigations/listInvestigations",
+	}
+
+	if input == nil {
+		input = &ListInvestigationsInput{}
+	}
+
+	output = &ListInvestigationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListInvestigations API operation for Amazon Detective.
+//
+// List all Investigations.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation ListInvestigations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - TooManyRequestsException
+//     The request cannot be completed because too many other requests are occurring
+//     at the same time.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/ListInvestigations
+func (c *Detective) ListInvestigations(input *ListInvestigationsInput) (*ListInvestigationsOutput, error) {
+	req, out := c.ListInvestigationsRequest(input)
+	return out, req.Send()
+}
+
+// ListInvestigationsWithContext is the same as ListInvestigations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListInvestigations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) ListInvestigationsWithContext(ctx aws.Context, input *ListInvestigationsInput, opts ...request.Option) (*ListInvestigationsOutput, error) {
+	req, out := c.ListInvestigationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opListInvitations = "ListInvitations"
 
 // ListInvitationsRequest generates a "aws/request.Request" representing the
@@ -1214,6 +1873,10 @@ func (c *Detective) ListInvitationsRequest(input *ListInvitationsInput) (req *re
 // API operation ListInvitations for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
@@ -1361,6 +2024,10 @@ func (c *Detective) ListMembersRequest(input *ListMembersInput) (req *request.Re
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -1504,6 +2171,10 @@ func (c *Detective) ListOrganizationAdminAccountsRequest(input *ListOrganization
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -1641,6 +2312,10 @@ func (c *Detective) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -1733,6 +2408,10 @@ func (c *Detective) RejectInvitationRequest(input *RejectInvitationInput) (req *
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - ConflictException
 //     The request attempted an invalid action.
 //
@@ -1762,6 +2441,99 @@ func (c *Detective) RejectInvitation(input *RejectInvitationInput) (*RejectInvit
 // for more information on using Contexts.
 func (c *Detective) RejectInvitationWithContext(ctx aws.Context, input *RejectInvitationInput, opts ...request.Option) (*RejectInvitationOutput, error) {
 	req, out := c.RejectInvitationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opStartInvestigation = "StartInvestigation"
+
+// StartInvestigationRequest generates a "aws/request.Request" representing the
+// client's request for the StartInvestigation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartInvestigation for more information on using the StartInvestigation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartInvestigationRequest method.
+//	req, resp := client.StartInvestigationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/StartInvestigation
+func (c *Detective) StartInvestigationRequest(input *StartInvestigationInput) (req *request.Request, output *StartInvestigationOutput) {
+	op := &request.Operation{
+		Name:       opStartInvestigation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/investigations/startInvestigation",
+	}
+
+	if input == nil {
+		input = &StartInvestigationInput{}
+	}
+
+	output = &StartInvestigationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartInvestigation API operation for Amazon Detective.
+//
+// initiate an investigation on an entity in a graph
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation StartInvestigation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+//   - TooManyRequestsException
+//     The request cannot be completed because too many other requests are occurring
+//     at the same time.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/StartInvestigation
+func (c *Detective) StartInvestigation(input *StartInvestigationInput) (*StartInvestigationOutput, error) {
+	req, out := c.StartInvestigationRequest(input)
+	return out, req.Send()
+}
+
+// StartInvestigationWithContext is the same as StartInvestigation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartInvestigation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) StartInvestigationWithContext(ctx aws.Context, input *StartInvestigationInput, opts ...request.Option) (*StartInvestigationOutput, error) {
+	req, out := c.StartInvestigationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1828,6 +2600,10 @@ func (c *Detective) StartMonitoringMemberRequest(input *StartMonitoringMemberInp
 // API operation StartMonitoringMember for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - ConflictException
 //     The request attempted an invalid action.
@@ -1931,6 +2707,10 @@ func (c *Detective) TagResourceRequest(input *TagResourceInput) (req *request.Re
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -2017,6 +2797,10 @@ func (c *Detective) UntagResourceRequest(input *UntagResourceInput) (req *reques
 //
 // Returned Error Types:
 //
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
 //
@@ -2043,6 +2827,203 @@ func (c *Detective) UntagResource(input *UntagResourceInput) (*UntagResourceOutp
 // for more information on using Contexts.
 func (c *Detective) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateDatasourcePackages = "UpdateDatasourcePackages"
+
+// UpdateDatasourcePackagesRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateDatasourcePackages operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateDatasourcePackages for more information on using the UpdateDatasourcePackages
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateDatasourcePackagesRequest method.
+//	req, resp := client.UpdateDatasourcePackagesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/UpdateDatasourcePackages
+func (c *Detective) UpdateDatasourcePackagesRequest(input *UpdateDatasourcePackagesInput) (req *request.Request, output *UpdateDatasourcePackagesOutput) {
+	op := &request.Operation{
+		Name:       opUpdateDatasourcePackages,
+		HTTPMethod: "POST",
+		HTTPPath:   "/graph/datasources/update",
+	}
+
+	if input == nil {
+		input = &UpdateDatasourcePackagesInput{}
+	}
+
+	output = &UpdateDatasourcePackagesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateDatasourcePackages API operation for Amazon Detective.
+//
+// Starts a data source packages for the behavior graph.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation UpdateDatasourcePackages for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - ServiceQuotaExceededException
+//     This request cannot be completed for one of the following reasons.
+//
+//   - The request would cause the number of member accounts in the behavior
+//     graph to exceed the maximum allowed. A behavior graph cannot have more
+//     than 1200 member accounts.
+//
+//   - The request would cause the data rate for the behavior graph to exceed
+//     the maximum allowed.
+//
+//   - Detective is unable to verify the data rate for the member account.
+//     This is usually because the member account is not enrolled in Amazon GuardDuty.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/UpdateDatasourcePackages
+func (c *Detective) UpdateDatasourcePackages(input *UpdateDatasourcePackagesInput) (*UpdateDatasourcePackagesOutput, error) {
+	req, out := c.UpdateDatasourcePackagesRequest(input)
+	return out, req.Send()
+}
+
+// UpdateDatasourcePackagesWithContext is the same as UpdateDatasourcePackages with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateDatasourcePackages for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) UpdateDatasourcePackagesWithContext(ctx aws.Context, input *UpdateDatasourcePackagesInput, opts ...request.Option) (*UpdateDatasourcePackagesOutput, error) {
+	req, out := c.UpdateDatasourcePackagesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateInvestigationState = "UpdateInvestigationState"
+
+// UpdateInvestigationStateRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateInvestigationState operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateInvestigationState for more information on using the UpdateInvestigationState
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateInvestigationStateRequest method.
+//	req, resp := client.UpdateInvestigationStateRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/UpdateInvestigationState
+func (c *Detective) UpdateInvestigationStateRequest(input *UpdateInvestigationStateInput) (req *request.Request, output *UpdateInvestigationStateOutput) {
+	op := &request.Operation{
+		Name:       opUpdateInvestigationState,
+		HTTPMethod: "POST",
+		HTTPPath:   "/investigations/updateInvestigationState",
+	}
+
+	if input == nil {
+		input = &UpdateInvestigationStateInput{}
+	}
+
+	output = &UpdateInvestigationStateOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateInvestigationState API operation for Amazon Detective.
+//
+// Update the state of an investigation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Detective's
+// API operation UpdateInvestigationState for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
+//
+//   - InternalServerException
+//     The request was valid but failed because of a problem with the service.
+//
+//   - ValidationException
+//     The request parameters are invalid.
+//
+//   - ResourceNotFoundException
+//     The request refers to a nonexistent resource.
+//
+//   - TooManyRequestsException
+//     The request cannot be completed because too many other requests are occurring
+//     at the same time.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/detective-2018-10-26/UpdateInvestigationState
+func (c *Detective) UpdateInvestigationState(input *UpdateInvestigationStateInput) (*UpdateInvestigationStateOutput, error) {
+	req, out := c.UpdateInvestigationStateRequest(input)
+	return out, req.Send()
+}
+
+// UpdateInvestigationStateWithContext is the same as UpdateInvestigationState with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateInvestigationState for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Detective) UpdateInvestigationStateWithContext(ctx aws.Context, input *UpdateInvestigationStateInput, opts ...request.Option) (*UpdateInvestigationStateOutput, error) {
+	req, out := c.UpdateInvestigationStateRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2104,6 +3085,10 @@ func (c *Detective) UpdateOrganizationConfigurationRequest(input *UpdateOrganiza
 // API operation UpdateOrganizationConfiguration for usage and error information.
 //
 // Returned Error Types:
+//
+//   - AccessDeniedException
+//     The request issuer does not have permission to access this resource or perform
+//     this operation.
 //
 //   - InternalServerException
 //     The request was valid but failed because of a problem with the service.
@@ -2208,6 +3193,83 @@ func (s AcceptInvitationOutput) GoString() string {
 	return s.String()
 }
 
+// The request issuer does not have permission to access this resource or perform
+// this operation.
+type AccessDeniedException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	// The SDK default error code associated with the access denied exception.
+	ErrorCode *string `type:"string" enum:"ErrorCode"`
+
+	// The SDK default explanation of why access was denied.
+	ErrorCodeReason *string `type:"string"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The error code associated with the access denied exception.
+	SubErrorCode *string `type:"string" enum:"ErrorCode"`
+
+	// An explanation of why access was denied.
+	SubErrorCodeReason *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessDeniedException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessDeniedException) GoString() string {
+	return s.String()
+}
+
+func newErrorAccessDeniedException(v protocol.ResponseMetadata) error {
+	return &AccessDeniedException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *AccessDeniedException) Code() string {
+	return "AccessDeniedException"
+}
+
+// Message returns the exception's message.
+func (s *AccessDeniedException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *AccessDeniedException) OrigErr() error {
+	return nil
+}
+
+func (s *AccessDeniedException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *AccessDeniedException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *AccessDeniedException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // An Amazon Web Services account that is the administrator account of or a
 // member of a behavior graph.
 type Account struct {
@@ -2221,8 +3283,12 @@ type Account struct {
 	// The Amazon Web Services account root user email address for the Amazon Web
 	// Services account.
 	//
+	// EmailAddress is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Account's
+	// String and GoString methods.
+	//
 	// EmailAddress is a required field
-	EmailAddress *string `min:"1" type:"string" required:"true"`
+	EmailAddress *string `min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -2326,6 +3392,201 @@ func (s *Administrator) SetDelegationTime(v time.Time) *Administrator {
 // SetGraphArn sets the GraphArn field's value.
 func (s *Administrator) SetGraphArn(v string) *Administrator {
 	s.GraphArn = &v
+	return s
+}
+
+type BatchGetGraphMemberDatasourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of Amazon Web Services accounts to get data source package information
+	// on.
+	//
+	// AccountIds is a required field
+	AccountIds []*string `min:"1" type:"list" required:"true"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetGraphMemberDatasourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetGraphMemberDatasourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchGetGraphMemberDatasourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchGetGraphMemberDatasourcesInput"}
+	if s.AccountIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountIds"))
+	}
+	if s.AccountIds != nil && len(s.AccountIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountIds", 1))
+	}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountIds sets the AccountIds field's value.
+func (s *BatchGetGraphMemberDatasourcesInput) SetAccountIds(v []*string) *BatchGetGraphMemberDatasourcesInput {
+	s.AccountIds = v
+	return s
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *BatchGetGraphMemberDatasourcesInput) SetGraphArn(v string) *BatchGetGraphMemberDatasourcesInput {
+	s.GraphArn = &v
+	return s
+}
+
+type BatchGetGraphMemberDatasourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Details on the status of data source packages for members of the behavior
+	// graph.
+	MemberDatasources []*MembershipDatasources `type:"list"`
+
+	// Accounts that data source package information could not be retrieved for.
+	UnprocessedAccounts []*UnprocessedAccount `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetGraphMemberDatasourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetGraphMemberDatasourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetMemberDatasources sets the MemberDatasources field's value.
+func (s *BatchGetGraphMemberDatasourcesOutput) SetMemberDatasources(v []*MembershipDatasources) *BatchGetGraphMemberDatasourcesOutput {
+	s.MemberDatasources = v
+	return s
+}
+
+// SetUnprocessedAccounts sets the UnprocessedAccounts field's value.
+func (s *BatchGetGraphMemberDatasourcesOutput) SetUnprocessedAccounts(v []*UnprocessedAccount) *BatchGetGraphMemberDatasourcesOutput {
+	s.UnprocessedAccounts = v
+	return s
+}
+
+type BatchGetMembershipDatasourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArns is a required field
+	GraphArns []*string `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMembershipDatasourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMembershipDatasourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchGetMembershipDatasourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchGetMembershipDatasourcesInput"}
+	if s.GraphArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArns"))
+	}
+	if s.GraphArns != nil && len(s.GraphArns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GraphArns", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphArns sets the GraphArns field's value.
+func (s *BatchGetMembershipDatasourcesInput) SetGraphArns(v []*string) *BatchGetMembershipDatasourcesInput {
+	s.GraphArns = v
+	return s
+}
+
+type BatchGetMembershipDatasourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Details on the data source package history for an member of the behavior
+	// graph.
+	MembershipDatasources []*MembershipDatasources `type:"list"`
+
+	// Graphs that data source package information could not be retrieved for.
+	UnprocessedGraphs []*UnprocessedGraph `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMembershipDatasourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BatchGetMembershipDatasourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetMembershipDatasources sets the MembershipDatasources field's value.
+func (s *BatchGetMembershipDatasourcesOutput) SetMembershipDatasources(v []*MembershipDatasources) *BatchGetMembershipDatasourcesOutput {
+	s.MembershipDatasources = v
+	return s
+}
+
+// SetUnprocessedGraphs sets the UnprocessedGraphs field's value.
+func (s *BatchGetMembershipDatasourcesOutput) SetUnprocessedGraphs(v []*UnprocessedGraph) *BatchGetMembershipDatasourcesOutput {
+	s.UnprocessedGraphs = v
 	return s
 }
 
@@ -2497,7 +3758,11 @@ type CreateMembersInput struct {
 
 	// Customized message text to include in the invitation email message to the
 	// invited member accounts.
-	Message *string `min:"1" type:"string"`
+	//
+	// Message is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateMembersInput's
+	// String and GoString methods.
+	Message *string `min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -2617,6 +3882,152 @@ func (s *CreateMembersOutput) SetMembers(v []*MemberDetail) *CreateMembersOutput
 // SetUnprocessedAccounts sets the UnprocessedAccounts field's value.
 func (s *CreateMembersOutput) SetUnprocessedAccounts(v []*UnprocessedAccount) *CreateMembersOutput {
 	s.UnprocessedAccounts = v
+	return s
+}
+
+// Details about the data source packages ingested by your behavior graph.
+type DatasourcePackageIngestDetail struct {
+	_ struct{} `type:"structure"`
+
+	// Details on which data source packages are ingested for a member account.
+	DatasourcePackageIngestState *string `type:"string" enum:"DatasourcePackageIngestState"`
+
+	// The date a data source package was enabled for this account
+	LastIngestStateChange map[string]*TimestampForCollection `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatasourcePackageIngestDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatasourcePackageIngestDetail) GoString() string {
+	return s.String()
+}
+
+// SetDatasourcePackageIngestState sets the DatasourcePackageIngestState field's value.
+func (s *DatasourcePackageIngestDetail) SetDatasourcePackageIngestState(v string) *DatasourcePackageIngestDetail {
+	s.DatasourcePackageIngestState = &v
+	return s
+}
+
+// SetLastIngestStateChange sets the LastIngestStateChange field's value.
+func (s *DatasourcePackageIngestDetail) SetLastIngestStateChange(v map[string]*TimestampForCollection) *DatasourcePackageIngestDetail {
+	s.LastIngestStateChange = v
+	return s
+}
+
+// Information on the usage of a data source package in the behavior graph.
+type DatasourcePackageUsageInfo struct {
+	_ struct{} `type:"structure"`
+
+	// Total volume of data in bytes per day ingested for a given data source package.
+	VolumeUsageInBytes *int64 `type:"long"`
+
+	// The data and time when the member account data volume was last updated. The
+	// value is an ISO8601 formatted string. For example, 2021-08-18T16:35:56.284Z.
+	VolumeUsageUpdateTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatasourcePackageUsageInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DatasourcePackageUsageInfo) GoString() string {
+	return s.String()
+}
+
+// SetVolumeUsageInBytes sets the VolumeUsageInBytes field's value.
+func (s *DatasourcePackageUsageInfo) SetVolumeUsageInBytes(v int64) *DatasourcePackageUsageInfo {
+	s.VolumeUsageInBytes = &v
+	return s
+}
+
+// SetVolumeUsageUpdateTime sets the VolumeUsageUpdateTime field's value.
+func (s *DatasourcePackageUsageInfo) SetVolumeUsageUpdateTime(v time.Time) *DatasourcePackageUsageInfo {
+	s.VolumeUsageUpdateTime = &v
+	return s
+}
+
+// Contains details on the time range used to filter data.
+type DateFilter struct {
+	_ struct{} `type:"structure"`
+
+	// A timestamp representing the end date of the time period until when data
+	// is filtered , including the end date.
+	//
+	// EndInclusive is a required field
+	EndInclusive *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+
+	// A timestamp representing the start of the time period from when data is filtered,
+	// including the start date.
+	//
+	// StartInclusive is a required field
+	StartInclusive *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DateFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DateFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DateFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DateFilter"}
+	if s.EndInclusive == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndInclusive"))
+	}
+	if s.StartInclusive == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartInclusive"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndInclusive sets the EndInclusive field's value.
+func (s *DateFilter) SetEndInclusive(v time.Time) *DateFilter {
+	s.EndInclusive = &v
+	return s
+}
+
+// SetStartInclusive sets the StartInclusive field's value.
+func (s *DateFilter) SetStartInclusive(v time.Time) *DateFilter {
+	s.StartInclusive = &v
 	return s
 }
 
@@ -3060,6 +4471,333 @@ func (s EnableOrganizationAdminAccountOutput) GoString() string {
 	return s.String()
 }
 
+// Details on the criteria used to define the filter for investigation results.
+type FilterCriteria struct {
+	_ struct{} `type:"structure"`
+
+	// Filter the investigation results based on when the investigation was created.
+	CreatedTime *DateFilter `type:"structure"`
+
+	// Filter the investigation results based on the Amazon Resource Name (ARN)
+	// of the entity.
+	EntityArn *StringFilter `type:"structure"`
+
+	// Filter the investigation results based on the severity.
+	Severity *StringFilter `type:"structure"`
+
+	// Filter the investigation results based on the state.
+	State *StringFilter `type:"structure"`
+
+	// Filter the investigation results based on the status.
+	Status *StringFilter `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FilterCriteria) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FilterCriteria) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FilterCriteria) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FilterCriteria"}
+	if s.CreatedTime != nil {
+		if err := s.CreatedTime.Validate(); err != nil {
+			invalidParams.AddNested("CreatedTime", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.EntityArn != nil {
+		if err := s.EntityArn.Validate(); err != nil {
+			invalidParams.AddNested("EntityArn", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Severity != nil {
+		if err := s.Severity.Validate(); err != nil {
+			invalidParams.AddNested("Severity", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.State != nil {
+		if err := s.State.Validate(); err != nil {
+			invalidParams.AddNested("State", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Status != nil {
+		if err := s.Status.Validate(); err != nil {
+			invalidParams.AddNested("Status", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *FilterCriteria) SetCreatedTime(v *DateFilter) *FilterCriteria {
+	s.CreatedTime = v
+	return s
+}
+
+// SetEntityArn sets the EntityArn field's value.
+func (s *FilterCriteria) SetEntityArn(v *StringFilter) *FilterCriteria {
+	s.EntityArn = v
+	return s
+}
+
+// SetSeverity sets the Severity field's value.
+func (s *FilterCriteria) SetSeverity(v *StringFilter) *FilterCriteria {
+	s.Severity = v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *FilterCriteria) SetState(v *StringFilter) *FilterCriteria {
+	s.State = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *FilterCriteria) SetStatus(v *StringFilter) *FilterCriteria {
+	s.Status = v
+	return s
+}
+
+// Contains information on suspicious IP addresses identified as indicators
+// of compromise. This indicator is derived from Amazon Web Services threat
+// intelligence.
+type FlaggedIpAddressDetail struct {
+	_ struct{} `type:"structure"`
+
+	// IP address of the suspicious entity.
+	IpAddress *string `type:"string"`
+
+	// Details the reason the IP address was flagged as suspicious.
+	Reason *string `type:"string" enum:"Reason"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FlaggedIpAddressDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FlaggedIpAddressDetail) GoString() string {
+	return s.String()
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *FlaggedIpAddressDetail) SetIpAddress(v string) *FlaggedIpAddressDetail {
+	s.IpAddress = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *FlaggedIpAddressDetail) SetReason(v string) *FlaggedIpAddressDetail {
+	s.Reason = &v
+	return s
+}
+
+type GetInvestigationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+
+	// The investigation ID of the investigation report.
+	//
+	// InvestigationId is a required field
+	InvestigationId *string `min:"21" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetInvestigationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetInvestigationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetInvestigationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetInvestigationInput"}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+	if s.InvestigationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InvestigationId"))
+	}
+	if s.InvestigationId != nil && len(*s.InvestigationId) < 21 {
+		invalidParams.Add(request.NewErrParamMinLen("InvestigationId", 21))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *GetInvestigationInput) SetGraphArn(v string) *GetInvestigationInput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *GetInvestigationInput) SetInvestigationId(v string) *GetInvestigationInput {
+	s.InvestigationId = &v
+	return s
+}
+
+type GetInvestigationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The UTC time stamp of the creation time of the investigation report.
+	CreatedTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+
+	// The unique Amazon Resource Name (ARN) of the IAM user and IAM role.
+	EntityArn *string `type:"string"`
+
+	// Type of entity. For example, Amazon Web Services accounts, such as IAM user
+	// and role.
+	EntityType *string `type:"string" enum:"EntityType"`
+
+	// The ARN of the behavior graph.
+	GraphArn *string `type:"string"`
+
+	// The investigation ID of the investigation report.
+	InvestigationId *string `min:"21" type:"string"`
+
+	// The data and time when the investigation began. The value is an UTC ISO8601
+	// formatted string. For example, 2021-08-18T16:35:56.284Z.
+	ScopeEndTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+
+	// The start date and time for the scope time set to generate the investigation
+	// report.
+	ScopeStartTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+
+	// Severity based on the likelihood and impact of the indicators of compromise
+	// discovered in the investigation.
+	Severity *string `type:"string" enum:"Severity"`
+
+	// The current state of the investigation. An archived investigation indicates
+	// you have completed reviewing the investigation.
+	State *string `type:"string" enum:"State"`
+
+	// Status based on the completion status of the investigation.
+	Status *string `type:"string" enum:"Status"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetInvestigationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetInvestigationOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *GetInvestigationOutput) SetCreatedTime(v time.Time) *GetInvestigationOutput {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetEntityArn sets the EntityArn field's value.
+func (s *GetInvestigationOutput) SetEntityArn(v string) *GetInvestigationOutput {
+	s.EntityArn = &v
+	return s
+}
+
+// SetEntityType sets the EntityType field's value.
+func (s *GetInvestigationOutput) SetEntityType(v string) *GetInvestigationOutput {
+	s.EntityType = &v
+	return s
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *GetInvestigationOutput) SetGraphArn(v string) *GetInvestigationOutput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *GetInvestigationOutput) SetInvestigationId(v string) *GetInvestigationOutput {
+	s.InvestigationId = &v
+	return s
+}
+
+// SetScopeEndTime sets the ScopeEndTime field's value.
+func (s *GetInvestigationOutput) SetScopeEndTime(v time.Time) *GetInvestigationOutput {
+	s.ScopeEndTime = &v
+	return s
+}
+
+// SetScopeStartTime sets the ScopeStartTime field's value.
+func (s *GetInvestigationOutput) SetScopeStartTime(v time.Time) *GetInvestigationOutput {
+	s.ScopeStartTime = &v
+	return s
+}
+
+// SetSeverity sets the Severity field's value.
+func (s *GetInvestigationOutput) SetSeverity(v string) *GetInvestigationOutput {
+	s.Severity = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *GetInvestigationOutput) SetState(v string) *GetInvestigationOutput {
+	s.State = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetInvestigationOutput) SetStatus(v string) *GetInvestigationOutput {
+	s.Status = &v
+	return s
+}
+
 type GetMembersInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3214,6 +4952,216 @@ func (s *Graph) SetCreatedTime(v time.Time) *Graph {
 	return s
 }
 
+// Contains information on unusual and impossible travel in an account.
+type ImpossibleTravelDetail struct {
+	_ struct{} `type:"structure"`
+
+	// IP address where the resource was last used in the impossible travel.
+	EndingIpAddress *string `type:"string"`
+
+	// Location where the resource was last used in the impossible travel.
+	EndingLocation *string `type:"string"`
+
+	// Returns the time difference between the first and last timestamp the resource
+	// was used.
+	HourlyTimeDelta *int64 `type:"integer"`
+
+	// IP address where the resource was first used in the impossible travel
+	StartingIpAddress *string `type:"string"`
+
+	// Location where the resource was first used in the impossible travel
+	StartingLocation *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImpossibleTravelDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImpossibleTravelDetail) GoString() string {
+	return s.String()
+}
+
+// SetEndingIpAddress sets the EndingIpAddress field's value.
+func (s *ImpossibleTravelDetail) SetEndingIpAddress(v string) *ImpossibleTravelDetail {
+	s.EndingIpAddress = &v
+	return s
+}
+
+// SetEndingLocation sets the EndingLocation field's value.
+func (s *ImpossibleTravelDetail) SetEndingLocation(v string) *ImpossibleTravelDetail {
+	s.EndingLocation = &v
+	return s
+}
+
+// SetHourlyTimeDelta sets the HourlyTimeDelta field's value.
+func (s *ImpossibleTravelDetail) SetHourlyTimeDelta(v int64) *ImpossibleTravelDetail {
+	s.HourlyTimeDelta = &v
+	return s
+}
+
+// SetStartingIpAddress sets the StartingIpAddress field's value.
+func (s *ImpossibleTravelDetail) SetStartingIpAddress(v string) *ImpossibleTravelDetail {
+	s.StartingIpAddress = &v
+	return s
+}
+
+// SetStartingLocation sets the StartingLocation field's value.
+func (s *ImpossibleTravelDetail) SetStartingLocation(v string) *ImpossibleTravelDetail {
+	s.StartingLocation = &v
+	return s
+}
+
+// Investigations triages indicators of compromises such as a finding and surfaces
+// only the most critical and suspicious issues, so you can focus on high-level
+// investigations.
+type Indicator struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the indicator of compromise.
+	IndicatorDetail *IndicatorDetail `type:"structure"`
+
+	// The type of indicator.
+	IndicatorType *string `type:"string" enum:"IndicatorType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Indicator) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Indicator) GoString() string {
+	return s.String()
+}
+
+// SetIndicatorDetail sets the IndicatorDetail field's value.
+func (s *Indicator) SetIndicatorDetail(v *IndicatorDetail) *Indicator {
+	s.IndicatorDetail = v
+	return s
+}
+
+// SetIndicatorType sets the IndicatorType field's value.
+func (s *Indicator) SetIndicatorType(v string) *Indicator {
+	s.IndicatorType = &v
+	return s
+}
+
+// Details about the indicators of compromise which are used to determine if
+// a resource is involved in a security incident.
+type IndicatorDetail struct {
+	_ struct{} `type:"structure"`
+
+	// Suspicious IP addresses that are flagged, which indicates critical or severe
+	// threats based on threat intelligence by Detective. This indicator is derived
+	// from AWS threat intelligence.
+	FlaggedIpAddressDetail *FlaggedIpAddressDetail `type:"structure"`
+
+	// Identifies unusual and impossible user activity for an account.
+	ImpossibleTravelDetail *ImpossibleTravelDetail `type:"structure"`
+
+	// Contains details about the new Autonomous System Organization (ASO).
+	NewAsoDetail *NewAsoDetail `type:"structure"`
+
+	// Contains details about the new geographic location.
+	NewGeolocationDetail *NewGeolocationDetail `type:"structure"`
+
+	// Contains details about the new user agent.
+	NewUserAgentDetail *NewUserAgentDetail `type:"structure"`
+
+	// Contains details about related findings.
+	RelatedFindingDetail *RelatedFindingDetail `type:"structure"`
+
+	// Contains details about related finding groups.
+	RelatedFindingGroupDetail *RelatedFindingGroupDetail `type:"structure"`
+
+	// Details about the indicator of compromise.
+	TTPsObservedDetail *TTPsObservedDetail `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IndicatorDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IndicatorDetail) GoString() string {
+	return s.String()
+}
+
+// SetFlaggedIpAddressDetail sets the FlaggedIpAddressDetail field's value.
+func (s *IndicatorDetail) SetFlaggedIpAddressDetail(v *FlaggedIpAddressDetail) *IndicatorDetail {
+	s.FlaggedIpAddressDetail = v
+	return s
+}
+
+// SetImpossibleTravelDetail sets the ImpossibleTravelDetail field's value.
+func (s *IndicatorDetail) SetImpossibleTravelDetail(v *ImpossibleTravelDetail) *IndicatorDetail {
+	s.ImpossibleTravelDetail = v
+	return s
+}
+
+// SetNewAsoDetail sets the NewAsoDetail field's value.
+func (s *IndicatorDetail) SetNewAsoDetail(v *NewAsoDetail) *IndicatorDetail {
+	s.NewAsoDetail = v
+	return s
+}
+
+// SetNewGeolocationDetail sets the NewGeolocationDetail field's value.
+func (s *IndicatorDetail) SetNewGeolocationDetail(v *NewGeolocationDetail) *IndicatorDetail {
+	s.NewGeolocationDetail = v
+	return s
+}
+
+// SetNewUserAgentDetail sets the NewUserAgentDetail field's value.
+func (s *IndicatorDetail) SetNewUserAgentDetail(v *NewUserAgentDetail) *IndicatorDetail {
+	s.NewUserAgentDetail = v
+	return s
+}
+
+// SetRelatedFindingDetail sets the RelatedFindingDetail field's value.
+func (s *IndicatorDetail) SetRelatedFindingDetail(v *RelatedFindingDetail) *IndicatorDetail {
+	s.RelatedFindingDetail = v
+	return s
+}
+
+// SetRelatedFindingGroupDetail sets the RelatedFindingGroupDetail field's value.
+func (s *IndicatorDetail) SetRelatedFindingGroupDetail(v *RelatedFindingGroupDetail) *IndicatorDetail {
+	s.RelatedFindingGroupDetail = v
+	return s
+}
+
+// SetTTPsObservedDetail sets the TTPsObservedDetail field's value.
+func (s *IndicatorDetail) SetTTPsObservedDetail(v *TTPsObservedDetail) *IndicatorDetail {
+	s.TTPsObservedDetail = v
+	return s
+}
+
 // The request was valid but failed because of a problem with the service.
 type InternalServerException struct {
 	_            struct{}                  `type:"structure"`
@@ -3276,6 +5224,210 @@ func (s *InternalServerException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *InternalServerException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Details about the investigation related to a potential security event identified
+// by Detective
+type InvestigationDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The UTC time stamp of the creation time of the investigation report.
+	CreatedTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+
+	// The unique Amazon Resource Name (ARN) of the IAM user and IAM role.
+	EntityArn *string `type:"string"`
+
+	// Type of entity. For example, Amazon Web Services accounts, such as IAM user
+	// and role.
+	EntityType *string `type:"string" enum:"EntityType"`
+
+	// The investigation ID of the investigation report.
+	InvestigationId *string `min:"21" type:"string"`
+
+	// Severity based on the likelihood and impact of the indicators of compromise
+	// discovered in the investigation.
+	Severity *string `type:"string" enum:"Severity"`
+
+	// The current state of the investigation. An archived investigation indicates
+	// you have completed reviewing the investigation.
+	State *string `type:"string" enum:"State"`
+
+	// Status based on the completion status of the investigation.
+	Status *string `type:"string" enum:"Status"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvestigationDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvestigationDetail) GoString() string {
+	return s.String()
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *InvestigationDetail) SetCreatedTime(v time.Time) *InvestigationDetail {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetEntityArn sets the EntityArn field's value.
+func (s *InvestigationDetail) SetEntityArn(v string) *InvestigationDetail {
+	s.EntityArn = &v
+	return s
+}
+
+// SetEntityType sets the EntityType field's value.
+func (s *InvestigationDetail) SetEntityType(v string) *InvestigationDetail {
+	s.EntityType = &v
+	return s
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *InvestigationDetail) SetInvestigationId(v string) *InvestigationDetail {
+	s.InvestigationId = &v
+	return s
+}
+
+// SetSeverity sets the Severity field's value.
+func (s *InvestigationDetail) SetSeverity(v string) *InvestigationDetail {
+	s.Severity = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *InvestigationDetail) SetState(v string) *InvestigationDetail {
+	s.State = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *InvestigationDetail) SetStatus(v string) *InvestigationDetail {
+	s.Status = &v
+	return s
+}
+
+type ListDatasourcePackagesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+
+	// The maximum number of results to return.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// For requests to get the next page of results, the pagination token that was
+	// returned with the previous set of results. The initial request does not include
+	// a pagination token.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListDatasourcePackagesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListDatasourcePackagesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListDatasourcePackagesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListDatasourcePackagesInput"}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *ListDatasourcePackagesInput) SetGraphArn(v string) *ListDatasourcePackagesInput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListDatasourcePackagesInput) SetMaxResults(v int64) *ListDatasourcePackagesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDatasourcePackagesInput) SetNextToken(v string) *ListDatasourcePackagesInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListDatasourcePackagesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Details on the data source packages active in the behavior graph.
+	DatasourcePackages map[string]*DatasourcePackageIngestDetail `type:"map"`
+
+	// For requests to get the next page of results, the pagination token that was
+	// returned with the previous set of results. The initial request does not include
+	// a pagination token.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListDatasourcePackagesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListDatasourcePackagesOutput) GoString() string {
+	return s.String()
+}
+
+// SetDatasourcePackages sets the DatasourcePackages field's value.
+func (s *ListDatasourcePackagesOutput) SetDatasourcePackages(v map[string]*DatasourcePackageIngestDetail) *ListDatasourcePackagesOutput {
+	s.DatasourcePackages = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListDatasourcePackagesOutput) SetNextToken(v string) *ListDatasourcePackagesOutput {
+	s.NextToken = &v
+	return s
 }
 
 type ListGraphsInput struct {
@@ -3375,6 +5527,314 @@ func (s *ListGraphsOutput) SetGraphList(v []*Graph) *ListGraphsOutput {
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListGraphsOutput) SetNextToken(v string) *ListGraphsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListIndicatorsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+
+	// See Detective investigations. (https://docs.aws.amazon.com/detective/latest/userguide/detective-investigations.html).
+	IndicatorType *string `type:"string" enum:"IndicatorType"`
+
+	// The investigation ID of the investigation report.
+	//
+	// InvestigationId is a required field
+	InvestigationId *string `min:"21" type:"string" required:"true"`
+
+	// List the maximum number of indicators in a page.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// List if there are more results available. The value of nextToken is a unique
+	// pagination token for each page. Repeat the call using the returned token
+	// to retrieve the next page. Keep all other arguments unchanged.
+	//
+	// Each pagination token expires after 24 hours. Using an expired pagination
+	// token will return a Validation Exception error.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIndicatorsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIndicatorsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListIndicatorsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListIndicatorsInput"}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+	if s.InvestigationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InvestigationId"))
+	}
+	if s.InvestigationId != nil && len(*s.InvestigationId) < 21 {
+		invalidParams.Add(request.NewErrParamMinLen("InvestigationId", 21))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *ListIndicatorsInput) SetGraphArn(v string) *ListIndicatorsInput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetIndicatorType sets the IndicatorType field's value.
+func (s *ListIndicatorsInput) SetIndicatorType(v string) *ListIndicatorsInput {
+	s.IndicatorType = &v
+	return s
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *ListIndicatorsInput) SetInvestigationId(v string) *ListIndicatorsInput {
+	s.InvestigationId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListIndicatorsInput) SetMaxResults(v int64) *ListIndicatorsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIndicatorsInput) SetNextToken(v string) *ListIndicatorsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListIndicatorsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the behavior graph.
+	GraphArn *string `type:"string"`
+
+	// Indicators of compromise listed based on severity.
+	Indicators []*Indicator `type:"list"`
+
+	// The investigation ID of the investigation report.
+	InvestigationId *string `min:"21" type:"string"`
+
+	// List if there are more results available. The value of nextToken is a unique
+	// pagination token for each page. Repeat the call using the returned token
+	// to retrieve the next page. Keep all other arguments unchanged.
+	//
+	// Each pagination token expires after 24 hours. Using an expired pagination
+	// token will return a Validation Exception error.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIndicatorsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIndicatorsOutput) GoString() string {
+	return s.String()
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *ListIndicatorsOutput) SetGraphArn(v string) *ListIndicatorsOutput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetIndicators sets the Indicators field's value.
+func (s *ListIndicatorsOutput) SetIndicators(v []*Indicator) *ListIndicatorsOutput {
+	s.Indicators = v
+	return s
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *ListIndicatorsOutput) SetInvestigationId(v string) *ListIndicatorsOutput {
+	s.InvestigationId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIndicatorsOutput) SetNextToken(v string) *ListIndicatorsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListInvestigationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filter the investigation results based on a criteria.
+	FilterCriteria *FilterCriteria `type:"structure"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+
+	// List the maximum number of investigations in a page.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// List if there are more results available. The value of nextToken is a unique
+	// pagination token for each page. Repeat the call using the returned token
+	// to retrieve the next page. Keep all other arguments unchanged.
+	//
+	// Each pagination token expires after 24 hours. Using an expired pagination
+	// token will return a Validation Exception error.
+	NextToken *string `min:"1" type:"string"`
+
+	// Sorts the investigation results based on a criteria.
+	SortCriteria *SortCriteria `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListInvestigationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListInvestigationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListInvestigationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListInvestigationsInput"}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.FilterCriteria != nil {
+		if err := s.FilterCriteria.Validate(); err != nil {
+			invalidParams.AddNested("FilterCriteria", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilterCriteria sets the FilterCriteria field's value.
+func (s *ListInvestigationsInput) SetFilterCriteria(v *FilterCriteria) *ListInvestigationsInput {
+	s.FilterCriteria = v
+	return s
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *ListInvestigationsInput) SetGraphArn(v string) *ListInvestigationsInput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListInvestigationsInput) SetMaxResults(v int64) *ListInvestigationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListInvestigationsInput) SetNextToken(v string) *ListInvestigationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSortCriteria sets the SortCriteria field's value.
+func (s *ListInvestigationsInput) SetSortCriteria(v *SortCriteria) *ListInvestigationsInput {
+	s.SortCriteria = v
+	return s
+}
+
+type ListInvestigationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Investigations details lists the summary of uncommon behavior or malicious
+	// activity which indicates a compromise.
+	InvestigationDetails []*InvestigationDetail `type:"list"`
+
+	// List if there are more results available. The value of nextToken is a unique
+	// pagination token for each page. Repeat the call using the returned token
+	// to retrieve the next page. Keep all other arguments unchanged.
+	//
+	// Each pagination token expires after 24 hours. Using an expired pagination
+	// token will return an HTTP 400 InvalidToken error.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListInvestigationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListInvestigationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetInvestigationDetails sets the InvestigationDetails field's value.
+func (s *ListInvestigationsOutput) SetInvestigationDetails(v []*InvestigationDetail) *ListInvestigationsOutput {
+	s.InvestigationDetails = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListInvestigationsOutput) SetNextToken(v string) *ListInvestigationsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -3666,7 +6126,7 @@ func (s *ListOrganizationAdminAccountsInput) SetNextToken(v string) *ListOrganiz
 type ListOrganizationAdminAccountsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The list of delegated administrator accounts.
+	// The list of Detective administrator accounts.
 	Administrators []*Administrator `type:"list"`
 
 	// If there are more accounts remaining in the results, then this is the pagination
@@ -3796,6 +6256,9 @@ type MemberDetail struct {
 	// the behavior graph.
 	AdministratorId *string `min:"12" type:"string"`
 
+	// The state of a data source package for the behavior graph.
+	DatasourcePackageIngestStates map[string]*string `type:"map"`
+
 	// For member accounts with a status of ACCEPTED_BUT_DISABLED, the reason that
 	// the member account is not enabled.
 	//
@@ -3810,7 +6273,11 @@ type MemberDetail struct {
 	DisabledReason *string `type:"string" enum:"MemberDisabledReason"`
 
 	// The Amazon Web Services account root user email address for the member account.
-	EmailAddress *string `min:"1" type:"string"`
+	//
+	// EmailAddress is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by MemberDetail's
+	// String and GoString methods.
+	EmailAddress *string `min:"1" type:"string" sensitive:"true"`
 
 	// The ARN of the behavior graph.
 	GraphArn *string `type:"string"`
@@ -3843,13 +6310,13 @@ type MemberDetail struct {
 	// account is 40 GB per day, then PercentOfGraphUtilization is 25. It represents
 	// 25% of the maximum allowed data volume.
 	//
-	// Deprecated: This property is deprecated. Use VolumeUsageInBytes instead.
+	// Deprecated: This property is deprecated. Use VolumeUsageByDatasourcePackage instead.
 	PercentOfGraphUtilization *float64 `deprecated:"true" type:"double"`
 
 	// The date and time when the graph utilization percentage was last updated.
 	// The value is an ISO8601 formatted string. For example, 2021-08-18T16:35:56.284Z.
 	//
-	// Deprecated: This property is deprecated. Use VolumeUsageUpdatedTime instead.
+	// Deprecated: This property is deprecated. Use VolumeUsageByDatasourcePackage instead.
 	PercentOfGraphUtilizationUpdatedTime *time.Time `deprecated:"true" type:"timestamp" timestampFormat:"iso8601"`
 
 	// The current membership status of the member account. The status can have
@@ -3891,12 +6358,20 @@ type MemberDetail struct {
 	// an ISO8601 formatted string. For example, 2021-08-18T16:35:56.284Z.
 	UpdatedTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
 
+	// Details on the volume of usage for each data source package in a behavior
+	// graph.
+	VolumeUsageByDatasourcePackage map[string]*DatasourcePackageUsageInfo `type:"map"`
+
 	// The data volume in bytes per day for the member account.
-	VolumeUsageInBytes *int64 `type:"long"`
+	//
+	// Deprecated: This property is deprecated. Use VolumeUsageByDatasourcePackage instead.
+	VolumeUsageInBytes *int64 `deprecated:"true" type:"long"`
 
 	// The data and time when the member account data volume was last updated. The
 	// value is an ISO8601 formatted string. For example, 2021-08-18T16:35:56.284Z.
-	VolumeUsageUpdatedTime *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+	//
+	// Deprecated: This property is deprecated. Use VolumeUsageByDatasourcePackage instead.
+	VolumeUsageUpdatedTime *time.Time `deprecated:"true" type:"timestamp" timestampFormat:"iso8601"`
 }
 
 // String returns the string representation.
@@ -3926,6 +6401,12 @@ func (s *MemberDetail) SetAccountId(v string) *MemberDetail {
 // SetAdministratorId sets the AdministratorId field's value.
 func (s *MemberDetail) SetAdministratorId(v string) *MemberDetail {
 	s.AdministratorId = &v
+	return s
+}
+
+// SetDatasourcePackageIngestStates sets the DatasourcePackageIngestStates field's value.
+func (s *MemberDetail) SetDatasourcePackageIngestStates(v map[string]*string) *MemberDetail {
+	s.DatasourcePackageIngestStates = v
 	return s
 }
 
@@ -3989,6 +6470,12 @@ func (s *MemberDetail) SetUpdatedTime(v time.Time) *MemberDetail {
 	return s
 }
 
+// SetVolumeUsageByDatasourcePackage sets the VolumeUsageByDatasourcePackage field's value.
+func (s *MemberDetail) SetVolumeUsageByDatasourcePackage(v map[string]*DatasourcePackageUsageInfo) *MemberDetail {
+	s.VolumeUsageByDatasourcePackage = v
+	return s
+}
+
 // SetVolumeUsageInBytes sets the VolumeUsageInBytes field's value.
 func (s *MemberDetail) SetVolumeUsageInBytes(v int64) *MemberDetail {
 	s.VolumeUsageInBytes = &v
@@ -3998,6 +6485,191 @@ func (s *MemberDetail) SetVolumeUsageInBytes(v int64) *MemberDetail {
 // SetVolumeUsageUpdatedTime sets the VolumeUsageUpdatedTime field's value.
 func (s *MemberDetail) SetVolumeUsageUpdatedTime(v time.Time) *MemberDetail {
 	s.VolumeUsageUpdatedTime = &v
+	return s
+}
+
+// Details on data source packages for members of the behavior graph.
+type MembershipDatasources struct {
+	_ struct{} `type:"structure"`
+
+	// The account identifier of the Amazon Web Services account.
+	AccountId *string `min:"12" type:"string"`
+
+	// Details on when a data source package was added to a behavior graph.
+	DatasourcePackageIngestHistory map[string]map[string]*TimestampForCollection `type:"map"`
+
+	// The ARN of the organization behavior graph.
+	GraphArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MembershipDatasources) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MembershipDatasources) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *MembershipDatasources) SetAccountId(v string) *MembershipDatasources {
+	s.AccountId = &v
+	return s
+}
+
+// SetDatasourcePackageIngestHistory sets the DatasourcePackageIngestHistory field's value.
+func (s *MembershipDatasources) SetDatasourcePackageIngestHistory(v map[string]map[string]*TimestampForCollection) *MembershipDatasources {
+	s.DatasourcePackageIngestHistory = v
+	return s
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *MembershipDatasources) SetGraphArn(v string) *MembershipDatasources {
+	s.GraphArn = &v
+	return s
+}
+
+// Details new Autonomous System Organizations (ASOs) used either at the resource
+// or account level.
+type NewAsoDetail struct {
+	_ struct{} `type:"structure"`
+
+	// Details about the new Autonomous System Organization (ASO).
+	Aso *string `type:"string"`
+
+	// Checks if the ASO is for new for the entire account.
+	IsNewForEntireAccount *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NewAsoDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NewAsoDetail) GoString() string {
+	return s.String()
+}
+
+// SetAso sets the Aso field's value.
+func (s *NewAsoDetail) SetAso(v string) *NewAsoDetail {
+	s.Aso = &v
+	return s
+}
+
+// SetIsNewForEntireAccount sets the IsNewForEntireAccount field's value.
+func (s *NewAsoDetail) SetIsNewForEntireAccount(v bool) *NewAsoDetail {
+	s.IsNewForEntireAccount = &v
+	return s
+}
+
+// Details new geolocations used either at the resource or account level. For
+// example, lists an observed geolocation that is an infrequent or unused location
+// based on previous user activity.
+type NewGeolocationDetail struct {
+	_ struct{} `type:"structure"`
+
+	// IP address using which the resource was accessed.
+	IpAddress *string `type:"string"`
+
+	// Checks if the gelocation is new for the entire account.
+	IsNewForEntireAccount *bool `type:"boolean"`
+
+	// Location where the resource was accessed.
+	Location *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NewGeolocationDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NewGeolocationDetail) GoString() string {
+	return s.String()
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *NewGeolocationDetail) SetIpAddress(v string) *NewGeolocationDetail {
+	s.IpAddress = &v
+	return s
+}
+
+// SetIsNewForEntireAccount sets the IsNewForEntireAccount field's value.
+func (s *NewGeolocationDetail) SetIsNewForEntireAccount(v bool) *NewGeolocationDetail {
+	s.IsNewForEntireAccount = &v
+	return s
+}
+
+// SetLocation sets the Location field's value.
+func (s *NewGeolocationDetail) SetLocation(v string) *NewGeolocationDetail {
+	s.Location = &v
+	return s
+}
+
+// Details new user agents used either at the resource or account level.
+type NewUserAgentDetail struct {
+	_ struct{} `type:"structure"`
+
+	// Checks if the user agent is new for the entire account.
+	IsNewForEntireAccount *bool `type:"boolean"`
+
+	// New user agent which accessed the resource.
+	UserAgent *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NewUserAgentDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NewUserAgentDetail) GoString() string {
+	return s.String()
+}
+
+// SetIsNewForEntireAccount sets the IsNewForEntireAccount field's value.
+func (s *NewUserAgentDetail) SetIsNewForEntireAccount(v bool) *NewUserAgentDetail {
+	s.IsNewForEntireAccount = &v
+	return s
+}
+
+// SetUserAgent sets the UserAgent field's value.
+func (s *NewUserAgentDetail) SetUserAgent(v string) *NewUserAgentDetail {
+	s.UserAgent = &v
 	return s
 }
 
@@ -4070,6 +6742,92 @@ func (s RejectInvitationOutput) String() string {
 // value will be replaced with "sensitive".
 func (s RejectInvitationOutput) GoString() string {
 	return s.String()
+}
+
+// Details related activities associated with a potential security event. Lists
+// all distinct categories of evidence that are connected to the resource or
+// the finding group.
+type RelatedFindingDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the related finding.
+	Arn *string `type:"string"`
+
+	// The IP address of the finding.
+	IpAddress *string `type:"string"`
+
+	// The type of finding.
+	Type *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RelatedFindingDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RelatedFindingDetail) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *RelatedFindingDetail) SetArn(v string) *RelatedFindingDetail {
+	s.Arn = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *RelatedFindingDetail) SetIpAddress(v string) *RelatedFindingDetail {
+	s.IpAddress = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *RelatedFindingDetail) SetType(v string) *RelatedFindingDetail {
+	s.Type = &v
+	return s
+}
+
+// Details multiple activities as they related to a potential security event.
+// Detective uses graph analysis technique that infers relationships between
+// findings and entities, and groups them together as a finding group.
+type RelatedFindingGroupDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the finding group.
+	Id *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RelatedFindingGroupDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RelatedFindingGroupDetail) GoString() string {
+	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *RelatedFindingGroupDetail) SetId(v string) *RelatedFindingGroupDetail {
+	s.Id = &v
+	return s
 }
 
 // The request refers to a nonexistent resource.
@@ -4152,6 +6910,9 @@ type ServiceQuotaExceededException struct {
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
 	Message_ *string `locationName:"Message" type:"string"`
+
+	// The type of resource that has exceeded the service quota.
+	Resources []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -4197,7 +6958,7 @@ func (s *ServiceQuotaExceededException) OrigErr() error {
 }
 
 func (s *ServiceQuotaExceededException) Error() string {
-	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
 }
 
 // Status code returns the HTTP status code for the request's response error.
@@ -4208,6 +6969,168 @@ func (s *ServiceQuotaExceededException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ServiceQuotaExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Details about the criteria used for sorting investigations.
+type SortCriteria struct {
+	_ struct{} `type:"structure"`
+
+	// Represents the Field attribute to sort investigations.
+	Field *string `type:"string" enum:"Field"`
+
+	// The order by which the sorted findings are displayed.
+	SortOrder *string `type:"string" enum:"SortOrder"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SortCriteria) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SortCriteria) GoString() string {
+	return s.String()
+}
+
+// SetField sets the Field field's value.
+func (s *SortCriteria) SetField(v string) *SortCriteria {
+	s.Field = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *SortCriteria) SetSortOrder(v string) *SortCriteria {
+	s.SortOrder = &v
+	return s
+}
+
+type StartInvestigationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique Amazon Resource Name (ARN) of the IAM user and IAM role.
+	//
+	// EntityArn is a required field
+	EntityArn *string `type:"string" required:"true"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+
+	// The data and time when the investigation began. The value is an UTC ISO8601
+	// formatted string. For example, 2021-08-18T16:35:56.284Z.
+	//
+	// ScopeEndTime is a required field
+	ScopeEndTime *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+
+	// The data and time when the investigation began. The value is an UTC ISO8601
+	// formatted string. For example, 2021-08-18T16:35:56.284Z.
+	//
+	// ScopeStartTime is a required field
+	ScopeStartTime *time.Time `type:"timestamp" timestampFormat:"iso8601" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartInvestigationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartInvestigationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartInvestigationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartInvestigationInput"}
+	if s.EntityArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("EntityArn"))
+	}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+	if s.ScopeEndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScopeEndTime"))
+	}
+	if s.ScopeStartTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScopeStartTime"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEntityArn sets the EntityArn field's value.
+func (s *StartInvestigationInput) SetEntityArn(v string) *StartInvestigationInput {
+	s.EntityArn = &v
+	return s
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *StartInvestigationInput) SetGraphArn(v string) *StartInvestigationInput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetScopeEndTime sets the ScopeEndTime field's value.
+func (s *StartInvestigationInput) SetScopeEndTime(v time.Time) *StartInvestigationInput {
+	s.ScopeEndTime = &v
+	return s
+}
+
+// SetScopeStartTime sets the ScopeStartTime field's value.
+func (s *StartInvestigationInput) SetScopeStartTime(v time.Time) *StartInvestigationInput {
+	s.ScopeStartTime = &v
+	return s
+}
+
+type StartInvestigationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The investigation ID of the investigation report.
+	InvestigationId *string `min:"21" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartInvestigationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartInvestigationOutput) GoString() string {
+	return s.String()
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *StartInvestigationOutput) SetInvestigationId(v string) *StartInvestigationOutput {
+	s.InvestigationId = &v
+	return s
 }
 
 type StartMonitoringMemberInput struct {
@@ -4295,6 +7218,143 @@ func (s StartMonitoringMemberOutput) String() string {
 // value will be replaced with "sensitive".
 func (s StartMonitoringMemberOutput) GoString() string {
 	return s.String()
+}
+
+// A string for filtering Detective investigations.
+type StringFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The string filter value.
+	//
+	// Value is a required field
+	Value *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StringFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StringFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StringFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StringFilter"}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetValue sets the Value field's value.
+func (s *StringFilter) SetValue(v string) *StringFilter {
+	s.Value = &v
+	return s
+}
+
+// Details tactics, techniques, and procedures (TTPs) used in a potential security
+// event. Tactics are based on MITRE ATT&CK Matrix for Enterprise (https://attack.mitre.org/matrices/enterprise/).
+type TTPsObservedDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The total number of failed API requests.
+	APIFailureCount *int64 `type:"long"`
+
+	// The name of the API where the TTP was observed.
+	APIName *string `type:"string"`
+
+	// The total number of successful API requests.
+	APISuccessCount *int64 `type:"long"`
+
+	// The IP address where the TTP was observed.
+	IpAddress *string `type:"string"`
+
+	// The procedure used, identified by the investigation.
+	Procedure *string `type:"string"`
+
+	// The tactic used, identified by the investigation.
+	Tactic *string `type:"string"`
+
+	// The technique used, identified by the investigation.
+	Technique *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TTPsObservedDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TTPsObservedDetail) GoString() string {
+	return s.String()
+}
+
+// SetAPIFailureCount sets the APIFailureCount field's value.
+func (s *TTPsObservedDetail) SetAPIFailureCount(v int64) *TTPsObservedDetail {
+	s.APIFailureCount = &v
+	return s
+}
+
+// SetAPIName sets the APIName field's value.
+func (s *TTPsObservedDetail) SetAPIName(v string) *TTPsObservedDetail {
+	s.APIName = &v
+	return s
+}
+
+// SetAPISuccessCount sets the APISuccessCount field's value.
+func (s *TTPsObservedDetail) SetAPISuccessCount(v int64) *TTPsObservedDetail {
+	s.APISuccessCount = &v
+	return s
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *TTPsObservedDetail) SetIpAddress(v string) *TTPsObservedDetail {
+	s.IpAddress = &v
+	return s
+}
+
+// SetProcedure sets the Procedure field's value.
+func (s *TTPsObservedDetail) SetProcedure(v string) *TTPsObservedDetail {
+	s.Procedure = &v
+	return s
+}
+
+// SetTactic sets the Tactic field's value.
+func (s *TTPsObservedDetail) SetTactic(v string) *TTPsObservedDetail {
+	s.Tactic = &v
+	return s
+}
+
+// SetTechnique sets the Technique field's value.
+func (s *TTPsObservedDetail) SetTechnique(v string) *TTPsObservedDetail {
+	s.Technique = &v
+	return s
 }
 
 type TagResourceInput struct {
@@ -4385,6 +7445,39 @@ func (s TagResourceOutput) String() string {
 // value will be replaced with "sensitive".
 func (s TagResourceOutput) GoString() string {
 	return s.String()
+}
+
+// Details on when data collection began for a source package.
+type TimestampForCollection struct {
+	_ struct{} `type:"structure"`
+
+	// The data and time when data collection began for a source package. The value
+	// is an ISO8601 formatted string. For example, 2021-08-18T16:35:56.284Z.
+	Timestamp *time.Time `type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TimestampForCollection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TimestampForCollection) GoString() string {
+	return s.String()
+}
+
+// SetTimestamp sets the Timestamp field's value.
+func (s *TimestampForCollection) SetTimestamp(v time.Time) *TimestampForCollection {
+	s.Timestamp = &v
+	return s
 }
 
 // The request cannot be completed because too many other requests are occurring
@@ -4495,6 +7588,48 @@ func (s *UnprocessedAccount) SetReason(v string) *UnprocessedAccount {
 	return s
 }
 
+// Behavior graphs that could not be processed in the request.
+type UnprocessedGraph struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the organization behavior graph.
+	GraphArn *string `type:"string"`
+
+	// The reason data source package information could not be processed for a behavior
+	// graph.
+	Reason *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnprocessedGraph) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnprocessedGraph) GoString() string {
+	return s.String()
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *UnprocessedGraph) SetGraphArn(v string) *UnprocessedGraph {
+	s.GraphArn = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *UnprocessedGraph) SetReason(v string) *UnprocessedGraph {
+	s.Reason = &v
+	return s
+}
+
 type UntagResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4584,6 +7719,191 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateDatasourcePackagesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The data source package start for the behavior graph.
+	//
+	// DatasourcePackages is a required field
+	DatasourcePackages []*string `min:"1" type:"list" required:"true" enum:"DatasourcePackage"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDatasourcePackagesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDatasourcePackagesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateDatasourcePackagesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateDatasourcePackagesInput"}
+	if s.DatasourcePackages == nil {
+		invalidParams.Add(request.NewErrParamRequired("DatasourcePackages"))
+	}
+	if s.DatasourcePackages != nil && len(s.DatasourcePackages) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DatasourcePackages", 1))
+	}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDatasourcePackages sets the DatasourcePackages field's value.
+func (s *UpdateDatasourcePackagesInput) SetDatasourcePackages(v []*string) *UpdateDatasourcePackagesInput {
+	s.DatasourcePackages = v
+	return s
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *UpdateDatasourcePackagesInput) SetGraphArn(v string) *UpdateDatasourcePackagesInput {
+	s.GraphArn = &v
+	return s
+}
+
+type UpdateDatasourcePackagesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDatasourcePackagesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateDatasourcePackagesOutput) GoString() string {
+	return s.String()
+}
+
+type UpdateInvestigationStateInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the behavior graph.
+	//
+	// GraphArn is a required field
+	GraphArn *string `type:"string" required:"true"`
+
+	// The investigation ID of the investigation report.
+	//
+	// InvestigationId is a required field
+	InvestigationId *string `min:"21" type:"string" required:"true"`
+
+	// The current state of the investigation. An archived investigation indicates
+	// you have completed reviewing the investigation.
+	//
+	// State is a required field
+	State *string `type:"string" required:"true" enum:"State"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInvestigationStateInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInvestigationStateInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateInvestigationStateInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateInvestigationStateInput"}
+	if s.GraphArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GraphArn"))
+	}
+	if s.InvestigationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("InvestigationId"))
+	}
+	if s.InvestigationId != nil && len(*s.InvestigationId) < 21 {
+		invalidParams.Add(request.NewErrParamMinLen("InvestigationId", 21))
+	}
+	if s.State == nil {
+		invalidParams.Add(request.NewErrParamRequired("State"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGraphArn sets the GraphArn field's value.
+func (s *UpdateInvestigationStateInput) SetGraphArn(v string) *UpdateInvestigationStateInput {
+	s.GraphArn = &v
+	return s
+}
+
+// SetInvestigationId sets the InvestigationId field's value.
+func (s *UpdateInvestigationStateInput) SetInvestigationId(v string) *UpdateInvestigationStateInput {
+	s.InvestigationId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *UpdateInvestigationStateInput) SetState(v string) *UpdateInvestigationStateInput {
+	s.State = &v
+	return s
+}
+
+type UpdateInvestigationStateOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInvestigationStateOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInvestigationStateOutput) GoString() string {
+	return s.String()
+}
+
 type UpdateOrganizationConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4667,6 +7987,12 @@ type ValidationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The error code associated with the validation failure.
+	ErrorCode *string `type:"string" enum:"ErrorCode"`
+
+	// An explanation of why validation failed.
+	ErrorCodeReason *string `type:"string"`
+
 	Message_ *string `locationName:"Message" type:"string"`
 }
 
@@ -4713,7 +8039,7 @@ func (s *ValidationException) OrigErr() error {
 }
 
 func (s *ValidationException) Error() string {
-	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
 }
 
 // Status code returns the HTTP status code for the request's response error.
@@ -4724,6 +8050,142 @@ func (s *ValidationException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+const (
+	// DatasourcePackageDetectiveCore is a DatasourcePackage enum value
+	DatasourcePackageDetectiveCore = "DETECTIVE_CORE"
+
+	// DatasourcePackageEksAudit is a DatasourcePackage enum value
+	DatasourcePackageEksAudit = "EKS_AUDIT"
+
+	// DatasourcePackageAsffSecurityhubFinding is a DatasourcePackage enum value
+	DatasourcePackageAsffSecurityhubFinding = "ASFF_SECURITYHUB_FINDING"
+)
+
+// DatasourcePackage_Values returns all elements of the DatasourcePackage enum
+func DatasourcePackage_Values() []string {
+	return []string{
+		DatasourcePackageDetectiveCore,
+		DatasourcePackageEksAudit,
+		DatasourcePackageAsffSecurityhubFinding,
+	}
+}
+
+const (
+	// DatasourcePackageIngestStateStarted is a DatasourcePackageIngestState enum value
+	DatasourcePackageIngestStateStarted = "STARTED"
+
+	// DatasourcePackageIngestStateStopped is a DatasourcePackageIngestState enum value
+	DatasourcePackageIngestStateStopped = "STOPPED"
+
+	// DatasourcePackageIngestStateDisabled is a DatasourcePackageIngestState enum value
+	DatasourcePackageIngestStateDisabled = "DISABLED"
+)
+
+// DatasourcePackageIngestState_Values returns all elements of the DatasourcePackageIngestState enum
+func DatasourcePackageIngestState_Values() []string {
+	return []string{
+		DatasourcePackageIngestStateStarted,
+		DatasourcePackageIngestStateStopped,
+		DatasourcePackageIngestStateDisabled,
+	}
+}
+
+const (
+	// EntityTypeIamRole is a EntityType enum value
+	EntityTypeIamRole = "IAM_ROLE"
+
+	// EntityTypeIamUser is a EntityType enum value
+	EntityTypeIamUser = "IAM_USER"
+)
+
+// EntityType_Values returns all elements of the EntityType enum
+func EntityType_Values() []string {
+	return []string{
+		EntityTypeIamRole,
+		EntityTypeIamUser,
+	}
+}
+
+const (
+	// ErrorCodeInvalidGraphArn is a ErrorCode enum value
+	ErrorCodeInvalidGraphArn = "INVALID_GRAPH_ARN"
+
+	// ErrorCodeInvalidRequestBody is a ErrorCode enum value
+	ErrorCodeInvalidRequestBody = "INVALID_REQUEST_BODY"
+
+	// ErrorCodeInternalError is a ErrorCode enum value
+	ErrorCodeInternalError = "INTERNAL_ERROR"
+)
+
+// ErrorCode_Values returns all elements of the ErrorCode enum
+func ErrorCode_Values() []string {
+	return []string{
+		ErrorCodeInvalidGraphArn,
+		ErrorCodeInvalidRequestBody,
+		ErrorCodeInternalError,
+	}
+}
+
+const (
+	// FieldSeverity is a Field enum value
+	FieldSeverity = "SEVERITY"
+
+	// FieldStatus is a Field enum value
+	FieldStatus = "STATUS"
+
+	// FieldCreatedTime is a Field enum value
+	FieldCreatedTime = "CREATED_TIME"
+)
+
+// Field_Values returns all elements of the Field enum
+func Field_Values() []string {
+	return []string{
+		FieldSeverity,
+		FieldStatus,
+		FieldCreatedTime,
+	}
+}
+
+const (
+	// IndicatorTypeTtpObserved is a IndicatorType enum value
+	IndicatorTypeTtpObserved = "TTP_OBSERVED"
+
+	// IndicatorTypeImpossibleTravel is a IndicatorType enum value
+	IndicatorTypeImpossibleTravel = "IMPOSSIBLE_TRAVEL"
+
+	// IndicatorTypeFlaggedIpAddress is a IndicatorType enum value
+	IndicatorTypeFlaggedIpAddress = "FLAGGED_IP_ADDRESS"
+
+	// IndicatorTypeNewGeolocation is a IndicatorType enum value
+	IndicatorTypeNewGeolocation = "NEW_GEOLOCATION"
+
+	// IndicatorTypeNewAso is a IndicatorType enum value
+	IndicatorTypeNewAso = "NEW_ASO"
+
+	// IndicatorTypeNewUserAgent is a IndicatorType enum value
+	IndicatorTypeNewUserAgent = "NEW_USER_AGENT"
+
+	// IndicatorTypeRelatedFinding is a IndicatorType enum value
+	IndicatorTypeRelatedFinding = "RELATED_FINDING"
+
+	// IndicatorTypeRelatedFindingGroup is a IndicatorType enum value
+	IndicatorTypeRelatedFindingGroup = "RELATED_FINDING_GROUP"
+)
+
+// IndicatorType_Values returns all elements of the IndicatorType enum
+func IndicatorType_Values() []string {
+	return []string{
+		IndicatorTypeTtpObserved,
+		IndicatorTypeImpossibleTravel,
+		IndicatorTypeFlaggedIpAddress,
+		IndicatorTypeNewGeolocation,
+		IndicatorTypeNewAso,
+		IndicatorTypeNewUserAgent,
+		IndicatorTypeRelatedFinding,
+		IndicatorTypeRelatedFindingGroup,
+	}
 }
 
 const (
@@ -4783,5 +8245,97 @@ func MemberStatus_Values() []string {
 		MemberStatusVerificationFailed,
 		MemberStatusEnabled,
 		MemberStatusAcceptedButDisabled,
+	}
+}
+
+const (
+	// ReasonAwsThreatIntelligence is a Reason enum value
+	ReasonAwsThreatIntelligence = "AWS_THREAT_INTELLIGENCE"
+)
+
+// Reason_Values returns all elements of the Reason enum
+func Reason_Values() []string {
+	return []string{
+		ReasonAwsThreatIntelligence,
+	}
+}
+
+const (
+	// SeverityInformational is a Severity enum value
+	SeverityInformational = "INFORMATIONAL"
+
+	// SeverityLow is a Severity enum value
+	SeverityLow = "LOW"
+
+	// SeverityMedium is a Severity enum value
+	SeverityMedium = "MEDIUM"
+
+	// SeverityHigh is a Severity enum value
+	SeverityHigh = "HIGH"
+
+	// SeverityCritical is a Severity enum value
+	SeverityCritical = "CRITICAL"
+)
+
+// Severity_Values returns all elements of the Severity enum
+func Severity_Values() []string {
+	return []string{
+		SeverityInformational,
+		SeverityLow,
+		SeverityMedium,
+		SeverityHigh,
+		SeverityCritical,
+	}
+}
+
+const (
+	// SortOrderAsc is a SortOrder enum value
+	SortOrderAsc = "ASC"
+
+	// SortOrderDesc is a SortOrder enum value
+	SortOrderDesc = "DESC"
+)
+
+// SortOrder_Values returns all elements of the SortOrder enum
+func SortOrder_Values() []string {
+	return []string{
+		SortOrderAsc,
+		SortOrderDesc,
+	}
+}
+
+const (
+	// StateActive is a State enum value
+	StateActive = "ACTIVE"
+
+	// StateArchived is a State enum value
+	StateArchived = "ARCHIVED"
+)
+
+// State_Values returns all elements of the State enum
+func State_Values() []string {
+	return []string{
+		StateActive,
+		StateArchived,
+	}
+}
+
+const (
+	// StatusRunning is a Status enum value
+	StatusRunning = "RUNNING"
+
+	// StatusFailed is a Status enum value
+	StatusFailed = "FAILED"
+
+	// StatusSuccessful is a Status enum value
+	StatusSuccessful = "SUCCESSFUL"
+)
+
+// Status_Values returns all elements of the Status enum
+func Status_Values() []string {
+	return []string{
+		StatusRunning,
+		StatusFailed,
+		StatusSuccessful,
 	}
 }

@@ -56,10 +56,20 @@ func (c *Batch) CancelJobRequest(input *CancelJobInput) (req *request.Request, o
 
 // CancelJob API operation for AWS Batch.
 //
-// Cancels a job in an Batch job queue. Jobs that are in the SUBMITTED, PENDING,
-// or RUNNABLE state are canceled. Jobs that have progressed to STARTING or
-// RUNNING aren't canceled, but the API operation still succeeds, even if no
-// job is canceled. These jobs must be terminated with the TerminateJob operation.
+// Cancels a job in an Batch job queue. Jobs that are in the SUBMITTED or PENDING
+// are canceled. A job inRUNNABLE remains in RUNNABLE until it reaches the head
+// of the job queue. Then the job status is updated to FAILED.
+//
+// A PENDING job is canceled after all dependency jobs are completed. Therefore,
+// it may take longer than expected to cancel a job in PENDING status.
+//
+// When you try to cancel an array parent job in PENDING, Batch attempts to
+// cancel all child jobs. The array parent job is canceled when all child jobs
+// are completed.
+//
+// Jobs that progressed to the STARTING or RUNNING state aren't canceled. However,
+// the API operation still succeeds, even if no job is canceled. These jobs
+// must be terminated with the TerminateJob operation.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -71,9 +81,10 @@ func (c *Batch) CancelJobRequest(input *CancelJobInput) (req *request.Request, o
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -160,16 +171,19 @@ func (c *Batch) CreateComputeEnvironmentRequest(input *CreateComputeEnvironmentI
 // Multi-node parallel jobs aren't supported on Spot Instances.
 //
 // In an unmanaged compute environment, you can manage your own EC2 compute
-// resources and have a lot of flexibility with how you configure your compute
-// resources. For example, you can use custom AMIs. However, you must verify
-// that each of your AMIs meet the Amazon ECS container instance AMI specification.
-// For more information, see container instance AMIs (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container_instance_AMIs.html)
+// resources and have flexibility with how you configure your compute resources.
+// For example, you can use custom AMIs. However, you must verify that each
+// of your AMIs meet the Amazon ECS container instance AMI specification. For
+// more information, see container instance AMIs (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/container_instance_AMIs.html)
 // in the Amazon Elastic Container Service Developer Guide. After you created
 // your unmanaged compute environment, you can use the DescribeComputeEnvironments
 // operation to find the Amazon ECS cluster that's associated with it. Then,
 // launch your container instances into that Amazon ECS cluster. For more information,
 // see Launching an Amazon ECS container instance (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_container_instance.html)
 // in the Amazon Elastic Container Service Developer Guide.
+//
+// To create a compute environment that uses EKS resources, the caller must
+// have permissions to call eks:DescribeCluster.
 //
 // Batch doesn't automatically upgrade the AMIs in a compute environment after
 // it's created. For example, it also doesn't update the AMIs in your compute
@@ -193,35 +207,37 @@ func (c *Batch) CreateComputeEnvironmentRequest(input *CreateComputeEnvironmentI
 // To use the enhanced updating of compute environments to update AMIs, follow
 // these rules:
 //
-//   - Either do not set the service role (serviceRole) parameter or set it
+//   - Either don't set the service role (serviceRole) parameter or set it
 //     to the AWSBatchServiceRole service-linked role.
 //
-//   - Set the allocation strategy (allocationStrategy) parameter to BEST_FIT_PROGRESSIVE
-//     or SPOT_CAPACITY_OPTIMIZED.
+//   - Set the allocation strategy (allocationStrategy) parameter to BEST_FIT_PROGRESSIVE,
+//     SPOT_CAPACITY_OPTIMIZED, or SPOT_PRICE_CAPACITY_OPTIMIZED.
 //
 //   - Set the update to latest image version (updateToLatestImageVersion)
-//     parameter to true.
+//     parameter to true. The updateToLatestImageVersion parameter is used when
+//     you update a compute environment. This parameter is ignored when you create
+//     a compute environment.
 //
-//   - Do not specify an AMI ID in imageId, imageIdOverride (in ec2Configuration
+//   - Don't specify an AMI ID in imageId, imageIdOverride (in ec2Configuration
 //     (https://docs.aws.amazon.com/batch/latest/APIReference/API_Ec2Configuration.html)),
-//     or in the launch template (launchTemplate). In that case Batch will select
-//     the latest Amazon ECS optimized AMI supported by Batch at the time the
-//     infrastructure update is initiated. Alternatively you can specify the
-//     AMI ID in the imageId or imageIdOverride parameters, or the launch template
-//     identified by the LaunchTemplate properties. Changing any of these properties
-//     will trigger an infrastructure update. If the AMI ID is specified in the
-//     launch template, it can not be replaced by specifying an AMI ID in either
-//     the imageId or imageIdOverride parameters. It can only be replaced by
-//     specifying a different launch template, or if the launch template version
+//     or in the launch template (launchTemplate). In that case, Batch selects
+//     the latest Amazon ECS optimized AMI that's supported by Batch at the time
+//     the infrastructure update is initiated. Alternatively, you can specify
+//     the AMI ID in the imageId or imageIdOverride parameters, or the launch
+//     template identified by the LaunchTemplate properties. Changing any of
+//     these properties starts an infrastructure update. If the AMI ID is specified
+//     in the launch template, it can't be replaced by specifying an AMI ID in
+//     either the imageId or imageIdOverride parameters. It can only be replaced
+//     by specifying a different launch template, or if the launch template version
 //     is set to $Default or $Latest, by setting either a new default version
-//     for the launch template (if $Default)or by adding a new version to the
+//     for the launch template (if $Default) or by adding a new version to the
 //     launch template (if $Latest).
 //
-// If these rules are followed, any update that triggers an infrastructure update
-// will cause the AMI ID to be re-selected. If the version setting in the launch
+// If these rules are followed, any update that starts an infrastructure update
+// causes the AMI ID to be re-selected. If the version setting in the launch
 // template (launchTemplate) is set to $Latest or $Default, the latest or default
-// version of the launch template will be evaluated up at the time of the infrastructure
-// update, even if the launchTemplate was not updated.
+// version of the launch template is evaluated up at the time of the infrastructure
+// update, even if the launchTemplate wasn't updated.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -233,9 +249,10 @@ func (c *Batch) CreateComputeEnvironmentRequest(input *CreateComputeEnvironmentI
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -325,9 +342,10 @@ func (c *Batch) CreateJobQueueRequest(input *CreateJobQueueInput) (req *request.
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -409,9 +427,10 @@ func (c *Batch) CreateSchedulingPolicyRequest(input *CreateSchedulingPolicyInput
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -501,9 +520,10 @@ func (c *Batch) DeleteComputeEnvironmentRequest(input *DeleteComputeEnvironmentI
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -592,9 +612,10 @@ func (c *Batch) DeleteJobQueueRequest(input *DeleteJobQueueInput) (req *request.
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -679,9 +700,10 @@ func (c *Batch) DeleteSchedulingPolicyRequest(input *DeleteSchedulingPolicyInput
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -765,9 +787,10 @@ func (c *Batch) DeregisterJobDefinitionRequest(input *DeregisterJobDefinitionInp
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -859,9 +882,10 @@ func (c *Batch) DescribeComputeEnvironmentsRequest(input *DescribeComputeEnviron
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1001,9 +1025,10 @@ func (c *Batch) DescribeJobDefinitionsRequest(input *DescribeJobDefinitionsInput
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1142,9 +1167,10 @@ func (c *Batch) DescribeJobQueuesRequest(input *DescribeJobQueuesInput) (req *re
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1277,9 +1303,10 @@ func (c *Batch) DescribeJobsRequest(input *DescribeJobsInput) (req *request.Requ
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1361,9 +1388,10 @@ func (c *Batch) DescribeSchedulingPoliciesRequest(input *DescribeSchedulingPolic
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1462,9 +1490,10 @@ func (c *Batch) ListJobsRequest(input *ListJobsInput) (req *request.Request, out
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1603,9 +1632,10 @@ func (c *Batch) ListSchedulingPoliciesRequest(input *ListSchedulingPoliciesInput
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1728,7 +1758,7 @@ func (c *Batch) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 //
 // Lists the tags for an Batch resource. Batch resources that support tags are
 // compute environments, jobs, job definitions, job queues, and scheduling policies.
-// ARNs for child jobs of array and multi-node parallel (MNP) jobs are not supported.
+// ARNs for child jobs of array and multi-node parallel (MNP) jobs aren't supported.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1740,9 +1770,10 @@ func (c *Batch) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1824,9 +1855,10 @@ func (c *Batch) RegisterJobDefinitionRequest(input *RegisterJobDefinitionInput) 
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -1921,9 +1953,10 @@ func (c *Batch) SubmitJobRequest(input *SubmitJobInput) (req *request.Request, o
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2000,7 +2033,7 @@ func (c *Batch) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 // with that resource are deleted as well. Batch resources that support tags
 // are compute environments, jobs, job definitions, job queues, and scheduling
 // policies. ARNs for child jobs of array and multi-node parallel (MNP) jobs
-// are not supported.
+// aren't supported.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2012,9 +2045,10 @@ func (c *Batch) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2099,9 +2133,10 @@ func (c *Batch) TerminateJobRequest(input *TerminateJobInput) (req *request.Requ
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2184,9 +2219,10 @@ func (c *Batch) UntagResourceRequest(input *UntagResourceInput) (req *request.Re
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2268,9 +2304,10 @@ func (c *Batch) UpdateComputeEnvironmentRequest(input *UpdateComputeEnvironmentI
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2352,9 +2389,10 @@ func (c *Batch) UpdateJobQueueRequest(input *UpdateJobQueueInput) (req *request.
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2437,9 +2475,10 @@ func (c *Batch) UpdateSchedulingPolicyRequest(input *UpdateSchedulingPolicyInput
 // Returned Error Types:
 //
 //   - ClientException
-//     These errors are usually caused by a client action, such as using an action
-//     or resource on behalf of a user that doesn't have permissions to use the
-//     action or resource, or specifying an identifier that's not valid.
+//     These errors are usually caused by a client action. One example cause is
+//     using an action or resource on behalf of a user that doesn't have permissions
+//     to use the action or resource. Another cause is specifying an identifier
+//     that's not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server issue.
@@ -2466,7 +2505,7 @@ func (c *Batch) UpdateSchedulingPolicyWithContext(ctx aws.Context, input *Update
 	return out, req.Send()
 }
 
-// An object representing an Batch array job.
+// An object that represents an Batch array job.
 type ArrayProperties struct {
 	_ struct{} `type:"structure"`
 
@@ -2498,7 +2537,7 @@ func (s *ArrayProperties) SetSize(v int64) *ArrayProperties {
 	return s
 }
 
-// An object representing the array properties of a job.
+// An object that represents the array properties of a job.
 type ArrayPropertiesDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -2550,7 +2589,7 @@ func (s *ArrayPropertiesDetail) SetStatusSummary(v map[string]*int64) *ArrayProp
 	return s
 }
 
-// An object representing the array properties of a job.
+// An object that represents the array properties of a job.
 type ArrayPropertiesSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -2592,7 +2631,8 @@ func (s *ArrayPropertiesSummary) SetSize(v int64) *ArrayPropertiesSummary {
 	return s
 }
 
-// An object representing the details of a container that's part of a job attempt.
+// An object that represents the details of a container that's part of a job
+// attempt.
 type AttemptContainerDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -2600,19 +2640,19 @@ type AttemptContainerDetail struct {
 	// hosts the job attempt.
 	ContainerInstanceArn *string `locationName:"containerInstanceArn" type:"string"`
 
-	// The exit code for the job attempt. A non-zero exit code is considered a failure.
+	// The exit code for the job attempt. A non-zero exit code is considered failed.
 	ExitCode *int64 `locationName:"exitCode" type:"integer"`
 
-	// The name of the CloudWatch Logs log stream associated with the container.
+	// The name of the CloudWatch Logs log stream that's associated with the container.
 	// The log group for Batch jobs is /aws/batch/job. Each container attempt receives
 	// a log stream name when they reach the RUNNING status.
 	LogStreamName *string `locationName:"logStreamName" type:"string"`
 
-	// The network interfaces associated with the job attempt.
+	// The network interfaces that are associated with the job attempt.
 	NetworkInterfaces []*NetworkInterface `locationName:"networkInterfaces" type:"list"`
 
 	// A short (255 max characters) human-readable string to provide additional
-	// details about a running or stopped container.
+	// details for a running or stopped container.
 	Reason *string `locationName:"reason" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the Amazon ECS task that's associated with
@@ -2675,18 +2715,18 @@ func (s *AttemptContainerDetail) SetTaskArn(v string) *AttemptContainerDetail {
 	return s
 }
 
-// An object representing a job attempt.
+// An object that represents a job attempt.
 type AttemptDetail struct {
 	_ struct{} `type:"structure"`
 
-	// Details about the container in this job attempt.
+	// The details for the container in this job attempt.
 	Container *AttemptContainerDetail `locationName:"container" type:"structure"`
 
 	// The Unix timestamp (in milliseconds) for when the attempt was started (when
 	// the attempt transitioned from the STARTING state to the RUNNING state).
 	StartedAt *int64 `locationName:"startedAt" type:"long"`
 
-	// A short, human-readable string to provide additional details about the current
+	// A short, human-readable string to provide additional details for the current
 	// status of the job attempt.
 	StatusReason *string `locationName:"statusReason" type:"string"`
 
@@ -2823,9 +2863,10 @@ func (s CancelJobOutput) GoString() string {
 	return s.String()
 }
 
-// These errors are usually caused by a client action, such as using an action
-// or resource on behalf of a user that doesn't have permissions to use the
-// action or resource, or specifying an identifier that's not valid.
+// These errors are usually caused by a client action. One example cause is
+// using an action or resource on behalf of a user that doesn't have permissions
+// to use the action or resource. Another cause is specifying an identifier
+// that's not valid.
 type ClientException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -2889,7 +2930,7 @@ func (s *ClientException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// An object representing an Batch compute environment.
+// An object that represents an Batch compute environment.
 type ComputeEnvironmentDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -2898,9 +2939,9 @@ type ComputeEnvironmentDetail struct {
 	// ComputeEnvironmentArn is a required field
 	ComputeEnvironmentArn *string `locationName:"computeEnvironmentArn" type:"string" required:"true"`
 
-	// The name of the compute environment. It can be up to 128 letters long. It
-	// can contain uppercase and lowercase letters, numbers, hyphens (-), and underscores
-	// (_).
+	// The name of the compute environment. It can be up to 128 characters long.
+	// It can contain uppercase and lowercase letters, numbers, hyphens (-), and
+	// underscores (_).
 	//
 	// ComputeEnvironmentName is a required field
 	ComputeEnvironmentName *string `locationName:"computeEnvironmentName" type:"string" required:"true"`
@@ -2910,13 +2951,22 @@ type ComputeEnvironmentDetail struct {
 	// in the Batch User Guide.
 	ComputeResources *ComputeResource `locationName:"computeResources" type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the underlying Amazon ECS cluster used
-	// by the compute environment.
+	// The orchestration type of the compute environment. The valid values are ECS
+	// (default) or EKS.
+	ContainerOrchestrationType *string `locationName:"containerOrchestrationType" type:"string" enum:"OrchestrationType"`
+
+	// The Amazon Resource Name (ARN) of the underlying Amazon ECS cluster that
+	// the compute environment uses.
 	EcsClusterArn *string `locationName:"ecsClusterArn" type:"string"`
 
-	// The service role associated with the compute environment that allows Batch
-	// to make calls to Amazon Web Services API operations on your behalf. For more
-	// information, see Batch service IAM role (https://docs.aws.amazon.com/batch/latest/userguide/service_IAM_role.html)
+	// The configuration for the Amazon EKS cluster that supports the Batch compute
+	// environment. Only specify this parameter if the containerOrchestrationType
+	// is EKS.
+	EksConfiguration *EksConfiguration `locationName:"eksConfiguration" type:"structure"`
+
+	// The service role that's associated with the compute environment that allows
+	// Batch to make calls to Amazon Web Services API operations on your behalf.
+	// For more information, see Batch service IAM role (https://docs.aws.amazon.com/batch/latest/userguide/service_IAM_role.html)
 	// in the Batch User Guide.
 	ServiceRole *string `locationName:"serviceRole" type:"string"`
 
@@ -2925,19 +2975,28 @@ type ComputeEnvironmentDetail struct {
 	// If the state is ENABLED, then the Batch scheduler can attempt to place jobs
 	// from an associated job queue on the compute resources within the environment.
 	// If the compute environment is managed, then it can scale its instances out
-	// or in automatically, based on the job queue demand.
+	// or in automatically based on the job queue demand.
 	//
 	// If the state is DISABLED, then the Batch scheduler doesn't attempt to place
 	// jobs within the environment. Jobs in a STARTING or RUNNING state continue
 	// to progress normally. Managed compute environments in the DISABLED state
-	// don't scale out. However, they scale in to minvCpus value after instances
-	// become idle.
+	// don't scale out.
+	//
+	// Compute environments in a DISABLED state may continue to incur billing charges.
+	// To prevent additional charges, turn off and then delete the compute environment.
+	// For more information, see State (https://docs.aws.amazon.com/batch/latest/userguide/compute_environment_parameters.html#compute_environment_state)
+	// in the Batch User Guide.
+	//
+	// When an instance is idle, the instance scales down to the minvCpus value.
+	// However, the instance size doesn't change. For example, consider a c5.8xlarge
+	// instance with a minvCpus value of 4 and a desiredvCpus value of 36. This
+	// instance doesn't scale down to a c5.large instance.
 	State *string `locationName:"state" type:"string" enum:"CEState"`
 
 	// The current status of the compute environment (for example, CREATING or VALID).
 	Status *string `locationName:"status" type:"string" enum:"CEStatus"`
 
-	// A short, human-readable string to provide additional details about the current
+	// A short, human-readable string to provide additional details for the current
 	// status of the compute environment.
 	StatusReason *string `locationName:"statusReason" type:"string"`
 
@@ -2958,6 +3017,9 @@ type ComputeEnvironmentDetail struct {
 	// (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	UpdatePolicy *UpdatePolicy `locationName:"updatePolicy" type:"structure"`
+
+	// Unique identifier for the compute environment.
+	Uuid *string `locationName:"uuid" type:"string"`
 }
 
 // String returns the string representation.
@@ -2996,9 +3058,21 @@ func (s *ComputeEnvironmentDetail) SetComputeResources(v *ComputeResource) *Comp
 	return s
 }
 
+// SetContainerOrchestrationType sets the ContainerOrchestrationType field's value.
+func (s *ComputeEnvironmentDetail) SetContainerOrchestrationType(v string) *ComputeEnvironmentDetail {
+	s.ContainerOrchestrationType = &v
+	return s
+}
+
 // SetEcsClusterArn sets the EcsClusterArn field's value.
 func (s *ComputeEnvironmentDetail) SetEcsClusterArn(v string) *ComputeEnvironmentDetail {
 	s.EcsClusterArn = &v
+	return s
+}
+
+// SetEksConfiguration sets the EksConfiguration field's value.
+func (s *ComputeEnvironmentDetail) SetEksConfiguration(v *EksConfiguration) *ComputeEnvironmentDetail {
+	s.EksConfiguration = v
 	return s
 }
 
@@ -3050,7 +3124,13 @@ func (s *ComputeEnvironmentDetail) SetUpdatePolicy(v *UpdatePolicy) *ComputeEnvi
 	return s
 }
 
-// The order in which compute environments are tried for job placement within
+// SetUuid sets the Uuid field's value.
+func (s *ComputeEnvironmentDetail) SetUuid(v string) *ComputeEnvironmentDetail {
+	s.Uuid = &v
+	return s
+}
+
+// The order that compute environments are tried in for job placement within
 // a queue. Compute environments are tried in ascending order. For example,
 // if two compute environments are associated with a job queue, the compute
 // environment with a lower order integer value is tried for job placement first.
@@ -3125,8 +3205,8 @@ func (s *ComputeEnvironmentOrder) SetOrder(v int64) *ComputeEnvironmentOrder {
 	return s
 }
 
-// An object representing an Batch compute resource. For more information, see
-// Compute environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
+// An object that represents an Batch compute resource. For more information,
+// see Compute environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
 // in the Batch User Guide.
 type ComputeResource struct {
 	_ struct{} `type:"structure"`
@@ -3138,42 +3218,50 @@ type ComputeResource struct {
 	// For more information, see Allocation strategies (https://docs.aws.amazon.com/batch/latest/userguide/allocation-strategies.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// BEST_FIT (default)
 	//
 	// Batch selects an instance type that best fits the needs of the jobs with
 	// a preference for the lowest-cost instance type. If additional instances of
 	// the selected instance type aren't available, Batch waits for the additional
-	// instances to be available. If there aren't enough instances available, or
-	// if the user is reaching Amazon EC2 service limits (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html)
-	// then additional jobs aren't run until the currently running jobs have completed.
-	// This allocation strategy keeps costs lower but can limit scaling. If you
-	// are using Spot Fleets with BEST_FIT then the Spot Fleet IAM Role must be
-	// specified. Compute resources that use a BEST_FIT allocation strategy don't
-	// support infrastructure updates and can't update some parameters. For more
-	// information, see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
+	// instances to be available. If there aren't enough instances available or
+	// the user is reaching Amazon EC2 service limits (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html),
+	// additional jobs aren't run until the currently running jobs are completed.
+	// This allocation strategy keeps costs lower but can limit scaling. If you're
+	// using Spot Fleets with BEST_FIT, the Spot Fleet IAM Role must be specified.
+	// Compute resources that use a BEST_FIT allocation strategy don't support infrastructure
+	// updates and can't update some parameters. For more information, see Updating
+	// compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
 	// BEST_FIT_PROGRESSIVE
 	//
-	// Batch will select additional instance types that are large enough to meet
-	// the requirements of the jobs in the queue, with a preference for instance
-	// types with a lower cost per unit vCPU. If additional instances of the previously
-	// selected instance types aren't available, Batch will select new instance
-	// types.
+	// Batch selects additional instance types that are large enough to meet the
+	// requirements of the jobs in the queue. Its preference is for instance types
+	// with lower cost vCPUs. If additional instances of the previously selected
+	// instance types aren't available, Batch selects new instance types.
 	//
 	// SPOT_CAPACITY_OPTIMIZED
 	//
-	// Batch will select one or more instance types that are large enough to meet
-	// the requirements of the jobs in the queue, with a preference for instance
-	// types that are less likely to be interrupted. This allocation strategy is
-	// only available for Spot Instance compute resources.
+	// Batch selects one or more instance types that are large enough to meet the
+	// requirements of the jobs in the queue. Its preference is for instance types
+	// that are less likely to be interrupted. This allocation strategy is only
+	// available for Spot Instance compute resources.
 	//
-	// With both BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED strategies, Batch
-	// might need to go above maxvCpus to meet your capacity requirements. In this
-	// event, Batch never exceeds maxvCpus by more than a single instance.
+	// SPOT_PRICE_CAPACITY_OPTIMIZED
+	//
+	// The price and capacity optimized allocation strategy looks at both price
+	// and capacity to select the Spot Instance pools that are the least likely
+	// to be interrupted and have the lowest possible price. This allocation strategy
+	// is only available for Spot Instance compute resources.
+	//
+	// With BEST_FIT_PROGRESSIVE,SPOT_CAPACITY_OPTIMIZED and SPOT_PRICE_CAPACITY_OPTIMIZED
+	// strategies using On-Demand or Spot Instances, and the BEST_FIT strategy using
+	// Spot Instances, Batch might need to exceed maxvCpus to meet your capacity
+	// requirements. In this event, Batch never exceeds maxvCpus by more than a
+	// single instance.
 	AllocationStrategy *string `locationName:"allocationStrategy" type:"string" enum:"CRAllocationStrategy"`
 
 	// The maximum percentage that a Spot Instance price can be when compared with
@@ -3182,43 +3270,42 @@ type ComputeResource struct {
 	// be less than 20% of the current On-Demand price for that Amazon EC2 instance.
 	// You always pay the lowest (market) price and never more than your maximum
 	// percentage. If you leave this field empty, the default value is 100% of the
-	// On-Demand price.
+	// On-Demand price. For most use cases, we recommend leaving this field empty.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	BidPercentage *int64 `locationName:"bidPercentage" type:"integer"`
 
-	// The desired number of Amazon EC2 vCPUS in the compute environment. Batch
-	// modifies this value between the minimum and maximum values, based on job
-	// queue demand.
+	// The desired number of vCPUS in the compute environment. Batch modifies this
+	// value between the minimum and maximum values based on job queue demand.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	DesiredvCpus *int64 `locationName:"desiredvCpus" type:"integer"`
 
-	// Provides information used to select Amazon Machine Images (AMIs) for EC2
-	// instances in the compute environment. If Ec2Configuration isn't specified,
+	// Provides information that's used to select Amazon Machine Images (AMIs) for
+	// EC2 instances in the compute environment. If Ec2Configuration isn't specified,
 	// the default is ECS_AL2.
 	//
 	// One or two values can be provided.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	Ec2Configuration []*Ec2Configuration `locationName:"ec2Configuration" type:"list"`
 
 	// The Amazon EC2 key pair that's used for instances launched in the compute
 	// environment. You can use this key pair to log in to your instances with SSH.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	Ec2KeyPair *string `locationName:"ec2KeyPair" type:"string"`
 
 	// The Amazon Machine Image (AMI) ID used for instances launched in the compute
 	// environment. This parameter is overridden by the imageIdOverride member of
 	// the Ec2Configuration structure.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// The AMI that you choose for a compute environment must match the architecture
 	// of the instance types that you intend to use for that compute environment.
@@ -3237,8 +3324,8 @@ type ComputeResource struct {
 	// . For more information, see Amazon ECS instance role (https://docs.aws.amazon.com/batch/latest/userguide/instance_IAM_role.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	InstanceRole *string `locationName:"instanceRole" type:"string"`
 
 	// The instances types that can be launched. You can specify instance families
@@ -3247,8 +3334,8 @@ type ComputeResource struct {
 	// can also choose optimal to select instance types (from the C4, M4, and R4
 	// instance families) that match the demand of your job queues.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// When you create a compute environment, the instance types that you select
 	// for the compute environment must share the same architecture. For example,
@@ -3256,7 +3343,7 @@ type ComputeResource struct {
 	//
 	// Currently, optimal uses instance types from the C4, M4, and R4 instance families.
 	// In Regions that don't have instance types from those instance families, instance
-	// types from the C5, M5. and R5 instance families are used.
+	// types from the C5, M5, and R5 instance families are used.
 	InstanceTypes []*string `locationName:"instanceTypes" type:"list"`
 
 	// The launch template to use for your compute resources. Any other compute
@@ -3266,26 +3353,27 @@ type ComputeResource struct {
 	// For more information, see Launch template support (https://docs.aws.amazon.com/batch/latest/userguide/launch-templates.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	LaunchTemplate *LaunchTemplateSpecification `locationName:"launchTemplate" type:"structure"`
 
-	// The maximum number of Amazon EC2 vCPUs that a compute environment can reach.
+	// The maximum number of vCPUs that a compute environment can support.
 	//
-	// With both BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED allocation strategies,
-	// Batch might need to exceed maxvCpus to meet your capacity requirements. In
-	// this event, Batch never exceeds maxvCpus by more than a single instance.
-	// For example, no more than a single instance from among those specified in
-	// your compute environment is allocated.
+	// With BEST_FIT_PROGRESSIVE, SPOT_CAPACITY_OPTIMIZED and SPOT_PRICE_CAPACITY_OPTIMIZED
+	// allocation strategies using On-Demand or Spot Instances, and the BEST_FIT
+	// strategy using Spot Instances, Batch might need to exceed maxvCpus to meet
+	// your capacity requirements. In this event, Batch never exceeds maxvCpus by
+	// more than a single instance. For example, no more than a single instance
+	// from among those specified in your compute environment is allocated.
 	//
 	// MaxvCpus is a required field
 	MaxvCpus *int64 `locationName:"maxvCpus" type:"integer" required:"true"`
 
-	// The minimum number of Amazon EC2 vCPUs that an environment should maintain
-	// (even if the compute environment is DISABLED).
+	// The minimum number of vCPUs that a compute environment should maintain (even
+	// if the compute environment is DISABLED).
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	MinvCpus *int64 `locationName:"minvCpus" type:"integer"`
 
 	// The Amazon EC2 placement group to associate with your compute resources.
@@ -3296,13 +3384,13 @@ type ComputeResource struct {
 	// flow potential. For more information, see Placement groups (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/placement-groups.html)
 	// in the Amazon EC2 User Guide for Linux Instances.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	PlacementGroup *string `locationName:"placementGroup" type:"string"`
 
-	// The Amazon EC2 security groups associated with instances launched in the
-	// compute environment. One or more security groups must be specified, either
-	// in securityGroupIds or using a launch template referenced in launchTemplate.
+	// The Amazon EC2 security groups that are associated with instances launched
+	// in the compute environment. One or more security groups must be specified,
+	// either in securityGroupIds or using a launch template referenced in launchTemplate.
 	// This parameter is required for jobs that are running on Fargate resources
 	// and must contain at least one security group. Fargate doesn't support launch
 	// templates. If security groups are specified using both securityGroupIds and
@@ -3315,8 +3403,8 @@ type ComputeResource struct {
 	// see Amazon EC2 spot fleet role (https://docs.aws.amazon.com/batch/latest/userguide/spot_fleet_IAM_role.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// To tag your Spot Instances on creation, the Spot Fleet IAM role specified
 	// here must use the newer AmazonEC2SpotFleetTaggingRole managed policy. The
@@ -3331,21 +3419,31 @@ type ComputeResource struct {
 	// For more information, see VPCs and subnets (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html)
 	// in the Amazon VPC User Guide.
 	//
+	// Batch on Amazon EC2 and Batch on Amazon EKS support Local Zones. For more
+	// information, see Local Zones (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-local-zones)
+	// in the Amazon EC2 User Guide for Linux Instances, Amazon EKS and Amazon Web
+	// Services Local Zones (https://docs.aws.amazon.com/eks/latest/userguide/local-zones.html)
+	// in the Amazon EKS User Guide and Amazon ECS clusters in Local Zones, Wavelength
+	// Zones, and Amazon Web Services Outposts (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-regions-zones.html#clusters-local-zones)
+	// in the Amazon ECS Developer Guide.
+	//
+	// Batch on Fargate doesn't currently support Local Zones.
+	//
 	// Subnets is a required field
 	Subnets []*string `locationName:"subnets" type:"list" required:"true"`
 
 	// Key-value pair tags to be applied to EC2 resources that are launched in the
 	// compute environment. For Batch, these take the form of "String1": "String2",
-	// where String1 is the tag key and String2 is the tag value−for example,
-	// { "Name": "Batch Instance - C4OnDemand" }. This is helpful for recognizing
+	// where String1 is the tag key and String2 is the tag value-for example, {
+	// "Name": "Batch Instance - C4OnDemand" }. This is helpful for recognizing
 	// your Batch instances in the Amazon EC2 console. Updating these tags requires
 	// an infrastructure update to the compute environment. For more information,
 	// see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide. These tags aren't seen when using the Batch ListTagsForResource
 	// API operation.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The type of compute environment: EC2, SPOT, FARGATE, or FARGATE_SPOT. For
@@ -3510,16 +3608,16 @@ func (s *ComputeResource) SetType(v string) *ComputeResource {
 	return s
 }
 
-// An object representing the attributes of a compute environment that can be
-// updated. For more information, see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
+// An object that represents the attributes of a compute environment that can
+// be updated. For more information, see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 // in the Batch User Guide.
 type ComputeResourceUpdate struct {
 	_ struct{} `type:"structure"`
 
-	// The allocation strategy to use for the compute resource if not enough instances
-	// of the best fitting instance type can be allocated. This might be because
-	// of availability of the instance type in the Region or Amazon EC2 service
-	// limits (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html).
+	// The allocation strategy to use for the compute resource if there's not enough
+	// instances of the best fitting instance type that can be allocated. This might
+	// be because of availability of the instance type in the Region or Amazon EC2
+	// service limits (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-resource-limits.html).
 	// For more information, see Allocation strategies (https://docs.aws.amazon.com/batch/latest/userguide/allocation-strategies.html)
 	// in the Batch User Guide.
 	//
@@ -3529,51 +3627,70 @@ type ComputeResourceUpdate struct {
 	// in the Batch User Guide. BEST_FIT isn't supported when updating a compute
 	// environment.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// BEST_FIT_PROGRESSIVE
 	//
-	// Batch will select additional instance types that are large enough to meet
-	// the requirements of the jobs in the queue, with a preference for instance
-	// types with a lower cost per unit vCPU. If additional instances of the previously
-	// selected instance types aren't available, Batch will select new instance
-	// types.
+	// Batch selects additional instance types that are large enough to meet the
+	// requirements of the jobs in the queue. Its preference is for instance types
+	// with lower cost vCPUs. If additional instances of the previously selected
+	// instance types aren't available, Batch selects new instance types.
 	//
 	// SPOT_CAPACITY_OPTIMIZED
 	//
-	// Batch will select one or more instance types that are large enough to meet
-	// the requirements of the jobs in the queue, with a preference for instance
-	// types that are less likely to be interrupted. This allocation strategy is
-	// only available for Spot Instance compute resources.
+	// Batch selects one or more instance types that are large enough to meet the
+	// requirements of the jobs in the queue. Its preference is for instance types
+	// that are less likely to be interrupted. This allocation strategy is only
+	// available for Spot Instance compute resources.
 	//
-	// With both BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED strategies, Batch
-	// might need to go above maxvCpus to meet your capacity requirements. In this
-	// event, Batch never exceeds maxvCpus by more than a single instance.
+	// SPOT_PRICE_CAPACITY_OPTIMIZED
+	//
+	// The price and capacity optimized allocation strategy looks at both price
+	// and capacity to select the Spot Instance pools that are the least likely
+	// to be interrupted and have the lowest possible price. This allocation strategy
+	// is only available for Spot Instance compute resources.
+	//
+	// With both BEST_FIT_PROGRESSIVE, SPOT_CAPACITY_OPTIMIZED, and SPOT_PRICE_CAPACITY_OPTIMIZED
+	// strategies using On-Demand or Spot Instances, and the BEST_FIT strategy using
+	// Spot Instances, Batch might need to exceed maxvCpus to meet your capacity
+	// requirements. In this event, Batch never exceeds maxvCpus by more than a
+	// single instance.
 	AllocationStrategy *string `locationName:"allocationStrategy" type:"string" enum:"CRUpdateAllocationStrategy"`
 
 	// The maximum percentage that a Spot Instance price can be when compared with
 	// the On-Demand price for that instance type before instances are launched.
-	// For example, if your maximum percentage is 20%, then the Spot price must
-	// be less than 20% of the current On-Demand price for that Amazon EC2 instance.
-	// You always pay the lowest (market) price and never more than your maximum
-	// percentage.
+	// For example, if your maximum percentage is 20%, the Spot price must be less
+	// than 20% of the current On-Demand price for that Amazon EC2 instance. You
+	// always pay the lowest (market) price and never more than your maximum percentage.
+	// For most use cases, we recommend leaving this field empty.
 	//
 	// When updating a compute environment, changing the bid percentage requires
 	// an infrastructure update of the compute environment. For more information,
 	// see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	BidPercentage *int64 `locationName:"bidPercentage" type:"integer"`
 
-	// The desired number of Amazon EC2 vCPUS in the compute environment. Batch
-	// modifies this value between the minimum and maximum values based on job queue
-	// demand.
+	// The desired number of vCPUS in the compute environment. Batch modifies this
+	// value between the minimum and maximum values based on job queue demand.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
+	//
+	// Batch doesn't support changing the desired number of vCPUs of an existing
+	// compute environment. Don't specify this parameter for compute environments
+	// using Amazon EKS clusters.
+	//
+	// When you update the desiredvCpus setting, the value must be between the minvCpus
+	// and maxvCpus values.
+	//
+	// Additionally, the updated desiredvCpus value must be greater than or equal
+	// to the current desiredvCpus value. For more information, see Troubleshooting
+	// Batch (https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#error-desired-vcpus-update)
+	// in the Batch User Guide.
 	DesiredvCpus *int64 `locationName:"desiredvCpus" type:"integer"`
 
 	// Provides information used to select Amazon Machine Images (AMIs) for EC2
@@ -3588,8 +3705,8 @@ type ComputeResourceUpdate struct {
 	//
 	// One or two values can be provided.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	Ec2Configuration []*Ec2Configuration `locationName:"ec2Configuration" type:"list"`
 
 	// The Amazon EC2 key pair that's used for instances launched in the compute
@@ -3601,8 +3718,8 @@ type ComputeResourceUpdate struct {
 	// Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	Ec2KeyPair *string `locationName:"ec2KeyPair" type:"string"`
 
 	// The Amazon Machine Image (AMI) ID used for instances launched in the compute
@@ -3615,8 +3732,8 @@ type ComputeResourceUpdate struct {
 	// environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// The AMI that you choose for a compute environment must match the architecture
 	// of the instance types that you intend to use for that compute environment.
@@ -3638,8 +3755,8 @@ type ComputeResourceUpdate struct {
 	// environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	InstanceRole *string `locationName:"instanceRole" type:"string"`
 
 	// The instances types that can be launched. You can specify instance families
@@ -3653,8 +3770,8 @@ type ComputeResourceUpdate struct {
 	// environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	//
 	// When you create a compute environment, the instance types that you select
 	// for the compute environment must share the same architecture. For example,
@@ -3662,7 +3779,7 @@ type ComputeResourceUpdate struct {
 	//
 	// Currently, optimal uses instance types from the C4, M4, and R4 instance families.
 	// In Regions that don't have instance types from those instance families, instance
-	// types from the C5, M5. and R5 instance families are used.
+	// types from the C5, M5, and R5 instance families are used.
 	InstanceTypes []*string `locationName:"instanceTypes" type:"list"`
 
 	// The updated launch template to use for your compute resources. You must specify
@@ -3680,24 +3797,25 @@ type ComputeResourceUpdate struct {
 	// see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	LaunchTemplate *LaunchTemplateSpecification `locationName:"launchTemplate" type:"structure"`
 
 	// The maximum number of Amazon EC2 vCPUs that an environment can reach.
 	//
-	// With both BEST_FIT_PROGRESSIVE and SPOT_CAPACITY_OPTIMIZED allocation strategies,
-	// Batch might need to exceed maxvCpus to meet your capacity requirements. In
-	// this event, Batch never exceeds maxvCpus by more than a single instance.
-	// That is, no more than a single instance from among those specified in your
-	// compute environment.
+	// With BEST_FIT_PROGRESSIVE, SPOT_CAPACITY_OPTIMIZED, and SPOT_PRICE_CAPACITY_OPTIMIZED
+	// allocation strategies using On-Demand or Spot Instances, and the BEST_FIT
+	// strategy using Spot Instances, Batch might need to exceed maxvCpus to meet
+	// your capacity requirements. In this event, Batch never exceeds maxvCpus by
+	// more than a single instance. That is, no more than a single instance from
+	// among those specified in your compute environment.
 	MaxvCpus *int64 `locationName:"maxvCpus" type:"integer"`
 
-	// The minimum number of Amazon EC2 vCPUs that an environment should maintain
-	// (even if the compute environment is DISABLED).
+	// The minimum number of vCPUs that an environment should maintain (even if
+	// the compute environment is DISABLED).
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	MinvCpus *int64 `locationName:"minvCpus" type:"integer"`
 
 	// The Amazon EC2 placement group to associate with your compute resources.
@@ -3713,16 +3831,16 @@ type ComputeResourceUpdate struct {
 	// see Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	PlacementGroup *string `locationName:"placementGroup" type:"string"`
 
-	// The Amazon EC2 security groups associated with instances launched in the
-	// compute environment. This parameter is required for Fargate compute resources,
-	// where it can contain up to 5 security groups. For Fargate compute resources,
-	// providing an empty list is handled as if this parameter wasn't specified
-	// and no change is made. For EC2 compute resources, providing an empty list
-	// removes the security groups from the compute resource.
+	// The Amazon EC2 security groups that are associated with instances launched
+	// in the compute environment. This parameter is required for Fargate compute
+	// resources, where it can contain up to 5 security groups. For Fargate compute
+	// resources, providing an empty list is handled as if this parameter wasn't
+	// specified and no change is made. For EC2 compute resources, providing an
+	// empty list removes the security groups from the compute resource.
 	//
 	// When updating a compute environment, changing the EC2 security groups requires
 	// an infrastructure update of the compute environment. For more information,
@@ -3742,12 +3860,22 @@ type ComputeResourceUpdate struct {
 	// infrastructure update of the compute environment. For more information, see
 	// Updating compute environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
+	//
+	// Batch on Amazon EC2 and Batch on Amazon EKS support Local Zones. For more
+	// information, see Local Zones (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-local-zones)
+	// in the Amazon EC2 User Guide for Linux Instances, Amazon EKS and Amazon Web
+	// Services Local Zones (https://docs.aws.amazon.com/eks/latest/userguide/local-zones.html)
+	// in the Amazon EKS User Guide and Amazon ECS clusters in Local Zones, Wavelength
+	// Zones, and Amazon Web Services Outposts (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-regions-zones.html#clusters-local-zones)
+	// in the Amazon ECS Developer Guide.
+	//
+	// Batch on Fargate doesn't currently support Local Zones.
 	Subnets []*string `locationName:"subnets" type:"list"`
 
 	// Key-value pair tags to be applied to EC2 resources that are launched in the
 	// compute environment. For Batch, these take the form of "String1": "String2",
-	// where String1 is the tag key and String2 is the tag value−for example,
-	// { "Name": "Batch Instance - C4OnDemand" }. This is helpful for recognizing
+	// where String1 is the tag key and String2 is the tag value-for example, {
+	// "Name": "Batch Instance - C4OnDemand" }. This is helpful for recognizing
 	// your Batch instances in the Amazon EC2 console. These tags aren't seen when
 	// using the Batch ListTagsForResource API operation.
 	//
@@ -3756,8 +3884,8 @@ type ComputeResourceUpdate struct {
 	// environments (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 	// in the Batch User Guide.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources,
-	// and shouldn't be specified.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't specify it.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The type of compute environment: EC2, SPOT, FARGATE, or FARGATE_SPOT. For
@@ -3779,9 +3907,10 @@ type ComputeResourceUpdate struct {
 	// by Batch when the compute environment has an infrastructure update. The default
 	// value is false.
 	//
-	// If an AMI ID is specified in the imageId or imageIdOverride parameters or
-	// by the launch template specified in the launchTemplate parameter, this parameter
-	// is ignored. For more information on updating AMI IDs during an infrastructure
+	// An AMI ID can either be specified in the imageId or imageIdOverride parameters
+	// or be determined by the launch template that's specified in the launchTemplate
+	// parameter. If an AMI ID is specified any of these ways, this parameter is
+	// ignored. For more information about to update AMI IDs during an infrastructure
 	// update, see Updating the AMI ID (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html#updating-compute-environments-ami)
 	// in the Batch User Guide.
 	//
@@ -3932,7 +4061,7 @@ func (s *ComputeResourceUpdate) SetUpdateToLatestImageVersion(v bool) *ComputeRe
 	return s
 }
 
-// An object representing the details of a container that's part of a job.
+// An object that represents the details of a container that's part of a job.
 type ContainerDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -3945,9 +4074,14 @@ type ContainerDetail struct {
 
 	// The environment variables to pass to a container.
 	//
-	// Environment variables must not start with AWS_BATCH; this naming convention
-	// is reserved for variables that are set by the Batch service.
+	// Environment variables cannot start with "AWS_BATCH". This naming convention
+	// is reserved for variables that Batch sets.
 	Environment []*KeyValuePair `locationName:"environment" type:"list"`
+
+	// The amount of ephemeral storage allocated for the task. This parameter is
+	// used to expand the total amount of ephemeral storage available, beyond the
+	// default amount, for tasks hosted on Fargate.
+	EphemeralStorage *EphemeralStorage `locationName:"ephemeralStorage" type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the execution role that Batch can assume.
 	// For more information, see Batch execution IAM role (https://docs.aws.amazon.com/batch/latest/userguide/execution-IAM-role.html)
@@ -3970,7 +4104,7 @@ type ContainerDetail struct {
 	// This parameter isn't applicable to jobs that are running on Fargate resources.
 	InstanceType *string `locationName:"instanceType" type:"string"`
 
-	// The Amazon Resource Name (ARN) associated with the job upon execution.
+	// The Amazon Resource Name (ARN) that's associated with the job when run.
 	JobRoleArn *string `locationName:"jobRoleArn" type:"string"`
 
 	// Linux-specific modifications that are applied to the container, such as details
@@ -3998,7 +4132,7 @@ type ContainerDetail struct {
 	//
 	// This parameter requires version 1.18 of the Docker Remote API or greater
 	// on your container instance. To check the Docker Remote API version on your
-	// container instance, log into your container instance and run the following
+	// container instance, log in to your container instance and run the following
 	// command: sudo docker version | grep "Server API version"
 	//
 	// The Amazon ECS container agent running on a container instance must register
@@ -4009,9 +4143,9 @@ type ContainerDetail struct {
 	// in the Amazon Elastic Container Service Developer Guide.
 	LogConfiguration *LogConfiguration `locationName:"logConfiguration" type:"structure"`
 
-	// The name of the CloudWatch Logs log stream associated with the container.
-	// The log group for Batch jobs is /aws/batch/job. Each container attempt receives
-	// a log stream name when they reach the RUNNING status.
+	// The name of the Amazon CloudWatch Logs log stream that's associated with
+	// the container. The log group for Batch jobs is /aws/batch/job. Each container
+	// attempt receives a log stream name when they reach the RUNNING status.
 	LogStreamName *string `locationName:"logStreamName" type:"string"`
 
 	// For jobs running on EC2 resources that didn't specify memory requirements
@@ -4026,7 +4160,7 @@ type ContainerDetail struct {
 	// Jobs that are running on EC2 resources must not specify this parameter.
 	NetworkConfiguration *NetworkConfiguration `locationName:"networkConfiguration" type:"structure"`
 
-	// The network interfaces associated with the job.
+	// The network interfaces that are associated with the job.
 	NetworkInterfaces []*NetworkInterface `locationName:"networkInterfaces" type:"list"`
 
 	// When this parameter is true, the container is given elevated permissions
@@ -4045,12 +4179,16 @@ type ContainerDetail struct {
 	ReadonlyRootFilesystem *bool `locationName:"readonlyRootFilesystem" type:"boolean"`
 
 	// A short (255 max characters) human-readable string to provide additional
-	// details about a running or stopped container.
+	// details for a running or stopped container.
 	Reason *string `locationName:"reason" type:"string"`
 
 	// The type and amount of resources to assign to a container. The supported
 	// resources include GPU, MEMORY, and VCPU.
 	ResourceRequirements []*ResourceRequirement `locationName:"resourceRequirements" type:"list"`
+
+	// An object that represents the compute environment architecture for Batch
+	// jobs on Fargate.
+	RuntimePlatform *RuntimePlatform `locationName:"runtimePlatform" type:"structure"`
 
 	// The secrets to pass to the container. For more information, see Specifying
 	// sensitive data (https://docs.aws.amazon.com/batch/latest/userguide/specifying-sensitive-data.html)
@@ -4091,7 +4229,7 @@ type ContainerDetail struct {
 	// for the job using resourceRequirements.
 	Vcpus *int64 `locationName:"vcpus" type:"integer"`
 
-	// A list of volumes associated with the job.
+	// A list of volumes that are associated with the job.
 	Volumes []*Volume `locationName:"volumes" type:"list"`
 }
 
@@ -4128,6 +4266,12 @@ func (s *ContainerDetail) SetContainerInstanceArn(v string) *ContainerDetail {
 // SetEnvironment sets the Environment field's value.
 func (s *ContainerDetail) SetEnvironment(v []*KeyValuePair) *ContainerDetail {
 	s.Environment = v
+	return s
+}
+
+// SetEphemeralStorage sets the EphemeralStorage field's value.
+func (s *ContainerDetail) SetEphemeralStorage(v *EphemeralStorage) *ContainerDetail {
+	s.EphemeralStorage = v
 	return s
 }
 
@@ -4233,6 +4377,12 @@ func (s *ContainerDetail) SetResourceRequirements(v []*ResourceRequirement) *Con
 	return s
 }
 
+// SetRuntimePlatform sets the RuntimePlatform field's value.
+func (s *ContainerDetail) SetRuntimePlatform(v *RuntimePlatform) *ContainerDetail {
+	s.RuntimePlatform = v
+	return s
+}
+
 // SetSecrets sets the Secrets field's value.
 func (s *ContainerDetail) SetSecrets(v []*Secret) *ContainerDetail {
 	s.Secrets = v
@@ -4270,19 +4420,24 @@ func (s *ContainerDetail) SetVolumes(v []*Volume) *ContainerDetail {
 }
 
 // The overrides that should be sent to a container.
+//
+// For information about using Batch overrides when you connect event sources
+// to targets, see BatchContainerOverrides (https://docs.aws.amazon.com/eventbridge/latest/pipes-reference/API_BatchContainerOverrides.html).
 type ContainerOverrides struct {
 	_ struct{} `type:"structure"`
 
 	// The command to send to the container that overrides the default command from
 	// the Docker image or the job definition.
+	//
+	// This parameter can't contain an empty string.
 	Command []*string `locationName:"command" type:"list"`
 
 	// The environment variables to send to the container. You can add new environment
 	// variables, which are added to the container at launch, or you can override
 	// the existing environment variables from the Docker image or the job definition.
 	//
-	// Environment variables must not start with AWS_BATCH; this naming convention
-	// is reserved for variables that are set by the Batch service.
+	// Environment variables cannot start with "AWS_BATCH". This naming convention
+	// is reserved for variables that Batch sets.
 	Environment []*KeyValuePair `locationName:"environment" type:"list"`
 
 	// The instance type to use for a multi-node parallel job.
@@ -4293,11 +4448,11 @@ type ContainerOverrides struct {
 
 	// This parameter is deprecated, use resourceRequirements to override the memory
 	// requirements specified in the job definition. It's not supported for jobs
-	// running on Fargate resources. For jobs running on EC2 resources, it overrides
+	// running on Fargate resources. For jobs that run on EC2 resources, it overrides
 	// the memory parameter set in the job definition, but doesn't override any
-	// memory requirement specified in the resourceRequirements structure in the
-	// job definition. To override memory requirements that are specified in the
-	// resourceRequirements structure in the job definition, resourceRequirements
+	// memory requirement that's specified in the resourceRequirements structure
+	// in the job definition. To override memory requirements that are specified
+	// in the resourceRequirements structure in the job definition, resourceRequirements
 	// must be specified in the SubmitJob request, with type set to MEMORY and value
 	// set to the new value. For more information, see Can't override job definition
 	// resource requirements (https://docs.aws.amazon.com/batch/latest/userguide/troubleshooting.html#override-resource-requirements)
@@ -4313,7 +4468,7 @@ type ContainerOverrides struct {
 
 	// This parameter is deprecated, use resourceRequirements to override the vcpus
 	// parameter that's set in the job definition. It's not supported for jobs running
-	// on Fargate resources. For jobs running on EC2 resources, it overrides the
+	// on Fargate resources. For jobs that run on EC2 resources, it overrides the
 	// vcpus parameter set in the job definition, but doesn't override any vCPU
 	// requirement specified in the resourceRequirements structure in the job definition.
 	// To override vCPU requirements that are specified in the resourceRequirements
@@ -4401,8 +4556,8 @@ func (s *ContainerOverrides) SetVcpus(v int64) *ContainerOverrides {
 	return s
 }
 
-// Container properties are used in job definitions to describe the container
-// that's launched as part of a job.
+// Container properties are used for Amazon ECS based job definitions. These
+// properties to describe the container that's launched as part of a job.
 type ContainerProperties struct {
 	_ struct{} `type:"structure"`
 
@@ -4422,9 +4577,14 @@ type ContainerProperties struct {
 	// We don't recommend using plaintext environment variables for sensitive information,
 	// such as credential data.
 	//
-	// Environment variables must not start with AWS_BATCH; this naming convention
-	// is reserved for variables that are set by the Batch service.
+	// Environment variables cannot start with "AWS_BATCH". This naming convention
+	// is reserved for variables that Batch sets.
 	Environment []*KeyValuePair `locationName:"environment" type:"list"`
+
+	// The amount of ephemeral storage to allocate for the task. This parameter
+	// is used to expand the total amount of ephemeral storage available, beyond
+	// the default amount, for tasks hosted on Fargate.
+	EphemeralStorage *EphemeralStorage `locationName:"ephemeralStorage" type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the execution role that Batch can assume.
 	// For jobs that run on Fargate resources, you must provide an execution role.
@@ -4438,12 +4598,13 @@ type ContainerProperties struct {
 
 	// The image used to start a container. This string is passed directly to the
 	// Docker daemon. Images in the Docker Hub registry are available by default.
-	// Other repositories are specified with repository-url/image:tag . Up to 255
-	// letters (uppercase and lowercase), numbers, hyphens, underscores, colons,
-	// periods, forward slashes, and number signs are allowed. This parameter maps
-	// to Image in the Create a container (https://docs.docker.com/engine/api/v1.23/#create-a-container)
-	// section of the Docker Remote API (https://docs.docker.com/engine/api/v1.23/)
-	// and the IMAGE parameter of docker run (https://docs.docker.com/engine/reference/run/).
+	// Other repositories are specified with repository-url/image:tag . It can be
+	// 255 characters long. It can contain uppercase and lowercase letters, numbers,
+	// hyphens (-), underscores (_), colons (:), periods (.), forward slashes (/),
+	// and number signs (#). This parameter maps to Image in the Create a container
+	// (https://docs.docker.com/engine/api/v1.23/#create-a-container) section of
+	// the Docker Remote API (https://docs.docker.com/engine/api/v1.23/) and the
+	// IMAGE parameter of docker run (https://docs.docker.com/engine/reference/run/).
 	//
 	// Docker image architecture must match the processor architecture of the compute
 	// resources that they're scheduled on. For example, ARM-based Docker images
@@ -4453,7 +4614,7 @@ type ContainerProperties struct {
 	//    or registry/repository[@digest] naming conventions. For example, public.ecr.aws/registry_alias/my-web-app:latest .
 	//
 	//    * Images in Amazon ECR repositories use the full registry and repository
-	//    URI (for example, 012345678910.dkr.ecr.<region-name>.amazonaws.com/<repository-name>).
+	//    URI (for example, 123456789012.dkr.ecr.<region-name>.amazonaws.com/<repository-name>).
 	//
 	//    * Images in official repositories on Docker Hub use a single name (for
 	//    example, ubuntu or mongo).
@@ -4501,7 +4662,7 @@ type ContainerProperties struct {
 	//
 	// This parameter requires version 1.18 of the Docker Remote API or greater
 	// on your container instance. To check the Docker Remote API version on your
-	// container instance, log into your container instance and run the following
+	// container instance, log in to your container instance and run the following
 	// command: sudo docker version | grep "Server API version"
 	//
 	// The Amazon ECS container agent running on a container instance must register
@@ -4514,7 +4675,7 @@ type ContainerProperties struct {
 
 	// This parameter is deprecated, use resourceRequirements to specify the memory
 	// requirements for the job definition. It's not supported for jobs running
-	// on Fargate resources. For jobs running on EC2 resources, it specifies the
+	// on Fargate resources. For jobs that run on EC2 resources, it specifies the
 	// memory hard limit (in MiB) for a container. If your container attempts to
 	// exceed the specified number, it's terminated. You must specify at least 4
 	// MiB of memory for a job using this parameter. The memory hard limit can be
@@ -4555,6 +4716,10 @@ type ContainerProperties struct {
 	// The type and amount of resources to assign to a container. The supported
 	// resources include GPU, MEMORY, and VCPU.
 	ResourceRequirements []*ResourceRequirement `locationName:"resourceRequirements" type:"list"`
+
+	// An object that represents the compute environment architecture for Batch
+	// jobs on Fargate.
+	RuntimePlatform *RuntimePlatform `locationName:"runtimePlatform" type:"structure"`
 
 	// The secrets for the container. For more information, see Specifying sensitive
 	// data (https://docs.aws.amazon.com/batch/latest/userguide/specifying-sensitive-data.html)
@@ -4616,6 +4781,11 @@ func (s ContainerProperties) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ContainerProperties) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ContainerProperties"}
+	if s.EphemeralStorage != nil {
+		if err := s.EphemeralStorage.Validate(); err != nil {
+			invalidParams.AddNested("EphemeralStorage", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.LinuxParameters != nil {
 		if err := s.LinuxParameters.Validate(); err != nil {
 			invalidParams.AddNested("LinuxParameters", err.(request.ErrInvalidParams))
@@ -4682,6 +4852,12 @@ func (s *ContainerProperties) SetCommand(v []*string) *ContainerProperties {
 // SetEnvironment sets the Environment field's value.
 func (s *ContainerProperties) SetEnvironment(v []*KeyValuePair) *ContainerProperties {
 	s.Environment = v
+	return s
+}
+
+// SetEphemeralStorage sets the EphemeralStorage field's value.
+func (s *ContainerProperties) SetEphemeralStorage(v *EphemeralStorage) *ContainerProperties {
+	s.EphemeralStorage = v
 	return s
 }
 
@@ -4763,6 +4939,12 @@ func (s *ContainerProperties) SetResourceRequirements(v []*ResourceRequirement) 
 	return s
 }
 
+// SetRuntimePlatform sets the RuntimePlatform field's value.
+func (s *ContainerProperties) SetRuntimePlatform(v *RuntimePlatform) *ContainerProperties {
+	s.RuntimePlatform = v
+	return s
+}
+
 // SetSecrets sets the Secrets field's value.
 func (s *ContainerProperties) SetSecrets(v []*Secret) *ContainerProperties {
 	s.Secrets = v
@@ -4793,7 +4975,7 @@ func (s *ContainerProperties) SetVolumes(v []*Volume) *ContainerProperties {
 	return s
 }
 
-// An object representing summary details of a container within a job.
+// An object that represents summary details of a container within a job.
 type ContainerSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -4801,7 +4983,7 @@ type ContainerSummary struct {
 	ExitCode *int64 `locationName:"exitCode" type:"integer"`
 
 	// A short (255 max characters) human-readable string to provide additional
-	// details about a running or stopped container.
+	// details for a running or stopped container.
 	Reason *string `locationName:"reason" type:"string"`
 }
 
@@ -4839,7 +5021,7 @@ func (s *ContainerSummary) SetReason(v string) *ContainerSummary {
 type CreateComputeEnvironmentInput struct {
 	_ struct{} `type:"structure"`
 
-	// The name for your compute environment. It can be up to 128 letters long.
+	// The name for your compute environment. It can be up to 128 characters long.
 	// It can contain uppercase and lowercase letters, numbers, hyphens (-), and
 	// underscores (_).
 	//
@@ -4851,6 +5033,9 @@ type CreateComputeEnvironmentInput struct {
 	// see Compute Environments (https://docs.aws.amazon.com/batch/latest/userguide/compute_environments.html)
 	// in the Batch User Guide.
 	ComputeResources *ComputeResource `locationName:"computeResources" type:"structure"`
+
+	// The details for the Amazon EKS cluster that supports the compute environment.
+	EksConfiguration *EksConfiguration `locationName:"eksConfiguration" type:"structure"`
 
 	// The full Amazon Resource Name (ARN) of the IAM role that allows Batch to
 	// make calls to other Amazon Web Services services on your behalf. For more
@@ -4865,9 +5050,8 @@ type CreateComputeEnvironmentInput struct {
 	//
 	// If your specified role has a path other than /, then you must specify either
 	// the full role ARN (recommended) or prefix the role name with the path. For
-	// example, if a role with the name bar has a path of /foo/ then you would specify
-	// /foo/bar as the role name. For more information, see Friendly names and paths
-	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names)
+	// example, if a role with the name bar has a path of /foo/, specify /foo/bar
+	// as the role name. For more information, see Friendly names and paths (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names)
 	// in the IAM User Guide.
 	//
 	// Depending on how you created your Batch service role, its ARN might contain
@@ -4889,8 +5073,17 @@ type CreateComputeEnvironmentInput struct {
 	// If the state is DISABLED, then the Batch scheduler doesn't attempt to place
 	// jobs within the environment. Jobs in a STARTING or RUNNING state continue
 	// to progress normally. Managed compute environments in the DISABLED state
-	// don't scale out. However, they scale in to minvCpus value after instances
-	// become idle.
+	// don't scale out.
+	//
+	// Compute environments in a DISABLED state may continue to incur billing charges.
+	// To prevent additional charges, turn off and then delete the compute environment.
+	// For more information, see State (https://docs.aws.amazon.com/batch/latest/userguide/compute_environment_parameters.html#compute_environment_state)
+	// in the Batch User Guide.
+	//
+	// When an instance is idle, the instance scales down to the minvCpus value.
+	// However, the instance size doesn't change. For example, consider a c5.8xlarge
+	// instance with a minvCpus value of 4 and a desiredvCpus value of 36. This
+	// instance doesn't scale down to a c5.large instance.
 	State *string `locationName:"state" type:"string" enum:"CEState"`
 
 	// The tags that you apply to the compute environment to help you categorize
@@ -4954,6 +5147,11 @@ func (s *CreateComputeEnvironmentInput) Validate() error {
 			invalidParams.AddNested("ComputeResources", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.EksConfiguration != nil {
+		if err := s.EksConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("EksConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -4970,6 +5168,12 @@ func (s *CreateComputeEnvironmentInput) SetComputeEnvironmentName(v string) *Cre
 // SetComputeResources sets the ComputeResources field's value.
 func (s *CreateComputeEnvironmentInput) SetComputeResources(v *ComputeResource) *CreateComputeEnvironmentInput {
 	s.ComputeResources = v
+	return s
+}
+
+// SetEksConfiguration sets the EksConfiguration field's value.
+func (s *CreateComputeEnvironmentInput) SetEksConfiguration(v *EksConfiguration) *CreateComputeEnvironmentInput {
+	s.EksConfiguration = v
 	return s
 }
 
@@ -5009,9 +5213,9 @@ type CreateComputeEnvironmentOutput struct {
 	// The Amazon Resource Name (ARN) of the compute environment.
 	ComputeEnvironmentArn *string `locationName:"computeEnvironmentArn" type:"string"`
 
-	// The name of the compute environment. It can be up to 128 letters long. It
-	// can contain uppercase and lowercase letters, numbers, hyphens (-), and underscores
-	// (_).
+	// The name of the compute environment. It can be up to 128 characters long.
+	// It can contain uppercase and lowercase letters, numbers, hyphens (-), and
+	// underscores (_).
 	ComputeEnvironmentName *string `locationName:"computeEnvironmentName" type:"string"`
 }
 
@@ -5086,7 +5290,7 @@ type CreateJobQueueInput struct {
 	// If this parameter isn't specified, the job queue uses a first in, first out
 	// (FIFO) scheduling policy. After a job queue is created, you can replace but
 	// can't remove the fair share scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
-	// . An example is aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+	// . An example is aws:aws:batch:us-west-2:123456789012:scheduling-policy/MySchedulingPolicy.
 	SchedulingPolicyArn *string `locationName:"schedulingPolicyArn" type:"string"`
 
 	// The state of the job queue. If the job queue state is ENABLED, it is able
@@ -5317,7 +5521,7 @@ type CreateSchedulingPolicyOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
-	// . For example, aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+	// . For example, aws:aws:batch:us-west-2:123456789012:scheduling-policy/MySchedulingPolicy.
 	//
 	// Arn is a required field
 	Arn *string `locationName:"arn" type:"string" required:"true"`
@@ -5657,8 +5861,8 @@ type DescribeComputeEnvironmentsInput struct {
 	// returned the nextToken value. This value is null when there are no more results
 	// to return.
 	//
-	// This token should be treated as an opaque identifier that's only used to
-	// retrieve the next items in a list and not for other programmatic purposes.
+	// Treat this token as an opaque identifier that's only used to retrieve the
+	// next items in a list and not for other programmatic purposes.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -5768,8 +5972,8 @@ type DescribeJobDefinitionsInput struct {
 	// returned the nextToken value. This value is null when there are no more results
 	// to return.
 	//
-	// This token should be treated as an opaque identifier that's only used to
-	// retrieve the next items in a list and not for other programmatic purposes.
+	// Treat this token as an opaque identifier that's only used to retrieve the
+	// next items in a list and not for other programmatic purposes.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// The status used to filter job definitions.
@@ -5890,8 +6094,8 @@ type DescribeJobQueuesInput struct {
 	// returned the nextToken value. This value is null when there are no more results
 	// to return.
 	//
-	// This token should be treated as an opaque identifier that's only used to
-	// retrieve the next items in a list and not for other programmatic purposes.
+	// Treat this token as an opaque identifier that's only used to retrieve the
+	// next items in a list and not for other programmatic purposes.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -6130,7 +6334,7 @@ func (s *DescribeSchedulingPoliciesOutput) SetSchedulingPolicies(v []*Scheduling
 	return s
 }
 
-// An object representing a container instance host device.
+// An object that represents a container instance host device.
 //
 // This object isn't applicable to jobs that are running on Fargate resources
 // and shouldn't be provided.
@@ -6206,10 +6410,9 @@ type EFSAuthorizationConfig struct {
 
 	// The Amazon EFS access point ID to use. If an access point is specified, the
 	// root directory value specified in the EFSVolumeConfiguration must either
-	// be omitted or set to / which will enforce the path set on the EFS access
-	// point. If an access point is used, transit encryption must be enabled in
-	// the EFSVolumeConfiguration. For more information, see Working with Amazon
-	// EFS access points (https://docs.aws.amazon.com/efs/latest/ug/efs-access-points.html)
+	// be omitted or set to / which enforces the path set on the EFS access point.
+	// If an access point is used, transit encryption must be enabled in the EFSVolumeConfiguration.
+	// For more information, see Working with Amazon EFS access points (https://docs.aws.amazon.com/efs/latest/ug/efs-access-points.html)
 	// in the Amazon Elastic File System User Guide.
 	AccessPointId *string `locationName:"accessPointId" type:"string"`
 
@@ -6376,9 +6579,17 @@ type Ec2Configuration struct {
 	// in the Amazon Elastic Container Service Developer Guide.
 	ImageIdOverride *string `locationName:"imageIdOverride" min:"1" type:"string"`
 
-	// The image type to match with the instance type to select an AMI. If the imageIdOverride
-	// parameter isn't specified, then a recent Amazon ECS-optimized Amazon Linux
-	// 2 AMI (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#al2ami)
+	// The Kubernetes version for the compute environment. If you don't specify
+	// a value, the latest version that Batch supports is used.
+	ImageKubernetesVersion *string `locationName:"imageKubernetesVersion" min:"1" type:"string"`
+
+	// The image type to match with the instance type to select an AMI. The supported
+	// values are different for ECS and EKS resources.
+	//
+	// ECS
+	//
+	// If the imageIdOverride parameter isn't specified, then a recent Amazon ECS-optimized
+	// Amazon Linux 2 AMI (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#al2ami)
 	// (ECS_AL2) is used. If a new image type is specified in an update, but neither
 	// an imageId nor a imageIdOverride parameter is specified, then the latest
 	// Amazon ECS optimized AMI for that image type that's supported by Batch is
@@ -6386,20 +6597,39 @@ type Ec2Configuration struct {
 	//
 	// ECS_AL2
 	//
-	// Amazon Linux 2 (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#al2ami)−
+	// Amazon Linux 2 (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#al2ami):
 	// Default for all non-GPU instance families.
 	//
 	// ECS_AL2_NVIDIA
 	//
-	// Amazon Linux 2 (GPU) (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#gpuami)−Default
-	// for all GPU instance families (for example P4 and G4) and can be used for
-	// all non Amazon Web Services Graviton-based instance types.
+	// Amazon Linux 2 (GPU) (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#gpuami):
+	// Default for all GPU instance families (for example P4 and G4) and can be
+	// used for all non Amazon Web Services Graviton-based instance types.
 	//
 	// ECS_AL1
 	//
 	// Amazon Linux (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html#alami).
-	// Amazon Linux is reaching the end-of-life of standard support. For more information,
+	// Amazon Linux has reached the end-of-life of standard support. For more information,
 	// see Amazon Linux AMI (http://aws.amazon.com/amazon-linux-ami/).
+	//
+	// EKS
+	//
+	// If the imageIdOverride parameter isn't specified, then a recent Amazon EKS-optimized
+	// Amazon Linux AMI (https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html)
+	// (EKS_AL2) is used. If a new image type is specified in an update, but neither
+	// an imageId nor a imageIdOverride parameter is specified, then the latest
+	// Amazon EKS optimized AMI for that image type that Batch supports is used.
+	//
+	// EKS_AL2
+	//
+	// Amazon Linux 2 (https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html):
+	// Default for all non-GPU instance families.
+	//
+	// EKS_AL2_NVIDIA
+	//
+	// Amazon Linux 2 (accelerated) (https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html):
+	// Default for all GPU instance families (for example, P4 and G4) and can be
+	// used for all non Amazon Web Services Graviton-based instance types.
 	//
 	// ImageType is a required field
 	ImageType *string `locationName:"imageType" min:"1" type:"string" required:"true"`
@@ -6429,6 +6659,9 @@ func (s *Ec2Configuration) Validate() error {
 	if s.ImageIdOverride != nil && len(*s.ImageIdOverride) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ImageIdOverride", 1))
 	}
+	if s.ImageKubernetesVersion != nil && len(*s.ImageKubernetesVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ImageKubernetesVersion", 1))
+	}
 	if s.ImageType == nil {
 		invalidParams.Add(request.NewErrParamRequired("ImageType"))
 	}
@@ -6448,14 +6681,1738 @@ func (s *Ec2Configuration) SetImageIdOverride(v string) *Ec2Configuration {
 	return s
 }
 
+// SetImageKubernetesVersion sets the ImageKubernetesVersion field's value.
+func (s *Ec2Configuration) SetImageKubernetesVersion(v string) *Ec2Configuration {
+	s.ImageKubernetesVersion = &v
+	return s
+}
+
 // SetImageType sets the ImageType field's value.
 func (s *Ec2Configuration) SetImageType(v string) *Ec2Configuration {
 	s.ImageType = &v
 	return s
 }
 
-// Specifies a set of conditions to be met, and an action to take (RETRY or
-// EXIT) if all conditions are met.
+// An object that represents the details for an attempt for a job attempt that
+// an Amazon EKS container runs.
+type EksAttemptContainerDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The exit code for the job attempt. A non-zero exit code is considered failed.
+	ExitCode *int64 `locationName:"exitCode" type:"integer"`
+
+	// A short (255 max characters) human-readable string to provide additional
+	// details for a running or stopped container.
+	Reason *string `locationName:"reason" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAttemptContainerDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAttemptContainerDetail) GoString() string {
+	return s.String()
+}
+
+// SetExitCode sets the ExitCode field's value.
+func (s *EksAttemptContainerDetail) SetExitCode(v int64) *EksAttemptContainerDetail {
+	s.ExitCode = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *EksAttemptContainerDetail) SetReason(v string) *EksAttemptContainerDetail {
+	s.Reason = &v
+	return s
+}
+
+// An object that represents the details of a job attempt for a job attempt
+// by an Amazon EKS container.
+type EksAttemptDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The details for the final status of the containers for this job attempt.
+	Containers []*EksAttemptContainerDetail `locationName:"containers" type:"list"`
+
+	// The name of the node for this job attempt.
+	NodeName *string `locationName:"nodeName" type:"string"`
+
+	// The name of the pod for this job attempt.
+	PodName *string `locationName:"podName" type:"string"`
+
+	// The Unix timestamp (in milliseconds) for when the attempt was started (when
+	// the attempt transitioned from the STARTING state to the RUNNING state).
+	StartedAt *int64 `locationName:"startedAt" type:"long"`
+
+	// A short, human-readable string to provide additional details for the current
+	// status of the job attempt.
+	StatusReason *string `locationName:"statusReason" type:"string"`
+
+	// The Unix timestamp (in milliseconds) for when the attempt was stopped. This
+	// happens when the attempt transitioned from the RUNNING state to a terminal
+	// state, such as SUCCEEDED or FAILED.
+	StoppedAt *int64 `locationName:"stoppedAt" type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAttemptDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAttemptDetail) GoString() string {
+	return s.String()
+}
+
+// SetContainers sets the Containers field's value.
+func (s *EksAttemptDetail) SetContainers(v []*EksAttemptContainerDetail) *EksAttemptDetail {
+	s.Containers = v
+	return s
+}
+
+// SetNodeName sets the NodeName field's value.
+func (s *EksAttemptDetail) SetNodeName(v string) *EksAttemptDetail {
+	s.NodeName = &v
+	return s
+}
+
+// SetPodName sets the PodName field's value.
+func (s *EksAttemptDetail) SetPodName(v string) *EksAttemptDetail {
+	s.PodName = &v
+	return s
+}
+
+// SetStartedAt sets the StartedAt field's value.
+func (s *EksAttemptDetail) SetStartedAt(v int64) *EksAttemptDetail {
+	s.StartedAt = &v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *EksAttemptDetail) SetStatusReason(v string) *EksAttemptDetail {
+	s.StatusReason = &v
+	return s
+}
+
+// SetStoppedAt sets the StoppedAt field's value.
+func (s *EksAttemptDetail) SetStoppedAt(v int64) *EksAttemptDetail {
+	s.StoppedAt = &v
+	return s
+}
+
+// Configuration for the Amazon EKS cluster that supports the Batch compute
+// environment. The cluster must exist before the compute environment can be
+// created.
+type EksConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Amazon EKS cluster. An example is arn:aws:eks:us-east-1:123456789012:cluster/ClusterForBatch .
+	//
+	// EksClusterArn is a required field
+	EksClusterArn *string `locationName:"eksClusterArn" type:"string" required:"true"`
+
+	// The namespace of the Amazon EKS cluster. Batch manages pods in this namespace.
+	// The value can't left empty or null. It must be fewer than 64 characters long,
+	// can't be set to default, can't start with "kube-," and must match this regular
+	// expression: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$. For more information, see Namespaces
+	// (https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
+	// in the Kubernetes documentation.
+	//
+	// KubernetesNamespace is a required field
+	KubernetesNamespace *string `locationName:"kubernetesNamespace" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksConfiguration"}
+	if s.EksClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("EksClusterArn"))
+	}
+	if s.KubernetesNamespace == nil {
+		invalidParams.Add(request.NewErrParamRequired("KubernetesNamespace"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEksClusterArn sets the EksClusterArn field's value.
+func (s *EksConfiguration) SetEksClusterArn(v string) *EksConfiguration {
+	s.EksClusterArn = &v
+	return s
+}
+
+// SetKubernetesNamespace sets the KubernetesNamespace field's value.
+func (s *EksConfiguration) SetKubernetesNamespace(v string) *EksConfiguration {
+	s.KubernetesNamespace = &v
+	return s
+}
+
+// EKS container properties are used in job definitions for Amazon EKS based
+// job definitions to describe the properties for a container node in the pod
+// that's launched as part of a job. This can't be specified for Amazon ECS
+// based job definitions.
+type EksContainer struct {
+	_ struct{} `type:"structure"`
+
+	// An array of arguments to the entrypoint. If this isn't specified, the CMD
+	// of the container image is used. This corresponds to the args member in the
+	// Entrypoint (https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#entrypoint)
+	// portion of the Pod (https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/)
+	// in Kubernetes. Environment variable references are expanded using the container's
+	// environment.
+	//
+	// If the referenced environment variable doesn't exist, the reference in the
+	// command isn't changed. For example, if the reference is to "$(NAME1)" and
+	// the NAME1 environment variable doesn't exist, the command string will remain
+	// "$(NAME1)." $$ is replaced with $, and the resulting string isn't expanded.
+	// For example, $$(VAR_NAME) is passed as $(VAR_NAME) whether or not the VAR_NAME
+	// environment variable exists. For more information, see CMD (https://docs.docker.com/engine/reference/builder/#cmd)
+	// in the Dockerfile reference and Define a command and arguments for a pod
+	// (https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/)
+	// in the Kubernetes documentation.
+	Args []*string `locationName:"args" type:"list"`
+
+	// The entrypoint for the container. This isn't run within a shell. If this
+	// isn't specified, the ENTRYPOINT of the container image is used. Environment
+	// variable references are expanded using the container's environment.
+	//
+	// If the referenced environment variable doesn't exist, the reference in the
+	// command isn't changed. For example, if the reference is to "$(NAME1)" and
+	// the NAME1 environment variable doesn't exist, the command string will remain
+	// "$(NAME1)." $$ is replaced with $ and the resulting string isn't expanded.
+	// For example, $$(VAR_NAME) will be passed as $(VAR_NAME) whether or not the
+	// VAR_NAME environment variable exists. The entrypoint can't be updated. For
+	// more information, see ENTRYPOINT (https://docs.docker.com/engine/reference/builder/#entrypoint)
+	// in the Dockerfile reference and Define a command and arguments for a container
+	// (https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/)
+	// and Entrypoint (https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#entrypoint)
+	// in the Kubernetes documentation.
+	Command []*string `locationName:"command" type:"list"`
+
+	// The environment variables to pass to a container.
+	//
+	// Environment variables cannot start with "AWS_BATCH". This naming convention
+	// is reserved for variables that Batch sets.
+	Env []*EksContainerEnvironmentVariable `locationName:"env" type:"list"`
+
+	// The Docker image used to start the container.
+	//
+	// Image is a required field
+	Image *string `locationName:"image" type:"string" required:"true"`
+
+	// The image pull policy for the container. Supported values are Always, IfNotPresent,
+	// and Never. This parameter defaults to IfNotPresent. However, if the :latest
+	// tag is specified, it defaults to Always. For more information, see Updating
+	// images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
+	// in the Kubernetes documentation.
+	ImagePullPolicy *string `locationName:"imagePullPolicy" type:"string"`
+
+	// The name of the container. If the name isn't specified, the default name
+	// "Default" is used. Each container in a pod must have a unique name.
+	Name *string `locationName:"name" type:"string"`
+
+	// The type and amount of resources to assign to a container. The supported
+	// resources include memory, cpu, and nvidia.com/gpu. For more information,
+	// see Resource management for pods and containers (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+	// in the Kubernetes documentation.
+	Resources *EksContainerResourceRequirements `locationName:"resources" type:"structure"`
+
+	// The security context for a job. For more information, see Configure a security
+	// context for a pod or container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
+	// in the Kubernetes documentation.
+	SecurityContext *EksContainerSecurityContext `locationName:"securityContext" type:"structure"`
+
+	// The volume mounts for the container. Batch supports emptyDir, hostPath, and
+	// secret volume types. For more information about volumes and volume mounts
+	// in Kubernetes, see Volumes (https://kubernetes.io/docs/concepts/storage/volumes/)
+	// in the Kubernetes documentation.
+	VolumeMounts []*EksContainerVolumeMount `locationName:"volumeMounts" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainer) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainer) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksContainer) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksContainer"}
+	if s.Image == nil {
+		invalidParams.Add(request.NewErrParamRequired("Image"))
+	}
+	if s.Env != nil {
+		for i, v := range s.Env {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Env", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArgs sets the Args field's value.
+func (s *EksContainer) SetArgs(v []*string) *EksContainer {
+	s.Args = v
+	return s
+}
+
+// SetCommand sets the Command field's value.
+func (s *EksContainer) SetCommand(v []*string) *EksContainer {
+	s.Command = v
+	return s
+}
+
+// SetEnv sets the Env field's value.
+func (s *EksContainer) SetEnv(v []*EksContainerEnvironmentVariable) *EksContainer {
+	s.Env = v
+	return s
+}
+
+// SetImage sets the Image field's value.
+func (s *EksContainer) SetImage(v string) *EksContainer {
+	s.Image = &v
+	return s
+}
+
+// SetImagePullPolicy sets the ImagePullPolicy field's value.
+func (s *EksContainer) SetImagePullPolicy(v string) *EksContainer {
+	s.ImagePullPolicy = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *EksContainer) SetName(v string) *EksContainer {
+	s.Name = &v
+	return s
+}
+
+// SetResources sets the Resources field's value.
+func (s *EksContainer) SetResources(v *EksContainerResourceRequirements) *EksContainer {
+	s.Resources = v
+	return s
+}
+
+// SetSecurityContext sets the SecurityContext field's value.
+func (s *EksContainer) SetSecurityContext(v *EksContainerSecurityContext) *EksContainer {
+	s.SecurityContext = v
+	return s
+}
+
+// SetVolumeMounts sets the VolumeMounts field's value.
+func (s *EksContainer) SetVolumeMounts(v []*EksContainerVolumeMount) *EksContainer {
+	s.VolumeMounts = v
+	return s
+}
+
+// The details for container properties that are returned by DescribeJobs for
+// jobs that use Amazon EKS.
+type EksContainerDetail struct {
+	_ struct{} `type:"structure"`
+
+	// An array of arguments to the entrypoint. If this isn't specified, the CMD
+	// of the container image is used. This corresponds to the args member in the
+	// Entrypoint (https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#entrypoint)
+	// portion of the Pod (https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/)
+	// in Kubernetes. Environment variable references are expanded using the container's
+	// environment.
+	//
+	// If the referenced environment variable doesn't exist, the reference in the
+	// command isn't changed. For example, if the reference is to "$(NAME1)" and
+	// the NAME1 environment variable doesn't exist, the command string will remain
+	// "$(NAME1)". $$ is replaced with $ and the resulting string isn't expanded.
+	// For example, $$(VAR_NAME) is passed as $(VAR_NAME) whether or not the VAR_NAME
+	// environment variable exists. For more information, see CMD (https://docs.docker.com/engine/reference/builder/#cmd)
+	// in the Dockerfile reference and Define a command and arguments for a pod
+	// (https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/)
+	// in the Kubernetes documentation.
+	Args []*string `locationName:"args" type:"list"`
+
+	// The entrypoint for the container. For more information, see Entrypoint (https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#entrypoint)
+	// in the Kubernetes documentation.
+	Command []*string `locationName:"command" type:"list"`
+
+	// The environment variables to pass to a container.
+	//
+	// Environment variables cannot start with "AWS_BATCH". This naming convention
+	// is reserved for variables that Batch sets.
+	Env []*EksContainerEnvironmentVariable `locationName:"env" type:"list"`
+
+	// The exit code for the job attempt. A non-zero exit code is considered failed.
+	ExitCode *int64 `locationName:"exitCode" type:"integer"`
+
+	// The Docker image used to start the container.
+	Image *string `locationName:"image" type:"string"`
+
+	// The image pull policy for the container. Supported values are Always, IfNotPresent,
+	// and Never. This parameter defaults to Always if the :latest tag is specified,
+	// IfNotPresent otherwise. For more information, see Updating images (https://kubernetes.io/docs/concepts/containers/images/#updating-images)
+	// in the Kubernetes documentation.
+	ImagePullPolicy *string `locationName:"imagePullPolicy" type:"string"`
+
+	// The name of the container. If the name isn't specified, the default name
+	// "Default" is used. Each container in a pod must have a unique name.
+	Name *string `locationName:"name" type:"string"`
+
+	// A short human-readable string to provide additional details for a running
+	// or stopped container. It can be up to 255 characters long.
+	Reason *string `locationName:"reason" type:"string"`
+
+	// The type and amount of resources to assign to a container. The supported
+	// resources include memory, cpu, and nvidia.com/gpu. For more information,
+	// see Resource management for pods and containers (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+	// in the Kubernetes documentation.
+	Resources *EksContainerResourceRequirements `locationName:"resources" type:"structure"`
+
+	// The security context for a job. For more information, see Configure a security
+	// context for a pod or container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
+	// in the Kubernetes documentation.
+	SecurityContext *EksContainerSecurityContext `locationName:"securityContext" type:"structure"`
+
+	// The volume mounts for the container. Batch supports emptyDir, hostPath, and
+	// secret volume types. For more information about volumes and volume mounts
+	// in Kubernetes, see Volumes (https://kubernetes.io/docs/concepts/storage/volumes/)
+	// in the Kubernetes documentation.
+	VolumeMounts []*EksContainerVolumeMount `locationName:"volumeMounts" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerDetail) GoString() string {
+	return s.String()
+}
+
+// SetArgs sets the Args field's value.
+func (s *EksContainerDetail) SetArgs(v []*string) *EksContainerDetail {
+	s.Args = v
+	return s
+}
+
+// SetCommand sets the Command field's value.
+func (s *EksContainerDetail) SetCommand(v []*string) *EksContainerDetail {
+	s.Command = v
+	return s
+}
+
+// SetEnv sets the Env field's value.
+func (s *EksContainerDetail) SetEnv(v []*EksContainerEnvironmentVariable) *EksContainerDetail {
+	s.Env = v
+	return s
+}
+
+// SetExitCode sets the ExitCode field's value.
+func (s *EksContainerDetail) SetExitCode(v int64) *EksContainerDetail {
+	s.ExitCode = &v
+	return s
+}
+
+// SetImage sets the Image field's value.
+func (s *EksContainerDetail) SetImage(v string) *EksContainerDetail {
+	s.Image = &v
+	return s
+}
+
+// SetImagePullPolicy sets the ImagePullPolicy field's value.
+func (s *EksContainerDetail) SetImagePullPolicy(v string) *EksContainerDetail {
+	s.ImagePullPolicy = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *EksContainerDetail) SetName(v string) *EksContainerDetail {
+	s.Name = &v
+	return s
+}
+
+// SetReason sets the Reason field's value.
+func (s *EksContainerDetail) SetReason(v string) *EksContainerDetail {
+	s.Reason = &v
+	return s
+}
+
+// SetResources sets the Resources field's value.
+func (s *EksContainerDetail) SetResources(v *EksContainerResourceRequirements) *EksContainerDetail {
+	s.Resources = v
+	return s
+}
+
+// SetSecurityContext sets the SecurityContext field's value.
+func (s *EksContainerDetail) SetSecurityContext(v *EksContainerSecurityContext) *EksContainerDetail {
+	s.SecurityContext = v
+	return s
+}
+
+// SetVolumeMounts sets the VolumeMounts field's value.
+func (s *EksContainerDetail) SetVolumeMounts(v []*EksContainerVolumeMount) *EksContainerDetail {
+	s.VolumeMounts = v
+	return s
+}
+
+// An environment variable.
+type EksContainerEnvironmentVariable struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the environment variable.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The value of the environment variable.
+	Value *string `locationName:"value" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerEnvironmentVariable) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerEnvironmentVariable) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksContainerEnvironmentVariable) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksContainerEnvironmentVariable"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *EksContainerEnvironmentVariable) SetName(v string) *EksContainerEnvironmentVariable {
+	s.Name = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *EksContainerEnvironmentVariable) SetValue(v string) *EksContainerEnvironmentVariable {
+	s.Value = &v
+	return s
+}
+
+// Object representing any Kubernetes overrides to a job definition that's used
+// in a SubmitJob API operation.
+type EksContainerOverride struct {
+	_ struct{} `type:"structure"`
+
+	// The arguments to the entrypoint to send to the container that overrides the
+	// default arguments from the Docker image or the job definition. For more information,
+	// see CMD (https://docs.docker.com/engine/reference/builder/#cmd) in the Dockerfile
+	// reference and Define a command an arguments for a pod (https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/)
+	// in the Kubernetes documentation.
+	Args []*string `locationName:"args" type:"list"`
+
+	// The command to send to the container that overrides the default command from
+	// the Docker image or the job definition.
+	Command []*string `locationName:"command" type:"list"`
+
+	// The environment variables to send to the container. You can add new environment
+	// variables, which are added to the container at launch. Or, you can override
+	// the existing environment variables from the Docker image or the job definition.
+	//
+	// Environment variables cannot start with "AWS_BATCH". This naming convention
+	// is reserved for variables that Batch sets.
+	Env []*EksContainerEnvironmentVariable `locationName:"env" type:"list"`
+
+	// The override of the Docker image that's used to start the container.
+	Image *string `locationName:"image" type:"string"`
+
+	// The type and amount of resources to assign to a container. These override
+	// the settings in the job definition. The supported resources include memory,
+	// cpu, and nvidia.com/gpu. For more information, see Resource management for
+	// pods and containers (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+	// in the Kubernetes documentation.
+	Resources *EksContainerResourceRequirements `locationName:"resources" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerOverride) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerOverride) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksContainerOverride) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksContainerOverride"}
+	if s.Env != nil {
+		for i, v := range s.Env {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Env", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetArgs sets the Args field's value.
+func (s *EksContainerOverride) SetArgs(v []*string) *EksContainerOverride {
+	s.Args = v
+	return s
+}
+
+// SetCommand sets the Command field's value.
+func (s *EksContainerOverride) SetCommand(v []*string) *EksContainerOverride {
+	s.Command = v
+	return s
+}
+
+// SetEnv sets the Env field's value.
+func (s *EksContainerOverride) SetEnv(v []*EksContainerEnvironmentVariable) *EksContainerOverride {
+	s.Env = v
+	return s
+}
+
+// SetImage sets the Image field's value.
+func (s *EksContainerOverride) SetImage(v string) *EksContainerOverride {
+	s.Image = &v
+	return s
+}
+
+// SetResources sets the Resources field's value.
+func (s *EksContainerOverride) SetResources(v *EksContainerResourceRequirements) *EksContainerOverride {
+	s.Resources = v
+	return s
+}
+
+// The type and amount of resources to assign to a container. The supported
+// resources include memory, cpu, and nvidia.com/gpu. For more information,
+// see Resource management for pods and containers (https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+// in the Kubernetes documentation.
+type EksContainerResourceRequirements struct {
+	_ struct{} `type:"structure"`
+
+	// The type and quantity of the resources to reserve for the container. The
+	// values vary based on the name that's specified. Resources can be requested
+	// using either the limits or the requests objects.
+	//
+	// memory
+	//
+	// The memory hard limit (in MiB) for the container, using whole integers, with
+	// a "Mi" suffix. If your container attempts to exceed the memory specified,
+	// the container is terminated. You must specify at least 4 MiB of memory for
+	// a job. memory can be specified in limits, requests, or both. If memory is
+	// specified in both places, then the value that's specified in limits must
+	// be equal to the value that's specified in requests.
+	//
+	// To maximize your resource utilization, provide your jobs with as much memory
+	// as possible for the specific instance type that you are using. To learn how,
+	// see Memory management (https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html)
+	// in the Batch User Guide.
+	//
+	// cpu
+	//
+	// The number of CPUs that's reserved for the container. Values must be an even
+	// multiple of 0.25. cpu can be specified in limits, requests, or both. If cpu
+	// is specified in both places, then the value that's specified in limits must
+	// be at least as large as the value that's specified in requests.
+	//
+	// nvidia.com/gpu
+	//
+	// The number of GPUs that's reserved for the container. Values must be a whole
+	// integer. memory can be specified in limits, requests, or both. If memory
+	// is specified in both places, then the value that's specified in limits must
+	// be equal to the value that's specified in requests.
+	Limits map[string]*string `locationName:"limits" type:"map"`
+
+	// The type and quantity of the resources to request for the container. The
+	// values vary based on the name that's specified. Resources can be requested
+	// by using either the limits or the requests objects.
+	//
+	// memory
+	//
+	// The memory hard limit (in MiB) for the container, using whole integers, with
+	// a "Mi" suffix. If your container attempts to exceed the memory specified,
+	// the container is terminated. You must specify at least 4 MiB of memory for
+	// a job. memory can be specified in limits, requests, or both. If memory is
+	// specified in both, then the value that's specified in limits must be equal
+	// to the value that's specified in requests.
+	//
+	// If you're trying to maximize your resource utilization by providing your
+	// jobs as much memory as possible for a particular instance type, see Memory
+	// management (https://docs.aws.amazon.com/batch/latest/userguide/memory-management.html)
+	// in the Batch User Guide.
+	//
+	// cpu
+	//
+	// The number of CPUs that are reserved for the container. Values must be an
+	// even multiple of 0.25. cpu can be specified in limits, requests, or both.
+	// If cpu is specified in both, then the value that's specified in limits must
+	// be at least as large as the value that's specified in requests.
+	//
+	// nvidia.com/gpu
+	//
+	// The number of GPUs that are reserved for the container. Values must be a
+	// whole integer. nvidia.com/gpu can be specified in limits, requests, or both.
+	// If nvidia.com/gpu is specified in both, then the value that's specified in
+	// limits must be equal to the value that's specified in requests.
+	Requests map[string]*string `locationName:"requests" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerResourceRequirements) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerResourceRequirements) GoString() string {
+	return s.String()
+}
+
+// SetLimits sets the Limits field's value.
+func (s *EksContainerResourceRequirements) SetLimits(v map[string]*string) *EksContainerResourceRequirements {
+	s.Limits = v
+	return s
+}
+
+// SetRequests sets the Requests field's value.
+func (s *EksContainerResourceRequirements) SetRequests(v map[string]*string) *EksContainerResourceRequirements {
+	s.Requests = v
+	return s
+}
+
+// The security context for a job. For more information, see Configure a security
+// context for a pod or container (https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
+// in the Kubernetes documentation.
+type EksContainerSecurityContext struct {
+	_ struct{} `type:"structure"`
+
+	// When this parameter is true, the container is given elevated permissions
+	// on the host container instance. The level of permissions are similar to the
+	// root user permissions. The default value is false. This parameter maps to
+	// privileged policy in the Privileged pod security policies (https://kubernetes.io/docs/concepts/security/pod-security-policy/#privileged)
+	// in the Kubernetes documentation.
+	Privileged *bool `locationName:"privileged" type:"boolean"`
+
+	// When this parameter is true, the container is given read-only access to its
+	// root file system. The default value is false. This parameter maps to ReadOnlyRootFilesystem
+	// policy in the Volumes and file systems pod security policies (https://kubernetes.io/docs/concepts/security/pod-security-policy/#volumes-and-file-systems)
+	// in the Kubernetes documentation.
+	ReadOnlyRootFilesystem *bool `locationName:"readOnlyRootFilesystem" type:"boolean"`
+
+	// When this parameter is specified, the container is run as the specified group
+	// ID (gid). If this parameter isn't specified, the default is the group that's
+	// specified in the image metadata. This parameter maps to RunAsGroup and MustRunAs
+	// policy in the Users and groups pod security policies (https://kubernetes.io/docs/concepts/security/pod-security-policy/#users-and-groups)
+	// in the Kubernetes documentation.
+	RunAsGroup *int64 `locationName:"runAsGroup" type:"long"`
+
+	// When this parameter is specified, the container is run as a user with a uid
+	// other than 0. If this parameter isn't specified, so such rule is enforced.
+	// This parameter maps to RunAsUser and MustRunAsNonRoot policy in the Users
+	// and groups pod security policies (https://kubernetes.io/docs/concepts/security/pod-security-policy/#users-and-groups)
+	// in the Kubernetes documentation.
+	RunAsNonRoot *bool `locationName:"runAsNonRoot" type:"boolean"`
+
+	// When this parameter is specified, the container is run as the specified user
+	// ID (uid). If this parameter isn't specified, the default is the user that's
+	// specified in the image metadata. This parameter maps to RunAsUser and MustRanAs
+	// policy in the Users and groups pod security policies (https://kubernetes.io/docs/concepts/security/pod-security-policy/#users-and-groups)
+	// in the Kubernetes documentation.
+	RunAsUser *int64 `locationName:"runAsUser" type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerSecurityContext) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerSecurityContext) GoString() string {
+	return s.String()
+}
+
+// SetPrivileged sets the Privileged field's value.
+func (s *EksContainerSecurityContext) SetPrivileged(v bool) *EksContainerSecurityContext {
+	s.Privileged = &v
+	return s
+}
+
+// SetReadOnlyRootFilesystem sets the ReadOnlyRootFilesystem field's value.
+func (s *EksContainerSecurityContext) SetReadOnlyRootFilesystem(v bool) *EksContainerSecurityContext {
+	s.ReadOnlyRootFilesystem = &v
+	return s
+}
+
+// SetRunAsGroup sets the RunAsGroup field's value.
+func (s *EksContainerSecurityContext) SetRunAsGroup(v int64) *EksContainerSecurityContext {
+	s.RunAsGroup = &v
+	return s
+}
+
+// SetRunAsNonRoot sets the RunAsNonRoot field's value.
+func (s *EksContainerSecurityContext) SetRunAsNonRoot(v bool) *EksContainerSecurityContext {
+	s.RunAsNonRoot = &v
+	return s
+}
+
+// SetRunAsUser sets the RunAsUser field's value.
+func (s *EksContainerSecurityContext) SetRunAsUser(v int64) *EksContainerSecurityContext {
+	s.RunAsUser = &v
+	return s
+}
+
+// The volume mounts for a container for an Amazon EKS job. For more information
+// about volumes and volume mounts in Kubernetes, see Volumes (https://kubernetes.io/docs/concepts/storage/volumes/)
+// in the Kubernetes documentation.
+type EksContainerVolumeMount struct {
+	_ struct{} `type:"structure"`
+
+	// The path on the container where the volume is mounted.
+	MountPath *string `locationName:"mountPath" type:"string"`
+
+	// The name the volume mount. This must match the name of one of the volumes
+	// in the pod.
+	Name *string `locationName:"name" type:"string"`
+
+	// If this value is true, the container has read-only access to the volume.
+	// Otherwise, the container can write to the volume. The default value is false.
+	ReadOnly *bool `locationName:"readOnly" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerVolumeMount) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksContainerVolumeMount) GoString() string {
+	return s.String()
+}
+
+// SetMountPath sets the MountPath field's value.
+func (s *EksContainerVolumeMount) SetMountPath(v string) *EksContainerVolumeMount {
+	s.MountPath = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *EksContainerVolumeMount) SetName(v string) *EksContainerVolumeMount {
+	s.Name = &v
+	return s
+}
+
+// SetReadOnly sets the ReadOnly field's value.
+func (s *EksContainerVolumeMount) SetReadOnly(v bool) *EksContainerVolumeMount {
+	s.ReadOnly = &v
+	return s
+}
+
+// Specifies the configuration of a Kubernetes emptyDir volume. An emptyDir
+// volume is first created when a pod is assigned to a node. It exists as long
+// as that pod is running on that node. The emptyDir volume is initially empty.
+// All containers in the pod can read and write the files in the emptyDir volume.
+// However, the emptyDir volume can be mounted at the same or different paths
+// in each container. When a pod is removed from a node for any reason, the
+// data in the emptyDir is deleted permanently. For more information, see emptyDir
+// (https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) in the Kubernetes
+// documentation.
+type EksEmptyDir struct {
+	_ struct{} `type:"structure"`
+
+	// The medium to store the volume. The default value is an empty string, which
+	// uses the storage of the node.
+	//
+	// ""
+	//
+	// (Default) Use the disk storage of the node.
+	//
+	// "Memory"
+	//
+	// Use the tmpfs volume that's backed by the RAM of the node. Contents of the
+	// volume are lost when the node reboots, and any storage on the volume counts
+	// against the container's memory limit.
+	Medium *string `locationName:"medium" type:"string"`
+
+	// The maximum size of the volume. By default, there's no maximum size defined.
+	SizeLimit *string `locationName:"sizeLimit" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksEmptyDir) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksEmptyDir) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksEmptyDir) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksEmptyDir"}
+	if s.SizeLimit != nil && len(*s.SizeLimit) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SizeLimit", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMedium sets the Medium field's value.
+func (s *EksEmptyDir) SetMedium(v string) *EksEmptyDir {
+	s.Medium = &v
+	return s
+}
+
+// SetSizeLimit sets the SizeLimit field's value.
+func (s *EksEmptyDir) SetSizeLimit(v string) *EksEmptyDir {
+	s.SizeLimit = &v
+	return s
+}
+
+// Specifies the configuration of a Kubernetes hostPath volume. A hostPath volume
+// mounts an existing file or directory from the host node's filesystem into
+// your pod. For more information, see hostPath (https://kubernetes.io/docs/concepts/storage/volumes/#hostpath)
+// in the Kubernetes documentation.
+type EksHostPath struct {
+	_ struct{} `type:"structure"`
+
+	// The path of the file or directory on the host to mount into containers on
+	// the pod.
+	Path *string `locationName:"path" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksHostPath) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksHostPath) GoString() string {
+	return s.String()
+}
+
+// SetPath sets the Path field's value.
+func (s *EksHostPath) SetPath(v string) *EksHostPath {
+	s.Path = &v
+	return s
+}
+
+// Describes and uniquely identifies Kubernetes resources. For example, the
+// compute environment that a pod runs in or the jobID for a job running in
+// the pod. For more information, see Understanding Kubernetes Objects (https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/)
+// in the Kubernetes documentation.
+type EksMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// Key-value pairs used to identify, sort, and organize cube resources. Can
+	// contain up to 63 uppercase letters, lowercase letters, numbers, hyphens (-),
+	// and underscores (_). Labels can be added or modified at any time. Each resource
+	// can have multiple labels, but each key must be unique for a given object.
+	Labels map[string]*string `locationName:"labels" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksMetadata) GoString() string {
+	return s.String()
+}
+
+// SetLabels sets the Labels field's value.
+func (s *EksMetadata) SetLabels(v map[string]*string) *EksMetadata {
+	s.Labels = v
+	return s
+}
+
+// The properties for the pod.
+type EksPodProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The properties of the container that's used on the Amazon EKS pod.
+	Containers []*EksContainer `locationName:"containers" type:"list"`
+
+	// The DNS policy for the pod. The default value is ClusterFirst. If the hostNetwork
+	// parameter is not specified, the default is ClusterFirstWithHostNet. ClusterFirst
+	// indicates that any DNS query that does not match the configured cluster domain
+	// suffix is forwarded to the upstream nameserver inherited from the node. For
+	// more information, see Pod's DNS policy (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy)
+	// in the Kubernetes documentation.
+	//
+	// Valid values: Default | ClusterFirst | ClusterFirstWithHostNet
+	DnsPolicy *string `locationName:"dnsPolicy" type:"string"`
+
+	// Indicates if the pod uses the hosts' network IP address. The default value
+	// is true. Setting this to false enables the Kubernetes pod networking model.
+	// Most Batch workloads are egress-only and don't require the overhead of IP
+	// allocation for each pod for incoming connections. For more information, see
+	// Host namespaces (https://kubernetes.io/docs/concepts/security/pod-security-policy/#host-namespaces)
+	// and Pod networking (https://kubernetes.io/docs/concepts/workloads/pods/#pod-networking)
+	// in the Kubernetes documentation.
+	HostNetwork *bool `locationName:"hostNetwork" type:"boolean"`
+
+	// Metadata about the Kubernetes pod. For more information, see Understanding
+	// Kubernetes Objects (https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/)
+	// in the Kubernetes documentation.
+	Metadata *EksMetadata `locationName:"metadata" type:"structure"`
+
+	// The name of the service account that's used to run the pod. For more information,
+	// see Kubernetes service accounts (https://docs.aws.amazon.com/eks/latest/userguide/service-accounts.html)
+	// and Configure a Kubernetes service account to assume an IAM role (https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html)
+	// in the Amazon EKS User Guide and Configure service accounts for pods (https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+	// in the Kubernetes documentation.
+	ServiceAccountName *string `locationName:"serviceAccountName" type:"string"`
+
+	// Specifies the volumes for a job definition that uses Amazon EKS resources.
+	Volumes []*EksVolume `locationName:"volumes" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPodProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPodProperties) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksPodProperties) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksPodProperties"}
+	if s.Containers != nil {
+		for i, v := range s.Containers {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Containers", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Volumes != nil {
+		for i, v := range s.Volumes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Volumes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContainers sets the Containers field's value.
+func (s *EksPodProperties) SetContainers(v []*EksContainer) *EksPodProperties {
+	s.Containers = v
+	return s
+}
+
+// SetDnsPolicy sets the DnsPolicy field's value.
+func (s *EksPodProperties) SetDnsPolicy(v string) *EksPodProperties {
+	s.DnsPolicy = &v
+	return s
+}
+
+// SetHostNetwork sets the HostNetwork field's value.
+func (s *EksPodProperties) SetHostNetwork(v bool) *EksPodProperties {
+	s.HostNetwork = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *EksPodProperties) SetMetadata(v *EksMetadata) *EksPodProperties {
+	s.Metadata = v
+	return s
+}
+
+// SetServiceAccountName sets the ServiceAccountName field's value.
+func (s *EksPodProperties) SetServiceAccountName(v string) *EksPodProperties {
+	s.ServiceAccountName = &v
+	return s
+}
+
+// SetVolumes sets the Volumes field's value.
+func (s *EksPodProperties) SetVolumes(v []*EksVolume) *EksPodProperties {
+	s.Volumes = v
+	return s
+}
+
+// The details for the pod.
+type EksPodPropertiesDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The properties of the container that's used on the Amazon EKS pod.
+	Containers []*EksContainerDetail `locationName:"containers" type:"list"`
+
+	// The DNS policy for the pod. The default value is ClusterFirst. If the hostNetwork
+	// parameter is not specified, the default is ClusterFirstWithHostNet. ClusterFirst
+	// indicates that any DNS query that does not match the configured cluster domain
+	// suffix is forwarded to the upstream nameserver inherited from the node. If
+	// no value was specified for dnsPolicy in the RegisterJobDefinition (https://docs.aws.amazon.com/batch/latest/APIReference/API_RegisterJobDefinition.html)
+	// API operation, then no value will be returned for dnsPolicy by either of
+	// DescribeJobDefinitions (https://docs.aws.amazon.com/batch/latest/APIReference/API_DescribeJobDefinitions.html)
+	// or DescribeJobs (https://docs.aws.amazon.com/batch/latest/APIReference/API_DescribeJobs.html)
+	// API operations. The pod spec setting will contain either ClusterFirst or
+	// ClusterFirstWithHostNet, depending on the value of the hostNetwork parameter.
+	// For more information, see Pod's DNS policy (https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy)
+	// in the Kubernetes documentation.
+	//
+	// Valid values: Default | ClusterFirst | ClusterFirstWithHostNet
+	DnsPolicy *string `locationName:"dnsPolicy" type:"string"`
+
+	// Indicates if the pod uses the hosts' network IP address. The default value
+	// is true. Setting this to false enables the Kubernetes pod networking model.
+	// Most Batch workloads are egress-only and don't require the overhead of IP
+	// allocation for each pod for incoming connections. For more information, see
+	// Host namespaces (https://kubernetes.io/docs/concepts/security/pod-security-policy/#host-namespaces)
+	// and Pod networking (https://kubernetes.io/docs/concepts/workloads/pods/#pod-networking)
+	// in the Kubernetes documentation.
+	HostNetwork *bool `locationName:"hostNetwork" type:"boolean"`
+
+	// Describes and uniquely identifies Kubernetes resources. For example, the
+	// compute environment that a pod runs in or the jobID for a job running in
+	// the pod. For more information, see Understanding Kubernetes Objects (https://kubernetes.io/docs/concepts/overview/working-with-objects/kubernetes-objects/)
+	// in the Kubernetes documentation.
+	Metadata *EksMetadata `locationName:"metadata" type:"structure"`
+
+	// The name of the node for this job.
+	NodeName *string `locationName:"nodeName" type:"string"`
+
+	// The name of the pod for this job.
+	PodName *string `locationName:"podName" type:"string"`
+
+	// The name of the service account that's used to run the pod. For more information,
+	// see Kubernetes service accounts (https://docs.aws.amazon.com/eks/latest/userguide/service-accounts.html)
+	// and Configure a Kubernetes service account to assume an IAM role (https://docs.aws.amazon.com/eks/latest/userguide/associate-service-account-role.html)
+	// in the Amazon EKS User Guide and Configure service accounts for pods (https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/)
+	// in the Kubernetes documentation.
+	ServiceAccountName *string `locationName:"serviceAccountName" type:"string"`
+
+	// Specifies the volumes for a job definition using Amazon EKS resources.
+	Volumes []*EksVolume `locationName:"volumes" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPodPropertiesDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPodPropertiesDetail) GoString() string {
+	return s.String()
+}
+
+// SetContainers sets the Containers field's value.
+func (s *EksPodPropertiesDetail) SetContainers(v []*EksContainerDetail) *EksPodPropertiesDetail {
+	s.Containers = v
+	return s
+}
+
+// SetDnsPolicy sets the DnsPolicy field's value.
+func (s *EksPodPropertiesDetail) SetDnsPolicy(v string) *EksPodPropertiesDetail {
+	s.DnsPolicy = &v
+	return s
+}
+
+// SetHostNetwork sets the HostNetwork field's value.
+func (s *EksPodPropertiesDetail) SetHostNetwork(v bool) *EksPodPropertiesDetail {
+	s.HostNetwork = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *EksPodPropertiesDetail) SetMetadata(v *EksMetadata) *EksPodPropertiesDetail {
+	s.Metadata = v
+	return s
+}
+
+// SetNodeName sets the NodeName field's value.
+func (s *EksPodPropertiesDetail) SetNodeName(v string) *EksPodPropertiesDetail {
+	s.NodeName = &v
+	return s
+}
+
+// SetPodName sets the PodName field's value.
+func (s *EksPodPropertiesDetail) SetPodName(v string) *EksPodPropertiesDetail {
+	s.PodName = &v
+	return s
+}
+
+// SetServiceAccountName sets the ServiceAccountName field's value.
+func (s *EksPodPropertiesDetail) SetServiceAccountName(v string) *EksPodPropertiesDetail {
+	s.ServiceAccountName = &v
+	return s
+}
+
+// SetVolumes sets the Volumes field's value.
+func (s *EksPodPropertiesDetail) SetVolumes(v []*EksVolume) *EksPodPropertiesDetail {
+	s.Volumes = v
+	return s
+}
+
+// An object that contains overrides for the Kubernetes pod properties of a
+// job.
+type EksPodPropertiesOverride struct {
+	_ struct{} `type:"structure"`
+
+	// The overrides for the container that's used on the Amazon EKS pod.
+	Containers []*EksContainerOverride `locationName:"containers" type:"list"`
+
+	// Metadata about the overrides for the container that's used on the Amazon
+	// EKS pod.
+	Metadata *EksMetadata `locationName:"metadata" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPodPropertiesOverride) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPodPropertiesOverride) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksPodPropertiesOverride) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksPodPropertiesOverride"}
+	if s.Containers != nil {
+		for i, v := range s.Containers {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Containers", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContainers sets the Containers field's value.
+func (s *EksPodPropertiesOverride) SetContainers(v []*EksContainerOverride) *EksPodPropertiesOverride {
+	s.Containers = v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *EksPodPropertiesOverride) SetMetadata(v *EksMetadata) *EksPodPropertiesOverride {
+	s.Metadata = v
+	return s
+}
+
+// An object that contains the properties for the Kubernetes resources of a
+// job.
+type EksProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The properties for the Kubernetes pod resources of a job.
+	PodProperties *EksPodProperties `locationName:"podProperties" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksProperties) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksProperties) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksProperties"}
+	if s.PodProperties != nil {
+		if err := s.PodProperties.Validate(); err != nil {
+			invalidParams.AddNested("PodProperties", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPodProperties sets the PodProperties field's value.
+func (s *EksProperties) SetPodProperties(v *EksPodProperties) *EksProperties {
+	s.PodProperties = v
+	return s
+}
+
+// An object that contains the details for the Kubernetes resources of a job.
+type EksPropertiesDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The properties for the Kubernetes pod resources of a job.
+	PodProperties *EksPodPropertiesDetail `locationName:"podProperties" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPropertiesDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPropertiesDetail) GoString() string {
+	return s.String()
+}
+
+// SetPodProperties sets the PodProperties field's value.
+func (s *EksPropertiesDetail) SetPodProperties(v *EksPodPropertiesDetail) *EksPropertiesDetail {
+	s.PodProperties = v
+	return s
+}
+
+// An object that contains overrides for the Kubernetes resources of a job.
+type EksPropertiesOverride struct {
+	_ struct{} `type:"structure"`
+
+	// The overrides for the Kubernetes pod resources of a job.
+	PodProperties *EksPodPropertiesOverride `locationName:"podProperties" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPropertiesOverride) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksPropertiesOverride) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksPropertiesOverride) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksPropertiesOverride"}
+	if s.PodProperties != nil {
+		if err := s.PodProperties.Validate(); err != nil {
+			invalidParams.AddNested("PodProperties", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPodProperties sets the PodProperties field's value.
+func (s *EksPropertiesOverride) SetPodProperties(v *EksPodPropertiesOverride) *EksPropertiesOverride {
+	s.PodProperties = v
+	return s
+}
+
+// Specifies the configuration of a Kubernetes secret volume. For more information,
+// see secret (https://kubernetes.io/docs/concepts/storage/volumes/#secret)
+// in the Kubernetes documentation.
+type EksSecret struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether the secret or the secret's keys must be defined.
+	Optional *bool `locationName:"optional" type:"boolean"`
+
+	// The name of the secret. The name must be allowed as a DNS subdomain name.
+	// For more information, see DNS subdomain names (https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names)
+	// in the Kubernetes documentation.
+	//
+	// SecretName is a required field
+	SecretName *string `locationName:"secretName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksSecret) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksSecret) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksSecret) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksSecret"}
+	if s.SecretName == nil {
+		invalidParams.Add(request.NewErrParamRequired("SecretName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOptional sets the Optional field's value.
+func (s *EksSecret) SetOptional(v bool) *EksSecret {
+	s.Optional = &v
+	return s
+}
+
+// SetSecretName sets the SecretName field's value.
+func (s *EksSecret) SetSecretName(v string) *EksSecret {
+	s.SecretName = &v
+	return s
+}
+
+// Specifies an Amazon EKS volume for a job definition.
+type EksVolume struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the configuration of a Kubernetes emptyDir volume. For more information,
+	// see emptyDir (https://kubernetes.io/docs/concepts/storage/volumes/#emptydir)
+	// in the Kubernetes documentation.
+	EmptyDir *EksEmptyDir `locationName:"emptyDir" type:"structure"`
+
+	// Specifies the configuration of a Kubernetes hostPath volume. For more information,
+	// see hostPath (https://kubernetes.io/docs/concepts/storage/volumes/#hostpath)
+	// in the Kubernetes documentation.
+	HostPath *EksHostPath `locationName:"hostPath" type:"structure"`
+
+	// The name of the volume. The name must be allowed as a DNS subdomain name.
+	// For more information, see DNS subdomain names (https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-subdomain-names)
+	// in the Kubernetes documentation.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// Specifies the configuration of a Kubernetes secret volume. For more information,
+	// see secret (https://kubernetes.io/docs/concepts/storage/volumes/#secret)
+	// in the Kubernetes documentation.
+	Secret *EksSecret `locationName:"secret" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksVolume) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksVolume) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksVolume) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksVolume"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.EmptyDir != nil {
+		if err := s.EmptyDir.Validate(); err != nil {
+			invalidParams.AddNested("EmptyDir", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Secret != nil {
+		if err := s.Secret.Validate(); err != nil {
+			invalidParams.AddNested("Secret", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEmptyDir sets the EmptyDir field's value.
+func (s *EksVolume) SetEmptyDir(v *EksEmptyDir) *EksVolume {
+	s.EmptyDir = v
+	return s
+}
+
+// SetHostPath sets the HostPath field's value.
+func (s *EksVolume) SetHostPath(v *EksHostPath) *EksVolume {
+	s.HostPath = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *EksVolume) SetName(v string) *EksVolume {
+	s.Name = &v
+	return s
+}
+
+// SetSecret sets the Secret field's value.
+func (s *EksVolume) SetSecret(v *EksSecret) *EksVolume {
+	s.Secret = v
+	return s
+}
+
+// The amount of ephemeral storage to allocate for the task. This parameter
+// is used to expand the total amount of ephemeral storage available, beyond
+// the default amount, for tasks hosted on Fargate.
+type EphemeralStorage struct {
+	_ struct{} `type:"structure"`
+
+	// The total amount, in GiB, of ephemeral storage to set for the task. The minimum
+	// supported value is 21 GiB and the maximum supported value is 200 GiB.
+	//
+	// SizeInGiB is a required field
+	SizeInGiB *int64 `locationName:"sizeInGiB" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemeralStorage) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EphemeralStorage) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EphemeralStorage) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EphemeralStorage"}
+	if s.SizeInGiB == nil {
+		invalidParams.Add(request.NewErrParamRequired("SizeInGiB"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSizeInGiB sets the SizeInGiB field's value.
+func (s *EphemeralStorage) SetSizeInGiB(v int64) *EphemeralStorage {
+	s.SizeInGiB = &v
+	return s
+}
+
+// Specifies an array of up to 5 conditions to be met, and an action to take
+// (RETRY or EXIT) if all conditions are met. If none of the EvaluateOnExit
+// conditions in a RetryStrategy match, then the job is retried.
 type EvaluateOnExit struct {
 	_ struct{} `type:"structure"`
 
@@ -6466,29 +8423,25 @@ type EvaluateOnExit struct {
 	Action *string `locationName:"action" type:"string" required:"true" enum:"RetryAction"`
 
 	// Contains a glob pattern to match against the decimal representation of the
-	// ExitCode returned for a job. The pattern can be up to 512 characters in length.
-	// It can contain only numbers, and can optionally end with an asterisk (*)
-	// so that only the start of the string needs to be an exact match.
+	// ExitCode returned for a job. The pattern can be up to 512 characters long.
+	// It can contain only numbers, and can end with an asterisk (*) so that only
+	// the start of the string needs to be an exact match.
 	//
-	// The string can be between 1 and 512 characters in length.
+	// The string can contain up to 512 characters.
 	OnExitCode *string `locationName:"onExitCode" type:"string"`
 
 	// Contains a glob pattern to match against the Reason returned for a job. The
-	// pattern can be up to 512 characters in length. It can contain letters, numbers,
+	// pattern can contain up to 512 characters. It can contain letters, numbers,
 	// periods (.), colons (:), and white space (including spaces and tabs). It
 	// can optionally end with an asterisk (*) so that only the start of the string
 	// needs to be an exact match.
-	//
-	// The string can be between 1 and 512 characters in length.
 	OnReason *string `locationName:"onReason" type:"string"`
 
 	// Contains a glob pattern to match against the StatusReason returned for a
-	// job. The pattern can be up to 512 characters in length. It can contain letters,
-	// numbers, periods (.), colons (:), and white space (including spaces or tabs).
+	// job. The pattern can contain up to 512 characters. It can contain letters,
+	// numbers, periods (.), colons (:), and white spaces (including spaces or tabs).
 	// It can optionally end with an asterisk (*) so that only the start of the
 	// string needs to be an exact match.
-	//
-	// The string can be between 1 and 512 characters in length.
 	OnStatusReason *string `locationName:"onStatusReason" type:"string"`
 }
 
@@ -6552,27 +8505,27 @@ type FairsharePolicy struct {
 	_ struct{} `type:"structure"`
 
 	// A value used to reserve some of the available maximum vCPU for fair share
-	// identifiers that have not yet been used.
+	// identifiers that aren't already used.
 	//
 	// The reserved ratio is (computeReservation/100)^ActiveFairShares where ActiveFairShares
 	// is the number of active fair share identifiers.
 	//
-	// For example, a computeReservation value of 50 indicates that Batch should
-	// reserve 50% of the maximum available vCPU if there is only one fair share
-	// identifier, 25% if there are two fair share identifiers, and 12.5% if there
-	// are three fair share identifiers. A computeReservation value of 25 indicates
-	// that Batch should reserve 25% of the maximum available vCPU if there is only
-	// one fair share identifier, 6.25% if there are two fair share identifiers,
-	// and 1.56% if there are three fair share identifiers.
+	// For example, a computeReservation value of 50 indicates that Batchreserves
+	// 50% of the maximum available vCPU if there's only one fair share identifier.
+	// It reserves 25% if there are two fair share identifiers. It reserves 12.5%
+	// if there are three fair share identifiers. A computeReservation value of
+	// 25 indicates that Batch should reserve 25% of the maximum available vCPU
+	// if there's only one fair share identifier, 6.25% if there are two fair share
+	// identifiers, and 1.56% if there are three fair share identifiers.
 	//
 	// The minimum value is 0 and the maximum value is 99.
 	ComputeReservation *int64 `locationName:"computeReservation" type:"integer"`
 
-	// The time period to use to calculate a fair share percentage for each fair
-	// share identifier in use, in seconds. A value of zero (0) indicates that only
-	// current usage should be measured. The decay allows for more recently run
-	// jobs to have more weight than jobs that ran earlier. The maximum supported
-	// value is 604800 (1 week).
+	// The amount of time (in seconds) to use to calculate a fair share percentage
+	// for each fair share identifier in use. A value of zero (0) indicates that
+	// only current usage is measured. The decay allows for more recently run jobs
+	// to have more weight than jobs that ran earlier. The maximum supported value
+	// is 604800 (1 week).
 	ShareDecaySeconds *int64 `locationName:"shareDecaySeconds" type:"integer"`
 
 	// An array of SharedIdentifier objects that contain the weights for the fair
@@ -6676,9 +8629,9 @@ func (s *FargatePlatformConfiguration) SetPlatformVersion(v string) *FargatePlat
 }
 
 // Determine whether your data volume persists on the host container instance
-// and where it is stored. If this parameter is empty, then the Docker daemon
-// assigns a host path for your data volume, but the data isn't guaranteed to
-// persist after the containers associated with it stop running.
+// and where it's stored. If this parameter is empty, then the Docker daemon
+// assigns a host path for your data volume. However, the data isn't guaranteed
+// to persist after the containers that are associated with it stop running.
 type Host struct {
 	_ struct{} `type:"structure"`
 
@@ -6690,8 +8643,8 @@ type Host struct {
 	// container instance, the Docker daemon creates it. If the location does exist,
 	// the contents of the source path folder are exported.
 	//
-	// This parameter isn't applicable to jobs that run on Fargate resources and
-	// shouldn't be provided.
+	// This parameter isn't applicable to jobs that run on Fargate resources. Don't
+	// provide this for these jobs.
 	SourcePath *string `locationName:"sourcePath" type:"string"`
 }
 
@@ -6719,12 +8672,23 @@ func (s *Host) SetSourcePath(v string) *Host {
 	return s
 }
 
-// An object representing an Batch job definition.
+// An object that represents an Batch job definition.
 type JobDefinition struct {
 	_ struct{} `type:"structure"`
 
-	// An object with various properties specific to container-based jobs.
+	// The orchestration type of the compute environment. The valid values are ECS
+	// (default) or EKS.
+	ContainerOrchestrationType *string `locationName:"containerOrchestrationType" type:"string" enum:"OrchestrationType"`
+
+	// An object with various properties specific to Amazon ECS based jobs. Valid
+	// values are containerProperties, eksProperties, and nodeProperties. Only one
+	// can be specified.
 	ContainerProperties *ContainerProperties `locationName:"containerProperties" type:"structure"`
+
+	// An object with various properties that are specific to Amazon EKS based jobs.
+	// Valid values are containerProperties, eksProperties, and nodeProperties.
+	// Only one can be specified.
+	EksProperties *EksProperties `locationName:"eksProperties" type:"structure"`
 
 	// The Amazon Resource Name (ARN) for the job definition.
 	//
@@ -6736,10 +8700,12 @@ type JobDefinition struct {
 	// JobDefinitionName is a required field
 	JobDefinitionName *string `locationName:"jobDefinitionName" type:"string" required:"true"`
 
-	// An object with various properties specific to multi-node parallel jobs.
+	// An object with various properties that are specific to multi-node parallel
+	// jobs. Valid values are containerProperties, eksProperties, and nodeProperties.
+	// Only one can be specified.
 	//
-	// If the job runs on Fargate resources, then you must not specify nodeProperties;
-	// use containerProperties instead.
+	// If the job runs on Fargate resources, don't specify nodeProperties. Use containerProperties
+	// instead.
 	NodeProperties *NodeProperties `locationName:"nodeProperties" type:"structure"`
 
 	// Default parameters or parameter substitution placeholders that are set in
@@ -6756,7 +8722,7 @@ type JobDefinition struct {
 
 	// Specifies whether to propagate the tags from the job or job definition to
 	// the corresponding Amazon ECS task. If no value is specified, the tags aren't
-	// propagated. Tags can only be propagated to the tasks during task creation.
+	// propagated. Tags can only be propagated to the tasks when the tasks are created.
 	// For tags with the same name, job tags are given priority over job definitions
 	// tags. If the total number of combined tags from the job and job definition
 	// is over 50, the job is moved to the FAILED state.
@@ -6779,16 +8745,16 @@ type JobDefinition struct {
 	// The status of the job definition.
 	Status *string `locationName:"status" type:"string"`
 
-	// The tags applied to the job definition.
+	// The tags that are applied to the job definition.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
-	// The timeout configuration for jobs that are submitted with this job definition.
-	// You can specify a timeout duration after which Batch terminates your jobs
-	// if they haven't finished.
+	// The timeout time for jobs that are submitted with this job definition. After
+	// the amount of time you specify passes, Batch terminates your jobs if they
+	// aren't finished.
 	Timeout *JobTimeout `locationName:"timeout" type:"structure"`
 
-	// The type of job definition, either container or multinode. If the job is
-	// run on Fargate resources, then multinode isn't supported. For more information
+	// The type of job definition. It's either container or multinode. If the job
+	// is run on Fargate resources, then multinode isn't supported. For more information
 	// about multi-node parallel jobs, see Creating a multi-node parallel job definition
 	// (https://docs.aws.amazon.com/batch/latest/userguide/multi-node-job-def.html)
 	// in the Batch User Guide.
@@ -6815,9 +8781,21 @@ func (s JobDefinition) GoString() string {
 	return s.String()
 }
 
+// SetContainerOrchestrationType sets the ContainerOrchestrationType field's value.
+func (s *JobDefinition) SetContainerOrchestrationType(v string) *JobDefinition {
+	s.ContainerOrchestrationType = &v
+	return s
+}
+
 // SetContainerProperties sets the ContainerProperties field's value.
 func (s *JobDefinition) SetContainerProperties(v *ContainerProperties) *JobDefinition {
 	s.ContainerProperties = v
+	return s
+}
+
+// SetEksProperties sets the EksProperties field's value.
+func (s *JobDefinition) SetEksProperties(v *EksProperties) *JobDefinition {
+	s.EksProperties = v
 	return s
 }
 
@@ -6899,11 +8877,11 @@ func (s *JobDefinition) SetType(v string) *JobDefinition {
 	return s
 }
 
-// An object representing an Batch job dependency.
+// An object that represents an Batch job dependency.
 type JobDependency struct {
 	_ struct{} `type:"structure"`
 
-	// The job ID of the Batch job associated with this dependency.
+	// The job ID of the Batch job that's associated with this dependency.
 	JobId *string `locationName:"jobId" type:"string"`
 
 	// The type of the job dependency.
@@ -6940,44 +8918,57 @@ func (s *JobDependency) SetType(v string) *JobDependency {
 	return s
 }
 
-// An object representing an Batch job.
+// An object that represents an Batch job.
 type JobDetail struct {
 	_ struct{} `type:"structure"`
 
-	// The array properties of the job, if it is an array job.
+	// The array properties of the job, if it's an array job.
 	ArrayProperties *ArrayPropertiesDetail `locationName:"arrayProperties" type:"structure"`
 
-	// A list of job attempts associated with this job.
+	// A list of job attempts that are associated with this job.
 	Attempts []*AttemptDetail `locationName:"attempts" type:"list"`
 
-	// An object representing the details of the container that's associated with
-	// the job.
+	// An object that represents the details for the container that's associated
+	// with the job.
 	Container *ContainerDetail `locationName:"container" type:"structure"`
 
 	// The Unix timestamp (in milliseconds) for when the job was created. For non-array
-	// jobs and parent array jobs, this is when the job entered the SUBMITTED state
-	// (at the time SubmitJob was called). For array child jobs, this is when the
-	// child job was spawned by its parent and entered the PENDING state.
+	// jobs and parent array jobs, this is when the job entered the SUBMITTED state.
+	// This is specifically at the time SubmitJob was called. For array child jobs,
+	// this is when the child job was spawned by its parent and entered the PENDING
+	// state.
 	CreatedAt *int64 `locationName:"createdAt" type:"long"`
 
 	// A list of job IDs that this job depends on.
 	DependsOn []*JobDependency `locationName:"dependsOn" type:"list"`
 
+	// A list of job attempts that are associated with this job.
+	EksAttempts []*EksAttemptDetail `locationName:"eksAttempts" type:"list"`
+
+	// An object with various properties that are specific to Amazon EKS based jobs.
+	// Only one of container, eksProperties, or nodeDetails is specified.
+	EksProperties *EksPropertiesDetail `locationName:"eksProperties" type:"structure"`
+
+	// Indicates whether the job is canceled.
+	IsCancelled *bool `locationName:"isCancelled" type:"boolean"`
+
+	// Indicates whether the job is terminated.
+	IsTerminated *bool `locationName:"isTerminated" type:"boolean"`
+
 	// The Amazon Resource Name (ARN) of the job.
 	JobArn *string `locationName:"jobArn" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the job definition that's used by this
-	// job.
+	// The Amazon Resource Name (ARN) of the job definition that this job uses.
 	//
 	// JobDefinition is a required field
 	JobDefinition *string `locationName:"jobDefinition" type:"string" required:"true"`
 
-	// The ID for the job.
+	// The job ID.
 	//
 	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 
-	// The name of the job.
+	// The job name.
 	//
 	// JobName is a required field
 	JobName *string `locationName:"jobName" type:"string" required:"true"`
@@ -6988,16 +8979,16 @@ type JobDetail struct {
 	// JobQueue is a required field
 	JobQueue *string `locationName:"jobQueue" type:"string" required:"true"`
 
-	// An object representing the details of a node that's associated with a multi-node
-	// parallel job.
+	// An object that represents the details of a node that's associated with a
+	// multi-node parallel job.
 	NodeDetails *NodeDetails `locationName:"nodeDetails" type:"structure"`
 
-	// An object representing the node properties of a multi-node parallel job.
+	// An object that represents the node properties of a multi-node parallel job.
 	//
 	// This isn't applicable to jobs that are running on Fargate resources.
 	NodeProperties *NodeProperties `locationName:"nodeProperties" type:"structure"`
 
-	// Additional parameters passed to the job that replace parameter substitution
+	// Additional parameters that are passed to the job that replace parameter substitution
 	// placeholders or override any corresponding parameter defaults from the job
 	// definition.
 	Parameters map[string]*string `locationName:"parameters" type:"map"`
@@ -7008,7 +8999,7 @@ type JobDetail struct {
 
 	// Specifies whether to propagate the tags from the job or job definition to
 	// the corresponding Amazon ECS task. If no value is specified, the tags aren't
-	// propagated. Tags can only be propagated to the tasks during task creation.
+	// propagated. Tags can only be propagated to the tasks when the tasks are created.
 	// For tags with the same name, job tags are given priority over job definitions
 	// tags. If the total number of combined tags from the job and job definition
 	// is over 50, the job is moved to the FAILED state.
@@ -7025,9 +9016,10 @@ type JobDetail struct {
 	// The share identifier for the job.
 	ShareIdentifier *string `locationName:"shareIdentifier" type:"string"`
 
-	// The Unix timestamp (in milliseconds) for when the job was started (when the
-	// job transitioned from the STARTING state to the RUNNING state). This parameter
-	// isn't provided for child jobs of array jobs or multi-node parallel jobs.
+	// The Unix timestamp (in milliseconds) for when the job was started. More specifically,
+	// it's when the job transitioned from the STARTING state to the RUNNING state.
+	// This parameter isn't provided for child jobs of array jobs or multi-node
+	// parallel jobs.
 	//
 	// StartedAt is a required field
 	StartedAt *int64 `locationName:"startedAt" type:"long" required:"true"`
@@ -7041,16 +9033,16 @@ type JobDetail struct {
 	// Status is a required field
 	Status *string `locationName:"status" type:"string" required:"true" enum:"JobStatus"`
 
-	// A short, human-readable string to provide additional details about the current
-	// status of the job.
+	// A short, human-readable string to provide more details for the current status
+	// of the job.
 	StatusReason *string `locationName:"statusReason" type:"string"`
 
-	// The Unix timestamp (in milliseconds) for when the job was stopped (when the
-	// job transitioned from the RUNNING state to a terminal state, such as SUCCEEDED
-	// or FAILED).
+	// The Unix timestamp (in milliseconds) for when the job was stopped. More specifically,
+	// it's when the job transitioned from the RUNNING state to a terminal state,
+	// such as SUCCEEDED or FAILED.
 	StoppedAt *int64 `locationName:"stoppedAt" type:"long"`
 
-	// The tags applied to the job.
+	// The tags that are applied to the job.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
 	// The timeout configuration for the job.
@@ -7102,6 +9094,30 @@ func (s *JobDetail) SetCreatedAt(v int64) *JobDetail {
 // SetDependsOn sets the DependsOn field's value.
 func (s *JobDetail) SetDependsOn(v []*JobDependency) *JobDetail {
 	s.DependsOn = v
+	return s
+}
+
+// SetEksAttempts sets the EksAttempts field's value.
+func (s *JobDetail) SetEksAttempts(v []*EksAttemptDetail) *JobDetail {
+	s.EksAttempts = v
+	return s
+}
+
+// SetEksProperties sets the EksProperties field's value.
+func (s *JobDetail) SetEksProperties(v *EksPropertiesDetail) *JobDetail {
+	s.EksProperties = v
+	return s
+}
+
+// SetIsCancelled sets the IsCancelled field's value.
+func (s *JobDetail) SetIsCancelled(v bool) *JobDetail {
+	s.IsCancelled = &v
+	return s
+}
+
+// SetIsTerminated sets the IsTerminated field's value.
+func (s *JobDetail) SetIsTerminated(v bool) *JobDetail {
+	s.IsTerminated = &v
 	return s
 }
 
@@ -7219,7 +9235,7 @@ func (s *JobDetail) SetTimeout(v *JobTimeout) *JobDetail {
 	return s
 }
 
-// An object representing the details of an Batch job queue.
+// An object that represents the details for an Batch job queue.
 type JobQueueDetail struct {
 	_ struct{} `type:"structure"`
 
@@ -7235,29 +9251,29 @@ type JobQueueDetail struct {
 	// JobQueueArn is a required field
 	JobQueueArn *string `locationName:"jobQueueArn" type:"string" required:"true"`
 
-	// The name of the job queue.
+	// The job queue name.
 	//
 	// JobQueueName is a required field
 	JobQueueName *string `locationName:"jobQueueName" type:"string" required:"true"`
 
 	// The priority of the job queue. Job queues with a higher priority (or a higher
 	// integer value for the priority parameter) are evaluated first when associated
-	// with the same compute environment. Priority is determined in descending order,
-	// for example, a job queue with a priority value of 10 is given scheduling
+	// with the same compute environment. Priority is determined in descending order.
+	// For example, a job queue with a priority value of 10 is given scheduling
 	// preference over a job queue with a priority value of 1. All of the compute
-	// environments must be either EC2 (EC2 or SPOT) or Fargate (FARGATE or FARGATE_SPOT);
+	// environments must be either EC2 (EC2 or SPOT) or Fargate (FARGATE or FARGATE_SPOT).
 	// EC2 and Fargate compute environments can't be mixed.
 	//
 	// Priority is a required field
 	Priority *int64 `locationName:"priority" type:"integer" required:"true"`
 
 	// The Amazon Resource Name (ARN) of the scheduling policy. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
-	// . For example, aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+	// . For example, aws:aws:batch:us-west-2:123456789012:scheduling-policy/MySchedulingPolicy.
 	SchedulingPolicyArn *string `locationName:"schedulingPolicyArn" type:"string"`
 
 	// Describes the ability of the queue to accept new jobs. If the job queue state
-	// is ENABLED, it's able to accept jobs. If the job queue state is DISABLED,
-	// new jobs can't be added to the queue, but jobs already in the queue can finish.
+	// is ENABLED, it can accept jobs. If the job queue state is DISABLED, new jobs
+	// can't be added to the queue, but jobs already in the queue can finish.
 	//
 	// State is a required field
 	State *string `locationName:"state" type:"string" required:"true" enum:"JQState"`
@@ -7265,12 +9281,12 @@ type JobQueueDetail struct {
 	// The status of the job queue (for example, CREATING or VALID).
 	Status *string `locationName:"status" type:"string" enum:"JQStatus"`
 
-	// A short, human-readable string to provide additional details about the current
+	// A short, human-readable string to provide additional details for the current
 	// status of the job queue.
 	StatusReason *string `locationName:"statusReason" type:"string"`
 
-	// The tags applied to the job queue. For more information, see Tagging your
-	// Batch resources (https://docs.aws.amazon.com/batch/latest/userguide/using-tags.html)
+	// The tags that are applied to the job queue. For more information, see Tagging
+	// your Batch resources (https://docs.aws.amazon.com/batch/latest/userguide/using-tags.html)
 	// in Batch User Guide.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 }
@@ -7347,15 +9363,15 @@ func (s *JobQueueDetail) SetTags(v map[string]*string) *JobQueueDetail {
 	return s
 }
 
-// An object representing summary details of a job.
+// An object that represents summary details of a job.
 type JobSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The array properties of the job, if it is an array job.
+	// The array properties of the job, if it's an array job.
 	ArrayProperties *ArrayPropertiesSummary `locationName:"arrayProperties" type:"structure"`
 
-	// An object representing the details of the container that's associated with
-	// the job.
+	// An object that represents the details of the container that's associated
+	// with the job.
 	Container *ContainerSummary `locationName:"container" type:"structure"`
 
 	// The Unix timestamp (in milliseconds) for when the job was created. For non-array
@@ -7370,12 +9386,12 @@ type JobSummary struct {
 	// The Amazon Resource Name (ARN) of the job definition.
 	JobDefinition *string `locationName:"jobDefinition" type:"string"`
 
-	// The ID of the job.
+	// The job ID.
 	//
 	// JobId is a required field
 	JobId *string `locationName:"jobId" type:"string" required:"true"`
 
-	// The name of the job.
+	// The job name.
 	//
 	// JobName is a required field
 	JobName *string `locationName:"jobName" type:"string" required:"true"`
@@ -7385,19 +9401,20 @@ type JobSummary struct {
 	// This isn't applicable to jobs that are running on Fargate resources.
 	NodeProperties *NodePropertiesSummary `locationName:"nodeProperties" type:"structure"`
 
-	// The Unix timestamp for when the job was started (when the job transitioned
-	// from the STARTING state to the RUNNING state).
+	// The Unix timestamp for when the job was started. More specifically, it's
+	// when the job transitioned from the STARTING state to the RUNNING state.
 	StartedAt *int64 `locationName:"startedAt" type:"long"`
 
 	// The current status for the job.
 	Status *string `locationName:"status" type:"string" enum:"JobStatus"`
 
-	// A short, human-readable string to provide additional details about the current
-	// status of the job.
+	// A short, human-readable string to provide more details for the current status
+	// of the job.
 	StatusReason *string `locationName:"statusReason" type:"string"`
 
-	// The Unix timestamp for when the job was stopped (when the job transitioned
-	// from the RUNNING state to a terminal state, such as SUCCEEDED or FAILED).
+	// The Unix timestamp for when the job was stopped. More specifically, it's
+	// when the job transitioned from the RUNNING state to a terminal state, such
+	// as SUCCEEDED or FAILED.
 	StoppedAt *int64 `locationName:"stoppedAt" type:"long"`
 }
 
@@ -7491,13 +9508,19 @@ func (s *JobSummary) SetStoppedAt(v int64) *JobSummary {
 	return s
 }
 
-// An object representing a job timeout configuration.
+// An object that represents a job timeout configuration.
 type JobTimeout struct {
 	_ struct{} `type:"structure"`
 
-	// The time duration in seconds (measured from the job attempt's startedAt timestamp)
-	// after which Batch terminates your jobs if they have not finished. The minimum
-	// value for the timeout is 60 seconds.
+	// The job timeout time (in seconds) that's measured from the job attempt's
+	// startedAt timestamp. After this time passes, Batch terminates your jobs if
+	// they aren't finished. The minimum value for the timeout is 60 seconds.
+	//
+	// For array jobs, the timeout applies to the child jobs, not to the parent
+	// array job.
+	//
+	// For multi-node parallel (MNP) jobs, the timeout applies to the whole job,
+	// not to the individual nodes.
 	AttemptDurationSeconds *int64 `locationName:"attemptDurationSeconds" type:"integer"`
 }
 
@@ -7610,9 +9633,9 @@ func (s *KeyValuesPair) SetValues(v []*string) *KeyValuesPair {
 	return s
 }
 
-// An object representing a launch template associated with a compute resource.
-// You must specify either the launch template ID or launch template name in
-// the request, but not both.
+// An object that represents a launch template that's associated with a compute
+// resource. You must specify either the launch template ID or launch template
+// name in the request, but not both.
 //
 // If security groups are specified using both the securityGroupIds parameter
 // of CreateComputeEnvironment and the launch template, the values in the securityGroupIds
@@ -7690,20 +9713,20 @@ func (s *LaunchTemplateSpecification) SetVersion(v string) *LaunchTemplateSpecif
 type LinuxParameters struct {
 	_ struct{} `type:"structure"`
 
-	// Any host devices to expose to the container. This parameter maps to Devices
-	// in the Create a container (https://docs.docker.com/engine/api/v1.23/#create-a-container)
+	// Any of the host devices to expose to the container. This parameter maps to
+	// Devices in the Create a container (https://docs.docker.com/engine/api/v1.23/#create-a-container)
 	// section of the Docker Remote API (https://docs.docker.com/engine/api/v1.23/)
 	// and the --device option to docker run (https://docs.docker.com/engine/reference/run/).
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources
-	// and shouldn't be provided.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't provide it for these jobs.
 	Devices []*Device `locationName:"devices" type:"list"`
 
 	// If true, run an init process inside the container that forwards signals and
 	// reaps processes. This parameter maps to the --init option to docker run (https://docs.docker.com/engine/reference/run/).
 	// This parameter requires version 1.25 of the Docker Remote API or greater
 	// on your container instance. To check the Docker Remote API version on your
-	// container instance, log into your container instance and run the following
+	// container instance, log in to your container instance and run the following
 	// command: sudo docker version | grep "Server API version"
 	InitProcessEnabled *bool `locationName:"initProcessEnabled" type:"boolean"`
 
@@ -7716,34 +9739,34 @@ type LinuxParameters struct {
 	// If a maxSwap value of 0 is specified, the container doesn't use swap. Accepted
 	// values are 0 or any positive integer. If the maxSwap parameter is omitted,
 	// the container doesn't use the swap configuration for the container instance
-	// it is running on. A maxSwap value must be set for the swappiness parameter
+	// that it's running on. A maxSwap value must be set for the swappiness parameter
 	// to be used.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources
-	// and shouldn't be provided.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't provide it for these jobs.
 	MaxSwap *int64 `locationName:"maxSwap" type:"integer"`
 
 	// The value for the size (in MiB) of the /dev/shm volume. This parameter maps
 	// to the --shm-size option to docker run (https://docs.docker.com/engine/reference/run/).
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources
-	// and shouldn't be provided.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't provide it for these jobs.
 	SharedMemorySize *int64 `locationName:"sharedMemorySize" type:"integer"`
 
-	// This allows you to tune a container's memory swappiness behavior. A swappiness
-	// value of 0 causes swapping not to happen unless absolutely necessary. A swappiness
-	// value of 100 causes pages to be swapped very aggressively. Accepted values
-	// are whole numbers between 0 and 100. If the swappiness parameter isn't specified,
-	// a default value of 60 is used. If a value isn't specified for maxSwap, then
-	// this parameter is ignored. If maxSwap is set to 0, the container doesn't
-	// use swap. This parameter maps to the --memory-swappiness option to docker
-	// run (https://docs.docker.com/engine/reference/run/).
+	// You can use this parameter to tune a container's memory swappiness behavior.
+	// A swappiness value of 0 causes swapping to not occur unless absolutely necessary.
+	// A swappiness value of 100 causes pages to be swapped aggressively. Valid
+	// values are whole numbers between 0 and 100. If the swappiness parameter isn't
+	// specified, a default value of 60 is used. If a value isn't specified for
+	// maxSwap, then this parameter is ignored. If maxSwap is set to 0, the container
+	// doesn't use swap. This parameter maps to the --memory-swappiness option to
+	// docker run (https://docs.docker.com/engine/reference/run/).
 	//
 	// Consider the following when you use a per-container swap configuration.
 	//
 	//    * Swap space must be enabled and allocated on the container instance for
-	//    the containers to use. The Amazon ECS optimized AMIs don't have swap enabled
-	//    by default. You must enable swap on the instance to use this feature.
+	//    the containers to use. By default, the Amazon ECS optimized AMIs don't
+	//    have swap enabled. You must enable swap on the instance to use this feature.
 	//    For more information, see Instance store swap volumes (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-store-swap-volumes.html)
 	//    in the Amazon EC2 User Guide for Linux Instances or How do I allocate
 	//    memory to work as swap space in an Amazon EC2 instance by using a swap
@@ -7753,19 +9776,18 @@ type LinuxParameters struct {
 	//    EC2 resources.
 	//
 	//    * If the maxSwap and swappiness parameters are omitted from a job definition,
-	//    each container will have a default swappiness value of 60, and the total
-	//    swap usage will be limited to two times the memory reservation of the
-	//    container.
+	//    each container has a default swappiness value of 60. Moreover, the total
+	//    swap usage is limited to two times the memory reservation of the container.
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources
-	// and shouldn't be provided.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't provide it for these jobs.
 	Swappiness *int64 `locationName:"swappiness" type:"integer"`
 
 	// The container path, mount options, and size (in MiB) of the tmpfs mount.
 	// This parameter maps to the --tmpfs option to docker run (https://docs.docker.com/engine/reference/run/).
 	//
-	// This parameter isn't applicable to jobs that are running on Fargate resources
-	// and shouldn't be provided.
+	// This parameter isn't applicable to jobs that are running on Fargate resources.
+	// Don't provide this parameter for this resource type.
 	Tmpfs []*Tmpfs `locationName:"tmpfs" type:"list"`
 }
 
@@ -7869,7 +9891,7 @@ type ListJobsInput struct {
 	// JOB_NAME
 	//
 	// The value of the filter is a case-insensitive match for the job name. If
-	// the value ends with an asterisk (*), the filter will match any job name that
+	// the value ends with an asterisk (*), the filter matches any job name that
 	// begins with the string before the '*'. This corresponds to the jobName value.
 	// For example, test1 matches both Test1 and test1, and test1* matches both
 	// test1 and Test10. When the JOB_NAME filter is used, the results are grouped
@@ -7881,13 +9903,13 @@ type ListJobsInput struct {
 	// job definition. This corresponds to the jobDefinition value. The value is
 	// case sensitive. When the value for the filter is the job definition name,
 	// the results include all the jobs that used any revision of that job definition
-	// name. If the value ends with an asterisk (*), the filter will match any job
+	// name. If the value ends with an asterisk (*), the filter matches any job
 	// definition name that begins with the string before the '*'. For example,
 	// jd1 matches only jd1, and jd1* matches both jd1 and jd1A. The version of
 	// the job definition that's used doesn't affect the sort order. When the JOB_DEFINITION
 	// filter is used and the ARN is used (which is in the form arn:${Partition}:batch:${Region}:${Account}:job-definition/${JobDefinitionName}:${Revision}),
 	// the results include jobs that used the specified revision of the job definition.
-	// Asterisk (*) is not supported when the ARN is used.
+	// Asterisk (*) isn't supported when the ARN is used.
 	//
 	// BEFORE_CREATED_AT
 	//
@@ -7932,8 +9954,8 @@ type ListJobsInput struct {
 	// Pagination continues from the end of the previous results that returned the
 	// nextToken value. This value is null when there are no more results to return.
 	//
-	// This token should be treated as an opaque identifier that's only used to
-	// retrieve the next items in a list and not for other programmatic purposes.
+	// Treat this token as an opaque identifier that's only used to retrieve the
+	// next items in a list and not for other programmatic purposes.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -8061,8 +10083,8 @@ type ListSchedulingPoliciesInput struct {
 	// returned the nextToken value. This value is null when there are no more results
 	// to return.
 	//
-	// This token should be treated as an opaque identifier that's only used to
-	// retrieve the next items in a list and not for other programmatic purposes.
+	// Treat this token as an opaque identifier that's only used to retrieve the
+	// next items in a list and not for other programmatic purposes.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -8146,7 +10168,7 @@ type ListTagsForResourceInput struct {
 	// The Amazon Resource Name (ARN) that identifies the resource that tags are
 	// listed for. Batch resources that support tags are compute environments, jobs,
 	// job definitions, job queues, and scheduling policies. ARNs for child jobs
-	// of array and multi-node parallel (MNP) jobs are not supported.
+	// of array and multi-node parallel (MNP) jobs aren't supported.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
@@ -8227,9 +10249,9 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 type LogConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// The log driver to use for the container. The valid values listed for this
-	// parameter are log drivers that the Amazon ECS container agent can communicate
-	// with by default.
+	// The log driver to use for the container. The valid values that are listed
+	// for this parameter are log drivers that the Amazon ECS container agent can
+	// communicate with by default.
 	//
 	// The supported log drivers are awslogs, fluentd, gelf, json-file, journald,
 	// logentries, syslog, and splunk.
@@ -8246,37 +10268,37 @@ type LogConfiguration struct {
 	//
 	// fluentd
 	//
-	// Specifies the Fluentd logging driver. For more information, including usage
+	// Specifies the Fluentd logging driver. For more information including usage
 	// and options, see Fluentd logging driver (https://docs.docker.com/config/containers/logging/fluentd/)
 	// in the Docker documentation.
 	//
 	// gelf
 	//
-	// Specifies the Graylog Extended Format (GELF) logging driver. For more information,
+	// Specifies the Graylog Extended Format (GELF) logging driver. For more information
 	// including usage and options, see Graylog Extended Format logging driver (https://docs.docker.com/config/containers/logging/gelf/)
 	// in the Docker documentation.
 	//
 	// journald
 	//
-	// Specifies the journald logging driver. For more information, including usage
+	// Specifies the journald logging driver. For more information including usage
 	// and options, see Journald logging driver (https://docs.docker.com/config/containers/logging/journald/)
 	// in the Docker documentation.
 	//
 	// json-file
 	//
-	// Specifies the JSON file logging driver. For more information, including usage
+	// Specifies the JSON file logging driver. For more information including usage
 	// and options, see JSON File logging driver (https://docs.docker.com/config/containers/logging/json-file/)
 	// in the Docker documentation.
 	//
 	// splunk
 	//
-	// Specifies the Splunk logging driver. For more information, including usage
+	// Specifies the Splunk logging driver. For more information including usage
 	// and options, see Splunk logging driver (https://docs.docker.com/config/containers/logging/splunk/)
 	// in the Docker documentation.
 	//
 	// syslog
 	//
-	// Specifies the syslog logging driver. For more information, including usage
+	// Specifies the syslog logging driver. For more information including usage
 	// and options, see Syslog logging driver (https://docs.docker.com/config/containers/logging/syslog/)
 	// in the Docker documentation.
 	//
@@ -8289,7 +10311,7 @@ type LogConfiguration struct {
 	//
 	// This parameter requires version 1.18 of the Docker Remote API or greater
 	// on your container instance. To check the Docker Remote API version on your
-	// container instance, log into your container instance and run the following
+	// container instance, log in to your container instance and run the following
 	// command: sudo docker version | grep "Server API version"
 	//
 	// LogDriver is a required field
@@ -8297,8 +10319,8 @@ type LogConfiguration struct {
 
 	// The configuration options to send to the log driver. This parameter requires
 	// version 1.19 of the Docker Remote API or greater on your container instance.
-	// To check the Docker Remote API version on your container instance, log into
-	// your container instance and run the following command: sudo docker version
+	// To check the Docker Remote API version on your container instance, log in
+	// to your container instance and run the following command: sudo docker version
 	// | grep "Server API version"
 	Options map[string]*string `locationName:"options" type:"map"`
 
@@ -8367,8 +10389,8 @@ func (s *LogConfiguration) SetSecretOptions(v []*Secret) *LogConfiguration {
 	return s
 }
 
-// Details on a Docker volume mount point that's used in a job's container properties.
-// This parameter maps to Volumes in the Create a container (https://docs.docker.com/engine/reference/api/docker_remote_api_v1.19/#create-a-container)
+// Details for a Docker volume mount point that's used in a job's container
+// properties. This parameter maps to Volumes in the Create a container (https://docs.docker.com/engine/reference/api/docker_remote_api_v1.19/#create-a-container)
 // section of the Docker Remote API and the --volume option to docker run.
 type MountPoint struct {
 	_ struct{} `type:"structure"`
@@ -8425,12 +10447,13 @@ func (s *MountPoint) SetSourceVolume(v string) *MountPoint {
 type NetworkConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates whether the job should have a public IP address. For a job that
-	// is running on Fargate resources in a private subnet to send outbound traffic
-	// to the internet (for example, to pull container images), the private subnet
-	// requires a NAT gateway be attached to route requests to the internet. For
-	// more information, see Amazon ECS task networking (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html).
-	// The default value is "DISABLED".
+	// Indicates whether the job has a public IP address. For a job that's running
+	// on Fargate resources in a private subnet to send outbound traffic to the
+	// internet (for example, to pull container images), the private subnet requires
+	// a NAT gateway be attached to route requests to the internet. For more information,
+	// see Amazon ECS task networking (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-networking.html)
+	// in the Amazon Elastic Container Service Developer Guide. The default value
+	// is "DISABLED".
 	AssignPublicIp *string `locationName:"assignPublicIp" type:"string" enum:"AssignPublicIp"`
 }
 
@@ -8458,8 +10481,8 @@ func (s *NetworkConfiguration) SetAssignPublicIp(v string) *NetworkConfiguration
 	return s
 }
 
-// An object representing the elastic network interface for a multi-node parallel
-// job node.
+// An object that represents the elastic network interface for a multi-node
+// parallel job node.
 type NetworkInterface struct {
 	_ struct{} `type:"structure"`
 
@@ -8509,7 +10532,7 @@ func (s *NetworkInterface) SetPrivateIpv4Address(v string) *NetworkInterface {
 	return s
 }
 
-// An object representing the details of a multi-node parallel job node.
+// An object that represents the details of a multi-node parallel job node.
 type NodeDetails struct {
 	_ struct{} `type:"structure"`
 
@@ -8517,7 +10540,7 @@ type NodeDetails struct {
 	// job.
 	IsMainNode *bool `locationName:"isMainNode" type:"boolean"`
 
-	// The node index for the node. Node index numbering begins at zero. This index
+	// The node index for the node. Node index numbering starts at zero. This index
 	// is also available on the node with the AWS_BATCH_JOB_NODE_INDEX environment
 	// variable.
 	NodeIndex *int64 `locationName:"nodeIndex" type:"integer"`
@@ -8553,11 +10576,11 @@ func (s *NodeDetails) SetNodeIndex(v int64) *NodeDetails {
 	return s
 }
 
-// Object representing any node overrides to a job definition that's used in
-// a SubmitJob API operation.
+// An object that represents any node overrides to a job definition that's used
+// in a SubmitJob API operation.
 //
-// This isn't applicable to jobs that are running on Fargate resources and shouldn't
-// be provided; use containerOverrides instead.
+// This parameter isn't applicable to jobs that are running on Fargate resources.
+// Don't provide it for these jobs. Rather, use containerOverrides instead.
 type NodeOverrides struct {
 	_ struct{} `type:"structure"`
 
@@ -8566,16 +10589,16 @@ type NodeOverrides struct {
 
 	// The number of nodes to use with a multi-node parallel job. This value overrides
 	// the number of nodes that are specified in the job definition. To use this
-	// override:
+	// override, you must meet the following conditions:
 	//
 	//    * There must be at least one node range in your job definition that has
-	//    an open upper boundary (such as : or n:).
+	//    an open upper boundary, such as : or n:.
 	//
-	//    * The lower boundary of the node range specified in the job definition
+	//    * The lower boundary of the node range that's specified in the job definition
 	//    must be fewer than the number of nodes specified in the override.
 	//
-	//    * The main node index specified in the job definition must be fewer than
-	//    the number of nodes specified in the override.
+	//    * The main node index that's specified in the job definition must be fewer
+	//    than the number of nodes specified in the override.
 	NumNodes *int64 `locationName:"numNodes" type:"integer"`
 }
 
@@ -8629,7 +10652,9 @@ func (s *NodeOverrides) SetNumNodes(v int64) *NodeOverrides {
 	return s
 }
 
-// An object representing the node properties of a multi-node parallel job.
+// An object that represents the node properties of a multi-node parallel job.
+//
+// Node properties can't be specified for Amazon EKS based job definitions.
 type NodeProperties struct {
 	_ struct{} `type:"structure"`
 
@@ -8639,13 +10664,13 @@ type NodeProperties struct {
 	// MainNode is a required field
 	MainNode *int64 `locationName:"mainNode" type:"integer" required:"true"`
 
-	// A list of node ranges and their properties associated with a multi-node parallel
-	// job.
+	// A list of node ranges and their properties that are associated with a multi-node
+	// parallel job.
 	//
 	// NodeRangeProperties is a required field
 	NodeRangeProperties []*NodeRangeProperty `locationName:"nodeRangeProperties" type:"list" required:"true"`
 
-	// The number of nodes associated with a multi-node parallel job.
+	// The number of nodes that are associated with a multi-node parallel job.
 	//
 	// NumNodes is a required field
 	NumNodes *int64 `locationName:"numNodes" type:"integer" required:"true"`
@@ -8716,8 +10741,8 @@ func (s *NodeProperties) SetNumNodes(v int64) *NodeProperties {
 	return s
 }
 
-// An object representing the properties of a node that's associated with a
-// multi-node parallel job.
+// An object that represents the properties of a node that's associated with
+// a multi-node parallel job.
 type NodePropertiesSummary struct {
 	_ struct{} `type:"structure"`
 
@@ -8730,7 +10755,7 @@ type NodePropertiesSummary struct {
 	// variable.
 	NodeIndex *int64 `locationName:"nodeIndex" type:"integer"`
 
-	// The number of nodes associated with a multi-node parallel job.
+	// The number of nodes that are associated with a multi-node parallel job.
 	NumNodes *int64 `locationName:"numNodes" type:"integer"`
 }
 
@@ -8770,12 +10795,12 @@ func (s *NodePropertiesSummary) SetNumNodes(v int64) *NodePropertiesSummary {
 	return s
 }
 
-// Object representing any node overrides to a job definition that's used in
-// a SubmitJob API operation.
+// The object that represents any node overrides to a job definition that's
+// used in a SubmitJob API operation.
 type NodePropertyOverride struct {
 	_ struct{} `type:"structure"`
 
-	// The overrides that should be sent to a node range.
+	// The overrides that are sent to a node range.
 	ContainerOverrides *ContainerOverrides `locationName:"containerOverrides" type:"structure"`
 
 	// The range of nodes, using node index values, that's used to override. A range
@@ -8836,7 +10861,7 @@ func (s *NodePropertyOverride) SetTargetNodes(v string) *NodePropertyOverride {
 	return s
 }
 
-// An object representing the properties of the node range for a multi-node
+// An object that represents the properties of the node range for a multi-node
 // parallel job.
 type NodeRangeProperty struct {
 	_ struct{} `type:"structure"`
@@ -8849,7 +10874,7 @@ type NodeRangeProperty struct {
 	// (:n), then 0 is used to start the range. If the ending range value is omitted
 	// (n:), then the highest possible node index is used to end the range. Your
 	// accumulative node ranges must account for all nodes (0:n). You can nest node
-	// ranges, for example 0:10 and 4:5, in which case the 4:5 range properties
+	// ranges (for example, 0:10 and 4:5). In this case, the 4:5 range properties
 	// override the 0:10 properties.
 	//
 	// TargetNodes is a required field
@@ -8908,13 +10933,18 @@ func (s *NodeRangeProperty) SetTargetNodes(v string) *NodeRangeProperty {
 type RegisterJobDefinitionInput struct {
 	_ struct{} `type:"structure"`
 
-	// An object with various properties specific to single-node container-based
-	// jobs. If the job definition's type parameter is container, then you must
-	// specify either containerProperties or nodeProperties.
+	// An object with various properties specific to Amazon ECS based single-node
+	// container-based jobs. If the job definition's type parameter is container,
+	// then you must specify either containerProperties or nodeProperties. This
+	// must not be specified for Amazon EKS based job definitions.
 	//
 	// If the job runs on Fargate resources, then you must not specify nodeProperties;
 	// use only containerProperties.
 	ContainerProperties *ContainerProperties `locationName:"containerProperties" type:"structure"`
+
+	// An object with various properties that are specific to Amazon EKS based jobs.
+	// This must not be specified for Amazon ECS based job definitions.
+	EksProperties *EksProperties `locationName:"eksProperties" type:"structure"`
 
 	// The name of the job definition to register. It can be up to 128 letters long.
 	// It can contain uppercase and lowercase letters, numbers, hyphens (-), and
@@ -8931,6 +10961,8 @@ type RegisterJobDefinitionInput struct {
 	//
 	// If the job runs on Fargate resources, then you must not specify nodeProperties;
 	// use containerProperties instead.
+	//
+	// If the job runs on Amazon EKS resources, then you must not specify nodeProperties.
 	NodeProperties *NodeProperties `locationName:"nodeProperties" type:"structure"`
 
 	// Default parameter substitution placeholders to set in the job definition.
@@ -8941,6 +10973,8 @@ type RegisterJobDefinitionInput struct {
 	// The platform capabilities required by the job definition. If no value is
 	// specified, it defaults to EC2. To run the job on Fargate resources, specify
 	// FARGATE.
+	//
+	// If the job runs on Amazon EKS resources, then you must not specify platformCapabilities.
 	PlatformCapabilities []*string `locationName:"platformCapabilities" type:"list" enum:"PlatformCapability"`
 
 	// Specifies whether to propagate the tags from the job or job definition to
@@ -8949,6 +10983,8 @@ type RegisterJobDefinitionInput struct {
 	// For tags with the same name, job tags are given priority over job definitions
 	// tags. If the total number of combined tags from the job and job definition
 	// is over 50, the job is moved to the FAILED state.
+	//
+	// If the job runs on Amazon EKS resources, then you must not specify propagateTags.
 	PropagateTags *bool `locationName:"propagateTags" type:"boolean"`
 
 	// The retry strategy to use for failed jobs that are submitted with this job
@@ -8958,8 +10994,8 @@ type RegisterJobDefinitionInput struct {
 	RetryStrategy *RetryStrategy `locationName:"retryStrategy" type:"structure"`
 
 	// The scheduling priority for jobs that are submitted with this job definition.
-	// This will only affect jobs in job queues with a fair share policy. Jobs with
-	// a higher scheduling priority will be scheduled before jobs with a lower scheduling
+	// This only affects jobs in job queues with a fair share policy. Jobs with
+	// a higher scheduling priority are scheduled before jobs with a lower scheduling
 	// priority.
 	//
 	// The minimum supported value is 0 and the maximum supported value is 9999.
@@ -9025,6 +11061,11 @@ func (s *RegisterJobDefinitionInput) Validate() error {
 			invalidParams.AddNested("ContainerProperties", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.EksProperties != nil {
+		if err := s.EksProperties.Validate(); err != nil {
+			invalidParams.AddNested("EksProperties", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.NodeProperties != nil {
 		if err := s.NodeProperties.Validate(); err != nil {
 			invalidParams.AddNested("NodeProperties", err.(request.ErrInvalidParams))
@@ -9045,6 +11086,12 @@ func (s *RegisterJobDefinitionInput) Validate() error {
 // SetContainerProperties sets the ContainerProperties field's value.
 func (s *RegisterJobDefinitionInput) SetContainerProperties(v *ContainerProperties) *RegisterJobDefinitionInput {
 	s.ContainerProperties = v
+	return s
+}
+
+// SetEksProperties sets the EksProperties field's value.
+func (s *RegisterJobDefinitionInput) SetEksProperties(v *EksProperties) *RegisterJobDefinitionInput {
+	s.EksProperties = v
 	return s
 }
 
@@ -9179,11 +11226,12 @@ type ResourceRequirement struct {
 	//
 	// type="GPU"
 	//
-	// The number of physical GPUs to reserve for the container. The number of GPUs
-	// reserved for all containers in a job shouldn't exceed the number of available
-	// GPUs on the compute resource that the job is launched on.
+	// The number of physical GPUs to reserve for the container. Make sure that
+	// the number of GPUs reserved for all containers in a job doesn't exceed the
+	// number of available GPUs on the compute resource that the job is launched
+	// on.
 	//
-	// GPUs are not available for jobs that are running on Fargate resources.
+	// GPUs aren't available for jobs that are running on Fargate resources.
 	//
 	// type="MEMORY"
 	//
@@ -9237,14 +11285,34 @@ type ResourceRequirement struct {
 	//
 	// VCPU = 1, 2, or 4
 	//
-	// value = 9216, 10240, 11264, 12288, 13312, 14336, 15360, or 16384
+	// value = 9216, 10240, 11264, 12288, 13312, 14336, or 15360
 	//
 	// VCPU = 2 or 4
 	//
-	// value = 17408, 18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624,
-	// 27648, 28672, 29696, or 30720
+	// value = 16384
+	//
+	// VCPU = 2, 4, or 8
+	//
+	// value = 17408, 18432, 19456, 21504, 22528, 23552, 25600, 26624, 27648, 29696,
+	// or 30720
 	//
 	// VCPU = 4
+	//
+	// value = 20480, 24576, or 28672
+	//
+	// VCPU = 4 or 8
+	//
+	// value = 36864, 45056, 53248, or 61440
+	//
+	// VCPU = 8
+	//
+	// value = 32768, 40960, 49152, or 57344
+	//
+	// VCPU = 8 or 16
+	//
+	// value = 65536, 73728, 81920, 90112, 98304, 106496, 114688, or 122880
+	//
+	// VCPU = 16
 	//
 	// type="VCPU"
 	//
@@ -9256,9 +11324,14 @@ type ResourceRequirement struct {
 	// specify at least one vCPU. This is required but can be specified in several
 	// places; it must be specified for each node at least once.
 	//
+	// The default for the Fargate On-Demand vCPU resource count quota is 6 vCPUs.
+	// For more information about Fargate quotas, see Fargate quotas (https://docs.aws.amazon.com/general/latest/gr/ecs-service.html#service-quotas-fargate)
+	// in the Amazon Web Services General Reference.
+	//
 	// For jobs that are running on Fargate resources, then value must match one
 	// of the supported values and the MEMORY values must be one of the values supported
-	// for that VCPU value. The supported values are 0.25, 0.5, 1, 2, and 4
+	// for that VCPU value. The supported values are 0.25, 0.5, 1, 2, 4, 8, and
+	// 16
 	//
 	// value = 0.25
 	//
@@ -9282,6 +11355,16 @@ type ResourceRequirement struct {
 	// MEMORY = 8192, 9216, 10240, 11264, 12288, 13312, 14336, 15360, 16384, 17408,
 	// 18432, 19456, 20480, 21504, 22528, 23552, 24576, 25600, 26624, 27648, 28672,
 	// 29696, or 30720
+	//
+	// value = 8
+	//
+	// MEMORY = 16384, 20480, 24576, 28672, 32768, 36864, 40960, 45056, 49152, 53248,
+	// 57344, or 61440
+	//
+	// value = 16
+	//
+	// MEMORY = 32768, 40960, 49152, 57344, 65536, 73728, 81920, 90112, 98304, 106496,
+	// 114688, or 122880
 	//
 	// Value is a required field
 	Value *string `locationName:"value" type:"string" required:"true"`
@@ -9333,8 +11416,8 @@ func (s *ResourceRequirement) SetValue(v string) *ResourceRequirement {
 	return s
 }
 
-// The retry strategy associated with a job. For more information, see Automated
-// job retries (https://docs.aws.amazon.com/batch/latest/userguide/job_retries.html)
+// The retry strategy that's associated with a job. For more information, see
+// Automated job retries (https://docs.aws.amazon.com/batch/latest/userguide/job_retries.html)
 // in the Batch User Guide.
 type RetryStrategy struct {
 	_ struct{} `type:"structure"`
@@ -9344,9 +11427,10 @@ type RetryStrategy struct {
 	// the job is retried on failure the same number of attempts as the value.
 	Attempts *int64 `locationName:"attempts" type:"integer"`
 
-	// Array of up to 5 objects that specify conditions under which the job should
-	// be retried or failed. If this parameter is specified, then the attempts parameter
-	// must also be specified.
+	// Array of up to 5 objects that specify the conditions where jobs are retried
+	// or failed. If this parameter is specified, then the attempts parameter must
+	// also be specified. If none of the listed conditions match, then the job is
+	// retried.
 	EvaluateOnExit []*EvaluateOnExit `locationName:"evaluateOnExit" type:"list"`
 }
 
@@ -9397,6 +11481,66 @@ func (s *RetryStrategy) SetAttempts(v int64) *RetryStrategy {
 // SetEvaluateOnExit sets the EvaluateOnExit field's value.
 func (s *RetryStrategy) SetEvaluateOnExit(v []*EvaluateOnExit) *RetryStrategy {
 	s.EvaluateOnExit = v
+	return s
+}
+
+// An object that represents the compute environment architecture for Batch
+// jobs on Fargate.
+type RuntimePlatform struct {
+	_ struct{} `type:"structure"`
+
+	// The vCPU architecture. The default value is X86_64. Valid values are X86_64
+	// and ARM64.
+	//
+	// This parameter must be set to X86_64 for Windows containers.
+	CpuArchitecture *string `locationName:"cpuArchitecture" type:"string"`
+
+	// The operating system for the compute environment. Valid values are: LINUX
+	// (default), WINDOWS_SERVER_2019_CORE, WINDOWS_SERVER_2019_FULL, WINDOWS_SERVER_2022_CORE,
+	// and WINDOWS_SERVER_2022_FULL.
+	//
+	// The following parameters can’t be set for Windows containers: linuxParameters,
+	// privileged, user, ulimits, readonlyRootFilesystem, and efsVolumeConfiguration.
+	//
+	// The Batch Scheduler checks before registering a task definition with Fargate.
+	// If the job requires a Windows container and the first compute environment
+	// is LINUX, the compute environment is skipped and the next is checked until
+	// a Windows-based compute environment is found.
+	//
+	// Fargate Spot is not supported for Windows-based containers on Fargate. A
+	// job queue will be blocked if a Fargate Windows job is submitted to a job
+	// queue with only Fargate Spot compute environments. However, you can attach
+	// both FARGATE and FARGATE_SPOT compute environments to the same job queue.
+	OperatingSystemFamily *string `locationName:"operatingSystemFamily" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuntimePlatform) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RuntimePlatform) GoString() string {
+	return s.String()
+}
+
+// SetCpuArchitecture sets the CpuArchitecture field's value.
+func (s *RuntimePlatform) SetCpuArchitecture(v string) *RuntimePlatform {
+	s.CpuArchitecture = &v
+	return s
+}
+
+// SetOperatingSystemFamily sets the OperatingSystemFamily field's value.
+func (s *RuntimePlatform) SetOperatingSystemFamily(v string) *RuntimePlatform {
+	s.OperatingSystemFamily = &v
 	return s
 }
 
@@ -9501,8 +11645,8 @@ func (s *SchedulingPolicyListingDetail) SetArn(v string) *SchedulingPolicyListin
 	return s
 }
 
-// An object representing the secret to expose to your container. Secrets can
-// be exposed to a container in the following ways:
+// An object that represents the secret to expose to your container. Secrets
+// can be exposed to a container in the following ways:
 //
 //   - To inject sensitive data into your containers as environment variables,
 //     use the secrets container definition parameter.
@@ -9521,13 +11665,14 @@ type Secret struct {
 	Name *string `locationName:"name" type:"string" required:"true"`
 
 	// The secret to expose to the container. The supported values are either the
-	// full ARN of the Secrets Manager secret or the full ARN of the parameter in
-	// the Amazon Web Services Systems Manager Parameter Store.
+	// full Amazon Resource Name (ARN) of the Secrets Manager secret or the full
+	// ARN of the parameter in the Amazon Web Services Systems Manager Parameter
+	// Store.
 	//
 	// If the Amazon Web Services Systems Manager Parameter Store parameter exists
 	// in the same Region as the job you're launching, then you can use either the
-	// full ARN or name of the parameter. If the parameter exists in a different
-	// Region, then the full ARN must be specified.
+	// full Amazon Resource Name (ARN) or name of the parameter. If the parameter
+	// exists in a different Region, then the full ARN must be specified.
 	//
 	// ValueFrom is a required field
 	ValueFrom *string `locationName:"valueFrom" type:"string" required:"true"`
@@ -9651,13 +11796,13 @@ type ShareAttributes struct {
 	// A fair share identifier or fair share identifier prefix. If the string ends
 	// with an asterisk (*), this entry specifies the weight factor to use for fair
 	// share identifiers that start with that prefix. The list of fair share identifiers
-	// in a fair share policy cannot overlap. For example, you can't have one that
+	// in a fair share policy can't overlap. For example, you can't have one that
 	// specifies a shareIdentifier of UserA* and another that specifies a shareIdentifier
 	// of UserA-1.
 	//
 	// There can be no more than 500 fair share identifiers active in a job queue.
 	//
-	// The string is limited to 255 alphanumeric characters, optionally followed
+	// The string is limited to 255 alphanumeric characters, and can be followed
 	// by an asterisk (*).
 	//
 	// ShareIdentifier is a required field
@@ -9728,12 +11873,13 @@ type SubmitJobInput struct {
 	// Batch User Guide.
 	ArrayProperties *ArrayProperties `locationName:"arrayProperties" type:"structure"`
 
-	// A list of container overrides in the JSON format that specify the name of
-	// a container in the specified job definition and the overrides it receives.
-	// You can override the default command for a container, which is specified
-	// in the job definition or the Docker image, with a command override. You can
-	// also override existing environment variables on a container or add new environment
-	// variables to it with an environment override.
+	// An object with various properties that override the defaults for the job
+	// definition that specify the name of a container in the specified job definition
+	// and the overrides it should receive. You can override the default command
+	// for a container, which is specified in the job definition or the Docker image,
+	// with a command override. You can also override existing environment variables
+	// on a container or add new environment variables to it with an environment
+	// override.
 	ContainerOverrides *ContainerOverrides `locationName:"containerOverrides" type:"structure"`
 
 	// A list of dependencies for the job. A job can depend upon a maximum of 20
@@ -9745,9 +11891,16 @@ type SubmitJobInput struct {
 	// begin.
 	DependsOn []*JobDependency `locationName:"dependsOn" type:"list"`
 
-	// The job definition used by this job. This value can be one of name, name:revision,
-	// or the Amazon Resource Name (ARN) for the job definition. If name is specified
-	// without a revision then the latest active revision is used.
+	// An object that can only be specified for jobs that are run on Amazon EKS
+	// resources with various properties that override defaults for the job definition.
+	EksPropertiesOverride *EksPropertiesOverride `locationName:"eksPropertiesOverride" type:"structure"`
+
+	// The job definition used by this job. This value can be one of definition-name,
+	// definition-name:revision, or the Amazon Resource Name (ARN) for the job definition,
+	// with or without the revision (arn:aws:batch:region:account:job-definition/definition-name:revision
+	// , or arn:aws:batch:region:account:job-definition/definition-name ).
+	//
+	// If the revision is not specified, then the latest active revision is used.
 	//
 	// JobDefinition is a required field
 	JobDefinition *string `locationName:"jobDefinition" type:"string" required:"true"`
@@ -9792,17 +11945,20 @@ type SubmitJobInput struct {
 	// defined in the job definition.
 	RetryStrategy *RetryStrategy `locationName:"retryStrategy" type:"structure"`
 
-	// The scheduling priority for the job. This will only affect jobs in job queues
-	// with a fair share policy. Jobs with a higher scheduling priority will be
-	// scheduled before jobs with a lower scheduling priority. This will override
-	// any scheduling priority in the job definition.
+	// The scheduling priority for the job. This only affects jobs in job queues
+	// with a fair share policy. Jobs with a higher scheduling priority are scheduled
+	// before jobs with a lower scheduling priority. This overrides any scheduling
+	// priority in the job definition.
 	//
 	// The minimum supported value is 0 and the maximum supported value is 9999.
 	SchedulingPriorityOverride *int64 `locationName:"schedulingPriorityOverride" type:"integer"`
 
-	// The share identifier for the job. If the job queue does not have a scheduling
-	// policy, then this parameter must not be specified. If the job queue has a
-	// scheduling policy, then this parameter must be specified.
+	// The share identifier for the job. Don't specify this parameter if the job
+	// queue doesn't have a scheduling policy. If the job queue has a scheduling
+	// policy, then this parameter must be specified.
+	//
+	// This string is limited to 255 alphanumeric characters, and can be followed
+	// by an asterisk (*).
 	ShareIdentifier *string `locationName:"shareIdentifier" type:"string"`
 
 	// The tags that you apply to the job request to help you categorize and organize
@@ -9860,6 +12016,11 @@ func (s *SubmitJobInput) Validate() error {
 			invalidParams.AddNested("ContainerOverrides", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.EksPropertiesOverride != nil {
+		if err := s.EksPropertiesOverride.Validate(); err != nil {
+			invalidParams.AddNested("EksPropertiesOverride", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.NodeOverrides != nil {
 		if err := s.NodeOverrides.Validate(); err != nil {
 			invalidParams.AddNested("NodeOverrides", err.(request.ErrInvalidParams))
@@ -9892,6 +12053,12 @@ func (s *SubmitJobInput) SetContainerOverrides(v *ContainerOverrides) *SubmitJob
 // SetDependsOn sets the DependsOn field's value.
 func (s *SubmitJobInput) SetDependsOn(v []*JobDependency) *SubmitJobInput {
 	s.DependsOn = v
+	return s
+}
+
+// SetEksPropertiesOverride sets the EksPropertiesOverride field's value.
+func (s *SubmitJobInput) SetEksPropertiesOverride(v *EksPropertiesOverride) *SubmitJobInput {
+	s.EksPropertiesOverride = v
 	return s
 }
 
@@ -10021,7 +12188,7 @@ type TagResourceInput struct {
 	// The Amazon Resource Name (ARN) of the resource that tags are added to. Batch
 	// resources that support tags are compute environments, jobs, job definitions,
 	// job queues, and scheduling policies. ARNs for child jobs of array and multi-node
-	// parallel (MNP) jobs are not supported.
+	// parallel (MNP) jobs aren't supported.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
@@ -10357,7 +12524,7 @@ type UntagResourceInput struct {
 	// The Amazon Resource Name (ARN) of the resource from which to delete tags.
 	// Batch resources that support tags are compute environments, jobs, job definitions,
 	// job queues, and scheduling policies. ARNs for child jobs of array and multi-node
-	// parallel (MNP) jobs are not supported.
+	// parallel (MNP) jobs aren't supported.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
@@ -10493,15 +12660,24 @@ type UpdateComputeEnvironmentInput struct {
 	// If the state is DISABLED, then the Batch scheduler doesn't attempt to place
 	// jobs within the environment. Jobs in a STARTING or RUNNING state continue
 	// to progress normally. Managed compute environments in the DISABLED state
-	// don't scale out. However, they scale in to minvCpus value after instances
-	// become idle.
+	// don't scale out.
+	//
+	// Compute environments in a DISABLED state may continue to incur billing charges.
+	// To prevent additional charges, turn off and then delete the compute environment.
+	// For more information, see State (https://docs.aws.amazon.com/batch/latest/userguide/compute_environment_parameters.html#compute_environment_state)
+	// in the Batch User Guide.
+	//
+	// When an instance is idle, the instance scales down to the minvCpus value.
+	// However, the instance size doesn't change. For example, consider a c5.8xlarge
+	// instance with a minvCpus value of 4 and a desiredvCpus value of 36. This
+	// instance doesn't scale down to a c5.large instance.
 	State *string `locationName:"state" type:"string" enum:"CEState"`
 
 	// The maximum number of vCPUs expected to be used for an unmanaged compute
-	// environment. Do not specify this parameter for a managed compute environment.
+	// environment. Don't specify this parameter for a managed compute environment.
 	// This parameter is only used for fair share scheduling to reserve vCPU capacity
-	// for new share identifiers. If this parameter is not provided for a fair share
-	// job queue, no vCPU capacity will be reserved.
+	// for new share identifiers. If this parameter isn't provided for a fair share
+	// job queue, no vCPU capacity is reserved.
 	UnmanagedvCpus *int64 `locationName:"unmanagedvCpus" type:"integer"`
 
 	// Specifies the updated infrastructure update policy for the compute environment.
@@ -10594,9 +12770,9 @@ type UpdateComputeEnvironmentOutput struct {
 	// The Amazon Resource Name (ARN) of the compute environment.
 	ComputeEnvironmentArn *string `locationName:"computeEnvironmentArn" type:"string"`
 
-	// The name of the compute environment. It can be up to 128 letters long. It
-	// can contain uppercase and lowercase letters, numbers, hyphens (-), and underscores
-	// (_).
+	// The name of the compute environment. It can be up to 128 characters long.
+	// It can contain uppercase and lowercase letters, numbers, hyphens (-), and
+	// underscores (_).
 	ComputeEnvironmentName *string `locationName:"computeEnvironmentName" type:"string"`
 }
 
@@ -10664,7 +12840,7 @@ type UpdateJobQueueInput struct {
 	// Amazon Resource Name (ARN) of the fair share scheduling policy. Once a job
 	// queue is created, the fair share scheduling policy can be replaced but not
 	// removed. The format is aws:Partition:batch:Region:Account:scheduling-policy/Name
-	// . For example, aws:aws:batch:us-west-2:012345678910:scheduling-policy/MySchedulingPolicy.
+	// . For example, aws:aws:batch:us-west-2:123456789012:scheduling-policy/MySchedulingPolicy.
 	SchedulingPolicyArn *string `locationName:"schedulingPolicyArn" type:"string"`
 
 	// Describes the queue's ability to accept new jobs. If the job queue state
@@ -10785,13 +12961,13 @@ func (s *UpdateJobQueueOutput) SetJobQueueName(v string) *UpdateJobQueueOutput {
 }
 
 // Specifies the infrastructure update policy for the compute environment. For
-// more information about infrastructure updates, see Infrastructure updates
-// (https://docs.aws.amazon.com/batch/latest/userguide/infrastructure-updates.html)
+// more information about infrastructure updates, see Updating compute environments
+// (https://docs.aws.amazon.com/batch/latest/userguide/updating-compute-environments.html)
 // in the Batch User Guide.
 type UpdatePolicy struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the job timeout, in minutes, when the compute environment infrastructure
+	// Specifies the job timeout (in minutes) when the compute environment infrastructure
 	// is updated. The default value is 30.
 	JobExecutionTimeoutMinutes *int64 `locationName:"jobExecutionTimeoutMinutes" min:"1" type:"long"`
 
@@ -10926,26 +13102,26 @@ func (s UpdateSchedulingPolicyOutput) GoString() string {
 	return s.String()
 }
 
-// A data volume used in a job's container properties.
+// A data volume that's used in a job's container properties.
 type Volume struct {
 	_ struct{} `type:"structure"`
 
-	// This parameter is specified when you are using an Amazon Elastic File System
+	// This parameter is specified when you're using an Amazon Elastic File System
 	// file system for job storage. Jobs that are running on Fargate resources must
 	// specify a platformVersion of at least 1.4.0.
 	EfsVolumeConfiguration *EFSVolumeConfiguration `locationName:"efsVolumeConfiguration" type:"structure"`
 
 	// The contents of the host parameter determine whether your data volume persists
-	// on the host container instance and where it is stored. If the host parameter
+	// on the host container instance and where it's stored. If the host parameter
 	// is empty, then the Docker daemon assigns a host path for your data volume.
-	// However, the data isn't guaranteed to persist after the containers associated
-	// with it stop running.
+	// However, the data isn't guaranteed to persist after the containers that are
+	// associated with it stop running.
 	//
 	// This parameter isn't applicable to jobs that are running on Fargate resources
 	// and shouldn't be provided.
 	Host *Host `locationName:"host" type:"structure"`
 
-	// The name of the volume. It can be up to 255 letters long. It can contain
+	// The name of the volume. It can be up to 255 characters long. It can contain
 	// uppercase and lowercase letters, numbers, hyphens (-), and underscores (_).
 	// This name is referenced in the sourceVolume parameter of container definition
 	// mountPoints.
@@ -11108,6 +13284,9 @@ const (
 
 	// CRAllocationStrategySpotCapacityOptimized is a CRAllocationStrategy enum value
 	CRAllocationStrategySpotCapacityOptimized = "SPOT_CAPACITY_OPTIMIZED"
+
+	// CRAllocationStrategySpotPriceCapacityOptimized is a CRAllocationStrategy enum value
+	CRAllocationStrategySpotPriceCapacityOptimized = "SPOT_PRICE_CAPACITY_OPTIMIZED"
 )
 
 // CRAllocationStrategy_Values returns all elements of the CRAllocationStrategy enum
@@ -11116,6 +13295,7 @@ func CRAllocationStrategy_Values() []string {
 		CRAllocationStrategyBestFit,
 		CRAllocationStrategyBestFitProgressive,
 		CRAllocationStrategySpotCapacityOptimized,
+		CRAllocationStrategySpotPriceCapacityOptimized,
 	}
 }
 
@@ -11149,6 +13329,9 @@ const (
 
 	// CRUpdateAllocationStrategySpotCapacityOptimized is a CRUpdateAllocationStrategy enum value
 	CRUpdateAllocationStrategySpotCapacityOptimized = "SPOT_CAPACITY_OPTIMIZED"
+
+	// CRUpdateAllocationStrategySpotPriceCapacityOptimized is a CRUpdateAllocationStrategy enum value
+	CRUpdateAllocationStrategySpotPriceCapacityOptimized = "SPOT_PRICE_CAPACITY_OPTIMIZED"
 )
 
 // CRUpdateAllocationStrategy_Values returns all elements of the CRUpdateAllocationStrategy enum
@@ -11156,6 +13339,7 @@ func CRUpdateAllocationStrategy_Values() []string {
 	return []string{
 		CRUpdateAllocationStrategyBestFitProgressive,
 		CRUpdateAllocationStrategySpotCapacityOptimized,
+		CRUpdateAllocationStrategySpotPriceCapacityOptimized,
 	}
 }
 
@@ -11344,6 +13528,22 @@ func LogDriver_Values() []string {
 		LogDriverFluentd,
 		LogDriverAwslogs,
 		LogDriverSplunk,
+	}
+}
+
+const (
+	// OrchestrationTypeEcs is a OrchestrationType enum value
+	OrchestrationTypeEcs = "ECS"
+
+	// OrchestrationTypeEks is a OrchestrationType enum value
+	OrchestrationTypeEks = "EKS"
+)
+
+// OrchestrationType_Values returns all elements of the OrchestrationType enum
+func OrchestrationType_Values() []string {
+	return []string{
+		OrchestrationTypeEcs,
+		OrchestrationTypeEks,
 	}
 }
 

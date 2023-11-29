@@ -146,6 +146,12 @@ const (
 	// The resource registration failed.
 	ErrCodeResourceRegistrationFailureException = "ResourceRegistrationFailureException"
 
+	// ErrCodeServiceQuotaExceededException for service response error code
+	// "ServiceQuotaExceededException".
+	//
+	// A limit has been exceeded.
+	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
+
 	// ErrCodeServiceUnavailableException for service response error code
 	// "ServiceUnavailableException".
 	//
@@ -191,6 +197,12 @@ const (
 	// You are not authorized to perform this operation.
 	ErrCodeUnauthorizedException = "UnauthorizedException"
 
+	// ErrCodeValidationException for service response error code
+	// "ValidationException".
+	//
+	// The request is not valid.
+	ErrCodeValidationException = "ValidationException"
+
 	// ErrCodeVersionConflictException for service response error code
 	// "VersionConflictException".
 	//
@@ -228,6 +240,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ResourceAlreadyExistsException":       newErrorResourceAlreadyExistsException,
 	"ResourceNotFoundException":            newErrorResourceNotFoundException,
 	"ResourceRegistrationFailureException": newErrorResourceRegistrationFailureException,
+	"ServiceQuotaExceededException":        newErrorServiceQuotaExceededException,
 	"ServiceUnavailableException":          newErrorServiceUnavailableException,
 	"SqlParseException":                    newErrorSqlParseException,
 	"TaskAlreadyExistsException":           newErrorTaskAlreadyExistsException,
@@ -235,6 +248,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"TransferAlreadyCompletedException":    newErrorTransferAlreadyCompletedException,
 	"TransferConflictException":            newErrorTransferConflictException,
 	"UnauthorizedException":                newErrorUnauthorizedException,
+	"ValidationException":                  newErrorValidationException,
 	"VersionConflictException":             newErrorVersionConflictException,
 	"VersionsLimitExceededException":       newErrorVersionsLimitExceededException,
 }

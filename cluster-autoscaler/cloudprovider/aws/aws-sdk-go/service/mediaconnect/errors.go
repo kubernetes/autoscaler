@@ -24,6 +24,22 @@ const (
 	// exception.
 	ErrCodeBadRequestException = "BadRequestException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// Exception raised by AWS Elemental MediaConnect. See the error message and
+	// documentation for the operation for more information on the cause of this
+	// exception.
+	ErrCodeConflictException = "ConflictException"
+
+	// ErrCodeCreateBridge420Exception for service response error code
+	// "CreateBridge420Exception".
+	//
+	// Exception raised by AWS Elemental MediaConnect. See the error message and
+	// documentation for the operation for more information on the cause of this
+	// exception.
+	ErrCodeCreateBridge420Exception = "CreateBridge420Exception"
+
 	// ErrCodeCreateFlow420Exception for service response error code
 	// "CreateFlow420Exception".
 	//
@@ -31,6 +47,14 @@ const (
 	// documentation for the operation for more information on the cause of this
 	// exception.
 	ErrCodeCreateFlow420Exception = "CreateFlow420Exception"
+
+	// ErrCodeCreateGateway420Exception for service response error code
+	// "CreateGateway420Exception".
+	//
+	// Exception raised by AWS Elemental MediaConnect. See the error message and
+	// documentation for the operation for more information on the cause of this
+	// exception.
+	ErrCodeCreateGateway420Exception = "CreateGateway420Exception"
 
 	// ErrCodeForbiddenException for service response error code
 	// "ForbiddenException".
@@ -84,7 +108,10 @@ const (
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AddFlowOutputs420Exception":        newErrorAddFlowOutputs420Exception,
 	"BadRequestException":               newErrorBadRequestException,
+	"ConflictException":                 newErrorConflictException,
+	"CreateBridge420Exception":          newErrorCreateBridge420Exception,
 	"CreateFlow420Exception":            newErrorCreateFlow420Exception,
+	"CreateGateway420Exception":         newErrorCreateGateway420Exception,
 	"ForbiddenException":                newErrorForbiddenException,
 	"GrantFlowEntitlements420Exception": newErrorGrantFlowEntitlements420Exception,
 	"InternalServerErrorException":      newErrorInternalServerErrorException,

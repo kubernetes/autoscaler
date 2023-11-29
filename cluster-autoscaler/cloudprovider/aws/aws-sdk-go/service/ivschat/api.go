@@ -56,9 +56,20 @@ func (c *Ivschat) CreateChatTokenRequest(input *CreateChatTokenInput) (req *requ
 
 // CreateChatToken API operation for Amazon Interactive Video Service Chat.
 //
-// Creates an encrypted token that is used to establish an individual WebSocket
-// connection to a room. The token is valid for one minute, and a connection
-// (session) established with the token is valid for the specified duration.
+// Creates an encrypted token that is used by a chat participant to establish
+// an individual WebSocket chat connection to a room. When the token is used
+// to connect to chat, the connection is valid for the session duration specified
+// in the request. The token becomes invalid at the token-expiration timestamp
+// included in the response.
+//
+// Use the capabilities field to permit an end user to send messages or moderate
+// a room.
+//
+// The attributes field securely attaches structured data to the chat session;
+// the data is included within each message sent by the end user and received
+// by other participants in the room. Common use cases for attributes include
+// passing end-user profile data like an icon, display name, colors, badges,
+// and other display features.
 //
 // Encryption keys are owned by Amazon IVS Chat and never used directly by your
 // application.
@@ -97,6 +108,95 @@ func (c *Ivschat) CreateChatToken(input *CreateChatTokenInput) (*CreateChatToken
 // for more information on using Contexts.
 func (c *Ivschat) CreateChatTokenWithContext(ctx aws.Context, input *CreateChatTokenInput, opts ...request.Option) (*CreateChatTokenOutput, error) {
 	req, out := c.CreateChatTokenRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateLoggingConfiguration = "CreateLoggingConfiguration"
+
+// CreateLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateLoggingConfiguration for more information on using the CreateLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateLoggingConfigurationRequest method.
+//	req, resp := client.CreateLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/CreateLoggingConfiguration
+func (c *Ivschat) CreateLoggingConfigurationRequest(input *CreateLoggingConfigurationInput) (req *request.Request, output *CreateLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opCreateLoggingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/CreateLoggingConfiguration",
+	}
+
+	if input == nil {
+		input = &CreateLoggingConfigurationInput{}
+	}
+
+	output = &CreateLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateLoggingConfiguration API operation for Amazon Interactive Video Service Chat.
+//
+// Creates a logging configuration that allows clients to store and record sent
+// messages.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Interactive Video Service Chat's
+// API operation CreateLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//
+//   - AccessDeniedException
+//
+//   - ResourceNotFoundException
+//
+//   - ServiceQuotaExceededException
+//
+//   - PendingVerification
+//
+//   - ValidationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/CreateLoggingConfiguration
+func (c *Ivschat) CreateLoggingConfiguration(input *CreateLoggingConfigurationInput) (*CreateLoggingConfigurationOutput, error) {
+	req, out := c.CreateLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// CreateLoggingConfigurationWithContext is the same as CreateLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Ivschat) CreateLoggingConfigurationWithContext(ctx aws.Context, input *CreateLoggingConfigurationInput, opts ...request.Option) (*CreateLoggingConfigurationOutput, error) {
+	req, out := c.CreateLoggingConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -190,6 +290,93 @@ func (c *Ivschat) CreateRoomWithContext(ctx aws.Context, input *CreateRoomInput,
 	return out, req.Send()
 }
 
+const opDeleteLoggingConfiguration = "DeleteLoggingConfiguration"
+
+// DeleteLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteLoggingConfiguration for more information on using the DeleteLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteLoggingConfigurationRequest method.
+//	req, resp := client.DeleteLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DeleteLoggingConfiguration
+func (c *Ivschat) DeleteLoggingConfigurationRequest(input *DeleteLoggingConfigurationInput) (req *request.Request, output *DeleteLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteLoggingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/DeleteLoggingConfiguration",
+	}
+
+	if input == nil {
+		input = &DeleteLoggingConfigurationInput{}
+	}
+
+	output = &DeleteLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteLoggingConfiguration API operation for Amazon Interactive Video Service Chat.
+//
+// Deletes the specified logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Interactive Video Service Chat's
+// API operation DeleteLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//
+//   - AccessDeniedException
+//
+//   - ResourceNotFoundException
+//
+//   - PendingVerification
+//
+//   - ValidationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DeleteLoggingConfiguration
+func (c *Ivschat) DeleteLoggingConfiguration(input *DeleteLoggingConfigurationInput) (*DeleteLoggingConfigurationOutput, error) {
+	req, out := c.DeleteLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteLoggingConfigurationWithContext is the same as DeleteLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Ivschat) DeleteLoggingConfigurationWithContext(ctx aws.Context, input *DeleteLoggingConfigurationInput, opts ...request.Option) (*DeleteLoggingConfigurationOutput, error) {
+	req, out := c.DeleteLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteMessage = "DeleteMessage"
 
 // DeleteMessageRequest generates a "aws/request.Request" representing the
@@ -253,6 +440,8 @@ func (c *Ivschat) DeleteMessageRequest(input *DeleteMessageInput) (req *request.
 //   - AccessDeniedException
 //
 //   - ResourceNotFoundException
+//
+//   - PendingVerification
 //
 //   - ValidationException
 //
@@ -426,6 +615,8 @@ func (c *Ivschat) DisconnectUserRequest(input *DisconnectUserInput) (req *reques
 //
 //   - ResourceNotFoundException
 //
+//   - PendingVerification
+//
 //   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/DisconnectUser
@@ -445,6 +636,88 @@ func (c *Ivschat) DisconnectUser(input *DisconnectUserInput) (*DisconnectUserOut
 // for more information on using Contexts.
 func (c *Ivschat) DisconnectUserWithContext(ctx aws.Context, input *DisconnectUserInput, opts ...request.Option) (*DisconnectUserOutput, error) {
 	req, out := c.DisconnectUserRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetLoggingConfiguration = "GetLoggingConfiguration"
+
+// GetLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetLoggingConfiguration for more information on using the GetLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetLoggingConfigurationRequest method.
+//	req, resp := client.GetLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/GetLoggingConfiguration
+func (c *Ivschat) GetLoggingConfigurationRequest(input *GetLoggingConfigurationInput) (req *request.Request, output *GetLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetLoggingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/GetLoggingConfiguration",
+	}
+
+	if input == nil {
+		input = &GetLoggingConfigurationInput{}
+	}
+
+	output = &GetLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetLoggingConfiguration API operation for Amazon Interactive Video Service Chat.
+//
+// Gets the specified logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Interactive Video Service Chat's
+// API operation GetLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//
+//   - ResourceNotFoundException
+//
+//   - ValidationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/GetLoggingConfiguration
+func (c *Ivschat) GetLoggingConfiguration(input *GetLoggingConfigurationInput) (*GetLoggingConfigurationOutput, error) {
+	req, out := c.GetLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetLoggingConfigurationWithContext is the same as GetLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Ivschat) GetLoggingConfigurationWithContext(ctx aws.Context, input *GetLoggingConfigurationInput, opts ...request.Option) (*GetLoggingConfigurationOutput, error) {
+	req, out := c.GetLoggingConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -530,6 +803,144 @@ func (c *Ivschat) GetRoomWithContext(ctx aws.Context, input *GetRoomInput, opts 
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opListLoggingConfigurations = "ListLoggingConfigurations"
+
+// ListLoggingConfigurationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListLoggingConfigurations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListLoggingConfigurations for more information on using the ListLoggingConfigurations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListLoggingConfigurationsRequest method.
+//	req, resp := client.ListLoggingConfigurationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/ListLoggingConfigurations
+func (c *Ivschat) ListLoggingConfigurationsRequest(input *ListLoggingConfigurationsInput) (req *request.Request, output *ListLoggingConfigurationsOutput) {
+	op := &request.Operation{
+		Name:       opListLoggingConfigurations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListLoggingConfigurations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListLoggingConfigurationsInput{}
+	}
+
+	output = &ListLoggingConfigurationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListLoggingConfigurations API operation for Amazon Interactive Video Service Chat.
+//
+// Gets summary information about all your logging configurations in the AWS
+// region where the API request is processed.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Interactive Video Service Chat's
+// API operation ListLoggingConfigurations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//
+//   - ValidationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/ListLoggingConfigurations
+func (c *Ivschat) ListLoggingConfigurations(input *ListLoggingConfigurationsInput) (*ListLoggingConfigurationsOutput, error) {
+	req, out := c.ListLoggingConfigurationsRequest(input)
+	return out, req.Send()
+}
+
+// ListLoggingConfigurationsWithContext is the same as ListLoggingConfigurations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListLoggingConfigurations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Ivschat) ListLoggingConfigurationsWithContext(ctx aws.Context, input *ListLoggingConfigurationsInput, opts ...request.Option) (*ListLoggingConfigurationsOutput, error) {
+	req, out := c.ListLoggingConfigurationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListLoggingConfigurationsPages iterates over the pages of a ListLoggingConfigurations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListLoggingConfigurations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListLoggingConfigurations operation.
+//	pageNum := 0
+//	err := client.ListLoggingConfigurationsPages(params,
+//	    func(page *ivschat.ListLoggingConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Ivschat) ListLoggingConfigurationsPages(input *ListLoggingConfigurationsInput, fn func(*ListLoggingConfigurationsOutput, bool) bool) error {
+	return c.ListLoggingConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListLoggingConfigurationsPagesWithContext same as ListLoggingConfigurationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Ivschat) ListLoggingConfigurationsPagesWithContext(ctx aws.Context, input *ListLoggingConfigurationsInput, fn func(*ListLoggingConfigurationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListLoggingConfigurationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListLoggingConfigurationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListLoggingConfigurationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListRooms = "ListRooms"
@@ -816,6 +1227,8 @@ func (c *Ivschat) SendEventRequest(input *SendEventInput) (req *request.Request,
 //
 //   - ResourceNotFoundException
 //
+//   - PendingVerification
+//
 //   - ValidationException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/SendEvent
@@ -1006,6 +1419,92 @@ func (c *Ivschat) UntagResourceWithContext(ctx aws.Context, input *UntagResource
 	return out, req.Send()
 }
 
+const opUpdateLoggingConfiguration = "UpdateLoggingConfiguration"
+
+// UpdateLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateLoggingConfiguration for more information on using the UpdateLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateLoggingConfigurationRequest method.
+//	req, resp := client.UpdateLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/UpdateLoggingConfiguration
+func (c *Ivschat) UpdateLoggingConfigurationRequest(input *UpdateLoggingConfigurationInput) (req *request.Request, output *UpdateLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateLoggingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/UpdateLoggingConfiguration",
+	}
+
+	if input == nil {
+		input = &UpdateLoggingConfigurationInput{}
+	}
+
+	output = &UpdateLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateLoggingConfiguration API operation for Amazon Interactive Video Service Chat.
+//
+// Updates a specified logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Interactive Video Service Chat's
+// API operation UpdateLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//
+//   - AccessDeniedException
+//
+//   - ResourceNotFoundException
+//
+//   - PendingVerification
+//
+//   - ValidationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ivschat-2020-07-14/UpdateLoggingConfiguration
+func (c *Ivschat) UpdateLoggingConfiguration(input *UpdateLoggingConfigurationInput) (*UpdateLoggingConfigurationOutput, error) {
+	req, out := c.UpdateLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateLoggingConfigurationWithContext is the same as UpdateLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Ivschat) UpdateLoggingConfigurationWithContext(ctx aws.Context, input *UpdateLoggingConfigurationInput, opts ...request.Option) (*UpdateLoggingConfigurationOutput, error) {
+	req, out := c.UpdateLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateRoom = "UpdateRoom"
 
 // UpdateRoomRequest generates a "aws/request.Request" representing the
@@ -1153,6 +1652,57 @@ func (s *AccessDeniedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Specifies a CloudWatch Logs location where chat logs will be stored.
+type CloudWatchLogsDestinationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the Amazon Cloudwatch Logs destination where chat activity will be
+	// logged.
+	//
+	// LogGroupName is a required field
+	LogGroupName *string `locationName:"logGroupName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CloudWatchLogsDestinationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CloudWatchLogsDestinationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CloudWatchLogsDestinationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CloudWatchLogsDestinationConfiguration"}
+	if s.LogGroupName == nil {
+		invalidParams.Add(request.NewErrParamRequired("LogGroupName"))
+	}
+	if s.LogGroupName != nil && len(*s.LogGroupName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LogGroupName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLogGroupName sets the LogGroupName field's value.
+func (s *CloudWatchLogsDestinationConfiguration) SetLogGroupName(v string) *CloudWatchLogsDestinationConfiguration {
+	s.LogGroupName = &v
+	return s
+}
+
 type ConflictException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -1228,7 +1778,11 @@ type CreateChatTokenInput struct {
 	// Application-provided attributes to encode into the token and attach to a
 	// chat session. Map keys and values can contain UTF-8 encoded text. The maximum
 	// length of this field is 1 KB total.
-	Attributes map[string]*string `locationName:"attributes" type:"map"`
+	//
+	// Attributes is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateChatTokenInput's
+	// String and GoString methods.
+	Attributes map[string]*string `locationName:"attributes" type:"map" sensitive:"true"`
 
 	// Set of capabilities that the user is allowed to perform in the room. Default:
 	// None (the capability to view messages is implicitly included in all requests).
@@ -1247,8 +1801,12 @@ type CreateChatTokenInput struct {
 	// Application-provided ID that uniquely identifies the user associated with
 	// this token. This can be any UTF-8 encoded text.
 	//
+	// UserId is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateChatTokenInput's
+	// String and GoString methods.
+	//
 	// UserId is a required field
-	UserId *string `locationName:"userId" min:"1" type:"string" required:"true"`
+	UserId *string `locationName:"userId" min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -1332,7 +1890,11 @@ type CreateChatTokenOutput struct {
 	SessionExpirationTime *time.Time `locationName:"sessionExpirationTime" type:"timestamp" timestampFormat:"iso8601"`
 
 	// The issued client token, encrypted.
-	Token *string `locationName:"token" type:"string"`
+	//
+	// Token is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateChatTokenOutput's
+	// String and GoString methods.
+	Token *string `locationName:"token" type:"string" sensitive:"true"`
 
 	// Time after which the token is no longer valid and cannot be used to connect
 	// to a room. This is an ISO 8601 timestamp; note that this is returned as a
@@ -1376,8 +1938,187 @@ func (s *CreateChatTokenOutput) SetTokenExpirationTime(v time.Time) *CreateChatT
 	return s
 }
 
+type CreateLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that contains a destination configuration for where chat content
+	// will be logged. There can be only one type of destination (cloudWatchLogs,
+	// firehose, or s3) in a destinationConfiguration.
+	//
+	// DestinationConfiguration is a required field
+	DestinationConfiguration *DestinationConfiguration `locationName:"destinationConfiguration" type:"structure" required:"true"`
+
+	// Logging-configuration name. The value does not need to be unique.
+	Name *string `locationName:"name" type:"string"`
+
+	// Tags to attach to the resource. Array of maps, each of the form string:string
+	// (key:value). See Tagging AWS Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// for details, including restrictions that apply to tags and "Tag naming limits
+	// and requirements"; Amazon IVS Chat has no constraints on tags beyond what
+	// is documented there.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateLoggingConfigurationInput"}
+	if s.DestinationConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("DestinationConfiguration"))
+	}
+	if s.DestinationConfiguration != nil {
+		if err := s.DestinationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("DestinationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationConfiguration sets the DestinationConfiguration field's value.
+func (s *CreateLoggingConfigurationInput) SetDestinationConfiguration(v *DestinationConfiguration) *CreateLoggingConfigurationInput {
+	s.DestinationConfiguration = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateLoggingConfigurationInput) SetName(v string) *CreateLoggingConfigurationInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateLoggingConfigurationInput) SetTags(v map[string]*string) *CreateLoggingConfigurationInput {
+	s.Tags = v
+	return s
+}
+
+type CreateLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Logging-configuration ARN, assigned by the system.
+	Arn *string `locationName:"arn" min:"1" type:"string"`
+
+	// Time when the logging configuration was created. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// A complex type that contains a destination configuration for where chat content
+	// will be logged, from the request. There is only one type of destination (cloudWatchLogs,
+	// firehose, or s3) in a destinationConfiguration.
+	DestinationConfiguration *DestinationConfiguration `locationName:"destinationConfiguration" type:"structure"`
+
+	// Logging-configuration ID, generated by the system. This is a relative identifier,
+	// the part of the ARN that uniquely identifies the logging configuration.
+	Id *string `locationName:"id" min:"12" type:"string"`
+
+	// Logging-configuration name, from the request (if specified).
+	Name *string `locationName:"name" type:"string"`
+
+	// The state of the logging configuration. When the state is ACTIVE, the configuration
+	// is ready to log chat content.
+	State *string `locationName:"state" type:"string" enum:"CreateLoggingConfigurationState"`
+
+	// Tags attached to the resource, from the request (if specified). Array of
+	// maps, each of the form string:string (key:value).
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// Time of the logging configuration’s last update. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	UpdateTime *time.Time `locationName:"updateTime" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *CreateLoggingConfigurationOutput) SetArn(v string) *CreateLoggingConfigurationOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *CreateLoggingConfigurationOutput) SetCreateTime(v time.Time) *CreateLoggingConfigurationOutput {
+	s.CreateTime = &v
+	return s
+}
+
+// SetDestinationConfiguration sets the DestinationConfiguration field's value.
+func (s *CreateLoggingConfigurationOutput) SetDestinationConfiguration(v *DestinationConfiguration) *CreateLoggingConfigurationOutput {
+	s.DestinationConfiguration = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *CreateLoggingConfigurationOutput) SetId(v string) *CreateLoggingConfigurationOutput {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateLoggingConfigurationOutput) SetName(v string) *CreateLoggingConfigurationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CreateLoggingConfigurationOutput) SetState(v string) *CreateLoggingConfigurationOutput {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateLoggingConfigurationOutput) SetTags(v map[string]*string) *CreateLoggingConfigurationOutput {
+	s.Tags = v
+	return s
+}
+
+// SetUpdateTime sets the UpdateTime field's value.
+func (s *CreateLoggingConfigurationOutput) SetUpdateTime(v time.Time) *CreateLoggingConfigurationOutput {
+	s.UpdateTime = &v
+	return s
+}
+
 type CreateRoomInput struct {
 	_ struct{} `type:"structure"`
+
+	// Array of logging-configuration identifiers attached to the room.
+	LoggingConfigurationIdentifiers []*string `locationName:"loggingConfigurationIdentifiers" type:"list"`
 
 	// Maximum number of characters in a single message. Messages are expected to
 	// be UTF-8 encoded and this limit applies specifically to rune/code-point count,
@@ -1395,7 +2136,10 @@ type CreateRoomInput struct {
 	Name *string `locationName:"name" type:"string"`
 
 	// Tags to attach to the resource. Array of maps, each of the form string:string
-	// (key:value).
+	// (key:value). See Tagging AWS Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// for details, including restrictions that apply to tags and "Tag naming limits
+	// and requirements"; Amazon IVS Chat has no constraints beyond what is documented
+	// there.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
@@ -1431,6 +2175,12 @@ func (s *CreateRoomInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetLoggingConfigurationIdentifiers sets the LoggingConfigurationIdentifiers field's value.
+func (s *CreateRoomInput) SetLoggingConfigurationIdentifiers(v []*string) *CreateRoomInput {
+	s.LoggingConfigurationIdentifiers = v
+	return s
 }
 
 // SetMaximumMessageLength sets the MaximumMessageLength field's value.
@@ -1477,11 +2227,15 @@ type CreateRoomOutput struct {
 	// of the ARN that uniquely identifies the room.
 	Id *string `locationName:"id" min:"12" type:"string"`
 
-	// Maximum number of characters in a single message, from the request.
+	// Array of logging configurations attached to the room, from the request (if
+	// specified).
+	LoggingConfigurationIdentifiers []*string `locationName:"loggingConfigurationIdentifiers" type:"list"`
+
+	// Maximum number of characters in a single message, from the request (if specified).
 	MaximumMessageLength *int64 `locationName:"maximumMessageLength" min:"1" type:"integer"`
 
 	// Maximum number of messages per second that can be sent to the room (by all
-	// clients), from the request.
+	// clients), from the request (if specified).
 	MaximumMessageRatePerSecond *int64 `locationName:"maximumMessageRatePerSecond" min:"1" type:"integer"`
 
 	// Configuration information for optional review of messages.
@@ -1490,7 +2244,7 @@ type CreateRoomOutput struct {
 	// Room name, from the request (if specified).
 	Name *string `locationName:"name" type:"string"`
 
-	// Tags attached to the resource, from the request.
+	// Tags attached to the resource, from the request (if specified).
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// Time of the room’s last update. This is an ISO 8601 timestamp; note that
@@ -1534,6 +2288,12 @@ func (s *CreateRoomOutput) SetId(v string) *CreateRoomOutput {
 	return s
 }
 
+// SetLoggingConfigurationIdentifiers sets the LoggingConfigurationIdentifiers field's value.
+func (s *CreateRoomOutput) SetLoggingConfigurationIdentifiers(v []*string) *CreateRoomOutput {
+	s.LoggingConfigurationIdentifiers = v
+	return s
+}
+
 // SetMaximumMessageLength sets the MaximumMessageLength field's value.
 func (s *CreateRoomOutput) SetMaximumMessageLength(v int64) *CreateRoomOutput {
 	s.MaximumMessageLength = &v
@@ -1568,6 +2328,77 @@ func (s *CreateRoomOutput) SetTags(v map[string]*string) *CreateRoomOutput {
 func (s *CreateRoomOutput) SetUpdateTime(v time.Time) *CreateRoomOutput {
 	s.UpdateTime = &v
 	return s
+}
+
+type DeleteLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifier of the logging configuration to be deleted.
+	//
+	// Identifier is a required field
+	Identifier *string `locationName:"identifier" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteLoggingConfigurationInput"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *DeleteLoggingConfigurationInput) SetIdentifier(v string) *DeleteLoggingConfigurationInput {
+	s.Identifier = &v
+	return s
+}
+
+type DeleteLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationOutput) GoString() string {
+	return s.String()
 }
 
 type DeleteMessageInput struct {
@@ -1753,6 +2584,86 @@ func (s DeleteRoomOutput) GoString() string {
 	return s.String()
 }
 
+// A complex type that describes a location where chat logs will be stored.
+// Each member represents the configuration of one log destination. For logging,
+// you define only one type of destination (for CloudWatch Logs, Kinesis Firehose,
+// or S3).
+type DestinationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// An Amazon CloudWatch Logs destination configuration where chat activity will
+	// be logged.
+	CloudWatchLogs *CloudWatchLogsDestinationConfiguration `locationName:"cloudWatchLogs" type:"structure"`
+
+	// An Amazon Kinesis Data Firehose destination configuration where chat activity
+	// will be logged.
+	Firehose *FirehoseDestinationConfiguration `locationName:"firehose" type:"structure"`
+
+	// An Amazon S3 destination configuration where chat activity will be logged.
+	S3 *S3DestinationConfiguration `locationName:"s3" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DestinationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DestinationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DestinationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DestinationConfiguration"}
+	if s.CloudWatchLogs != nil {
+		if err := s.CloudWatchLogs.Validate(); err != nil {
+			invalidParams.AddNested("CloudWatchLogs", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Firehose != nil {
+		if err := s.Firehose.Validate(); err != nil {
+			invalidParams.AddNested("Firehose", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.S3 != nil {
+		if err := s.S3.Validate(); err != nil {
+			invalidParams.AddNested("S3", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCloudWatchLogs sets the CloudWatchLogs field's value.
+func (s *DestinationConfiguration) SetCloudWatchLogs(v *CloudWatchLogsDestinationConfiguration) *DestinationConfiguration {
+	s.CloudWatchLogs = v
+	return s
+}
+
+// SetFirehose sets the Firehose field's value.
+func (s *DestinationConfiguration) SetFirehose(v *FirehoseDestinationConfiguration) *DestinationConfiguration {
+	s.Firehose = v
+	return s
+}
+
+// SetS3 sets the S3 field's value.
+func (s *DestinationConfiguration) SetS3(v *S3DestinationConfiguration) *DestinationConfiguration {
+	s.S3 = v
+	return s
+}
+
 type DisconnectUserInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1767,8 +2678,12 @@ type DisconnectUserInput struct {
 
 	// ID of the user (connection) to disconnect from the room.
 	//
+	// UserId is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by DisconnectUserInput's
+	// String and GoString methods.
+	//
 	// UserId is a required field
-	UserId *string `locationName:"userId" min:"1" type:"string" required:"true"`
+	UserId *string `locationName:"userId" min:"1" type:"string" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -1854,6 +2769,207 @@ func (s DisconnectUserOutput) GoString() string {
 	return s.String()
 }
 
+// Specifies a Kinesis Firehose location where chat logs will be stored.
+type FirehoseDestinationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the Amazon Kinesis Firehose delivery stream where chat activity will
+	// be logged.
+	//
+	// DeliveryStreamName is a required field
+	DeliveryStreamName *string `locationName:"deliveryStreamName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FirehoseDestinationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FirehoseDestinationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FirehoseDestinationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FirehoseDestinationConfiguration"}
+	if s.DeliveryStreamName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DeliveryStreamName"))
+	}
+	if s.DeliveryStreamName != nil && len(*s.DeliveryStreamName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeliveryStreamName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeliveryStreamName sets the DeliveryStreamName field's value.
+func (s *FirehoseDestinationConfiguration) SetDeliveryStreamName(v string) *FirehoseDestinationConfiguration {
+	s.DeliveryStreamName = &v
+	return s
+}
+
+type GetLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifier of the logging configuration to be retrieved.
+	//
+	// Identifier is a required field
+	Identifier *string `locationName:"identifier" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetLoggingConfigurationInput"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *GetLoggingConfigurationInput) SetIdentifier(v string) *GetLoggingConfigurationInput {
+	s.Identifier = &v
+	return s
+}
+
+type GetLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Logging-configuration ARN, from the request (if identifier was an ARN).
+	Arn *string `locationName:"arn" min:"1" type:"string"`
+
+	// Time when the logging configuration was created. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// A complex type that contains a destination configuration for where chat content
+	// will be logged. There is only one type of destination (cloudWatchLogs, firehose,
+	// or s3) in a destinationConfiguration.
+	DestinationConfiguration *DestinationConfiguration `locationName:"destinationConfiguration" type:"structure"`
+
+	// Logging-configuration ID, generated by the system. This is a relative identifier,
+	// the part of the ARN that uniquely identifies the logging configuration.
+	Id *string `locationName:"id" min:"12" type:"string"`
+
+	// Logging-configuration name. This value does not need to be unique.
+	Name *string `locationName:"name" type:"string"`
+
+	// The state of the logging configuration. When the state is ACTIVE, the configuration
+	// is ready to log chat content.
+	State *string `locationName:"state" type:"string" enum:"LoggingConfigurationState"`
+
+	// Tags attached to the resource. Array of maps, each of the form string:string
+	// (key:value).
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// Time of the logging configuration’s last update. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	UpdateTime *time.Time `locationName:"updateTime" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *GetLoggingConfigurationOutput) SetArn(v string) *GetLoggingConfigurationOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *GetLoggingConfigurationOutput) SetCreateTime(v time.Time) *GetLoggingConfigurationOutput {
+	s.CreateTime = &v
+	return s
+}
+
+// SetDestinationConfiguration sets the DestinationConfiguration field's value.
+func (s *GetLoggingConfigurationOutput) SetDestinationConfiguration(v *DestinationConfiguration) *GetLoggingConfigurationOutput {
+	s.DestinationConfiguration = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *GetLoggingConfigurationOutput) SetId(v string) *GetLoggingConfigurationOutput {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetLoggingConfigurationOutput) SetName(v string) *GetLoggingConfigurationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *GetLoggingConfigurationOutput) SetState(v string) *GetLoggingConfigurationOutput {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *GetLoggingConfigurationOutput) SetTags(v map[string]*string) *GetLoggingConfigurationOutput {
+	s.Tags = v
+	return s
+}
+
+// SetUpdateTime sets the UpdateTime field's value.
+func (s *GetLoggingConfigurationOutput) SetUpdateTime(v time.Time) *GetLoggingConfigurationOutput {
+	s.UpdateTime = &v
+	return s
+}
+
 type GetRoomInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1918,6 +3034,9 @@ type GetRoomOutput struct {
 	// of the ARN that uniquely identifies the room.
 	Id *string `locationName:"id" min:"12" type:"string"`
 
+	// Array of logging configurations attached to the room.
+	LoggingConfigurationIdentifiers []*string `locationName:"loggingConfigurationIdentifiers" type:"list"`
+
 	// Maximum number of characters in a single message. Messages are expected to
 	// be UTF-8 encoded and this limit applies specifically to rune/code-point count,
 	// not number of bytes. Default: 500.
@@ -1975,6 +3094,12 @@ func (s *GetRoomOutput) SetCreateTime(v time.Time) *GetRoomOutput {
 // SetId sets the Id field's value.
 func (s *GetRoomOutput) SetId(v string) *GetRoomOutput {
 	s.Id = &v
+	return s
+}
+
+// SetLoggingConfigurationIdentifiers sets the LoggingConfigurationIdentifiers field's value.
+func (s *GetRoomOutput) SetLoggingConfigurationIdentifiers(v []*string) *GetRoomOutput {
+	s.LoggingConfigurationIdentifiers = v
 	return s
 }
 
@@ -2077,8 +3202,109 @@ func (s *InternalServerException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ListLoggingConfigurationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Maximum number of logging configurations to return. Default: 50.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// The first logging configurations to retrieve. This is used for pagination;
+	// see the nextToken response field.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLoggingConfigurationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLoggingConfigurationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListLoggingConfigurationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListLoggingConfigurationsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListLoggingConfigurationsInput) SetMaxResults(v int64) *ListLoggingConfigurationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLoggingConfigurationsInput) SetNextToken(v string) *ListLoggingConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListLoggingConfigurationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// List of the matching logging configurations (summary information only). There
+	// is only one type of destination (cloudWatchLogs, firehose, or s3) in a destinationConfiguration.
+	//
+	// LoggingConfigurations is a required field
+	LoggingConfigurations []*LoggingConfigurationSummary `locationName:"loggingConfigurations" type:"list" required:"true"`
+
+	// If there are more logging configurations than maxResults, use nextToken in
+	// the request to get the next set.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLoggingConfigurationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListLoggingConfigurationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetLoggingConfigurations sets the LoggingConfigurations field's value.
+func (s *ListLoggingConfigurationsOutput) SetLoggingConfigurations(v []*LoggingConfigurationSummary) *ListLoggingConfigurationsOutput {
+	s.LoggingConfigurations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListLoggingConfigurationsOutput) SetNextToken(v string) *ListLoggingConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListRoomsInput struct {
 	_ struct{} `type:"structure"`
+
+	// Logging-configuration identifier.
+	LoggingConfigurationIdentifier *string `locationName:"loggingConfigurationIdentifier" min:"1" type:"string"`
 
 	// Maximum number of rooms to return. Default: 50.
 	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
@@ -2115,6 +3341,9 @@ func (s ListRoomsInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ListRoomsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ListRoomsInput"}
+	if s.LoggingConfigurationIdentifier != nil && len(*s.LoggingConfigurationIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LoggingConfigurationIdentifier", 1))
+	}
 	if s.MaxResults != nil && *s.MaxResults < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
 	}
@@ -2123,6 +3352,12 @@ func (s *ListRoomsInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetLoggingConfigurationIdentifier sets the LoggingConfigurationIdentifier field's value.
+func (s *ListRoomsInput) SetLoggingConfigurationIdentifier(v string) *ListRoomsInput {
+	s.LoggingConfigurationIdentifier = &v
+	return s
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -2244,7 +3479,7 @@ func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResource
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Tags to attach to the resource. Array of maps, each of the form string:string
+	// Tags attached to the resource. Array of maps, each of the form string:string
 	// (key:value).
 	//
 	// Tags is a required field
@@ -2272,6 +3507,110 @@ func (s ListTagsForResourceOutput) GoString() string {
 // SetTags sets the Tags field's value.
 func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForResourceOutput {
 	s.Tags = v
+	return s
+}
+
+// Summary information about a logging configuration.
+type LoggingConfigurationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Logging-configuration ARN.
+	Arn *string `locationName:"arn" min:"1" type:"string"`
+
+	// Time when the logging configuration was created. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// A complex type that contains a destination configuration for where chat content
+	// will be logged.
+	DestinationConfiguration *DestinationConfiguration `locationName:"destinationConfiguration" type:"structure"`
+
+	// Logging-configuration ID, generated by the system. This is a relative identifier,
+	// the part of the ARN that uniquely identifies the room.
+	Id *string `locationName:"id" min:"12" type:"string"`
+
+	// Logging-configuration name. The value does not need to be unique.
+	Name *string `locationName:"name" type:"string"`
+
+	// The state of the logging configuration. When this is ACTIVE, the configuration
+	// is ready for logging chat content.
+	State *string `locationName:"state" type:"string" enum:"LoggingConfigurationState"`
+
+	// Tags to attach to the resource. Array of maps, each of the form string:string
+	// (key:value). See Tagging AWS Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// for details, including restrictions that apply to tags and "Tag naming limits
+	// and requirements"; Amazon IVS Chat has no constraints on tags beyond what
+	// is documented there.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// Time of the logging configuration’s last update. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	UpdateTime *time.Time `locationName:"updateTime" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingConfigurationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingConfigurationSummary) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *LoggingConfigurationSummary) SetArn(v string) *LoggingConfigurationSummary {
+	s.Arn = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *LoggingConfigurationSummary) SetCreateTime(v time.Time) *LoggingConfigurationSummary {
+	s.CreateTime = &v
+	return s
+}
+
+// SetDestinationConfiguration sets the DestinationConfiguration field's value.
+func (s *LoggingConfigurationSummary) SetDestinationConfiguration(v *DestinationConfiguration) *LoggingConfigurationSummary {
+	s.DestinationConfiguration = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *LoggingConfigurationSummary) SetId(v string) *LoggingConfigurationSummary {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *LoggingConfigurationSummary) SetName(v string) *LoggingConfigurationSummary {
+	s.Name = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *LoggingConfigurationSummary) SetState(v string) *LoggingConfigurationSummary {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *LoggingConfigurationSummary) SetTags(v map[string]*string) *LoggingConfigurationSummary {
+	s.Tags = v
+	return s
+}
+
+// SetUpdateTime sets the UpdateTime field's value.
+func (s *LoggingConfigurationSummary) SetUpdateTime(v time.Time) *LoggingConfigurationSummary {
+	s.UpdateTime = &v
 	return s
 }
 
@@ -2469,13 +3808,20 @@ type RoomSummary struct {
 	// of the ARN that uniquely identifies the room.
 	Id *string `locationName:"id" min:"12" type:"string"`
 
+	// List of logging-configuration identifiers attached to the room.
+	LoggingConfigurationIdentifiers []*string `locationName:"loggingConfigurationIdentifiers" type:"list"`
+
 	// Configuration information for optional review of messages.
 	MessageReviewHandler *MessageReviewHandler `locationName:"messageReviewHandler" type:"structure"`
 
 	// Room name. The value does not need to be unique.
 	Name *string `locationName:"name" type:"string"`
 
-	// Tags attached to the resource.
+	// Tags attached to the resource. Array of maps, each of the form string:string
+	// (key:value). See Tagging AWS Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// for details, including restrictions that apply to tags and "Tag naming limits
+	// and requirements"; Amazon IVS Chat has no constraints beyond what is documented
+	// there.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// Time of the room’s last update. This is an ISO 8601 timestamp; note that
@@ -2519,6 +3865,12 @@ func (s *RoomSummary) SetId(v string) *RoomSummary {
 	return s
 }
 
+// SetLoggingConfigurationIdentifiers sets the LoggingConfigurationIdentifiers field's value.
+func (s *RoomSummary) SetLoggingConfigurationIdentifiers(v []*string) *RoomSummary {
+	s.LoggingConfigurationIdentifiers = v
+	return s
+}
+
 // SetMessageReviewHandler sets the MessageReviewHandler field's value.
 func (s *RoomSummary) SetMessageReviewHandler(v *MessageReviewHandler) *RoomSummary {
 	s.MessageReviewHandler = v
@@ -2540,6 +3892,56 @@ func (s *RoomSummary) SetTags(v map[string]*string) *RoomSummary {
 // SetUpdateTime sets the UpdateTime field's value.
 func (s *RoomSummary) SetUpdateTime(v time.Time) *RoomSummary {
 	s.UpdateTime = &v
+	return s
+}
+
+// Specifies an S3 location where chat logs will be stored.
+type S3DestinationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Name of the Amazon S3 bucket where chat activity will be logged.
+	//
+	// BucketName is a required field
+	BucketName *string `locationName:"bucketName" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DestinationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s S3DestinationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *S3DestinationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "S3DestinationConfiguration"}
+	if s.BucketName == nil {
+		invalidParams.Add(request.NewErrParamRequired("BucketName"))
+	}
+	if s.BucketName != nil && len(*s.BucketName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("BucketName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBucketName sets the BucketName field's value.
+func (s *S3DestinationConfiguration) SetBucketName(v string) *S3DestinationConfiguration {
+	s.BucketName = &v
 	return s
 }
 
@@ -2732,7 +4134,11 @@ type TagResourceInput struct {
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
 
-	// Array of tags to be added or updated.
+	// Array of tags to be added or updated. Array of maps, each of the form string:string
+	// (key:value). See Tagging AWS Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// for details, including restrictions that apply to tags and "Tag naming limits
+	// and requirements"; Amazon IVS Chat has no constraints beyond what is documented
+	// there.
 	//
 	// Tags is a required field
 	Tags map[string]*string `locationName:"tags" type:"map" required:"true"`
@@ -2889,7 +4295,11 @@ type UntagResourceInput struct {
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
 
-	// Array of tags to be removed.
+	// Array of tags to be removed. Array of maps, each of the form string:string
+	// (key:value). See Tagging AWS Resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html)
+	// for details, including restrictions that apply to tags and "Tag naming limits
+	// and requirements"; Amazon IVS Chat has no constraints beyond what is documented
+	// there.
 	//
 	// TagKeys is a required field
 	TagKeys []*string `location:"querystring" locationName:"tagKeys" type:"list" required:"true"`
@@ -2966,6 +4376,181 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// A complex type that contains a destination configuration for where chat content
+	// will be logged. There can be only one type of destination (cloudWatchLogs,
+	// firehose, or s3) in a destinationConfiguration.
+	DestinationConfiguration *DestinationConfiguration `locationName:"destinationConfiguration" type:"structure"`
+
+	// Identifier of the logging configuration to be updated.
+	//
+	// Identifier is a required field
+	Identifier *string `locationName:"identifier" min:"1" type:"string" required:"true"`
+
+	// Logging-configuration name. The value does not need to be unique.
+	Name *string `locationName:"name" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateLoggingConfigurationInput"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+	if s.DestinationConfiguration != nil {
+		if err := s.DestinationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("DestinationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestinationConfiguration sets the DestinationConfiguration field's value.
+func (s *UpdateLoggingConfigurationInput) SetDestinationConfiguration(v *DestinationConfiguration) *UpdateLoggingConfigurationInput {
+	s.DestinationConfiguration = v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *UpdateLoggingConfigurationInput) SetIdentifier(v string) *UpdateLoggingConfigurationInput {
+	s.Identifier = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateLoggingConfigurationInput) SetName(v string) *UpdateLoggingConfigurationInput {
+	s.Name = &v
+	return s
+}
+
+type UpdateLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Logging-configuration ARN, from the request (if identifier was an ARN).
+	Arn *string `locationName:"arn" min:"1" type:"string"`
+
+	// Time when the logging configuration was created. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	CreateTime *time.Time `locationName:"createTime" type:"timestamp" timestampFormat:"iso8601"`
+
+	// A complex type that contains a destination configuration for where chat content
+	// will be logged, from the request. There is only one type of destination (cloudWatchLogs,
+	// firehose, or s3) in a destinationConfiguration.
+	DestinationConfiguration *DestinationConfiguration `locationName:"destinationConfiguration" type:"structure"`
+
+	// Logging-configuration ID, generated by the system. This is a relative identifier,
+	// the part of the ARN that uniquely identifies the room.
+	Id *string `locationName:"id" min:"12" type:"string"`
+
+	// Logging-configuration name, from the request (if specified).
+	Name *string `locationName:"name" type:"string"`
+
+	// The state of the logging configuration. When the state is ACTIVE, the configuration
+	// is ready to log chat content.
+	State *string `locationName:"state" type:"string" enum:"UpdateLoggingConfigurationState"`
+
+	// Tags attached to the resource. Array of maps, each of the form string:string
+	// (key:value).
+	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// Time of the logging configuration’s last update. This is an ISO 8601 timestamp;
+	// note that this is returned as a string.
+	UpdateTime *time.Time `locationName:"updateTime" type:"timestamp" timestampFormat:"iso8601"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *UpdateLoggingConfigurationOutput) SetArn(v string) *UpdateLoggingConfigurationOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *UpdateLoggingConfigurationOutput) SetCreateTime(v time.Time) *UpdateLoggingConfigurationOutput {
+	s.CreateTime = &v
+	return s
+}
+
+// SetDestinationConfiguration sets the DestinationConfiguration field's value.
+func (s *UpdateLoggingConfigurationOutput) SetDestinationConfiguration(v *DestinationConfiguration) *UpdateLoggingConfigurationOutput {
+	s.DestinationConfiguration = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UpdateLoggingConfigurationOutput) SetId(v string) *UpdateLoggingConfigurationOutput {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateLoggingConfigurationOutput) SetName(v string) *UpdateLoggingConfigurationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *UpdateLoggingConfigurationOutput) SetState(v string) *UpdateLoggingConfigurationOutput {
+	s.State = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *UpdateLoggingConfigurationOutput) SetTags(v map[string]*string) *UpdateLoggingConfigurationOutput {
+	s.Tags = v
+	return s
+}
+
+// SetUpdateTime sets the UpdateTime field's value.
+func (s *UpdateLoggingConfigurationOutput) SetUpdateTime(v time.Time) *UpdateLoggingConfigurationOutput {
+	s.UpdateTime = &v
+	return s
+}
+
 type UpdateRoomInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2973,6 +4558,9 @@ type UpdateRoomInput struct {
 	//
 	// Identifier is a required field
 	Identifier *string `locationName:"identifier" min:"1" type:"string" required:"true"`
+
+	// Array of logging-configuration identifiers attached to the room.
+	LoggingConfigurationIdentifiers []*string `locationName:"loggingConfigurationIdentifiers" type:"list"`
 
 	// The maximum number of characters in a single message. Messages are expected
 	// to be UTF-8 encoded and this limit applies specifically to rune/code-point
@@ -3037,6 +4625,12 @@ func (s *UpdateRoomInput) SetIdentifier(v string) *UpdateRoomInput {
 	return s
 }
 
+// SetLoggingConfigurationIdentifiers sets the LoggingConfigurationIdentifiers field's value.
+func (s *UpdateRoomInput) SetLoggingConfigurationIdentifiers(v []*string) *UpdateRoomInput {
+	s.LoggingConfigurationIdentifiers = v
+	return s
+}
+
 // SetMaximumMessageLength sets the MaximumMessageLength field's value.
 func (s *UpdateRoomInput) SetMaximumMessageLength(v int64) *UpdateRoomInput {
 	s.MaximumMessageLength = &v
@@ -3075,20 +4669,25 @@ type UpdateRoomOutput struct {
 	// of the ARN that uniquely identifies the room.
 	Id *string `locationName:"id" min:"12" type:"string"`
 
-	// Maximum number of characters in a single message, from the request.
+	// Array of logging configurations attached to the room, from the request (if
+	// specified).
+	LoggingConfigurationIdentifiers []*string `locationName:"loggingConfigurationIdentifiers" type:"list"`
+
+	// Maximum number of characters in a single message, from the request (if specified).
 	MaximumMessageLength *int64 `locationName:"maximumMessageLength" min:"1" type:"integer"`
 
 	// Maximum number of messages per second that can be sent to the room (by all
-	// clients), from the request.
+	// clients), from the request (if specified).
 	MaximumMessageRatePerSecond *int64 `locationName:"maximumMessageRatePerSecond" min:"1" type:"integer"`
 
 	// Configuration information for optional review of messages.
 	MessageReviewHandler *MessageReviewHandler `locationName:"messageReviewHandler" type:"structure"`
 
-	// Room name, from the request.
+	// Room name, from the request (if specified).
 	Name *string `locationName:"name" type:"string"`
 
-	// Tags attached to the resource.
+	// Tags attached to the resource. Array of maps, each of the form string:string
+	// (key:value).
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// Time of the room’s last update. This is an ISO 8601 timestamp; note that
@@ -3129,6 +4728,12 @@ func (s *UpdateRoomOutput) SetCreateTime(v time.Time) *UpdateRoomOutput {
 // SetId sets the Id field's value.
 func (s *UpdateRoomOutput) SetId(v string) *UpdateRoomOutput {
 	s.Id = &v
+	return s
+}
+
+// SetLoggingConfigurationIdentifiers sets the LoggingConfigurationIdentifiers field's value.
+func (s *UpdateRoomOutput) SetLoggingConfigurationIdentifiers(v []*string) *UpdateRoomOutput {
+	s.LoggingConfigurationIdentifiers = v
 	return s
 }
 
@@ -3302,6 +4907,18 @@ func ChatTokenCapability_Values() []string {
 }
 
 const (
+	// CreateLoggingConfigurationStateActive is a CreateLoggingConfigurationState enum value
+	CreateLoggingConfigurationStateActive = "ACTIVE"
+)
+
+// CreateLoggingConfigurationState_Values returns all elements of the CreateLoggingConfigurationState enum
+func CreateLoggingConfigurationState_Values() []string {
+	return []string{
+		CreateLoggingConfigurationStateActive,
+	}
+}
+
+const (
 	// FallbackResultAllow is a FallbackResult enum value
 	FallbackResultAllow = "ALLOW"
 
@@ -3318,6 +4935,42 @@ func FallbackResult_Values() []string {
 }
 
 const (
+	// LoggingConfigurationStateCreating is a LoggingConfigurationState enum value
+	LoggingConfigurationStateCreating = "CREATING"
+
+	// LoggingConfigurationStateCreateFailed is a LoggingConfigurationState enum value
+	LoggingConfigurationStateCreateFailed = "CREATE_FAILED"
+
+	// LoggingConfigurationStateDeleting is a LoggingConfigurationState enum value
+	LoggingConfigurationStateDeleting = "DELETING"
+
+	// LoggingConfigurationStateDeleteFailed is a LoggingConfigurationState enum value
+	LoggingConfigurationStateDeleteFailed = "DELETE_FAILED"
+
+	// LoggingConfigurationStateUpdating is a LoggingConfigurationState enum value
+	LoggingConfigurationStateUpdating = "UPDATING"
+
+	// LoggingConfigurationStateUpdateFailed is a LoggingConfigurationState enum value
+	LoggingConfigurationStateUpdateFailed = "UPDATE_FAILED"
+
+	// LoggingConfigurationStateActive is a LoggingConfigurationState enum value
+	LoggingConfigurationStateActive = "ACTIVE"
+)
+
+// LoggingConfigurationState_Values returns all elements of the LoggingConfigurationState enum
+func LoggingConfigurationState_Values() []string {
+	return []string{
+		LoggingConfigurationStateCreating,
+		LoggingConfigurationStateCreateFailed,
+		LoggingConfigurationStateDeleting,
+		LoggingConfigurationStateDeleteFailed,
+		LoggingConfigurationStateUpdating,
+		LoggingConfigurationStateUpdateFailed,
+		LoggingConfigurationStateActive,
+	}
+}
+
+const (
 	// ResourceTypeRoom is a ResourceType enum value
 	ResourceTypeRoom = "ROOM"
 )
@@ -3326,6 +4979,18 @@ const (
 func ResourceType_Values() []string {
 	return []string{
 		ResourceTypeRoom,
+	}
+}
+
+const (
+	// UpdateLoggingConfigurationStateActive is a UpdateLoggingConfigurationState enum value
+	UpdateLoggingConfigurationStateActive = "ACTIVE"
+)
+
+// UpdateLoggingConfigurationState_Values returns all elements of the UpdateLoggingConfigurationState enum
+func UpdateLoggingConfigurationState_Values() []string {
+	return []string{
+		UpdateLoggingConfigurationStateActive,
 	}
 }
 

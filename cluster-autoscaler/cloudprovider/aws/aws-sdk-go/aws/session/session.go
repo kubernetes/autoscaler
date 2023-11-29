@@ -37,7 +37,7 @@ const (
 
 // ErrSharedConfigSourceCollision will be returned if a section contains both
 // source_profile and credential_source
-var ErrSharedConfigSourceCollision = awserr.New(ErrCodeSharedConfig, "only one credential type may be specified per profile: source profile, credential source, credential process, web identity token, or sso", nil)
+var ErrSharedConfigSourceCollision = awserr.New(ErrCodeSharedConfig, "only one credential type may be specified per profile: source profile, credential source, credential process, web identity token", nil)
 
 // ErrSharedConfigECSContainerEnvVarEmpty will be returned if the environment
 // variables are empty and Environment was set as the credential source
@@ -223,7 +223,7 @@ type Options struct {
 	// from stdin for the MFA token code.
 	//
 	// This field is only used if the shared configuration is enabled, and
-	// the config enables assume role wit MFA via the mfa_serial field.
+	// the config enables assume role with MFA via the mfa_serial field.
 	AssumeRoleTokenProvider func() (string, error)
 
 	// When the SDK's shared config is configured to assume a role this option
@@ -779,14 +779,12 @@ func mergeConfigSrcs(cfg, userCfg *aws.Config,
 		cfg.EndpointResolver = wrapEC2IMDSEndpoint(cfg.EndpointResolver, ec2IMDSEndpoint, endpointMode)
 	}
 
-	// Configure credentials if not already set by the user when creating the
-	// Session.
-	if cfg.Credentials == credentials.AnonymousCredentials && userCfg.Credentials == nil {
-		creds, err := resolveCredentials(cfg, envCfg, sharedCfg, handlers, sessOpts)
-		if err != nil {
-			return err
-		}
-		cfg.Credentials = creds
+	cfg.EC2MetadataEnableFallback = userCfg.EC2MetadataEnableFallback
+	if cfg.EC2MetadataEnableFallback == nil && envCfg.EC2IMDSv1Disabled != nil {
+		cfg.EC2MetadataEnableFallback = aws.Bool(!*envCfg.EC2IMDSv1Disabled)
+	}
+	if cfg.EC2MetadataEnableFallback == nil && sharedCfg.EC2IMDSv1Disabled != nil {
+		cfg.EC2MetadataEnableFallback = aws.Bool(!*sharedCfg.EC2IMDSv1Disabled)
 	}
 
 	cfg.S3UseARNRegion = userCfg.S3UseARNRegion
@@ -809,6 +807,17 @@ func mergeConfigSrcs(cfg, userCfg *aws.Config,
 			cfg.UseFIPSEndpoint = v
 			break
 		}
+	}
+
+	// Configure credentials if not already set by the user when creating the Session.
+	// Credentials are resolved last such that all _resolved_ config values are propagated to credential providers.
+	// ticket: P83606045
+	if cfg.Credentials == credentials.AnonymousCredentials && userCfg.Credentials == nil {
+		creds, err := resolveCredentials(cfg, envCfg, sharedCfg, handlers, sessOpts)
+		if err != nil {
+			return err
+		}
+		cfg.Credentials = creds
 	}
 
 	return nil

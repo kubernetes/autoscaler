@@ -30,6 +30,15 @@ const (
 	// since it was last read.
 	ErrCodePreconditionFailedException = "PreconditionFailedException"
 
+	// ErrCodeRequestTimeoutException for service response error code
+	// "RequestTimeoutException".
+	//
+	// The request reached the service more than 15 minutes after the date stamp
+	// on the request or more than 15 minutes after the request expiration date
+	// (such as for pre-signed URLs), or the date stamp on the request is more than
+	// 15 minutes in the future.
+	ErrCodeRequestTimeoutException = "RequestTimeoutException"
+
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
@@ -62,6 +71,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessDeniedException":         newErrorAccessDeniedException,
 	"ConflictException":             newErrorConflictException,
 	"PreconditionFailedException":   newErrorPreconditionFailedException,
+	"RequestTimeoutException":       newErrorRequestTimeoutException,
 	"ResourceNotFoundException":     newErrorResourceNotFoundException,
 	"ServiceQuotaExceededException": newErrorServiceQuotaExceededException,
 	"TooManyTagsException":          newErrorTooManyTagsException,

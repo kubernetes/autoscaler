@@ -22,6 +22,25 @@
 // Pinpoint integration with other Amazon Web Services services, and the quotas
 // that apply to use of the service.
 //
+// # Regional availability
+//
+// The Amazon Pinpoint SMS and Voice, version 2 API Reference is available in
+// several Amazon Web Services Regions and it provides an endpoint for each
+// of these Regions. For a list of all the Regions and endpoints where the API
+// is currently available, see Amazon Web Services Service Endpoints (https://docs.aws.amazon.com/general/latest/gr/rande.html#pinpoint_region)
+// and Amazon Pinpoint endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/pinpoint.html)
+// in the Amazon Web Services General Reference. To learn more about Amazon
+// Web Services Regions, see Managing Amazon Web Services Regions (https://docs.aws.amazon.com/general/latest/gr/rande-manage.html)
+// in the Amazon Web Services General Reference.
+//
+// In each Region, Amazon Web Services maintains multiple Availability Zones.
+// These Availability Zones are physically isolated from each other, but are
+// united by private, low-latency, high-throughput, and highly redundant network
+// connections. These Availability Zones enable us to provide very high levels
+// of availability and redundancy, while also minimizing latency. To learn more
+// about the number of Availability Zones that are available in each Region,
+// see Amazon Web Services Global Infrastructure. (https://aws.amazon.com/about-aws/global-infrastructure/)
+//
 // See https://docs.aws.amazon.com/goto/WebAPI/pinpoint-sms-voice-v2-2022-03-31 for more information on this service.
 //
 // See pinpointsmsvoicev2 package documentation for more information.

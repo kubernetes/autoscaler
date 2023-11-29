@@ -64,6 +64,10 @@ type MarketplaceCatalogAPI interface {
 	CancelChangeSetWithContext(aws.Context, *marketplacecatalog.CancelChangeSetInput, ...request.Option) (*marketplacecatalog.CancelChangeSetOutput, error)
 	CancelChangeSetRequest(*marketplacecatalog.CancelChangeSetInput) (*request.Request, *marketplacecatalog.CancelChangeSetOutput)
 
+	DeleteResourcePolicy(*marketplacecatalog.DeleteResourcePolicyInput) (*marketplacecatalog.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(aws.Context, *marketplacecatalog.DeleteResourcePolicyInput, ...request.Option) (*marketplacecatalog.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(*marketplacecatalog.DeleteResourcePolicyInput) (*request.Request, *marketplacecatalog.DeleteResourcePolicyOutput)
+
 	DescribeChangeSet(*marketplacecatalog.DescribeChangeSetInput) (*marketplacecatalog.DescribeChangeSetOutput, error)
 	DescribeChangeSetWithContext(aws.Context, *marketplacecatalog.DescribeChangeSetInput, ...request.Option) (*marketplacecatalog.DescribeChangeSetOutput, error)
 	DescribeChangeSetRequest(*marketplacecatalog.DescribeChangeSetInput) (*request.Request, *marketplacecatalog.DescribeChangeSetOutput)
@@ -71,6 +75,10 @@ type MarketplaceCatalogAPI interface {
 	DescribeEntity(*marketplacecatalog.DescribeEntityInput) (*marketplacecatalog.DescribeEntityOutput, error)
 	DescribeEntityWithContext(aws.Context, *marketplacecatalog.DescribeEntityInput, ...request.Option) (*marketplacecatalog.DescribeEntityOutput, error)
 	DescribeEntityRequest(*marketplacecatalog.DescribeEntityInput) (*request.Request, *marketplacecatalog.DescribeEntityOutput)
+
+	GetResourcePolicy(*marketplacecatalog.GetResourcePolicyInput) (*marketplacecatalog.GetResourcePolicyOutput, error)
+	GetResourcePolicyWithContext(aws.Context, *marketplacecatalog.GetResourcePolicyInput, ...request.Option) (*marketplacecatalog.GetResourcePolicyOutput, error)
+	GetResourcePolicyRequest(*marketplacecatalog.GetResourcePolicyInput) (*request.Request, *marketplacecatalog.GetResourcePolicyOutput)
 
 	ListChangeSets(*marketplacecatalog.ListChangeSetsInput) (*marketplacecatalog.ListChangeSetsOutput, error)
 	ListChangeSetsWithContext(aws.Context, *marketplacecatalog.ListChangeSetsInput, ...request.Option) (*marketplacecatalog.ListChangeSetsOutput, error)
@@ -86,9 +94,25 @@ type MarketplaceCatalogAPI interface {
 	ListEntitiesPages(*marketplacecatalog.ListEntitiesInput, func(*marketplacecatalog.ListEntitiesOutput, bool) bool) error
 	ListEntitiesPagesWithContext(aws.Context, *marketplacecatalog.ListEntitiesInput, func(*marketplacecatalog.ListEntitiesOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*marketplacecatalog.ListTagsForResourceInput) (*marketplacecatalog.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *marketplacecatalog.ListTagsForResourceInput, ...request.Option) (*marketplacecatalog.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*marketplacecatalog.ListTagsForResourceInput) (*request.Request, *marketplacecatalog.ListTagsForResourceOutput)
+
+	PutResourcePolicy(*marketplacecatalog.PutResourcePolicyInput) (*marketplacecatalog.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(aws.Context, *marketplacecatalog.PutResourcePolicyInput, ...request.Option) (*marketplacecatalog.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(*marketplacecatalog.PutResourcePolicyInput) (*request.Request, *marketplacecatalog.PutResourcePolicyOutput)
+
 	StartChangeSet(*marketplacecatalog.StartChangeSetInput) (*marketplacecatalog.StartChangeSetOutput, error)
 	StartChangeSetWithContext(aws.Context, *marketplacecatalog.StartChangeSetInput, ...request.Option) (*marketplacecatalog.StartChangeSetOutput, error)
 	StartChangeSetRequest(*marketplacecatalog.StartChangeSetInput) (*request.Request, *marketplacecatalog.StartChangeSetOutput)
+
+	TagResource(*marketplacecatalog.TagResourceInput) (*marketplacecatalog.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *marketplacecatalog.TagResourceInput, ...request.Option) (*marketplacecatalog.TagResourceOutput, error)
+	TagResourceRequest(*marketplacecatalog.TagResourceInput) (*request.Request, *marketplacecatalog.TagResourceOutput)
+
+	UntagResource(*marketplacecatalog.UntagResourceInput) (*marketplacecatalog.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *marketplacecatalog.UntagResourceInput, ...request.Option) (*marketplacecatalog.UntagResourceOutput, error)
+	UntagResourceRequest(*marketplacecatalog.UntagResourceInput) (*request.Request, *marketplacecatalog.UntagResourceOutput)
 }
 
 var _ MarketplaceCatalogAPI = (*marketplacecatalog.MarketplaceCatalog)(nil)

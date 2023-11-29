@@ -11,6 +11,95 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
 )
 
+const opGetActionRecommendations = "GetActionRecommendations"
+
+// GetActionRecommendationsRequest generates a "aws/request.Request" representing the
+// client's request for the GetActionRecommendations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetActionRecommendations for more information on using the GetActionRecommendations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetActionRecommendationsRequest method.
+//	req, resp := client.GetActionRecommendationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-runtime-2018-05-22/GetActionRecommendations
+func (c *PersonalizeRuntime) GetActionRecommendationsRequest(input *GetActionRecommendationsInput) (req *request.Request, output *GetActionRecommendationsOutput) {
+	op := &request.Operation{
+		Name:       opGetActionRecommendations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/action-recommendations",
+	}
+
+	if input == nil {
+		input = &GetActionRecommendationsInput{}
+	}
+
+	output = &GetActionRecommendationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetActionRecommendations API operation for Amazon Personalize Runtime.
+//
+// Returns a list of recommended actions in sorted in descending order by prediction
+// score. Use the GetActionRecommendations API if you have a custom campaign
+// that deploys a solution version trained with a PERSONALIZED_ACTIONS recipe.
+//
+// For more information about PERSONALIZED_ACTIONS recipes, see PERSONALIZED_ACTIONS
+// recipes (https://docs.aws.amazon.com/personalize/latest/dg/nexts-best-action-recipes.html).
+// For more information about getting action recommendations, see Getting action
+// recommendations (https://docs.aws.amazon.com/personalize/latest/dg/get-action-recommendations.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Personalize Runtime's
+// API operation GetActionRecommendations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidInputException
+//     Provide a valid value for the field or parameter.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/personalize-runtime-2018-05-22/GetActionRecommendations
+func (c *PersonalizeRuntime) GetActionRecommendations(input *GetActionRecommendationsInput) (*GetActionRecommendationsOutput, error) {
+	req, out := c.GetActionRecommendationsRequest(input)
+	return out, req.Send()
+}
+
+// GetActionRecommendationsWithContext is the same as GetActionRecommendations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetActionRecommendations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PersonalizeRuntime) GetActionRecommendationsWithContext(ctx aws.Context, input *GetActionRecommendationsInput, opts ...request.Option) (*GetActionRecommendationsOutput, error) {
+	req, out := c.GetActionRecommendationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetPersonalizedRanking = "GetPersonalizedRanking"
 
 // GetPersonalizedRankingRequest generates a "aws/request.Request" representing the
@@ -193,6 +282,131 @@ func (c *PersonalizeRuntime) GetRecommendationsWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+type GetActionRecommendationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the campaign to use for getting action
+	// recommendations. This campaign must deploy a solution version trained with
+	// a PERSONALIZED_ACTIONS recipe.
+	CampaignArn *string `locationName:"campaignArn" type:"string"`
+
+	// The ARN of the filter to apply to the returned recommendations. For more
+	// information, see Filtering Recommendations (https://docs.aws.amazon.com/personalize/latest/dg/filter.html).
+	//
+	// When using this parameter, be sure the filter resource is ACTIVE.
+	FilterArn *string `locationName:"filterArn" type:"string"`
+
+	// The values to use when filtering recommendations. For each placeholder parameter
+	// in your filter expression, provide the parameter name (in matching case)
+	// as a key and the filter value(s) as the corresponding value. Separate multiple
+	// values for one parameter with a comma.
+	//
+	// For filter expressions that use an INCLUDE element to include actions, you
+	// must provide values for all parameters that are defined in the expression.
+	// For filters with expressions that use an EXCLUDE element to exclude actions,
+	// you can omit the filter-values. In this case, Amazon Personalize doesn't
+	// use that portion of the expression to filter recommendations.
+	//
+	// For more information, see Filtering recommendations and user segments (https://docs.aws.amazon.com/personalize/latest/dg/filter.html).
+	FilterValues map[string]*string `locationName:"filterValues" type:"map"`
+
+	// The number of results to return. The default is 5. The maximum is 100.
+	NumResults *int64 `locationName:"numResults" type:"integer"`
+
+	// The user ID of the user to provide action recommendations for.
+	UserId *string `locationName:"userId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetActionRecommendationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetActionRecommendationsInput) GoString() string {
+	return s.String()
+}
+
+// SetCampaignArn sets the CampaignArn field's value.
+func (s *GetActionRecommendationsInput) SetCampaignArn(v string) *GetActionRecommendationsInput {
+	s.CampaignArn = &v
+	return s
+}
+
+// SetFilterArn sets the FilterArn field's value.
+func (s *GetActionRecommendationsInput) SetFilterArn(v string) *GetActionRecommendationsInput {
+	s.FilterArn = &v
+	return s
+}
+
+// SetFilterValues sets the FilterValues field's value.
+func (s *GetActionRecommendationsInput) SetFilterValues(v map[string]*string) *GetActionRecommendationsInput {
+	s.FilterValues = v
+	return s
+}
+
+// SetNumResults sets the NumResults field's value.
+func (s *GetActionRecommendationsInput) SetNumResults(v int64) *GetActionRecommendationsInput {
+	s.NumResults = &v
+	return s
+}
+
+// SetUserId sets the UserId field's value.
+func (s *GetActionRecommendationsInput) SetUserId(v string) *GetActionRecommendationsInput {
+	s.UserId = &v
+	return s
+}
+
+type GetActionRecommendationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of action recommendations sorted in descending order by prediction
+	// score. There can be a maximum of 100 actions in the list. For information
+	// about action scores, see How action recommendation scoring works (https://docs.aws.amazon.com/personalize/latest/dg/how-action-recommendation-scoring-works.html).
+	ActionList []*PredictedAction `locationName:"actionList" type:"list"`
+
+	// The ID of the recommendation.
+	RecommendationId *string `locationName:"recommendationId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetActionRecommendationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetActionRecommendationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetActionList sets the ActionList field's value.
+func (s *GetActionRecommendationsOutput) SetActionList(v []*PredictedAction) *GetActionRecommendationsOutput {
+	s.ActionList = v
+	return s
+}
+
+// SetRecommendationId sets the RecommendationId field's value.
+func (s *GetActionRecommendationsOutput) SetRecommendationId(v string) *GetActionRecommendationsOutput {
+	s.RecommendationId = &v
+	return s
+}
+
 type GetPersonalizedRankingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -227,11 +441,22 @@ type GetPersonalizedRankingInput struct {
 	FilterValues map[string]*string `locationName:"filterValues" type:"map"`
 
 	// A list of items (by itemId) to rank. If an item was not included in the training
-	// dataset, the item is appended to the end of the reranked list. The maximum
-	// is 500.
+	// dataset, the item is appended to the end of the reranked list. If you are
+	// including metadata in recommendations, the maximum is 50. Otherwise, the
+	// maximum is 500.
 	//
 	// InputList is a required field
 	InputList []*string `locationName:"inputList" type:"list" required:"true"`
+
+	// If you enabled metadata in recommendations when you created or updated the
+	// campaign, specify metadata columns from your Items dataset to include in
+	// the personalized ranking. The map key is ITEMS and the value is a list of
+	// column names from your Items dataset. The maximum number of columns you can
+	// provide is 10.
+	//
+	// For information about enabling metadata for a campaign, see Enabling metadata
+	// in recommendations for a campaign (https://docs.aws.amazon.com/personalize/latest/dg/create-campaign-return-metadata.html).
+	MetadataColumns map[string][]*string `locationName:"metadataColumns" type:"map"`
 
 	// The user for which you want the campaign to provide a personalized ranking.
 	//
@@ -303,6 +528,12 @@ func (s *GetPersonalizedRankingInput) SetFilterValues(v map[string]*string) *Get
 // SetInputList sets the InputList field's value.
 func (s *GetPersonalizedRankingInput) SetInputList(v []*string) *GetPersonalizedRankingInput {
 	s.InputList = v
+	return s
+}
+
+// SetMetadataColumns sets the MetadataColumns field's value.
+func (s *GetPersonalizedRankingInput) SetMetadataColumns(v map[string][]*string) *GetPersonalizedRankingInput {
+	s.MetadataColumns = v
 	return s
 }
 
@@ -381,7 +612,7 @@ type GetRecommendationsInput struct {
 	// you can omit the filter-values.In this case, Amazon Personalize doesn't use
 	// that portion of the expression to filter recommendations.
 	//
-	// For more information, see Filtering Recommendations (https://docs.aws.amazon.com/personalize/latest/dg/filter.html).
+	// For more information, see Filtering recommendations and user segments (https://docs.aws.amazon.com/personalize/latest/dg/filter.html).
 	FilterValues map[string]*string `locationName:"filterValues" type:"map"`
 
 	// The item ID to provide recommendations for.
@@ -389,8 +620,27 @@ type GetRecommendationsInput struct {
 	// Required for RELATED_ITEMS recipe type.
 	ItemId *string `locationName:"itemId" type:"string"`
 
-	// The number of results to return. The default is 25. The maximum is 500.
+	// If you enabled metadata in recommendations when you created or updated the
+	// campaign or recommender, specify the metadata columns from your Items dataset
+	// to include in item recommendations. The map key is ITEMS and the value is
+	// a list of column names from your Items dataset. The maximum number of columns
+	// you can provide is 10.
+	//
+	// For information about enabling metadata for a campaign, see Enabling metadata
+	// in recommendations for a campaign (https://docs.aws.amazon.com/personalize/latest/dg/create-campaign-return-metadata.html).
+	// For information about enabling metadata for a recommender, see Enabling metadata
+	// in recommendations for a recommender (https://docs.aws.amazon.com/personalize/latest/dg/create-recommender-return-metadata.html).
+	MetadataColumns map[string][]*string `locationName:"metadataColumns" type:"map"`
+
+	// The number of results to return. The default is 25. If you are including
+	// metadata in recommendations, the maximum is 50. Otherwise, the maximum is
+	// 500.
 	NumResults *int64 `locationName:"numResults" type:"integer"`
+
+	// The promotions to apply to the recommendation request. A promotion defines
+	// additional business rules that apply to a configurable subset of recommended
+	// items.
+	Promotions []*Promotion `locationName:"promotions" type:"list"`
 
 	// The Amazon Resource Name (ARN) of the recommender to use to get recommendations.
 	// Provide a recommender ARN if you created a Domain dataset group with a recommender
@@ -419,6 +669,26 @@ func (s GetRecommendationsInput) String() string {
 // value will be replaced with "sensitive".
 func (s GetRecommendationsInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetRecommendationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetRecommendationsInput"}
+	if s.Promotions != nil {
+		for i, v := range s.Promotions {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Promotions", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetCampaignArn sets the CampaignArn field's value.
@@ -451,9 +721,21 @@ func (s *GetRecommendationsInput) SetItemId(v string) *GetRecommendationsInput {
 	return s
 }
 
+// SetMetadataColumns sets the MetadataColumns field's value.
+func (s *GetRecommendationsInput) SetMetadataColumns(v map[string][]*string) *GetRecommendationsInput {
+	s.MetadataColumns = v
+	return s
+}
+
 // SetNumResults sets the NumResults field's value.
 func (s *GetRecommendationsInput) SetNumResults(v int64) *GetRecommendationsInput {
 	s.NumResults = &v
+	return s
+}
+
+// SetPromotions sets the Promotions field's value.
+func (s *GetRecommendationsInput) SetPromotions(v []*Promotion) *GetRecommendationsInput {
+	s.Promotions = v
 	return s
 }
 
@@ -574,6 +856,50 @@ func (s *InvalidInputException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// An object that identifies an action.
+//
+// The API returns a list of PredictedActions.
+type PredictedAction struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the recommended action.
+	ActionId *string `locationName:"actionId" type:"string"`
+
+	// The score of the recommended action. For information about action scores,
+	// see How action recommendation scoring works (https://docs.aws.amazon.com/personalize/latest/dg/how-action-recommendation-scoring-works.html).
+	Score *float64 `locationName:"score" type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictedAction) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PredictedAction) GoString() string {
+	return s.String()
+}
+
+// SetActionId sets the ActionId field's value.
+func (s *PredictedAction) SetActionId(v string) *PredictedAction {
+	s.ActionId = &v
+	return s
+}
+
+// SetScore sets the Score field's value.
+func (s *PredictedAction) SetScore(v float64) *PredictedAction {
+	s.Score = &v
+	return s
+}
+
 // An object that identifies an item.
 //
 // The and APIs return a list of PredictedItems.
@@ -582,6 +908,12 @@ type PredictedItem struct {
 
 	// The recommended item ID.
 	ItemId *string `locationName:"itemId" type:"string"`
+
+	// Metadata about the item from your Items dataset.
+	Metadata map[string]*string `locationName:"metadata" type:"map"`
+
+	// The name of the promotion that included the predicted item.
+	PromotionName *string `locationName:"promotionName" min:"1" type:"string"`
 
 	// A numeric representation of the model's certainty that the item will be the
 	// next user selection. For more information on scoring logic, see how-scores-work.
@@ -612,9 +944,111 @@ func (s *PredictedItem) SetItemId(v string) *PredictedItem {
 	return s
 }
 
+// SetMetadata sets the Metadata field's value.
+func (s *PredictedItem) SetMetadata(v map[string]*string) *PredictedItem {
+	s.Metadata = v
+	return s
+}
+
+// SetPromotionName sets the PromotionName field's value.
+func (s *PredictedItem) SetPromotionName(v string) *PredictedItem {
+	s.PromotionName = &v
+	return s
+}
+
 // SetScore sets the Score field's value.
 func (s *PredictedItem) SetScore(v float64) *PredictedItem {
 	s.Score = &v
+	return s
+}
+
+// Contains information on a promotion. A promotion defines additional business
+// rules that apply to a configurable subset of recommended items.
+type Promotion struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the filter used by the promotion. This
+	// filter defines the criteria for promoted items. For more information, see
+	// Promotion filters (https://docs.aws.amazon.com/personalize/latest/dg/promoting-items.html#promotion-filters).
+	FilterArn *string `locationName:"filterArn" type:"string"`
+
+	// The values to use when promoting items. For each placeholder parameter in
+	// your promotion's filter expression, provide the parameter name (in matching
+	// case) as a key and the filter value(s) as the corresponding value. Separate
+	// multiple values for one parameter with a comma.
+	//
+	// For filter expressions that use an INCLUDE element to include items, you
+	// must provide values for all parameters that are defined in the expression.
+	// For filters with expressions that use an EXCLUDE element to exclude items,
+	// you can omit the filter-values. In this case, Amazon Personalize doesn't
+	// use that portion of the expression to filter recommendations.
+	//
+	// For more information on creating filters, see Filtering recommendations and
+	// user segments (https://docs.aws.amazon.com/personalize/latest/dg/filter.html).
+	FilterValues map[string]*string `locationName:"filterValues" type:"map"`
+
+	// The name of the promotion.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The percentage of recommended items to apply the promotion to.
+	PercentPromotedItems *int64 `locationName:"percentPromotedItems" min:"1" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Promotion) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Promotion) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Promotion) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Promotion"}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.PercentPromotedItems != nil && *s.PercentPromotedItems < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PercentPromotedItems", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilterArn sets the FilterArn field's value.
+func (s *Promotion) SetFilterArn(v string) *Promotion {
+	s.FilterArn = &v
+	return s
+}
+
+// SetFilterValues sets the FilterValues field's value.
+func (s *Promotion) SetFilterValues(v map[string]*string) *Promotion {
+	s.FilterValues = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Promotion) SetName(v string) *Promotion {
+	s.Name = &v
+	return s
+}
+
+// SetPercentPromotedItems sets the PercentPromotedItems field's value.
+func (s *Promotion) SetPercentPromotedItems(v int64) *Promotion {
+	s.PercentPromotedItems = &v
 	return s
 }
 
