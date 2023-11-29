@@ -97,7 +97,7 @@ vertical-pod-autoscaler:
                 build: ~
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-recommender'
-            dockerfile: './vertical-pod-autoscaler/pkg/recommender/Dockerfile'
+            dockerfile: './vertical-pod-autoscaler/Dockerfile.recommender'
           vpa-updater:
             inputs:
               repos:
@@ -106,7 +106,7 @@ vertical-pod-autoscaler:
                 build: ~
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-updater'
-            dockerfile: './vertical-pod-autoscaler/pkg/updater/Dockerfile'
+            dockerfile: './vertical-pod-autoscaler/Dockerfile.updater'
           vpa-admission-controller:
             inputs:
               repos:
@@ -115,7 +115,7 @@ vertical-pod-autoscaler:
                 build: ~
             registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-admission-controller'
-            dockerfile: './vertical-pod-autoscaler/pkg/admission-controller/Dockerfile'
+            dockerfile: './vertical-pod-autoscaler/Dockerfile.admissioncontroller'
     steps:
       test:
         image: 'golang:1.20.5'
