@@ -21,14 +21,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	corev1 "k8s.io/api/core/v1"
 )
 
 // KubernetesClusterPoolUpdateConfig is used to create a new cluster pool
 type KubernetesClusterPoolUpdateConfig struct {
-	ID     string `json:"id,omitempty"`
-	Count  int    `json:"count,omitempty"`
-	Size   string `json:"size,omitempty"`
-	Region string `json:"region,omitempty"`
+	ID               string            `json:"id,omitempty"`
+	Count            int               `json:"count,omitempty"`
+	Size             string            `json:"size,omitempty"`
+	Labels           map[string]string `json:"labels,omitempty"`
+	Taints           []corev1.Taint    `json:"taints,omitempty"`
+	PublicIPNodePool bool              `json:"public_ip_node_pool,omitempty"`
+	Region           string            `json:"region,omitempty"`
 }
 
 // ListKubernetesClusterPools returns all the pools for a kubernetes cluster
