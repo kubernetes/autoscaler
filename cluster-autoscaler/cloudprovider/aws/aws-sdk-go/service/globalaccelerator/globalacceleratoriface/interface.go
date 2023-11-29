@@ -64,6 +64,10 @@ type GlobalAcceleratorAPI interface {
 	AddCustomRoutingEndpointsWithContext(aws.Context, *globalaccelerator.AddCustomRoutingEndpointsInput, ...request.Option) (*globalaccelerator.AddCustomRoutingEndpointsOutput, error)
 	AddCustomRoutingEndpointsRequest(*globalaccelerator.AddCustomRoutingEndpointsInput) (*request.Request, *globalaccelerator.AddCustomRoutingEndpointsOutput)
 
+	AddEndpoints(*globalaccelerator.AddEndpointsInput) (*globalaccelerator.AddEndpointsOutput, error)
+	AddEndpointsWithContext(aws.Context, *globalaccelerator.AddEndpointsInput, ...request.Option) (*globalaccelerator.AddEndpointsOutput, error)
+	AddEndpointsRequest(*globalaccelerator.AddEndpointsInput) (*request.Request, *globalaccelerator.AddEndpointsOutput)
+
 	AdvertiseByoipCidr(*globalaccelerator.AdvertiseByoipCidrInput) (*globalaccelerator.AdvertiseByoipCidrOutput, error)
 	AdvertiseByoipCidrWithContext(aws.Context, *globalaccelerator.AdvertiseByoipCidrInput, ...request.Option) (*globalaccelerator.AdvertiseByoipCidrOutput, error)
 	AdvertiseByoipCidrRequest(*globalaccelerator.AdvertiseByoipCidrInput) (*request.Request, *globalaccelerator.AdvertiseByoipCidrOutput)
@@ -75,6 +79,10 @@ type GlobalAcceleratorAPI interface {
 	CreateAccelerator(*globalaccelerator.CreateAcceleratorInput) (*globalaccelerator.CreateAcceleratorOutput, error)
 	CreateAcceleratorWithContext(aws.Context, *globalaccelerator.CreateAcceleratorInput, ...request.Option) (*globalaccelerator.CreateAcceleratorOutput, error)
 	CreateAcceleratorRequest(*globalaccelerator.CreateAcceleratorInput) (*request.Request, *globalaccelerator.CreateAcceleratorOutput)
+
+	CreateCrossAccountAttachment(*globalaccelerator.CreateCrossAccountAttachmentInput) (*globalaccelerator.CreateCrossAccountAttachmentOutput, error)
+	CreateCrossAccountAttachmentWithContext(aws.Context, *globalaccelerator.CreateCrossAccountAttachmentInput, ...request.Option) (*globalaccelerator.CreateCrossAccountAttachmentOutput, error)
+	CreateCrossAccountAttachmentRequest(*globalaccelerator.CreateCrossAccountAttachmentInput) (*request.Request, *globalaccelerator.CreateCrossAccountAttachmentOutput)
 
 	CreateCustomRoutingAccelerator(*globalaccelerator.CreateCustomRoutingAcceleratorInput) (*globalaccelerator.CreateCustomRoutingAcceleratorOutput, error)
 	CreateCustomRoutingAcceleratorWithContext(aws.Context, *globalaccelerator.CreateCustomRoutingAcceleratorInput, ...request.Option) (*globalaccelerator.CreateCustomRoutingAcceleratorOutput, error)
@@ -99,6 +107,10 @@ type GlobalAcceleratorAPI interface {
 	DeleteAccelerator(*globalaccelerator.DeleteAcceleratorInput) (*globalaccelerator.DeleteAcceleratorOutput, error)
 	DeleteAcceleratorWithContext(aws.Context, *globalaccelerator.DeleteAcceleratorInput, ...request.Option) (*globalaccelerator.DeleteAcceleratorOutput, error)
 	DeleteAcceleratorRequest(*globalaccelerator.DeleteAcceleratorInput) (*request.Request, *globalaccelerator.DeleteAcceleratorOutput)
+
+	DeleteCrossAccountAttachment(*globalaccelerator.DeleteCrossAccountAttachmentInput) (*globalaccelerator.DeleteCrossAccountAttachmentOutput, error)
+	DeleteCrossAccountAttachmentWithContext(aws.Context, *globalaccelerator.DeleteCrossAccountAttachmentInput, ...request.Option) (*globalaccelerator.DeleteCrossAccountAttachmentOutput, error)
+	DeleteCrossAccountAttachmentRequest(*globalaccelerator.DeleteCrossAccountAttachmentInput) (*request.Request, *globalaccelerator.DeleteCrossAccountAttachmentOutput)
 
 	DeleteCustomRoutingAccelerator(*globalaccelerator.DeleteCustomRoutingAcceleratorInput) (*globalaccelerator.DeleteCustomRoutingAcceleratorOutput, error)
 	DeleteCustomRoutingAcceleratorWithContext(aws.Context, *globalaccelerator.DeleteCustomRoutingAcceleratorInput, ...request.Option) (*globalaccelerator.DeleteCustomRoutingAcceleratorOutput, error)
@@ -135,6 +147,10 @@ type GlobalAcceleratorAPI interface {
 	DescribeAcceleratorAttributes(*globalaccelerator.DescribeAcceleratorAttributesInput) (*globalaccelerator.DescribeAcceleratorAttributesOutput, error)
 	DescribeAcceleratorAttributesWithContext(aws.Context, *globalaccelerator.DescribeAcceleratorAttributesInput, ...request.Option) (*globalaccelerator.DescribeAcceleratorAttributesOutput, error)
 	DescribeAcceleratorAttributesRequest(*globalaccelerator.DescribeAcceleratorAttributesInput) (*request.Request, *globalaccelerator.DescribeAcceleratorAttributesOutput)
+
+	DescribeCrossAccountAttachment(*globalaccelerator.DescribeCrossAccountAttachmentInput) (*globalaccelerator.DescribeCrossAccountAttachmentOutput, error)
+	DescribeCrossAccountAttachmentWithContext(aws.Context, *globalaccelerator.DescribeCrossAccountAttachmentInput, ...request.Option) (*globalaccelerator.DescribeCrossAccountAttachmentOutput, error)
+	DescribeCrossAccountAttachmentRequest(*globalaccelerator.DescribeCrossAccountAttachmentInput) (*request.Request, *globalaccelerator.DescribeCrossAccountAttachmentOutput)
 
 	DescribeCustomRoutingAccelerator(*globalaccelerator.DescribeCustomRoutingAcceleratorInput) (*globalaccelerator.DescribeCustomRoutingAcceleratorOutput, error)
 	DescribeCustomRoutingAcceleratorWithContext(aws.Context, *globalaccelerator.DescribeCustomRoutingAcceleratorInput, ...request.Option) (*globalaccelerator.DescribeCustomRoutingAcceleratorOutput, error)
@@ -173,6 +189,24 @@ type GlobalAcceleratorAPI interface {
 
 	ListByoipCidrsPages(*globalaccelerator.ListByoipCidrsInput, func(*globalaccelerator.ListByoipCidrsOutput, bool) bool) error
 	ListByoipCidrsPagesWithContext(aws.Context, *globalaccelerator.ListByoipCidrsInput, func(*globalaccelerator.ListByoipCidrsOutput, bool) bool, ...request.Option) error
+
+	ListCrossAccountAttachments(*globalaccelerator.ListCrossAccountAttachmentsInput) (*globalaccelerator.ListCrossAccountAttachmentsOutput, error)
+	ListCrossAccountAttachmentsWithContext(aws.Context, *globalaccelerator.ListCrossAccountAttachmentsInput, ...request.Option) (*globalaccelerator.ListCrossAccountAttachmentsOutput, error)
+	ListCrossAccountAttachmentsRequest(*globalaccelerator.ListCrossAccountAttachmentsInput) (*request.Request, *globalaccelerator.ListCrossAccountAttachmentsOutput)
+
+	ListCrossAccountAttachmentsPages(*globalaccelerator.ListCrossAccountAttachmentsInput, func(*globalaccelerator.ListCrossAccountAttachmentsOutput, bool) bool) error
+	ListCrossAccountAttachmentsPagesWithContext(aws.Context, *globalaccelerator.ListCrossAccountAttachmentsInput, func(*globalaccelerator.ListCrossAccountAttachmentsOutput, bool) bool, ...request.Option) error
+
+	ListCrossAccountResourceAccounts(*globalaccelerator.ListCrossAccountResourceAccountsInput) (*globalaccelerator.ListCrossAccountResourceAccountsOutput, error)
+	ListCrossAccountResourceAccountsWithContext(aws.Context, *globalaccelerator.ListCrossAccountResourceAccountsInput, ...request.Option) (*globalaccelerator.ListCrossAccountResourceAccountsOutput, error)
+	ListCrossAccountResourceAccountsRequest(*globalaccelerator.ListCrossAccountResourceAccountsInput) (*request.Request, *globalaccelerator.ListCrossAccountResourceAccountsOutput)
+
+	ListCrossAccountResources(*globalaccelerator.ListCrossAccountResourcesInput) (*globalaccelerator.ListCrossAccountResourcesOutput, error)
+	ListCrossAccountResourcesWithContext(aws.Context, *globalaccelerator.ListCrossAccountResourcesInput, ...request.Option) (*globalaccelerator.ListCrossAccountResourcesOutput, error)
+	ListCrossAccountResourcesRequest(*globalaccelerator.ListCrossAccountResourcesInput) (*request.Request, *globalaccelerator.ListCrossAccountResourcesOutput)
+
+	ListCrossAccountResourcesPages(*globalaccelerator.ListCrossAccountResourcesInput, func(*globalaccelerator.ListCrossAccountResourcesOutput, bool) bool) error
+	ListCrossAccountResourcesPagesWithContext(aws.Context, *globalaccelerator.ListCrossAccountResourcesInput, func(*globalaccelerator.ListCrossAccountResourcesOutput, bool) bool, ...request.Option) error
 
 	ListCustomRoutingAccelerators(*globalaccelerator.ListCustomRoutingAcceleratorsInput) (*globalaccelerator.ListCustomRoutingAcceleratorsOutput, error)
 	ListCustomRoutingAcceleratorsWithContext(aws.Context, *globalaccelerator.ListCustomRoutingAcceleratorsInput, ...request.Option) (*globalaccelerator.ListCustomRoutingAcceleratorsOutput, error)
@@ -235,6 +269,10 @@ type GlobalAcceleratorAPI interface {
 	RemoveCustomRoutingEndpointsWithContext(aws.Context, *globalaccelerator.RemoveCustomRoutingEndpointsInput, ...request.Option) (*globalaccelerator.RemoveCustomRoutingEndpointsOutput, error)
 	RemoveCustomRoutingEndpointsRequest(*globalaccelerator.RemoveCustomRoutingEndpointsInput) (*request.Request, *globalaccelerator.RemoveCustomRoutingEndpointsOutput)
 
+	RemoveEndpoints(*globalaccelerator.RemoveEndpointsInput) (*globalaccelerator.RemoveEndpointsOutput, error)
+	RemoveEndpointsWithContext(aws.Context, *globalaccelerator.RemoveEndpointsInput, ...request.Option) (*globalaccelerator.RemoveEndpointsOutput, error)
+	RemoveEndpointsRequest(*globalaccelerator.RemoveEndpointsInput) (*request.Request, *globalaccelerator.RemoveEndpointsOutput)
+
 	TagResource(*globalaccelerator.TagResourceInput) (*globalaccelerator.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *globalaccelerator.TagResourceInput, ...request.Option) (*globalaccelerator.TagResourceOutput, error)
 	TagResourceRequest(*globalaccelerator.TagResourceInput) (*request.Request, *globalaccelerator.TagResourceOutput)
@@ -250,6 +288,10 @@ type GlobalAcceleratorAPI interface {
 	UpdateAcceleratorAttributes(*globalaccelerator.UpdateAcceleratorAttributesInput) (*globalaccelerator.UpdateAcceleratorAttributesOutput, error)
 	UpdateAcceleratorAttributesWithContext(aws.Context, *globalaccelerator.UpdateAcceleratorAttributesInput, ...request.Option) (*globalaccelerator.UpdateAcceleratorAttributesOutput, error)
 	UpdateAcceleratorAttributesRequest(*globalaccelerator.UpdateAcceleratorAttributesInput) (*request.Request, *globalaccelerator.UpdateAcceleratorAttributesOutput)
+
+	UpdateCrossAccountAttachment(*globalaccelerator.UpdateCrossAccountAttachmentInput) (*globalaccelerator.UpdateCrossAccountAttachmentOutput, error)
+	UpdateCrossAccountAttachmentWithContext(aws.Context, *globalaccelerator.UpdateCrossAccountAttachmentInput, ...request.Option) (*globalaccelerator.UpdateCrossAccountAttachmentOutput, error)
+	UpdateCrossAccountAttachmentRequest(*globalaccelerator.UpdateCrossAccountAttachmentInput) (*request.Request, *globalaccelerator.UpdateCrossAccountAttachmentOutput)
 
 	UpdateCustomRoutingAccelerator(*globalaccelerator.UpdateCustomRoutingAcceleratorInput) (*globalaccelerator.UpdateCustomRoutingAcceleratorOutput, error)
 	UpdateCustomRoutingAcceleratorWithContext(aws.Context, *globalaccelerator.UpdateCustomRoutingAcceleratorInput, ...request.Option) (*globalaccelerator.UpdateCustomRoutingAcceleratorOutput, error)

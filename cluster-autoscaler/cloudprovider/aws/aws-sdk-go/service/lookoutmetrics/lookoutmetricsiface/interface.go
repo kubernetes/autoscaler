@@ -119,6 +119,10 @@ type LookoutMetricsAPI interface {
 	GetAnomalyGroupWithContext(aws.Context, *lookoutmetrics.GetAnomalyGroupInput, ...request.Option) (*lookoutmetrics.GetAnomalyGroupOutput, error)
 	GetAnomalyGroupRequest(*lookoutmetrics.GetAnomalyGroupInput) (*request.Request, *lookoutmetrics.GetAnomalyGroupOutput)
 
+	GetDataQualityMetrics(*lookoutmetrics.GetDataQualityMetricsInput) (*lookoutmetrics.GetDataQualityMetricsOutput, error)
+	GetDataQualityMetricsWithContext(aws.Context, *lookoutmetrics.GetDataQualityMetricsInput, ...request.Option) (*lookoutmetrics.GetDataQualityMetricsOutput, error)
+	GetDataQualityMetricsRequest(*lookoutmetrics.GetDataQualityMetricsInput) (*request.Request, *lookoutmetrics.GetDataQualityMetricsOutput)
+
 	GetFeedback(*lookoutmetrics.GetFeedbackInput) (*lookoutmetrics.GetFeedbackOutput, error)
 	GetFeedbackWithContext(aws.Context, *lookoutmetrics.GetFeedbackInput, ...request.Option) (*lookoutmetrics.GetFeedbackOutput, error)
 	GetFeedbackRequest(*lookoutmetrics.GetFeedbackInput) (*request.Request, *lookoutmetrics.GetFeedbackOutput)
@@ -187,6 +191,10 @@ type LookoutMetricsAPI interface {
 	UntagResource(*lookoutmetrics.UntagResourceInput) (*lookoutmetrics.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *lookoutmetrics.UntagResourceInput, ...request.Option) (*lookoutmetrics.UntagResourceOutput, error)
 	UntagResourceRequest(*lookoutmetrics.UntagResourceInput) (*request.Request, *lookoutmetrics.UntagResourceOutput)
+
+	UpdateAlert(*lookoutmetrics.UpdateAlertInput) (*lookoutmetrics.UpdateAlertOutput, error)
+	UpdateAlertWithContext(aws.Context, *lookoutmetrics.UpdateAlertInput, ...request.Option) (*lookoutmetrics.UpdateAlertOutput, error)
+	UpdateAlertRequest(*lookoutmetrics.UpdateAlertInput) (*request.Request, *lookoutmetrics.UpdateAlertOutput)
 
 	UpdateAnomalyDetector(*lookoutmetrics.UpdateAnomalyDetectorInput) (*lookoutmetrics.UpdateAnomalyDetectorOutput, error)
 	UpdateAnomalyDetectorWithContext(aws.Context, *lookoutmetrics.UpdateAnomalyDetectorInput, ...request.Option) (*lookoutmetrics.UpdateAnomalyDetectorOutput, error)

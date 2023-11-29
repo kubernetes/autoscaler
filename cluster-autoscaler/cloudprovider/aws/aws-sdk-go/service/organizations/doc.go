@@ -49,7 +49,7 @@
 // an Amazon S3 bucket. By using information collected by CloudTrail, you can
 // determine which requests the Organizations service received, who made the
 // request and when, and so on. For more about Organizations and its support
-// for CloudTrail, see Logging Organizations Events with CloudTrail (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_incident-response.html#orgs_cloudtrail-integration)
+// for CloudTrail, see Logging Organizations API calls with CloudTrail (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_incident-response.html#orgs_cloudtrail-integration)
 // in the Organizations User Guide. To learn more about CloudTrail, including
 // how to turn it on and find your log files, see the CloudTrail User Guide
 // (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/what_is_cloud_trail_top_level.html).

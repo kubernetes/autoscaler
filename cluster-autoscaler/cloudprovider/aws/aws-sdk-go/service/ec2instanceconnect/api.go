@@ -92,6 +92,9 @@ func (c *EC2InstanceConnect) SendSSHPublicKeyRequest(input *SendSSHPublicKeyInpu
 //     to a stopped or terminated instance is not supported. If the instance is
 //     stopped, start your instance, and try to connect again.
 //
+//   - EC2InstanceUnavailableException
+//     The instance is currently unavailable. Wait a few minutes and try again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-instance-connect-2018-04-02/SendSSHPublicKey
 func (c *EC2InstanceConnect) SendSSHPublicKey(input *SendSSHPublicKeyInput) (*SendSSHPublicKeyOutput, error) {
 	req, out := c.SendSSHPublicKeyRequest(input)
@@ -211,6 +214,9 @@ func (c *EC2InstanceConnect) SendSerialConsoleSSHPublicKeyRequest(input *SendSer
 //     Unable to connect because the instance is not in a valid state. Connecting
 //     to a stopped or terminated instance is not supported. If the instance is
 //     stopped, start your instance, and try to connect again.
+//
+//   - EC2InstanceUnavailableException
+//     The instance is currently unavailable. Wait a few minutes and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ec2-instance-connect-2018-04-02/SendSerialConsoleSSHPublicKey
 func (c *EC2InstanceConnect) SendSerialConsoleSSHPublicKey(input *SendSerialConsoleSSHPublicKeyInput) (*SendSerialConsoleSSHPublicKeyOutput, error) {
@@ -491,6 +497,70 @@ func (s *EC2InstanceTypeInvalidException) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *EC2InstanceTypeInvalidException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The instance is currently unavailable. Wait a few minutes and try again.
+type EC2InstanceUnavailableException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EC2InstanceUnavailableException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EC2InstanceUnavailableException) GoString() string {
+	return s.String()
+}
+
+func newErrorEC2InstanceUnavailableException(v protocol.ResponseMetadata) error {
+	return &EC2InstanceUnavailableException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *EC2InstanceUnavailableException) Code() string {
+	return "EC2InstanceUnavailableException"
+}
+
+// Message returns the exception's message.
+func (s *EC2InstanceUnavailableException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *EC2InstanceUnavailableException) OrigErr() error {
+	return nil
+}
+
+func (s *EC2InstanceUnavailableException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *EC2InstanceUnavailableException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *EC2InstanceUnavailableException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 

@@ -58,9 +58,9 @@ func (c *ServiceQuotas) AssociateServiceQuotaTemplateRequest(input *AssociateSer
 // AssociateServiceQuotaTemplate API operation for Service Quotas.
 //
 // Associates your quota request template with your organization. When a new
-// account is created in your organization, the quota increase requests in the
-// template are automatically applied to the account. You can add a quota increase
-// request for any adjustable quota to your template.
+// Amazon Web Services account is created in your organization, the quota increase
+// requests in the template are automatically applied to the account. You can
+// add a quota increase request for any adjustable quota to your template.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -89,13 +89,15 @@ func (c *ServiceQuotas) AssociateServiceQuotaTemplateRequest(input *AssociateSer
 //     Quotas is enabled in your organization.
 //
 //   - OrganizationNotInAllFeaturesModeException
-//     The organization that your account belongs to is not in All Features mode.
+//     The organization that your Amazon Web Services account belongs to is not
+//     in All Features mode.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/AssociateServiceQuotaTemplate
 func (c *ServiceQuotas) AssociateServiceQuotaTemplate(input *AssociateServiceQuotaTemplateInput) (*AssociateServiceQuotaTemplateOutput, error) {
@@ -199,10 +201,11 @@ func (c *ServiceQuotas) DeleteServiceQuotaIncreaseRequestFromTemplateRequest(inp
 //     Quotas is enabled in your organization.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/DeleteServiceQuotaIncreaseRequestFromTemplate
 func (c *ServiceQuotas) DeleteServiceQuotaIncreaseRequestFromTemplate(input *DeleteServiceQuotaIncreaseRequestFromTemplateInput) (*DeleteServiceQuotaIncreaseRequestFromTemplateOutput, error) {
@@ -271,9 +274,9 @@ func (c *ServiceQuotas) DisassociateServiceQuotaTemplateRequest(input *Disassoci
 // DisassociateServiceQuotaTemplate API operation for Service Quotas.
 //
 // Disables your quota request template. After a template is disabled, the quota
-// increase requests in the template are not applied to new accounts in your
-// organization. Disabling a quota request template does not apply its quota
-// increase requests.
+// increase requests in the template are not applied to new Amazon Web Services
+// accounts in your organization. Disabling a quota request template does not
+// apply its quota increase requests.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -305,10 +308,11 @@ func (c *ServiceQuotas) DisassociateServiceQuotaTemplateRequest(input *Disassoci
 //     Quotas is enabled in your organization.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/DisassociateServiceQuotaTemplate
 func (c *ServiceQuotas) DisassociateServiceQuotaTemplate(input *DisassociateServiceQuotaTemplateInput) (*DisassociateServiceQuotaTemplateOutput, error) {
@@ -500,10 +504,11 @@ func (c *ServiceQuotas) GetAssociationForServiceQuotaTemplateRequest(input *GetA
 //     Quotas is enabled in your organization.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetAssociationForServiceQuotaTemplate
 func (c *ServiceQuotas) GetAssociationForServiceQuotaTemplate(input *GetAssociationForServiceQuotaTemplateInput) (*GetAssociationForServiceQuotaTemplateOutput, error) {
@@ -792,10 +797,11 @@ func (c *ServiceQuotas) GetServiceQuotaIncreaseRequestFromTemplateRequest(input 
 //     Quotas is enabled in your organization.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/GetServiceQuotaIncreaseRequestFromTemplate
 func (c *ServiceQuotas) GetServiceQuotaIncreaseRequestFromTemplate(input *GetServiceQuotaIncreaseRequestFromTemplateInput) (*GetServiceQuotaIncreaseRequestFromTemplateOutput, error) {
@@ -868,8 +874,8 @@ func (c *ServiceQuotas) ListAWSDefaultServiceQuotasRequest(input *ListAWSDefault
 
 // ListAWSDefaultServiceQuotas API operation for Service Quotas.
 //
-// Lists the default values for the quotas for the specified AWS service. A
-// default value does not reflect any quota increases.
+// Lists the default values for the quotas for the specified Amazon Web Service.
+// A default value does not reflect any quota increases.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1021,7 +1027,7 @@ func (c *ServiceQuotas) ListRequestedServiceQuotaChangeHistoryRequest(input *Lis
 
 // ListRequestedServiceQuotaChangeHistory API operation for Service Quotas.
 //
-// Retrieves the quota increase requests for the specified service.
+// Retrieves the quota increase requests for the specified Amazon Web Service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1357,10 +1363,11 @@ func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplateRequest(input 
 //     Quotas is enabled in your organization.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/ListServiceQuotaIncreaseRequestsInTemplate
 func (c *ServiceQuotas) ListServiceQuotaIncreaseRequestsInTemplate(input *ListServiceQuotaIncreaseRequestsInTemplateInput) (*ListServiceQuotaIncreaseRequestsInTemplateOutput, error) {
@@ -1484,9 +1491,9 @@ func (c *ServiceQuotas) ListServiceQuotasRequest(input *ListServiceQuotasInput) 
 
 // ListServiceQuotas API operation for Service Quotas.
 //
-// Lists the applied quota values for the specified AWS service. For some quotas,
-// only the default values are available. If the applied quota value is not
-// available for a quota, the quota is not retrieved.
+// Lists the applied quota values for the specified Amazon Web Service. For
+// some quotas, only the default values are available. If the applied quota
+// value is not available for a quota, the quota is not retrieved.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1638,7 +1645,8 @@ func (c *ServiceQuotas) ListServicesRequest(input *ListServicesInput) (req *requ
 
 // ListServices API operation for Service Quotas.
 //
-// Lists the names and codes for the services integrated with Service Quotas.
+// Lists the names and codes for the Amazon Web Services integrated with Service
+// Quotas.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1913,10 +1921,11 @@ func (c *ServiceQuotas) PutServiceQuotaIncreaseRequestIntoTemplateRequest(input 
 //     Quotas is enabled in your organization.
 //
 //   - TemplatesNotAvailableInRegionException
-//     The Service Quotas template is not available in this AWS Region.
+//     The Service Quotas template is not available in this Amazon Web Services
+//     Region.
 //
 //   - NoAvailableOrganizationException
-//     The account making this call is not a member of an organization.
+//     The Amazon Web Services account making this call is not a member of an organization.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24/PutServiceQuotaIncreaseRequestIntoTemplate
 func (c *ServiceQuotas) PutServiceQuotaIncreaseRequestIntoTemplate(input *PutServiceQuotaIncreaseRequestIntoTemplateInput) (*PutServiceQuotaIncreaseRequestIntoTemplateOutput, error) {
@@ -2418,17 +2427,20 @@ func (s AssociateServiceQuotaTemplateOutput) GoString() string {
 type DeleteServiceQuotaIncreaseRequestFromTemplateInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS Region.
+	// Specifies the Amazon Web Services Region for which the request was made.
 	//
 	// AwsRegion is a required field
 	AwsRegion *string `min:"1" type:"string" required:"true"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -2636,11 +2648,12 @@ type ErrorReason struct {
 	//
 	//    * DEPENDENCY_ACCESS_DENIED_ERROR - The caller does not have the required
 	//    permissions to complete the action. To resolve the error, you must have
-	//    permission to access the service or quota.
+	//    permission to access the Amazon Web Service or quota.
 	//
-	//    * DEPENDENCY_THROTTLING_ERROR - The service is throttling Service Quotas.
+	//    * DEPENDENCY_THROTTLING_ERROR - The Amazon Web Service is throttling Service
+	//    Quotas.
 	//
-	//    * DEPENDENCY_SERVICE_ERROR - The service is not available.
+	//    * DEPENDENCY_SERVICE_ERROR - The Amazon Web Service is not available.
 	//
 	//    * SERVICE_QUOTA_NOT_AVAILABLE_ERROR - There was an error in Service Quotas.
 	ErrorCode *string `type:"string" enum:"ErrorCode"`
@@ -2682,12 +2695,15 @@ func (s *ErrorReason) SetErrorMessage(v string) *ErrorReason {
 type GetAWSDefaultServiceQuotaInput struct {
 	_ struct{} `type:"structure"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -2802,7 +2818,8 @@ type GetAssociationForServiceQuotaTemplateOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The association status. If the status is ASSOCIATED, the quota increase requests
-	// in the template are automatically applied to new accounts in your organization.
+	// in the template are automatically applied to new Amazon Web Services accounts
+	// in your organization.
 	ServiceQuotaTemplateAssociationStatus *string `type:"string" enum:"ServiceQuotaTemplateAssociationStatus"`
 }
 
@@ -2833,7 +2850,7 @@ func (s *GetAssociationForServiceQuotaTemplateOutput) SetServiceQuotaTemplateAss
 type GetRequestedServiceQuotaChangeInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the quota increase request.
+	// Specifies the ID of the quota increase request.
 	//
 	// RequestId is a required field
 	RequestId *string `min:"1" type:"string" required:"true"`
@@ -2913,17 +2930,20 @@ func (s *GetRequestedServiceQuotaChangeOutput) SetRequestedQuota(v *RequestedSer
 type GetServiceQuotaIncreaseRequestFromTemplateInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS Region.
+	// Specifies the Amazon Web Services Region for which you made the request.
 	//
 	// AwsRegion is a required field
 	AwsRegion *string `min:"1" type:"string" required:"true"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -3027,12 +3047,20 @@ func (s *GetServiceQuotaIncreaseRequestFromTemplateOutput) SetServiceQuotaIncrea
 type GetServiceQuotaInput struct {
 	_ struct{} `type:"structure"`
 
-	// The quota identifier.
+	// Specifies the Amazon Web Services account or resource to which the quota
+	// applies. The value in this field depends on the context scope associated
+	// with the specified service quota.
+	ContextId *string `type:"string"`
+
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -3076,6 +3104,12 @@ func (s *GetServiceQuotaInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetContextId sets the ContextId field's value.
+func (s *GetServiceQuotaInput) SetContextId(v string) *GetServiceQuotaInput {
+	s.ContextId = &v
+	return s
 }
 
 // SetQuotaCode sets the QuotaCode field's value.
@@ -3316,15 +3350,26 @@ func (s *InvalidResourceStateException) RequestID() string {
 type ListAWSDefaultServiceQuotasInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, if any, make another call with the token returned from
-	// this call.
+	// Specifies the maximum number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// appropriate to the operation. If additional items exist beyond those included
+	// in the current response, the NextToken response element is present and has
+	// a value (is not null). Include that value as the NextToken request parameter
+	// in the next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// Specifies a value for receiving additional results after you receive a NextToken
+	// response in a previous request. A NextToken response indicates that more
+	// output is available. Set this parameter to the value of the previous call's
+	// NextToken response to indicate where the output should continue from.
 	NextToken *string `type:"string"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -3388,8 +3433,10 @@ func (s *ListAWSDefaultServiceQuotasInput) SetServiceCode(v string) *ListAWSDefa
 type ListAWSDefaultServiceQuotasOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// If present, indicates that more output is available than is included in the
+	// current response. Use this value in the NextToken request parameter in a
+	// subsequent call to the operation to get the next part of the output. You
+	// should repeat this until the NextToken response element comes back as null.
 	NextToken *string `type:"string"`
 
 	// Information about the quotas.
@@ -3429,25 +3476,43 @@ func (s *ListAWSDefaultServiceQuotasOutput) SetQuotas(v []*ServiceQuota) *ListAW
 type ListRequestedServiceQuotaChangeHistoryByQuotaInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, if any, make another call with the token returned from
-	// this call.
+	// Specifies the maximum number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// appropriate to the operation. If additional items exist beyond those included
+	// in the current response, the NextToken response element is present and has
+	// a value (is not null). Include that value as the NextToken request parameter
+	// in the next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// Specifies a value for receiving additional results after you receive a NextToken
+	// response in a previous request. A NextToken response indicates that more
+	// output is available. Set this parameter to the value of the previous call's
+	// NextToken response to indicate where the output should continue from.
 	NextToken *string `type:"string"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies at which level within the Amazon Web Services account the quota
+	// request applies to.
+	QuotaRequestedAtLevel *string `type:"string" enum:"AppliedLevelEnum"`
+
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
 
-	// The status value of the quota increase request.
+	// Specifies that you want to filter the results to only the requests with the
+	// matching status.
 	Status *string `type:"string" enum:"RequestStatus"`
 }
 
@@ -3512,6 +3577,12 @@ func (s *ListRequestedServiceQuotaChangeHistoryByQuotaInput) SetQuotaCode(v stri
 	return s
 }
 
+// SetQuotaRequestedAtLevel sets the QuotaRequestedAtLevel field's value.
+func (s *ListRequestedServiceQuotaChangeHistoryByQuotaInput) SetQuotaRequestedAtLevel(v string) *ListRequestedServiceQuotaChangeHistoryByQuotaInput {
+	s.QuotaRequestedAtLevel = &v
+	return s
+}
+
 // SetServiceCode sets the ServiceCode field's value.
 func (s *ListRequestedServiceQuotaChangeHistoryByQuotaInput) SetServiceCode(v string) *ListRequestedServiceQuotaChangeHistoryByQuotaInput {
 	s.ServiceCode = &v
@@ -3527,8 +3598,10 @@ func (s *ListRequestedServiceQuotaChangeHistoryByQuotaInput) SetStatus(v string)
 type ListRequestedServiceQuotaChangeHistoryByQuotaOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// If present, indicates that more output is available than is included in the
+	// current response. Use this value in the NextToken request parameter in a
+	// subsequent call to the operation to get the next part of the output. You
+	// should repeat this until the NextToken response element comes back as null.
 	NextToken *string `type:"string"`
 
 	// Information about the quota increase requests.
@@ -3568,18 +3641,34 @@ func (s *ListRequestedServiceQuotaChangeHistoryByQuotaOutput) SetRequestedQuotas
 type ListRequestedServiceQuotaChangeHistoryInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, if any, make another call with the token returned from
-	// this call.
+	// Specifies the maximum number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// appropriate to the operation. If additional items exist beyond those included
+	// in the current response, the NextToken response element is present and has
+	// a value (is not null). Include that value as the NextToken request parameter
+	// in the next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// Specifies a value for receiving additional results after you receive a NextToken
+	// response in a previous request. A NextToken response indicates that more
+	// output is available. Set this parameter to the value of the previous call's
+	// NextToken response to indicate where the output should continue from.
 	NextToken *string `type:"string"`
 
-	// The service identifier.
+	// Specifies at which level within the Amazon Web Services account the quota
+	// request applies to.
+	QuotaRequestedAtLevel *string `type:"string" enum:"AppliedLevelEnum"`
+
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	ServiceCode *string `min:"1" type:"string"`
 
-	// The status of the quota increase request.
+	// Specifies that you want to filter the results to only the requests with the
+	// matching status.
 	Status *string `type:"string" enum:"RequestStatus"`
 }
 
@@ -3629,6 +3718,12 @@ func (s *ListRequestedServiceQuotaChangeHistoryInput) SetNextToken(v string) *Li
 	return s
 }
 
+// SetQuotaRequestedAtLevel sets the QuotaRequestedAtLevel field's value.
+func (s *ListRequestedServiceQuotaChangeHistoryInput) SetQuotaRequestedAtLevel(v string) *ListRequestedServiceQuotaChangeHistoryInput {
+	s.QuotaRequestedAtLevel = &v
+	return s
+}
+
 // SetServiceCode sets the ServiceCode field's value.
 func (s *ListRequestedServiceQuotaChangeHistoryInput) SetServiceCode(v string) *ListRequestedServiceQuotaChangeHistoryInput {
 	s.ServiceCode = &v
@@ -3644,8 +3739,10 @@ func (s *ListRequestedServiceQuotaChangeHistoryInput) SetStatus(v string) *ListR
 type ListRequestedServiceQuotaChangeHistoryOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// If present, indicates that more output is available than is included in the
+	// current response. Use this value in the NextToken request parameter in a
+	// subsequent call to the operation to get the next part of the output. You
+	// should repeat this until the NextToken response element comes back as null.
 	NextToken *string `type:"string"`
 
 	// Information about the quota increase requests.
@@ -3685,18 +3782,29 @@ func (s *ListRequestedServiceQuotaChangeHistoryOutput) SetRequestedQuotas(v []*R
 type ListServiceQuotaIncreaseRequestsInTemplateInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS Region.
+	// Specifies the Amazon Web Services Region for which you made the request.
 	AwsRegion *string `min:"1" type:"string"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, if any, make another call with the token returned from
-	// this call.
+	// Specifies the maximum number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// appropriate to the operation. If additional items exist beyond those included
+	// in the current response, the NextToken response element is present and has
+	// a value (is not null). Include that value as the NextToken request parameter
+	// in the next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// Specifies a value for receiving additional results after you receive a NextToken
+	// response in a previous request. A NextToken response indicates that more
+	// output is available. Set this parameter to the value of the previous call's
+	// NextToken response to indicate where the output should continue from.
 	NextToken *string `type:"string"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	ServiceCode *string `min:"1" type:"string"`
 }
 
@@ -3764,8 +3872,10 @@ func (s *ListServiceQuotaIncreaseRequestsInTemplateInput) SetServiceCode(v strin
 type ListServiceQuotaIncreaseRequestsInTemplateOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// If present, indicates that more output is available than is included in the
+	// current response. Use this value in the NextToken request parameter in a
+	// subsequent call to the operation to get the next part of the output. You
+	// should repeat this until the NextToken response element comes back as null.
 	NextToken *string `type:"string"`
 
 	// Information about the quota increase requests.
@@ -3805,15 +3915,34 @@ func (s *ListServiceQuotaIncreaseRequestsInTemplateOutput) SetServiceQuotaIncrea
 type ListServiceQuotasInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, if any, make another call with the token returned from
-	// this call.
+	// Specifies the maximum number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// appropriate to the operation. If additional items exist beyond those included
+	// in the current response, the NextToken response element is present and has
+	// a value (is not null). Include that value as the NextToken request parameter
+	// in the next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// Specifies a value for receiving additional results after you receive a NextToken
+	// response in a previous request. A NextToken response indicates that more
+	// output is available. Set this parameter to the value of the previous call's
+	// NextToken response to indicate where the output should continue from.
 	NextToken *string `type:"string"`
 
-	// The service identifier.
+	// Specifies at which level of granularity that the quota value is applied.
+	QuotaAppliedAtLevel *string `type:"string" enum:"AppliedLevelEnum"`
+
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
+	QuotaCode *string `min:"1" type:"string"`
+
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -3843,6 +3972,9 @@ func (s *ListServiceQuotasInput) Validate() error {
 	if s.MaxResults != nil && *s.MaxResults < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
 	}
+	if s.QuotaCode != nil && len(*s.QuotaCode) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("QuotaCode", 1))
+	}
 	if s.ServiceCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("ServiceCode"))
 	}
@@ -3868,6 +4000,18 @@ func (s *ListServiceQuotasInput) SetNextToken(v string) *ListServiceQuotasInput 
 	return s
 }
 
+// SetQuotaAppliedAtLevel sets the QuotaAppliedAtLevel field's value.
+func (s *ListServiceQuotasInput) SetQuotaAppliedAtLevel(v string) *ListServiceQuotasInput {
+	s.QuotaAppliedAtLevel = &v
+	return s
+}
+
+// SetQuotaCode sets the QuotaCode field's value.
+func (s *ListServiceQuotasInput) SetQuotaCode(v string) *ListServiceQuotasInput {
+	s.QuotaCode = &v
+	return s
+}
+
 // SetServiceCode sets the ServiceCode field's value.
 func (s *ListServiceQuotasInput) SetServiceCode(v string) *ListServiceQuotasInput {
 	s.ServiceCode = &v
@@ -3877,8 +4021,10 @@ func (s *ListServiceQuotasInput) SetServiceCode(v string) *ListServiceQuotasInpu
 type ListServiceQuotasOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// If present, indicates that more output is available than is included in the
+	// current response. Use this value in the NextToken request parameter in a
+	// subsequent call to the operation to get the next part of the output. You
+	// should repeat this until the NextToken response element comes back as null.
 	NextToken *string `type:"string"`
 
 	// Information about the quotas.
@@ -3918,12 +4064,22 @@ func (s *ListServiceQuotasOutput) SetQuotas(v []*ServiceQuota) *ListServiceQuota
 type ListServicesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results to return with a single call. To retrieve the
-	// remaining results, if any, make another call with the token returned from
-	// this call.
+	// Specifies the maximum number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// appropriate to the operation. If additional items exist beyond those included
+	// in the current response, the NextToken response element is present and has
+	// a value (is not null). Include that value as the NextToken request parameter
+	// in the next call to the operation to get the next part of the results.
+	//
+	// An API operation can return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
 	MaxResults *int64 `min:"1" type:"integer"`
 
-	// The token for the next page of results.
+	// Specifies a value for receiving additional results after you receive a NextToken
+	// response in a previous request. A NextToken response indicates that more
+	// output is available. Set this parameter to the value of the previous call's
+	// NextToken response to indicate where the output should continue from.
 	NextToken *string `type:"string"`
 }
 
@@ -3973,11 +4129,13 @@ func (s *ListServicesInput) SetNextToken(v string) *ListServicesInput {
 type ListServicesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token to use to retrieve the next page of results. This value is null
-	// when there are no more results to return.
+	// If present, indicates that more output is available than is included in the
+	// current response. Use this value in the NextToken request parameter in a
+	// subsequent call to the operation to get the next part of the output. You
+	// should repeat this until the NextToken response element comes back as null.
 	NextToken *string `type:"string"`
 
-	// Information about the services.
+	// The list of the Amazon Web Service names and service codes.
 	Services []*ServiceInfo `type:"list"`
 }
 
@@ -4017,8 +4175,8 @@ type ListTagsForResourceInput struct {
 	// The Amazon Resource Name (ARN) for the applied quota for which you want to
 	// list tags. You can get this information by using the Service Quotas console,
 	// or by listing the quotas using the list-service-quotas (https://docs.aws.amazon.com/cli/latest/reference/service-quotas/list-service-quotas.html)
-	// AWS CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
-	// AWS API operation.
+	// CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
+	// Amazon Web Services API operation.
 	//
 	// ResourceARN is a required field
 	ResourceARN *string `min:"1" type:"string" required:"true"`
@@ -4155,7 +4313,7 @@ func (s *MetricInfo) SetMetricStatisticRecommendation(v string) *MetricInfo {
 	return s
 }
 
-// The account making this call is not a member of an organization.
+// The Amazon Web Services account making this call is not a member of an organization.
 type NoAvailableOrganizationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -4283,7 +4441,8 @@ func (s *NoSuchResourceException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The organization that your account belongs to is not in All Features mode.
+// The organization that your Amazon Web Services account belongs to is not
+// in All Features mode.
 type OrganizationNotInAllFeaturesModeException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -4350,22 +4509,25 @@ func (s *OrganizationNotInAllFeaturesModeException) RequestID() string {
 type PutServiceQuotaIncreaseRequestIntoTemplateInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS Region.
+	// Specifies the Amazon Web Services Region to which the template applies.
 	//
 	// AwsRegion is a required field
 	AwsRegion *string `min:"1" type:"string" required:"true"`
 
-	// The new, increased value for the quota.
+	// Specifies the new, increased value for the quota.
 	//
 	// DesiredValue is a required field
 	DesiredValue *float64 `type:"double" required:"true"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -4475,6 +4637,61 @@ func (s *PutServiceQuotaIncreaseRequestIntoTemplateOutput) SetServiceQuotaIncrea
 	return s
 }
 
+// A structure that describes the context for a service quota. The context identifies
+// what the quota applies to.
+type QuotaContextInfo struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the Amazon Web Services account or resource to which the quota
+	// applies. The value in this field depends on the context scope associated
+	// with the specified service quota.
+	ContextId *string `type:"string"`
+
+	// Specifies whether the quota applies to an Amazon Web Services account, or
+	// to a resource.
+	ContextScope *string `type:"string" enum:"QuotaContextScope"`
+
+	// When the ContextScope is RESOURCE, then this specifies the resource type
+	// of the specified resource.
+	ContextScopeType *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuotaContextInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuotaContextInfo) GoString() string {
+	return s.String()
+}
+
+// SetContextId sets the ContextId field's value.
+func (s *QuotaContextInfo) SetContextId(v string) *QuotaContextInfo {
+	s.ContextId = &v
+	return s
+}
+
+// SetContextScope sets the ContextScope field's value.
+func (s *QuotaContextInfo) SetContextScope(v string) *QuotaContextInfo {
+	s.ContextScope = &v
+	return s
+}
+
+// SetContextScopeType sets the ContextScopeType field's value.
+func (s *QuotaContextInfo) SetContextScopeType(v string) *QuotaContextInfo {
+	s.ContextScopeType = &v
+	return s
+}
+
 // You have exceeded your service quota. To perform the requested action, remove
 // some of the relevant resources, or use Service Quotas to request a service
 // quota increase.
@@ -4548,7 +4765,7 @@ type QuotaPeriod struct {
 	// The time unit.
 	PeriodUnit *string `type:"string" enum:"PeriodUnit"`
 
-	// The value.
+	// The value associated with the reported PeriodUnit.
 	PeriodValue *int64 `type:"integer"`
 }
 
@@ -4585,17 +4802,25 @@ func (s *QuotaPeriod) SetPeriodValue(v int64) *QuotaPeriod {
 type RequestServiceQuotaIncreaseInput struct {
 	_ struct{} `type:"structure"`
 
-	// The new, increased value for the quota.
+	// Specifies the Amazon Web Services account or resource to which the quota
+	// applies. The value in this field depends on the context scope associated
+	// with the specified service quota.
+	ContextId *string `type:"string"`
+
+	// Specifies the new, increased value for the quota.
 	//
 	// DesiredValue is a required field
 	DesiredValue *float64 `type:"double" required:"true"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	//
 	// QuotaCode is a required field
 	QuotaCode *string `min:"1" type:"string" required:"true"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	//
 	// ServiceCode is a required field
 	ServiceCode *string `min:"1" type:"string" required:"true"`
@@ -4642,6 +4867,12 @@ func (s *RequestServiceQuotaIncreaseInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetContextId sets the ContextId field's value.
+func (s *RequestServiceQuotaIncreaseInput) SetContextId(v string) *RequestServiceQuotaIncreaseInput {
+	s.ContextId = &v
+	return s
 }
 
 // SetDesiredValue sets the DesiredValue field's value.
@@ -4719,19 +4950,29 @@ type RequestedServiceQuotaChange struct {
 	// The Amazon Resource Name (ARN) of the quota.
 	QuotaArn *string `type:"string"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	QuotaCode *string `min:"1" type:"string"`
 
-	// The quota name.
+	// The context for this service quota.
+	QuotaContext *QuotaContextInfo `type:"structure"`
+
+	// Specifies the quota name.
 	QuotaName *string `type:"string"`
+
+	// Specifies at which level within the Amazon Web Services account the quota
+	// request applies to.
+	QuotaRequestedAtLevel *string `type:"string" enum:"AppliedLevelEnum"`
 
 	// The IAM identity of the requester.
 	Requester *string `type:"string"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	ServiceCode *string `min:"1" type:"string"`
 
-	// The service name.
+	// Specifies the service name.
 	ServiceName *string `type:"string"`
 
 	// The state of the quota increase request.
@@ -4807,9 +5048,21 @@ func (s *RequestedServiceQuotaChange) SetQuotaCode(v string) *RequestedServiceQu
 	return s
 }
 
+// SetQuotaContext sets the QuotaContext field's value.
+func (s *RequestedServiceQuotaChange) SetQuotaContext(v *QuotaContextInfo) *RequestedServiceQuotaChange {
+	s.QuotaContext = v
+	return s
+}
+
 // SetQuotaName sets the QuotaName field's value.
 func (s *RequestedServiceQuotaChange) SetQuotaName(v string) *RequestedServiceQuotaChange {
 	s.QuotaName = &v
+	return s
+}
+
+// SetQuotaRequestedAtLevel sets the QuotaRequestedAtLevel field's value.
+func (s *RequestedServiceQuotaChange) SetQuotaRequestedAtLevel(v string) *RequestedServiceQuotaChange {
+	s.QuotaRequestedAtLevel = &v
 	return s
 }
 
@@ -4971,14 +5224,15 @@ func (s *ServiceException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// Information about a service.
+// Information about an Amazon Web Service.
 type ServiceInfo struct {
 	_ struct{} `type:"structure"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	ServiceCode *string `min:"1" type:"string"`
 
-	// The service name.
+	// Specifies the service name.
 	ServiceName *string `type:"string"`
 }
 
@@ -5028,19 +5282,28 @@ type ServiceQuota struct {
 	// The period of time.
 	Period *QuotaPeriod `type:"structure"`
 
+	// Specifies at which level of granularity that the quota value is applied.
+	QuotaAppliedAtLevel *string `type:"string" enum:"AppliedLevelEnum"`
+
 	// The Amazon Resource Name (ARN) of the quota.
 	QuotaArn *string `type:"string"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	QuotaCode *string `min:"1" type:"string"`
 
-	// The quota name.
+	// The context for this service quota.
+	QuotaContext *QuotaContextInfo `type:"structure"`
+
+	// Specifies the quota name.
 	QuotaName *string `type:"string"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	ServiceCode *string `min:"1" type:"string"`
 
-	// The service name.
+	// Specifies the service name.
 	ServiceName *string `type:"string"`
 
 	// The unit of measurement.
@@ -5095,6 +5358,12 @@ func (s *ServiceQuota) SetPeriod(v *QuotaPeriod) *ServiceQuota {
 	return s
 }
 
+// SetQuotaAppliedAtLevel sets the QuotaAppliedAtLevel field's value.
+func (s *ServiceQuota) SetQuotaAppliedAtLevel(v string) *ServiceQuota {
+	s.QuotaAppliedAtLevel = &v
+	return s
+}
+
 // SetQuotaArn sets the QuotaArn field's value.
 func (s *ServiceQuota) SetQuotaArn(v string) *ServiceQuota {
 	s.QuotaArn = &v
@@ -5104,6 +5373,12 @@ func (s *ServiceQuota) SetQuotaArn(v string) *ServiceQuota {
 // SetQuotaCode sets the QuotaCode field's value.
 func (s *ServiceQuota) SetQuotaCode(v string) *ServiceQuota {
 	s.QuotaCode = &v
+	return s
+}
+
+// SetQuotaContext sets the QuotaContext field's value.
+func (s *ServiceQuota) SetQuotaContext(v *QuotaContextInfo) *ServiceQuota {
+	s.QuotaContext = v
 	return s
 }
 
@@ -5147,7 +5422,7 @@ func (s *ServiceQuota) SetValue(v float64) *ServiceQuota {
 type ServiceQuotaIncreaseRequestInTemplate struct {
 	_ struct{} `type:"structure"`
 
-	// The AWS Region.
+	// The Amazon Web Services Region.
 	AwsRegion *string `min:"1" type:"string"`
 
 	// The new, increased value of the quota.
@@ -5156,16 +5431,19 @@ type ServiceQuotaIncreaseRequestInTemplate struct {
 	// Indicates whether the quota is global.
 	GlobalQuota *bool `type:"boolean"`
 
-	// The quota identifier.
+	// Specifies the quota identifier. To find the quota code for a specific quota,
+	// use the ListServiceQuotas operation, and look for the QuotaCode response
+	// in the output for the quota you want.
 	QuotaCode *string `min:"1" type:"string"`
 
-	// The quota name.
+	// Specifies the quota name.
 	QuotaName *string `type:"string"`
 
-	// The service identifier.
+	// Specifies the service identifier. To find the service code value for an Amazon
+	// Web Services service, use the ListServices operation.
 	ServiceCode *string `min:"1" type:"string"`
 
-	// The service name.
+	// Specifies the service name.
 	ServiceName *string `type:"string"`
 
 	// The unit of measurement.
@@ -5440,8 +5718,8 @@ type TagResourceInput struct {
 	// The Amazon Resource Name (ARN) for the applied quota. You can get this information
 	// by using the Service Quotas console, or by listing the quotas using the list-service-quotas
 	// (https://docs.aws.amazon.com/cli/latest/reference/service-quotas/list-service-quotas.html)
-	// AWS CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
-	// AWS API operation.
+	// CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
+	// Amazon Web Services API operation.
 	//
 	// ResourceARN is a required field
 	ResourceARN *string `min:"1" type:"string" required:"true"`
@@ -5536,7 +5814,8 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
-// The Service Quotas template is not available in this AWS Region.
+// The Service Quotas template is not available in this Amazon Web Services
+// Region.
 type TemplatesNotAvailableInRegionException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5737,8 +6016,8 @@ type UntagResourceInput struct {
 	// The Amazon Resource Name (ARN) for the applied quota that you want to untag.
 	// You can get this information by using the Service Quotas console, or by listing
 	// the quotas using the list-service-quotas (https://docs.aws.amazon.com/cli/latest/reference/service-quotas/list-service-quotas.html)
-	// AWS CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
-	// AWS API operation.
+	// CLI command or the ListServiceQuotas (https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_ListServiceQuotas.html)
+	// Amazon Web Services API operation.
 	//
 	// ResourceARN is a required field
 	ResourceARN *string `min:"1" type:"string" required:"true"`
@@ -5821,6 +6100,26 @@ func (s UntagResourceOutput) GoString() string {
 }
 
 const (
+	// AppliedLevelEnumAccount is a AppliedLevelEnum enum value
+	AppliedLevelEnumAccount = "ACCOUNT"
+
+	// AppliedLevelEnumResource is a AppliedLevelEnum enum value
+	AppliedLevelEnumResource = "RESOURCE"
+
+	// AppliedLevelEnumAll is a AppliedLevelEnum enum value
+	AppliedLevelEnumAll = "ALL"
+)
+
+// AppliedLevelEnum_Values returns all elements of the AppliedLevelEnum enum
+func AppliedLevelEnum_Values() []string {
+	return []string{
+		AppliedLevelEnumAccount,
+		AppliedLevelEnumResource,
+		AppliedLevelEnumAll,
+	}
+}
+
+const (
 	// ErrorCodeDependencyAccessDeniedError is a ErrorCode enum value
 	ErrorCodeDependencyAccessDeniedError = "DEPENDENCY_ACCESS_DENIED_ERROR"
 
@@ -5881,6 +6180,22 @@ func PeriodUnit_Values() []string {
 }
 
 const (
+	// QuotaContextScopeResource is a QuotaContextScope enum value
+	QuotaContextScopeResource = "RESOURCE"
+
+	// QuotaContextScopeAccount is a QuotaContextScope enum value
+	QuotaContextScopeAccount = "ACCOUNT"
+)
+
+// QuotaContextScope_Values returns all elements of the QuotaContextScope enum
+func QuotaContextScope_Values() []string {
+	return []string{
+		QuotaContextScopeResource,
+		QuotaContextScopeAccount,
+	}
+}
+
+const (
 	// RequestStatusPending is a RequestStatus enum value
 	RequestStatusPending = "PENDING"
 
@@ -5895,6 +6210,12 @@ const (
 
 	// RequestStatusCaseClosed is a RequestStatus enum value
 	RequestStatusCaseClosed = "CASE_CLOSED"
+
+	// RequestStatusNotApproved is a RequestStatus enum value
+	RequestStatusNotApproved = "NOT_APPROVED"
+
+	// RequestStatusInvalidRequest is a RequestStatus enum value
+	RequestStatusInvalidRequest = "INVALID_REQUEST"
 )
 
 // RequestStatus_Values returns all elements of the RequestStatus enum
@@ -5905,6 +6226,8 @@ func RequestStatus_Values() []string {
 		RequestStatusApproved,
 		RequestStatusDenied,
 		RequestStatusCaseClosed,
+		RequestStatusNotApproved,
+		RequestStatusInvalidRequest,
 	}
 }
 

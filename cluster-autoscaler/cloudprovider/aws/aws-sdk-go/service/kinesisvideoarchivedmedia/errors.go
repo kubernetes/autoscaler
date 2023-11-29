@@ -60,8 +60,8 @@ const (
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
-	// GetMedia throws this error when Kinesis Video Streams can't find the stream
-	// that you specified.
+	// GetImages will throw this error when Kinesis Video Streams can't find the
+	// stream that you specified.
 	//
 	// GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 	// if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested

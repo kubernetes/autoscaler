@@ -11,196 +11,196 @@ type legacyJSONValues struct {
 }
 
 var legacyJSONValueShapes = map[string]map[string]legacyJSONValues{
-	"braket": {
-		"CreateQuantumTaskRequest": {
+	"braket": map[string]legacyJSONValues{
+		"CreateQuantumTaskRequest": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"action":           {},
-				"deviceParameters": {},
+				"action":           struct{}{},
+				"deviceParameters": struct{}{},
 			},
 		},
-		"GetDeviceResponse": {
+		"GetDeviceResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"deviceCapabilities": {},
+				"deviceCapabilities": struct{}{},
 			},
 		},
-		"GetQuantumTaskResponse": {
+		"GetQuantumTaskResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"deviceParameters": {},
-			},
-		},
-	},
-	"cloudwatchrum": {
-		"RumEvent": {
-			Type: "structure",
-			StructMembers: map[string]struct{}{
-				"details":  {},
-				"metadata": {},
+				"deviceParameters": struct{}{},
 			},
 		},
 	},
-	"lexruntimeservice": {
-		"PostContentRequest": {
+	"cloudwatchrum": map[string]legacyJSONValues{
+		"RumEvent": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"requestAttributes": {},
+				"details":  struct{}{},
+				"metadata": struct{}{},
+			},
+		},
+	},
+	"lexruntimeservice": map[string]legacyJSONValues{
+		"PostContentRequest": legacyJSONValues{
+			Type: "structure",
+			StructMembers: map[string]struct{}{
+				"requestAttributes": struct{}{},
 				//"ActiveContexts":    struct{}{}, - Disabled because JSON List
-				"sessionAttributes": {},
+				"sessionAttributes": struct{}{},
 			},
 		},
-		"PostContentResponse": {
+		"PostContentResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
 				// "alternativeIntents":  struct{}{}, - Disabled because JSON List
-				"sessionAttributes":   {},
-				"nluIntentConfidence": {},
-				"slots":               {},
+				"sessionAttributes":   struct{}{},
+				"nluIntentConfidence": struct{}{},
+				"slots":               struct{}{},
 				//"activeContexts":      struct{}{}, - Disabled because JSON List
 			},
 		},
-		"PutSessionResponse": {
+		"PutSessionResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
 				// "activeContexts":    struct{}{}, - Disabled because JSON List
-				"slots":             {},
-				"sessionAttributes": {},
+				"slots":             struct{}{},
+				"sessionAttributes": struct{}{},
 			},
 		},
 	},
-	"lookoutequipment": {
-		"DatasetSchema": {
+	"lookoutequipment": map[string]legacyJSONValues{
+		"DatasetSchema": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"InlineDataSchema": {},
+				"InlineDataSchema": struct{}{},
 			},
 		},
-		"DescribeDatasetResponse": {
+		"DescribeDatasetResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Schema": {},
+				"Schema": struct{}{},
 			},
 		},
-		"DescribeModelResponse": {
+		"DescribeModelResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Schema":       {},
-				"ModelMetrics": {},
-			},
-		},
-	},
-	"networkmanager": {
-		"CoreNetworkPolicy": {
-			Type: "structure",
-			StructMembers: map[string]struct{}{
-				"PolicyDocument": {},
-			},
-		},
-		"GetResourcePolicyResponse": {
-			Type: "structure",
-			StructMembers: map[string]struct{}{
-				"PolicyDocument": {},
-			},
-		},
-		"PutCoreNetworkPolicyRequest": {
-			Type: "structure",
-			StructMembers: map[string]struct{}{
-				"PolicyDocument": {},
-			},
-		},
-		"PutResourcePolicyRequest": {
-			Type: "structure",
-			StructMembers: map[string]struct{}{
-				"PolicyDocument": {},
+				"Schema":       struct{}{},
+				"ModelMetrics": struct{}{},
 			},
 		},
 	},
-	"personalizeevents": {
-		"Event": {
+	"networkmanager": map[string]legacyJSONValues{
+		"CoreNetworkPolicy": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"properties": {},
+				"PolicyDocument": struct{}{},
 			},
 		},
-		"Item": {
+		"GetResourcePolicyResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"properties": {},
+				"PolicyDocument": struct{}{},
 			},
 		},
-		"User": {
+		"PutCoreNetworkPolicyRequest": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"properties": {},
+				"PolicyDocument": struct{}{},
+			},
+		},
+		"PutResourcePolicyRequest": legacyJSONValues{
+			Type: "structure",
+			StructMembers: map[string]struct{}{
+				"PolicyDocument": struct{}{},
 			},
 		},
 	},
-	"pricing": {
-		"PriceList": {
+	"personalizeevents": map[string]legacyJSONValues{
+		"Event": legacyJSONValues{
+			Type: "structure",
+			StructMembers: map[string]struct{}{
+				"properties": struct{}{},
+			},
+		},
+		"Item": legacyJSONValues{
+			Type: "structure",
+			StructMembers: map[string]struct{}{
+				"properties": struct{}{},
+			},
+		},
+		"User": legacyJSONValues{
+			Type: "structure",
+			StructMembers: map[string]struct{}{
+				"properties": struct{}{},
+			},
+		},
+	},
+	"pricing": map[string]legacyJSONValues{
+		"PriceListJsonItems": legacyJSONValues{
 			Type:          "list",
 			ListMemberRef: true,
 		},
 	},
-	"rekognition": {
-		"HumanLoopActivationOutput": {
+	"rekognition": map[string]legacyJSONValues{
+		"HumanLoopActivationOutput": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"HumanLoopActivationConditionsEvaluationResults": {},
+				"HumanLoopActivationConditionsEvaluationResults": struct{}{},
 			},
 		},
 	},
-	"sagemaker": {
-		"HumanLoopActivationConditionsConfig": {
+	"sagemaker": map[string]legacyJSONValues{
+		"HumanLoopActivationConditionsConfig": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"HumanLoopActivationConditions": {},
+				"HumanLoopActivationConditions": struct{}{},
 			},
 		},
 	},
-	"schemas": {
-		"GetResourcePolicyResponse": {
+	"schemas": map[string]legacyJSONValues{
+		"GetResourcePolicyResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Policy": {},
+				"Policy": struct{}{},
 			},
 		},
-		"PutResourcePolicyRequest": {
+		"PutResourcePolicyRequest": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Policy": {},
+				"Policy": struct{}{},
 			},
 		},
-		"PutResourcePolicyResponse": {
+		"PutResourcePolicyResponse": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Policy": {},
+				"Policy": struct{}{},
 			},
 		},
-		"GetResourcePolicyOutput": {
+		"GetResourcePolicyOutput": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Policy": {},
+				"Policy": struct{}{},
 			},
 		},
-		"PutResourcePolicyInput": {
+		"PutResourcePolicyInput": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Policy": {},
+				"Policy": struct{}{},
 			},
 		},
-		"PutResourcePolicyOutput": {
+		"PutResourcePolicyOutput": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"Policy": {},
+				"Policy": struct{}{},
 			},
 		},
 	},
-	"textract": {
-		"HumanLoopActivationOutput": {
+	"textract": map[string]legacyJSONValues{
+		"HumanLoopActivationOutput": legacyJSONValues{
 			Type: "structure",
 			StructMembers: map[string]struct{}{
-				"HumanLoopActivationConditionsEvaluationResults": {},
+				"HumanLoopActivationConditionsEvaluationResults": struct{}{},
 			},
 		},
 	},

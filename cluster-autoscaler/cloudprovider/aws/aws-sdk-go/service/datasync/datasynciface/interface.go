@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// AWS DataSync.
 //	func myFunc(svc datasynciface.DataSyncAPI) bool {
-//	    // Make svc.CancelTaskExecution request
+//	    // Make svc.AddStorageSystem request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockDataSyncClient struct {
 //	    datasynciface.DataSyncAPI
 //	}
-//	func (m *mockDataSyncClient) CancelTaskExecution(input *datasync.CancelTaskExecutionInput) (*datasync.CancelTaskExecutionOutput, error) {
+//	func (m *mockDataSyncClient) AddStorageSystem(input *datasync.AddStorageSystemInput) (*datasync.AddStorageSystemOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type DataSyncAPI interface {
+	AddStorageSystem(*datasync.AddStorageSystemInput) (*datasync.AddStorageSystemOutput, error)
+	AddStorageSystemWithContext(aws.Context, *datasync.AddStorageSystemInput, ...request.Option) (*datasync.AddStorageSystemOutput, error)
+	AddStorageSystemRequest(*datasync.AddStorageSystemInput) (*request.Request, *datasync.AddStorageSystemOutput)
+
 	CancelTaskExecution(*datasync.CancelTaskExecutionInput) (*datasync.CancelTaskExecutionOutput, error)
 	CancelTaskExecutionWithContext(aws.Context, *datasync.CancelTaskExecutionInput, ...request.Option) (*datasync.CancelTaskExecutionOutput, error)
 	CancelTaskExecutionRequest(*datasync.CancelTaskExecutionInput) (*request.Request, *datasync.CancelTaskExecutionOutput)
@@ -68,6 +72,10 @@ type DataSyncAPI interface {
 	CreateAgentWithContext(aws.Context, *datasync.CreateAgentInput, ...request.Option) (*datasync.CreateAgentOutput, error)
 	CreateAgentRequest(*datasync.CreateAgentInput) (*request.Request, *datasync.CreateAgentOutput)
 
+	CreateLocationAzureBlob(*datasync.CreateLocationAzureBlobInput) (*datasync.CreateLocationAzureBlobOutput, error)
+	CreateLocationAzureBlobWithContext(aws.Context, *datasync.CreateLocationAzureBlobInput, ...request.Option) (*datasync.CreateLocationAzureBlobOutput, error)
+	CreateLocationAzureBlobRequest(*datasync.CreateLocationAzureBlobInput) (*request.Request, *datasync.CreateLocationAzureBlobOutput)
+
 	CreateLocationEfs(*datasync.CreateLocationEfsInput) (*datasync.CreateLocationEfsOutput, error)
 	CreateLocationEfsWithContext(aws.Context, *datasync.CreateLocationEfsInput, ...request.Option) (*datasync.CreateLocationEfsOutput, error)
 	CreateLocationEfsRequest(*datasync.CreateLocationEfsInput) (*request.Request, *datasync.CreateLocationEfsOutput)
@@ -75,6 +83,10 @@ type DataSyncAPI interface {
 	CreateLocationFsxLustre(*datasync.CreateLocationFsxLustreInput) (*datasync.CreateLocationFsxLustreOutput, error)
 	CreateLocationFsxLustreWithContext(aws.Context, *datasync.CreateLocationFsxLustreInput, ...request.Option) (*datasync.CreateLocationFsxLustreOutput, error)
 	CreateLocationFsxLustreRequest(*datasync.CreateLocationFsxLustreInput) (*request.Request, *datasync.CreateLocationFsxLustreOutput)
+
+	CreateLocationFsxOntap(*datasync.CreateLocationFsxOntapInput) (*datasync.CreateLocationFsxOntapOutput, error)
+	CreateLocationFsxOntapWithContext(aws.Context, *datasync.CreateLocationFsxOntapInput, ...request.Option) (*datasync.CreateLocationFsxOntapOutput, error)
+	CreateLocationFsxOntapRequest(*datasync.CreateLocationFsxOntapInput) (*request.Request, *datasync.CreateLocationFsxOntapOutput)
 
 	CreateLocationFsxOpenZfs(*datasync.CreateLocationFsxOpenZfsInput) (*datasync.CreateLocationFsxOpenZfsOutput, error)
 	CreateLocationFsxOpenZfsWithContext(aws.Context, *datasync.CreateLocationFsxOpenZfsInput, ...request.Option) (*datasync.CreateLocationFsxOpenZfsOutput, error)
@@ -124,6 +136,14 @@ type DataSyncAPI interface {
 	DescribeAgentWithContext(aws.Context, *datasync.DescribeAgentInput, ...request.Option) (*datasync.DescribeAgentOutput, error)
 	DescribeAgentRequest(*datasync.DescribeAgentInput) (*request.Request, *datasync.DescribeAgentOutput)
 
+	DescribeDiscoveryJob(*datasync.DescribeDiscoveryJobInput) (*datasync.DescribeDiscoveryJobOutput, error)
+	DescribeDiscoveryJobWithContext(aws.Context, *datasync.DescribeDiscoveryJobInput, ...request.Option) (*datasync.DescribeDiscoveryJobOutput, error)
+	DescribeDiscoveryJobRequest(*datasync.DescribeDiscoveryJobInput) (*request.Request, *datasync.DescribeDiscoveryJobOutput)
+
+	DescribeLocationAzureBlob(*datasync.DescribeLocationAzureBlobInput) (*datasync.DescribeLocationAzureBlobOutput, error)
+	DescribeLocationAzureBlobWithContext(aws.Context, *datasync.DescribeLocationAzureBlobInput, ...request.Option) (*datasync.DescribeLocationAzureBlobOutput, error)
+	DescribeLocationAzureBlobRequest(*datasync.DescribeLocationAzureBlobInput) (*request.Request, *datasync.DescribeLocationAzureBlobOutput)
+
 	DescribeLocationEfs(*datasync.DescribeLocationEfsInput) (*datasync.DescribeLocationEfsOutput, error)
 	DescribeLocationEfsWithContext(aws.Context, *datasync.DescribeLocationEfsInput, ...request.Option) (*datasync.DescribeLocationEfsOutput, error)
 	DescribeLocationEfsRequest(*datasync.DescribeLocationEfsInput) (*request.Request, *datasync.DescribeLocationEfsOutput)
@@ -131,6 +151,10 @@ type DataSyncAPI interface {
 	DescribeLocationFsxLustre(*datasync.DescribeLocationFsxLustreInput) (*datasync.DescribeLocationFsxLustreOutput, error)
 	DescribeLocationFsxLustreWithContext(aws.Context, *datasync.DescribeLocationFsxLustreInput, ...request.Option) (*datasync.DescribeLocationFsxLustreOutput, error)
 	DescribeLocationFsxLustreRequest(*datasync.DescribeLocationFsxLustreInput) (*request.Request, *datasync.DescribeLocationFsxLustreOutput)
+
+	DescribeLocationFsxOntap(*datasync.DescribeLocationFsxOntapInput) (*datasync.DescribeLocationFsxOntapOutput, error)
+	DescribeLocationFsxOntapWithContext(aws.Context, *datasync.DescribeLocationFsxOntapInput, ...request.Option) (*datasync.DescribeLocationFsxOntapOutput, error)
+	DescribeLocationFsxOntapRequest(*datasync.DescribeLocationFsxOntapInput) (*request.Request, *datasync.DescribeLocationFsxOntapOutput)
 
 	DescribeLocationFsxOpenZfs(*datasync.DescribeLocationFsxOpenZfsInput) (*datasync.DescribeLocationFsxOpenZfsOutput, error)
 	DescribeLocationFsxOpenZfsWithContext(aws.Context, *datasync.DescribeLocationFsxOpenZfsInput, ...request.Option) (*datasync.DescribeLocationFsxOpenZfsOutput, error)
@@ -160,6 +184,24 @@ type DataSyncAPI interface {
 	DescribeLocationSmbWithContext(aws.Context, *datasync.DescribeLocationSmbInput, ...request.Option) (*datasync.DescribeLocationSmbOutput, error)
 	DescribeLocationSmbRequest(*datasync.DescribeLocationSmbInput) (*request.Request, *datasync.DescribeLocationSmbOutput)
 
+	DescribeStorageSystem(*datasync.DescribeStorageSystemInput) (*datasync.DescribeStorageSystemOutput, error)
+	DescribeStorageSystemWithContext(aws.Context, *datasync.DescribeStorageSystemInput, ...request.Option) (*datasync.DescribeStorageSystemOutput, error)
+	DescribeStorageSystemRequest(*datasync.DescribeStorageSystemInput) (*request.Request, *datasync.DescribeStorageSystemOutput)
+
+	DescribeStorageSystemResourceMetrics(*datasync.DescribeStorageSystemResourceMetricsInput) (*datasync.DescribeStorageSystemResourceMetricsOutput, error)
+	DescribeStorageSystemResourceMetricsWithContext(aws.Context, *datasync.DescribeStorageSystemResourceMetricsInput, ...request.Option) (*datasync.DescribeStorageSystemResourceMetricsOutput, error)
+	DescribeStorageSystemResourceMetricsRequest(*datasync.DescribeStorageSystemResourceMetricsInput) (*request.Request, *datasync.DescribeStorageSystemResourceMetricsOutput)
+
+	DescribeStorageSystemResourceMetricsPages(*datasync.DescribeStorageSystemResourceMetricsInput, func(*datasync.DescribeStorageSystemResourceMetricsOutput, bool) bool) error
+	DescribeStorageSystemResourceMetricsPagesWithContext(aws.Context, *datasync.DescribeStorageSystemResourceMetricsInput, func(*datasync.DescribeStorageSystemResourceMetricsOutput, bool) bool, ...request.Option) error
+
+	DescribeStorageSystemResources(*datasync.DescribeStorageSystemResourcesInput) (*datasync.DescribeStorageSystemResourcesOutput, error)
+	DescribeStorageSystemResourcesWithContext(aws.Context, *datasync.DescribeStorageSystemResourcesInput, ...request.Option) (*datasync.DescribeStorageSystemResourcesOutput, error)
+	DescribeStorageSystemResourcesRequest(*datasync.DescribeStorageSystemResourcesInput) (*request.Request, *datasync.DescribeStorageSystemResourcesOutput)
+
+	DescribeStorageSystemResourcesPages(*datasync.DescribeStorageSystemResourcesInput, func(*datasync.DescribeStorageSystemResourcesOutput, bool) bool) error
+	DescribeStorageSystemResourcesPagesWithContext(aws.Context, *datasync.DescribeStorageSystemResourcesInput, func(*datasync.DescribeStorageSystemResourcesOutput, bool) bool, ...request.Option) error
+
 	DescribeTask(*datasync.DescribeTaskInput) (*datasync.DescribeTaskOutput, error)
 	DescribeTaskWithContext(aws.Context, *datasync.DescribeTaskInput, ...request.Option) (*datasync.DescribeTaskOutput, error)
 	DescribeTaskRequest(*datasync.DescribeTaskInput) (*request.Request, *datasync.DescribeTaskOutput)
@@ -168,6 +210,10 @@ type DataSyncAPI interface {
 	DescribeTaskExecutionWithContext(aws.Context, *datasync.DescribeTaskExecutionInput, ...request.Option) (*datasync.DescribeTaskExecutionOutput, error)
 	DescribeTaskExecutionRequest(*datasync.DescribeTaskExecutionInput) (*request.Request, *datasync.DescribeTaskExecutionOutput)
 
+	GenerateRecommendations(*datasync.GenerateRecommendationsInput) (*datasync.GenerateRecommendationsOutput, error)
+	GenerateRecommendationsWithContext(aws.Context, *datasync.GenerateRecommendationsInput, ...request.Option) (*datasync.GenerateRecommendationsOutput, error)
+	GenerateRecommendationsRequest(*datasync.GenerateRecommendationsInput) (*request.Request, *datasync.GenerateRecommendationsOutput)
+
 	ListAgents(*datasync.ListAgentsInput) (*datasync.ListAgentsOutput, error)
 	ListAgentsWithContext(aws.Context, *datasync.ListAgentsInput, ...request.Option) (*datasync.ListAgentsOutput, error)
 	ListAgentsRequest(*datasync.ListAgentsInput) (*request.Request, *datasync.ListAgentsOutput)
@@ -175,12 +221,26 @@ type DataSyncAPI interface {
 	ListAgentsPages(*datasync.ListAgentsInput, func(*datasync.ListAgentsOutput, bool) bool) error
 	ListAgentsPagesWithContext(aws.Context, *datasync.ListAgentsInput, func(*datasync.ListAgentsOutput, bool) bool, ...request.Option) error
 
+	ListDiscoveryJobs(*datasync.ListDiscoveryJobsInput) (*datasync.ListDiscoveryJobsOutput, error)
+	ListDiscoveryJobsWithContext(aws.Context, *datasync.ListDiscoveryJobsInput, ...request.Option) (*datasync.ListDiscoveryJobsOutput, error)
+	ListDiscoveryJobsRequest(*datasync.ListDiscoveryJobsInput) (*request.Request, *datasync.ListDiscoveryJobsOutput)
+
+	ListDiscoveryJobsPages(*datasync.ListDiscoveryJobsInput, func(*datasync.ListDiscoveryJobsOutput, bool) bool) error
+	ListDiscoveryJobsPagesWithContext(aws.Context, *datasync.ListDiscoveryJobsInput, func(*datasync.ListDiscoveryJobsOutput, bool) bool, ...request.Option) error
+
 	ListLocations(*datasync.ListLocationsInput) (*datasync.ListLocationsOutput, error)
 	ListLocationsWithContext(aws.Context, *datasync.ListLocationsInput, ...request.Option) (*datasync.ListLocationsOutput, error)
 	ListLocationsRequest(*datasync.ListLocationsInput) (*request.Request, *datasync.ListLocationsOutput)
 
 	ListLocationsPages(*datasync.ListLocationsInput, func(*datasync.ListLocationsOutput, bool) bool) error
 	ListLocationsPagesWithContext(aws.Context, *datasync.ListLocationsInput, func(*datasync.ListLocationsOutput, bool) bool, ...request.Option) error
+
+	ListStorageSystems(*datasync.ListStorageSystemsInput) (*datasync.ListStorageSystemsOutput, error)
+	ListStorageSystemsWithContext(aws.Context, *datasync.ListStorageSystemsInput, ...request.Option) (*datasync.ListStorageSystemsOutput, error)
+	ListStorageSystemsRequest(*datasync.ListStorageSystemsInput) (*request.Request, *datasync.ListStorageSystemsOutput)
+
+	ListStorageSystemsPages(*datasync.ListStorageSystemsInput, func(*datasync.ListStorageSystemsOutput, bool) bool) error
+	ListStorageSystemsPagesWithContext(aws.Context, *datasync.ListStorageSystemsInput, func(*datasync.ListStorageSystemsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*datasync.ListTagsForResourceInput) (*datasync.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *datasync.ListTagsForResourceInput, ...request.Option) (*datasync.ListTagsForResourceOutput, error)
@@ -203,9 +263,21 @@ type DataSyncAPI interface {
 	ListTasksPages(*datasync.ListTasksInput, func(*datasync.ListTasksOutput, bool) bool) error
 	ListTasksPagesWithContext(aws.Context, *datasync.ListTasksInput, func(*datasync.ListTasksOutput, bool) bool, ...request.Option) error
 
+	RemoveStorageSystem(*datasync.RemoveStorageSystemInput) (*datasync.RemoveStorageSystemOutput, error)
+	RemoveStorageSystemWithContext(aws.Context, *datasync.RemoveStorageSystemInput, ...request.Option) (*datasync.RemoveStorageSystemOutput, error)
+	RemoveStorageSystemRequest(*datasync.RemoveStorageSystemInput) (*request.Request, *datasync.RemoveStorageSystemOutput)
+
+	StartDiscoveryJob(*datasync.StartDiscoveryJobInput) (*datasync.StartDiscoveryJobOutput, error)
+	StartDiscoveryJobWithContext(aws.Context, *datasync.StartDiscoveryJobInput, ...request.Option) (*datasync.StartDiscoveryJobOutput, error)
+	StartDiscoveryJobRequest(*datasync.StartDiscoveryJobInput) (*request.Request, *datasync.StartDiscoveryJobOutput)
+
 	StartTaskExecution(*datasync.StartTaskExecutionInput) (*datasync.StartTaskExecutionOutput, error)
 	StartTaskExecutionWithContext(aws.Context, *datasync.StartTaskExecutionInput, ...request.Option) (*datasync.StartTaskExecutionOutput, error)
 	StartTaskExecutionRequest(*datasync.StartTaskExecutionInput) (*request.Request, *datasync.StartTaskExecutionOutput)
+
+	StopDiscoveryJob(*datasync.StopDiscoveryJobInput) (*datasync.StopDiscoveryJobOutput, error)
+	StopDiscoveryJobWithContext(aws.Context, *datasync.StopDiscoveryJobInput, ...request.Option) (*datasync.StopDiscoveryJobOutput, error)
+	StopDiscoveryJobRequest(*datasync.StopDiscoveryJobInput) (*request.Request, *datasync.StopDiscoveryJobOutput)
 
 	TagResource(*datasync.TagResourceInput) (*datasync.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *datasync.TagResourceInput, ...request.Option) (*datasync.TagResourceOutput, error)
@@ -218,6 +290,14 @@ type DataSyncAPI interface {
 	UpdateAgent(*datasync.UpdateAgentInput) (*datasync.UpdateAgentOutput, error)
 	UpdateAgentWithContext(aws.Context, *datasync.UpdateAgentInput, ...request.Option) (*datasync.UpdateAgentOutput, error)
 	UpdateAgentRequest(*datasync.UpdateAgentInput) (*request.Request, *datasync.UpdateAgentOutput)
+
+	UpdateDiscoveryJob(*datasync.UpdateDiscoveryJobInput) (*datasync.UpdateDiscoveryJobOutput, error)
+	UpdateDiscoveryJobWithContext(aws.Context, *datasync.UpdateDiscoveryJobInput, ...request.Option) (*datasync.UpdateDiscoveryJobOutput, error)
+	UpdateDiscoveryJobRequest(*datasync.UpdateDiscoveryJobInput) (*request.Request, *datasync.UpdateDiscoveryJobOutput)
+
+	UpdateLocationAzureBlob(*datasync.UpdateLocationAzureBlobInput) (*datasync.UpdateLocationAzureBlobOutput, error)
+	UpdateLocationAzureBlobWithContext(aws.Context, *datasync.UpdateLocationAzureBlobInput, ...request.Option) (*datasync.UpdateLocationAzureBlobOutput, error)
+	UpdateLocationAzureBlobRequest(*datasync.UpdateLocationAzureBlobInput) (*request.Request, *datasync.UpdateLocationAzureBlobOutput)
 
 	UpdateLocationHdfs(*datasync.UpdateLocationHdfsInput) (*datasync.UpdateLocationHdfsOutput, error)
 	UpdateLocationHdfsWithContext(aws.Context, *datasync.UpdateLocationHdfsInput, ...request.Option) (*datasync.UpdateLocationHdfsOutput, error)
@@ -234,6 +314,10 @@ type DataSyncAPI interface {
 	UpdateLocationSmb(*datasync.UpdateLocationSmbInput) (*datasync.UpdateLocationSmbOutput, error)
 	UpdateLocationSmbWithContext(aws.Context, *datasync.UpdateLocationSmbInput, ...request.Option) (*datasync.UpdateLocationSmbOutput, error)
 	UpdateLocationSmbRequest(*datasync.UpdateLocationSmbInput) (*request.Request, *datasync.UpdateLocationSmbOutput)
+
+	UpdateStorageSystem(*datasync.UpdateStorageSystemInput) (*datasync.UpdateStorageSystemOutput, error)
+	UpdateStorageSystemWithContext(aws.Context, *datasync.UpdateStorageSystemInput, ...request.Option) (*datasync.UpdateStorageSystemOutput, error)
+	UpdateStorageSystemRequest(*datasync.UpdateStorageSystemInput) (*request.Request, *datasync.UpdateStorageSystemOutput)
 
 	UpdateTask(*datasync.UpdateTaskInput) (*datasync.UpdateTaskOutput, error)
 	UpdateTaskWithContext(aws.Context, *datasync.UpdateTaskInput, ...request.Option) (*datasync.UpdateTaskOutput, error)
