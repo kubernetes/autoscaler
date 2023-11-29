@@ -23,6 +23,10 @@
 // to the session's client and used the first time it calls GetLatestConfiguration
 // for that session.
 //
+// This token should only be used once in your first call to GetLatestConfiguration.
+// You must use the new token in the GetLatestConfiguration response (NextPollConfigurationToken)
+// in each subsequent call to GetLatestConfiguration.
+//
 // When calling GetLatestConfiguration, your client code sends the most recent
 // ConfigurationToken value it has and receives in response:
 //
@@ -37,9 +41,14 @@
 //   - The configuration: the latest data intended for the session. This may
 //     be empty if the client already has the latest version of the configuration.
 //
+// The InitialConfigurationToken and NextPollConfigurationToken should only
+// be used once. To support long poll use cases, the tokens are valid for up
+// to 24 hours. If a GetLatestConfiguration call uses an expired token, the
+// system returns BadRequestException.
+//
 // For more information and to view example CLI commands that show how to retrieve
 // a configuration using the AppConfig Data StartConfigurationSession and GetLatestConfiguration
-// API actions, see Receiving the configuration (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration)
+// API actions, see Retrieving the configuration (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration)
 // in the AppConfig User Guide.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11 for more information on this service.

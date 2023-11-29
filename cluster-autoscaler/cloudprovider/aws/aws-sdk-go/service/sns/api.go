@@ -60,6 +60,10 @@ func (c *SNS) AddPermissionRequest(input *AddPermissionInput) (req *request.Requ
 // Adds a statement to a topic's access control policy, granting access for
 // the specified Amazon Web Services accounts to the specified actions.
 //
+// To remove the ability to change topic permissions, you must deny permissions
+// to the AddPermission, RemovePermission, and SetTopicAttributes actions in
+// your IAM policy.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -274,6 +278,10 @@ func (c *SNS) ConfirmSubscriptionRequest(input *ConfirmSubscriptionInput) (req *
 //     Indicates that the number of filter polices in your Amazon Web Services account
 //     exceeds the limit. To add more filter polices, submit an Amazon SNS Limit
 //     Increase case in the Amazon Web Services Support Center.
+//
+//   - ErrCodeReplayLimitExceededException "ReplayLimitExceeded"
+//     Indicates that the request parameter has exceeded the maximum number of concurrent
+//     message replays.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/ConfirmSubscription
 func (c *SNS) ConfirmSubscription(input *ConfirmSubscriptionInput) (*ConfirmSubscriptionOutput, error) {
@@ -1081,6 +1089,9 @@ func (c *SNS) DeleteTopicRequest(input *DeleteTopicInput) (req *request.Request,
 //   - ErrCodeInvalidParameterException "InvalidParameter"
 //     Indicates that a request parameter does not comply with the associated constraints.
 //
+//   - ErrCodeInvalidStateException "InvalidState"
+//     Indicates that the specified state is not a valid state for an event source.
+//
 //   - ErrCodeInternalErrorException "InternalError"
 //     Indicates an internal service error.
 //
@@ -1119,6 +1130,99 @@ func (c *SNS) DeleteTopic(input *DeleteTopicInput) (*DeleteTopicOutput, error) {
 // for more information on using Contexts.
 func (c *SNS) DeleteTopicWithContext(ctx aws.Context, input *DeleteTopicInput, opts ...request.Option) (*DeleteTopicOutput, error) {
 	req, out := c.DeleteTopicRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetDataProtectionPolicy = "GetDataProtectionPolicy"
+
+// GetDataProtectionPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetDataProtectionPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetDataProtectionPolicy for more information on using the GetDataProtectionPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetDataProtectionPolicyRequest method.
+//	req, resp := client.GetDataProtectionPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/GetDataProtectionPolicy
+func (c *SNS) GetDataProtectionPolicyRequest(input *GetDataProtectionPolicyInput) (req *request.Request, output *GetDataProtectionPolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetDataProtectionPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetDataProtectionPolicyInput{}
+	}
+
+	output = &GetDataProtectionPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDataProtectionPolicy API operation for Amazon Simple Notification Service.
+//
+// Retrieves the specified inline DataProtectionPolicy document that is stored
+// in the specified Amazon SNS topic.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Notification Service's
+// API operation GetDataProtectionPolicy for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeInvalidParameterException "InvalidParameter"
+//     Indicates that a request parameter does not comply with the associated constraints.
+//
+//   - ErrCodeInternalErrorException "InternalError"
+//     Indicates an internal service error.
+//
+//   - ErrCodeNotFoundException "NotFound"
+//     Indicates that the requested resource does not exist.
+//
+//   - ErrCodeAuthorizationErrorException "AuthorizationError"
+//     Indicates that the user has been denied access to the requested resource.
+//
+//   - ErrCodeInvalidSecurityException "InvalidSecurity"
+//     The credential signature isn't valid. You must use an HTTPS endpoint and
+//     sign your request using Signature Version 4.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/GetDataProtectionPolicy
+func (c *SNS) GetDataProtectionPolicy(input *GetDataProtectionPolicyInput) (*GetDataProtectionPolicyOutput, error) {
+	req, out := c.GetDataProtectionPolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetDataProtectionPolicyWithContext is the same as GetDataProtectionPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetDataProtectionPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SNS) GetDataProtectionPolicyWithContext(ctx aws.Context, input *GetDataProtectionPolicyInput, opts ...request.Option) (*GetDataProtectionPolicyOutput, error) {
+	req, out := c.GetDataProtectionPolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3175,13 +3279,13 @@ func (c *SNS) PublishRequest(input *PublishInput) (req *request.Request, output 
 //     Indicates that the user has been denied access to the requested resource.
 //
 //   - ErrCodeKMSDisabledException "KMSDisabled"
-//     The request was rejected because the specified customer master key (CMK)
+//     The request was rejected because the specified Amazon Web Services KMS key
 //     isn't enabled.
 //
 //   - ErrCodeKMSInvalidStateException "KMSInvalidState"
 //     The request was rejected because the state of the specified resource isn't
-//     valid for this request. For more information, see How Key State Affects Use
-//     of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     valid for this request. For more information, see Key states of Amazon Web
+//     Services KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 //     in the Key Management Service Developer Guide.
 //
 //   - ErrCodeKMSNotFoundException "KMSNotFound"
@@ -3203,6 +3307,9 @@ func (c *SNS) PublishRequest(input *PublishInput) (req *request.Request, output 
 //   - ErrCodeInvalidSecurityException "InvalidSecurity"
 //     The credential signature isn't valid. You must use an HTTPS endpoint and
 //     sign your request using Signature Version 4.
+//
+//   - ErrCodeValidationException "ValidationException"
+//     Indicates that a parameter in the request is invalid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/Publish
 func (c *SNS) Publish(input *PublishInput) (*PublishOutput, error) {
@@ -3344,13 +3451,13 @@ func (c *SNS) PublishBatchRequest(input *PublishBatchInput) (req *request.Reques
 //     The batch request contains more entries than permissible.
 //
 //   - ErrCodeKMSDisabledException "KMSDisabled"
-//     The request was rejected because the specified customer master key (CMK)
+//     The request was rejected because the specified Amazon Web Services KMS key
 //     isn't enabled.
 //
 //   - ErrCodeKMSInvalidStateException "KMSInvalidState"
 //     The request was rejected because the state of the specified resource isn't
-//     valid for this request. For more information, see How Key State Affects Use
-//     of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+//     valid for this request. For more information, see Key states of Amazon Web
+//     Services KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 //     in the Key Management Service Developer Guide.
 //
 //   - ErrCodeKMSNotFoundException "KMSNotFound"
@@ -3373,6 +3480,9 @@ func (c *SNS) PublishBatchRequest(input *PublishBatchInput) (req *request.Reques
 //     The credential signature isn't valid. You must use an HTTPS endpoint and
 //     sign your request using Signature Version 4.
 //
+//   - ErrCodeValidationException "ValidationException"
+//     Indicates that a parameter in the request is invalid.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/PublishBatch
 func (c *SNS) PublishBatch(input *PublishBatchInput) (*PublishBatchOutput, error) {
 	req, out := c.PublishBatchRequest(input)
@@ -3390,6 +3500,100 @@ func (c *SNS) PublishBatch(input *PublishBatchInput) (*PublishBatchOutput, error
 // for more information on using Contexts.
 func (c *SNS) PublishBatchWithContext(ctx aws.Context, input *PublishBatchInput, opts ...request.Option) (*PublishBatchOutput, error) {
 	req, out := c.PublishBatchRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutDataProtectionPolicy = "PutDataProtectionPolicy"
+
+// PutDataProtectionPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutDataProtectionPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutDataProtectionPolicy for more information on using the PutDataProtectionPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutDataProtectionPolicyRequest method.
+//	req, resp := client.PutDataProtectionPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/PutDataProtectionPolicy
+func (c *SNS) PutDataProtectionPolicyRequest(input *PutDataProtectionPolicyInput) (req *request.Request, output *PutDataProtectionPolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutDataProtectionPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutDataProtectionPolicyInput{}
+	}
+
+	output = &PutDataProtectionPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(query.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutDataProtectionPolicy API operation for Amazon Simple Notification Service.
+//
+// Adds or updates an inline policy document that is stored in the specified
+// Amazon SNS topic.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Simple Notification Service's
+// API operation PutDataProtectionPolicy for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeInvalidParameterException "InvalidParameter"
+//     Indicates that a request parameter does not comply with the associated constraints.
+//
+//   - ErrCodeInternalErrorException "InternalError"
+//     Indicates an internal service error.
+//
+//   - ErrCodeNotFoundException "NotFound"
+//     Indicates that the requested resource does not exist.
+//
+//   - ErrCodeAuthorizationErrorException "AuthorizationError"
+//     Indicates that the user has been denied access to the requested resource.
+//
+//   - ErrCodeInvalidSecurityException "InvalidSecurity"
+//     The credential signature isn't valid. You must use an HTTPS endpoint and
+//     sign your request using Signature Version 4.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sns-2010-03-31/PutDataProtectionPolicy
+func (c *SNS) PutDataProtectionPolicy(input *PutDataProtectionPolicyInput) (*PutDataProtectionPolicyOutput, error) {
+	req, out := c.PutDataProtectionPolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutDataProtectionPolicyWithContext is the same as PutDataProtectionPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutDataProtectionPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SNS) PutDataProtectionPolicyWithContext(ctx aws.Context, input *PutDataProtectionPolicyInput, opts ...request.Option) (*PutDataProtectionPolicyOutput, error) {
+	req, out := c.PutDataProtectionPolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3440,6 +3644,10 @@ func (c *SNS) RemovePermissionRequest(input *RemovePermissionInput) (req *reques
 // RemovePermission API operation for Amazon Simple Notification Service.
 //
 // Removes a statement from a topic's access control policy.
+//
+// To remove the ability to change topic permissions, you must deny permissions
+// to the AddPermission, RemovePermission, and SetTopicAttributes actions in
+// your IAM policy.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3831,6 +4039,10 @@ func (c *SNS) SetSubscriptionAttributesRequest(input *SetSubscriptionAttributesI
 //     exceeds the limit. To add more filter polices, submit an Amazon SNS Limit
 //     Increase case in the Amazon Web Services Support Center.
 //
+//   - ErrCodeReplayLimitExceededException "ReplayLimitExceeded"
+//     Indicates that the request parameter has exceeded the maximum number of concurrent
+//     message replays.
+//
 //   - ErrCodeInternalErrorException "InternalError"
 //     Indicates an internal service error.
 //
@@ -3907,6 +4119,10 @@ func (c *SNS) SetTopicAttributesRequest(input *SetTopicAttributesInput) (req *re
 // SetTopicAttributes API operation for Amazon Simple Notification Service.
 //
 // Allows a topic owner to set an attribute of the topic to a new value.
+//
+// To remove the ability to change topic permissions, you must deny permissions
+// to the AddPermission, RemovePermission, and SetTopicAttributes actions in
+// your IAM policy.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4004,7 +4220,7 @@ func (c *SNS) SubscribeRequest(input *SubscribeInput) (req *request.Request, out
 // to confirm the subscription.
 //
 // You call the ConfirmSubscription action with the token from the subscription
-// response. Confirmation tokens are valid for three days.
+// response. Confirmation tokens are valid for two days.
 //
 // This action is throttled at 100 transactions per second (TPS).
 //
@@ -4024,6 +4240,10 @@ func (c *SNS) SubscribeRequest(input *SubscribeInput) (req *request.Request, out
 //     Indicates that the number of filter polices in your Amazon Web Services account
 //     exceeds the limit. To add more filter polices, submit an Amazon SNS Limit
 //     Increase case in the Amazon Web Services Support Center.
+//
+//   - ErrCodeReplayLimitExceededException "ReplayLimitExceeded"
+//     Indicates that the request parameter has exceeded the maximum number of concurrent
+//     message replays.
 //
 //   - ErrCodeInvalidParameterException "InvalidParameter"
 //     Indicates that a request parameter does not comply with the associated constraints.
@@ -4234,6 +4454,10 @@ func (c *SNS) UnsubscribeRequest(input *UnsubscribeInput) (req *request.Request,
 // owner, a final cancellation message is delivered to the endpoint, so that
 // the endpoint owner can easily resubscribe to the topic if the Unsubscribe
 // request was unintended.
+//
+// Amazon SQS queue subscriptions require authentication for deletion. Only
+// the owner of the subscription, or the owner of the topic can unsubscribe
+// using the required Amazon Web Services signature.
 //
 // This action is throttled at 100 transactions per second (TPS).
 //
@@ -5192,6 +5416,18 @@ type CreateTopicInput struct {
 	//    * Policy – The policy that defines who can access your topic. By default,
 	//    only the topic owner can publish or subscribe to the topic.
 	//
+	//    * SignatureVersion – The signature version corresponds to the hashing
+	//    algorithm used while creating the signature of the notifications, subscription
+	//    confirmations, or unsubscribe confirmation messages sent by Amazon SNS.
+	//    By default, SignatureVersion is set to 1.
+	//
+	//    * TracingConfig – Tracing mode of an Amazon SNS topic. By default TracingConfig
+	//    is set to PassThrough, and the topic passes through the tracing header
+	//    it receives from an Amazon SNS publisher to its subscriptions. If set
+	//    to Active, Amazon SNS will vend X-Ray segment data to topic owner account
+	//    if the sampled flag in the tracing header is true. This is only supported
+	//    on standard topics.
+	//
 	// The following attribute applies only to server-side encryption (https://docs.aws.amazon.com/sns/latest/dg/sns-server-side-encryption.html):
 	//
 	//    * KmsMasterKeyId – The ID of an Amazon Web Services managed customer
@@ -5202,7 +5438,13 @@ type CreateTopicInput struct {
 	//
 	// The following attributes apply only to FIFO topics (https://docs.aws.amazon.com/sns/latest/dg/sns-fifo-topics.html):
 	//
-	//    * FifoTopic – When this is set to true, a FIFO topic is created.
+	//    * ArchivePolicy – Adds or updates an inline policy document to archive
+	//    messages stored in the specified Amazon SNS topic.
+	//
+	//    * BeginningArchiveTime – The earliest starting point at which a message
+	//    in the topic’s archive can be replayed from. This point in time is based
+	//    on the configured message retention period set by the topic’s message
+	//    archiving policy.
 	//
 	//    * ContentBasedDeduplication – Enables content-based deduplication for
 	//    FIFO topics. By default, ContentBasedDeduplication is set to false. If
@@ -5214,6 +5456,15 @@ type CreateTopicInput struct {
 	//    the generated value, you can specify a value for the MessageDeduplicationId
 	//    parameter for the Publish action.
 	Attributes map[string]*string `type:"map"`
+
+	// The body of the policy document you want to use for this topic.
+	//
+	// You can only add one policy per topic.
+	//
+	// The policy must be in JSON string format.
+	//
+	// Length Constraints: Maximum length of 30,720.
+	DataProtectionPolicy *string `type:"string"`
 
 	// The name of the topic you want to create.
 	//
@@ -5277,6 +5528,12 @@ func (s *CreateTopicInput) Validate() error {
 // SetAttributes sets the Attributes field's value.
 func (s *CreateTopicInput) SetAttributes(v map[string]*string) *CreateTopicInput {
 	s.Attributes = v
+	return s
+}
+
+// SetDataProtectionPolicy sets the DataProtectionPolicy field's value.
+func (s *CreateTopicInput) SetDataProtectionPolicy(v string) *CreateTopicInput {
+	s.DataProtectionPolicy = &v
 	return s
 }
 
@@ -5636,6 +5893,86 @@ func (s *Endpoint) SetAttributes(v map[string]*string) *Endpoint {
 // SetEndpointArn sets the EndpointArn field's value.
 func (s *Endpoint) SetEndpointArn(v string) *Endpoint {
 	s.EndpointArn = &v
+	return s
+}
+
+type GetDataProtectionPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the topic whose DataProtectionPolicy you want to get.
+	//
+	// For more information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataProtectionPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataProtectionPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDataProtectionPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDataProtectionPolicyInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *GetDataProtectionPolicyInput) SetResourceArn(v string) *GetDataProtectionPolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type GetDataProtectionPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Retrieves the DataProtectionPolicy in JSON string format.
+	DataProtectionPolicy *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataProtectionPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataProtectionPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetDataProtectionPolicy sets the DataProtectionPolicy field's value.
+func (s *GetDataProtectionPolicyOutput) SetDataProtectionPolicy(v string) *GetDataProtectionPolicyOutput {
+	s.DataProtectionPolicy = &v
 	return s
 }
 
@@ -6025,6 +6362,11 @@ type GetSubscriptionAttributesOutput struct {
 	//    For more information, see Amazon SNS Message Filtering (https://docs.aws.amazon.com/sns/latest/dg/sns-message-filtering.html)
 	//    in the Amazon SNS Developer Guide.
 	//
+	//    * FilterPolicyScope – This attribute lets you choose the filtering scope
+	//    by using one of the following string value types: MessageAttributes (default)
+	//    – The filter is applied on the message attributes. MessageBody – The
+	//    filter is applied on the message body.
+	//
 	//    * Owner – The Amazon Web Services account ID of the subscription's owner.
 	//
 	//    * PendingConfirmation – true if the subscription hasn't been confirmed.
@@ -6141,9 +6483,21 @@ type GetTopicAttributesOutput struct {
 	//    * DisplayName – The human-readable name used in the From field for notifications
 	//    to email and email-json endpoints.
 	//
+	//    * EffectiveDeliveryPolicy – The JSON serialization of the effective
+	//    delivery policy, taking system defaults into account.
+	//
 	//    * Owner – The Amazon Web Services account ID of the topic's owner.
 	//
 	//    * Policy – The JSON serialization of the topic's access control policy.
+	//
+	//    * SignatureVersion – The signature version corresponds to the hashing
+	//    algorithm used while creating the signature of the notifications, subscription
+	//    confirmations, or unsubscribe confirmation messages sent by Amazon SNS.
+	//    By default, SignatureVersion is set to 1. The signature is a Base64-encoded
+	//    SHA1withRSA signature. When you set SignatureVersion to 2. Amazon SNS
+	//    uses a Base64-encoded SHA256withRSA signature. If the API response does
+	//    not include the SignatureVersion attribute, it means that the SignatureVersion
+	//    for the topic has value 1.
 	//
 	//    * SubscriptionsConfirmed – The number of confirmed subscriptions for
 	//    the topic.
@@ -6156,8 +6510,12 @@ type GetTopicAttributesOutput struct {
 	//
 	//    * TopicArn – The topic's ARN.
 	//
-	//    * EffectiveDeliveryPolicy – The JSON serialization of the effective
-	//    delivery policy, taking system defaults into account.
+	//    * TracingConfig – Tracing mode of an Amazon SNS topic. By default TracingConfig
+	//    is set to PassThrough, and the topic passes through the tracing header
+	//    it receives from an Amazon SNS publisher to its subscriptions. If set
+	//    to Active, Amazon SNS will vend X-Ray segment data to topic owner account
+	//    if the sampled flag in the tracing header is true. This is only supported
+	//    on standard topics.
 	//
 	// The following attribute applies only to server-side-encryption (https://docs.aws.amazon.com/sns/latest/dg/sns-server-side-encryption.html):
 	//
@@ -7863,6 +8221,95 @@ func (s *PublishOutput) SetSequenceNumber(v string) *PublishOutput {
 	return s
 }
 
+type PutDataProtectionPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The JSON serialization of the topic's DataProtectionPolicy.
+	//
+	// The DataProtectionPolicy must be in JSON string format.
+	//
+	// Length Constraints: Maximum length of 30,720.
+	//
+	// DataProtectionPolicy is a required field
+	DataProtectionPolicy *string `type:"string" required:"true"`
+
+	// The ARN of the topic whose DataProtectionPolicy you want to add or update.
+	//
+	// For more information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutDataProtectionPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutDataProtectionPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutDataProtectionPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutDataProtectionPolicyInput"}
+	if s.DataProtectionPolicy == nil {
+		invalidParams.Add(request.NewErrParamRequired("DataProtectionPolicy"))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDataProtectionPolicy sets the DataProtectionPolicy field's value.
+func (s *PutDataProtectionPolicyInput) SetDataProtectionPolicy(v string) *PutDataProtectionPolicyInput {
+	s.DataProtectionPolicy = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *PutDataProtectionPolicyInput) SetResourceArn(v string) *PutDataProtectionPolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type PutDataProtectionPolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutDataProtectionPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutDataProtectionPolicyOutput) GoString() string {
+	return s.String()
+}
+
 // Input for RemovePermission action.
 type RemovePermissionInput struct {
 	_ struct{} `type:"structure"`
@@ -8379,6 +8826,11 @@ type SetSubscriptionAttributesInput struct {
 	//    only a subset of messages, rather than receiving every message published
 	//    to the topic.
 	//
+	//    * FilterPolicyScope – This attribute lets you choose the filtering scope
+	//    by using one of the following string value types: MessageAttributes (default)
+	//    – The filter is applied on the message attributes. MessageBody – The
+	//    filter is applied on the message body.
+	//
 	//    * RawMessageDelivery – When set to true, enables raw message delivery
 	//    to Amazon SQS or HTTP/S endpoints. This eliminates the need for the endpoints
 	//    to process JSON formatting, which is otherwise created for Amazon SNS
@@ -8497,6 +8949,10 @@ type SetTopicAttributesInput struct {
 	// The following lists the names, descriptions, and values of the special request
 	// parameters that the SetTopicAttributes action uses:
 	//
+	//    * ApplicationSuccessFeedbackRoleArn – Indicates failed message delivery
+	//    status for an Amazon SNS topic that is subscribed to a platform application
+	//    endpoint.
+	//
 	//    * DeliveryPolicy – The policy that defines how Amazon SNS retries failed
 	//    deliveries to HTTP/S endpoints.
 	//
@@ -8505,6 +8961,66 @@ type SetTopicAttributesInput struct {
 	//    * Policy – The policy that defines who can access your topic. By default,
 	//    only the topic owner can publish or subscribe to the topic.
 	//
+	//    * TracingConfig – Tracing mode of an Amazon SNS topic. By default TracingConfig
+	//    is set to PassThrough, and the topic passes through the tracing header
+	//    it receives from an Amazon SNS publisher to its subscriptions. If set
+	//    to Active, Amazon SNS will vend X-Ray segment data to topic owner account
+	//    if the sampled flag in the tracing header is true. This is only supported
+	//    on standard topics.
+	//
+	//    * HTTP HTTPSuccessFeedbackRoleArn – Indicates successful message delivery
+	//    status for an Amazon SNS topic that is subscribed to an HTTP endpoint.
+	//    HTTPSuccessFeedbackSampleRate – Indicates percentage of successful messages
+	//    to sample for an Amazon SNS topic that is subscribed to an HTTP endpoint.
+	//    HTTPFailureFeedbackRoleArn – Indicates failed message delivery status
+	//    for an Amazon SNS topic that is subscribed to an HTTP endpoint.
+	//
+	//    * Amazon Kinesis Data Firehose FirehoseSuccessFeedbackRoleArn – Indicates
+	//    successful message delivery status for an Amazon SNS topic that is subscribed
+	//    to an Amazon Kinesis Data Firehose endpoint. FirehoseSuccessFeedbackSampleRate
+	//    – Indicates percentage of successful messages to sample for an Amazon
+	//    SNS topic that is subscribed to an Amazon Kinesis Data Firehose endpoint.
+	//    FirehoseFailureFeedbackRoleArn – Indicates failed message delivery status
+	//    for an Amazon SNS topic that is subscribed to an Amazon Kinesis Data Firehose
+	//    endpoint.
+	//
+	//    * Lambda LambdaSuccessFeedbackRoleArn – Indicates successful message
+	//    delivery status for an Amazon SNS topic that is subscribed to an Lambda
+	//    endpoint. LambdaSuccessFeedbackSampleRate – Indicates percentage of
+	//    successful messages to sample for an Amazon SNS topic that is subscribed
+	//    to an Lambda endpoint. LambdaFailureFeedbackRoleArn – Indicates failed
+	//    message delivery status for an Amazon SNS topic that is subscribed to
+	//    an Lambda endpoint.
+	//
+	//    * Platform application endpoint ApplicationSuccessFeedbackRoleArn –
+	//    Indicates successful message delivery status for an Amazon SNS topic that
+	//    is subscribed to an Amazon Web Services application endpoint. ApplicationSuccessFeedbackSampleRate
+	//    – Indicates percentage of successful messages to sample for an Amazon
+	//    SNS topic that is subscribed to an Amazon Web Services application endpoint.
+	//    ApplicationFailureFeedbackRoleArn – Indicates failed message delivery
+	//    status for an Amazon SNS topic that is subscribed to an Amazon Web Services
+	//    application endpoint. In addition to being able to configure topic attributes
+	//    for message delivery status of notification messages sent to Amazon SNS
+	//    application endpoints, you can also configure application attributes for
+	//    the delivery status of push notification messages sent to push notification
+	//    services. For example, For more information, see Using Amazon SNS Application
+	//    Attributes for Message Delivery Status (https://docs.aws.amazon.com/sns/latest/dg/sns-msg-status.html).
+	//
+	//    * Amazon SQS SQSSuccessFeedbackRoleArn – Indicates successful message
+	//    delivery status for an Amazon SNS topic that is subscribed to an Amazon
+	//    SQS endpoint. SQSSuccessFeedbackSampleRate – Indicates percentage of
+	//    successful messages to sample for an Amazon SNS topic that is subscribed
+	//    to an Amazon SQS endpoint. SQSFailureFeedbackRoleArn – Indicates failed
+	//    message delivery status for an Amazon SNS topic that is subscribed to
+	//    an Amazon SQS endpoint.
+	//
+	// The <ENDPOINT>SuccessFeedbackRoleArn and <ENDPOINT>FailureFeedbackRoleArn
+	// attributes are used to give Amazon SNS write access to use CloudWatch Logs
+	// on your behalf. The <ENDPOINT>SuccessFeedbackSampleRate attribute is for
+	// specifying the sample rate percentage (0-100) of successfully delivered messages.
+	// After you configure the <ENDPOINT>FailureFeedbackRoleArn attribute, then
+	// all failed message deliveries generate CloudWatch Logs.
+	//
 	// The following attribute applies only to server-side-encryption (https://docs.aws.amazon.com/sns/latest/dg/sns-server-side-encryption.html):
 	//
 	//    * KmsMasterKeyId – The ID of an Amazon Web Services managed customer
@@ -8512,6 +9028,11 @@ type SetTopicAttributesInput struct {
 	//    see Key Terms (https://docs.aws.amazon.com/sns/latest/dg/sns-server-side-encryption.html#sse-key-terms).
 	//    For more examples, see KeyId (https://docs.aws.amazon.com/kms/latest/APIReference/API_DescribeKey.html#API_DescribeKey_RequestParameters)
 	//    in the Key Management Service API Reference.
+	//
+	//    * SignatureVersion – The signature version corresponds to the hashing
+	//    algorithm used while creating the signature of the notifications, subscription
+	//    confirmations, or unsubscribe confirmation messages sent by Amazon SNS.
+	//    By default, SignatureVersion is set to 1.
 	//
 	// The following attribute applies only to FIFO topics (https://docs.aws.amazon.com/sns/latest/dg/sns-fifo-topics.html):
 	//
@@ -8627,6 +9148,11 @@ type SubscribeInput struct {
 	//    only a subset of messages, rather than receiving every message published
 	//    to the topic.
 	//
+	//    * FilterPolicyScope – This attribute lets you choose the filtering scope
+	//    by using one of the following string value types: MessageAttributes (default)
+	//    – The filter is applied on the message attributes. MessageBody – The
+	//    filter is applied on the message body.
+	//
 	//    * RawMessageDelivery – When set to true, enables raw message delivery
 	//    to Amazon SQS or HTTP/S endpoints. This eliminates the need for the endpoints
 	//    to process JSON formatting, which is otherwise created for Amazon SNS
@@ -8649,6 +9175,19 @@ type SubscribeInput struct {
 	//    more information, see Fanout to Kinesis Data Firehose delivery streams
 	//    (https://docs.aws.amazon.com/sns/latest/dg/sns-firehose-as-subscriber.html)
 	//    in the Amazon SNS Developer Guide.
+	//
+	// The following attributes apply only to FIFO topics (https://docs.aws.amazon.com/sns/latest/dg/sns-fifo-topics.html):
+	//
+	//    * ReplayPolicy – Adds or updates an inline policy document for a subscription
+	//    to replay messages stored in the specified Amazon SNS topic.
+	//
+	//    * ReplayStatus – Retrieves the status of the subscription message replay,
+	//    which can be one of the following: Completed – The replay has successfully
+	//    redelivered all messages, and is now delivering newly published messages.
+	//    If an ending point was specified in the ReplayPolicy then the subscription
+	//    will no longer receive newly published messages. In progress – The replay
+	//    is currently replaying the selected messages. Failed – The replay was
+	//    unable to complete. Pending – The default state while the replay initiates.
 	Attributes map[string]*string `type:"map"`
 
 	// The endpoint that you want to receive notifications. Endpoints vary by protocol:

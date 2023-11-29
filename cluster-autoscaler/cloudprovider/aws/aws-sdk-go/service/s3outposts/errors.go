@@ -26,11 +26,24 @@ const (
 	// There was an exception with the internal server.
 	ErrCodeInternalServerException = "InternalServerException"
 
+	// ErrCodeOutpostOfflineException for service response error code
+	// "OutpostOfflineException".
+	//
+	// The service link connection to your Outposts home Region is down. Check your
+	// connection and try again.
+	ErrCodeOutpostOfflineException = "OutpostOfflineException"
+
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
 	// The requested resource was not found.
 	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
+
+	// ErrCodeThrottlingException for service response error code
+	// "ThrottlingException".
+	//
+	// The request was denied due to request throttling.
+	ErrCodeThrottlingException = "ThrottlingException"
 
 	// ErrCodeValidationException for service response error code
 	// "ValidationException".
@@ -43,6 +56,8 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessDeniedException":     newErrorAccessDeniedException,
 	"ConflictException":         newErrorConflictException,
 	"InternalServerException":   newErrorInternalServerException,
+	"OutpostOfflineException":   newErrorOutpostOfflineException,
 	"ResourceNotFoundException": newErrorResourceNotFoundException,
+	"ThrottlingException":       newErrorThrottlingException,
 	"ValidationException":       newErrorValidationException,
 }

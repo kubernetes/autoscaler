@@ -64,9 +64,17 @@ type IvschatAPI interface {
 	CreateChatTokenWithContext(aws.Context, *ivschat.CreateChatTokenInput, ...request.Option) (*ivschat.CreateChatTokenOutput, error)
 	CreateChatTokenRequest(*ivschat.CreateChatTokenInput) (*request.Request, *ivschat.CreateChatTokenOutput)
 
+	CreateLoggingConfiguration(*ivschat.CreateLoggingConfigurationInput) (*ivschat.CreateLoggingConfigurationOutput, error)
+	CreateLoggingConfigurationWithContext(aws.Context, *ivschat.CreateLoggingConfigurationInput, ...request.Option) (*ivschat.CreateLoggingConfigurationOutput, error)
+	CreateLoggingConfigurationRequest(*ivschat.CreateLoggingConfigurationInput) (*request.Request, *ivschat.CreateLoggingConfigurationOutput)
+
 	CreateRoom(*ivschat.CreateRoomInput) (*ivschat.CreateRoomOutput, error)
 	CreateRoomWithContext(aws.Context, *ivschat.CreateRoomInput, ...request.Option) (*ivschat.CreateRoomOutput, error)
 	CreateRoomRequest(*ivschat.CreateRoomInput) (*request.Request, *ivschat.CreateRoomOutput)
+
+	DeleteLoggingConfiguration(*ivschat.DeleteLoggingConfigurationInput) (*ivschat.DeleteLoggingConfigurationOutput, error)
+	DeleteLoggingConfigurationWithContext(aws.Context, *ivschat.DeleteLoggingConfigurationInput, ...request.Option) (*ivschat.DeleteLoggingConfigurationOutput, error)
+	DeleteLoggingConfigurationRequest(*ivschat.DeleteLoggingConfigurationInput) (*request.Request, *ivschat.DeleteLoggingConfigurationOutput)
 
 	DeleteMessage(*ivschat.DeleteMessageInput) (*ivschat.DeleteMessageOutput, error)
 	DeleteMessageWithContext(aws.Context, *ivschat.DeleteMessageInput, ...request.Option) (*ivschat.DeleteMessageOutput, error)
@@ -80,9 +88,20 @@ type IvschatAPI interface {
 	DisconnectUserWithContext(aws.Context, *ivschat.DisconnectUserInput, ...request.Option) (*ivschat.DisconnectUserOutput, error)
 	DisconnectUserRequest(*ivschat.DisconnectUserInput) (*request.Request, *ivschat.DisconnectUserOutput)
 
+	GetLoggingConfiguration(*ivschat.GetLoggingConfigurationInput) (*ivschat.GetLoggingConfigurationOutput, error)
+	GetLoggingConfigurationWithContext(aws.Context, *ivschat.GetLoggingConfigurationInput, ...request.Option) (*ivschat.GetLoggingConfigurationOutput, error)
+	GetLoggingConfigurationRequest(*ivschat.GetLoggingConfigurationInput) (*request.Request, *ivschat.GetLoggingConfigurationOutput)
+
 	GetRoom(*ivschat.GetRoomInput) (*ivschat.GetRoomOutput, error)
 	GetRoomWithContext(aws.Context, *ivschat.GetRoomInput, ...request.Option) (*ivschat.GetRoomOutput, error)
 	GetRoomRequest(*ivschat.GetRoomInput) (*request.Request, *ivschat.GetRoomOutput)
+
+	ListLoggingConfigurations(*ivschat.ListLoggingConfigurationsInput) (*ivschat.ListLoggingConfigurationsOutput, error)
+	ListLoggingConfigurationsWithContext(aws.Context, *ivschat.ListLoggingConfigurationsInput, ...request.Option) (*ivschat.ListLoggingConfigurationsOutput, error)
+	ListLoggingConfigurationsRequest(*ivschat.ListLoggingConfigurationsInput) (*request.Request, *ivschat.ListLoggingConfigurationsOutput)
+
+	ListLoggingConfigurationsPages(*ivschat.ListLoggingConfigurationsInput, func(*ivschat.ListLoggingConfigurationsOutput, bool) bool) error
+	ListLoggingConfigurationsPagesWithContext(aws.Context, *ivschat.ListLoggingConfigurationsInput, func(*ivschat.ListLoggingConfigurationsOutput, bool) bool, ...request.Option) error
 
 	ListRooms(*ivschat.ListRoomsInput) (*ivschat.ListRoomsOutput, error)
 	ListRoomsWithContext(aws.Context, *ivschat.ListRoomsInput, ...request.Option) (*ivschat.ListRoomsOutput, error)
@@ -106,6 +125,10 @@ type IvschatAPI interface {
 	UntagResource(*ivschat.UntagResourceInput) (*ivschat.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *ivschat.UntagResourceInput, ...request.Option) (*ivschat.UntagResourceOutput, error)
 	UntagResourceRequest(*ivschat.UntagResourceInput) (*request.Request, *ivschat.UntagResourceOutput)
+
+	UpdateLoggingConfiguration(*ivschat.UpdateLoggingConfigurationInput) (*ivschat.UpdateLoggingConfigurationOutput, error)
+	UpdateLoggingConfigurationWithContext(aws.Context, *ivschat.UpdateLoggingConfigurationInput, ...request.Option) (*ivschat.UpdateLoggingConfigurationOutput, error)
+	UpdateLoggingConfigurationRequest(*ivschat.UpdateLoggingConfigurationInput) (*request.Request, *ivschat.UpdateLoggingConfigurationOutput)
 
 	UpdateRoom(*ivschat.UpdateRoomInput) (*ivschat.UpdateRoomOutput, error)
 	UpdateRoomWithContext(aws.Context, *ivschat.UpdateRoomInput, ...request.Option) (*ivschat.UpdateRoomOutput, error)

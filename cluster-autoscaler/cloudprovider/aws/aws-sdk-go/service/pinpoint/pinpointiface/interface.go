@@ -328,6 +328,18 @@ type PinpointAPI interface {
 	GetJourneyExecutionMetricsWithContext(aws.Context, *pinpoint.GetJourneyExecutionMetricsInput, ...request.Option) (*pinpoint.GetJourneyExecutionMetricsOutput, error)
 	GetJourneyExecutionMetricsRequest(*pinpoint.GetJourneyExecutionMetricsInput) (*request.Request, *pinpoint.GetJourneyExecutionMetricsOutput)
 
+	GetJourneyRunExecutionActivityMetrics(*pinpoint.GetJourneyRunExecutionActivityMetricsInput) (*pinpoint.GetJourneyRunExecutionActivityMetricsOutput, error)
+	GetJourneyRunExecutionActivityMetricsWithContext(aws.Context, *pinpoint.GetJourneyRunExecutionActivityMetricsInput, ...request.Option) (*pinpoint.GetJourneyRunExecutionActivityMetricsOutput, error)
+	GetJourneyRunExecutionActivityMetricsRequest(*pinpoint.GetJourneyRunExecutionActivityMetricsInput) (*request.Request, *pinpoint.GetJourneyRunExecutionActivityMetricsOutput)
+
+	GetJourneyRunExecutionMetrics(*pinpoint.GetJourneyRunExecutionMetricsInput) (*pinpoint.GetJourneyRunExecutionMetricsOutput, error)
+	GetJourneyRunExecutionMetricsWithContext(aws.Context, *pinpoint.GetJourneyRunExecutionMetricsInput, ...request.Option) (*pinpoint.GetJourneyRunExecutionMetricsOutput, error)
+	GetJourneyRunExecutionMetricsRequest(*pinpoint.GetJourneyRunExecutionMetricsInput) (*request.Request, *pinpoint.GetJourneyRunExecutionMetricsOutput)
+
+	GetJourneyRuns(*pinpoint.GetJourneyRunsInput) (*pinpoint.GetJourneyRunsOutput, error)
+	GetJourneyRunsWithContext(aws.Context, *pinpoint.GetJourneyRunsInput, ...request.Option) (*pinpoint.GetJourneyRunsOutput, error)
+	GetJourneyRunsRequest(*pinpoint.GetJourneyRunsInput) (*request.Request, *pinpoint.GetJourneyRunsOutput)
+
 	GetPushTemplate(*pinpoint.GetPushTemplateInput) (*pinpoint.GetPushTemplateOutput, error)
 	GetPushTemplateWithContext(aws.Context, *pinpoint.GetPushTemplateInput, ...request.Option) (*pinpoint.GetPushTemplateOutput, error)
 	GetPushTemplateRequest(*pinpoint.GetPushTemplateInput) (*request.Request, *pinpoint.GetPushTemplateOutput)

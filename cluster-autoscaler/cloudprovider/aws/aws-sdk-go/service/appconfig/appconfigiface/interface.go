@@ -76,6 +76,14 @@ type AppConfigAPI interface {
 	CreateEnvironmentWithContext(aws.Context, *appconfig.CreateEnvironmentInput, ...request.Option) (*appconfig.CreateEnvironmentOutput, error)
 	CreateEnvironmentRequest(*appconfig.CreateEnvironmentInput) (*request.Request, *appconfig.CreateEnvironmentOutput)
 
+	CreateExtension(*appconfig.CreateExtensionInput) (*appconfig.CreateExtensionOutput, error)
+	CreateExtensionWithContext(aws.Context, *appconfig.CreateExtensionInput, ...request.Option) (*appconfig.CreateExtensionOutput, error)
+	CreateExtensionRequest(*appconfig.CreateExtensionInput) (*request.Request, *appconfig.CreateExtensionOutput)
+
+	CreateExtensionAssociation(*appconfig.CreateExtensionAssociationInput) (*appconfig.CreateExtensionAssociationOutput, error)
+	CreateExtensionAssociationWithContext(aws.Context, *appconfig.CreateExtensionAssociationInput, ...request.Option) (*appconfig.CreateExtensionAssociationOutput, error)
+	CreateExtensionAssociationRequest(*appconfig.CreateExtensionAssociationInput) (*request.Request, *appconfig.CreateExtensionAssociationOutput)
+
 	CreateHostedConfigurationVersion(*appconfig.CreateHostedConfigurationVersionInput) (*appconfig.CreateHostedConfigurationVersionOutput, error)
 	CreateHostedConfigurationVersionWithContext(aws.Context, *appconfig.CreateHostedConfigurationVersionInput, ...request.Option) (*appconfig.CreateHostedConfigurationVersionOutput, error)
 	CreateHostedConfigurationVersionRequest(*appconfig.CreateHostedConfigurationVersionInput) (*request.Request, *appconfig.CreateHostedConfigurationVersionOutput)
@@ -95,6 +103,14 @@ type AppConfigAPI interface {
 	DeleteEnvironment(*appconfig.DeleteEnvironmentInput) (*appconfig.DeleteEnvironmentOutput, error)
 	DeleteEnvironmentWithContext(aws.Context, *appconfig.DeleteEnvironmentInput, ...request.Option) (*appconfig.DeleteEnvironmentOutput, error)
 	DeleteEnvironmentRequest(*appconfig.DeleteEnvironmentInput) (*request.Request, *appconfig.DeleteEnvironmentOutput)
+
+	DeleteExtension(*appconfig.DeleteExtensionInput) (*appconfig.DeleteExtensionOutput, error)
+	DeleteExtensionWithContext(aws.Context, *appconfig.DeleteExtensionInput, ...request.Option) (*appconfig.DeleteExtensionOutput, error)
+	DeleteExtensionRequest(*appconfig.DeleteExtensionInput) (*request.Request, *appconfig.DeleteExtensionOutput)
+
+	DeleteExtensionAssociation(*appconfig.DeleteExtensionAssociationInput) (*appconfig.DeleteExtensionAssociationOutput, error)
+	DeleteExtensionAssociationWithContext(aws.Context, *appconfig.DeleteExtensionAssociationInput, ...request.Option) (*appconfig.DeleteExtensionAssociationOutput, error)
+	DeleteExtensionAssociationRequest(*appconfig.DeleteExtensionAssociationInput) (*request.Request, *appconfig.DeleteExtensionAssociationOutput)
 
 	DeleteHostedConfigurationVersion(*appconfig.DeleteHostedConfigurationVersionInput) (*appconfig.DeleteHostedConfigurationVersionOutput, error)
 	DeleteHostedConfigurationVersionWithContext(aws.Context, *appconfig.DeleteHostedConfigurationVersionInput, ...request.Option) (*appconfig.DeleteHostedConfigurationVersionOutput, error)
@@ -123,6 +139,14 @@ type AppConfigAPI interface {
 	GetEnvironment(*appconfig.GetEnvironmentInput) (*appconfig.GetEnvironmentOutput, error)
 	GetEnvironmentWithContext(aws.Context, *appconfig.GetEnvironmentInput, ...request.Option) (*appconfig.GetEnvironmentOutput, error)
 	GetEnvironmentRequest(*appconfig.GetEnvironmentInput) (*request.Request, *appconfig.GetEnvironmentOutput)
+
+	GetExtension(*appconfig.GetExtensionInput) (*appconfig.GetExtensionOutput, error)
+	GetExtensionWithContext(aws.Context, *appconfig.GetExtensionInput, ...request.Option) (*appconfig.GetExtensionOutput, error)
+	GetExtensionRequest(*appconfig.GetExtensionInput) (*request.Request, *appconfig.GetExtensionOutput)
+
+	GetExtensionAssociation(*appconfig.GetExtensionAssociationInput) (*appconfig.GetExtensionAssociationOutput, error)
+	GetExtensionAssociationWithContext(aws.Context, *appconfig.GetExtensionAssociationInput, ...request.Option) (*appconfig.GetExtensionAssociationOutput, error)
+	GetExtensionAssociationRequest(*appconfig.GetExtensionAssociationInput) (*request.Request, *appconfig.GetExtensionAssociationOutput)
 
 	GetHostedConfigurationVersion(*appconfig.GetHostedConfigurationVersionInput) (*appconfig.GetHostedConfigurationVersionOutput, error)
 	GetHostedConfigurationVersionWithContext(aws.Context, *appconfig.GetHostedConfigurationVersionInput, ...request.Option) (*appconfig.GetHostedConfigurationVersionOutput, error)
@@ -162,6 +186,20 @@ type AppConfigAPI interface {
 
 	ListEnvironmentsPages(*appconfig.ListEnvironmentsInput, func(*appconfig.ListEnvironmentsOutput, bool) bool) error
 	ListEnvironmentsPagesWithContext(aws.Context, *appconfig.ListEnvironmentsInput, func(*appconfig.ListEnvironmentsOutput, bool) bool, ...request.Option) error
+
+	ListExtensionAssociations(*appconfig.ListExtensionAssociationsInput) (*appconfig.ListExtensionAssociationsOutput, error)
+	ListExtensionAssociationsWithContext(aws.Context, *appconfig.ListExtensionAssociationsInput, ...request.Option) (*appconfig.ListExtensionAssociationsOutput, error)
+	ListExtensionAssociationsRequest(*appconfig.ListExtensionAssociationsInput) (*request.Request, *appconfig.ListExtensionAssociationsOutput)
+
+	ListExtensionAssociationsPages(*appconfig.ListExtensionAssociationsInput, func(*appconfig.ListExtensionAssociationsOutput, bool) bool) error
+	ListExtensionAssociationsPagesWithContext(aws.Context, *appconfig.ListExtensionAssociationsInput, func(*appconfig.ListExtensionAssociationsOutput, bool) bool, ...request.Option) error
+
+	ListExtensions(*appconfig.ListExtensionsInput) (*appconfig.ListExtensionsOutput, error)
+	ListExtensionsWithContext(aws.Context, *appconfig.ListExtensionsInput, ...request.Option) (*appconfig.ListExtensionsOutput, error)
+	ListExtensionsRequest(*appconfig.ListExtensionsInput) (*request.Request, *appconfig.ListExtensionsOutput)
+
+	ListExtensionsPages(*appconfig.ListExtensionsInput, func(*appconfig.ListExtensionsOutput, bool) bool) error
+	ListExtensionsPagesWithContext(aws.Context, *appconfig.ListExtensionsInput, func(*appconfig.ListExtensionsOutput, bool) bool, ...request.Option) error
 
 	ListHostedConfigurationVersions(*appconfig.ListHostedConfigurationVersionsInput) (*appconfig.ListHostedConfigurationVersionsOutput, error)
 	ListHostedConfigurationVersionsWithContext(aws.Context, *appconfig.ListHostedConfigurationVersionsInput, ...request.Option) (*appconfig.ListHostedConfigurationVersionsOutput, error)
@@ -205,6 +243,14 @@ type AppConfigAPI interface {
 	UpdateEnvironment(*appconfig.UpdateEnvironmentInput) (*appconfig.UpdateEnvironmentOutput, error)
 	UpdateEnvironmentWithContext(aws.Context, *appconfig.UpdateEnvironmentInput, ...request.Option) (*appconfig.UpdateEnvironmentOutput, error)
 	UpdateEnvironmentRequest(*appconfig.UpdateEnvironmentInput) (*request.Request, *appconfig.UpdateEnvironmentOutput)
+
+	UpdateExtension(*appconfig.UpdateExtensionInput) (*appconfig.UpdateExtensionOutput, error)
+	UpdateExtensionWithContext(aws.Context, *appconfig.UpdateExtensionInput, ...request.Option) (*appconfig.UpdateExtensionOutput, error)
+	UpdateExtensionRequest(*appconfig.UpdateExtensionInput) (*request.Request, *appconfig.UpdateExtensionOutput)
+
+	UpdateExtensionAssociation(*appconfig.UpdateExtensionAssociationInput) (*appconfig.UpdateExtensionAssociationOutput, error)
+	UpdateExtensionAssociationWithContext(aws.Context, *appconfig.UpdateExtensionAssociationInput, ...request.Option) (*appconfig.UpdateExtensionAssociationOutput, error)
+	UpdateExtensionAssociationRequest(*appconfig.UpdateExtensionAssociationInput) (*request.Request, *appconfig.UpdateExtensionAssociationOutput)
 
 	ValidateConfiguration(*appconfig.ValidateConfigurationInput) (*appconfig.ValidateConfigurationOutput, error)
 	ValidateConfigurationWithContext(aws.Context, *appconfig.ValidateConfigurationInput, ...request.Option) (*appconfig.ValidateConfigurationOutput, error)

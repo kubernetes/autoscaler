@@ -72,6 +72,12 @@ const (
 	// The specified directory does not exist in the system.
 	ErrCodeDirectoryDoesNotExistException = "DirectoryDoesNotExistException"
 
+	// ErrCodeDirectoryInDesiredStateException for service response error code
+	// "DirectoryInDesiredStateException".
+	//
+	// The directory is already updated to desired update type settings.
+	ErrCodeDirectoryInDesiredStateException = "DirectoryInDesiredStateException"
+
 	// ErrCodeDirectoryLimitExceededException for service response error code
 	// "DirectoryLimitExceededException".
 	//
@@ -111,6 +117,12 @@ const (
 	//
 	// The specified entity could not be found.
 	ErrCodeEntityDoesNotExistException = "EntityDoesNotExistException"
+
+	// ErrCodeIncompatibleSettingsException for service response error code
+	// "IncompatibleSettingsException".
+	//
+	// The specified directory setting is not compatible with other settings.
+	ErrCodeIncompatibleSettingsException = "IncompatibleSettingsException"
 
 	// ErrCodeInsufficientPermissionsException for service response error code
 	// "InsufficientPermissionsException".
@@ -222,6 +234,12 @@ const (
 	// The operation is not supported.
 	ErrCodeUnsupportedOperationException = "UnsupportedOperationException"
 
+	// ErrCodeUnsupportedSettingsException for service response error code
+	// "UnsupportedSettingsException".
+	//
+	// The specified directory setting is not supported.
+	ErrCodeUnsupportedSettingsException = "UnsupportedSettingsException"
+
 	// ErrCodeUserDoesNotExistException for service response error code
 	// "UserDoesNotExistException".
 	//
@@ -240,12 +258,14 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"DirectoryAlreadyInRegionException":      newErrorDirectoryAlreadyInRegionException,
 	"DirectoryAlreadySharedException":        newErrorDirectoryAlreadySharedException,
 	"DirectoryDoesNotExistException":         newErrorDirectoryDoesNotExistException,
+	"DirectoryInDesiredStateException":       newErrorDirectoryInDesiredStateException,
 	"DirectoryLimitExceededException":        newErrorDirectoryLimitExceededException,
 	"DirectoryNotSharedException":            newErrorDirectoryNotSharedException,
 	"DirectoryUnavailableException":          newErrorDirectoryUnavailableException,
 	"DomainControllerLimitExceededException": newErrorDomainControllerLimitExceededException,
 	"EntityAlreadyExistsException":           newErrorEntityAlreadyExistsException,
 	"EntityDoesNotExistException":            newErrorEntityDoesNotExistException,
+	"IncompatibleSettingsException":          newErrorIncompatibleSettingsException,
 	"InsufficientPermissionsException":       newErrorInsufficientPermissionsException,
 	"InvalidCertificateException":            newErrorInvalidCertificateException,
 	"InvalidClientAuthStatusException":       newErrorInvalidClientAuthStatusException,
@@ -263,5 +283,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"SnapshotLimitExceededException":         newErrorSnapshotLimitExceededException,
 	"TagLimitExceededException":              newErrorTagLimitExceededException,
 	"UnsupportedOperationException":          newErrorUnsupportedOperationException,
+	"UnsupportedSettingsException":           newErrorUnsupportedSettingsException,
 	"UserDoesNotExistException":              newErrorUserDoesNotExistException,
 }

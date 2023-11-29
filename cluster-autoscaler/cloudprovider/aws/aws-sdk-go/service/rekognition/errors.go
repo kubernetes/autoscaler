@@ -14,6 +14,13 @@ const (
 	// You are not authorized to perform the action.
 	ErrCodeAccessDeniedException = "AccessDeniedException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// A User with the same Id already exists within the collection, or the update
+	// or deletion of the User caused an inconsistent state. **
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeHumanLoopQuotaExceededException for service response error code
 	// "HumanLoopQuotaExceededException".
 	//
@@ -50,6 +57,13 @@ const (
 	// The provided image format is not supported.
 	ErrCodeInvalidImageFormatException = "InvalidImageFormatException"
 
+	// ErrCodeInvalidManifestException for service response error code
+	// "InvalidManifestException".
+	//
+	// Indicates that a provided manifest file is empty or larger than the allowed
+	// limit.
+	ErrCodeInvalidManifestException = "InvalidManifestException"
+
 	// ErrCodeInvalidPaginationTokenException for service response error code
 	// "InvalidPaginationTokenException".
 	//
@@ -63,6 +77,12 @@ const (
 	// the API operation again.
 	ErrCodeInvalidParameterException = "InvalidParameterException"
 
+	// ErrCodeInvalidPolicyRevisionIdException for service response error code
+	// "InvalidPolicyRevisionIdException".
+	//
+	// The supplied revision id for the project policy is invalid.
+	ErrCodeInvalidPolicyRevisionIdException = "InvalidPolicyRevisionIdException"
+
 	// ErrCodeInvalidS3ObjectException for service response error code
 	// "InvalidS3ObjectException".
 	//
@@ -73,11 +93,18 @@ const (
 	// "LimitExceededException".
 	//
 	// An Amazon Rekognition service limit was exceeded. For example, if you start
-	// too many Amazon Rekognition Video jobs concurrently, calls to start operations
-	// (StartLabelDetection, for example) will raise a LimitExceededException exception
-	// (HTTP status code: 400) until the number of concurrently running jobs is
-	// below the Amazon Rekognition service limit.
+	// too many jobs concurrently, subsequent calls to start operations (ex: StartLabelDetection)
+	// will raise a LimitExceededException exception (HTTP status code: 400) until
+	// the number of concurrently running jobs is below the Amazon Rekognition service
+	// limit.
 	ErrCodeLimitExceededException = "LimitExceededException"
+
+	// ErrCodeMalformedPolicyDocumentException for service response error code
+	// "MalformedPolicyDocumentException".
+	//
+	// The format of the project policy document that you supplied to PutProjectPolicy
+	// is incorrect.
+	ErrCodeMalformedPolicyDocumentException = "MalformedPolicyDocumentException"
 
 	// ErrCodeProvisionedThroughputExceededException for service response error code
 	// "ProvisionedThroughputExceededException".
@@ -119,6 +146,12 @@ const (
 	// Developer Guide.
 	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
 
+	// ErrCodeSessionNotFoundException for service response error code
+	// "SessionNotFoundException".
+	//
+	// Occurs when a given sessionId is not found.
+	ErrCodeSessionNotFoundException = "SessionNotFoundException"
+
 	// ErrCodeThrottlingException for service response error code
 	// "ThrottlingException".
 	//
@@ -136,21 +169,26 @@ const (
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessDeniedException":                  newErrorAccessDeniedException,
+	"ConflictException":                      newErrorConflictException,
 	"HumanLoopQuotaExceededException":        newErrorHumanLoopQuotaExceededException,
 	"IdempotentParameterMismatchException":   newErrorIdempotentParameterMismatchException,
 	"ImageTooLargeException":                 newErrorImageTooLargeException,
 	"InternalServerError":                    newErrorInternalServerError,
 	"InvalidImageFormatException":            newErrorInvalidImageFormatException,
+	"InvalidManifestException":               newErrorInvalidManifestException,
 	"InvalidPaginationTokenException":        newErrorInvalidPaginationTokenException,
 	"InvalidParameterException":              newErrorInvalidParameterException,
+	"InvalidPolicyRevisionIdException":       newErrorInvalidPolicyRevisionIdException,
 	"InvalidS3ObjectException":               newErrorInvalidS3ObjectException,
 	"LimitExceededException":                 newErrorLimitExceededException,
+	"MalformedPolicyDocumentException":       newErrorMalformedPolicyDocumentException,
 	"ProvisionedThroughputExceededException": newErrorProvisionedThroughputExceededException,
 	"ResourceAlreadyExistsException":         newErrorResourceAlreadyExistsException,
 	"ResourceInUseException":                 newErrorResourceInUseException,
 	"ResourceNotFoundException":              newErrorResourceNotFoundException,
 	"ResourceNotReadyException":              newErrorResourceNotReadyException,
 	"ServiceQuotaExceededException":          newErrorServiceQuotaExceededException,
+	"SessionNotFoundException":               newErrorSessionNotFoundException,
 	"ThrottlingException":                    newErrorThrottlingException,
 	"VideoTooLargeException":                 newErrorVideoTooLargeException,
 }

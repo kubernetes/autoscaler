@@ -64,6 +64,10 @@ type MigrationHubConfigAPI interface {
 	CreateHomeRegionControlWithContext(aws.Context, *migrationhubconfig.CreateHomeRegionControlInput, ...request.Option) (*migrationhubconfig.CreateHomeRegionControlOutput, error)
 	CreateHomeRegionControlRequest(*migrationhubconfig.CreateHomeRegionControlInput) (*request.Request, *migrationhubconfig.CreateHomeRegionControlOutput)
 
+	DeleteHomeRegionControl(*migrationhubconfig.DeleteHomeRegionControlInput) (*migrationhubconfig.DeleteHomeRegionControlOutput, error)
+	DeleteHomeRegionControlWithContext(aws.Context, *migrationhubconfig.DeleteHomeRegionControlInput, ...request.Option) (*migrationhubconfig.DeleteHomeRegionControlOutput, error)
+	DeleteHomeRegionControlRequest(*migrationhubconfig.DeleteHomeRegionControlInput) (*request.Request, *migrationhubconfig.DeleteHomeRegionControlOutput)
+
 	DescribeHomeRegionControls(*migrationhubconfig.DescribeHomeRegionControlsInput) (*migrationhubconfig.DescribeHomeRegionControlsOutput, error)
 	DescribeHomeRegionControlsWithContext(aws.Context, *migrationhubconfig.DescribeHomeRegionControlsInput, ...request.Option) (*migrationhubconfig.DescribeHomeRegionControlsOutput, error)
 	DescribeHomeRegionControlsRequest(*migrationhubconfig.DescribeHomeRegionControlsInput) (*request.Request, *migrationhubconfig.DescribeHomeRegionControlsOutput)
