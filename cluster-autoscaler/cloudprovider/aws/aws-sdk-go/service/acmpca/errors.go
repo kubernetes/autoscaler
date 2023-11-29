@@ -37,7 +37,7 @@ const (
 	// "InvalidNextTokenException".
 	//
 	// The token specified in the NextToken argument is not valid. Use the token
-	// returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/acm-pca/latest/APIReference/API_ListCertificateAuthorities.html).
+	// returned from your previous call to ListCertificateAuthorities (https://docs.aws.amazon.com/privateca/latest/APIReference/API_ListCertificateAuthorities.html).
 	ErrCodeInvalidNextTokenException = "InvalidNextTokenException"
 
 	// ErrCodeInvalidPolicyException for service response error code
@@ -70,8 +70,8 @@ const (
 	// ErrCodeLimitExceededException for service response error code
 	// "LimitExceededException".
 	//
-	// An ACM Private CA quota has been exceeded. See the exception message returned
-	// to determine the quota that was exceeded.
+	// An Amazon Web Services Private CA quota has been exceeded. See the exception
+	// message returned to determine the quota that was exceeded.
 	ErrCodeLimitExceededException = "LimitExceededException"
 
 	// ErrCodeLockoutPreventedException for service response error code

@@ -42,6 +42,12 @@ func (c *MarketplaceEntitlementService) GetEntitlementsRequest(input *GetEntitle
 		Name:       opGetEntitlements,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -97,6 +103,57 @@ func (c *MarketplaceEntitlementService) GetEntitlementsWithContext(ctx aws.Conte
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// GetEntitlementsPages iterates over the pages of a GetEntitlements operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See GetEntitlements method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a GetEntitlements operation.
+//	pageNum := 0
+//	err := client.GetEntitlementsPages(params,
+//	    func(page *marketplaceentitlementservice.GetEntitlementsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MarketplaceEntitlementService) GetEntitlementsPages(input *GetEntitlementsInput, fn func(*GetEntitlementsOutput, bool) bool) error {
+	return c.GetEntitlementsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// GetEntitlementsPagesWithContext same as GetEntitlementsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MarketplaceEntitlementService) GetEntitlementsPagesWithContext(ctx aws.Context, input *GetEntitlementsInput, fn func(*GetEntitlementsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *GetEntitlementsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetEntitlementsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*GetEntitlementsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 // An entitlement represents capacity in a product owned by the customer. For
@@ -255,7 +312,7 @@ type GetEntitlementsInput struct {
 
 	// The maximum number of items to retrieve from the GetEntitlements operation.
 	// For pagination, use the NextToken field in subsequent calls to GetEntitlements.
-	MaxResults *int64 `type:"integer"`
+	MaxResults *int64 `min:"1" type:"integer"`
 
 	// For paginated calls to GetEntitlements, pass the NextToken from the previous
 	// GetEntitlementsResult.
@@ -290,6 +347,9 @@ func (s GetEntitlementsInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *GetEntitlementsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GetEntitlementsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
 	if s.ProductCode == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProductCode"))
 	}

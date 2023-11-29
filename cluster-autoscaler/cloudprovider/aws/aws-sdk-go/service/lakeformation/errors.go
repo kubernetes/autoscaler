@@ -29,7 +29,7 @@ const (
 	// ErrCodeEntityNotFoundException for service response error code
 	// "EntityNotFoundException".
 	//
-	// A specified entity does not exist
+	// A specified entity does not exist.
 	ErrCodeEntityNotFoundException = "EntityNotFoundException"
 
 	// ErrCodeExpiredException for service response error code

@@ -117,10 +117,10 @@ const (
 	// ErrCodeInvalidLambdaFunctionException for service response error code
 	// "InvalidLambdaFunction".
 	//
-	// Indicates that the provided AWS Lambda function is invalid, or that Amazon
-	// SES could not execute the provided function, possibly due to permissions
-	// issues. For information about giving permissions, see the Amazon SES Developer
-	// Guide (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-permissions.html).
+	// Indicates that the provided Amazon Web Services Lambda function is invalid,
+	// or that Amazon SES could not execute the provided function, possibly due
+	// to permissions issues. For information about giving permissions, see the
+	// Amazon SES Developer Guide (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-permissions.html).
 	ErrCodeInvalidLambdaFunctionException = "InvalidLambdaFunction"
 
 	// ErrCodeInvalidPolicyException for service response error code
@@ -140,10 +140,10 @@ const (
 	// ErrCodeInvalidS3ConfigurationException for service response error code
 	// "InvalidS3Configuration".
 	//
-	// Indicates that the provided Amazon S3 bucket or AWS KMS encryption key is
-	// invalid, or that Amazon SES could not publish to the bucket, possibly due
-	// to permissions issues. For information about giving permissions, see the
-	// Amazon SES Developer Guide (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-permissions.html).
+	// Indicates that the provided Amazon S3 bucket or Amazon Web Services KMS encryption
+	// key is invalid, or that Amazon SES could not publish to the bucket, possibly
+	// due to permissions issues. For information about giving permissions, see
+	// the Amazon SES Developer Guide (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/receiving-email-permissions.html).
 	ErrCodeInvalidS3ConfigurationException = "InvalidS3Configuration"
 
 	// ErrCodeInvalidSNSDestinationException for service response error code

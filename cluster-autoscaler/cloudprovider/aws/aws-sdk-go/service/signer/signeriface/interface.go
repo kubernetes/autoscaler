@@ -72,6 +72,10 @@ type SignerAPI interface {
 	DescribeSigningJobWithContext(aws.Context, *signer.DescribeSigningJobInput, ...request.Option) (*signer.DescribeSigningJobOutput, error)
 	DescribeSigningJobRequest(*signer.DescribeSigningJobInput) (*request.Request, *signer.DescribeSigningJobOutput)
 
+	GetRevocationStatus(*signer.GetRevocationStatusInput) (*signer.GetRevocationStatusOutput, error)
+	GetRevocationStatusWithContext(aws.Context, *signer.GetRevocationStatusInput, ...request.Option) (*signer.GetRevocationStatusOutput, error)
+	GetRevocationStatusRequest(*signer.GetRevocationStatusInput) (*request.Request, *signer.GetRevocationStatusOutput)
+
 	GetSigningPlatform(*signer.GetSigningPlatformInput) (*signer.GetSigningPlatformOutput, error)
 	GetSigningPlatformWithContext(aws.Context, *signer.GetSigningPlatformInput, ...request.Option) (*signer.GetSigningPlatformOutput, error)
 	GetSigningPlatformRequest(*signer.GetSigningPlatformInput) (*request.Request, *signer.GetSigningPlatformOutput)
@@ -124,6 +128,10 @@ type SignerAPI interface {
 	RevokeSigningProfile(*signer.RevokeSigningProfileInput) (*signer.RevokeSigningProfileOutput, error)
 	RevokeSigningProfileWithContext(aws.Context, *signer.RevokeSigningProfileInput, ...request.Option) (*signer.RevokeSigningProfileOutput, error)
 	RevokeSigningProfileRequest(*signer.RevokeSigningProfileInput) (*request.Request, *signer.RevokeSigningProfileOutput)
+
+	SignPayload(*signer.SignPayloadInput) (*signer.SignPayloadOutput, error)
+	SignPayloadWithContext(aws.Context, *signer.SignPayloadInput, ...request.Option) (*signer.SignPayloadOutput, error)
+	SignPayloadRequest(*signer.SignPayloadInput) (*request.Request, *signer.SignPayloadOutput)
 
 	StartSigningJob(*signer.StartSigningJobInput) (*signer.StartSigningJobOutput, error)
 	StartSigningJobWithContext(aws.Context, *signer.StartSigningJobInput, ...request.Option) (*signer.StartSigningJobOutput, error)

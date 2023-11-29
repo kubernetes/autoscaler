@@ -370,6 +370,9 @@ func (c *LicenseManager) CheckoutLicenseRequest(input *CheckoutLicenseInput) (re
 //
 // Checks out the specified license.
 //
+// If the account that created the license is the same that is performing the
+// check out, you must specify the account as the beneficiary.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -477,7 +480,10 @@ func (c *LicenseManager) CreateGrantRequest(input *CreateGrantInput) (req *reque
 // CreateGrant API operation for AWS License Manager.
 //
 // Creates a grant for the specified license. A grant shares the use of license
-// entitlements with specific Amazon Web Services accounts.
+// entitlements with a specific Amazon Web Services account, an organization,
+// or an organizational unit (OU). For more information, see Granted licenses
+// in License Manager (https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html)
+// in the License Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -575,7 +581,9 @@ func (c *LicenseManager) CreateGrantVersionRequest(input *CreateGrantVersionInpu
 
 // CreateGrantVersion API operation for AWS License Manager.
 //
-// Creates a new version of the specified grant.
+// Creates a new version of the specified grant. For more information, see Granted
+// licenses in License Manager (https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html)
+// in the License Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3483,7 +3491,9 @@ func (c *LicenseManager) ListReceivedGrantsRequest(input *ListReceivedGrantsInpu
 
 // ListReceivedGrants API operation for AWS License Manager.
 //
-// Lists grants that are received but not accepted.
+// Lists grants that are received. Received grants are grants created while
+// specifying the recipient as this Amazon Web Services account, your organization,
+// or an organizational unit (OU) to which this member account belongs.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3533,6 +3543,104 @@ func (c *LicenseManager) ListReceivedGrants(input *ListReceivedGrantsInput) (*Li
 // for more information on using Contexts.
 func (c *LicenseManager) ListReceivedGrantsWithContext(ctx aws.Context, input *ListReceivedGrantsInput, opts ...request.Option) (*ListReceivedGrantsOutput, error) {
 	req, out := c.ListReceivedGrantsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListReceivedGrantsForOrganization = "ListReceivedGrantsForOrganization"
+
+// ListReceivedGrantsForOrganizationRequest generates a "aws/request.Request" representing the
+// client's request for the ListReceivedGrantsForOrganization operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListReceivedGrantsForOrganization for more information on using the ListReceivedGrantsForOrganization
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListReceivedGrantsForOrganizationRequest method.
+//	req, resp := client.ListReceivedGrantsForOrganizationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedGrantsForOrganization
+func (c *LicenseManager) ListReceivedGrantsForOrganizationRequest(input *ListReceivedGrantsForOrganizationInput) (req *request.Request, output *ListReceivedGrantsForOrganizationOutput) {
+	op := &request.Operation{
+		Name:       opListReceivedGrantsForOrganization,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListReceivedGrantsForOrganizationInput{}
+	}
+
+	output = &ListReceivedGrantsForOrganizationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListReceivedGrantsForOrganization API operation for AWS License Manager.
+//
+// Lists the grants received for all accounts in the organization.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS License Manager's
+// API operation ListReceivedGrantsForOrganization for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
+//
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
+//
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
+//
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedGrantsForOrganization
+func (c *LicenseManager) ListReceivedGrantsForOrganization(input *ListReceivedGrantsForOrganizationInput) (*ListReceivedGrantsForOrganizationOutput, error) {
+	req, out := c.ListReceivedGrantsForOrganizationRequest(input)
+	return out, req.Send()
+}
+
+// ListReceivedGrantsForOrganizationWithContext is the same as ListReceivedGrantsForOrganization with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListReceivedGrantsForOrganization for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *LicenseManager) ListReceivedGrantsForOrganizationWithContext(ctx aws.Context, input *ListReceivedGrantsForOrganizationInput, opts ...request.Option) (*ListReceivedGrantsForOrganizationOutput, error) {
+	req, out := c.ListReceivedGrantsForOrganizationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3631,6 +3739,104 @@ func (c *LicenseManager) ListReceivedLicenses(input *ListReceivedLicensesInput) 
 // for more information on using Contexts.
 func (c *LicenseManager) ListReceivedLicensesWithContext(ctx aws.Context, input *ListReceivedLicensesInput, opts ...request.Option) (*ListReceivedLicensesOutput, error) {
 	req, out := c.ListReceivedLicensesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListReceivedLicensesForOrganization = "ListReceivedLicensesForOrganization"
+
+// ListReceivedLicensesForOrganizationRequest generates a "aws/request.Request" representing the
+// client's request for the ListReceivedLicensesForOrganization operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListReceivedLicensesForOrganization for more information on using the ListReceivedLicensesForOrganization
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListReceivedLicensesForOrganizationRequest method.
+//	req, resp := client.ListReceivedLicensesForOrganizationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedLicensesForOrganization
+func (c *LicenseManager) ListReceivedLicensesForOrganizationRequest(input *ListReceivedLicensesForOrganizationInput) (req *request.Request, output *ListReceivedLicensesForOrganizationOutput) {
+	op := &request.Operation{
+		Name:       opListReceivedLicensesForOrganization,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListReceivedLicensesForOrganizationInput{}
+	}
+
+	output = &ListReceivedLicensesForOrganizationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListReceivedLicensesForOrganization API operation for AWS License Manager.
+//
+// Lists the licenses received for all accounts in the organization.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS License Manager's
+// API operation ListReceivedLicensesForOrganization for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The provided input is not valid. Try your request again.
+//
+//   - InvalidParameterValueException
+//     One or more parameter values are not valid.
+//
+//   - ResourceLimitExceededException
+//     Your resource limits have been exceeded.
+//
+//   - ServerInternalException
+//     The server experienced an internal error. Try again.
+//
+//   - AuthorizationException
+//     The Amazon Web Services user account does not have permission to perform
+//     the action. Check the IAM policy associated with this account.
+//
+//   - AccessDeniedException
+//     Access to resource denied.
+//
+//   - RateLimitExceededException
+//     Too many requests have been submitted. Try again after a brief wait.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/license-manager-2018-08-01/ListReceivedLicensesForOrganization
+func (c *LicenseManager) ListReceivedLicensesForOrganization(input *ListReceivedLicensesForOrganizationInput) (*ListReceivedLicensesForOrganizationOutput, error) {
+	req, out := c.ListReceivedLicensesForOrganizationRequest(input)
+	return out, req.Send()
+}
+
+// ListReceivedLicensesForOrganizationWithContext is the same as ListReceivedLicensesForOrganization with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListReceivedLicensesForOrganization for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *LicenseManager) ListReceivedLicensesForOrganizationWithContext(ctx aws.Context, input *ListReceivedLicensesForOrganizationInput, opts ...request.Option) (*ListReceivedLicensesForOrganizationOutput, error) {
+	req, out := c.ListReceivedLicensesForOrganizationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5738,7 +5944,14 @@ type CreateGrantInput struct {
 	// LicenseArn is a required field
 	LicenseArn *string `type:"string" required:"true"`
 
-	// The grant principals.
+	// The grant principals. You can specify one of the following as an Amazon Resource
+	// Name (ARN):
+	//
+	//    * An Amazon Web Services account, which includes only the account specified.
+	//
+	//    * An organizational unit (OU), which includes all accounts in the OU.
+	//
+	//    * An organization, which will include all accounts across your organization.
 	//
 	// Principals is a required field
 	Principals []*string `min:"1" type:"list" required:"true"`
@@ -5901,6 +6114,9 @@ type CreateGrantVersionInput struct {
 	// Grant name.
 	GrantName *string `type:"string"`
 
+	// The options specified for the grant.
+	Options *Options `type:"structure"`
+
 	// Current version of the grant.
 	SourceVersion *string `type:"string"`
 
@@ -5969,6 +6185,12 @@ func (s *CreateGrantVersionInput) SetGrantArn(v string) *CreateGrantVersionInput
 // SetGrantName sets the GrantName field's value.
 func (s *CreateGrantVersionInput) SetGrantName(v string) *CreateGrantVersionInput {
 	s.GrantName = &v
+	return s
+}
+
+// SetOptions sets the Options field's value.
+func (s *CreateGrantVersionInput) SetOptions(v *Options) *CreateGrantVersionInput {
+	s.Options = v
 	return s
 }
 
@@ -6227,7 +6449,7 @@ type CreateLicenseConversionTaskForResourceInput struct {
 
 	// Information that identifies the license type you are converting to. For the
 	// structure of the destination license, see Convert a license type using the
-	// AWS CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
+	// CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
 	// in the License Manager User Guide.
 	//
 	// DestinationLicenseContext is a required field
@@ -6241,7 +6463,7 @@ type CreateLicenseConversionTaskForResourceInput struct {
 
 	// Information that identifies the license type you are converting from. For
 	// the structure of the source license, see Convert a license type using the
-	// AWS CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
+	// CLI (https://docs.aws.amazon.com/license-manager/latest/userguide/conversion-procedures.html#conversion-cli)
 	// in the License Manager User Guide.
 	//
 	// SourceLicenseContext is a required field
@@ -8115,7 +8337,8 @@ type Filter struct {
 	// Name of the filter. Filter names are case-sensitive.
 	Name *string `type:"string"`
 
-	// Filter values. Filter values are case-sensitive.
+	// The value of the filter, which is case-sensitive. You can only specify one
+	// value for the filter.
 	Values []*string `type:"list"`
 }
 
@@ -9127,6 +9350,9 @@ type Grant struct {
 	// LicenseArn is a required field
 	LicenseArn *string `type:"string" required:"true"`
 
+	// The options specified for the grant.
+	Options *Options `type:"structure"`
+
 	// Parent ARN.
 	//
 	// ParentArn is a required field
@@ -9198,6 +9424,12 @@ func (s *Grant) SetHomeRegion(v string) *Grant {
 // SetLicenseArn sets the LicenseArn field's value.
 func (s *Grant) SetLicenseArn(v string) *Grant {
 	s.LicenseArn = &v
+	return s
+}
+
+// SetOptions sets the Options field's value.
+func (s *Grant) SetOptions(v *Options) *Grant {
+	s.Options = v
 	return s
 }
 
@@ -11501,6 +11733,126 @@ func (s *ListLicensesOutput) SetNextToken(v string) *ListLicensesOutput {
 	return s
 }
 
+type ListReceivedGrantsForOrganizationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filters to scope the results. The following filters are supported:
+	//
+	//    * ParentArn
+	//
+	//    * GranteePrincipalArn
+	Filters []*Filter `type:"list"`
+
+	// The Amazon Resource Name (ARN) of the received license.
+	//
+	// LicenseArn is a required field
+	LicenseArn *string `type:"string" required:"true"`
+
+	// Maximum number of results to return in a single call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListReceivedGrantsForOrganizationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListReceivedGrantsForOrganizationInput"}
+	if s.LicenseArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LicenseArn"))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetFilters(v []*Filter) *ListReceivedGrantsForOrganizationInput {
+	s.Filters = v
+	return s
+}
+
+// SetLicenseArn sets the LicenseArn field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetLicenseArn(v string) *ListReceivedGrantsForOrganizationInput {
+	s.LicenseArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetMaxResults(v int64) *ListReceivedGrantsForOrganizationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedGrantsForOrganizationInput) SetNextToken(v string) *ListReceivedGrantsForOrganizationInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListReceivedGrantsForOrganizationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Lists the grants the organization has received.
+	Grants []*Grant `type:"list"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedGrantsForOrganizationOutput) GoString() string {
+	return s.String()
+}
+
+// SetGrants sets the Grants field's value.
+func (s *ListReceivedGrantsForOrganizationOutput) SetGrants(v []*Grant) *ListReceivedGrantsForOrganizationOutput {
+	s.Grants = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedGrantsForOrganizationOutput) SetNextToken(v string) *ListReceivedGrantsForOrganizationOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListReceivedGrantsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11618,6 +11970,112 @@ func (s *ListReceivedGrantsOutput) SetGrants(v []*Grant) *ListReceivedGrantsOutp
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListReceivedGrantsOutput) SetNextToken(v string) *ListReceivedGrantsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListReceivedLicensesForOrganizationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filters to scope the results. The following filters are supported:
+	//
+	//    * Beneficiary
+	//
+	//    * ProductSKU
+	Filters []*Filter `type:"list"`
+
+	// Maximum number of results to return in a single call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListReceivedLicensesForOrganizationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListReceivedLicensesForOrganizationInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListReceivedLicensesForOrganizationInput) SetFilters(v []*Filter) *ListReceivedLicensesForOrganizationInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListReceivedLicensesForOrganizationInput) SetMaxResults(v int64) *ListReceivedLicensesForOrganizationInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedLicensesForOrganizationInput) SetNextToken(v string) *ListReceivedLicensesForOrganizationInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListReceivedLicensesForOrganizationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Lists the licenses the organization has received.
+	Licenses []*GrantedLicense `type:"list"`
+
+	// Token for the next set of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReceivedLicensesForOrganizationOutput) GoString() string {
+	return s.String()
+}
+
+// SetLicenses sets the Licenses field's value.
+func (s *ListReceivedLicensesForOrganizationOutput) SetLicenses(v []*GrantedLicense) *ListReceivedLicensesForOrganizationOutput {
+	s.Licenses = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReceivedLicensesForOrganizationOutput) SetNextToken(v string) *ListReceivedLicensesForOrganizationOutput {
 	s.NextToken = &v
 	return s
 }
@@ -12331,6 +12789,65 @@ func (s *NoEntitlementsAllowedException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *NoEntitlementsAllowedException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// The options you can specify when you create a new version of a grant, such
+// as activation override behavior. For more information, see Granted licenses
+// in License Manager (https://docs.aws.amazon.com/license-manager/latest/userguide/granted-licenses.html)
+// in the License Manager User Guide.
+type Options struct {
+	_ struct{} `type:"structure"`
+
+	// An activation option for your grant that determines the behavior of activating
+	// a grant. Activation options can only be used with granted licenses sourced
+	// from the Amazon Web Services Marketplace. Additionally, the operation must
+	// specify the value of ACTIVE for the Status parameter.
+	//
+	//    * As a license administrator, you can optionally specify an ActivationOverrideBehavior
+	//    when activating a grant.
+	//
+	//    * As a grantor, you can optionally specify an ActivationOverrideBehavior
+	//    when you activate a grant for a grantee account in your organization.
+	//
+	//    * As a grantee, if the grantor creating the distributed grant doesn’t
+	//    specify an ActivationOverrideBehavior, you can optionally specify one
+	//    when you are activating the grant.
+	//
+	// DISTRIBUTED_GRANTS_ONLY
+	//
+	// Use this value to activate a grant without replacing any member account’s
+	// active grants for the same product.
+	//
+	// ALL_GRANTS_PERMITTED_BY_ISSUER
+	//
+	// Use this value to activate a grant and disable other active grants in any
+	// member accounts for the same product. This action will also replace their
+	// previously activated grants with this activated grant.
+	ActivationOverrideBehavior *string `type:"string" enum:"ActivationOverrideBehavior"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Options) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Options) GoString() string {
+	return s.String()
+}
+
+// SetActivationOverrideBehavior sets the ActivationOverrideBehavior field's value.
+func (s *Options) SetActivationOverrideBehavior(v string) *Options {
+	s.ActivationOverrideBehavior = &v
+	return s
 }
 
 // Configuration information for Organizations.
@@ -14363,6 +14880,22 @@ func (s *ValidationException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+const (
+	// ActivationOverrideBehaviorDistributedGrantsOnly is a ActivationOverrideBehavior enum value
+	ActivationOverrideBehaviorDistributedGrantsOnly = "DISTRIBUTED_GRANTS_ONLY"
+
+	// ActivationOverrideBehaviorAllGrantsPermittedByIssuer is a ActivationOverrideBehavior enum value
+	ActivationOverrideBehaviorAllGrantsPermittedByIssuer = "ALL_GRANTS_PERMITTED_BY_ISSUER"
+)
+
+// ActivationOverrideBehavior_Values returns all elements of the ActivationOverrideBehavior enum
+func ActivationOverrideBehavior_Values() []string {
+	return []string{
+		ActivationOverrideBehaviorDistributedGrantsOnly,
+		ActivationOverrideBehaviorAllGrantsPermittedByIssuer,
+	}
 }
 
 const (

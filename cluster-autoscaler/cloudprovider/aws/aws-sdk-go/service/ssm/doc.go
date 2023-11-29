@@ -3,42 +3,32 @@
 // Package ssm provides the client and types for making API
 // requests to Amazon Simple Systems Manager (SSM).
 //
-// Amazon Web Services Systems Manager is a collection of capabilities that
-// helps you automate management tasks such as collecting system inventory,
-// applying operating system (OS) patches, automating the creation of Amazon
-// Machine Images (AMIs), and configuring operating systems (OSs) and applications
-// at scale. Systems Manager lets you remotely and securely manage the configuration
-// of your managed nodes. A managed node is any Amazon Elastic Compute Cloud
-// (Amazon EC2) instance, edge device, or on-premises server or virtual machine
-// (VM) that has been configured for Systems Manager.
-//
-// With support for IoT Greengrass core devices, the phrase managed instance
-// has been changed to managed node in most of the Systems Manager documentation.
-// The Systems Manager console, API calls, error messages, and SSM documents
-// still use the term instance.
+// Amazon Web Services Systems Manager is the operations hub for your Amazon
+// Web Services applications and resources and a secure end-to-end management
+// solution for hybrid cloud environments that enables safe and secure operations
+// at scale.
 //
 // This reference is intended to be used with the Amazon Web Services Systems
 // Manager User Guide (https://docs.aws.amazon.com/systems-manager/latest/userguide/).
-//
-// To get started, verify prerequisites and configure managed nodes. For more
-// information, see Setting up Amazon Web Services Systems Manager (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up.html)
-// in the Amazon Web Services Systems Manager User Guide.
+// To get started, see Setting up Amazon Web Services Systems Manager (https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-setting-up.html).
 //
 // Related resources
 //
-//   - For information about how to use a Query API, see Making API requests
-//     (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/making-api-requests.html).
+//   - For information about each of the capabilities that comprise Systems
+//     Manager, see Systems Manager capabilities (https://docs.aws.amazon.com/systems-manager/latest/userguide/what-is-systems-manager.html#systems-manager-capabilities)
+//     in the Amazon Web Services Systems Manager User Guide.
 //
-//   - For information about other API operations you can perform on EC2 instances,
-//     see the Amazon EC2 API Reference (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/).
+//   - For details about predefined runbooks for Automation, a capability of
+//     Amazon Web Services Systems Manager, see the Systems Manager Automation
+//     runbook reference (https://docs.aws.amazon.com/systems-manager-automation-runbooks/latest/userguide/automation-runbook-reference.html) .
 //
 //   - For information about AppConfig, a capability of Systems Manager, see
 //     the AppConfig User Guide (https://docs.aws.amazon.com/appconfig/latest/userguide/)
-//     and the AppConfig API Reference (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/).
+//     and the AppConfig API Reference (https://docs.aws.amazon.com/appconfig/2019-10-09/APIReference/) .
 //
 //   - For information about Incident Manager, a capability of Systems Manager,
-//     see the Incident Manager User Guide (https://docs.aws.amazon.com/incident-manager/latest/userguide/)
-//     and the Incident Manager API Reference (https://docs.aws.amazon.com/incident-manager/latest/APIReference/).
+//     see the Systems Manager Incident Manager User Guide (https://docs.aws.amazon.com/incident-manager/latest/userguide/)
+//     and the Systems Manager Incident Manager API Reference (https://docs.aws.amazon.com/incident-manager/latest/APIReference/) .
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/ssm-2014-11-06 for more information on this service.
 //

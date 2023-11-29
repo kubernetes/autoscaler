@@ -112,6 +112,10 @@ type OrganizationsAPI interface {
 	DeletePolicyWithContext(aws.Context, *organizations.DeletePolicyInput, ...request.Option) (*organizations.DeletePolicyOutput, error)
 	DeletePolicyRequest(*organizations.DeletePolicyInput) (*request.Request, *organizations.DeletePolicyOutput)
 
+	DeleteResourcePolicy(*organizations.DeleteResourcePolicyInput) (*organizations.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(aws.Context, *organizations.DeleteResourcePolicyInput, ...request.Option) (*organizations.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(*organizations.DeleteResourcePolicyInput) (*request.Request, *organizations.DeleteResourcePolicyOutput)
+
 	DeregisterDelegatedAdministrator(*organizations.DeregisterDelegatedAdministratorInput) (*organizations.DeregisterDelegatedAdministratorOutput, error)
 	DeregisterDelegatedAdministratorWithContext(aws.Context, *organizations.DeregisterDelegatedAdministratorInput, ...request.Option) (*organizations.DeregisterDelegatedAdministratorOutput, error)
 	DeregisterDelegatedAdministratorRequest(*organizations.DeregisterDelegatedAdministratorInput) (*request.Request, *organizations.DeregisterDelegatedAdministratorOutput)
@@ -143,6 +147,10 @@ type OrganizationsAPI interface {
 	DescribePolicy(*organizations.DescribePolicyInput) (*organizations.DescribePolicyOutput, error)
 	DescribePolicyWithContext(aws.Context, *organizations.DescribePolicyInput, ...request.Option) (*organizations.DescribePolicyOutput, error)
 	DescribePolicyRequest(*organizations.DescribePolicyInput) (*request.Request, *organizations.DescribePolicyOutput)
+
+	DescribeResourcePolicy(*organizations.DescribeResourcePolicyInput) (*organizations.DescribeResourcePolicyOutput, error)
+	DescribeResourcePolicyWithContext(aws.Context, *organizations.DescribeResourcePolicyInput, ...request.Option) (*organizations.DescribeResourcePolicyOutput, error)
+	DescribeResourcePolicyRequest(*organizations.DescribeResourcePolicyInput) (*request.Request, *organizations.DescribeResourcePolicyOutput)
 
 	DetachPolicy(*organizations.DetachPolicyInput) (*organizations.DetachPolicyOutput, error)
 	DetachPolicyWithContext(aws.Context, *organizations.DetachPolicyInput, ...request.Option) (*organizations.DetachPolicyOutput, error)
@@ -291,6 +299,10 @@ type OrganizationsAPI interface {
 	MoveAccount(*organizations.MoveAccountInput) (*organizations.MoveAccountOutput, error)
 	MoveAccountWithContext(aws.Context, *organizations.MoveAccountInput, ...request.Option) (*organizations.MoveAccountOutput, error)
 	MoveAccountRequest(*organizations.MoveAccountInput) (*request.Request, *organizations.MoveAccountOutput)
+
+	PutResourcePolicy(*organizations.PutResourcePolicyInput) (*organizations.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(aws.Context, *organizations.PutResourcePolicyInput, ...request.Option) (*organizations.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(*organizations.PutResourcePolicyInput) (*request.Request, *organizations.PutResourcePolicyOutput)
 
 	RegisterDelegatedAdministrator(*organizations.RegisterDelegatedAdministratorInput) (*organizations.RegisterDelegatedAdministratorOutput, error)
 	RegisterDelegatedAdministratorWithContext(aws.Context, *organizations.RegisterDelegatedAdministratorInput, ...request.Option) (*organizations.RegisterDelegatedAdministratorOutput, error)

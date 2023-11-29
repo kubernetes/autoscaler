@@ -59,6 +59,8 @@ func (c *ConnectParticipant) CompleteAttachmentUploadRequest(input *CompleteAtta
 // Allows you to confirm that the attachment has been uploaded using the pre-signed
 // URL provided in StartAttachmentUpload API.
 //
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
+//
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
 //
@@ -155,8 +157,9 @@ func (c *ConnectParticipant) CreateParticipantConnectionRequest(input *CreatePar
 
 // CreateParticipantConnection API operation for Amazon Connect Participant Service.
 //
-// Creates the participant's connection. Note that ParticipantToken is used
-// for invoking this API instead of ConnectionToken.
+// Creates the participant's connection.
+//
+// ParticipantToken is used for invoking this API instead of ConnectionToken.
 //
 // The participant token is valid for the lifetime of the participant – until
 // they are part of a contact.
@@ -233,6 +236,98 @@ func (c *ConnectParticipant) CreateParticipantConnectionWithContext(ctx aws.Cont
 	return out, req.Send()
 }
 
+const opDescribeView = "DescribeView"
+
+// DescribeViewRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeView operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeView for more information on using the DescribeView
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeViewRequest method.
+//	req, resp := client.DescribeViewRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/DescribeView
+func (c *ConnectParticipant) DescribeViewRequest(input *DescribeViewInput) (req *request.Request, output *DescribeViewOutput) {
+	op := &request.Operation{
+		Name:       opDescribeView,
+		HTTPMethod: "GET",
+		HTTPPath:   "/participant/views/{ViewToken}",
+	}
+
+	if input == nil {
+		input = &DescribeViewInput{}
+	}
+
+	output = &DescribeViewOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeView API operation for Amazon Connect Participant Service.
+//
+// Retrieves the view for the specified view token.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Participant Service's
+// API operation DescribeView for usage and error information.
+//
+// Returned Error Types:
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     This exception occurs when there is an internal failure in the Amazon Connect
+//     service.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - ResourceNotFoundException
+//     The resource was not found.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by Amazon Connect.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/connectparticipant-2018-09-07/DescribeView
+func (c *ConnectParticipant) DescribeView(input *DescribeViewInput) (*DescribeViewOutput, error) {
+	req, out := c.DescribeViewRequest(input)
+	return out, req.Send()
+}
+
+// DescribeViewWithContext is the same as DescribeView with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeView for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectParticipant) DescribeViewWithContext(ctx aws.Context, input *DescribeViewInput, opts ...request.Option) (*DescribeViewOutput, error) {
+	req, out := c.DescribeViewRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDisconnectParticipant = "DisconnectParticipant"
 
 // DisconnectParticipantRequest generates a "aws/request.Request" representing the
@@ -277,8 +372,9 @@ func (c *ConnectParticipant) DisconnectParticipantRequest(input *DisconnectParti
 
 // DisconnectParticipant API operation for Amazon Connect Participant Service.
 //
-// Disconnects a participant. Note that ConnectionToken is used for invoking
-// this API instead of ParticipantToken.
+// Disconnects a participant.
+//
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
 //
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -372,6 +468,8 @@ func (c *ConnectParticipant) GetAttachmentRequest(input *GetAttachmentInput) (re
 //
 // Provides a pre-signed URL for download of a completed attachment. This is
 // an asynchronous API for use with active contacts.
+//
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
 //
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -470,7 +568,10 @@ func (c *ConnectParticipant) GetTranscriptRequest(input *GetTranscriptInput) (re
 // GetTranscript API operation for Amazon Connect Participant Service.
 //
 // Retrieves a transcript of the session, including details about any attachments.
-// Note that ConnectionToken is used for invoking this API instead of ParticipantToken.
+// For information about accessing past chat contact transcripts for a persistent
+// chat, see Enable persistent chat (https://docs.aws.amazon.com/connect/latest/adminguide/chat-persistence.html).
+//
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
 //
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -613,8 +714,9 @@ func (c *ConnectParticipant) SendEventRequest(input *SendEventInput) (req *reque
 
 // SendEvent API operation for Amazon Connect Participant Service.
 //
-// Sends an event. Note that ConnectionToken is used for invoking this API instead
-// of ParticipantToken.
+// Sends an event.
+//
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
 //
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -706,8 +808,9 @@ func (c *ConnectParticipant) SendMessageRequest(input *SendMessageInput) (req *r
 
 // SendMessage API operation for Amazon Connect Participant Service.
 //
-// Sends a message. Note that ConnectionToken is used for invoking this API
-// instead of ParticipantToken.
+// Sends a message.
+//
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
 //
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -801,6 +904,8 @@ func (c *ConnectParticipant) StartAttachmentUploadRequest(input *StartAttachment
 //
 // Provides a pre-signed Amazon S3 URL in response for uploading the file directly
 // to S3.
+//
+// ConnectionToken is used for invoking this API instead of ParticipantToken.
 //
 // The Amazon Connect Participant Service APIs do not use Signature Version
 // 4 authentication (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).
@@ -928,7 +1033,7 @@ type AttachmentItem struct {
 	AttachmentName *string `min:"1" type:"string"`
 
 	// Describes the MIME file type of the attachment. For a list of supported file
-	// types, see Feature specifications (https://docs.aws.amazon.com/connect/latest/adminguide/amazon-connect-service-limits.html#feature-limits)
+	// types, see Feature specifications (https://docs.aws.amazon.com/connect/latest/adminguide/feature-limits.html)
 	// in the Amazon Connect Administrator Guide.
 	ContentType *string `min:"1" type:"string"`
 
@@ -987,7 +1092,9 @@ type CompleteAttachmentUploadInput struct {
 	AttachmentIds []*string `min:"1" type:"list" required:"true"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The authentication token associated with the participant's connection.
@@ -1191,7 +1298,8 @@ type CreateParticipantConnectionInput struct {
 	_ struct{} `type:"structure"`
 
 	// Amazon Connect Participant is used to mark the participant as connected for
-	// message streaming.
+	// customer participant in message streaming, as well as for agent or manager
+	// participant in non-streaming chats.
 	ConnectParticipant *bool `type:"boolean"`
 
 	// This is a header parameter.
@@ -1202,10 +1310,10 @@ type CreateParticipantConnectionInput struct {
 	// ParticipantToken is a required field
 	ParticipantToken *string `location:"header" locationName:"X-Amz-Bearer" min:"1" type:"string" required:"true"`
 
-	// Type of connection information required.
-	//
-	// Type is a required field
-	Type []*string `min:"1" type:"list" required:"true" enum:"ConnectionType"`
+	// Type of connection information required. If you need CONNECTION_CREDENTIALS
+	// along with marking participant as connected, pass CONNECTION_CREDENTIALS
+	// in Type.
+	Type []*string `min:"1" type:"list" enum:"ConnectionType"`
 }
 
 // String returns the string representation.
@@ -1234,9 +1342,6 @@ func (s *CreateParticipantConnectionInput) Validate() error {
 	}
 	if s.ParticipantToken != nil && len(*s.ParticipantToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ParticipantToken", 1))
-	}
-	if s.Type == nil {
-		invalidParams.Add(request.NewErrParamRequired("Type"))
 	}
 	if s.Type != nil && len(s.Type) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Type", 1))
@@ -1307,11 +1412,112 @@ func (s *CreateParticipantConnectionOutput) SetWebsocket(v *Websocket) *CreatePa
 	return s
 }
 
+type DescribeViewInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The connection token.
+	//
+	// ConnectionToken is a required field
+	ConnectionToken *string `location:"header" locationName:"X-Amz-Bearer" min:"1" type:"string" required:"true"`
+
+	// An encrypted token originating from the interactive message of a ShowView
+	// block operation. Represents the desired view.
+	//
+	// ViewToken is a required field
+	ViewToken *string `location:"uri" locationName:"ViewToken" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeViewInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeViewInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeViewInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeViewInput"}
+	if s.ConnectionToken == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConnectionToken"))
+	}
+	if s.ConnectionToken != nil && len(*s.ConnectionToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ConnectionToken", 1))
+	}
+	if s.ViewToken == nil {
+		invalidParams.Add(request.NewErrParamRequired("ViewToken"))
+	}
+	if s.ViewToken != nil && len(*s.ViewToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ViewToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConnectionToken sets the ConnectionToken field's value.
+func (s *DescribeViewInput) SetConnectionToken(v string) *DescribeViewInput {
+	s.ConnectionToken = &v
+	return s
+}
+
+// SetViewToken sets the ViewToken field's value.
+func (s *DescribeViewInput) SetViewToken(v string) *DescribeViewInput {
+	s.ViewToken = &v
+	return s
+}
+
+type DescribeViewOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A view resource object. Contains metadata and content necessary to render
+	// the view.
+	View *View `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeViewOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeViewOutput) GoString() string {
+	return s.String()
+}
+
+// SetView sets the View field's value.
+func (s *DescribeViewOutput) SetView(v *View) *DescribeViewOutput {
+	s.View = v
+	return s
+}
+
 type DisconnectParticipantInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `type:"string" idempotencyToken:"true"`
 
 	// The authentication token associated with the participant's connection.
@@ -1740,6 +1946,10 @@ type Item struct {
 	// Provides information about the attachments.
 	Attachments []*AttachmentItem `type:"list"`
 
+	// The contactId on which the transcript item was originally sent. This field
+	// is populated only when the transcript item is from the current chat session.
+	ContactId *string `min:"1" type:"string"`
+
 	// The content of the message or event.
 	Content *string `min:"1" type:"string"`
 
@@ -1752,11 +1962,20 @@ type Item struct {
 	// The ID of the item.
 	Id *string `min:"1" type:"string"`
 
+	// The metadata related to the message. Currently this supports only information
+	// related to message receipts.
+	MessageMetadata *MessageMetadata `type:"structure"`
+
 	// The ID of the sender in the session.
 	ParticipantId *string `min:"1" type:"string"`
 
 	// The role of the sender. For example, is it a customer, agent, or system.
 	ParticipantRole *string `type:"string" enum:"ParticipantRole"`
+
+	// The contactId on which the transcript item was originally sent. This field
+	// is only populated for persistent chats when the transcript item is from the
+	// past chat session. For more information, see Enable persistent chat (https://docs.aws.amazon.com/connect/latest/adminguide/chat-persistence.html).
+	RelatedContactId *string `min:"1" type:"string"`
 
 	// Type of the item: message or event.
 	Type *string `type:"string" enum:"ChatItemType"`
@@ -1792,6 +2011,12 @@ func (s *Item) SetAttachments(v []*AttachmentItem) *Item {
 	return s
 }
 
+// SetContactId sets the ContactId field's value.
+func (s *Item) SetContactId(v string) *Item {
+	s.ContactId = &v
+	return s
+}
+
 // SetContent sets the Content field's value.
 func (s *Item) SetContent(v string) *Item {
 	s.Content = &v
@@ -1816,6 +2041,12 @@ func (s *Item) SetId(v string) *Item {
 	return s
 }
 
+// SetMessageMetadata sets the MessageMetadata field's value.
+func (s *Item) SetMessageMetadata(v *MessageMetadata) *Item {
+	s.MessageMetadata = v
+	return s
+}
+
 // SetParticipantId sets the ParticipantId field's value.
 func (s *Item) SetParticipantId(v string) *Item {
 	s.ParticipantId = &v
@@ -1828,17 +2059,186 @@ func (s *Item) SetParticipantRole(v string) *Item {
 	return s
 }
 
+// SetRelatedContactId sets the RelatedContactId field's value.
+func (s *Item) SetRelatedContactId(v string) *Item {
+	s.RelatedContactId = &v
+	return s
+}
+
 // SetType sets the Type field's value.
 func (s *Item) SetType(v string) *Item {
 	s.Type = &v
 	return s
 }
 
+// Contains metadata related to a message.
+type MessageMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the message that contains the metadata information.
+	MessageId *string `min:"1" type:"string"`
+
+	// The list of receipt information for a message for different recipients.
+	Receipts []*Receipt `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MessageMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MessageMetadata) GoString() string {
+	return s.String()
+}
+
+// SetMessageId sets the MessageId field's value.
+func (s *MessageMetadata) SetMessageId(v string) *MessageMetadata {
+	s.MessageId = &v
+	return s
+}
+
+// SetReceipts sets the Receipts field's value.
+func (s *MessageMetadata) SetReceipts(v []*Receipt) *MessageMetadata {
+	s.Receipts = v
+	return s
+}
+
+// The receipt for the message delivered to the recipient.
+type Receipt struct {
+	_ struct{} `type:"structure"`
+
+	// The time when the message was delivered to the recipient.
+	DeliveredTimestamp *string `min:"1" type:"string"`
+
+	// The time when the message was read by the recipient.
+	ReadTimestamp *string `min:"1" type:"string"`
+
+	// The identifier of the recipient of the message.
+	RecipientParticipantId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Receipt) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Receipt) GoString() string {
+	return s.String()
+}
+
+// SetDeliveredTimestamp sets the DeliveredTimestamp field's value.
+func (s *Receipt) SetDeliveredTimestamp(v string) *Receipt {
+	s.DeliveredTimestamp = &v
+	return s
+}
+
+// SetReadTimestamp sets the ReadTimestamp field's value.
+func (s *Receipt) SetReadTimestamp(v string) *Receipt {
+	s.ReadTimestamp = &v
+	return s
+}
+
+// SetRecipientParticipantId sets the RecipientParticipantId field's value.
+func (s *Receipt) SetRecipientParticipantId(v string) *Receipt {
+	s.RecipientParticipantId = &v
+	return s
+}
+
+// The resource was not found.
+type ResourceNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The identifier of the resource.
+	ResourceId *string `type:"string"`
+
+	// The type of Amazon Connect resource.
+	ResourceType *string `type:"string" enum:"ResourceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourceNotFoundException(v protocol.ResponseMetadata) error {
+	return &ResourceNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourceNotFoundException) Code() string {
+	return "ResourceNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *ResourceNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourceNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourceNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourceNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourceNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type SendEventInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `type:"string" idempotencyToken:"true"`
 
 	// The authentication token associated with the participant's connection.
@@ -1846,8 +2246,10 @@ type SendEventInput struct {
 	// ConnectionToken is a required field
 	ConnectionToken *string `location:"header" locationName:"X-Amz-Bearer" min:"1" type:"string" required:"true"`
 
-	// The content of the event to be sent (for example, message text). This is
-	// not yet supported.
+	// The content of the event to be sent (for example, message text). For content
+	// related to message receipts, this is supported in the form of a JSON string.
+	//
+	// Sample Content: "{\"messageId\":\"11111111-aaaa-bbbb-cccc-EXAMPLE01234\"}"
 	Content *string `min:"1" type:"string"`
 
 	// The content type of the request. Supported types are:
@@ -1855,6 +2257,10 @@ type SendEventInput struct {
 	//    * application/vnd.amazonaws.connect.event.typing
 	//
 	//    * application/vnd.amazonaws.connect.event.connection.acknowledged
+	//
+	//    * application/vnd.amazonaws.connect.event.message.delivered
+	//
+	//    * application/vnd.amazonaws.connect.event.message.read
 	//
 	// ContentType is a required field
 	ContentType *string `min:"1" type:"string" required:"true"`
@@ -1974,7 +2380,9 @@ type SendMessageInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `type:"string" idempotencyToken:"true"`
 
 	// The authentication token associated with the connection.
@@ -1984,10 +2392,20 @@ type SendMessageInput struct {
 
 	// The content of the message.
 	//
+	//    * For text/plain and text/markdown, the Length Constraints are Minimum
+	//    of 1, Maximum of 1024.
+	//
+	//    * For application/json, the Length Constraints are Minimum of 1, Maximum
+	//    of 12000.
+	//
+	//    * For application/vnd.amazonaws.connect.message.interactive.response,
+	//    the Length Constraints are Minimum of 1, Maximum of 12288.
+	//
 	// Content is a required field
 	Content *string `min:"1" type:"string" required:"true"`
 
-	// The type of the content. Supported types are text/plain.
+	// The type of the content. Supported types are text/plain, text/markdown, application/json,
+	// and application/vnd.amazonaws.connect.message.interactive.response.
 	//
 	// ContentType is a required field
 	ContentType *string `min:"1" type:"string" required:"true"`
@@ -2183,7 +2601,10 @@ type StartAttachmentUploadInput struct {
 	// AttachmentSizeInBytes is a required field
 	AttachmentSizeInBytes *int64 `min:"1" type:"long" required:"true"`
 
-	// A unique case sensitive identifier to support idempotency of request.
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The authentication token associated with the participant's connection.
@@ -2192,7 +2613,7 @@ type StartAttachmentUploadInput struct {
 	ConnectionToken *string `location:"header" locationName:"X-Amz-Bearer" min:"1" type:"string" required:"true"`
 
 	// Describes the MIME file type of the attachment. For a list of supported file
-	// types, see Feature specifications (https://docs.aws.amazon.com/connect/latest/adminguide/amazon-connect-service-limits.html#feature-limits)
+	// types, see Feature specifications (https://docs.aws.amazon.com/connect/latest/adminguide/feature-limits.html)
 	// in the Amazon Connect Administrator Guide.
 	//
 	// ContentType is a required field
@@ -2574,6 +2995,140 @@ func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// A view resource object. Contains metadata and content necessary to render
+// the view.
+type View struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the view.
+	Arn *string `type:"string"`
+
+	// View content containing all content necessary to render a view except for
+	// runtime input data.
+	Content *ViewContent `type:"structure"`
+
+	// The identifier of the view.
+	Id *string `min:"1" type:"string"`
+
+	// The name of the view.
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by View's
+	// String and GoString methods.
+	Name *string `min:"1" type:"string" sensitive:"true"`
+
+	// The current version of the view.
+	Version *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s View) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s View) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *View) SetArn(v string) *View {
+	s.Arn = &v
+	return s
+}
+
+// SetContent sets the Content field's value.
+func (s *View) SetContent(v *ViewContent) *View {
+	s.Content = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *View) SetId(v string) *View {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *View) SetName(v string) *View {
+	s.Name = &v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *View) SetVersion(v int64) *View {
+	s.Version = &v
+	return s
+}
+
+// View content containing all content necessary to render a view except for
+// runtime input data.
+type ViewContent struct {
+	_ struct{} `type:"structure"`
+
+	// A list of actions possible from the view
+	Actions []*string `type:"list"`
+
+	// The schema representing the input data that the view template must be supplied
+	// to render.
+	//
+	// InputSchema is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ViewContent's
+	// String and GoString methods.
+	InputSchema *string `type:"string" sensitive:"true"`
+
+	// The view template representing the structure of the view.
+	//
+	// Template is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ViewContent's
+	// String and GoString methods.
+	Template *string `type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ViewContent) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ViewContent) GoString() string {
+	return s.String()
+}
+
+// SetActions sets the Actions field's value.
+func (s *ViewContent) SetActions(v []*string) *ViewContent {
+	s.Actions = v
+	return s
+}
+
+// SetInputSchema sets the InputSchema field's value.
+func (s *ViewContent) SetInputSchema(v string) *ViewContent {
+	s.InputSchema = &v
+	return s
+}
+
+// SetTemplate sets the Template field's value.
+func (s *ViewContent) SetTemplate(v string) *ViewContent {
+	s.Template = &v
+	return s
+}
+
 // The websocket for the participant's connection.
 type Websocket struct {
 	_ struct{} `type:"structure"`
@@ -2668,6 +3223,12 @@ const (
 
 	// ChatItemTypeConnectionAck is a ChatItemType enum value
 	ChatItemTypeConnectionAck = "CONNECTION_ACK"
+
+	// ChatItemTypeMessageDelivered is a ChatItemType enum value
+	ChatItemTypeMessageDelivered = "MESSAGE_DELIVERED"
+
+	// ChatItemTypeMessageRead is a ChatItemType enum value
+	ChatItemTypeMessageRead = "MESSAGE_READ"
 )
 
 // ChatItemType_Values returns all elements of the ChatItemType enum
@@ -2683,6 +3244,8 @@ func ChatItemType_Values() []string {
 		ChatItemTypeEvent,
 		ChatItemTypeAttachment,
 		ChatItemTypeConnectionAck,
+		ChatItemTypeMessageDelivered,
+		ChatItemTypeMessageRead,
 	}
 }
 
@@ -2711,6 +3274,9 @@ const (
 
 	// ParticipantRoleSystem is a ParticipantRole enum value
 	ParticipantRoleSystem = "SYSTEM"
+
+	// ParticipantRoleCustomBot is a ParticipantRole enum value
+	ParticipantRoleCustomBot = "CUSTOM_BOT"
 )
 
 // ParticipantRole_Values returns all elements of the ParticipantRole enum
@@ -2719,6 +3285,43 @@ func ParticipantRole_Values() []string {
 		ParticipantRoleAgent,
 		ParticipantRoleCustomer,
 		ParticipantRoleSystem,
+		ParticipantRoleCustomBot,
+	}
+}
+
+const (
+	// ResourceTypeContact is a ResourceType enum value
+	ResourceTypeContact = "CONTACT"
+
+	// ResourceTypeContactFlow is a ResourceType enum value
+	ResourceTypeContactFlow = "CONTACT_FLOW"
+
+	// ResourceTypeInstance is a ResourceType enum value
+	ResourceTypeInstance = "INSTANCE"
+
+	// ResourceTypeParticipant is a ResourceType enum value
+	ResourceTypeParticipant = "PARTICIPANT"
+
+	// ResourceTypeHierarchyLevel is a ResourceType enum value
+	ResourceTypeHierarchyLevel = "HIERARCHY_LEVEL"
+
+	// ResourceTypeHierarchyGroup is a ResourceType enum value
+	ResourceTypeHierarchyGroup = "HIERARCHY_GROUP"
+
+	// ResourceTypeUser is a ResourceType enum value
+	ResourceTypeUser = "USER"
+)
+
+// ResourceType_Values returns all elements of the ResourceType enum
+func ResourceType_Values() []string {
+	return []string{
+		ResourceTypeContact,
+		ResourceTypeContactFlow,
+		ResourceTypeInstance,
+		ResourceTypeParticipant,
+		ResourceTypeHierarchyLevel,
+		ResourceTypeHierarchyGroup,
+		ResourceTypeUser,
 	}
 }
 

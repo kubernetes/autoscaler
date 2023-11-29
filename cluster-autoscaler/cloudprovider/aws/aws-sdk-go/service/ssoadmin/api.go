@@ -13,6 +13,110 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
+const opAttachCustomerManagedPolicyReferenceToPermissionSet = "AttachCustomerManagedPolicyReferenceToPermissionSet"
+
+// AttachCustomerManagedPolicyReferenceToPermissionSetRequest generates a "aws/request.Request" representing the
+// client's request for the AttachCustomerManagedPolicyReferenceToPermissionSet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AttachCustomerManagedPolicyReferenceToPermissionSet for more information on using the AttachCustomerManagedPolicyReferenceToPermissionSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AttachCustomerManagedPolicyReferenceToPermissionSetRequest method.
+//	req, resp := client.AttachCustomerManagedPolicyReferenceToPermissionSetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/AttachCustomerManagedPolicyReferenceToPermissionSet
+func (c *SSOAdmin) AttachCustomerManagedPolicyReferenceToPermissionSetRequest(input *AttachCustomerManagedPolicyReferenceToPermissionSetInput) (req *request.Request, output *AttachCustomerManagedPolicyReferenceToPermissionSetOutput) {
+	op := &request.Operation{
+		Name:       opAttachCustomerManagedPolicyReferenceToPermissionSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &AttachCustomerManagedPolicyReferenceToPermissionSetInput{}
+	}
+
+	output = &AttachCustomerManagedPolicyReferenceToPermissionSetOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// AttachCustomerManagedPolicyReferenceToPermissionSet API operation for AWS Single Sign-On Admin.
+//
+// Attaches the specified customer managed policy to the specified PermissionSet.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation AttachCustomerManagedPolicyReferenceToPermissionSet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/AttachCustomerManagedPolicyReferenceToPermissionSet
+func (c *SSOAdmin) AttachCustomerManagedPolicyReferenceToPermissionSet(input *AttachCustomerManagedPolicyReferenceToPermissionSetInput) (*AttachCustomerManagedPolicyReferenceToPermissionSetOutput, error) {
+	req, out := c.AttachCustomerManagedPolicyReferenceToPermissionSetRequest(input)
+	return out, req.Send()
+}
+
+// AttachCustomerManagedPolicyReferenceToPermissionSetWithContext is the same as AttachCustomerManagedPolicyReferenceToPermissionSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AttachCustomerManagedPolicyReferenceToPermissionSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) AttachCustomerManagedPolicyReferenceToPermissionSetWithContext(ctx aws.Context, input *AttachCustomerManagedPolicyReferenceToPermissionSetInput, opts ...request.Option) (*AttachCustomerManagedPolicyReferenceToPermissionSetOutput, error) {
+	req, out := c.AttachCustomerManagedPolicyReferenceToPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opAttachManagedPolicyToPermissionSet = "AttachManagedPolicyToPermissionSet"
 
 // AttachManagedPolicyToPermissionSetRequest generates a "aws/request.Request" representing the
@@ -57,7 +161,7 @@ func (c *SSOAdmin) AttachManagedPolicyToPermissionSetRequest(input *AttachManage
 
 // AttachManagedPolicyToPermissionSet API operation for AWS Single Sign-On Admin.
 //
-// Attaches an IAM managed policy ARN to a permission set.
+// Attaches an Amazon Web Services managed policy ARN to a permission set.
 //
 // If the permission set is already referenced by one or more account assignments,
 // you will need to call ProvisionPermissionSet after this operation. Calling
@@ -73,13 +177,6 @@ func (c *SSOAdmin) AttachManagedPolicyToPermissionSetRequest(input *AttachManage
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
-//
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
 //   - ServiceQuotaExceededException
 //     Indicates that the principal has crossed the permitted number of resources
 //     that can be created.
@@ -88,11 +185,18 @@ func (c *SSOAdmin) AttachManagedPolicyToPermissionSetRequest(input *AttachManage
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -168,15 +272,18 @@ func (c *SSOAdmin) CreateAccountAssignmentRequest(input *CreateAccountAssignment
 // Assigns access to a principal for a specified Amazon Web Services account
 // using a specified permission set.
 //
-// The term principal here refers to a user or group that is defined in Amazon
-// Web Services SSO.
+// The term principal here refers to a user or group that is defined in IAM
+// Identity Center.
 //
 // As part of a successful CreateAccountAssignment call, the specified permission
 // set will automatically be provisioned to the account in the form of an IAM
-// policy. That policy is attached to the SSO-created IAM role. If the permission
-// set is subsequently updated, the corresponding IAM policies attached to roles
-// in your accounts will not be updated automatically. In this case, you must
-// call ProvisionPermissionSet to make these updates.
+// policy. That policy is attached to the IAM role created in IAM Identity Center.
+// If the permission set is subsequently updated, the corresponding IAM policies
+// attached to roles in your accounts will not be updated automatically. In
+// this case, you must call ProvisionPermissionSet to make these updates.
+//
+// After a successful response, call DescribeAccountAssignmentCreationStatus
+// to describe the status of an assignment creation request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -187,13 +294,6 @@ func (c *SSOAdmin) CreateAccountAssignmentRequest(input *CreateAccountAssignment
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
-//
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
 //   - ServiceQuotaExceededException
 //     Indicates that the principal has crossed the permitted number of resources
 //     that can be created.
@@ -202,11 +302,18 @@ func (c *SSOAdmin) CreateAccountAssignmentRequest(input *CreateAccountAssignment
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -231,6 +338,322 @@ func (c *SSOAdmin) CreateAccountAssignment(input *CreateAccountAssignmentInput) 
 // for more information on using Contexts.
 func (c *SSOAdmin) CreateAccountAssignmentWithContext(ctx aws.Context, input *CreateAccountAssignmentInput, opts ...request.Option) (*CreateAccountAssignmentOutput, error) {
 	req, out := c.CreateAccountAssignmentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateApplication = "CreateApplication"
+
+// CreateApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateApplication for more information on using the CreateApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateApplicationRequest method.
+//	req, resp := client.CreateApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateApplication
+func (c *SSOAdmin) CreateApplicationRequest(input *CreateApplicationInput) (req *request.Request, output *CreateApplicationOutput) {
+	op := &request.Operation{
+		Name:       opCreateApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateApplicationInput{}
+	}
+
+	output = &CreateApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateApplication API operation for AWS Single Sign-On Admin.
+//
+// Creates an application in IAM Identity Center for the given application provider.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation CreateApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateApplication
+func (c *SSOAdmin) CreateApplication(input *CreateApplicationInput) (*CreateApplicationOutput, error) {
+	req, out := c.CreateApplicationRequest(input)
+	return out, req.Send()
+}
+
+// CreateApplicationWithContext is the same as CreateApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) CreateApplicationWithContext(ctx aws.Context, input *CreateApplicationInput, opts ...request.Option) (*CreateApplicationOutput, error) {
+	req, out := c.CreateApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateApplicationAssignment = "CreateApplicationAssignment"
+
+// CreateApplicationAssignmentRequest generates a "aws/request.Request" representing the
+// client's request for the CreateApplicationAssignment operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateApplicationAssignment for more information on using the CreateApplicationAssignment
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateApplicationAssignmentRequest method.
+//	req, resp := client.CreateApplicationAssignmentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateApplicationAssignment
+func (c *SSOAdmin) CreateApplicationAssignmentRequest(input *CreateApplicationAssignmentInput) (req *request.Request, output *CreateApplicationAssignmentOutput) {
+	op := &request.Operation{
+		Name:       opCreateApplicationAssignment,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateApplicationAssignmentInput{}
+	}
+
+	output = &CreateApplicationAssignmentOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// CreateApplicationAssignment API operation for AWS Single Sign-On Admin.
+//
+// Grant application access to a user or group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation CreateApplicationAssignment for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateApplicationAssignment
+func (c *SSOAdmin) CreateApplicationAssignment(input *CreateApplicationAssignmentInput) (*CreateApplicationAssignmentOutput, error) {
+	req, out := c.CreateApplicationAssignmentRequest(input)
+	return out, req.Send()
+}
+
+// CreateApplicationAssignmentWithContext is the same as CreateApplicationAssignment with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateApplicationAssignment for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) CreateApplicationAssignmentWithContext(ctx aws.Context, input *CreateApplicationAssignmentInput, opts ...request.Option) (*CreateApplicationAssignmentOutput, error) {
+	req, out := c.CreateApplicationAssignmentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateInstance = "CreateInstance"
+
+// CreateInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the CreateInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateInstance for more information on using the CreateInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateInstanceRequest method.
+//	req, resp := client.CreateInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateInstance
+func (c *SSOAdmin) CreateInstanceRequest(input *CreateInstanceInput) (req *request.Request, output *CreateInstanceOutput) {
+	op := &request.Operation{
+		Name:       opCreateInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateInstanceInput{}
+	}
+
+	output = &CreateInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateInstance API operation for AWS Single Sign-On Admin.
+//
+// Creates an instance of IAM Identity Center for a standalone Amazon Web Services
+// account that is not managed by Organizations or a member Amazon Web Services
+// account in an organization. You can create only one instance per account
+// and across all Amazon Web Services Regions.
+//
+// The CreateInstance request is rejected if the following apply:
+//
+//   - The instance is created within the organization management account.
+//
+//   - An instance already exists in the same account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation CreateInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateInstance
+func (c *SSOAdmin) CreateInstance(input *CreateInstanceInput) (*CreateInstanceOutput, error) {
+	req, out := c.CreateInstanceRequest(input)
+	return out, req.Send()
+}
+
+// CreateInstanceWithContext is the same as CreateInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) CreateInstanceWithContext(ctx aws.Context, input *CreateInstanceInput, opts ...request.Option) (*CreateInstanceOutput, error) {
+	req, out := c.CreateInstanceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -281,10 +704,13 @@ func (c *SSOAdmin) CreateInstanceAccessControlAttributeConfigurationRequest(inpu
 // CreateInstanceAccessControlAttributeConfiguration API operation for AWS Single Sign-On Admin.
 //
 // Enables the attributes-based access control (ABAC) feature for the specified
-// Amazon Web Services SSO instance. You can also specify new attributes to
-// add to your ABAC configuration during the enabling process. For more information
+// IAM Identity Center instance. You can also specify new attributes to add
+// to your ABAC configuration during the enabling process. For more information
 // about ABAC, see Attribute-Based Access Control (/singlesignon/latest/userguide/abac.html)
-// in the Amazon Web Services SSO User Guide.
+// in the IAM Identity Center User Guide.
+//
+// After a successful response, call DescribeInstanceAccessControlAttributeConfiguration
+// to validate that InstanceAccessControlAttributeConfiguration was created.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -295,22 +721,22 @@ func (c *SSOAdmin) CreateInstanceAccessControlAttributeConfigurationRequest(inpu
 //
 // Returned Error Types:
 //
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
-//   - AccessDeniedException
-//     You do not have sufficient access to perform this action.
-//
 //   - ThrottlingException
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
 //   - ResourceNotFoundException
 //     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -383,7 +809,7 @@ func (c *SSOAdmin) CreatePermissionSetRequest(input *CreatePermissionSetInput) (
 
 // CreatePermissionSet API operation for AWS Single Sign-On Admin.
 //
-// Creates a permission set within a specified SSO instance.
+// Creates a permission set within a specified IAM Identity Center instance.
 //
 // To grant users and groups access to Amazon Web Services account resources,
 // use CreateAccountAssignment .
@@ -397,13 +823,6 @@ func (c *SSOAdmin) CreatePermissionSetRequest(input *CreatePermissionSetInput) (
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
-//
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
 //   - ServiceQuotaExceededException
 //     Indicates that the principal has crossed the permitted number of resources
 //     that can be created.
@@ -412,11 +831,18 @@ func (c *SSOAdmin) CreatePermissionSetRequest(input *CreatePermissionSetInput) (
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -441,6 +867,112 @@ func (c *SSOAdmin) CreatePermissionSet(input *CreatePermissionSetInput) (*Create
 // for more information on using Contexts.
 func (c *SSOAdmin) CreatePermissionSetWithContext(ctx aws.Context, input *CreatePermissionSetInput, opts ...request.Option) (*CreatePermissionSetOutput, error) {
 	req, out := c.CreatePermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateTrustedTokenIssuer = "CreateTrustedTokenIssuer"
+
+// CreateTrustedTokenIssuerRequest generates a "aws/request.Request" representing the
+// client's request for the CreateTrustedTokenIssuer operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateTrustedTokenIssuer for more information on using the CreateTrustedTokenIssuer
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateTrustedTokenIssuerRequest method.
+//	req, resp := client.CreateTrustedTokenIssuerRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateTrustedTokenIssuer
+func (c *SSOAdmin) CreateTrustedTokenIssuerRequest(input *CreateTrustedTokenIssuerInput) (req *request.Request, output *CreateTrustedTokenIssuerOutput) {
+	op := &request.Operation{
+		Name:       opCreateTrustedTokenIssuer,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateTrustedTokenIssuerInput{}
+	}
+
+	output = &CreateTrustedTokenIssuerOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateTrustedTokenIssuer API operation for AWS Single Sign-On Admin.
+//
+// Creates a connection to a trusted token issuer in an instance of IAM Identity
+// Center. A trusted token issuer enables trusted identity propagation to be
+// used with applications that authenticate outside of Amazon Web Services.
+//
+// This trusted token issuer describes an external identity provider (IdP) that
+// can generate claims or assertions in the form of access tokens for a user.
+// Applications enabled for IAM Identity Center can use these tokens for authentication.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation CreateTrustedTokenIssuer for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceQuotaExceededException
+//     Indicates that the principal has crossed the permitted number of resources
+//     that can be created.
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/CreateTrustedTokenIssuer
+func (c *SSOAdmin) CreateTrustedTokenIssuer(input *CreateTrustedTokenIssuerInput) (*CreateTrustedTokenIssuerOutput, error) {
+	req, out := c.CreateTrustedTokenIssuerRequest(input)
+	return out, req.Send()
+}
+
+// CreateTrustedTokenIssuerWithContext is the same as CreateTrustedTokenIssuer with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateTrustedTokenIssuer for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) CreateTrustedTokenIssuerWithContext(ctx aws.Context, input *CreateTrustedTokenIssuerInput, opts ...request.Option) (*CreateTrustedTokenIssuerOutput, error) {
+	req, out := c.CreateTrustedTokenIssuerRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -492,6 +1024,9 @@ func (c *SSOAdmin) DeleteAccountAssignmentRequest(input *DeleteAccountAssignment
 // Deletes a principal's access from a specified Amazon Web Services account
 // using a specified permission set.
 //
+// After a successful response, call DescribeAccountAssignmentDeletionStatus
+// to describe the status of an assignment deletion request.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -501,22 +1036,22 @@ func (c *SSOAdmin) DeleteAccountAssignmentRequest(input *DeleteAccountAssignment
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -541,6 +1076,508 @@ func (c *SSOAdmin) DeleteAccountAssignment(input *DeleteAccountAssignmentInput) 
 // for more information on using Contexts.
 func (c *SSOAdmin) DeleteAccountAssignmentWithContext(ctx aws.Context, input *DeleteAccountAssignmentInput, opts ...request.Option) (*DeleteAccountAssignmentOutput, error) {
 	req, out := c.DeleteAccountAssignmentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteApplication = "DeleteApplication"
+
+// DeleteApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteApplication for more information on using the DeleteApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteApplicationRequest method.
+//	req, resp := client.DeleteApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplication
+func (c *SSOAdmin) DeleteApplicationRequest(input *DeleteApplicationInput) (req *request.Request, output *DeleteApplicationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteApplicationInput{}
+	}
+
+	output = &DeleteApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteApplication API operation for AWS Single Sign-On Admin.
+//
+// Deletes the association with the application. The connected service resource
+// still exists.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplication
+func (c *SSOAdmin) DeleteApplication(input *DeleteApplicationInput) (*DeleteApplicationOutput, error) {
+	req, out := c.DeleteApplicationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteApplicationWithContext is the same as DeleteApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteApplicationWithContext(ctx aws.Context, input *DeleteApplicationInput, opts ...request.Option) (*DeleteApplicationOutput, error) {
+	req, out := c.DeleteApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteApplicationAccessScope = "DeleteApplicationAccessScope"
+
+// DeleteApplicationAccessScopeRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteApplicationAccessScope operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteApplicationAccessScope for more information on using the DeleteApplicationAccessScope
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteApplicationAccessScopeRequest method.
+//	req, resp := client.DeleteApplicationAccessScopeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationAccessScope
+func (c *SSOAdmin) DeleteApplicationAccessScopeRequest(input *DeleteApplicationAccessScopeInput) (req *request.Request, output *DeleteApplicationAccessScopeOutput) {
+	op := &request.Operation{
+		Name:       opDeleteApplicationAccessScope,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteApplicationAccessScopeInput{}
+	}
+
+	output = &DeleteApplicationAccessScopeOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteApplicationAccessScope API operation for AWS Single Sign-On Admin.
+//
+// Deletes an IAM Identity Center access scope from an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteApplicationAccessScope for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationAccessScope
+func (c *SSOAdmin) DeleteApplicationAccessScope(input *DeleteApplicationAccessScopeInput) (*DeleteApplicationAccessScopeOutput, error) {
+	req, out := c.DeleteApplicationAccessScopeRequest(input)
+	return out, req.Send()
+}
+
+// DeleteApplicationAccessScopeWithContext is the same as DeleteApplicationAccessScope with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteApplicationAccessScope for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteApplicationAccessScopeWithContext(ctx aws.Context, input *DeleteApplicationAccessScopeInput, opts ...request.Option) (*DeleteApplicationAccessScopeOutput, error) {
+	req, out := c.DeleteApplicationAccessScopeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteApplicationAssignment = "DeleteApplicationAssignment"
+
+// DeleteApplicationAssignmentRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteApplicationAssignment operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteApplicationAssignment for more information on using the DeleteApplicationAssignment
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteApplicationAssignmentRequest method.
+//	req, resp := client.DeleteApplicationAssignmentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationAssignment
+func (c *SSOAdmin) DeleteApplicationAssignmentRequest(input *DeleteApplicationAssignmentInput) (req *request.Request, output *DeleteApplicationAssignmentOutput) {
+	op := &request.Operation{
+		Name:       opDeleteApplicationAssignment,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteApplicationAssignmentInput{}
+	}
+
+	output = &DeleteApplicationAssignmentOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteApplicationAssignment API operation for AWS Single Sign-On Admin.
+//
+// Revoke application access to an application by deleting application assignments
+// for a user or group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteApplicationAssignment for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationAssignment
+func (c *SSOAdmin) DeleteApplicationAssignment(input *DeleteApplicationAssignmentInput) (*DeleteApplicationAssignmentOutput, error) {
+	req, out := c.DeleteApplicationAssignmentRequest(input)
+	return out, req.Send()
+}
+
+// DeleteApplicationAssignmentWithContext is the same as DeleteApplicationAssignment with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteApplicationAssignment for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteApplicationAssignmentWithContext(ctx aws.Context, input *DeleteApplicationAssignmentInput, opts ...request.Option) (*DeleteApplicationAssignmentOutput, error) {
+	req, out := c.DeleteApplicationAssignmentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteApplicationAuthenticationMethod = "DeleteApplicationAuthenticationMethod"
+
+// DeleteApplicationAuthenticationMethodRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteApplicationAuthenticationMethod operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteApplicationAuthenticationMethod for more information on using the DeleteApplicationAuthenticationMethod
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteApplicationAuthenticationMethodRequest method.
+//	req, resp := client.DeleteApplicationAuthenticationMethodRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationAuthenticationMethod
+func (c *SSOAdmin) DeleteApplicationAuthenticationMethodRequest(input *DeleteApplicationAuthenticationMethodInput) (req *request.Request, output *DeleteApplicationAuthenticationMethodOutput) {
+	op := &request.Operation{
+		Name:       opDeleteApplicationAuthenticationMethod,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteApplicationAuthenticationMethodInput{}
+	}
+
+	output = &DeleteApplicationAuthenticationMethodOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteApplicationAuthenticationMethod API operation for AWS Single Sign-On Admin.
+//
+// Deletes an authentication method from an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteApplicationAuthenticationMethod for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationAuthenticationMethod
+func (c *SSOAdmin) DeleteApplicationAuthenticationMethod(input *DeleteApplicationAuthenticationMethodInput) (*DeleteApplicationAuthenticationMethodOutput, error) {
+	req, out := c.DeleteApplicationAuthenticationMethodRequest(input)
+	return out, req.Send()
+}
+
+// DeleteApplicationAuthenticationMethodWithContext is the same as DeleteApplicationAuthenticationMethod with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteApplicationAuthenticationMethod for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteApplicationAuthenticationMethodWithContext(ctx aws.Context, input *DeleteApplicationAuthenticationMethodInput, opts ...request.Option) (*DeleteApplicationAuthenticationMethodOutput, error) {
+	req, out := c.DeleteApplicationAuthenticationMethodRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteApplicationGrant = "DeleteApplicationGrant"
+
+// DeleteApplicationGrantRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteApplicationGrant operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteApplicationGrant for more information on using the DeleteApplicationGrant
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteApplicationGrantRequest method.
+//	req, resp := client.DeleteApplicationGrantRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationGrant
+func (c *SSOAdmin) DeleteApplicationGrantRequest(input *DeleteApplicationGrantInput) (req *request.Request, output *DeleteApplicationGrantOutput) {
+	op := &request.Operation{
+		Name:       opDeleteApplicationGrant,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteApplicationGrantInput{}
+	}
+
+	output = &DeleteApplicationGrantOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteApplicationGrant API operation for AWS Single Sign-On Admin.
+//
+// Deletes a grant from an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteApplicationGrant for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteApplicationGrant
+func (c *SSOAdmin) DeleteApplicationGrant(input *DeleteApplicationGrantInput) (*DeleteApplicationGrantOutput, error) {
+	req, out := c.DeleteApplicationGrantRequest(input)
+	return out, req.Send()
+}
+
+// DeleteApplicationGrantWithContext is the same as DeleteApplicationGrant with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteApplicationGrant for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteApplicationGrantWithContext(ctx aws.Context, input *DeleteApplicationGrantInput, opts ...request.Option) (*DeleteApplicationGrantOutput, error) {
+	req, out := c.DeleteApplicationGrantRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -601,22 +1638,22 @@ func (c *SSOAdmin) DeleteInlinePolicyFromPermissionSetRequest(input *DeleteInlin
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -641,6 +1678,106 @@ func (c *SSOAdmin) DeleteInlinePolicyFromPermissionSet(input *DeleteInlinePolicy
 // for more information on using Contexts.
 func (c *SSOAdmin) DeleteInlinePolicyFromPermissionSetWithContext(ctx aws.Context, input *DeleteInlinePolicyFromPermissionSetInput, opts ...request.Option) (*DeleteInlinePolicyFromPermissionSetOutput, error) {
 	req, out := c.DeleteInlinePolicyFromPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteInstance = "DeleteInstance"
+
+// DeleteInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteInstance for more information on using the DeleteInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteInstanceRequest method.
+//	req, resp := client.DeleteInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteInstance
+func (c *SSOAdmin) DeleteInstanceRequest(input *DeleteInstanceInput) (req *request.Request, output *DeleteInstanceOutput) {
+	op := &request.Operation{
+		Name:       opDeleteInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteInstanceInput{}
+	}
+
+	output = &DeleteInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteInstance API operation for AWS Single Sign-On Admin.
+//
+// Deletes the instance of IAM Identity Center. Only the account that owns the
+// instance can call this API. Neither the delegated administrator nor member
+// account can delete the organization instance, but those roles can delete
+// their own instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteInstance
+func (c *SSOAdmin) DeleteInstance(input *DeleteInstanceInput) (*DeleteInstanceOutput, error) {
+	req, out := c.DeleteInstanceRequest(input)
+	return out, req.Send()
+}
+
+// DeleteInstanceWithContext is the same as DeleteInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteInstanceWithContext(ctx aws.Context, input *DeleteInstanceInput, opts ...request.Option) (*DeleteInstanceOutput, error) {
+	req, out := c.DeleteInstanceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -691,12 +1828,12 @@ func (c *SSOAdmin) DeleteInstanceAccessControlAttributeConfigurationRequest(inpu
 // DeleteInstanceAccessControlAttributeConfiguration API operation for AWS Single Sign-On Admin.
 //
 // Disables the attributes-based access control (ABAC) feature for the specified
-// Amazon Web Services SSO instance and deletes all of the attribute mappings
-// that have been configured. Once deleted, any attributes that are received
-// from an identity source and any custom attributes you have previously configured
+// IAM Identity Center instance and deletes all of the attribute mappings that
+// have been configured. Once deleted, any attributes that are received from
+// an identity source and any custom attributes you have previously configured
 // will not be passed. For more information about ABAC, see Attribute-Based
-// Access Control (/singlesignon/latest/userguide/abac.html) in the Amazon Web
-// Services SSO User Guide.
+// Access Control (/singlesignon/latest/userguide/abac.html) in the IAM Identity
+// Center User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -707,22 +1844,22 @@ func (c *SSOAdmin) DeleteInstanceAccessControlAttributeConfigurationRequest(inpu
 //
 // Returned Error Types:
 //
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
-//   - AccessDeniedException
-//     You do not have sufficient access to perform this action.
-//
 //   - ThrottlingException
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
 //   - ResourceNotFoundException
 //     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -807,22 +1944,22 @@ func (c *SSOAdmin) DeletePermissionSetRequest(input *DeletePermissionSetInput) (
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -847,6 +1984,210 @@ func (c *SSOAdmin) DeletePermissionSet(input *DeletePermissionSetInput) (*Delete
 // for more information on using Contexts.
 func (c *SSOAdmin) DeletePermissionSetWithContext(ctx aws.Context, input *DeletePermissionSetInput, opts ...request.Option) (*DeletePermissionSetOutput, error) {
 	req, out := c.DeletePermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeletePermissionsBoundaryFromPermissionSet = "DeletePermissionsBoundaryFromPermissionSet"
+
+// DeletePermissionsBoundaryFromPermissionSetRequest generates a "aws/request.Request" representing the
+// client's request for the DeletePermissionsBoundaryFromPermissionSet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeletePermissionsBoundaryFromPermissionSet for more information on using the DeletePermissionsBoundaryFromPermissionSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeletePermissionsBoundaryFromPermissionSetRequest method.
+//	req, resp := client.DeletePermissionsBoundaryFromPermissionSetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeletePermissionsBoundaryFromPermissionSet
+func (c *SSOAdmin) DeletePermissionsBoundaryFromPermissionSetRequest(input *DeletePermissionsBoundaryFromPermissionSetInput) (req *request.Request, output *DeletePermissionsBoundaryFromPermissionSetOutput) {
+	op := &request.Operation{
+		Name:       opDeletePermissionsBoundaryFromPermissionSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeletePermissionsBoundaryFromPermissionSetInput{}
+	}
+
+	output = &DeletePermissionsBoundaryFromPermissionSetOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeletePermissionsBoundaryFromPermissionSet API operation for AWS Single Sign-On Admin.
+//
+// Deletes the permissions boundary from a specified PermissionSet.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeletePermissionsBoundaryFromPermissionSet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeletePermissionsBoundaryFromPermissionSet
+func (c *SSOAdmin) DeletePermissionsBoundaryFromPermissionSet(input *DeletePermissionsBoundaryFromPermissionSetInput) (*DeletePermissionsBoundaryFromPermissionSetOutput, error) {
+	req, out := c.DeletePermissionsBoundaryFromPermissionSetRequest(input)
+	return out, req.Send()
+}
+
+// DeletePermissionsBoundaryFromPermissionSetWithContext is the same as DeletePermissionsBoundaryFromPermissionSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeletePermissionsBoundaryFromPermissionSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeletePermissionsBoundaryFromPermissionSetWithContext(ctx aws.Context, input *DeletePermissionsBoundaryFromPermissionSetInput, opts ...request.Option) (*DeletePermissionsBoundaryFromPermissionSetOutput, error) {
+	req, out := c.DeletePermissionsBoundaryFromPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteTrustedTokenIssuer = "DeleteTrustedTokenIssuer"
+
+// DeleteTrustedTokenIssuerRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteTrustedTokenIssuer operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteTrustedTokenIssuer for more information on using the DeleteTrustedTokenIssuer
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteTrustedTokenIssuerRequest method.
+//	req, resp := client.DeleteTrustedTokenIssuerRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteTrustedTokenIssuer
+func (c *SSOAdmin) DeleteTrustedTokenIssuerRequest(input *DeleteTrustedTokenIssuerInput) (req *request.Request, output *DeleteTrustedTokenIssuerOutput) {
+	op := &request.Operation{
+		Name:       opDeleteTrustedTokenIssuer,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteTrustedTokenIssuerInput{}
+	}
+
+	output = &DeleteTrustedTokenIssuerOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteTrustedTokenIssuer API operation for AWS Single Sign-On Admin.
+//
+// Deletes a trusted token issuer configuration from an instance of IAM Identity
+// Center.
+//
+// Deleting this trusted token issuer configuration will cause users to lose
+// access to any applications that are configured to use the trusted token issuer.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DeleteTrustedTokenIssuer for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DeleteTrustedTokenIssuer
+func (c *SSOAdmin) DeleteTrustedTokenIssuer(input *DeleteTrustedTokenIssuerInput) (*DeleteTrustedTokenIssuerOutput, error) {
+	req, out := c.DeleteTrustedTokenIssuerRequest(input)
+	return out, req.Send()
+}
+
+// DeleteTrustedTokenIssuerWithContext is the same as DeleteTrustedTokenIssuer with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteTrustedTokenIssuer for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DeleteTrustedTokenIssuerWithContext(ctx aws.Context, input *DeleteTrustedTokenIssuerInput, opts ...request.Option) (*DeleteTrustedTokenIssuerOutput, error) {
+	req, out := c.DeleteTrustedTokenIssuerRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -906,22 +2247,22 @@ func (c *SSOAdmin) DescribeAccountAssignmentCreationStatusRequest(input *Describ
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeAccountAssignmentCreationStatus
 func (c *SSOAdmin) DescribeAccountAssignmentCreationStatus(input *DescribeAccountAssignmentCreationStatusInput) (*DescribeAccountAssignmentCreationStatusOutput, error) {
@@ -999,22 +2340,22 @@ func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatusRequest(input *Describ
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeAccountAssignmentDeletionStatus
 func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatus(input *DescribeAccountAssignmentDeletionStatusInput) (*DescribeAccountAssignmentDeletionStatusOutput, error) {
@@ -1033,6 +2374,392 @@ func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatus(input *DescribeAccoun
 // for more information on using Contexts.
 func (c *SSOAdmin) DescribeAccountAssignmentDeletionStatusWithContext(ctx aws.Context, input *DescribeAccountAssignmentDeletionStatusInput, opts ...request.Option) (*DescribeAccountAssignmentDeletionStatusOutput, error) {
 	req, out := c.DescribeAccountAssignmentDeletionStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeApplication = "DescribeApplication"
+
+// DescribeApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeApplication for more information on using the DescribeApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeApplicationRequest method.
+//	req, resp := client.DescribeApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeApplication
+func (c *SSOAdmin) DescribeApplicationRequest(input *DescribeApplicationInput) (req *request.Request, output *DescribeApplicationOutput) {
+	op := &request.Operation{
+		Name:       opDescribeApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeApplicationInput{}
+	}
+
+	output = &DescribeApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeApplication API operation for AWS Single Sign-On Admin.
+//
+// Retrieves the details of an application associated with an instance of IAM
+// Identity Center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DescribeApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeApplication
+func (c *SSOAdmin) DescribeApplication(input *DescribeApplicationInput) (*DescribeApplicationOutput, error) {
+	req, out := c.DescribeApplicationRequest(input)
+	return out, req.Send()
+}
+
+// DescribeApplicationWithContext is the same as DescribeApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DescribeApplicationWithContext(ctx aws.Context, input *DescribeApplicationInput, opts ...request.Option) (*DescribeApplicationOutput, error) {
+	req, out := c.DescribeApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeApplicationAssignment = "DescribeApplicationAssignment"
+
+// DescribeApplicationAssignmentRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeApplicationAssignment operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeApplicationAssignment for more information on using the DescribeApplicationAssignment
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeApplicationAssignmentRequest method.
+//	req, resp := client.DescribeApplicationAssignmentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeApplicationAssignment
+func (c *SSOAdmin) DescribeApplicationAssignmentRequest(input *DescribeApplicationAssignmentInput) (req *request.Request, output *DescribeApplicationAssignmentOutput) {
+	op := &request.Operation{
+		Name:       opDescribeApplicationAssignment,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeApplicationAssignmentInput{}
+	}
+
+	output = &DescribeApplicationAssignmentOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeApplicationAssignment API operation for AWS Single Sign-On Admin.
+//
+// Retrieves a direct assignment of a user or group to an application. If the
+// user doesn’t have a direct assignment to the application, the user may
+// still have access to the application through a group. Therefore, don’t
+// use this API to test access to an application for a user. Instead use ListApplicationAssignmentsForPrincipal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DescribeApplicationAssignment for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeApplicationAssignment
+func (c *SSOAdmin) DescribeApplicationAssignment(input *DescribeApplicationAssignmentInput) (*DescribeApplicationAssignmentOutput, error) {
+	req, out := c.DescribeApplicationAssignmentRequest(input)
+	return out, req.Send()
+}
+
+// DescribeApplicationAssignmentWithContext is the same as DescribeApplicationAssignment with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeApplicationAssignment for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DescribeApplicationAssignmentWithContext(ctx aws.Context, input *DescribeApplicationAssignmentInput, opts ...request.Option) (*DescribeApplicationAssignmentOutput, error) {
+	req, out := c.DescribeApplicationAssignmentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeApplicationProvider = "DescribeApplicationProvider"
+
+// DescribeApplicationProviderRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeApplicationProvider operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeApplicationProvider for more information on using the DescribeApplicationProvider
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeApplicationProviderRequest method.
+//	req, resp := client.DescribeApplicationProviderRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeApplicationProvider
+func (c *SSOAdmin) DescribeApplicationProviderRequest(input *DescribeApplicationProviderInput) (req *request.Request, output *DescribeApplicationProviderOutput) {
+	op := &request.Operation{
+		Name:       opDescribeApplicationProvider,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeApplicationProviderInput{}
+	}
+
+	output = &DescribeApplicationProviderOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeApplicationProvider API operation for AWS Single Sign-On Admin.
+//
+// Retrieves details about a provider that can be used to connect an Amazon
+// Web Services managed application or customer managed application to IAM Identity
+// Center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DescribeApplicationProvider for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeApplicationProvider
+func (c *SSOAdmin) DescribeApplicationProvider(input *DescribeApplicationProviderInput) (*DescribeApplicationProviderOutput, error) {
+	req, out := c.DescribeApplicationProviderRequest(input)
+	return out, req.Send()
+}
+
+// DescribeApplicationProviderWithContext is the same as DescribeApplicationProvider with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeApplicationProvider for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DescribeApplicationProviderWithContext(ctx aws.Context, input *DescribeApplicationProviderInput, opts ...request.Option) (*DescribeApplicationProviderOutput, error) {
+	req, out := c.DescribeApplicationProviderRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeInstance = "DescribeInstance"
+
+// DescribeInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeInstance for more information on using the DescribeInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeInstanceRequest method.
+//	req, resp := client.DescribeInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeInstance
+func (c *SSOAdmin) DescribeInstanceRequest(input *DescribeInstanceInput) (req *request.Request, output *DescribeInstanceOutput) {
+	op := &request.Operation{
+		Name:       opDescribeInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeInstanceInput{}
+	}
+
+	output = &DescribeInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeInstance API operation for AWS Single Sign-On Admin.
+//
+// Returns the details of an instance of IAM Identity Center. The status can
+// be one of the following:
+//
+//   - CREATE_IN_PROGRESS - The instance is in the process of being created.
+//     When the instance is ready for use, DescribeInstance returns the status
+//     of ACTIVE. While the instance is in the CREATE_IN_PROGRESS state, you
+//     can call only DescribeInstance and DeleteInstance operations.
+//
+//   - DELETE_IN_PROGRESS - The instance is being deleted. Returns AccessDeniedException
+//     after the delete operation completes.
+//
+//   - ACTIVE - The instance is active.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DescribeInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeInstance
+func (c *SSOAdmin) DescribeInstance(input *DescribeInstanceInput) (*DescribeInstanceOutput, error) {
+	req, out := c.DescribeInstanceRequest(input)
+	return out, req.Send()
+}
+
+// DescribeInstanceWithContext is the same as DescribeInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DescribeInstanceWithContext(ctx aws.Context, input *DescribeInstanceInput, opts ...request.Option) (*DescribeInstanceOutput, error) {
+	req, out := c.DescribeInstanceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1081,12 +2808,12 @@ func (c *SSOAdmin) DescribeInstanceAccessControlAttributeConfigurationRequest(in
 
 // DescribeInstanceAccessControlAttributeConfiguration API operation for AWS Single Sign-On Admin.
 //
-// Returns the list of Amazon Web Services SSO identity store attributes that
-// have been configured to work with attributes-based access control (ABAC)
-// for the specified Amazon Web Services SSO instance. This will not return
-// attributes configured and sent by an external identity provider. For more
-// information about ABAC, see Attribute-Based Access Control (/singlesignon/latest/userguide/abac.html)
-// in the Amazon Web Services SSO User Guide.
+// Returns the list of IAM Identity Center identity store attributes that have
+// been configured to work with attributes-based access control (ABAC) for the
+// specified IAM Identity Center instance. This will not return attributes configured
+// and sent by an external identity provider. For more information about ABAC,
+// see Attribute-Based Access Control (/singlesignon/latest/userguide/abac.html)
+// in the IAM Identity Center User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1097,19 +2824,19 @@ func (c *SSOAdmin) DescribeInstanceAccessControlAttributeConfigurationRequest(in
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
-//
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
 //
 //   - ValidationException
 //     The request failed because it contains a syntax error.
@@ -1190,22 +2917,22 @@ func (c *SSOAdmin) DescribePermissionSetRequest(input *DescribePermissionSetInpu
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribePermissionSet
 func (c *SSOAdmin) DescribePermissionSet(input *DescribePermissionSetInput) (*DescribePermissionSetOutput, error) {
@@ -1283,22 +3010,22 @@ func (c *SSOAdmin) DescribePermissionSetProvisioningStatusRequest(input *Describ
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribePermissionSetProvisioningStatus
 func (c *SSOAdmin) DescribePermissionSetProvisioningStatus(input *DescribePermissionSetProvisioningStatusInput) (*DescribePermissionSetProvisioningStatusOutput, error) {
@@ -1317,6 +3044,202 @@ func (c *SSOAdmin) DescribePermissionSetProvisioningStatus(input *DescribePermis
 // for more information on using Contexts.
 func (c *SSOAdmin) DescribePermissionSetProvisioningStatusWithContext(ctx aws.Context, input *DescribePermissionSetProvisioningStatusInput, opts ...request.Option) (*DescribePermissionSetProvisioningStatusOutput, error) {
 	req, out := c.DescribePermissionSetProvisioningStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeTrustedTokenIssuer = "DescribeTrustedTokenIssuer"
+
+// DescribeTrustedTokenIssuerRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeTrustedTokenIssuer operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeTrustedTokenIssuer for more information on using the DescribeTrustedTokenIssuer
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeTrustedTokenIssuerRequest method.
+//	req, resp := client.DescribeTrustedTokenIssuerRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeTrustedTokenIssuer
+func (c *SSOAdmin) DescribeTrustedTokenIssuerRequest(input *DescribeTrustedTokenIssuerInput) (req *request.Request, output *DescribeTrustedTokenIssuerOutput) {
+	op := &request.Operation{
+		Name:       opDescribeTrustedTokenIssuer,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeTrustedTokenIssuerInput{}
+	}
+
+	output = &DescribeTrustedTokenIssuerOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeTrustedTokenIssuer API operation for AWS Single Sign-On Admin.
+//
+// Retrieves details about a trusted token issuer configuration stored in an
+// instance of IAM Identity Center. Details include the name of the trusted
+// token issuer, the issuer URL, and the path of the source attribute and the
+// destination attribute for a trusted token issuer configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DescribeTrustedTokenIssuer for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DescribeTrustedTokenIssuer
+func (c *SSOAdmin) DescribeTrustedTokenIssuer(input *DescribeTrustedTokenIssuerInput) (*DescribeTrustedTokenIssuerOutput, error) {
+	req, out := c.DescribeTrustedTokenIssuerRequest(input)
+	return out, req.Send()
+}
+
+// DescribeTrustedTokenIssuerWithContext is the same as DescribeTrustedTokenIssuer with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeTrustedTokenIssuer for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DescribeTrustedTokenIssuerWithContext(ctx aws.Context, input *DescribeTrustedTokenIssuerInput, opts ...request.Option) (*DescribeTrustedTokenIssuerOutput, error) {
+	req, out := c.DescribeTrustedTokenIssuerRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDetachCustomerManagedPolicyReferenceFromPermissionSet = "DetachCustomerManagedPolicyReferenceFromPermissionSet"
+
+// DetachCustomerManagedPolicyReferenceFromPermissionSetRequest generates a "aws/request.Request" representing the
+// client's request for the DetachCustomerManagedPolicyReferenceFromPermissionSet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DetachCustomerManagedPolicyReferenceFromPermissionSet for more information on using the DetachCustomerManagedPolicyReferenceFromPermissionSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DetachCustomerManagedPolicyReferenceFromPermissionSetRequest method.
+//	req, resp := client.DetachCustomerManagedPolicyReferenceFromPermissionSetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DetachCustomerManagedPolicyReferenceFromPermissionSet
+func (c *SSOAdmin) DetachCustomerManagedPolicyReferenceFromPermissionSetRequest(input *DetachCustomerManagedPolicyReferenceFromPermissionSetInput) (req *request.Request, output *DetachCustomerManagedPolicyReferenceFromPermissionSetOutput) {
+	op := &request.Operation{
+		Name:       opDetachCustomerManagedPolicyReferenceFromPermissionSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DetachCustomerManagedPolicyReferenceFromPermissionSetInput{}
+	}
+
+	output = &DetachCustomerManagedPolicyReferenceFromPermissionSetOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DetachCustomerManagedPolicyReferenceFromPermissionSet API operation for AWS Single Sign-On Admin.
+//
+// Detaches the specified customer managed policy from the specified PermissionSet.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation DetachCustomerManagedPolicyReferenceFromPermissionSet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/DetachCustomerManagedPolicyReferenceFromPermissionSet
+func (c *SSOAdmin) DetachCustomerManagedPolicyReferenceFromPermissionSet(input *DetachCustomerManagedPolicyReferenceFromPermissionSetInput) (*DetachCustomerManagedPolicyReferenceFromPermissionSetOutput, error) {
+	req, out := c.DetachCustomerManagedPolicyReferenceFromPermissionSetRequest(input)
+	return out, req.Send()
+}
+
+// DetachCustomerManagedPolicyReferenceFromPermissionSetWithContext is the same as DetachCustomerManagedPolicyReferenceFromPermissionSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DetachCustomerManagedPolicyReferenceFromPermissionSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) DetachCustomerManagedPolicyReferenceFromPermissionSetWithContext(ctx aws.Context, input *DetachCustomerManagedPolicyReferenceFromPermissionSetInput, opts ...request.Option) (*DetachCustomerManagedPolicyReferenceFromPermissionSetOutput, error) {
+	req, out := c.DetachCustomerManagedPolicyReferenceFromPermissionSetRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1366,8 +3289,8 @@ func (c *SSOAdmin) DetachManagedPolicyFromPermissionSetRequest(input *DetachMana
 
 // DetachManagedPolicyFromPermissionSet API operation for AWS Single Sign-On Admin.
 //
-// Detaches the attached IAM managed policy ARN from the specified permission
-// set.
+// Detaches the attached Amazon Web Services managed policy ARN from the specified
+// permission set.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1378,22 +3301,22 @@ func (c *SSOAdmin) DetachManagedPolicyFromPermissionSetRequest(input *DetachMana
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -1418,6 +3341,379 @@ func (c *SSOAdmin) DetachManagedPolicyFromPermissionSet(input *DetachManagedPoli
 // for more information on using Contexts.
 func (c *SSOAdmin) DetachManagedPolicyFromPermissionSetWithContext(ctx aws.Context, input *DetachManagedPolicyFromPermissionSetInput, opts ...request.Option) (*DetachManagedPolicyFromPermissionSetOutput, error) {
 	req, out := c.DetachManagedPolicyFromPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetApplicationAccessScope = "GetApplicationAccessScope"
+
+// GetApplicationAccessScopeRequest generates a "aws/request.Request" representing the
+// client's request for the GetApplicationAccessScope operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApplicationAccessScope for more information on using the GetApplicationAccessScope
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetApplicationAccessScopeRequest method.
+//	req, resp := client.GetApplicationAccessScopeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationAccessScope
+func (c *SSOAdmin) GetApplicationAccessScopeRequest(input *GetApplicationAccessScopeInput) (req *request.Request, output *GetApplicationAccessScopeOutput) {
+	op := &request.Operation{
+		Name:       opGetApplicationAccessScope,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetApplicationAccessScopeInput{}
+	}
+
+	output = &GetApplicationAccessScopeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApplicationAccessScope API operation for AWS Single Sign-On Admin.
+//
+// Retrieves the authorized targets for an IAM Identity Center access scope
+// for an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation GetApplicationAccessScope for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationAccessScope
+func (c *SSOAdmin) GetApplicationAccessScope(input *GetApplicationAccessScopeInput) (*GetApplicationAccessScopeOutput, error) {
+	req, out := c.GetApplicationAccessScopeRequest(input)
+	return out, req.Send()
+}
+
+// GetApplicationAccessScopeWithContext is the same as GetApplicationAccessScope with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApplicationAccessScope for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) GetApplicationAccessScopeWithContext(ctx aws.Context, input *GetApplicationAccessScopeInput, opts ...request.Option) (*GetApplicationAccessScopeOutput, error) {
+	req, out := c.GetApplicationAccessScopeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetApplicationAssignmentConfiguration = "GetApplicationAssignmentConfiguration"
+
+// GetApplicationAssignmentConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetApplicationAssignmentConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApplicationAssignmentConfiguration for more information on using the GetApplicationAssignmentConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetApplicationAssignmentConfigurationRequest method.
+//	req, resp := client.GetApplicationAssignmentConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationAssignmentConfiguration
+func (c *SSOAdmin) GetApplicationAssignmentConfigurationRequest(input *GetApplicationAssignmentConfigurationInput) (req *request.Request, output *GetApplicationAssignmentConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetApplicationAssignmentConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetApplicationAssignmentConfigurationInput{}
+	}
+
+	output = &GetApplicationAssignmentConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApplicationAssignmentConfiguration API operation for AWS Single Sign-On Admin.
+//
+// Retrieves the configuration of PutApplicationAssignmentConfiguration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation GetApplicationAssignmentConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationAssignmentConfiguration
+func (c *SSOAdmin) GetApplicationAssignmentConfiguration(input *GetApplicationAssignmentConfigurationInput) (*GetApplicationAssignmentConfigurationOutput, error) {
+	req, out := c.GetApplicationAssignmentConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetApplicationAssignmentConfigurationWithContext is the same as GetApplicationAssignmentConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApplicationAssignmentConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) GetApplicationAssignmentConfigurationWithContext(ctx aws.Context, input *GetApplicationAssignmentConfigurationInput, opts ...request.Option) (*GetApplicationAssignmentConfigurationOutput, error) {
+	req, out := c.GetApplicationAssignmentConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetApplicationAuthenticationMethod = "GetApplicationAuthenticationMethod"
+
+// GetApplicationAuthenticationMethodRequest generates a "aws/request.Request" representing the
+// client's request for the GetApplicationAuthenticationMethod operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApplicationAuthenticationMethod for more information on using the GetApplicationAuthenticationMethod
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetApplicationAuthenticationMethodRequest method.
+//	req, resp := client.GetApplicationAuthenticationMethodRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationAuthenticationMethod
+func (c *SSOAdmin) GetApplicationAuthenticationMethodRequest(input *GetApplicationAuthenticationMethodInput) (req *request.Request, output *GetApplicationAuthenticationMethodOutput) {
+	op := &request.Operation{
+		Name:       opGetApplicationAuthenticationMethod,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetApplicationAuthenticationMethodInput{}
+	}
+
+	output = &GetApplicationAuthenticationMethodOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApplicationAuthenticationMethod API operation for AWS Single Sign-On Admin.
+//
+// Retrieves details about an authentication method used by an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation GetApplicationAuthenticationMethod for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationAuthenticationMethod
+func (c *SSOAdmin) GetApplicationAuthenticationMethod(input *GetApplicationAuthenticationMethodInput) (*GetApplicationAuthenticationMethodOutput, error) {
+	req, out := c.GetApplicationAuthenticationMethodRequest(input)
+	return out, req.Send()
+}
+
+// GetApplicationAuthenticationMethodWithContext is the same as GetApplicationAuthenticationMethod with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApplicationAuthenticationMethod for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) GetApplicationAuthenticationMethodWithContext(ctx aws.Context, input *GetApplicationAuthenticationMethodInput, opts ...request.Option) (*GetApplicationAuthenticationMethodOutput, error) {
+	req, out := c.GetApplicationAuthenticationMethodRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetApplicationGrant = "GetApplicationGrant"
+
+// GetApplicationGrantRequest generates a "aws/request.Request" representing the
+// client's request for the GetApplicationGrant operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetApplicationGrant for more information on using the GetApplicationGrant
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetApplicationGrantRequest method.
+//	req, resp := client.GetApplicationGrantRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationGrant
+func (c *SSOAdmin) GetApplicationGrantRequest(input *GetApplicationGrantInput) (req *request.Request, output *GetApplicationGrantOutput) {
+	op := &request.Operation{
+		Name:       opGetApplicationGrant,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetApplicationGrantInput{}
+	}
+
+	output = &GetApplicationGrantOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetApplicationGrant API operation for AWS Single Sign-On Admin.
+//
+// Retrieves details about an application grant.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation GetApplicationGrant for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetApplicationGrant
+func (c *SSOAdmin) GetApplicationGrant(input *GetApplicationGrantInput) (*GetApplicationGrantOutput, error) {
+	req, out := c.GetApplicationGrantRequest(input)
+	return out, req.Send()
+}
+
+// GetApplicationGrantWithContext is the same as GetApplicationGrant with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetApplicationGrant for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) GetApplicationGrantWithContext(ctx aws.Context, input *GetApplicationGrantInput, opts ...request.Option) (*GetApplicationGrantOutput, error) {
+	req, out := c.GetApplicationGrantRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1477,22 +3773,22 @@ func (c *SSOAdmin) GetInlinePolicyForPermissionSetRequest(input *GetInlinePolicy
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetInlinePolicyForPermissionSet
 func (c *SSOAdmin) GetInlinePolicyForPermissionSet(input *GetInlinePolicyForPermissionSetInput) (*GetInlinePolicyForPermissionSetOutput, error) {
@@ -1511,6 +3807,99 @@ func (c *SSOAdmin) GetInlinePolicyForPermissionSet(input *GetInlinePolicyForPerm
 // for more information on using Contexts.
 func (c *SSOAdmin) GetInlinePolicyForPermissionSetWithContext(ctx aws.Context, input *GetInlinePolicyForPermissionSetInput, opts ...request.Option) (*GetInlinePolicyForPermissionSetOutput, error) {
 	req, out := c.GetInlinePolicyForPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetPermissionsBoundaryForPermissionSet = "GetPermissionsBoundaryForPermissionSet"
+
+// GetPermissionsBoundaryForPermissionSetRequest generates a "aws/request.Request" representing the
+// client's request for the GetPermissionsBoundaryForPermissionSet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetPermissionsBoundaryForPermissionSet for more information on using the GetPermissionsBoundaryForPermissionSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetPermissionsBoundaryForPermissionSetRequest method.
+//	req, resp := client.GetPermissionsBoundaryForPermissionSetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetPermissionsBoundaryForPermissionSet
+func (c *SSOAdmin) GetPermissionsBoundaryForPermissionSetRequest(input *GetPermissionsBoundaryForPermissionSetInput) (req *request.Request, output *GetPermissionsBoundaryForPermissionSetOutput) {
+	op := &request.Operation{
+		Name:       opGetPermissionsBoundaryForPermissionSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetPermissionsBoundaryForPermissionSetInput{}
+	}
+
+	output = &GetPermissionsBoundaryForPermissionSetOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetPermissionsBoundaryForPermissionSet API operation for AWS Single Sign-On Admin.
+//
+// Obtains the permissions boundary for a specified PermissionSet.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation GetPermissionsBoundaryForPermissionSet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/GetPermissionsBoundaryForPermissionSet
+func (c *SSOAdmin) GetPermissionsBoundaryForPermissionSet(input *GetPermissionsBoundaryForPermissionSetInput) (*GetPermissionsBoundaryForPermissionSetOutput, error) {
+	req, out := c.GetPermissionsBoundaryForPermissionSetRequest(input)
+	return out, req.Send()
+}
+
+// GetPermissionsBoundaryForPermissionSetWithContext is the same as GetPermissionsBoundaryForPermissionSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetPermissionsBoundaryForPermissionSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) GetPermissionsBoundaryForPermissionSetWithContext(ctx aws.Context, input *GetPermissionsBoundaryForPermissionSetInput, opts ...request.Option) (*GetPermissionsBoundaryForPermissionSetOutput, error) {
+	req, out := c.GetPermissionsBoundaryForPermissionSetRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1566,7 +3955,7 @@ func (c *SSOAdmin) ListAccountAssignmentCreationStatusRequest(input *ListAccount
 // ListAccountAssignmentCreationStatus API operation for AWS Single Sign-On Admin.
 //
 // Lists the status of the Amazon Web Services account assignment creation requests
-// for a specified SSO instance.
+// for a specified IAM Identity Center instance.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1577,22 +3966,22 @@ func (c *SSOAdmin) ListAccountAssignmentCreationStatusRequest(input *ListAccount
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentCreationStatus
 func (c *SSOAdmin) ListAccountAssignmentCreationStatus(input *ListAccountAssignmentCreationStatusInput) (*ListAccountAssignmentCreationStatusOutput, error) {
@@ -1717,7 +4106,7 @@ func (c *SSOAdmin) ListAccountAssignmentDeletionStatusRequest(input *ListAccount
 // ListAccountAssignmentDeletionStatus API operation for AWS Single Sign-On Admin.
 //
 // Lists the status of the Amazon Web Services account assignment deletion requests
-// for a specified SSO instance.
+// for a specified IAM Identity Center instance.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1728,22 +4117,22 @@ func (c *SSOAdmin) ListAccountAssignmentDeletionStatusRequest(input *ListAccount
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentDeletionStatus
 func (c *SSOAdmin) ListAccountAssignmentDeletionStatus(input *ListAccountAssignmentDeletionStatusInput) (*ListAccountAssignmentDeletionStatusOutput, error) {
@@ -1879,22 +4268,22 @@ func (c *SSOAdmin) ListAccountAssignmentsRequest(input *ListAccountAssignmentsIn
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignments
 func (c *SSOAdmin) ListAccountAssignments(input *ListAccountAssignmentsInput) (*ListAccountAssignmentsOutput, error) {
@@ -1969,6 +4358,157 @@ func (c *SSOAdmin) ListAccountAssignmentsPagesWithContext(ctx aws.Context, input
 	return p.Err()
 }
 
+const opListAccountAssignmentsForPrincipal = "ListAccountAssignmentsForPrincipal"
+
+// ListAccountAssignmentsForPrincipalRequest generates a "aws/request.Request" representing the
+// client's request for the ListAccountAssignmentsForPrincipal operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAccountAssignmentsForPrincipal for more information on using the ListAccountAssignmentsForPrincipal
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAccountAssignmentsForPrincipalRequest method.
+//	req, resp := client.ListAccountAssignmentsForPrincipalRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentsForPrincipal
+func (c *SSOAdmin) ListAccountAssignmentsForPrincipalRequest(input *ListAccountAssignmentsForPrincipalInput) (req *request.Request, output *ListAccountAssignmentsForPrincipalOutput) {
+	op := &request.Operation{
+		Name:       opListAccountAssignmentsForPrincipal,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAccountAssignmentsForPrincipalInput{}
+	}
+
+	output = &ListAccountAssignmentsForPrincipalOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListAccountAssignmentsForPrincipal API operation for AWS Single Sign-On Admin.
+//
+// Retrieves a list of the IAM Identity Center associated Amazon Web Services
+// accounts that the principal has access to.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListAccountAssignmentsForPrincipal for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountAssignmentsForPrincipal
+func (c *SSOAdmin) ListAccountAssignmentsForPrincipal(input *ListAccountAssignmentsForPrincipalInput) (*ListAccountAssignmentsForPrincipalOutput, error) {
+	req, out := c.ListAccountAssignmentsForPrincipalRequest(input)
+	return out, req.Send()
+}
+
+// ListAccountAssignmentsForPrincipalWithContext is the same as ListAccountAssignmentsForPrincipal with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAccountAssignmentsForPrincipal for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListAccountAssignmentsForPrincipalWithContext(ctx aws.Context, input *ListAccountAssignmentsForPrincipalInput, opts ...request.Option) (*ListAccountAssignmentsForPrincipalOutput, error) {
+	req, out := c.ListAccountAssignmentsForPrincipalRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAccountAssignmentsForPrincipalPages iterates over the pages of a ListAccountAssignmentsForPrincipal operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAccountAssignmentsForPrincipal method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAccountAssignmentsForPrincipal operation.
+//	pageNum := 0
+//	err := client.ListAccountAssignmentsForPrincipalPages(params,
+//	    func(page *ssoadmin.ListAccountAssignmentsForPrincipalOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListAccountAssignmentsForPrincipalPages(input *ListAccountAssignmentsForPrincipalInput, fn func(*ListAccountAssignmentsForPrincipalOutput, bool) bool) error {
+	return c.ListAccountAssignmentsForPrincipalPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAccountAssignmentsForPrincipalPagesWithContext same as ListAccountAssignmentsForPrincipalPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListAccountAssignmentsForPrincipalPagesWithContext(ctx aws.Context, input *ListAccountAssignmentsForPrincipalInput, fn func(*ListAccountAssignmentsForPrincipalOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAccountAssignmentsForPrincipalInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAccountAssignmentsForPrincipalRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAccountAssignmentsForPrincipalOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListAccountsForProvisionedPermissionSet = "ListAccountsForProvisionedPermissionSet"
 
 // ListAccountsForProvisionedPermissionSetRequest generates a "aws/request.Request" representing the
@@ -2030,22 +4570,22 @@ func (c *SSOAdmin) ListAccountsForProvisionedPermissionSetRequest(input *ListAcc
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListAccountsForProvisionedPermissionSet
 func (c *SSOAdmin) ListAccountsForProvisionedPermissionSet(input *ListAccountsForProvisionedPermissionSetInput) (*ListAccountsForProvisionedPermissionSetOutput, error) {
@@ -2120,6 +4660,1204 @@ func (c *SSOAdmin) ListAccountsForProvisionedPermissionSetPagesWithContext(ctx a
 	return p.Err()
 }
 
+const opListApplicationAccessScopes = "ListApplicationAccessScopes"
+
+// ListApplicationAccessScopesRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplicationAccessScopes operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplicationAccessScopes for more information on using the ListApplicationAccessScopes
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationAccessScopesRequest method.
+//	req, resp := client.ListApplicationAccessScopesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAccessScopes
+func (c *SSOAdmin) ListApplicationAccessScopesRequest(input *ListApplicationAccessScopesInput) (req *request.Request, output *ListApplicationAccessScopesOutput) {
+	op := &request.Operation{
+		Name:       opListApplicationAccessScopes,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationAccessScopesInput{}
+	}
+
+	output = &ListApplicationAccessScopesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplicationAccessScopes API operation for AWS Single Sign-On Admin.
+//
+// Lists the access scopes and authorized targets associated with an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplicationAccessScopes for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAccessScopes
+func (c *SSOAdmin) ListApplicationAccessScopes(input *ListApplicationAccessScopesInput) (*ListApplicationAccessScopesOutput, error) {
+	req, out := c.ListApplicationAccessScopesRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationAccessScopesWithContext is the same as ListApplicationAccessScopes with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplicationAccessScopes for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAccessScopesWithContext(ctx aws.Context, input *ListApplicationAccessScopesInput, opts ...request.Option) (*ListApplicationAccessScopesOutput, error) {
+	req, out := c.ListApplicationAccessScopesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationAccessScopesPages iterates over the pages of a ListApplicationAccessScopes operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplicationAccessScopes method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplicationAccessScopes operation.
+//	pageNum := 0
+//	err := client.ListApplicationAccessScopesPages(params,
+//	    func(page *ssoadmin.ListApplicationAccessScopesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationAccessScopesPages(input *ListApplicationAccessScopesInput, fn func(*ListApplicationAccessScopesOutput, bool) bool) error {
+	return c.ListApplicationAccessScopesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationAccessScopesPagesWithContext same as ListApplicationAccessScopesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAccessScopesPagesWithContext(ctx aws.Context, input *ListApplicationAccessScopesInput, fn func(*ListApplicationAccessScopesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationAccessScopesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationAccessScopesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationAccessScopesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListApplicationAssignments = "ListApplicationAssignments"
+
+// ListApplicationAssignmentsRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplicationAssignments operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplicationAssignments for more information on using the ListApplicationAssignments
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationAssignmentsRequest method.
+//	req, resp := client.ListApplicationAssignmentsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAssignments
+func (c *SSOAdmin) ListApplicationAssignmentsRequest(input *ListApplicationAssignmentsInput) (req *request.Request, output *ListApplicationAssignmentsOutput) {
+	op := &request.Operation{
+		Name:       opListApplicationAssignments,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationAssignmentsInput{}
+	}
+
+	output = &ListApplicationAssignmentsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplicationAssignments API operation for AWS Single Sign-On Admin.
+//
+// Lists Amazon Web Services account users that are assigned to an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplicationAssignments for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAssignments
+func (c *SSOAdmin) ListApplicationAssignments(input *ListApplicationAssignmentsInput) (*ListApplicationAssignmentsOutput, error) {
+	req, out := c.ListApplicationAssignmentsRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationAssignmentsWithContext is the same as ListApplicationAssignments with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplicationAssignments for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAssignmentsWithContext(ctx aws.Context, input *ListApplicationAssignmentsInput, opts ...request.Option) (*ListApplicationAssignmentsOutput, error) {
+	req, out := c.ListApplicationAssignmentsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationAssignmentsPages iterates over the pages of a ListApplicationAssignments operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplicationAssignments method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplicationAssignments operation.
+//	pageNum := 0
+//	err := client.ListApplicationAssignmentsPages(params,
+//	    func(page *ssoadmin.ListApplicationAssignmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationAssignmentsPages(input *ListApplicationAssignmentsInput, fn func(*ListApplicationAssignmentsOutput, bool) bool) error {
+	return c.ListApplicationAssignmentsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationAssignmentsPagesWithContext same as ListApplicationAssignmentsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAssignmentsPagesWithContext(ctx aws.Context, input *ListApplicationAssignmentsInput, fn func(*ListApplicationAssignmentsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationAssignmentsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationAssignmentsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationAssignmentsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListApplicationAssignmentsForPrincipal = "ListApplicationAssignmentsForPrincipal"
+
+// ListApplicationAssignmentsForPrincipalRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplicationAssignmentsForPrincipal operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplicationAssignmentsForPrincipal for more information on using the ListApplicationAssignmentsForPrincipal
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationAssignmentsForPrincipalRequest method.
+//	req, resp := client.ListApplicationAssignmentsForPrincipalRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAssignmentsForPrincipal
+func (c *SSOAdmin) ListApplicationAssignmentsForPrincipalRequest(input *ListApplicationAssignmentsForPrincipalInput) (req *request.Request, output *ListApplicationAssignmentsForPrincipalOutput) {
+	op := &request.Operation{
+		Name:       opListApplicationAssignmentsForPrincipal,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationAssignmentsForPrincipalInput{}
+	}
+
+	output = &ListApplicationAssignmentsForPrincipalOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplicationAssignmentsForPrincipal API operation for AWS Single Sign-On Admin.
+//
+// Lists the applications to which a specified principal is assigned.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplicationAssignmentsForPrincipal for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAssignmentsForPrincipal
+func (c *SSOAdmin) ListApplicationAssignmentsForPrincipal(input *ListApplicationAssignmentsForPrincipalInput) (*ListApplicationAssignmentsForPrincipalOutput, error) {
+	req, out := c.ListApplicationAssignmentsForPrincipalRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationAssignmentsForPrincipalWithContext is the same as ListApplicationAssignmentsForPrincipal with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplicationAssignmentsForPrincipal for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAssignmentsForPrincipalWithContext(ctx aws.Context, input *ListApplicationAssignmentsForPrincipalInput, opts ...request.Option) (*ListApplicationAssignmentsForPrincipalOutput, error) {
+	req, out := c.ListApplicationAssignmentsForPrincipalRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationAssignmentsForPrincipalPages iterates over the pages of a ListApplicationAssignmentsForPrincipal operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplicationAssignmentsForPrincipal method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplicationAssignmentsForPrincipal operation.
+//	pageNum := 0
+//	err := client.ListApplicationAssignmentsForPrincipalPages(params,
+//	    func(page *ssoadmin.ListApplicationAssignmentsForPrincipalOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationAssignmentsForPrincipalPages(input *ListApplicationAssignmentsForPrincipalInput, fn func(*ListApplicationAssignmentsForPrincipalOutput, bool) bool) error {
+	return c.ListApplicationAssignmentsForPrincipalPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationAssignmentsForPrincipalPagesWithContext same as ListApplicationAssignmentsForPrincipalPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAssignmentsForPrincipalPagesWithContext(ctx aws.Context, input *ListApplicationAssignmentsForPrincipalInput, fn func(*ListApplicationAssignmentsForPrincipalOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationAssignmentsForPrincipalInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationAssignmentsForPrincipalRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationAssignmentsForPrincipalOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListApplicationAuthenticationMethods = "ListApplicationAuthenticationMethods"
+
+// ListApplicationAuthenticationMethodsRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplicationAuthenticationMethods operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplicationAuthenticationMethods for more information on using the ListApplicationAuthenticationMethods
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationAuthenticationMethodsRequest method.
+//	req, resp := client.ListApplicationAuthenticationMethodsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAuthenticationMethods
+func (c *SSOAdmin) ListApplicationAuthenticationMethodsRequest(input *ListApplicationAuthenticationMethodsInput) (req *request.Request, output *ListApplicationAuthenticationMethodsOutput) {
+	op := &request.Operation{
+		Name:       opListApplicationAuthenticationMethods,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationAuthenticationMethodsInput{}
+	}
+
+	output = &ListApplicationAuthenticationMethodsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplicationAuthenticationMethods API operation for AWS Single Sign-On Admin.
+//
+// Lists all of the authentication methods supported by the specified application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplicationAuthenticationMethods for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationAuthenticationMethods
+func (c *SSOAdmin) ListApplicationAuthenticationMethods(input *ListApplicationAuthenticationMethodsInput) (*ListApplicationAuthenticationMethodsOutput, error) {
+	req, out := c.ListApplicationAuthenticationMethodsRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationAuthenticationMethodsWithContext is the same as ListApplicationAuthenticationMethods with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplicationAuthenticationMethods for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAuthenticationMethodsWithContext(ctx aws.Context, input *ListApplicationAuthenticationMethodsInput, opts ...request.Option) (*ListApplicationAuthenticationMethodsOutput, error) {
+	req, out := c.ListApplicationAuthenticationMethodsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationAuthenticationMethodsPages iterates over the pages of a ListApplicationAuthenticationMethods operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplicationAuthenticationMethods method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplicationAuthenticationMethods operation.
+//	pageNum := 0
+//	err := client.ListApplicationAuthenticationMethodsPages(params,
+//	    func(page *ssoadmin.ListApplicationAuthenticationMethodsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationAuthenticationMethodsPages(input *ListApplicationAuthenticationMethodsInput, fn func(*ListApplicationAuthenticationMethodsOutput, bool) bool) error {
+	return c.ListApplicationAuthenticationMethodsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationAuthenticationMethodsPagesWithContext same as ListApplicationAuthenticationMethodsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationAuthenticationMethodsPagesWithContext(ctx aws.Context, input *ListApplicationAuthenticationMethodsInput, fn func(*ListApplicationAuthenticationMethodsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationAuthenticationMethodsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationAuthenticationMethodsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationAuthenticationMethodsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListApplicationGrants = "ListApplicationGrants"
+
+// ListApplicationGrantsRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplicationGrants operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplicationGrants for more information on using the ListApplicationGrants
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationGrantsRequest method.
+//	req, resp := client.ListApplicationGrantsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationGrants
+func (c *SSOAdmin) ListApplicationGrantsRequest(input *ListApplicationGrantsInput) (req *request.Request, output *ListApplicationGrantsOutput) {
+	op := &request.Operation{
+		Name:       opListApplicationGrants,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationGrantsInput{}
+	}
+
+	output = &ListApplicationGrantsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplicationGrants API operation for AWS Single Sign-On Admin.
+//
+// List the grants associated with an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplicationGrants for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationGrants
+func (c *SSOAdmin) ListApplicationGrants(input *ListApplicationGrantsInput) (*ListApplicationGrantsOutput, error) {
+	req, out := c.ListApplicationGrantsRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationGrantsWithContext is the same as ListApplicationGrants with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplicationGrants for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationGrantsWithContext(ctx aws.Context, input *ListApplicationGrantsInput, opts ...request.Option) (*ListApplicationGrantsOutput, error) {
+	req, out := c.ListApplicationGrantsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationGrantsPages iterates over the pages of a ListApplicationGrants operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplicationGrants method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplicationGrants operation.
+//	pageNum := 0
+//	err := client.ListApplicationGrantsPages(params,
+//	    func(page *ssoadmin.ListApplicationGrantsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationGrantsPages(input *ListApplicationGrantsInput, fn func(*ListApplicationGrantsOutput, bool) bool) error {
+	return c.ListApplicationGrantsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationGrantsPagesWithContext same as ListApplicationGrantsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationGrantsPagesWithContext(ctx aws.Context, input *ListApplicationGrantsInput, fn func(*ListApplicationGrantsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationGrantsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationGrantsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationGrantsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListApplicationProviders = "ListApplicationProviders"
+
+// ListApplicationProvidersRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplicationProviders operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplicationProviders for more information on using the ListApplicationProviders
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationProvidersRequest method.
+//	req, resp := client.ListApplicationProvidersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationProviders
+func (c *SSOAdmin) ListApplicationProvidersRequest(input *ListApplicationProvidersInput) (req *request.Request, output *ListApplicationProvidersOutput) {
+	op := &request.Operation{
+		Name:       opListApplicationProviders,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationProvidersInput{}
+	}
+
+	output = &ListApplicationProvidersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplicationProviders API operation for AWS Single Sign-On Admin.
+//
+// Lists the application providers configured in the IAM Identity Center identity
+// store.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplicationProviders for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplicationProviders
+func (c *SSOAdmin) ListApplicationProviders(input *ListApplicationProvidersInput) (*ListApplicationProvidersOutput, error) {
+	req, out := c.ListApplicationProvidersRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationProvidersWithContext is the same as ListApplicationProviders with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplicationProviders for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationProvidersWithContext(ctx aws.Context, input *ListApplicationProvidersInput, opts ...request.Option) (*ListApplicationProvidersOutput, error) {
+	req, out := c.ListApplicationProvidersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationProvidersPages iterates over the pages of a ListApplicationProviders operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplicationProviders method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplicationProviders operation.
+//	pageNum := 0
+//	err := client.ListApplicationProvidersPages(params,
+//	    func(page *ssoadmin.ListApplicationProvidersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationProvidersPages(input *ListApplicationProvidersInput, fn func(*ListApplicationProvidersOutput, bool) bool) error {
+	return c.ListApplicationProvidersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationProvidersPagesWithContext same as ListApplicationProvidersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationProvidersPagesWithContext(ctx aws.Context, input *ListApplicationProvidersInput, fn func(*ListApplicationProvidersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationProvidersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationProvidersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationProvidersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListApplications = "ListApplications"
+
+// ListApplicationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListApplications operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListApplications for more information on using the ListApplications
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListApplicationsRequest method.
+//	req, resp := client.ListApplicationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplications
+func (c *SSOAdmin) ListApplicationsRequest(input *ListApplicationsInput) (req *request.Request, output *ListApplicationsOutput) {
+	op := &request.Operation{
+		Name:       opListApplications,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListApplicationsInput{}
+	}
+
+	output = &ListApplicationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListApplications API operation for AWS Single Sign-On Admin.
+//
+// Lists all applications associated with the instance of IAM Identity Center.
+// When listing applications for an instance in the management account, member
+// accounts must use the applicationAccount parameter to filter the list to
+// only applications created from that account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListApplications for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListApplications
+func (c *SSOAdmin) ListApplications(input *ListApplicationsInput) (*ListApplicationsOutput, error) {
+	req, out := c.ListApplicationsRequest(input)
+	return out, req.Send()
+}
+
+// ListApplicationsWithContext is the same as ListApplications with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListApplications for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationsWithContext(ctx aws.Context, input *ListApplicationsInput, opts ...request.Option) (*ListApplicationsOutput, error) {
+	req, out := c.ListApplicationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListApplicationsPages iterates over the pages of a ListApplications operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListApplications method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListApplications operation.
+//	pageNum := 0
+//	err := client.ListApplicationsPages(params,
+//	    func(page *ssoadmin.ListApplicationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListApplicationsPages(input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool) error {
+	return c.ListApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListApplicationsPagesWithContext same as ListApplicationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListApplicationsPagesWithContext(ctx aws.Context, input *ListApplicationsInput, fn func(*ListApplicationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListApplicationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListApplicationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListApplicationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListCustomerManagedPolicyReferencesInPermissionSet = "ListCustomerManagedPolicyReferencesInPermissionSet"
+
+// ListCustomerManagedPolicyReferencesInPermissionSetRequest generates a "aws/request.Request" representing the
+// client's request for the ListCustomerManagedPolicyReferencesInPermissionSet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListCustomerManagedPolicyReferencesInPermissionSet for more information on using the ListCustomerManagedPolicyReferencesInPermissionSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListCustomerManagedPolicyReferencesInPermissionSetRequest method.
+//	req, resp := client.ListCustomerManagedPolicyReferencesInPermissionSetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListCustomerManagedPolicyReferencesInPermissionSet
+func (c *SSOAdmin) ListCustomerManagedPolicyReferencesInPermissionSetRequest(input *ListCustomerManagedPolicyReferencesInPermissionSetInput) (req *request.Request, output *ListCustomerManagedPolicyReferencesInPermissionSetOutput) {
+	op := &request.Operation{
+		Name:       opListCustomerManagedPolicyReferencesInPermissionSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListCustomerManagedPolicyReferencesInPermissionSetInput{}
+	}
+
+	output = &ListCustomerManagedPolicyReferencesInPermissionSetOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListCustomerManagedPolicyReferencesInPermissionSet API operation for AWS Single Sign-On Admin.
+//
+// Lists all customer managed policies attached to a specified PermissionSet.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListCustomerManagedPolicyReferencesInPermissionSet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListCustomerManagedPolicyReferencesInPermissionSet
+func (c *SSOAdmin) ListCustomerManagedPolicyReferencesInPermissionSet(input *ListCustomerManagedPolicyReferencesInPermissionSetInput) (*ListCustomerManagedPolicyReferencesInPermissionSetOutput, error) {
+	req, out := c.ListCustomerManagedPolicyReferencesInPermissionSetRequest(input)
+	return out, req.Send()
+}
+
+// ListCustomerManagedPolicyReferencesInPermissionSetWithContext is the same as ListCustomerManagedPolicyReferencesInPermissionSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListCustomerManagedPolicyReferencesInPermissionSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListCustomerManagedPolicyReferencesInPermissionSetWithContext(ctx aws.Context, input *ListCustomerManagedPolicyReferencesInPermissionSetInput, opts ...request.Option) (*ListCustomerManagedPolicyReferencesInPermissionSetOutput, error) {
+	req, out := c.ListCustomerManagedPolicyReferencesInPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListCustomerManagedPolicyReferencesInPermissionSetPages iterates over the pages of a ListCustomerManagedPolicyReferencesInPermissionSet operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListCustomerManagedPolicyReferencesInPermissionSet method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListCustomerManagedPolicyReferencesInPermissionSet operation.
+//	pageNum := 0
+//	err := client.ListCustomerManagedPolicyReferencesInPermissionSetPages(params,
+//	    func(page *ssoadmin.ListCustomerManagedPolicyReferencesInPermissionSetOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListCustomerManagedPolicyReferencesInPermissionSetPages(input *ListCustomerManagedPolicyReferencesInPermissionSetInput, fn func(*ListCustomerManagedPolicyReferencesInPermissionSetOutput, bool) bool) error {
+	return c.ListCustomerManagedPolicyReferencesInPermissionSetPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListCustomerManagedPolicyReferencesInPermissionSetPagesWithContext same as ListCustomerManagedPolicyReferencesInPermissionSetPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListCustomerManagedPolicyReferencesInPermissionSetPagesWithContext(ctx aws.Context, input *ListCustomerManagedPolicyReferencesInPermissionSetInput, fn func(*ListCustomerManagedPolicyReferencesInPermissionSetOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListCustomerManagedPolicyReferencesInPermissionSetInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListCustomerManagedPolicyReferencesInPermissionSetRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListCustomerManagedPolicyReferencesInPermissionSetOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListInstances = "ListInstances"
 
 // ListInstancesRequest generates a "aws/request.Request" representing the
@@ -2169,7 +5907,8 @@ func (c *SSOAdmin) ListInstancesRequest(input *ListInstancesInput) (req *request
 
 // ListInstances API operation for AWS Single Sign-On Admin.
 //
-// Lists the SSO instances that the caller has access to.
+// Lists the details of the organization and account instances of IAM Identity
+// Center that were created in or visible to the account calling this API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2180,13 +5919,13 @@ func (c *SSOAdmin) ListInstancesRequest(input *ListInstancesInput) (req *request
 //
 // Returned Error Types:
 //
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
 //   - ThrottlingException
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
@@ -2316,7 +6055,8 @@ func (c *SSOAdmin) ListManagedPoliciesInPermissionSetRequest(input *ListManagedP
 
 // ListManagedPoliciesInPermissionSet API operation for AWS Single Sign-On Admin.
 //
-// Lists the IAM managed policy that is attached to a specified permission set.
+// Lists the Amazon Web Services managed policy that is attached to a specified
+// permission set.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2327,22 +6067,22 @@ func (c *SSOAdmin) ListManagedPoliciesInPermissionSetRequest(input *ListManagedP
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListManagedPoliciesInPermissionSet
 func (c *SSOAdmin) ListManagedPoliciesInPermissionSet(input *ListManagedPoliciesInPermissionSetInput) (*ListManagedPoliciesInPermissionSetOutput, error) {
@@ -2467,7 +6207,7 @@ func (c *SSOAdmin) ListPermissionSetProvisioningStatusRequest(input *ListPermiss
 // ListPermissionSetProvisioningStatus API operation for AWS Single Sign-On Admin.
 //
 // Lists the status of the permission set provisioning requests for a specified
-// SSO instance.
+// IAM Identity Center instance.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2478,22 +6218,22 @@ func (c *SSOAdmin) ListPermissionSetProvisioningStatusRequest(input *ListPermiss
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSetProvisioningStatus
 func (c *SSOAdmin) ListPermissionSetProvisioningStatus(input *ListPermissionSetProvisioningStatusInput) (*ListPermissionSetProvisioningStatusOutput, error) {
@@ -2617,7 +6357,7 @@ func (c *SSOAdmin) ListPermissionSetsRequest(input *ListPermissionSetsInput) (re
 
 // ListPermissionSets API operation for AWS Single Sign-On Admin.
 //
-// Lists the PermissionSets in an SSO instance.
+// Lists the PermissionSets in an IAM Identity Center instance.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2628,22 +6368,22 @@ func (c *SSOAdmin) ListPermissionSetsRequest(input *ListPermissionSetsInput) (re
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSets
 func (c *SSOAdmin) ListPermissionSets(input *ListPermissionSetsInput) (*ListPermissionSetsOutput, error) {
@@ -2779,22 +6519,22 @@ func (c *SSOAdmin) ListPermissionSetsProvisionedToAccountRequest(input *ListPerm
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListPermissionSetsProvisionedToAccount
 func (c *SSOAdmin) ListPermissionSetsProvisionedToAccount(input *ListPermissionSetsProvisionedToAccountInput) (*ListPermissionSetsProvisionedToAccountOutput, error) {
@@ -2929,22 +6669,22 @@ func (c *SSOAdmin) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListTagsForResource
 func (c *SSOAdmin) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3019,6 +6759,154 @@ func (c *SSOAdmin) ListTagsForResourcePagesWithContext(ctx aws.Context, input *L
 	return p.Err()
 }
 
+const opListTrustedTokenIssuers = "ListTrustedTokenIssuers"
+
+// ListTrustedTokenIssuersRequest generates a "aws/request.Request" representing the
+// client's request for the ListTrustedTokenIssuers operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTrustedTokenIssuers for more information on using the ListTrustedTokenIssuers
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTrustedTokenIssuersRequest method.
+//	req, resp := client.ListTrustedTokenIssuersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListTrustedTokenIssuers
+func (c *SSOAdmin) ListTrustedTokenIssuersRequest(input *ListTrustedTokenIssuersInput) (req *request.Request, output *ListTrustedTokenIssuersOutput) {
+	op := &request.Operation{
+		Name:       opListTrustedTokenIssuers,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListTrustedTokenIssuersInput{}
+	}
+
+	output = &ListTrustedTokenIssuersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTrustedTokenIssuers API operation for AWS Single Sign-On Admin.
+//
+// Lists all the trusted token issuers configured in an instance of IAM Identity
+// Center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation ListTrustedTokenIssuers for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/ListTrustedTokenIssuers
+func (c *SSOAdmin) ListTrustedTokenIssuers(input *ListTrustedTokenIssuersInput) (*ListTrustedTokenIssuersOutput, error) {
+	req, out := c.ListTrustedTokenIssuersRequest(input)
+	return out, req.Send()
+}
+
+// ListTrustedTokenIssuersWithContext is the same as ListTrustedTokenIssuers with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTrustedTokenIssuers for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListTrustedTokenIssuersWithContext(ctx aws.Context, input *ListTrustedTokenIssuersInput, opts ...request.Option) (*ListTrustedTokenIssuersOutput, error) {
+	req, out := c.ListTrustedTokenIssuersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListTrustedTokenIssuersPages iterates over the pages of a ListTrustedTokenIssuers operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListTrustedTokenIssuers method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListTrustedTokenIssuers operation.
+//	pageNum := 0
+//	err := client.ListTrustedTokenIssuersPages(params,
+//	    func(page *ssoadmin.ListTrustedTokenIssuersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *SSOAdmin) ListTrustedTokenIssuersPages(input *ListTrustedTokenIssuersInput, fn func(*ListTrustedTokenIssuersOutput, bool) bool) error {
+	return c.ListTrustedTokenIssuersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListTrustedTokenIssuersPagesWithContext same as ListTrustedTokenIssuersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) ListTrustedTokenIssuersPagesWithContext(ctx aws.Context, input *ListTrustedTokenIssuersInput, fn func(*ListTrustedTokenIssuersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListTrustedTokenIssuersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListTrustedTokenIssuersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListTrustedTokenIssuersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opProvisionPermissionSet = "ProvisionPermissionSet"
 
 // ProvisionPermissionSetRequest generates a "aws/request.Request" representing the
@@ -3074,22 +6962,22 @@ func (c *SSOAdmin) ProvisionPermissionSetRequest(input *ProvisionPermissionSetIn
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -3114,6 +7002,412 @@ func (c *SSOAdmin) ProvisionPermissionSet(input *ProvisionPermissionSetInput) (*
 // for more information on using Contexts.
 func (c *SSOAdmin) ProvisionPermissionSetWithContext(ctx aws.Context, input *ProvisionPermissionSetInput, opts ...request.Option) (*ProvisionPermissionSetOutput, error) {
 	req, out := c.ProvisionPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutApplicationAccessScope = "PutApplicationAccessScope"
+
+// PutApplicationAccessScopeRequest generates a "aws/request.Request" representing the
+// client's request for the PutApplicationAccessScope operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutApplicationAccessScope for more information on using the PutApplicationAccessScope
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutApplicationAccessScopeRequest method.
+//	req, resp := client.PutApplicationAccessScopeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationAccessScope
+func (c *SSOAdmin) PutApplicationAccessScopeRequest(input *PutApplicationAccessScopeInput) (req *request.Request, output *PutApplicationAccessScopeOutput) {
+	op := &request.Operation{
+		Name:       opPutApplicationAccessScope,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutApplicationAccessScopeInput{}
+	}
+
+	output = &PutApplicationAccessScopeOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutApplicationAccessScope API operation for AWS Single Sign-On Admin.
+//
+// Adds or updates the list of authorized targets for an IAM Identity Center
+// access scope for an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation PutApplicationAccessScope for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationAccessScope
+func (c *SSOAdmin) PutApplicationAccessScope(input *PutApplicationAccessScopeInput) (*PutApplicationAccessScopeOutput, error) {
+	req, out := c.PutApplicationAccessScopeRequest(input)
+	return out, req.Send()
+}
+
+// PutApplicationAccessScopeWithContext is the same as PutApplicationAccessScope with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutApplicationAccessScope for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) PutApplicationAccessScopeWithContext(ctx aws.Context, input *PutApplicationAccessScopeInput, opts ...request.Option) (*PutApplicationAccessScopeOutput, error) {
+	req, out := c.PutApplicationAccessScopeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutApplicationAssignmentConfiguration = "PutApplicationAssignmentConfiguration"
+
+// PutApplicationAssignmentConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the PutApplicationAssignmentConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutApplicationAssignmentConfiguration for more information on using the PutApplicationAssignmentConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutApplicationAssignmentConfigurationRequest method.
+//	req, resp := client.PutApplicationAssignmentConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationAssignmentConfiguration
+func (c *SSOAdmin) PutApplicationAssignmentConfigurationRequest(input *PutApplicationAssignmentConfigurationInput) (req *request.Request, output *PutApplicationAssignmentConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opPutApplicationAssignmentConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutApplicationAssignmentConfigurationInput{}
+	}
+
+	output = &PutApplicationAssignmentConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutApplicationAssignmentConfiguration API operation for AWS Single Sign-On Admin.
+//
+// Configure how users gain access to an application. If AssignmentsRequired
+// is true (default value), users don’t have access to the application unless
+// an assignment is created using the CreateApplicationAssignment API (https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_CreateApplicationAssignment.html).
+// If false, all users have access to the application. If an assignment is created
+// using CreateApplicationAssignment (https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_CreateApplicationAssignment.html).,
+// the user retains access if AssignmentsRequired is set to true.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation PutApplicationAssignmentConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationAssignmentConfiguration
+func (c *SSOAdmin) PutApplicationAssignmentConfiguration(input *PutApplicationAssignmentConfigurationInput) (*PutApplicationAssignmentConfigurationOutput, error) {
+	req, out := c.PutApplicationAssignmentConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// PutApplicationAssignmentConfigurationWithContext is the same as PutApplicationAssignmentConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutApplicationAssignmentConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) PutApplicationAssignmentConfigurationWithContext(ctx aws.Context, input *PutApplicationAssignmentConfigurationInput, opts ...request.Option) (*PutApplicationAssignmentConfigurationOutput, error) {
+	req, out := c.PutApplicationAssignmentConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutApplicationAuthenticationMethod = "PutApplicationAuthenticationMethod"
+
+// PutApplicationAuthenticationMethodRequest generates a "aws/request.Request" representing the
+// client's request for the PutApplicationAuthenticationMethod operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutApplicationAuthenticationMethod for more information on using the PutApplicationAuthenticationMethod
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutApplicationAuthenticationMethodRequest method.
+//	req, resp := client.PutApplicationAuthenticationMethodRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationAuthenticationMethod
+func (c *SSOAdmin) PutApplicationAuthenticationMethodRequest(input *PutApplicationAuthenticationMethodInput) (req *request.Request, output *PutApplicationAuthenticationMethodOutput) {
+	op := &request.Operation{
+		Name:       opPutApplicationAuthenticationMethod,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutApplicationAuthenticationMethodInput{}
+	}
+
+	output = &PutApplicationAuthenticationMethodOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutApplicationAuthenticationMethod API operation for AWS Single Sign-On Admin.
+//
+// Adds or updates an authentication method for an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation PutApplicationAuthenticationMethod for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationAuthenticationMethod
+func (c *SSOAdmin) PutApplicationAuthenticationMethod(input *PutApplicationAuthenticationMethodInput) (*PutApplicationAuthenticationMethodOutput, error) {
+	req, out := c.PutApplicationAuthenticationMethodRequest(input)
+	return out, req.Send()
+}
+
+// PutApplicationAuthenticationMethodWithContext is the same as PutApplicationAuthenticationMethod with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutApplicationAuthenticationMethod for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) PutApplicationAuthenticationMethodWithContext(ctx aws.Context, input *PutApplicationAuthenticationMethodInput, opts ...request.Option) (*PutApplicationAuthenticationMethodOutput, error) {
+	req, out := c.PutApplicationAuthenticationMethodRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutApplicationGrant = "PutApplicationGrant"
+
+// PutApplicationGrantRequest generates a "aws/request.Request" representing the
+// client's request for the PutApplicationGrant operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutApplicationGrant for more information on using the PutApplicationGrant
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutApplicationGrantRequest method.
+//	req, resp := client.PutApplicationGrantRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationGrant
+func (c *SSOAdmin) PutApplicationGrantRequest(input *PutApplicationGrantInput) (req *request.Request, output *PutApplicationGrantOutput) {
+	op := &request.Operation{
+		Name:       opPutApplicationGrant,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutApplicationGrantInput{}
+	}
+
+	output = &PutApplicationGrantOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutApplicationGrant API operation for AWS Single Sign-On Admin.
+//
+// Adds a grant to an application.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation PutApplicationGrant for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutApplicationGrant
+func (c *SSOAdmin) PutApplicationGrant(input *PutApplicationGrantInput) (*PutApplicationGrantOutput, error) {
+	req, out := c.PutApplicationGrantRequest(input)
+	return out, req.Send()
+}
+
+// PutApplicationGrantWithContext is the same as PutApplicationGrant with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutApplicationGrant for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) PutApplicationGrantWithContext(ctx aws.Context, input *PutApplicationGrantInput, opts ...request.Option) (*PutApplicationGrantOutput, error) {
+	req, out := c.PutApplicationGrantRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3163,7 +7457,7 @@ func (c *SSOAdmin) PutInlinePolicyToPermissionSetRequest(input *PutInlinePolicyT
 
 // PutInlinePolicyToPermissionSet API operation for AWS Single Sign-On Admin.
 //
-// Attaches an IAM inline policy to a permission set.
+// Attaches an inline policy to a permission set.
 //
 // If the permission set is already referenced by one or more account assignments,
 // you will need to call ProvisionPermissionSet after this action to apply the
@@ -3178,13 +7472,6 @@ func (c *SSOAdmin) PutInlinePolicyToPermissionSetRequest(input *PutInlinePolicyT
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
-//
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
 //   - ServiceQuotaExceededException
 //     Indicates that the principal has crossed the permitted number of resources
 //     that can be created.
@@ -3193,11 +7480,18 @@ func (c *SSOAdmin) PutInlinePolicyToPermissionSetRequest(input *PutInlinePolicyT
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -3222,6 +7516,107 @@ func (c *SSOAdmin) PutInlinePolicyToPermissionSet(input *PutInlinePolicyToPermis
 // for more information on using Contexts.
 func (c *SSOAdmin) PutInlinePolicyToPermissionSetWithContext(ctx aws.Context, input *PutInlinePolicyToPermissionSetInput, opts ...request.Option) (*PutInlinePolicyToPermissionSetOutput, error) {
 	req, out := c.PutInlinePolicyToPermissionSetRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutPermissionsBoundaryToPermissionSet = "PutPermissionsBoundaryToPermissionSet"
+
+// PutPermissionsBoundaryToPermissionSetRequest generates a "aws/request.Request" representing the
+// client's request for the PutPermissionsBoundaryToPermissionSet operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutPermissionsBoundaryToPermissionSet for more information on using the PutPermissionsBoundaryToPermissionSet
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutPermissionsBoundaryToPermissionSetRequest method.
+//	req, resp := client.PutPermissionsBoundaryToPermissionSetRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutPermissionsBoundaryToPermissionSet
+func (c *SSOAdmin) PutPermissionsBoundaryToPermissionSetRequest(input *PutPermissionsBoundaryToPermissionSetInput) (req *request.Request, output *PutPermissionsBoundaryToPermissionSetOutput) {
+	op := &request.Operation{
+		Name:       opPutPermissionsBoundaryToPermissionSet,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutPermissionsBoundaryToPermissionSetInput{}
+	}
+
+	output = &PutPermissionsBoundaryToPermissionSetOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// PutPermissionsBoundaryToPermissionSet API operation for AWS Single Sign-On Admin.
+//
+// Attaches an Amazon Web Services managed or customer managed policy to the
+// specified PermissionSet as a permissions boundary.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation PutPermissionsBoundaryToPermissionSet for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/PutPermissionsBoundaryToPermissionSet
+func (c *SSOAdmin) PutPermissionsBoundaryToPermissionSet(input *PutPermissionsBoundaryToPermissionSetInput) (*PutPermissionsBoundaryToPermissionSetOutput, error) {
+	req, out := c.PutPermissionsBoundaryToPermissionSetRequest(input)
+	return out, req.Send()
+}
+
+// PutPermissionsBoundaryToPermissionSetWithContext is the same as PutPermissionsBoundaryToPermissionSet with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutPermissionsBoundaryToPermissionSet for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) PutPermissionsBoundaryToPermissionSetWithContext(ctx aws.Context, input *PutPermissionsBoundaryToPermissionSetInput, opts ...request.Option) (*PutPermissionsBoundaryToPermissionSetOutput, error) {
+	req, out := c.PutPermissionsBoundaryToPermissionSetRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3282,13 +7677,6 @@ func (c *SSOAdmin) TagResourceRequest(input *TagResourceInput) (req *request.Req
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
-//
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
 //   - ServiceQuotaExceededException
 //     Indicates that the principal has crossed the permitted number of resources
 //     that can be created.
@@ -3297,11 +7685,18 @@ func (c *SSOAdmin) TagResourceRequest(input *TagResourceInput) (req *request.Req
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -3386,22 +7781,22 @@ func (c *SSOAdmin) UntagResourceRequest(input *UntagResourceInput) (req *request
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -3426,6 +7821,204 @@ func (c *SSOAdmin) UntagResource(input *UntagResourceInput) (*UntagResourceOutpu
 // for more information on using Contexts.
 func (c *SSOAdmin) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateApplication = "UpdateApplication"
+
+// UpdateApplicationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateApplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateApplication for more information on using the UpdateApplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateApplicationRequest method.
+//	req, resp := client.UpdateApplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateApplication
+func (c *SSOAdmin) UpdateApplicationRequest(input *UpdateApplicationInput) (req *request.Request, output *UpdateApplicationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateApplication,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateApplicationInput{}
+	}
+
+	output = &UpdateApplicationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateApplication API operation for AWS Single Sign-On Admin.
+//
+// Updates application properties.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation UpdateApplication for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateApplication
+func (c *SSOAdmin) UpdateApplication(input *UpdateApplicationInput) (*UpdateApplicationOutput, error) {
+	req, out := c.UpdateApplicationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateApplicationWithContext is the same as UpdateApplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateApplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) UpdateApplicationWithContext(ctx aws.Context, input *UpdateApplicationInput, opts ...request.Option) (*UpdateApplicationOutput, error) {
+	req, out := c.UpdateApplicationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateInstance = "UpdateInstance"
+
+// UpdateInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateInstance for more information on using the UpdateInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateInstanceRequest method.
+//	req, resp := client.UpdateInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateInstance
+func (c *SSOAdmin) UpdateInstanceRequest(input *UpdateInstanceInput) (req *request.Request, output *UpdateInstanceOutput) {
+	op := &request.Operation{
+		Name:       opUpdateInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateInstanceInput{}
+	}
+
+	output = &UpdateInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateInstance API operation for AWS Single Sign-On Admin.
+//
+// Update the details for the instance of IAM Identity Center that is owned
+// by the Amazon Web Services account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation UpdateInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateInstance
+func (c *SSOAdmin) UpdateInstance(input *UpdateInstanceInput) (*UpdateInstanceOutput, error) {
+	req, out := c.UpdateInstanceRequest(input)
+	return out, req.Send()
+}
+
+// UpdateInstanceWithContext is the same as UpdateInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) UpdateInstanceWithContext(ctx aws.Context, input *UpdateInstanceInput, opts ...request.Option) (*UpdateInstanceOutput, error) {
+	req, out := c.UpdateInstanceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3475,15 +8068,15 @@ func (c *SSOAdmin) UpdateInstanceAccessControlAttributeConfigurationRequest(inpu
 
 // UpdateInstanceAccessControlAttributeConfiguration API operation for AWS Single Sign-On Admin.
 //
-// Updates the Amazon Web Services SSO identity store attributes that you can
-// use with the Amazon Web Services SSO instance for attributes-based access
-// control (ABAC). When using an external identity provider as an identity source,
-// you can pass attributes through the SAML assertion as an alternative to configuring
-// attributes from the Amazon Web Services SSO identity store. If a SAML assertion
-// passes any of these attributes, Amazon Web Services SSO replaces the attribute
-// value with the value from the Amazon Web Services SSO identity store. For
-// more information about ABAC, see Attribute-Based Access Control (/singlesignon/latest/userguide/abac.html)
-// in the Amazon Web Services SSO User Guide.
+// Updates the IAM Identity Center identity store attributes that you can use
+// with the IAM Identity Center instance for attributes-based access control
+// (ABAC). When using an external identity provider as an identity source, you
+// can pass attributes through the SAML assertion as an alternative to configuring
+// attributes from the IAM Identity Center identity store. If a SAML assertion
+// passes any of these attributes, IAM Identity Center replaces the attribute
+// value with the value from the IAM Identity Center identity store. For more
+// information about ABAC, see Attribute-Based Access Control (/singlesignon/latest/userguide/abac.html)
+// in the IAM Identity Center User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3494,22 +8087,22 @@ func (c *SSOAdmin) UpdateInstanceAccessControlAttributeConfigurationRequest(inpu
 //
 // Returned Error Types:
 //
-//   - InternalServerException
-//     The request processing has failed because of an unknown error, exception,
-//     or failure with an internal server.
-//
-//   - AccessDeniedException
-//     You do not have sufficient access to perform this action.
-//
 //   - ThrottlingException
 //     Indicates that the principal has crossed the throttling limits of the API
 //     operations.
 //
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
 //
 //   - ResourceNotFoundException
 //     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -3594,22 +8187,22 @@ func (c *SSOAdmin) UpdatePermissionSetRequest(input *UpdatePermissionSetInput) (
 //
 // Returned Error Types:
 //
-//   - ResourceNotFoundException
-//     Indicates that a requested resource is not found.
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
 //
 //   - InternalServerException
 //     The request processing has failed because of an unknown error, exception,
 //     or failure with an internal server.
 //
-//   - ThrottlingException
-//     Indicates that the principal has crossed the throttling limits of the API
-//     operations.
-//
-//   - ValidationException
-//     The request failed because it contains a syntax error.
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
 //
 //   - AccessDeniedException
 //     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
 //
 //   - ConflictException
 //     Occurs when a conflict with a previous successful write is detected. This
@@ -3639,18 +8232,122 @@ func (c *SSOAdmin) UpdatePermissionSetWithContext(ctx aws.Context, input *Update
 	return out, req.Send()
 }
 
-// These are Amazon Web Services SSO identity store attributes that you can
-// configure for use in attributes-based access control (ABAC). You can create
-// permissions policies that determine who can access your Amazon Web Services
-// resources based upon the configured attribute values. When you enable ABAC
-// and specify AccessControlAttributes, Amazon Web Services SSO passes the attribute
-// values of the authenticated user into IAM for use in policy evaluation.
+const opUpdateTrustedTokenIssuer = "UpdateTrustedTokenIssuer"
+
+// UpdateTrustedTokenIssuerRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateTrustedTokenIssuer operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateTrustedTokenIssuer for more information on using the UpdateTrustedTokenIssuer
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateTrustedTokenIssuerRequest method.
+//	req, resp := client.UpdateTrustedTokenIssuerRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateTrustedTokenIssuer
+func (c *SSOAdmin) UpdateTrustedTokenIssuerRequest(input *UpdateTrustedTokenIssuerInput) (req *request.Request, output *UpdateTrustedTokenIssuerOutput) {
+	op := &request.Operation{
+		Name:       opUpdateTrustedTokenIssuer,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateTrustedTokenIssuerInput{}
+	}
+
+	output = &UpdateTrustedTokenIssuerOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UpdateTrustedTokenIssuer API operation for AWS Single Sign-On Admin.
+//
+// Updates the name of the trusted token issuer, or the path of a source attribute
+// or destination attribute for a trusted token issuer configuration.
+//
+// Updating this trusted token issuer configuration might cause users to lose
+// access to any applications that are configured to use the trusted token issuer.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Single Sign-On Admin's
+// API operation UpdateTrustedTokenIssuer for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Indicates that the principal has crossed the throttling limits of the API
+//     operations.
+//
+//   - InternalServerException
+//     The request processing has failed because of an unknown error, exception,
+//     or failure with an internal server.
+//
+//   - ResourceNotFoundException
+//     Indicates that a requested resource is not found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ValidationException
+//     The request failed because it contains a syntax error.
+//
+//   - ConflictException
+//     Occurs when a conflict with a previous successful write is detected. This
+//     generally occurs when the previous write did not have time to propagate to
+//     the host serving the current request. A retry (with appropriate backoff logic)
+//     is the recommended response to this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sso-admin-2020-07-20/UpdateTrustedTokenIssuer
+func (c *SSOAdmin) UpdateTrustedTokenIssuer(input *UpdateTrustedTokenIssuerInput) (*UpdateTrustedTokenIssuerOutput, error) {
+	req, out := c.UpdateTrustedTokenIssuerRequest(input)
+	return out, req.Send()
+}
+
+// UpdateTrustedTokenIssuerWithContext is the same as UpdateTrustedTokenIssuer with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateTrustedTokenIssuer for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SSOAdmin) UpdateTrustedTokenIssuerWithContext(ctx aws.Context, input *UpdateTrustedTokenIssuerInput, opts ...request.Option) (*UpdateTrustedTokenIssuerOutput, error) {
+	req, out := c.UpdateTrustedTokenIssuerRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// These are IAM Identity Center identity store attributes that you can configure
+// for use in attributes-based access control (ABAC). You can create permissions
+// policies that determine who can access your Amazon Web Services resources
+// based upon the configured attribute values. When you enable ABAC and specify
+// AccessControlAttributes, IAM Identity Center passes the attribute values
+// of the authenticated user into IAM for use in policy evaluation.
 type AccessControlAttribute struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the attribute associated with your identities in your identity
 	// source. This is used to map a specified attribute in your identity source
-	// with an attribute in Amazon Web Services SSO.
+	// with an attribute in IAM Identity Center.
 	//
 	// Key is a required field
 	Key *string `min:"1" type:"string" required:"true"`
@@ -3715,12 +8412,14 @@ func (s *AccessControlAttribute) SetValue(v *AccessControlAttributeValue) *Acces
 	return s
 }
 
-// The value used for mapping a specified attribute to an identity source.
+// The value used for mapping a specified attribute to an identity source. For
+// more information, see Attribute mappings (https://docs.aws.amazon.com/singlesignon/latest/userguide/attributemappingsconcept.html)
+// in the IAM Identity Center User Guide.
 type AccessControlAttributeValue struct {
 	_ struct{} `type:"structure"`
 
-	// The identity source to use when mapping a specified attribute to Amazon Web
-	// Services SSO.
+	// The identity source to use when mapping a specified attribute to IAM Identity
+	// Center.
 	//
 	// Source is a required field
 	Source []*string `min:"1" type:"list" required:"true"`
@@ -3833,23 +8532,23 @@ func (s *AccessDeniedException) RequestID() string {
 // The assignment that indicates a principal's limited access to a specified
 // Amazon Web Services account with a specified permission set.
 //
-// The term principal here refers to a user or group that is defined in Amazon
-// Web Services SSO.
+// The term principal here refers to a user or group that is defined in IAM
+// Identity Center.
 type AccountAssignment struct {
 	_ struct{} `type:"structure"`
 
 	// The identifier of the Amazon Web Services account.
-	AccountId *string `type:"string"`
+	AccountId *string `min:"12" type:"string"`
 
 	// The ARN of the permission set. For more information about ARNs, see Amazon
 	// Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	PermissionSetArn *string `min:"10" type:"string"`
 
-	// An identifier for an object in Amazon Web Services SSO, such as a user or
-	// group. PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
-	// For more information about PrincipalIds in Amazon Web Services SSO, see the
-	// Amazon Web Services SSO Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
 	PrincipalId *string `min:"1" type:"string"`
 
 	// The entity type for which the assignment will be created.
@@ -3898,6 +8597,67 @@ func (s *AccountAssignment) SetPrincipalType(v string) *AccountAssignment {
 	return s
 }
 
+// A structure that describes an assignment of an Amazon Web Services account
+// to a principal and the permissions that principal has in the account.
+type AccountAssignmentForPrincipal struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID number of the Amazon Web Services account.
+	AccountId *string `min:"12" type:"string"`
+
+	// The ARN of the IAM Identity Center permission set assigned to this principal
+	// for this Amazon Web Services account.
+	PermissionSetArn *string `min:"10" type:"string"`
+
+	// The ID of the principal.
+	PrincipalId *string `min:"1" type:"string"`
+
+	// The type of the principal.
+	PrincipalType *string `type:"string" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccountAssignmentForPrincipal) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccountAssignmentForPrincipal) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *AccountAssignmentForPrincipal) SetAccountId(v string) *AccountAssignmentForPrincipal {
+	s.AccountId = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *AccountAssignmentForPrincipal) SetPermissionSetArn(v string) *AccountAssignmentForPrincipal {
+	s.PermissionSetArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *AccountAssignmentForPrincipal) SetPrincipalId(v string) *AccountAssignmentForPrincipal {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *AccountAssignmentForPrincipal) SetPrincipalType(v string) *AccountAssignmentForPrincipal {
+	s.PrincipalType = &v
+	return s
+}
+
 // The status of the creation or deletion operation of an assignment that a
 // principal needs to access an account.
 type AccountAssignmentOperationStatus struct {
@@ -3914,10 +8674,10 @@ type AccountAssignmentOperationStatus struct {
 	// in the Amazon Web Services General Reference.
 	PermissionSetArn *string `min:"10" type:"string"`
 
-	// An identifier for an object in Amazon Web Services SSO, such as a user or
-	// group. PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
-	// For more information about PrincipalIds in Amazon Web Services SSO, see the
-	// Amazon Web Services SSO Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
 	PrincipalId *string `min:"1" type:"string"`
 
 	// The entity type for which the assignment will be created.
@@ -3925,14 +8685,13 @@ type AccountAssignmentOperationStatus struct {
 
 	// The identifier for tracking the request operation that is generated by the
 	// universally unique identifier (UUID) workflow.
-	RequestId *string `type:"string"`
+	RequestId *string `min:"36" type:"string"`
 
 	// The status of the permission set provisioning process.
 	Status *string `type:"string" enum:"StatusValues"`
 
-	// TargetID is an Amazon Web Services account identifier, typically a 10-12
-	// digit string (For example, 123456789012).
-	TargetId *string `type:"string"`
+	// TargetID is an Amazon Web Services account identifier, (For example, 123456789012).
+	TargetId *string `min:"12" type:"string"`
 
 	// The entity type for which the assignment will be created.
 	TargetType *string `type:"string" enum:"TargetType"`
@@ -4019,7 +8778,7 @@ type AccountAssignmentOperationStatusMetadata struct {
 
 	// The identifier for tracking the request operation that is generated by the
 	// universally unique identifier (UUID) workflow.
-	RequestId *string `type:"string"`
+	RequestId *string `min:"36" type:"string"`
 
 	// The status of the permission set provisioning process.
 	Status *string `type:"string" enum:"StatusValues"`
@@ -4061,18 +8820,406 @@ func (s *AccountAssignmentOperationStatusMetadata) SetStatus(v string) *AccountA
 	return s
 }
 
+// A structure that describes an application that uses IAM Identity Center for
+// access management.
+type Application struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services account ID number of the application.
+	ApplicationAccount *string `min:"12" type:"string"`
+
+	// The ARN of the application.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The ARN of the application provider for this application.
+	ApplicationProviderArn *string `min:"10" type:"string"`
+
+	// The date and time when the application was originally created.
+	CreatedDate *time.Time `type:"timestamp"`
+
+	// The description of the application.
+	Description *string `min:"1" type:"string"`
+
+	// The ARN of the instance of IAM Identity Center that is configured with this
+	// application.
+	InstanceArn *string `min:"10" type:"string"`
+
+	// The name of the application.
+	Name *string `type:"string"`
+
+	// A structure that describes the options for the access portal associated with
+	// this application.
+	PortalOptions *PortalOptions `type:"structure"`
+
+	// The current status of the application in this instance of IAM Identity Center.
+	Status *string `type:"string" enum:"ApplicationStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Application) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Application) GoString() string {
+	return s.String()
+}
+
+// SetApplicationAccount sets the ApplicationAccount field's value.
+func (s *Application) SetApplicationAccount(v string) *Application {
+	s.ApplicationAccount = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *Application) SetApplicationArn(v string) *Application {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetApplicationProviderArn sets the ApplicationProviderArn field's value.
+func (s *Application) SetApplicationProviderArn(v string) *Application {
+	s.ApplicationProviderArn = &v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *Application) SetCreatedDate(v time.Time) *Application {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Application) SetDescription(v string) *Application {
+	s.Description = &v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *Application) SetInstanceArn(v string) *Application {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Application) SetName(v string) *Application {
+	s.Name = &v
+	return s
+}
+
+// SetPortalOptions sets the PortalOptions field's value.
+func (s *Application) SetPortalOptions(v *PortalOptions) *Application {
+	s.PortalOptions = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Application) SetStatus(v string) *Application {
+	s.Status = &v
+	return s
+}
+
+// A structure that describes an assignment of a principal to an application.
+type ApplicationAssignment struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the application that has principals assigned.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// The unique identifier of the principal assigned to the application.
+	//
+	// PrincipalId is a required field
+	PrincipalId *string `min:"1" type:"string" required:"true"`
+
+	// The type of the principal assigned to the application.
+	//
+	// PrincipalType is a required field
+	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationAssignment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationAssignment) GoString() string {
+	return s.String()
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ApplicationAssignment) SetApplicationArn(v string) *ApplicationAssignment {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *ApplicationAssignment) SetPrincipalId(v string) *ApplicationAssignment {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *ApplicationAssignment) SetPrincipalType(v string) *ApplicationAssignment {
+	s.PrincipalType = &v
+	return s
+}
+
+// A structure that describes an application to which a principal is assigned.
+type ApplicationAssignmentForPrincipal struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the application to which the specified principal is assigned.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The unique identifier of the principal assigned to the application.
+	PrincipalId *string `min:"1" type:"string"`
+
+	// The type of the principal assigned to the application.
+	PrincipalType *string `type:"string" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationAssignmentForPrincipal) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationAssignmentForPrincipal) GoString() string {
+	return s.String()
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ApplicationAssignmentForPrincipal) SetApplicationArn(v string) *ApplicationAssignmentForPrincipal {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *ApplicationAssignmentForPrincipal) SetPrincipalId(v string) *ApplicationAssignmentForPrincipal {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *ApplicationAssignmentForPrincipal) SetPrincipalType(v string) *ApplicationAssignmentForPrincipal {
+	s.PrincipalType = &v
+	return s
+}
+
+// A structure that describes a provider that can be used to connect an Amazon
+// Web Services managed application or customer managed application to IAM Identity
+// Center.
+type ApplicationProvider struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the application provider.
+	//
+	// ApplicationProviderArn is a required field
+	ApplicationProviderArn *string `min:"10" type:"string" required:"true"`
+
+	// A structure that describes how IAM Identity Center represents the application
+	// provider in the portal.
+	DisplayData *DisplayData `type:"structure"`
+
+	// The protocol that the application provider uses to perform federation.
+	FederationProtocol *string `type:"string" enum:"FederationProtocol"`
+
+	// A structure that describes the application provider's resource server.
+	ResourceServerConfig *ResourceServerConfig `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationProvider) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationProvider) GoString() string {
+	return s.String()
+}
+
+// SetApplicationProviderArn sets the ApplicationProviderArn field's value.
+func (s *ApplicationProvider) SetApplicationProviderArn(v string) *ApplicationProvider {
+	s.ApplicationProviderArn = &v
+	return s
+}
+
+// SetDisplayData sets the DisplayData field's value.
+func (s *ApplicationProvider) SetDisplayData(v *DisplayData) *ApplicationProvider {
+	s.DisplayData = v
+	return s
+}
+
+// SetFederationProtocol sets the FederationProtocol field's value.
+func (s *ApplicationProvider) SetFederationProtocol(v string) *ApplicationProvider {
+	s.FederationProtocol = &v
+	return s
+}
+
+// SetResourceServerConfig sets the ResourceServerConfig field's value.
+func (s *ApplicationProvider) SetResourceServerConfig(v *ResourceServerConfig) *ApplicationProvider {
+	s.ResourceServerConfig = v
+	return s
+}
+
+type AttachCustomerManagedPolicyReferenceToPermissionSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the name and path of a customer managed policy. You must have an
+	// IAM policy that matches the name and path in each Amazon Web Services account
+	// where you want to deploy your permission set.
+	//
+	// CustomerManagedPolicyReference is a required field
+	CustomerManagedPolicyReference *CustomerManagedPolicyReference `type:"structure" required:"true"`
+
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The ARN of the PermissionSet.
+	//
+	// PermissionSetArn is a required field
+	PermissionSetArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachCustomerManagedPolicyReferenceToPermissionSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachCustomerManagedPolicyReferenceToPermissionSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AttachCustomerManagedPolicyReferenceToPermissionSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AttachCustomerManagedPolicyReferenceToPermissionSetInput"}
+	if s.CustomerManagedPolicyReference == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomerManagedPolicyReference"))
+	}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.PermissionSetArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionSetArn"))
+	}
+	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+	if s.CustomerManagedPolicyReference != nil {
+		if err := s.CustomerManagedPolicyReference.Validate(); err != nil {
+			invalidParams.AddNested("CustomerManagedPolicyReference", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCustomerManagedPolicyReference sets the CustomerManagedPolicyReference field's value.
+func (s *AttachCustomerManagedPolicyReferenceToPermissionSetInput) SetCustomerManagedPolicyReference(v *CustomerManagedPolicyReference) *AttachCustomerManagedPolicyReferenceToPermissionSetInput {
+	s.CustomerManagedPolicyReference = v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *AttachCustomerManagedPolicyReferenceToPermissionSetInput) SetInstanceArn(v string) *AttachCustomerManagedPolicyReferenceToPermissionSetInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *AttachCustomerManagedPolicyReferenceToPermissionSetInput) SetPermissionSetArn(v string) *AttachCustomerManagedPolicyReferenceToPermissionSetInput {
+	s.PermissionSetArn = &v
+	return s
+}
+
+type AttachCustomerManagedPolicyReferenceToPermissionSetOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachCustomerManagedPolicyReferenceToPermissionSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AttachCustomerManagedPolicyReferenceToPermissionSetOutput) GoString() string {
+	return s.String()
+}
+
 type AttachManagedPolicyToPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
 	InstanceArn *string `min:"10" type:"string" required:"true"`
 
-	// The IAM managed policy ARN to be attached to a permission set.
+	// The Amazon Web Services managed policy ARN to be attached to a permission
+	// set.
 	//
 	// ManagedPolicyArn is a required field
 	ManagedPolicyArn *string `min:"20" type:"string" required:"true"`
@@ -4169,16 +9316,17 @@ func (s AttachManagedPolicyToPermissionSetOutput) GoString() string {
 	return s.String()
 }
 
-// A structure that stores the details of the IAM managed policy.
+// A structure that stores the details of the Amazon Web Services managed policy.
 type AttachedManagedPolicy struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the IAM managed policy. For more information about ARNs, see Amazon
-	// Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
-	// in the Amazon Web Services General Reference.
+	// The ARN of the Amazon Web Services managed policy. For more information about
+	// ARNs, see Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces
+	// (/general/latest/gr/aws-arns-and-namespaces.html) in the Amazon Web Services
+	// General Reference.
 	Arn *string `min:"20" type:"string"`
 
-	// The name of the IAM managed policy.
+	// The name of the Amazon Web Services managed policy.
 	Name *string `min:"1" type:"string"`
 }
 
@@ -4209,6 +9357,178 @@ func (s *AttachedManagedPolicy) SetArn(v string) *AttachedManagedPolicy {
 // SetName sets the Name field's value.
 func (s *AttachedManagedPolicy) SetName(v string) *AttachedManagedPolicy {
 	s.Name = &v
+	return s
+}
+
+// A structure that describes an authentication method that can be used by an
+// application.
+type AuthenticationMethod struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthenticationMethod) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthenticationMethod) GoString() string {
+	return s.String()
+}
+
+// A structure that describes an authentication method and its type.
+type AuthenticationMethodItem struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that describes an authentication method. The contents of this
+	// structure is determined by the AuthenticationMethodType.
+	AuthenticationMethod *AuthenticationMethod `type:"structure"`
+
+	// The type of authentication that is used by this method.
+	AuthenticationMethodType *string `type:"string" enum:"AuthenticationMethodType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthenticationMethodItem) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthenticationMethodItem) GoString() string {
+	return s.String()
+}
+
+// SetAuthenticationMethod sets the AuthenticationMethod field's value.
+func (s *AuthenticationMethodItem) SetAuthenticationMethod(v *AuthenticationMethod) *AuthenticationMethodItem {
+	s.AuthenticationMethod = v
+	return s
+}
+
+// SetAuthenticationMethodType sets the AuthenticationMethodType field's value.
+func (s *AuthenticationMethodItem) SetAuthenticationMethodType(v string) *AuthenticationMethodItem {
+	s.AuthenticationMethodType = &v
+	return s
+}
+
+// A structure that defines configuration settings for an application that supports
+// the OAuth 2.0 Authorization Code Grant.
+type AuthorizationCodeGrant struct {
+	_ struct{} `type:"structure"`
+
+	// A list of URIs that are valid locations to redirect a user's browser after
+	// the user is authorized.
+	RedirectUris []*string `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizationCodeGrant) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizationCodeGrant) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AuthorizationCodeGrant) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AuthorizationCodeGrant"}
+	if s.RedirectUris != nil && len(s.RedirectUris) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RedirectUris", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRedirectUris sets the RedirectUris field's value.
+func (s *AuthorizationCodeGrant) SetRedirectUris(v []*string) *AuthorizationCodeGrant {
+	s.RedirectUris = v
+	return s
+}
+
+// A structure that describes a trusted token issuer and associates it with
+// a set of authorized audiences.
+type AuthorizedTokenIssuer struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of authorized audiences, or applications, that can consume
+	// the tokens generated by the associated trusted token issuer.
+	AuthorizedAudiences []*string `min:"1" type:"list"`
+
+	// The ARN of the trusted token issuer.
+	TrustedTokenIssuerArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedTokenIssuer) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedTokenIssuer) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AuthorizedTokenIssuer) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AuthorizedTokenIssuer"}
+	if s.AuthorizedAudiences != nil && len(s.AuthorizedAudiences) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizedAudiences", 1))
+	}
+	if s.TrustedTokenIssuerArn != nil && len(*s.TrustedTokenIssuerArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TrustedTokenIssuerArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthorizedAudiences sets the AuthorizedAudiences field's value.
+func (s *AuthorizedTokenIssuer) SetAuthorizedAudiences(v []*string) *AuthorizedTokenIssuer {
+	s.AuthorizedAudiences = v
+	return s
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *AuthorizedTokenIssuer) SetTrustedTokenIssuerArn(v string) *AuthorizedTokenIssuer {
+	s.TrustedTokenIssuerArn = &v
 	return s
 }
 
@@ -4282,9 +9602,9 @@ func (s *ConflictException) RequestID() string {
 type CreateAccountAssignmentInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -4296,10 +9616,10 @@ type CreateAccountAssignmentInput struct {
 	// PermissionSetArn is a required field
 	PermissionSetArn *string `min:"10" type:"string" required:"true"`
 
-	// An identifier for an object in Amazon Web Services SSO, such as a user or
-	// group. PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
-	// For more information about PrincipalIds in Amazon Web Services SSO, see the
-	// Amazon Web Services SSO Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
 	//
 	// PrincipalId is a required field
 	PrincipalId *string `min:"1" type:"string" required:"true"`
@@ -4309,11 +9629,10 @@ type CreateAccountAssignmentInput struct {
 	// PrincipalType is a required field
 	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
 
-	// TargetID is an Amazon Web Services account identifier, typically a 10-12
-	// digit string (For example, 123456789012).
+	// TargetID is an Amazon Web Services account identifier, (For example, 123456789012).
 	//
 	// TargetId is a required field
-	TargetId *string `type:"string" required:"true"`
+	TargetId *string `min:"12" type:"string" required:"true"`
 
 	// The entity type for which the assignment will be created.
 	//
@@ -4365,6 +9684,9 @@ func (s *CreateAccountAssignmentInput) Validate() error {
 	}
 	if s.TargetId == nil {
 		invalidParams.Add(request.NewErrParamRequired("TargetId"))
+	}
+	if s.TargetId != nil && len(*s.TargetId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("TargetId", 12))
 	}
 	if s.TargetType == nil {
 		invalidParams.Add(request.NewErrParamRequired("TargetType"))
@@ -4443,21 +9765,318 @@ func (s *CreateAccountAssignmentOutput) SetAccountAssignmentCreationStatus(v *Ac
 	return s
 }
 
+type CreateApplicationAssignmentInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the application provider under which the operation will run.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	//
+	// PrincipalId is a required field
+	PrincipalId *string `min:"1" type:"string" required:"true"`
+
+	// The entity type for which the assignment will be created.
+	//
+	// PrincipalType is a required field
+	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationAssignmentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationAssignmentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateApplicationAssignmentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateApplicationAssignmentInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.PrincipalId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalId"))
+	}
+	if s.PrincipalId != nil && len(*s.PrincipalId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PrincipalId", 1))
+	}
+	if s.PrincipalType == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *CreateApplicationAssignmentInput) SetApplicationArn(v string) *CreateApplicationAssignmentInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *CreateApplicationAssignmentInput) SetPrincipalId(v string) *CreateApplicationAssignmentInput {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *CreateApplicationAssignmentInput) SetPrincipalType(v string) *CreateApplicationAssignmentInput {
+	s.PrincipalType = &v
+	return s
+}
+
+type CreateApplicationAssignmentOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationAssignmentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationAssignmentOutput) GoString() string {
+	return s.String()
+}
+
+type CreateApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the application provider under which the operation will run.
+	//
+	// ApplicationProviderArn is a required field
+	ApplicationProviderArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies a unique, case-sensitive ID that you provide to ensure the idempotency
+	// of the request. This lets you safely retry the request without accidentally
+	// performing the same operation a second time. Passing the same value to a
+	// later call to an operation requires that you also pass the same value for
+	// all other parameters. We recommend that you use a UUID type of value (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// The description of the .
+	Description *string `min:"1" type:"string"`
+
+	// The ARN of the instance of IAM Identity Center under which the operation
+	// will run. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The name of the .
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+
+	// A structure that describes the options for the portal associated with an
+	// application.
+	PortalOptions *PortalOptions `type:"structure"`
+
+	// Specifies whether the application is enabled or disabled.
+	Status *string `type:"string" enum:"ApplicationStatus"`
+
+	// Specifies tags to be attached to the application.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateApplicationInput"}
+	if s.ApplicationProviderArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationProviderArn"))
+	}
+	if s.ApplicationProviderArn != nil && len(*s.ApplicationProviderArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationProviderArn", 10))
+	}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.PortalOptions != nil {
+		if err := s.PortalOptions.Validate(); err != nil {
+			invalidParams.AddNested("PortalOptions", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationProviderArn sets the ApplicationProviderArn field's value.
+func (s *CreateApplicationInput) SetApplicationProviderArn(v string) *CreateApplicationInput {
+	s.ApplicationProviderArn = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateApplicationInput) SetClientToken(v string) *CreateApplicationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateApplicationInput) SetDescription(v string) *CreateApplicationInput {
+	s.Description = &v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *CreateApplicationInput) SetInstanceArn(v string) *CreateApplicationInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateApplicationInput) SetName(v string) *CreateApplicationInput {
+	s.Name = &v
+	return s
+}
+
+// SetPortalOptions sets the PortalOptions field's value.
+func (s *CreateApplicationInput) SetPortalOptions(v *PortalOptions) *CreateApplicationInput {
+	s.PortalOptions = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CreateApplicationInput) SetStatus(v string) *CreateApplicationInput {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateApplicationInput) SetTags(v []*Tag) *CreateApplicationInput {
+	s.Tags = v
+	return s
+}
+
+type CreateApplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application.
+	ApplicationArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *CreateApplicationOutput) SetApplicationArn(v string) *CreateApplicationOutput {
+	s.ApplicationArn = &v
+	return s
+}
+
 type CreateInstanceAccessControlAttributeConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the Amazon Web Services SSO identity store attributes to add to
-	// your ABAC configuration. When using an external identity provider as an identity
+	// Specifies the IAM Identity Center identity store attributes to add to your
+	// ABAC configuration. When using an external identity provider as an identity
 	// source, you can pass attributes through the SAML assertion. Doing so provides
-	// an alternative to configuring attributes from the Amazon Web Services SSO
-	// identity store. If a SAML assertion passes any of these attributes, Amazon
-	// Web Services SSO will replace the attribute value with the value from the
-	// Amazon Web Services SSO identity store.
+	// an alternative to configuring attributes from the IAM Identity Center identity
+	// store. If a SAML assertion passes any of these attributes, IAM Identity Center
+	// will replace the attribute value with the value from the IAM Identity Center
+	// identity store.
 	//
 	// InstanceAccessControlAttributeConfiguration is a required field
 	InstanceAccessControlAttributeConfiguration *InstanceAccessControlAttributeConfiguration `type:"structure" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed.
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
 	//
 	// InstanceArn is a required field
 	InstanceArn *string `min:"10" type:"string" required:"true"`
@@ -4539,15 +10158,133 @@ func (s CreateInstanceAccessControlAttributeConfigurationOutput) GoString() stri
 	return s.String()
 }
 
+type CreateInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive ID that you provide to ensure the idempotency
+	// of the request. This lets you safely retry the request without accidentally
+	// performing the same operation a second time. Passing the same value to a
+	// later call to an operation requires that you also pass the same value for
+	// all other parameters. We recommend that you use a UUID type of value (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// The name of the instance of IAM Identity Center.
+	Name *string `type:"string"`
+
+	// Specifies tags to be attached to the instance of IAM Identity Center.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateInstanceInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateInstanceInput) SetClientToken(v string) *CreateInstanceInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateInstanceInput) SetName(v string) *CreateInstanceInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateInstanceInput) SetTags(v []*Tag) *CreateInstanceInput {
+	s.Tags = v
+	return s
+}
+
+type CreateInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the instance of IAM Identity Center under which the operation
+	// will run.
+	//
+	// For more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
+	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	InstanceArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *CreateInstanceOutput) SetInstanceArn(v string) *CreateInstanceOutput {
+	s.InstanceArn = &v
+	return s
+}
+
 type CreatePermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
 	// The description of the PermissionSet.
 	Description *string `min:"1" type:"string"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -4696,12 +10433,254 @@ func (s *CreatePermissionSetOutput) SetPermissionSet(v *PermissionSet) *CreatePe
 	return s
 }
 
+type CreateTrustedTokenIssuerInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive ID that you provide to ensure the idempotency
+	// of the request. This lets you safely retry the request without accidentally
+	// performing the same operation a second time. Passing the same value to a
+	// later call to an operation requires that you also pass the same value for
+	// all other parameters. We recommend that you use a UUID type of value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// Specifies the ARN of the instance of IAM Identity Center to contain the new
+	// trusted token issuer configuration.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the name of the new trusted token issuer configuration.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Specifies tags to be attached to the new trusted token issuer configuration.
+	Tags []*Tag `type:"list"`
+
+	// Specifies settings that apply to the new trusted token issuer configuration.
+	// The settings that are available depend on what TrustedTokenIssuerType you
+	// specify.
+	//
+	// TrustedTokenIssuerConfiguration is a required field
+	TrustedTokenIssuerConfiguration *TrustedTokenIssuerConfiguration `type:"structure" required:"true"`
+
+	// Specifies the type of the new trusted token issuer.
+	//
+	// TrustedTokenIssuerType is a required field
+	TrustedTokenIssuerType *string `type:"string" required:"true" enum:"TrustedTokenIssuerType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustedTokenIssuerInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustedTokenIssuerInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateTrustedTokenIssuerInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateTrustedTokenIssuerInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.TrustedTokenIssuerConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustedTokenIssuerConfiguration"))
+	}
+	if s.TrustedTokenIssuerType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustedTokenIssuerType"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.TrustedTokenIssuerConfiguration != nil {
+		if err := s.TrustedTokenIssuerConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("TrustedTokenIssuerConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateTrustedTokenIssuerInput) SetClientToken(v string) *CreateTrustedTokenIssuerInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *CreateTrustedTokenIssuerInput) SetInstanceArn(v string) *CreateTrustedTokenIssuerInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateTrustedTokenIssuerInput) SetName(v string) *CreateTrustedTokenIssuerInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateTrustedTokenIssuerInput) SetTags(v []*Tag) *CreateTrustedTokenIssuerInput {
+	s.Tags = v
+	return s
+}
+
+// SetTrustedTokenIssuerConfiguration sets the TrustedTokenIssuerConfiguration field's value.
+func (s *CreateTrustedTokenIssuerInput) SetTrustedTokenIssuerConfiguration(v *TrustedTokenIssuerConfiguration) *CreateTrustedTokenIssuerInput {
+	s.TrustedTokenIssuerConfiguration = v
+	return s
+}
+
+// SetTrustedTokenIssuerType sets the TrustedTokenIssuerType field's value.
+func (s *CreateTrustedTokenIssuerInput) SetTrustedTokenIssuerType(v string) *CreateTrustedTokenIssuerInput {
+	s.TrustedTokenIssuerType = &v
+	return s
+}
+
+type CreateTrustedTokenIssuerOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the new trusted token issuer configuration.
+	TrustedTokenIssuerArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustedTokenIssuerOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTrustedTokenIssuerOutput) GoString() string {
+	return s.String()
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *CreateTrustedTokenIssuerOutput) SetTrustedTokenIssuerArn(v string) *CreateTrustedTokenIssuerOutput {
+	s.TrustedTokenIssuerArn = &v
+	return s
+}
+
+// Specifies the name and path of a customer managed policy. You must have an
+// IAM policy that matches the name and path in each Amazon Web Services account
+// where you want to deploy your permission set.
+type CustomerManagedPolicyReference struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the IAM policy that you have configured in each account where
+	// you want to deploy your permission set.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// The path to the IAM policy that you have configured in each account where
+	// you want to deploy your permission set. The default is /. For more information,
+	// see Friendly names and paths (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_identifiers.html#identifiers-friendly-names)
+	// in the IAM User Guide.
+	Path *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CustomerManagedPolicyReference) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CustomerManagedPolicyReference) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CustomerManagedPolicyReference) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CustomerManagedPolicyReference"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Path != nil && len(*s.Path) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Path", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *CustomerManagedPolicyReference) SetName(v string) *CustomerManagedPolicyReference {
+	s.Name = &v
+	return s
+}
+
+// SetPath sets the Path field's value.
+func (s *CustomerManagedPolicyReference) SetPath(v string) *CustomerManagedPolicyReference {
+	s.Path = &v
+	return s
+}
+
 type DeleteAccountAssignmentInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -4712,10 +10691,10 @@ type DeleteAccountAssignmentInput struct {
 	// PermissionSetArn is a required field
 	PermissionSetArn *string `min:"10" type:"string" required:"true"`
 
-	// An identifier for an object in Amazon Web Services SSO, such as a user or
-	// group. PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
-	// For more information about PrincipalIds in Amazon Web Services SSO, see the
-	// Amazon Web Services SSO Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
 	//
 	// PrincipalId is a required field
 	PrincipalId *string `min:"1" type:"string" required:"true"`
@@ -4725,11 +10704,10 @@ type DeleteAccountAssignmentInput struct {
 	// PrincipalType is a required field
 	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
 
-	// TargetID is an Amazon Web Services account identifier, typically a 10-12
-	// digit string (For example, 123456789012).
+	// TargetID is an Amazon Web Services account identifier, (For example, 123456789012).
 	//
 	// TargetId is a required field
-	TargetId *string `type:"string" required:"true"`
+	TargetId *string `min:"12" type:"string" required:"true"`
 
 	// The entity type for which the assignment will be deleted.
 	//
@@ -4781,6 +10759,9 @@ func (s *DeleteAccountAssignmentInput) Validate() error {
 	}
 	if s.TargetId == nil {
 		invalidParams.Add(request.NewErrParamRequired("TargetId"))
+	}
+	if s.TargetId != nil && len(*s.TargetId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("TargetId", 12))
 	}
 	if s.TargetType == nil {
 		invalidParams.Add(request.NewErrParamRequired("TargetType"))
@@ -4859,12 +10840,445 @@ func (s *DeleteAccountAssignmentOutput) SetAccountAssignmentDeletionStatus(v *Ac
 	return s
 }
 
+type DeleteApplicationAccessScopeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the access scope to delete.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the name of the access scope to remove from the application.
+	//
+	// Scope is a required field
+	Scope *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAccessScopeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAccessScopeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteApplicationAccessScopeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteApplicationAccessScopeInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.Scope == nil {
+		invalidParams.Add(request.NewErrParamRequired("Scope"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DeleteApplicationAccessScopeInput) SetApplicationArn(v string) *DeleteApplicationAccessScopeInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *DeleteApplicationAccessScopeInput) SetScope(v string) *DeleteApplicationAccessScopeInput {
+	s.Scope = &v
+	return s
+}
+
+type DeleteApplicationAccessScopeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAccessScopeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAccessScopeOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteApplicationAssignmentInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	//
+	// PrincipalId is a required field
+	PrincipalId *string `min:"1" type:"string" required:"true"`
+
+	// The entity type for which the assignment will be deleted.
+	//
+	// PrincipalType is a required field
+	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAssignmentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAssignmentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteApplicationAssignmentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteApplicationAssignmentInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.PrincipalId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalId"))
+	}
+	if s.PrincipalId != nil && len(*s.PrincipalId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PrincipalId", 1))
+	}
+	if s.PrincipalType == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DeleteApplicationAssignmentInput) SetApplicationArn(v string) *DeleteApplicationAssignmentInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *DeleteApplicationAssignmentInput) SetPrincipalId(v string) *DeleteApplicationAssignmentInput {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *DeleteApplicationAssignmentInput) SetPrincipalType(v string) *DeleteApplicationAssignmentInput {
+	s.PrincipalType = &v
+	return s
+}
+
+type DeleteApplicationAssignmentOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAssignmentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAssignmentOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteApplicationAuthenticationMethodInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the authentication method to delete.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the authentication method type to delete from the application.
+	//
+	// AuthenticationMethodType is a required field
+	AuthenticationMethodType *string `type:"string" required:"true" enum:"AuthenticationMethodType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAuthenticationMethodInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAuthenticationMethodInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteApplicationAuthenticationMethodInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteApplicationAuthenticationMethodInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.AuthenticationMethodType == nil {
+		invalidParams.Add(request.NewErrParamRequired("AuthenticationMethodType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DeleteApplicationAuthenticationMethodInput) SetApplicationArn(v string) *DeleteApplicationAuthenticationMethodInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetAuthenticationMethodType sets the AuthenticationMethodType field's value.
+func (s *DeleteApplicationAuthenticationMethodInput) SetAuthenticationMethodType(v string) *DeleteApplicationAuthenticationMethodInput {
+	s.AuthenticationMethodType = &v
+	return s
+}
+
+type DeleteApplicationAuthenticationMethodOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAuthenticationMethodOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationAuthenticationMethodOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteApplicationGrantInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the grant to delete.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the type of grant to delete from the application.
+	//
+	// GrantType is a required field
+	GrantType *string `type:"string" required:"true" enum:"GrantType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationGrantInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationGrantInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteApplicationGrantInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteApplicationGrantInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.GrantType == nil {
+		invalidParams.Add(request.NewErrParamRequired("GrantType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DeleteApplicationGrantInput) SetApplicationArn(v string) *DeleteApplicationGrantInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetGrantType sets the GrantType field's value.
+func (s *DeleteApplicationGrantInput) SetGrantType(v string) *DeleteApplicationGrantInput {
+	s.GrantType = &v
+	return s
+}
+
+type DeleteApplicationGrantOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationGrantOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationGrantOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteApplicationInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DeleteApplicationInput) SetApplicationArn(v string) *DeleteApplicationInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+type DeleteApplicationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteApplicationOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteInlinePolicyFromPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -4953,7 +11367,8 @@ func (s DeleteInlinePolicyFromPermissionSetOutput) GoString() string {
 type DeleteInstanceAccessControlAttributeConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed.
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
 	//
 	// InstanceArn is a required field
 	InstanceArn *string `min:"10" type:"string" required:"true"`
@@ -5021,12 +11436,84 @@ func (s DeleteInstanceAccessControlAttributeConfigurationOutput) GoString() stri
 	return s.String()
 }
 
+type DeleteInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the instance of IAM Identity Center under which the operation
+	// will run.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteInstanceInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *DeleteInstanceInput) SetInstanceArn(v string) *DeleteInstanceInput {
+	s.InstanceArn = &v
+	return s
+}
+
+type DeleteInstanceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteInstanceOutput) GoString() string {
+	return s.String()
+}
+
 type DeletePermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -5112,17 +11599,177 @@ func (s DeletePermissionSetOutput) GoString() string {
 	return s.String()
 }
 
+type DeletePermissionsBoundaryFromPermissionSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The ARN of the PermissionSet.
+	//
+	// PermissionSetArn is a required field
+	PermissionSetArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionsBoundaryFromPermissionSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionsBoundaryFromPermissionSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeletePermissionsBoundaryFromPermissionSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeletePermissionsBoundaryFromPermissionSetInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.PermissionSetArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionSetArn"))
+	}
+	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *DeletePermissionsBoundaryFromPermissionSetInput) SetInstanceArn(v string) *DeletePermissionsBoundaryFromPermissionSetInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *DeletePermissionsBoundaryFromPermissionSetInput) SetPermissionSetArn(v string) *DeletePermissionsBoundaryFromPermissionSetInput {
+	s.PermissionSetArn = &v
+	return s
+}
+
+type DeletePermissionsBoundaryFromPermissionSetOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionsBoundaryFromPermissionSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionsBoundaryFromPermissionSetOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteTrustedTokenIssuerInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the trusted token issuer configuration to delete.
+	//
+	// TrustedTokenIssuerArn is a required field
+	TrustedTokenIssuerArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustedTokenIssuerInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustedTokenIssuerInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteTrustedTokenIssuerInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteTrustedTokenIssuerInput"}
+	if s.TrustedTokenIssuerArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustedTokenIssuerArn"))
+	}
+	if s.TrustedTokenIssuerArn != nil && len(*s.TrustedTokenIssuerArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TrustedTokenIssuerArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *DeleteTrustedTokenIssuerInput) SetTrustedTokenIssuerArn(v string) *DeleteTrustedTokenIssuerInput {
+	s.TrustedTokenIssuerArn = &v
+	return s
+}
+
+type DeleteTrustedTokenIssuerOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustedTokenIssuerOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTrustedTokenIssuerOutput) GoString() string {
+	return s.String()
+}
+
 type DescribeAccountAssignmentCreationStatusInput struct {
 	_ struct{} `type:"structure"`
 
 	// The identifier that is used to track the request operation progress.
 	//
 	// AccountAssignmentCreationRequestId is a required field
-	AccountAssignmentCreationRequestId *string `type:"string" required:"true"`
+	AccountAssignmentCreationRequestId *string `min:"36" type:"string" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -5152,6 +11799,9 @@ func (s *DescribeAccountAssignmentCreationStatusInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DescribeAccountAssignmentCreationStatusInput"}
 	if s.AccountAssignmentCreationRequestId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AccountAssignmentCreationRequestId"))
+	}
+	if s.AccountAssignmentCreationRequestId != nil && len(*s.AccountAssignmentCreationRequestId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountAssignmentCreationRequestId", 36))
 	}
 	if s.InstanceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
@@ -5215,11 +11865,11 @@ type DescribeAccountAssignmentDeletionStatusInput struct {
 	// The identifier that is used to track the request operation progress.
 	//
 	// AccountAssignmentDeletionRequestId is a required field
-	AccountAssignmentDeletionRequestId *string `type:"string" required:"true"`
+	AccountAssignmentDeletionRequestId *string `min:"36" type:"string" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -5249,6 +11899,9 @@ func (s *DescribeAccountAssignmentDeletionStatusInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "DescribeAccountAssignmentDeletionStatusInput"}
 	if s.AccountAssignmentDeletionRequestId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AccountAssignmentDeletionRequestId"))
+	}
+	if s.AccountAssignmentDeletionRequestId != nil && len(*s.AccountAssignmentDeletionRequestId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountAssignmentDeletionRequestId", 36))
 	}
 	if s.InstanceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
@@ -5306,10 +11959,417 @@ func (s *DescribeAccountAssignmentDeletionStatusOutput) SetAccountAssignmentDele
 	return s
 }
 
+type DescribeApplicationAssignmentInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	//
+	// PrincipalId is a required field
+	PrincipalId *string `min:"1" type:"string" required:"true"`
+
+	// The entity type for which the assignment will be created.
+	//
+	// PrincipalType is a required field
+	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationAssignmentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationAssignmentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeApplicationAssignmentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeApplicationAssignmentInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.PrincipalId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalId"))
+	}
+	if s.PrincipalId != nil && len(*s.PrincipalId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PrincipalId", 1))
+	}
+	if s.PrincipalType == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DescribeApplicationAssignmentInput) SetApplicationArn(v string) *DescribeApplicationAssignmentInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *DescribeApplicationAssignmentInput) SetPrincipalId(v string) *DescribeApplicationAssignmentInput {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *DescribeApplicationAssignmentInput) SetPrincipalType(v string) *DescribeApplicationAssignmentInput {
+	s.PrincipalType = &v
+	return s
+}
+
+type DescribeApplicationAssignmentOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// An identifier for an object in IAM Identity Center, such as a user or group.
+	// PrincipalIds are GUIDs (For example, f81d4fae-7dec-11d0-a765-00a0c91e6bf6).
+	// For more information about PrincipalIds in IAM Identity Center, see the IAM
+	// Identity Center Identity Store API Reference (/singlesignon/latest/IdentityStoreAPIReference/welcome.html).
+	PrincipalId *string `min:"1" type:"string"`
+
+	// The entity type for which the assignment will be created.
+	PrincipalType *string `type:"string" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationAssignmentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationAssignmentOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DescribeApplicationAssignmentOutput) SetApplicationArn(v string) *DescribeApplicationAssignmentOutput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *DescribeApplicationAssignmentOutput) SetPrincipalId(v string) *DescribeApplicationAssignmentOutput {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *DescribeApplicationAssignmentOutput) SetPrincipalType(v string) *DescribeApplicationAssignmentOutput {
+	s.PrincipalType = &v
+	return s
+}
+
+type DescribeApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeApplicationInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DescribeApplicationInput) SetApplicationArn(v string) *DescribeApplicationInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+type DescribeApplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID.
+	ApplicationAccount *string `min:"12" type:"string"`
+
+	// Specifies the ARN of the application.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The ARN of the application provider under which the operation will run.
+	ApplicationProviderArn *string `min:"10" type:"string"`
+
+	// The date the application was created.
+	CreatedDate *time.Time `type:"timestamp"`
+
+	// The description of the .
+	Description *string `min:"1" type:"string"`
+
+	// The ARN of the IAM Identity Center application under which the operation
+	// will run. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	InstanceArn *string `min:"10" type:"string"`
+
+	// The application name.
+	Name *string `type:"string"`
+
+	// A structure that describes the options for the portal associated with an
+	// application.
+	PortalOptions *PortalOptions `type:"structure"`
+
+	// Specifies whether the application is enabled or disabled.
+	Status *string `type:"string" enum:"ApplicationStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationAccount sets the ApplicationAccount field's value.
+func (s *DescribeApplicationOutput) SetApplicationAccount(v string) *DescribeApplicationOutput {
+	s.ApplicationAccount = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *DescribeApplicationOutput) SetApplicationArn(v string) *DescribeApplicationOutput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetApplicationProviderArn sets the ApplicationProviderArn field's value.
+func (s *DescribeApplicationOutput) SetApplicationProviderArn(v string) *DescribeApplicationOutput {
+	s.ApplicationProviderArn = &v
+	return s
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *DescribeApplicationOutput) SetCreatedDate(v time.Time) *DescribeApplicationOutput {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *DescribeApplicationOutput) SetDescription(v string) *DescribeApplicationOutput {
+	s.Description = &v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *DescribeApplicationOutput) SetInstanceArn(v string) *DescribeApplicationOutput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeApplicationOutput) SetName(v string) *DescribeApplicationOutput {
+	s.Name = &v
+	return s
+}
+
+// SetPortalOptions sets the PortalOptions field's value.
+func (s *DescribeApplicationOutput) SetPortalOptions(v *PortalOptions) *DescribeApplicationOutput {
+	s.PortalOptions = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DescribeApplicationOutput) SetStatus(v string) *DescribeApplicationOutput {
+	s.Status = &v
+	return s
+}
+
+type DescribeApplicationProviderInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application provider for which you want details.
+	//
+	// ApplicationProviderArn is a required field
+	ApplicationProviderArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationProviderInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationProviderInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeApplicationProviderInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeApplicationProviderInput"}
+	if s.ApplicationProviderArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationProviderArn"))
+	}
+	if s.ApplicationProviderArn != nil && len(*s.ApplicationProviderArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationProviderArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationProviderArn sets the ApplicationProviderArn field's value.
+func (s *DescribeApplicationProviderInput) SetApplicationProviderArn(v string) *DescribeApplicationProviderInput {
+	s.ApplicationProviderArn = &v
+	return s
+}
+
+type DescribeApplicationProviderOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the application provider.
+	//
+	// ApplicationProviderArn is a required field
+	ApplicationProviderArn *string `min:"10" type:"string" required:"true"`
+
+	// A structure with details about the display data for the application provider.
+	DisplayData *DisplayData `type:"structure"`
+
+	// The protocol used to federate to the application provider.
+	FederationProtocol *string `type:"string" enum:"FederationProtocol"`
+
+	// A structure with details about the receiving application.
+	ResourceServerConfig *ResourceServerConfig `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationProviderOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeApplicationProviderOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationProviderArn sets the ApplicationProviderArn field's value.
+func (s *DescribeApplicationProviderOutput) SetApplicationProviderArn(v string) *DescribeApplicationProviderOutput {
+	s.ApplicationProviderArn = &v
+	return s
+}
+
+// SetDisplayData sets the DisplayData field's value.
+func (s *DescribeApplicationProviderOutput) SetDisplayData(v *DisplayData) *DescribeApplicationProviderOutput {
+	s.DisplayData = v
+	return s
+}
+
+// SetFederationProtocol sets the FederationProtocol field's value.
+func (s *DescribeApplicationProviderOutput) SetFederationProtocol(v string) *DescribeApplicationProviderOutput {
+	s.FederationProtocol = &v
+	return s
+}
+
+// SetResourceServerConfig sets the ResourceServerConfig field's value.
+func (s *DescribeApplicationProviderOutput) SetResourceServerConfig(v *ResourceServerConfig) *DescribeApplicationProviderOutput {
+	s.ResourceServerConfig = v
+	return s
+}
+
 type DescribeInstanceAccessControlAttributeConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed.
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
 	//
 	// InstanceArn is a required field
 	InstanceArn *string `min:"10" type:"string" required:"true"`
@@ -5358,7 +12418,7 @@ func (s *DescribeInstanceAccessControlAttributeConfigurationInput) SetInstanceAr
 type DescribeInstanceAccessControlAttributeConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Gets the list of Amazon Web Services SSO identity store attributes that have
+	// Gets the list of IAM Identity Center identity store attributes that have
 	// been added to your ABAC configuration.
 	InstanceAccessControlAttributeConfiguration *InstanceAccessControlAttributeConfiguration `type:"structure"`
 
@@ -5405,12 +12465,143 @@ func (s *DescribeInstanceAccessControlAttributeConfigurationOutput) SetStatusRea
 	return s
 }
 
+type DescribeInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the instance of IAM Identity Center under which the operation
+	// will run.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeInstanceInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *DescribeInstanceInput) SetInstanceArn(v string) *DescribeInstanceInput {
+	s.InstanceArn = &v
+	return s
+}
+
+type DescribeInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The date the instance was created.
+	CreatedDate *time.Time `type:"timestamp"`
+
+	// The identifier of the identity store that is connected to the instance of
+	// IAM Identity Center.
+	IdentityStoreId *string `min:"1" type:"string"`
+
+	// The ARN of the instance of IAM Identity Center under which the operation
+	// will run. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	InstanceArn *string `min:"10" type:"string"`
+
+	// Specifies the instance name.
+	Name *string `type:"string"`
+
+	// The identifier of the Amazon Web Services account for which the instance
+	// was created.
+	OwnerAccountId *string `min:"12" type:"string"`
+
+	// The status of the instance.
+	Status *string `type:"string" enum:"InstanceStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *DescribeInstanceOutput) SetCreatedDate(v time.Time) *DescribeInstanceOutput {
+	s.CreatedDate = &v
+	return s
+}
+
+// SetIdentityStoreId sets the IdentityStoreId field's value.
+func (s *DescribeInstanceOutput) SetIdentityStoreId(v string) *DescribeInstanceOutput {
+	s.IdentityStoreId = &v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *DescribeInstanceOutput) SetInstanceArn(v string) *DescribeInstanceOutput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeInstanceOutput) SetName(v string) *DescribeInstanceOutput {
+	s.Name = &v
+	return s
+}
+
+// SetOwnerAccountId sets the OwnerAccountId field's value.
+func (s *DescribeInstanceOutput) SetOwnerAccountId(v string) *DescribeInstanceOutput {
+	s.OwnerAccountId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DescribeInstanceOutput) SetStatus(v string) *DescribeInstanceOutput {
+	s.Status = &v
+	return s
+}
+
 type DescribePermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -5508,9 +12699,9 @@ func (s *DescribePermissionSetOutput) SetPermissionSet(v *PermissionSet) *Descri
 type DescribePermissionSetProvisioningStatusInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -5520,7 +12711,7 @@ type DescribePermissionSetProvisioningStatusInput struct {
 	// the current status of the provisioning workflow.
 	//
 	// ProvisionPermissionSetRequestId is a required field
-	ProvisionPermissionSetRequestId *string `type:"string" required:"true"`
+	ProvisionPermissionSetRequestId *string `min:"36" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -5552,6 +12743,9 @@ func (s *DescribePermissionSetProvisioningStatusInput) Validate() error {
 	}
 	if s.ProvisionPermissionSetRequestId == nil {
 		invalidParams.Add(request.NewErrParamRequired("ProvisionPermissionSetRequestId"))
+	}
+	if s.ProvisionPermissionSetRequestId != nil && len(*s.ProvisionPermissionSetRequestId) < 36 {
+		invalidParams.Add(request.NewErrParamMinLen("ProvisionPermissionSetRequestId", 36))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -5603,18 +12797,237 @@ func (s *DescribePermissionSetProvisioningStatusOutput) SetPermissionSetProvisio
 	return s
 }
 
+type DescribeTrustedTokenIssuerInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the trusted token issuer configuration that you want
+	// details about.
+	//
+	// TrustedTokenIssuerArn is a required field
+	TrustedTokenIssuerArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustedTokenIssuerInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustedTokenIssuerInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeTrustedTokenIssuerInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeTrustedTokenIssuerInput"}
+	if s.TrustedTokenIssuerArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustedTokenIssuerArn"))
+	}
+	if s.TrustedTokenIssuerArn != nil && len(*s.TrustedTokenIssuerArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TrustedTokenIssuerArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *DescribeTrustedTokenIssuerInput) SetTrustedTokenIssuerArn(v string) *DescribeTrustedTokenIssuerInput {
+	s.TrustedTokenIssuerArn = &v
+	return s
+}
+
+type DescribeTrustedTokenIssuerOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the trusted token issuer configuration.
+	Name *string `min:"1" type:"string"`
+
+	// The ARN of the trusted token issuer configuration.
+	TrustedTokenIssuerArn *string `min:"10" type:"string"`
+
+	// A structure the describes the settings that apply of this trusted token issuer.
+	TrustedTokenIssuerConfiguration *TrustedTokenIssuerConfiguration `type:"structure"`
+
+	// The type of the trusted token issuer.
+	TrustedTokenIssuerType *string `type:"string" enum:"TrustedTokenIssuerType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustedTokenIssuerOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeTrustedTokenIssuerOutput) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *DescribeTrustedTokenIssuerOutput) SetName(v string) *DescribeTrustedTokenIssuerOutput {
+	s.Name = &v
+	return s
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *DescribeTrustedTokenIssuerOutput) SetTrustedTokenIssuerArn(v string) *DescribeTrustedTokenIssuerOutput {
+	s.TrustedTokenIssuerArn = &v
+	return s
+}
+
+// SetTrustedTokenIssuerConfiguration sets the TrustedTokenIssuerConfiguration field's value.
+func (s *DescribeTrustedTokenIssuerOutput) SetTrustedTokenIssuerConfiguration(v *TrustedTokenIssuerConfiguration) *DescribeTrustedTokenIssuerOutput {
+	s.TrustedTokenIssuerConfiguration = v
+	return s
+}
+
+// SetTrustedTokenIssuerType sets the TrustedTokenIssuerType field's value.
+func (s *DescribeTrustedTokenIssuerOutput) SetTrustedTokenIssuerType(v string) *DescribeTrustedTokenIssuerOutput {
+	s.TrustedTokenIssuerType = &v
+	return s
+}
+
+type DetachCustomerManagedPolicyReferenceFromPermissionSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the name and path of a customer managed policy. You must have an
+	// IAM policy that matches the name and path in each Amazon Web Services account
+	// where you want to deploy your permission set.
+	//
+	// CustomerManagedPolicyReference is a required field
+	CustomerManagedPolicyReference *CustomerManagedPolicyReference `type:"structure" required:"true"`
+
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The ARN of the PermissionSet.
+	//
+	// PermissionSetArn is a required field
+	PermissionSetArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachCustomerManagedPolicyReferenceFromPermissionSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachCustomerManagedPolicyReferenceFromPermissionSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DetachCustomerManagedPolicyReferenceFromPermissionSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DetachCustomerManagedPolicyReferenceFromPermissionSetInput"}
+	if s.CustomerManagedPolicyReference == nil {
+		invalidParams.Add(request.NewErrParamRequired("CustomerManagedPolicyReference"))
+	}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.PermissionSetArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionSetArn"))
+	}
+	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+	if s.CustomerManagedPolicyReference != nil {
+		if err := s.CustomerManagedPolicyReference.Validate(); err != nil {
+			invalidParams.AddNested("CustomerManagedPolicyReference", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCustomerManagedPolicyReference sets the CustomerManagedPolicyReference field's value.
+func (s *DetachCustomerManagedPolicyReferenceFromPermissionSetInput) SetCustomerManagedPolicyReference(v *CustomerManagedPolicyReference) *DetachCustomerManagedPolicyReferenceFromPermissionSetInput {
+	s.CustomerManagedPolicyReference = v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *DetachCustomerManagedPolicyReferenceFromPermissionSetInput) SetInstanceArn(v string) *DetachCustomerManagedPolicyReferenceFromPermissionSetInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *DetachCustomerManagedPolicyReferenceFromPermissionSetInput) SetPermissionSetArn(v string) *DetachCustomerManagedPolicyReferenceFromPermissionSetInput {
+	s.PermissionSetArn = &v
+	return s
+}
+
+type DetachCustomerManagedPolicyReferenceFromPermissionSetOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachCustomerManagedPolicyReferenceFromPermissionSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetachCustomerManagedPolicyReferenceFromPermissionSetOutput) GoString() string {
+	return s.String()
+}
+
 type DetachManagedPolicyFromPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
 	InstanceArn *string `min:"10" type:"string" required:"true"`
 
-	// The IAM managed policy ARN to be attached to a permission set.
+	// The Amazon Web Services managed policy ARN to be detached from a permission
+	// set.
 	//
 	// ManagedPolicyArn is a required field
 	ManagedPolicyArn *string `min:"20" type:"string" required:"true"`
@@ -5711,12 +13124,446 @@ func (s DetachManagedPolicyFromPermissionSetOutput) GoString() string {
 	return s.String()
 }
 
+// A structure that describes how the portal represents an application provider.
+type DisplayData struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the application provider that appears in the portal.
+	Description *string `min:"1" type:"string"`
+
+	// The name of the application provider that appears in the portal.
+	DisplayName *string `min:"1" type:"string"`
+
+	// A URL that points to an icon that represents the application provider.
+	IconUrl *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisplayData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisplayData) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *DisplayData) SetDescription(v string) *DisplayData {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *DisplayData) SetDisplayName(v string) *DisplayData {
+	s.DisplayName = &v
+	return s
+}
+
+// SetIconUrl sets the IconUrl field's value.
+func (s *DisplayData) SetIconUrl(v string) *DisplayData {
+	s.IconUrl = &v
+	return s
+}
+
+type GetApplicationAccessScopeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the access scope that you want
+	// to retrieve.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the name of the access scope for which you want the authorized
+	// targets.
+	//
+	// Scope is a required field
+	Scope *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAccessScopeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAccessScopeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetApplicationAccessScopeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetApplicationAccessScopeInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.Scope == nil {
+		invalidParams.Add(request.NewErrParamRequired("Scope"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *GetApplicationAccessScopeInput) SetApplicationArn(v string) *GetApplicationAccessScopeInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *GetApplicationAccessScopeInput) SetScope(v string) *GetApplicationAccessScopeInput {
+	s.Scope = &v
+	return s
+}
+
+type GetApplicationAccessScopeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of authorized targets associated with this access scope.
+	AuthorizedTargets []*string `min:"1" type:"list"`
+
+	// The name of the access scope that can be used with the authorized targets.
+	//
+	// Scope is a required field
+	Scope *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAccessScopeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAccessScopeOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedTargets sets the AuthorizedTargets field's value.
+func (s *GetApplicationAccessScopeOutput) SetAuthorizedTargets(v []*string) *GetApplicationAccessScopeOutput {
+	s.AuthorizedTargets = v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *GetApplicationAccessScopeOutput) SetScope(v string) *GetApplicationAccessScopeOutput {
+	s.Scope = &v
+	return s
+}
+
+type GetApplicationAssignmentConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAssignmentConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAssignmentConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetApplicationAssignmentConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetApplicationAssignmentConfigurationInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *GetApplicationAssignmentConfigurationInput) SetApplicationArn(v string) *GetApplicationAssignmentConfigurationInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+type GetApplicationAssignmentConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If AssignmentsRequired is true (default value), users don’t have access
+	// to the application unless an assignment is created using the CreateApplicationAssignment
+	// API (https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_CreateApplicationAssignment.html).
+	// If false, all users have access to the application.
+	//
+	// AssignmentRequired is a required field
+	AssignmentRequired *bool `type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAssignmentConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAssignmentConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssignmentRequired sets the AssignmentRequired field's value.
+func (s *GetApplicationAssignmentConfigurationOutput) SetAssignmentRequired(v bool) *GetApplicationAssignmentConfigurationOutput {
+	s.AssignmentRequired = &v
+	return s
+}
+
+type GetApplicationAuthenticationMethodInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the type of authentication method for which you want details.
+	//
+	// AuthenticationMethodType is a required field
+	AuthenticationMethodType *string `type:"string" required:"true" enum:"AuthenticationMethodType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAuthenticationMethodInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAuthenticationMethodInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetApplicationAuthenticationMethodInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetApplicationAuthenticationMethodInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.AuthenticationMethodType == nil {
+		invalidParams.Add(request.NewErrParamRequired("AuthenticationMethodType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *GetApplicationAuthenticationMethodInput) SetApplicationArn(v string) *GetApplicationAuthenticationMethodInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetAuthenticationMethodType sets the AuthenticationMethodType field's value.
+func (s *GetApplicationAuthenticationMethodInput) SetAuthenticationMethodType(v string) *GetApplicationAuthenticationMethodInput {
+	s.AuthenticationMethodType = &v
+	return s
+}
+
+type GetApplicationAuthenticationMethodOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains details about the requested authentication method.
+	AuthenticationMethod *AuthenticationMethod `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAuthenticationMethodOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationAuthenticationMethodOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthenticationMethod sets the AuthenticationMethod field's value.
+func (s *GetApplicationAuthenticationMethodOutput) SetAuthenticationMethod(v *AuthenticationMethod) *GetApplicationAuthenticationMethodOutput {
+	s.AuthenticationMethod = v
+	return s
+}
+
+type GetApplicationGrantInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application that contains the grant.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the type of grant.
+	//
+	// GrantType is a required field
+	GrantType *string `type:"string" required:"true" enum:"GrantType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationGrantInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationGrantInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetApplicationGrantInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetApplicationGrantInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.GrantType == nil {
+		invalidParams.Add(request.NewErrParamRequired("GrantType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *GetApplicationGrantInput) SetApplicationArn(v string) *GetApplicationGrantInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetGrantType sets the GrantType field's value.
+func (s *GetApplicationGrantInput) SetGrantType(v string) *GetApplicationGrantInput {
+	s.GrantType = &v
+	return s
+}
+
+type GetApplicationGrantOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that describes the requested grant.
+	//
+	// Grant is a required field
+	Grant *Grant `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationGrantOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetApplicationGrantOutput) GoString() string {
+	return s.String()
+}
+
+// SetGrant sets the Grant field's value.
+func (s *GetApplicationGrantOutput) SetGrant(v *Grant) *GetApplicationGrantOutput {
+	s.Grant = v
+	return s
+}
+
 type GetInlinePolicyForPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -5783,12 +13630,11 @@ func (s *GetInlinePolicyForPermissionSetInput) SetPermissionSetArn(v string) *Ge
 type GetInlinePolicyForPermissionSetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The IAM inline policy that is attached to the permission set.
+	// The inline policy that is attached to the permission set.
 	//
-	// InlinePolicy is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by GetInlinePolicyForPermissionSetOutput's
-	// String and GoString methods.
-	InlinePolicy *string `min:"1" type:"string" sensitive:"true"`
+	// For Length Constraints, if a valid ARN is provided for a permission set,
+	// it is possible for an empty inline policy to be returned.
+	InlinePolicy *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -5815,13 +13661,239 @@ func (s *GetInlinePolicyForPermissionSetOutput) SetInlinePolicy(v string) *GetIn
 	return s
 }
 
+type GetPermissionsBoundaryForPermissionSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The ARN of the PermissionSet.
+	//
+	// PermissionSetArn is a required field
+	PermissionSetArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPermissionsBoundaryForPermissionSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPermissionsBoundaryForPermissionSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPermissionsBoundaryForPermissionSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPermissionsBoundaryForPermissionSetInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.PermissionSetArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionSetArn"))
+	}
+	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *GetPermissionsBoundaryForPermissionSetInput) SetInstanceArn(v string) *GetPermissionsBoundaryForPermissionSetInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *GetPermissionsBoundaryForPermissionSetInput) SetPermissionSetArn(v string) *GetPermissionsBoundaryForPermissionSetInput {
+	s.PermissionSetArn = &v
+	return s
+}
+
+type GetPermissionsBoundaryForPermissionSetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The permissions boundary attached to the specified permission set.
+	PermissionsBoundary *PermissionsBoundary `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPermissionsBoundaryForPermissionSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPermissionsBoundaryForPermissionSetOutput) GoString() string {
+	return s.String()
+}
+
+// SetPermissionsBoundary sets the PermissionsBoundary field's value.
+func (s *GetPermissionsBoundaryForPermissionSetOutput) SetPermissionsBoundary(v *PermissionsBoundary) *GetPermissionsBoundaryForPermissionSetOutput {
+	s.PermissionsBoundary = v
+	return s
+}
+
+// The Grant union represents the set of possible configuration options for
+// the selected grant type. Exactly one member of the union must be specified,
+// and must match the grant type selected.
+type Grant struct {
+	_ struct{} `type:"structure"`
+
+	// Configuration options for the authorization_code grant type.
+	AuthorizationCode *AuthorizationCodeGrant `type:"structure"`
+
+	// Configuration options for the urn:ietf:params:oauth:grant-type:jwt-bearer
+	// grant type.
+	JwtBearer *JwtBearerGrant `type:"structure"`
+
+	// Configuration options for the refresh_token grant type.
+	RefreshToken *RefreshTokenGrant `type:"structure"`
+
+	// Configuration options for the urn:ietf:params:oauth:grant-type:token-exchange
+	// grant type.
+	TokenExchange *TokenExchangeGrant `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Grant) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Grant) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Grant) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Grant"}
+	if s.AuthorizationCode != nil {
+		if err := s.AuthorizationCode.Validate(); err != nil {
+			invalidParams.AddNested("AuthorizationCode", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.JwtBearer != nil {
+		if err := s.JwtBearer.Validate(); err != nil {
+			invalidParams.AddNested("JwtBearer", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthorizationCode sets the AuthorizationCode field's value.
+func (s *Grant) SetAuthorizationCode(v *AuthorizationCodeGrant) *Grant {
+	s.AuthorizationCode = v
+	return s
+}
+
+// SetJwtBearer sets the JwtBearer field's value.
+func (s *Grant) SetJwtBearer(v *JwtBearerGrant) *Grant {
+	s.JwtBearer = v
+	return s
+}
+
+// SetRefreshToken sets the RefreshToken field's value.
+func (s *Grant) SetRefreshToken(v *RefreshTokenGrant) *Grant {
+	s.RefreshToken = v
+	return s
+}
+
+// SetTokenExchange sets the TokenExchange field's value.
+func (s *Grant) SetTokenExchange(v *TokenExchangeGrant) *Grant {
+	s.TokenExchange = v
+	return s
+}
+
+// A structure that defines a single grant and its configuration.
+type GrantItem struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration structure for the selected grant.
+	//
+	// Grant is a required field
+	Grant *Grant `type:"structure" required:"true"`
+
+	// The type of the selected grant.
+	//
+	// GrantType is a required field
+	GrantType *string `type:"string" required:"true" enum:"GrantType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GrantItem) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GrantItem) GoString() string {
+	return s.String()
+}
+
+// SetGrant sets the Grant field's value.
+func (s *GrantItem) SetGrant(v *Grant) *GrantItem {
+	s.Grant = v
+	return s
+}
+
+// SetGrantType sets the GrantType field's value.
+func (s *GrantItem) SetGrantType(v string) *GrantItem {
+	s.GrantType = &v
+	return s
+}
+
 // Specifies the attributes to add to your attribute-based access control (ABAC)
 // configuration.
 type InstanceAccessControlAttributeConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// Lists the attributes that are configured for ABAC in the specified Amazon
-	// Web Services SSO instance.
+	// Lists the attributes that are configured for ABAC in the specified IAM Identity
+	// Center instance.
 	//
 	// AccessControlAttributes is a required field
 	AccessControlAttributes []*AccessControlAttribute `type:"list" required:"true"`
@@ -5874,18 +13946,32 @@ func (s *InstanceAccessControlAttributeConfiguration) SetAccessControlAttributes
 	return s
 }
 
-// Provides information about the SSO instance.
+// Provides information about the IAM Identity Center instance.
 type InstanceMetadata struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier of the identity store that is connected to the SSO instance.
+	// The date and time that the Identity Center instance was created.
+	CreatedDate *time.Time `type:"timestamp"`
+
+	// The identifier of the identity store that is connected to the Identity Center
+	// instance.
 	IdentityStoreId *string `min:"1" type:"string"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the Identity Center instance under which the operation will be
+	// executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	InstanceArn *string `min:"10" type:"string"`
+
+	// The name of the Identity Center instance.
+	Name *string `type:"string"`
+
+	// The Amazon Web Services account ID number of the owner of the Identity Center
+	// instance.
+	OwnerAccountId *string `min:"12" type:"string"`
+
+	// The current status of this Identity Center instance.
+	Status *string `type:"string" enum:"InstanceStatus"`
 }
 
 // String returns the string representation.
@@ -5906,6 +13992,12 @@ func (s InstanceMetadata) GoString() string {
 	return s.String()
 }
 
+// SetCreatedDate sets the CreatedDate field's value.
+func (s *InstanceMetadata) SetCreatedDate(v time.Time) *InstanceMetadata {
+	s.CreatedDate = &v
+	return s
+}
+
 // SetIdentityStoreId sets the IdentityStoreId field's value.
 func (s *InstanceMetadata) SetIdentityStoreId(v string) *InstanceMetadata {
 	s.IdentityStoreId = &v
@@ -5915,6 +14007,24 @@ func (s *InstanceMetadata) SetIdentityStoreId(v string) *InstanceMetadata {
 // SetInstanceArn sets the InstanceArn field's value.
 func (s *InstanceMetadata) SetInstanceArn(v string) *InstanceMetadata {
 	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *InstanceMetadata) SetName(v string) *InstanceMetadata {
+	s.Name = &v
+	return s
+}
+
+// SetOwnerAccountId sets the OwnerAccountId field's value.
+func (s *InstanceMetadata) SetOwnerAccountId(v string) *InstanceMetadata {
+	s.OwnerAccountId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *InstanceMetadata) SetStatus(v string) *InstanceMetadata {
+	s.Status = &v
 	return s
 }
 
@@ -5983,15 +14093,72 @@ func (s *InternalServerException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// A structure that defines configuration settings for an application that supports
+// the JWT Bearer Token Authorization Grant.
+type JwtBearerGrant struct {
+	_ struct{} `type:"structure"`
+
+	// A list of allowed token issuers trusted by the Identity Center instances
+	// for this application.
+	AuthorizedTokenIssuers []*AuthorizedTokenIssuer `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JwtBearerGrant) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JwtBearerGrant) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *JwtBearerGrant) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "JwtBearerGrant"}
+	if s.AuthorizedTokenIssuers != nil && len(s.AuthorizedTokenIssuers) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizedTokenIssuers", 1))
+	}
+	if s.AuthorizedTokenIssuers != nil {
+		for i, v := range s.AuthorizedTokenIssuers {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "AuthorizedTokenIssuers", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthorizedTokenIssuers sets the AuthorizedTokenIssuers field's value.
+func (s *JwtBearerGrant) SetAuthorizedTokenIssuers(v []*AuthorizedTokenIssuer) *JwtBearerGrant {
+	s.AuthorizedTokenIssuers = v
+	return s
+}
+
 type ListAccountAssignmentCreationStatusInput struct {
 	_ struct{} `type:"structure"`
 
 	// Filters results based on the passed attribute value.
 	Filter *OperationStatusFilter `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6113,9 +14280,9 @@ type ListAccountAssignmentDeletionStatusInput struct {
 	// Filters results based on the passed attribute value.
 	Filter *OperationStatusFilter `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6231,6 +14398,224 @@ func (s *ListAccountAssignmentDeletionStatusOutput) SetNextToken(v string) *List
 	return s
 }
 
+// A structure that describes a filter for account assignments.
+type ListAccountAssignmentsFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The ID number of an Amazon Web Services account that filters the results
+	// in the response.
+	AccountId *string `min:"12" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccountAssignmentsFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccountAssignmentsFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAccountAssignmentsFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAccountAssignmentsFilter"}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ListAccountAssignmentsFilter) SetAccountId(v string) *ListAccountAssignmentsFilter {
+	s.AccountId = &v
+	return s
+}
+
+type ListAccountAssignmentsForPrincipalInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies an Amazon Web Services account ID number. Results are filtered
+	// to only those that match this ID number.
+	Filter *ListAccountAssignmentsFilter `type:"structure"`
+
+	// Specifies the ARN of the instance of IAM Identity Center that contains the
+	// principal.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+
+	// Specifies the principal for which you want to retrieve the list of account
+	// assignments.
+	//
+	// PrincipalId is a required field
+	PrincipalId *string `min:"1" type:"string" required:"true"`
+
+	// Specifies the type of the principal.
+	//
+	// PrincipalType is a required field
+	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccountAssignmentsForPrincipalInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccountAssignmentsForPrincipalInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAccountAssignmentsForPrincipalInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAccountAssignmentsForPrincipalInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.PrincipalId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalId"))
+	}
+	if s.PrincipalId != nil && len(*s.PrincipalId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PrincipalId", 1))
+	}
+	if s.PrincipalType == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalType"))
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilter sets the Filter field's value.
+func (s *ListAccountAssignmentsForPrincipalInput) SetFilter(v *ListAccountAssignmentsFilter) *ListAccountAssignmentsForPrincipalInput {
+	s.Filter = v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *ListAccountAssignmentsForPrincipalInput) SetInstanceArn(v string) *ListAccountAssignmentsForPrincipalInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAccountAssignmentsForPrincipalInput) SetMaxResults(v int64) *ListAccountAssignmentsForPrincipalInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccountAssignmentsForPrincipalInput) SetNextToken(v string) *ListAccountAssignmentsForPrincipalInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *ListAccountAssignmentsForPrincipalInput) SetPrincipalId(v string) *ListAccountAssignmentsForPrincipalInput {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *ListAccountAssignmentsForPrincipalInput) SetPrincipalType(v string) *ListAccountAssignmentsForPrincipalInput {
+	s.PrincipalType = &v
+	return s
+}
+
+type ListAccountAssignmentsForPrincipalOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of the account assignments for the principal.
+	AccountAssignments []*AccountAssignmentForPrincipal `type:"list"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccountAssignmentsForPrincipalOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccountAssignmentsForPrincipalOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccountAssignments sets the AccountAssignments field's value.
+func (s *ListAccountAssignmentsForPrincipalOutput) SetAccountAssignments(v []*AccountAssignmentForPrincipal) *ListAccountAssignmentsForPrincipalOutput {
+	s.AccountAssignments = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccountAssignmentsForPrincipalOutput) SetNextToken(v string) *ListAccountAssignmentsForPrincipalOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListAccountAssignmentsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6238,11 +14623,11 @@ type ListAccountAssignmentsInput struct {
 	// assignments.
 	//
 	// AccountId is a required field
-	AccountId *string `type:"string" required:"true"`
+	AccountId *string `min:"12" type:"string" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6284,6 +14669,9 @@ func (s *ListAccountAssignmentsInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ListAccountAssignmentsInput"}
 	if s.AccountId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
 	}
 	if s.InstanceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
@@ -6382,9 +14770,9 @@ func (s *ListAccountAssignmentsOutput) SetNextToken(v string) *ListAccountAssign
 type ListAccountsForProvisionedPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6521,6 +14909,1126 @@ func (s *ListAccountsForProvisionedPermissionSetOutput) SetNextToken(v string) *
 	return s
 }
 
+type ListApplicationAccessScopesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAccessScopesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAccessScopesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationAccessScopesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationAccessScopesInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListApplicationAccessScopesInput) SetApplicationArn(v string) *ListApplicationAccessScopesInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListApplicationAccessScopesInput) SetMaxResults(v int64) *ListApplicationAccessScopesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAccessScopesInput) SetNextToken(v string) *ListApplicationAccessScopesInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationAccessScopesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+
+	// An array list of access scopes and their authorized targets that are associated
+	// with the application.
+	//
+	// Scopes is a required field
+	Scopes []*ScopeDetails `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAccessScopesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAccessScopesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAccessScopesOutput) SetNextToken(v string) *ListApplicationAccessScopesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetScopes sets the Scopes field's value.
+func (s *ListApplicationAccessScopesOutput) SetScopes(v []*ScopeDetails) *ListApplicationAccessScopesOutput {
+	s.Scopes = v
+	return s
+}
+
+// A structure that describes a filter for application assignments.
+type ListApplicationAssignmentsFilter struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of an application.
+	ApplicationArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationAssignmentsFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationAssignmentsFilter"}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListApplicationAssignmentsFilter) SetApplicationArn(v string) *ListApplicationAssignmentsFilter {
+	s.ApplicationArn = &v
+	return s
+}
+
+type ListApplicationAssignmentsForPrincipalInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filters the output to include only assignments associated with the application
+	// that has the specified ARN.
+	Filter *ListApplicationAssignmentsFilter `type:"structure"`
+
+	// Specifies the instance of IAM Identity Center that contains principal and
+	// applications.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+
+	// Specifies the unique identifier of the principal for which you want to retrieve
+	// its assignments.
+	//
+	// PrincipalId is a required field
+	PrincipalId *string `min:"1" type:"string" required:"true"`
+
+	// Specifies the type of the principal for which you want to retrieve its assignments.
+	//
+	// PrincipalType is a required field
+	PrincipalType *string `type:"string" required:"true" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsForPrincipalInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsForPrincipalInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationAssignmentsForPrincipalInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationAssignmentsForPrincipalInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.PrincipalId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalId"))
+	}
+	if s.PrincipalId != nil && len(*s.PrincipalId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PrincipalId", 1))
+	}
+	if s.PrincipalType == nil {
+		invalidParams.Add(request.NewErrParamRequired("PrincipalType"))
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilter sets the Filter field's value.
+func (s *ListApplicationAssignmentsForPrincipalInput) SetFilter(v *ListApplicationAssignmentsFilter) *ListApplicationAssignmentsForPrincipalInput {
+	s.Filter = v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *ListApplicationAssignmentsForPrincipalInput) SetInstanceArn(v string) *ListApplicationAssignmentsForPrincipalInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListApplicationAssignmentsForPrincipalInput) SetMaxResults(v int64) *ListApplicationAssignmentsForPrincipalInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAssignmentsForPrincipalInput) SetNextToken(v string) *ListApplicationAssignmentsForPrincipalInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPrincipalId sets the PrincipalId field's value.
+func (s *ListApplicationAssignmentsForPrincipalInput) SetPrincipalId(v string) *ListApplicationAssignmentsForPrincipalInput {
+	s.PrincipalId = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *ListApplicationAssignmentsForPrincipalInput) SetPrincipalType(v string) *ListApplicationAssignmentsForPrincipalInput {
+	s.PrincipalType = &v
+	return s
+}
+
+type ListApplicationAssignmentsForPrincipalOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of the application assignments for the specified principal.
+	ApplicationAssignments []*ApplicationAssignmentForPrincipal `type:"list"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsForPrincipalOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsForPrincipalOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationAssignments sets the ApplicationAssignments field's value.
+func (s *ListApplicationAssignmentsForPrincipalOutput) SetApplicationAssignments(v []*ApplicationAssignmentForPrincipal) *ListApplicationAssignmentsForPrincipalOutput {
+	s.ApplicationAssignments = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAssignmentsForPrincipalOutput) SetNextToken(v string) *ListApplicationAssignmentsForPrincipalOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationAssignmentsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationAssignmentsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationAssignmentsInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListApplicationAssignmentsInput) SetApplicationArn(v string) *ListApplicationAssignmentsInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListApplicationAssignmentsInput) SetMaxResults(v int64) *ListApplicationAssignmentsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAssignmentsInput) SetNextToken(v string) *ListApplicationAssignmentsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationAssignmentsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of users assigned to an application.
+	ApplicationAssignments []*ApplicationAssignment `type:"list"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAssignmentsOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationAssignments sets the ApplicationAssignments field's value.
+func (s *ListApplicationAssignmentsOutput) SetApplicationAssignments(v []*ApplicationAssignment) *ListApplicationAssignmentsOutput {
+	s.ApplicationAssignments = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAssignmentsOutput) SetNextToken(v string) *ListApplicationAssignmentsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationAuthenticationMethodsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the authentication methods you
+	// want to list.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAuthenticationMethodsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAuthenticationMethodsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationAuthenticationMethodsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationAuthenticationMethodsInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListApplicationAuthenticationMethodsInput) SetApplicationArn(v string) *ListApplicationAuthenticationMethodsInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAuthenticationMethodsInput) SetNextToken(v string) *ListApplicationAuthenticationMethodsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationAuthenticationMethodsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of authentication methods for the specified application.
+	AuthenticationMethods []*AuthenticationMethodItem `type:"list"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAuthenticationMethodsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationAuthenticationMethodsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthenticationMethods sets the AuthenticationMethods field's value.
+func (s *ListApplicationAuthenticationMethodsOutput) SetAuthenticationMethods(v []*AuthenticationMethodItem) *ListApplicationAuthenticationMethodsOutput {
+	s.AuthenticationMethods = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationAuthenticationMethodsOutput) SetNextToken(v string) *ListApplicationAuthenticationMethodsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationGrantsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application whose grants you want to list.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationGrantsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationGrantsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationGrantsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationGrantsInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListApplicationGrantsInput) SetApplicationArn(v string) *ListApplicationGrantsInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationGrantsInput) SetNextToken(v string) *ListApplicationGrantsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationGrantsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of structures that describe the requested grants.
+	//
+	// Grants is a required field
+	Grants []*GrantItem `type:"list" required:"true"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationGrantsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationGrantsOutput) GoString() string {
+	return s.String()
+}
+
+// SetGrants sets the Grants field's value.
+func (s *ListApplicationGrantsOutput) SetGrants(v []*GrantItem) *ListApplicationGrantsOutput {
+	s.Grants = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationGrantsOutput) SetNextToken(v string) *ListApplicationGrantsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationProvidersInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationProvidersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationProvidersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationProvidersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationProvidersInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListApplicationProvidersInput) SetMaxResults(v int64) *ListApplicationProvidersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationProvidersInput) SetNextToken(v string) *ListApplicationProvidersInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationProvidersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of structures that describe application providers.
+	ApplicationProviders []*ApplicationProvider `type:"list"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationProvidersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationProvidersOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationProviders sets the ApplicationProviders field's value.
+func (s *ListApplicationProvidersOutput) SetApplicationProviders(v []*ApplicationProvider) *ListApplicationProvidersOutput {
+	s.ApplicationProviders = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationProvidersOutput) SetNextToken(v string) *ListApplicationProvidersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// A structure that describes a filter for applications.
+type ListApplicationsFilter struct {
+	_ struct{} `type:"structure"`
+
+	// An Amazon Web Services account ID number that filters the results in the
+	// response.
+	ApplicationAccount *string `min:"12" type:"string"`
+
+	// The ARN of an application provider that can filter the results in the response.
+	ApplicationProvider *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationsFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationsFilter"}
+	if s.ApplicationAccount != nil && len(*s.ApplicationAccount) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationAccount", 12))
+	}
+	if s.ApplicationProvider != nil && len(*s.ApplicationProvider) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationProvider", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationAccount sets the ApplicationAccount field's value.
+func (s *ListApplicationsFilter) SetApplicationAccount(v string) *ListApplicationsFilter {
+	s.ApplicationAccount = &v
+	return s
+}
+
+// SetApplicationProvider sets the ApplicationProvider field's value.
+func (s *ListApplicationsFilter) SetApplicationProvider(v string) *ListApplicationsFilter {
+	s.ApplicationProvider = &v
+	return s
+}
+
+type ListApplicationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Filters response results.
+	Filter *ListApplicationsFilter `type:"structure"`
+
+	// The ARN of the IAM Identity Center application under which the operation
+	// will run. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListApplicationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListApplicationsInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilter sets the Filter field's value.
+func (s *ListApplicationsInput) SetFilter(v *ListApplicationsFilter) *ListApplicationsInput {
+	s.Filter = v
+	return s
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *ListApplicationsInput) SetInstanceArn(v string) *ListApplicationsInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListApplicationsInput) SetMaxResults(v int64) *ListApplicationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationsInput) SetNextToken(v string) *ListApplicationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListApplicationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Retrieves all applications associated with the instance.
+	Applications []*Application `type:"list"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListApplicationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplications sets the Applications field's value.
+func (s *ListApplicationsOutput) SetApplications(v []*Application) *ListApplicationsOutput {
+	s.Applications = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListApplicationsOutput) SetNextToken(v string) *ListApplicationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListCustomerManagedPolicyReferencesInPermissionSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The maximum number of results to display for the list call.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// The pagination token for the list API. Initially the value is null. Use the
+	// output of previous API calls to make subsequent calls.
+	NextToken *string `type:"string"`
+
+	// The ARN of the PermissionSet.
+	//
+	// PermissionSetArn is a required field
+	PermissionSetArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCustomerManagedPolicyReferencesInPermissionSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCustomerManagedPolicyReferencesInPermissionSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListCustomerManagedPolicyReferencesInPermissionSetInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.PermissionSetArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionSetArn"))
+	}
+	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetInput) SetInstanceArn(v string) *ListCustomerManagedPolicyReferencesInPermissionSetInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetInput) SetMaxResults(v int64) *ListCustomerManagedPolicyReferencesInPermissionSetInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetInput) SetNextToken(v string) *ListCustomerManagedPolicyReferencesInPermissionSetInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetInput) SetPermissionSetArn(v string) *ListCustomerManagedPolicyReferencesInPermissionSetInput {
+	s.PermissionSetArn = &v
+	return s
+}
+
+type ListCustomerManagedPolicyReferencesInPermissionSetOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the names and paths of the customer managed policies that you have
+	// attached to your permission set.
+	CustomerManagedPolicyReferences []*CustomerManagedPolicyReference `type:"list"`
+
+	// The pagination token for the list API. Initially the value is null. Use the
+	// output of previous API calls to make subsequent calls.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCustomerManagedPolicyReferencesInPermissionSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListCustomerManagedPolicyReferencesInPermissionSetOutput) GoString() string {
+	return s.String()
+}
+
+// SetCustomerManagedPolicyReferences sets the CustomerManagedPolicyReferences field's value.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetOutput) SetCustomerManagedPolicyReferences(v []*CustomerManagedPolicyReference) *ListCustomerManagedPolicyReferencesInPermissionSetOutput {
+	s.CustomerManagedPolicyReferences = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListCustomerManagedPolicyReferencesInPermissionSetOutput) SetNextToken(v string) *ListCustomerManagedPolicyReferencesInPermissionSetOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListInstancesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6578,7 +16086,7 @@ func (s *ListInstancesInput) SetNextToken(v string) *ListInstancesInput {
 type ListInstancesOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Lists the SSO instances that the caller has access to.
+	// Lists the IAM Identity Center instances that the caller has access to.
 	Instances []*InstanceMetadata `type:"list"`
 
 	// The pagination token for the list API. Initially the value is null. Use the
@@ -6619,9 +16127,9 @@ func (s *ListInstancesOutput) SetNextToken(v string) *ListInstancesOutput {
 type ListManagedPoliciesInPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6710,7 +16218,7 @@ func (s *ListManagedPoliciesInPermissionSetInput) SetPermissionSetArn(v string) 
 type ListManagedPoliciesInPermissionSetOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The array of the AttachedManagedPolicy data type object.
+	// An array of the AttachedManagedPolicy data type object.
 	AttachedManagedPolicies []*AttachedManagedPolicy `type:"list"`
 
 	// The pagination token for the list API. Initially the value is null. Use the
@@ -6754,9 +16262,9 @@ type ListPermissionSetProvisioningStatusInput struct {
 	// Filters results based on the passed attribute value.
 	Filter *OperationStatusFilter `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6875,9 +16383,9 @@ func (s *ListPermissionSetProvisioningStatusOutput) SetPermissionSetsProvisionin
 type ListPermissionSetsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -6994,11 +16502,11 @@ type ListPermissionSetsProvisionedToAccountInput struct {
 	// assignments.
 	//
 	// AccountId is a required field
-	AccountId *string `type:"string" required:"true"`
+	AccountId *string `min:"12" type:"string" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -7038,6 +16546,9 @@ func (s *ListPermissionSetsProvisionedToAccountInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ListPermissionSetsProvisionedToAccountInput"}
 	if s.AccountId == nil {
 		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
 	}
 	if s.InstanceArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
@@ -7129,13 +16640,11 @@ func (s *ListPermissionSetsProvisionedToAccountOutput) SetPermissionSets(v []*st
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
-	//
-	// InstanceArn is a required field
-	InstanceArn *string `min:"10" type:"string" required:"true"`
+	InstanceArn *string `min:"10" type:"string"`
 
 	// The pagination token for the list API. Initially the value is null. Use the
 	// output of previous API calls to make subsequent calls.
@@ -7168,9 +16677,6 @@ func (s ListTagsForResourceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ListTagsForResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
-	if s.InstanceArn == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
-	}
 	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
 		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
 	}
@@ -7246,7 +16752,314 @@ func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput
 	return s
 }
 
-// Filters he operation status list based on the passed attribute value.
+type ListTrustedTokenIssuersInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the instance of IAM Identity Center with the trusted
+	// token issuer configurations that you want to list.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies the total number of results that you want included in each response.
+	// If additional items exist beyond the number you specify, the NextToken response
+	// element is returned with a value (not null). Include the specified value
+	// as the NextToken request parameter in the next call to the operation to get
+	// the next set of results. Note that the service might return fewer results
+	// than the maximum even when there are more results available. You should check
+	// NextToken after every operation to ensure that you receive all of the results.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTrustedTokenIssuersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTrustedTokenIssuersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTrustedTokenIssuersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTrustedTokenIssuersInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *ListTrustedTokenIssuersInput) SetInstanceArn(v string) *ListTrustedTokenIssuersInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListTrustedTokenIssuersInput) SetMaxResults(v int64) *ListTrustedTokenIssuersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTrustedTokenIssuersInput) SetNextToken(v string) *ListTrustedTokenIssuersInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListTrustedTokenIssuersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `type:"string"`
+
+	// An array list of the trusted token issuer configurations.
+	TrustedTokenIssuers []*TrustedTokenIssuerMetadata `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTrustedTokenIssuersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTrustedTokenIssuersOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTrustedTokenIssuersOutput) SetNextToken(v string) *ListTrustedTokenIssuersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTrustedTokenIssuers sets the TrustedTokenIssuers field's value.
+func (s *ListTrustedTokenIssuersOutput) SetTrustedTokenIssuers(v []*TrustedTokenIssuerMetadata) *ListTrustedTokenIssuersOutput {
+	s.TrustedTokenIssuers = v
+	return s
+}
+
+// A structure that describes configuration settings for a trusted token issuer
+// that supports OpenID Connect (OIDC) and JSON Web Tokens (JWTs).
+type OidcJwtConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The path of the source attribute in the JWT from the trusted token issuer.
+	// The attribute mapped by this JMESPath expression is compared against the
+	// attribute mapped by IdentityStoreAttributePath when a trusted token issuer
+	// token is exchanged for an IAM Identity Center token.
+	//
+	// ClaimAttributePath is a required field
+	ClaimAttributePath *string `min:"1" type:"string" required:"true"`
+
+	// The path of the destination attribute in a JWT from IAM Identity Center.
+	// The attribute mapped by this JMESPath expression is compared against the
+	// attribute mapped by ClaimAttributePath when a trusted token issuer token
+	// is exchanged for an IAM Identity Center token.
+	//
+	// IdentityStoreAttributePath is a required field
+	IdentityStoreAttributePath *string `min:"1" type:"string" required:"true"`
+
+	// The URL that IAM Identity Center uses for OpenID Discovery. OpenID Discovery
+	// is used to obtain the information required to verify the tokens that the
+	// trusted token issuer generates.
+	//
+	// IssuerUrl is a required field
+	IssuerUrl *string `min:"1" type:"string" required:"true"`
+
+	// The method that the trusted token issuer can use to retrieve the JSON Web
+	// Key Set used to verify a JWT.
+	//
+	// JwksRetrievalOption is a required field
+	JwksRetrievalOption *string `type:"string" required:"true" enum:"JwksRetrievalOption"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OidcJwtConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OidcJwtConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *OidcJwtConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "OidcJwtConfiguration"}
+	if s.ClaimAttributePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClaimAttributePath"))
+	}
+	if s.ClaimAttributePath != nil && len(*s.ClaimAttributePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClaimAttributePath", 1))
+	}
+	if s.IdentityStoreAttributePath == nil {
+		invalidParams.Add(request.NewErrParamRequired("IdentityStoreAttributePath"))
+	}
+	if s.IdentityStoreAttributePath != nil && len(*s.IdentityStoreAttributePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IdentityStoreAttributePath", 1))
+	}
+	if s.IssuerUrl == nil {
+		invalidParams.Add(request.NewErrParamRequired("IssuerUrl"))
+	}
+	if s.IssuerUrl != nil && len(*s.IssuerUrl) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IssuerUrl", 1))
+	}
+	if s.JwksRetrievalOption == nil {
+		invalidParams.Add(request.NewErrParamRequired("JwksRetrievalOption"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClaimAttributePath sets the ClaimAttributePath field's value.
+func (s *OidcJwtConfiguration) SetClaimAttributePath(v string) *OidcJwtConfiguration {
+	s.ClaimAttributePath = &v
+	return s
+}
+
+// SetIdentityStoreAttributePath sets the IdentityStoreAttributePath field's value.
+func (s *OidcJwtConfiguration) SetIdentityStoreAttributePath(v string) *OidcJwtConfiguration {
+	s.IdentityStoreAttributePath = &v
+	return s
+}
+
+// SetIssuerUrl sets the IssuerUrl field's value.
+func (s *OidcJwtConfiguration) SetIssuerUrl(v string) *OidcJwtConfiguration {
+	s.IssuerUrl = &v
+	return s
+}
+
+// SetJwksRetrievalOption sets the JwksRetrievalOption field's value.
+func (s *OidcJwtConfiguration) SetJwksRetrievalOption(v string) *OidcJwtConfiguration {
+	s.JwksRetrievalOption = &v
+	return s
+}
+
+// A structure that describes updated configuration settings for a trusted token
+// issuer that supports OpenID Connect (OIDC) and JSON Web Tokens (JWTs).
+type OidcJwtUpdateConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The path of the source attribute in the JWT from the trusted token issuer.
+	// The attribute mapped by this JMESPath expression is compared against the
+	// attribute mapped by IdentityStoreAttributePath when a trusted token issuer
+	// token is exchanged for an IAM Identity Center token.
+	ClaimAttributePath *string `min:"1" type:"string"`
+
+	// The path of the destination attribute in a JWT from IAM Identity Center.
+	// The attribute mapped by this JMESPath expression is compared against the
+	// attribute mapped by ClaimAttributePath when a trusted token issuer token
+	// is exchanged for an IAM Identity Center token.
+	IdentityStoreAttributePath *string `min:"1" type:"string"`
+
+	// The method that the trusted token issuer can use to retrieve the JSON Web
+	// Key Set used to verify a JWT.
+	JwksRetrievalOption *string `type:"string" enum:"JwksRetrievalOption"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OidcJwtUpdateConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OidcJwtUpdateConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *OidcJwtUpdateConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "OidcJwtUpdateConfiguration"}
+	if s.ClaimAttributePath != nil && len(*s.ClaimAttributePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClaimAttributePath", 1))
+	}
+	if s.IdentityStoreAttributePath != nil && len(*s.IdentityStoreAttributePath) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IdentityStoreAttributePath", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClaimAttributePath sets the ClaimAttributePath field's value.
+func (s *OidcJwtUpdateConfiguration) SetClaimAttributePath(v string) *OidcJwtUpdateConfiguration {
+	s.ClaimAttributePath = &v
+	return s
+}
+
+// SetIdentityStoreAttributePath sets the IdentityStoreAttributePath field's value.
+func (s *OidcJwtUpdateConfiguration) SetIdentityStoreAttributePath(v string) *OidcJwtUpdateConfiguration {
+	s.IdentityStoreAttributePath = &v
+	return s
+}
+
+// SetJwksRetrievalOption sets the JwksRetrievalOption field's value.
+func (s *OidcJwtUpdateConfiguration) SetJwksRetrievalOption(v string) *OidcJwtUpdateConfiguration {
+	s.JwksRetrievalOption = &v
+	return s
+}
+
+// Filters the operation status list based on the passed attribute value.
 type OperationStatusFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -7366,7 +17179,7 @@ type PermissionSetProvisioningStatus struct {
 
 	// The identifier of the Amazon Web Services account from which to list the
 	// assignments.
-	AccountId *string `type:"string"`
+	AccountId *string `min:"12" type:"string"`
 
 	// The date that the permission set was created.
 	CreatedDate *time.Time `type:"timestamp"`
@@ -7382,7 +17195,7 @@ type PermissionSetProvisioningStatus struct {
 
 	// The identifier for tracking the request operation that is generated by the
 	// universally unique identifier (UUID) workflow.
-	RequestId *string `type:"string"`
+	RequestId *string `min:"36" type:"string"`
 
 	// The status of the permission set provisioning process.
 	Status *string `type:"string" enum:"StatusValues"`
@@ -7451,7 +17264,7 @@ type PermissionSetProvisioningStatusMetadata struct {
 
 	// The identifier for tracking the request operation that is generated by the
 	// universally unique identifier (UUID) workflow.
-	RequestId *string `type:"string"`
+	RequestId *string `min:"36" type:"string"`
 
 	// The status of the permission set provisioning process.
 	Status *string `type:"string" enum:"StatusValues"`
@@ -7493,12 +17306,143 @@ func (s *PermissionSetProvisioningStatusMetadata) SetStatus(v string) *Permissio
 	return s
 }
 
+// Specifies the configuration of the Amazon Web Services managed or customer
+// managed policy that you want to set as a permissions boundary. Specify either
+// CustomerManagedPolicyReference to use the name and path of a customer managed
+// policy, or ManagedPolicyArn to use the ARN of an Amazon Web Services managed
+// policy. A permissions boundary represents the maximum permissions that any
+// policy can grant your role. For more information, see Permissions boundaries
+// for IAM entities (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html)
+// in the IAM User Guide.
+//
+// Policies used as permissions boundaries don't provide permissions. You must
+// also attach an IAM policy to the role. To learn how the effective permissions
+// for a role are evaluated, see IAM JSON policy evaluation logic (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html)
+// in the IAM User Guide.
+type PermissionsBoundary struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the name and path of a customer managed policy. You must have an
+	// IAM policy that matches the name and path in each Amazon Web Services account
+	// where you want to deploy your permission set.
+	CustomerManagedPolicyReference *CustomerManagedPolicyReference `type:"structure"`
+
+	// The Amazon Web Services managed policy ARN that you want to attach to a permission
+	// set as a permissions boundary.
+	ManagedPolicyArn *string `min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionsBoundary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionsBoundary) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PermissionsBoundary) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PermissionsBoundary"}
+	if s.ManagedPolicyArn != nil && len(*s.ManagedPolicyArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ManagedPolicyArn", 20))
+	}
+	if s.CustomerManagedPolicyReference != nil {
+		if err := s.CustomerManagedPolicyReference.Validate(); err != nil {
+			invalidParams.AddNested("CustomerManagedPolicyReference", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCustomerManagedPolicyReference sets the CustomerManagedPolicyReference field's value.
+func (s *PermissionsBoundary) SetCustomerManagedPolicyReference(v *CustomerManagedPolicyReference) *PermissionsBoundary {
+	s.CustomerManagedPolicyReference = v
+	return s
+}
+
+// SetManagedPolicyArn sets the ManagedPolicyArn field's value.
+func (s *PermissionsBoundary) SetManagedPolicyArn(v string) *PermissionsBoundary {
+	s.ManagedPolicyArn = &v
+	return s
+}
+
+// A structure that describes the options for the access portal associated with
+// an application.
+type PortalOptions struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that describes the sign-in options for the access portal.
+	SignInOptions *SignInOptions `type:"structure"`
+
+	// Indicates whether this application is visible in the access portal.
+	Visibility *string `type:"string" enum:"ApplicationVisibility"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PortalOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PortalOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PortalOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PortalOptions"}
+	if s.SignInOptions != nil {
+		if err := s.SignInOptions.Validate(); err != nil {
+			invalidParams.AddNested("SignInOptions", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSignInOptions sets the SignInOptions field's value.
+func (s *PortalOptions) SetSignInOptions(v *SignInOptions) *PortalOptions {
+	s.SignInOptions = v
+	return s
+}
+
+// SetVisibility sets the Visibility field's value.
+func (s *PortalOptions) SetVisibility(v string) *PortalOptions {
+	s.Visibility = &v
+	return s
+}
+
 type ProvisionPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -7509,9 +17453,8 @@ type ProvisionPermissionSetInput struct {
 	// PermissionSetArn is a required field
 	PermissionSetArn *string `min:"10" type:"string" required:"true"`
 
-	// TargetID is an Amazon Web Services account identifier, typically a 10-12
-	// digit string (For example, 123456789012).
-	TargetId *string `type:"string"`
+	// TargetID is an Amazon Web Services account identifier, (For example, 123456789012).
+	TargetId *string `min:"12" type:"string"`
 
 	// The entity type for which the assignment will be created.
 	//
@@ -7551,6 +17494,9 @@ func (s *ProvisionPermissionSetInput) Validate() error {
 	}
 	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
 		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+	if s.TargetId != nil && len(*s.TargetId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("TargetId", 12))
 	}
 	if s.TargetType == nil {
 		invalidParams.Add(request.NewErrParamRequired("TargetType"))
@@ -7617,21 +17563,413 @@ func (s *ProvisionPermissionSetOutput) SetPermissionSetProvisioningStatus(v *Per
 	return s
 }
 
+type PutApplicationAccessScopeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the access scope with the targets
+	// to add or update.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies an array list of ARNs that represent the authorized targets for
+	// this access scope.
+	AuthorizedTargets []*string `min:"1" type:"list"`
+
+	// Specifies the name of the access scope to be associated with the specified
+	// targets.
+	//
+	// Scope is a required field
+	Scope *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAccessScopeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAccessScopeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutApplicationAccessScopeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutApplicationAccessScopeInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.AuthorizedTargets != nil && len(s.AuthorizedTargets) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AuthorizedTargets", 1))
+	}
+	if s.Scope == nil {
+		invalidParams.Add(request.NewErrParamRequired("Scope"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *PutApplicationAccessScopeInput) SetApplicationArn(v string) *PutApplicationAccessScopeInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetAuthorizedTargets sets the AuthorizedTargets field's value.
+func (s *PutApplicationAccessScopeInput) SetAuthorizedTargets(v []*string) *PutApplicationAccessScopeInput {
+	s.AuthorizedTargets = v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *PutApplicationAccessScopeInput) SetScope(v string) *PutApplicationAccessScopeInput {
+	s.Scope = &v
+	return s
+}
+
+type PutApplicationAccessScopeOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAccessScopeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAccessScopeOutput) GoString() string {
+	return s.String()
+}
+
+type PutApplicationAssignmentConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// If AssignmentsRequired is true (default value), users don’t have access
+	// to the application unless an assignment is created using the CreateApplicationAssignment
+	// API (https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_CreateApplicationAssignment.html).
+	// If false, all users have access to the application.
+	//
+	// AssignmentRequired is a required field
+	AssignmentRequired *bool `type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAssignmentConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAssignmentConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutApplicationAssignmentConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutApplicationAssignmentConfigurationInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.AssignmentRequired == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssignmentRequired"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *PutApplicationAssignmentConfigurationInput) SetApplicationArn(v string) *PutApplicationAssignmentConfigurationInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetAssignmentRequired sets the AssignmentRequired field's value.
+func (s *PutApplicationAssignmentConfigurationInput) SetAssignmentRequired(v bool) *PutApplicationAssignmentConfigurationInput {
+	s.AssignmentRequired = &v
+	return s
+}
+
+type PutApplicationAssignmentConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAssignmentConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAssignmentConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+type PutApplicationAuthenticationMethodInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application with the authentication method to add
+	// or update.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies a structure that describes the authentication method to add or
+	// update. The structure type you provide is determined by the AuthenticationMethodType
+	// parameter.
+	//
+	// AuthenticationMethod is a required field
+	AuthenticationMethod *AuthenticationMethod `type:"structure" required:"true"`
+
+	// Specifies the type of the authentication method that you want to add or update.
+	//
+	// AuthenticationMethodType is a required field
+	AuthenticationMethodType *string `type:"string" required:"true" enum:"AuthenticationMethodType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAuthenticationMethodInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAuthenticationMethodInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutApplicationAuthenticationMethodInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutApplicationAuthenticationMethodInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.AuthenticationMethod == nil {
+		invalidParams.Add(request.NewErrParamRequired("AuthenticationMethod"))
+	}
+	if s.AuthenticationMethodType == nil {
+		invalidParams.Add(request.NewErrParamRequired("AuthenticationMethodType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *PutApplicationAuthenticationMethodInput) SetApplicationArn(v string) *PutApplicationAuthenticationMethodInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetAuthenticationMethod sets the AuthenticationMethod field's value.
+func (s *PutApplicationAuthenticationMethodInput) SetAuthenticationMethod(v *AuthenticationMethod) *PutApplicationAuthenticationMethodInput {
+	s.AuthenticationMethod = v
+	return s
+}
+
+// SetAuthenticationMethodType sets the AuthenticationMethodType field's value.
+func (s *PutApplicationAuthenticationMethodInput) SetAuthenticationMethodType(v string) *PutApplicationAuthenticationMethodInput {
+	s.AuthenticationMethodType = &v
+	return s
+}
+
+type PutApplicationAuthenticationMethodOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAuthenticationMethodOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationAuthenticationMethodOutput) GoString() string {
+	return s.String()
+}
+
+type PutApplicationGrantInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application to update.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies a structure that describes the grant to update.
+	//
+	// Grant is a required field
+	Grant *Grant `type:"structure" required:"true"`
+
+	// Specifies the type of grant to update.
+	//
+	// GrantType is a required field
+	GrantType *string `type:"string" required:"true" enum:"GrantType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationGrantInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationGrantInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutApplicationGrantInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutApplicationGrantInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.Grant == nil {
+		invalidParams.Add(request.NewErrParamRequired("Grant"))
+	}
+	if s.GrantType == nil {
+		invalidParams.Add(request.NewErrParamRequired("GrantType"))
+	}
+	if s.Grant != nil {
+		if err := s.Grant.Validate(); err != nil {
+			invalidParams.AddNested("Grant", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *PutApplicationGrantInput) SetApplicationArn(v string) *PutApplicationGrantInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetGrant sets the Grant field's value.
+func (s *PutApplicationGrantInput) SetGrant(v *Grant) *PutApplicationGrantInput {
+	s.Grant = v
+	return s
+}
+
+// SetGrantType sets the GrantType field's value.
+func (s *PutApplicationGrantInput) SetGrantType(v string) *PutApplicationGrantInput {
+	s.GrantType = &v
+	return s
+}
+
+type PutApplicationGrantOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationGrantOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutApplicationGrantOutput) GoString() string {
+	return s.String()
+}
+
 type PutInlinePolicyToPermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
-	// The IAM inline policy to attach to a PermissionSet.
-	//
-	// InlinePolicy is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by PutInlinePolicyToPermissionSetInput's
-	// String and GoString methods.
+	// The inline policy to attach to a PermissionSet.
 	//
 	// InlinePolicy is a required field
-	InlinePolicy *string `min:"1" type:"string" required:"true" sensitive:"true"`
+	InlinePolicy *string `min:"1" type:"string" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -7729,6 +18067,138 @@ func (s PutInlinePolicyToPermissionSetOutput) GoString() string {
 	return s.String()
 }
 
+type PutPermissionsBoundaryToPermissionSetInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// The ARN of the PermissionSet.
+	//
+	// PermissionSetArn is a required field
+	PermissionSetArn *string `min:"10" type:"string" required:"true"`
+
+	// The permissions boundary that you want to attach to a PermissionSet.
+	//
+	// PermissionsBoundary is a required field
+	PermissionsBoundary *PermissionsBoundary `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutPermissionsBoundaryToPermissionSetInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutPermissionsBoundaryToPermissionSetInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutPermissionsBoundaryToPermissionSetInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutPermissionsBoundaryToPermissionSetInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.PermissionSetArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionSetArn"))
+	}
+	if s.PermissionSetArn != nil && len(*s.PermissionSetArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("PermissionSetArn", 10))
+	}
+	if s.PermissionsBoundary == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionsBoundary"))
+	}
+	if s.PermissionsBoundary != nil {
+		if err := s.PermissionsBoundary.Validate(); err != nil {
+			invalidParams.AddNested("PermissionsBoundary", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *PutPermissionsBoundaryToPermissionSetInput) SetInstanceArn(v string) *PutPermissionsBoundaryToPermissionSetInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetPermissionSetArn sets the PermissionSetArn field's value.
+func (s *PutPermissionsBoundaryToPermissionSetInput) SetPermissionSetArn(v string) *PutPermissionsBoundaryToPermissionSetInput {
+	s.PermissionSetArn = &v
+	return s
+}
+
+// SetPermissionsBoundary sets the PermissionsBoundary field's value.
+func (s *PutPermissionsBoundaryToPermissionSetInput) SetPermissionsBoundary(v *PermissionsBoundary) *PutPermissionsBoundaryToPermissionSetInput {
+	s.PermissionsBoundary = v
+	return s
+}
+
+type PutPermissionsBoundaryToPermissionSetOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutPermissionsBoundaryToPermissionSetOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutPermissionsBoundaryToPermissionSetOutput) GoString() string {
+	return s.String()
+}
+
+// A structure that defines configuration settings for an application that supports
+// the OAuth 2.0 Refresh Token Grant.
+type RefreshTokenGrant struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RefreshTokenGrant) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RefreshTokenGrant) GoString() string {
+	return s.String()
+}
+
 // Indicates that a requested resource is not found.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -7791,6 +18261,125 @@ func (s *ResourceNotFoundException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// A structure that describes the configuration of a resource server.
+type ResourceServerConfig struct {
+	_ struct{} `type:"structure"`
+
+	// A list of the IAM Identity Center access scopes that are associated with
+	// this resource server.
+	Scopes map[string]*ResourceServerScopeDetails `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceServerConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceServerConfig) GoString() string {
+	return s.String()
+}
+
+// SetScopes sets the Scopes field's value.
+func (s *ResourceServerConfig) SetScopes(v map[string]*ResourceServerScopeDetails) *ResourceServerConfig {
+	s.Scopes = v
+	return s
+}
+
+// A structure that describes details for an IAM Identity Center access scope
+// that is associated with a resource server.
+type ResourceServerScopeDetails struct {
+	_ struct{} `type:"structure"`
+
+	// The title of an access scope for a resource server.
+	DetailedTitle *string `min:"1" type:"string"`
+
+	// The description of an access scope for a resource server.
+	LongDescription *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceServerScopeDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceServerScopeDetails) GoString() string {
+	return s.String()
+}
+
+// SetDetailedTitle sets the DetailedTitle field's value.
+func (s *ResourceServerScopeDetails) SetDetailedTitle(v string) *ResourceServerScopeDetails {
+	s.DetailedTitle = &v
+	return s
+}
+
+// SetLongDescription sets the LongDescription field's value.
+func (s *ResourceServerScopeDetails) SetLongDescription(v string) *ResourceServerScopeDetails {
+	s.LongDescription = &v
+	return s
+}
+
+// A structure that describes an IAM Identity Center access scope and its authorized
+// targets.
+type ScopeDetails struct {
+	_ struct{} `type:"structure"`
+
+	// An array list of ARNs of applications.
+	AuthorizedTargets []*string `min:"1" type:"list"`
+
+	// The name of the access scope.
+	//
+	// Scope is a required field
+	Scope *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScopeDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScopeDetails) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedTargets sets the AuthorizedTargets field's value.
+func (s *ScopeDetails) SetAuthorizedTargets(v []*string) *ScopeDetails {
+	s.AuthorizedTargets = v
+	return s
+}
+
+// SetScope sets the Scope field's value.
+func (s *ScopeDetails) SetScope(v string) *ScopeDetails {
+	s.Scope = &v
+	return s
 }
 
 // Indicates that the principal has crossed the permitted number of resources
@@ -7858,17 +18447,88 @@ func (s *ServiceQuotaExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// A structure that describes the sign-in options for an application portal.
+type SignInOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The URL that accepts authentication requests for an application. This is
+	// a required parameter if the Origin parameter is APPLICATION.
+	ApplicationUrl *string `min:"1" type:"string"`
+
+	// This determines how IAM Identity Center navigates the user to the target
+	// application. It can be one of the following values:
+	//
+	//    * APPLICATION: IAM Identity Center redirects the customer to the configured
+	//    ApplicationUrl.
+	//
+	//    * IDENTITY_CENTER: IAM Identity Center uses SAML identity-provider initiated
+	//    authentication to sign the customer directly into a SAML-based application.
+	//
+	// Origin is a required field
+	Origin *string `type:"string" required:"true" enum:"SignInOrigin"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignInOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignInOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SignInOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SignInOptions"}
+	if s.ApplicationUrl != nil && len(*s.ApplicationUrl) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationUrl", 1))
+	}
+	if s.Origin == nil {
+		invalidParams.Add(request.NewErrParamRequired("Origin"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationUrl sets the ApplicationUrl field's value.
+func (s *SignInOptions) SetApplicationUrl(v string) *SignInOptions {
+	s.ApplicationUrl = &v
+	return s
+}
+
+// SetOrigin sets the Origin field's value.
+func (s *SignInOptions) SetOrigin(v string) *SignInOptions {
+	s.Origin = &v
+	return s
+}
+
 // A set of key-value pairs that are used to manage the resource. Tags can only
 // be applied to permission sets and cannot be applied to corresponding roles
-// that Amazon Web Services SSO creates in Amazon Web Services accounts.
+// that IAM Identity Center creates in Amazon Web Services accounts.
 type Tag struct {
 	_ struct{} `type:"structure"`
 
 	// The key for the tag.
-	Key *string `min:"1" type:"string"`
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
 
 	// The value of the tag.
-	Value *string `type:"string"`
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -7892,8 +18552,14 @@ func (s Tag) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *Tag) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
 	if s.Key != nil && len(*s.Key) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -7917,13 +18583,11 @@ func (s *Tag) SetValue(v string) *Tag {
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
-	//
-	// InstanceArn is a required field
-	InstanceArn *string `min:"10" type:"string" required:"true"`
+	InstanceArn *string `min:"10" type:"string"`
 
 	// The ARN of the resource with the tags to be listed.
 	//
@@ -7957,9 +18621,6 @@ func (s TagResourceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *TagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
-	if s.InstanceArn == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
-	}
 	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
 		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
 	}
@@ -8094,16 +18755,190 @@ func (s *ThrottlingException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// A structure that defines configuration settings for an application that supports
+// the OAuth 2.0 Token Exchange Grant.
+type TokenExchangeGrant struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TokenExchangeGrant) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TokenExchangeGrant) GoString() string {
+	return s.String()
+}
+
+// A structure that describes the configuration of a trusted token issuer. The
+// structure and available settings are determined by the type of the trusted
+// token issuer.
+type TrustedTokenIssuerConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that describes the settings for a trusted token issuer that works
+	// with OpenID Connect (OIDC) by using JSON Web Tokens (JWT).
+	OidcJwtConfiguration *OidcJwtConfiguration `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustedTokenIssuerConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustedTokenIssuerConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TrustedTokenIssuerConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TrustedTokenIssuerConfiguration"}
+	if s.OidcJwtConfiguration != nil {
+		if err := s.OidcJwtConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("OidcJwtConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOidcJwtConfiguration sets the OidcJwtConfiguration field's value.
+func (s *TrustedTokenIssuerConfiguration) SetOidcJwtConfiguration(v *OidcJwtConfiguration) *TrustedTokenIssuerConfiguration {
+	s.OidcJwtConfiguration = v
+	return s
+}
+
+// A structure that describes a trusted token issuer.
+type TrustedTokenIssuerMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the trusted token issuer configuration in the instance of IAM
+	// Identity Center.
+	Name *string `min:"1" type:"string"`
+
+	// The ARN of the trusted token issuer configuration in the instance of IAM
+	// Identity Center.
+	TrustedTokenIssuerArn *string `min:"10" type:"string"`
+
+	// The type of trusted token issuer.
+	TrustedTokenIssuerType *string `type:"string" enum:"TrustedTokenIssuerType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustedTokenIssuerMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustedTokenIssuerMetadata) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *TrustedTokenIssuerMetadata) SetName(v string) *TrustedTokenIssuerMetadata {
+	s.Name = &v
+	return s
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *TrustedTokenIssuerMetadata) SetTrustedTokenIssuerArn(v string) *TrustedTokenIssuerMetadata {
+	s.TrustedTokenIssuerArn = &v
+	return s
+}
+
+// SetTrustedTokenIssuerType sets the TrustedTokenIssuerType field's value.
+func (s *TrustedTokenIssuerMetadata) SetTrustedTokenIssuerType(v string) *TrustedTokenIssuerMetadata {
+	s.TrustedTokenIssuerType = &v
+	return s
+}
+
+// A structure that contains details to be updated for a trusted token issuer
+// configuration. The structure and settings that you can include depend on
+// the type of the trusted token issuer being updated.
+type TrustedTokenIssuerUpdateConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that describes an updated configuration for a trusted token issuer
+	// that uses OpenID Connect (OIDC) with JSON web tokens (JWT).
+	OidcJwtConfiguration *OidcJwtUpdateConfiguration `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustedTokenIssuerUpdateConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TrustedTokenIssuerUpdateConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TrustedTokenIssuerUpdateConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TrustedTokenIssuerUpdateConfiguration"}
+	if s.OidcJwtConfiguration != nil {
+		if err := s.OidcJwtConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("OidcJwtConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOidcJwtConfiguration sets the OidcJwtConfiguration field's value.
+func (s *TrustedTokenIssuerUpdateConfiguration) SetOidcJwtConfiguration(v *OidcJwtUpdateConfiguration) *TrustedTokenIssuerUpdateConfiguration {
+	s.OidcJwtConfiguration = v
+	return s
+}
+
 type UntagResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
-	//
-	// InstanceArn is a required field
-	InstanceArn *string `min:"10" type:"string" required:"true"`
+	InstanceArn *string `min:"10" type:"string"`
 
 	// The ARN of the resource with the tags to be listed.
 	//
@@ -8137,9 +18972,6 @@ func (s UntagResourceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UntagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
-	if s.InstanceArn == nil {
-		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
-	}
 	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
 		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
 	}
@@ -8202,6 +19034,172 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateApplicationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ARN of the application. For more information about ARNs, see
+	// Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// ApplicationArn is a required field
+	ApplicationArn *string `min:"10" type:"string" required:"true"`
+
+	// The description of the .
+	Description *string `min:"1" type:"string"`
+
+	// Specifies the updated name for the application.
+	Name *string `type:"string"`
+
+	// A structure that describes the options for the portal associated with an
+	// application.
+	PortalOptions *UpdateApplicationPortalOptions `type:"structure"`
+
+	// Specifies whether the application is enabled or disabled.
+	Status *string `type:"string" enum:"ApplicationStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateApplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateApplicationInput"}
+	if s.ApplicationArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationArn"))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.PortalOptions != nil {
+		if err := s.PortalOptions.Validate(); err != nil {
+			invalidParams.AddNested("PortalOptions", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *UpdateApplicationInput) SetApplicationArn(v string) *UpdateApplicationInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateApplicationInput) SetDescription(v string) *UpdateApplicationInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateApplicationInput) SetName(v string) *UpdateApplicationInput {
+	s.Name = &v
+	return s
+}
+
+// SetPortalOptions sets the PortalOptions field's value.
+func (s *UpdateApplicationInput) SetPortalOptions(v *UpdateApplicationPortalOptions) *UpdateApplicationInput {
+	s.PortalOptions = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UpdateApplicationInput) SetStatus(v string) *UpdateApplicationInput {
+	s.Status = &v
+	return s
+}
+
+type UpdateApplicationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationOutput) GoString() string {
+	return s.String()
+}
+
+// A structure that describes the options for the access portal associated with
+// an application that can be updated.
+type UpdateApplicationPortalOptions struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that describes the sign-in options for an application portal.
+	SignInOptions *SignInOptions `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationPortalOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateApplicationPortalOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateApplicationPortalOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateApplicationPortalOptions"}
+	if s.SignInOptions != nil {
+		if err := s.SignInOptions.Validate(); err != nil {
+			invalidParams.AddNested("SignInOptions", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSignInOptions sets the SignInOptions field's value.
+func (s *UpdateApplicationPortalOptions) SetSignInOptions(v *SignInOptions) *UpdateApplicationPortalOptions {
+	s.SignInOptions = v
+	return s
+}
+
 type UpdateInstanceAccessControlAttributeConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8210,7 +19208,8 @@ type UpdateInstanceAccessControlAttributeConfigurationInput struct {
 	// InstanceAccessControlAttributeConfiguration is a required field
 	InstanceAccessControlAttributeConfiguration *InstanceAccessControlAttributeConfiguration `type:"structure" required:"true"`
 
-	// The ARN of the SSO instance under which the operation will be executed.
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed.
 	//
 	// InstanceArn is a required field
 	InstanceArn *string `min:"10" type:"string" required:"true"`
@@ -8292,15 +19291,103 @@ func (s UpdateInstanceAccessControlAttributeConfigurationOutput) GoString() stri
 	return s.String()
 }
 
+type UpdateInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the instance of IAM Identity Center under which the operation
+	// will run. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	//
+	// InstanceArn is a required field
+	InstanceArn *string `min:"10" type:"string" required:"true"`
+
+	// Updates the instance name.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateInstanceInput"}
+	if s.InstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("InstanceArn"))
+	}
+	if s.InstanceArn != nil && len(*s.InstanceArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceArn", 10))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceArn sets the InstanceArn field's value.
+func (s *UpdateInstanceInput) SetInstanceArn(v string) *UpdateInstanceInput {
+	s.InstanceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateInstanceInput) SetName(v string) *UpdateInstanceInput {
+	s.Name = &v
+	return s
+}
+
+type UpdateInstanceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateInstanceOutput) GoString() string {
+	return s.String()
+}
+
 type UpdatePermissionSetInput struct {
 	_ struct{} `type:"structure"`
 
 	// The description of the PermissionSet.
 	Description *string `min:"1" type:"string"`
 
-	// The ARN of the SSO instance under which the operation will be executed. For
-	// more information about ARNs, see Amazon Resource Names (ARNs) and Amazon
-	// Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
+	// The ARN of the IAM Identity Center instance under which the operation will
+	// be executed. For more information about ARNs, see Amazon Resource Names (ARNs)
+	// and Amazon Web Services Service Namespaces (/general/latest/gr/aws-arns-and-namespaces.html)
 	// in the Amazon Web Services General Reference.
 	//
 	// InstanceArn is a required field
@@ -8421,6 +19508,106 @@ func (s UpdatePermissionSetOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateTrustedTokenIssuerInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the updated name to be applied to the trusted token issuer configuration.
+	Name *string `min:"1" type:"string"`
+
+	// Specifies the ARN of the trusted token issuer configuration that you want
+	// to update.
+	//
+	// TrustedTokenIssuerArn is a required field
+	TrustedTokenIssuerArn *string `min:"10" type:"string" required:"true"`
+
+	// Specifies a structure with settings to apply to the specified trusted token
+	// issuer. The settings that you can provide are determined by the type of the
+	// trusted token issuer that you are updating.
+	TrustedTokenIssuerConfiguration *TrustedTokenIssuerUpdateConfiguration `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTrustedTokenIssuerInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTrustedTokenIssuerInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateTrustedTokenIssuerInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateTrustedTokenIssuerInput"}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.TrustedTokenIssuerArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrustedTokenIssuerArn"))
+	}
+	if s.TrustedTokenIssuerArn != nil && len(*s.TrustedTokenIssuerArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("TrustedTokenIssuerArn", 10))
+	}
+	if s.TrustedTokenIssuerConfiguration != nil {
+		if err := s.TrustedTokenIssuerConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("TrustedTokenIssuerConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateTrustedTokenIssuerInput) SetName(v string) *UpdateTrustedTokenIssuerInput {
+	s.Name = &v
+	return s
+}
+
+// SetTrustedTokenIssuerArn sets the TrustedTokenIssuerArn field's value.
+func (s *UpdateTrustedTokenIssuerInput) SetTrustedTokenIssuerArn(v string) *UpdateTrustedTokenIssuerInput {
+	s.TrustedTokenIssuerArn = &v
+	return s
+}
+
+// SetTrustedTokenIssuerConfiguration sets the TrustedTokenIssuerConfiguration field's value.
+func (s *UpdateTrustedTokenIssuerInput) SetTrustedTokenIssuerConfiguration(v *TrustedTokenIssuerUpdateConfiguration) *UpdateTrustedTokenIssuerInput {
+	s.TrustedTokenIssuerConfiguration = v
+	return s
+}
+
+type UpdateTrustedTokenIssuerOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTrustedTokenIssuerOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTrustedTokenIssuerOutput) GoString() string {
+	return s.String()
+}
+
 // The request failed because it contains a syntax error.
 type ValidationException struct {
 	_            struct{}                  `type:"structure"`
@@ -8486,6 +19673,90 @@ func (s *ValidationException) RequestID() string {
 }
 
 const (
+	// ApplicationStatusEnabled is a ApplicationStatus enum value
+	ApplicationStatusEnabled = "ENABLED"
+
+	// ApplicationStatusDisabled is a ApplicationStatus enum value
+	ApplicationStatusDisabled = "DISABLED"
+)
+
+// ApplicationStatus_Values returns all elements of the ApplicationStatus enum
+func ApplicationStatus_Values() []string {
+	return []string{
+		ApplicationStatusEnabled,
+		ApplicationStatusDisabled,
+	}
+}
+
+const (
+	// ApplicationVisibilityEnabled is a ApplicationVisibility enum value
+	ApplicationVisibilityEnabled = "ENABLED"
+
+	// ApplicationVisibilityDisabled is a ApplicationVisibility enum value
+	ApplicationVisibilityDisabled = "DISABLED"
+)
+
+// ApplicationVisibility_Values returns all elements of the ApplicationVisibility enum
+func ApplicationVisibility_Values() []string {
+	return []string{
+		ApplicationVisibilityEnabled,
+		ApplicationVisibilityDisabled,
+	}
+}
+
+const (
+	// AuthenticationMethodTypeIam is a AuthenticationMethodType enum value
+	AuthenticationMethodTypeIam = "IAM"
+)
+
+// AuthenticationMethodType_Values returns all elements of the AuthenticationMethodType enum
+func AuthenticationMethodType_Values() []string {
+	return []string{
+		AuthenticationMethodTypeIam,
+	}
+}
+
+const (
+	// FederationProtocolSaml is a FederationProtocol enum value
+	FederationProtocolSaml = "SAML"
+
+	// FederationProtocolOauth is a FederationProtocol enum value
+	FederationProtocolOauth = "OAUTH"
+)
+
+// FederationProtocol_Values returns all elements of the FederationProtocol enum
+func FederationProtocol_Values() []string {
+	return []string{
+		FederationProtocolSaml,
+		FederationProtocolOauth,
+	}
+}
+
+const (
+	// GrantTypeAuthorizationCode is a GrantType enum value
+	GrantTypeAuthorizationCode = "authorization_code"
+
+	// GrantTypeRefreshToken is a GrantType enum value
+	GrantTypeRefreshToken = "refresh_token"
+
+	// GrantTypeUrnIetfParamsOauthGrantTypeJwtBearer is a GrantType enum value
+	GrantTypeUrnIetfParamsOauthGrantTypeJwtBearer = "urn:ietf:params:oauth:grant-type:jwt-bearer"
+
+	// GrantTypeUrnIetfParamsOauthGrantTypeTokenExchange is a GrantType enum value
+	GrantTypeUrnIetfParamsOauthGrantTypeTokenExchange = "urn:ietf:params:oauth:grant-type:token-exchange"
+)
+
+// GrantType_Values returns all elements of the GrantType enum
+func GrantType_Values() []string {
+	return []string{
+		GrantTypeAuthorizationCode,
+		GrantTypeRefreshToken,
+		GrantTypeUrnIetfParamsOauthGrantTypeJwtBearer,
+		GrantTypeUrnIetfParamsOauthGrantTypeTokenExchange,
+	}
+}
+
+const (
 	// InstanceAccessControlAttributeConfigurationStatusEnabled is a InstanceAccessControlAttributeConfigurationStatus enum value
 	InstanceAccessControlAttributeConfigurationStatusEnabled = "ENABLED"
 
@@ -8502,6 +19773,38 @@ func InstanceAccessControlAttributeConfigurationStatus_Values() []string {
 		InstanceAccessControlAttributeConfigurationStatusEnabled,
 		InstanceAccessControlAttributeConfigurationStatusCreationInProgress,
 		InstanceAccessControlAttributeConfigurationStatusCreationFailed,
+	}
+}
+
+const (
+	// InstanceStatusCreateInProgress is a InstanceStatus enum value
+	InstanceStatusCreateInProgress = "CREATE_IN_PROGRESS"
+
+	// InstanceStatusDeleteInProgress is a InstanceStatus enum value
+	InstanceStatusDeleteInProgress = "DELETE_IN_PROGRESS"
+
+	// InstanceStatusActive is a InstanceStatus enum value
+	InstanceStatusActive = "ACTIVE"
+)
+
+// InstanceStatus_Values returns all elements of the InstanceStatus enum
+func InstanceStatus_Values() []string {
+	return []string{
+		InstanceStatusCreateInProgress,
+		InstanceStatusDeleteInProgress,
+		InstanceStatusActive,
+	}
+}
+
+const (
+	// JwksRetrievalOptionOpenIdDiscovery is a JwksRetrievalOption enum value
+	JwksRetrievalOptionOpenIdDiscovery = "OPEN_ID_DISCOVERY"
+)
+
+// JwksRetrievalOption_Values returns all elements of the JwksRetrievalOption enum
+func JwksRetrievalOption_Values() []string {
+	return []string{
+		JwksRetrievalOptionOpenIdDiscovery,
 	}
 }
 
@@ -8554,6 +19857,22 @@ func ProvisioningStatus_Values() []string {
 }
 
 const (
+	// SignInOriginIdentityCenter is a SignInOrigin enum value
+	SignInOriginIdentityCenter = "IDENTITY_CENTER"
+
+	// SignInOriginApplication is a SignInOrigin enum value
+	SignInOriginApplication = "APPLICATION"
+)
+
+// SignInOrigin_Values returns all elements of the SignInOrigin enum
+func SignInOrigin_Values() []string {
+	return []string{
+		SignInOriginIdentityCenter,
+		SignInOriginApplication,
+	}
+}
+
+const (
 	// StatusValuesInProgress is a StatusValues enum value
 	StatusValuesInProgress = "IN_PROGRESS"
 
@@ -8582,5 +19901,17 @@ const (
 func TargetType_Values() []string {
 	return []string{
 		TargetTypeAwsAccount,
+	}
+}
+
+const (
+	// TrustedTokenIssuerTypeOidcJwt is a TrustedTokenIssuerType enum value
+	TrustedTokenIssuerTypeOidcJwt = "OIDC_JWT"
+)
+
+// TrustedTokenIssuerType_Values returns all elements of the TrustedTokenIssuerType enum
+func TrustedTokenIssuerType_Values() []string {
+	return []string{
+		TrustedTokenIssuerTypeOidcJwt,
 	}
 }
