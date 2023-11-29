@@ -80,6 +80,10 @@ type NetworkFirewallAPI interface {
 	CreateRuleGroupWithContext(aws.Context, *networkfirewall.CreateRuleGroupInput, ...request.Option) (*networkfirewall.CreateRuleGroupOutput, error)
 	CreateRuleGroupRequest(*networkfirewall.CreateRuleGroupInput) (*request.Request, *networkfirewall.CreateRuleGroupOutput)
 
+	CreateTLSInspectionConfiguration(*networkfirewall.CreateTLSInspectionConfigurationInput) (*networkfirewall.CreateTLSInspectionConfigurationOutput, error)
+	CreateTLSInspectionConfigurationWithContext(aws.Context, *networkfirewall.CreateTLSInspectionConfigurationInput, ...request.Option) (*networkfirewall.CreateTLSInspectionConfigurationOutput, error)
+	CreateTLSInspectionConfigurationRequest(*networkfirewall.CreateTLSInspectionConfigurationInput) (*request.Request, *networkfirewall.CreateTLSInspectionConfigurationOutput)
+
 	DeleteFirewall(*networkfirewall.DeleteFirewallInput) (*networkfirewall.DeleteFirewallOutput, error)
 	DeleteFirewallWithContext(aws.Context, *networkfirewall.DeleteFirewallInput, ...request.Option) (*networkfirewall.DeleteFirewallOutput, error)
 	DeleteFirewallRequest(*networkfirewall.DeleteFirewallInput) (*request.Request, *networkfirewall.DeleteFirewallOutput)
@@ -95,6 +99,10 @@ type NetworkFirewallAPI interface {
 	DeleteRuleGroup(*networkfirewall.DeleteRuleGroupInput) (*networkfirewall.DeleteRuleGroupOutput, error)
 	DeleteRuleGroupWithContext(aws.Context, *networkfirewall.DeleteRuleGroupInput, ...request.Option) (*networkfirewall.DeleteRuleGroupOutput, error)
 	DeleteRuleGroupRequest(*networkfirewall.DeleteRuleGroupInput) (*request.Request, *networkfirewall.DeleteRuleGroupOutput)
+
+	DeleteTLSInspectionConfiguration(*networkfirewall.DeleteTLSInspectionConfigurationInput) (*networkfirewall.DeleteTLSInspectionConfigurationOutput, error)
+	DeleteTLSInspectionConfigurationWithContext(aws.Context, *networkfirewall.DeleteTLSInspectionConfigurationInput, ...request.Option) (*networkfirewall.DeleteTLSInspectionConfigurationOutput, error)
+	DeleteTLSInspectionConfigurationRequest(*networkfirewall.DeleteTLSInspectionConfigurationInput) (*request.Request, *networkfirewall.DeleteTLSInspectionConfigurationOutput)
 
 	DescribeFirewall(*networkfirewall.DescribeFirewallInput) (*networkfirewall.DescribeFirewallOutput, error)
 	DescribeFirewallWithContext(aws.Context, *networkfirewall.DescribeFirewallInput, ...request.Option) (*networkfirewall.DescribeFirewallOutput, error)
@@ -120,6 +128,10 @@ type NetworkFirewallAPI interface {
 	DescribeRuleGroupMetadataWithContext(aws.Context, *networkfirewall.DescribeRuleGroupMetadataInput, ...request.Option) (*networkfirewall.DescribeRuleGroupMetadataOutput, error)
 	DescribeRuleGroupMetadataRequest(*networkfirewall.DescribeRuleGroupMetadataInput) (*request.Request, *networkfirewall.DescribeRuleGroupMetadataOutput)
 
+	DescribeTLSInspectionConfiguration(*networkfirewall.DescribeTLSInspectionConfigurationInput) (*networkfirewall.DescribeTLSInspectionConfigurationOutput, error)
+	DescribeTLSInspectionConfigurationWithContext(aws.Context, *networkfirewall.DescribeTLSInspectionConfigurationInput, ...request.Option) (*networkfirewall.DescribeTLSInspectionConfigurationOutput, error)
+	DescribeTLSInspectionConfigurationRequest(*networkfirewall.DescribeTLSInspectionConfigurationInput) (*request.Request, *networkfirewall.DescribeTLSInspectionConfigurationOutput)
+
 	DisassociateSubnets(*networkfirewall.DisassociateSubnetsInput) (*networkfirewall.DisassociateSubnetsOutput, error)
 	DisassociateSubnetsWithContext(aws.Context, *networkfirewall.DisassociateSubnetsInput, ...request.Option) (*networkfirewall.DisassociateSubnetsOutput, error)
 	DisassociateSubnetsRequest(*networkfirewall.DisassociateSubnetsInput) (*request.Request, *networkfirewall.DisassociateSubnetsOutput)
@@ -144,6 +156,13 @@ type NetworkFirewallAPI interface {
 
 	ListRuleGroupsPages(*networkfirewall.ListRuleGroupsInput, func(*networkfirewall.ListRuleGroupsOutput, bool) bool) error
 	ListRuleGroupsPagesWithContext(aws.Context, *networkfirewall.ListRuleGroupsInput, func(*networkfirewall.ListRuleGroupsOutput, bool) bool, ...request.Option) error
+
+	ListTLSInspectionConfigurations(*networkfirewall.ListTLSInspectionConfigurationsInput) (*networkfirewall.ListTLSInspectionConfigurationsOutput, error)
+	ListTLSInspectionConfigurationsWithContext(aws.Context, *networkfirewall.ListTLSInspectionConfigurationsInput, ...request.Option) (*networkfirewall.ListTLSInspectionConfigurationsOutput, error)
+	ListTLSInspectionConfigurationsRequest(*networkfirewall.ListTLSInspectionConfigurationsInput) (*request.Request, *networkfirewall.ListTLSInspectionConfigurationsOutput)
+
+	ListTLSInspectionConfigurationsPages(*networkfirewall.ListTLSInspectionConfigurationsInput, func(*networkfirewall.ListTLSInspectionConfigurationsOutput, bool) bool) error
+	ListTLSInspectionConfigurationsPagesWithContext(aws.Context, *networkfirewall.ListTLSInspectionConfigurationsInput, func(*networkfirewall.ListTLSInspectionConfigurationsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*networkfirewall.ListTagsForResourceInput) (*networkfirewall.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *networkfirewall.ListTagsForResourceInput, ...request.Option) (*networkfirewall.ListTagsForResourceOutput, error)
@@ -195,6 +214,10 @@ type NetworkFirewallAPI interface {
 	UpdateSubnetChangeProtection(*networkfirewall.UpdateSubnetChangeProtectionInput) (*networkfirewall.UpdateSubnetChangeProtectionOutput, error)
 	UpdateSubnetChangeProtectionWithContext(aws.Context, *networkfirewall.UpdateSubnetChangeProtectionInput, ...request.Option) (*networkfirewall.UpdateSubnetChangeProtectionOutput, error)
 	UpdateSubnetChangeProtectionRequest(*networkfirewall.UpdateSubnetChangeProtectionInput) (*request.Request, *networkfirewall.UpdateSubnetChangeProtectionOutput)
+
+	UpdateTLSInspectionConfiguration(*networkfirewall.UpdateTLSInspectionConfigurationInput) (*networkfirewall.UpdateTLSInspectionConfigurationOutput, error)
+	UpdateTLSInspectionConfigurationWithContext(aws.Context, *networkfirewall.UpdateTLSInspectionConfigurationInput, ...request.Option) (*networkfirewall.UpdateTLSInspectionConfigurationOutput, error)
+	UpdateTLSInspectionConfigurationRequest(*networkfirewall.UpdateTLSInspectionConfigurationInput) (*request.Request, *networkfirewall.UpdateTLSInspectionConfigurationOutput)
 }
 
 var _ NetworkFirewallAPI = (*networkfirewall.NetworkFirewall)(nil)

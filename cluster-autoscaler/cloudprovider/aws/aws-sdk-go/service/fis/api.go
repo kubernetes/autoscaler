@@ -72,7 +72,7 @@ func (c *FIS) CreateExperimentTemplateRequest(input *CreateExperimentTemplateInp
 //     is running, the experiment is automatically stopped. You can define a
 //     stop condition as a CloudWatch alarm.
 //
-// For more information, see Experiment templates (https://docs.aws.amazon.com/fis/latest/userguide/experiment-templates.html)
+// For more information, see experiment templates (https://docs.aws.amazon.com/fis/latest/userguide/experiment-templates.html)
 // in the Fault Injection Simulator User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -114,6 +114,98 @@ func (c *FIS) CreateExperimentTemplate(input *CreateExperimentTemplateInput) (*C
 // for more information on using Contexts.
 func (c *FIS) CreateExperimentTemplateWithContext(ctx aws.Context, input *CreateExperimentTemplateInput, opts ...request.Option) (*CreateExperimentTemplateOutput, error) {
 	req, out := c.CreateExperimentTemplateRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateTargetAccountConfiguration = "CreateTargetAccountConfiguration"
+
+// CreateTargetAccountConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateTargetAccountConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateTargetAccountConfiguration for more information on using the CreateTargetAccountConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateTargetAccountConfigurationRequest method.
+//	req, resp := client.CreateTargetAccountConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/CreateTargetAccountConfiguration
+func (c *FIS) CreateTargetAccountConfigurationRequest(input *CreateTargetAccountConfigurationInput) (req *request.Request, output *CreateTargetAccountConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opCreateTargetAccountConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/experimentTemplates/{id}/targetAccountConfigurations/{accountId}",
+	}
+
+	if input == nil {
+		input = &CreateTargetAccountConfigurationInput{}
+	}
+
+	output = &CreateTargetAccountConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateTargetAccountConfiguration API operation for AWS Fault Injection Simulator.
+//
+// Creates a target account configuration for the experiment template. A target
+// account configuration is required when accountTargeting of experimentOptions
+// is set to multi-account. For more information, see experiment options (https://docs.aws.amazon.com/fis/latest/userguide/experiment-options.html)
+// in the Fault Injection Simulator User Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation CreateTargetAccountConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ConflictException
+//     The request could not be processed because of a conflict.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+//   - ServiceQuotaExceededException
+//     You have exceeded your service quota.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/CreateTargetAccountConfiguration
+func (c *FIS) CreateTargetAccountConfiguration(input *CreateTargetAccountConfigurationInput) (*CreateTargetAccountConfigurationOutput, error) {
+	req, out := c.CreateTargetAccountConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// CreateTargetAccountConfigurationWithContext is the same as CreateTargetAccountConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateTargetAccountConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) CreateTargetAccountConfigurationWithContext(ctx aws.Context, input *CreateTargetAccountConfigurationInput, opts ...request.Option) (*CreateTargetAccountConfigurationOutput, error) {
+	req, out := c.CreateTargetAccountConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -197,6 +289,89 @@ func (c *FIS) DeleteExperimentTemplate(input *DeleteExperimentTemplateInput) (*D
 // for more information on using Contexts.
 func (c *FIS) DeleteExperimentTemplateWithContext(ctx aws.Context, input *DeleteExperimentTemplateInput, opts ...request.Option) (*DeleteExperimentTemplateOutput, error) {
 	req, out := c.DeleteExperimentTemplateRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteTargetAccountConfiguration = "DeleteTargetAccountConfiguration"
+
+// DeleteTargetAccountConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteTargetAccountConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteTargetAccountConfiguration for more information on using the DeleteTargetAccountConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteTargetAccountConfigurationRequest method.
+//	req, resp := client.DeleteTargetAccountConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/DeleteTargetAccountConfiguration
+func (c *FIS) DeleteTargetAccountConfigurationRequest(input *DeleteTargetAccountConfigurationInput) (req *request.Request, output *DeleteTargetAccountConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteTargetAccountConfiguration,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/experimentTemplates/{id}/targetAccountConfigurations/{accountId}",
+	}
+
+	if input == nil {
+		input = &DeleteTargetAccountConfigurationInput{}
+	}
+
+	output = &DeleteTargetAccountConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteTargetAccountConfiguration API operation for AWS Fault Injection Simulator.
+//
+// Deletes the specified target account configuration of the experiment template.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation DeleteTargetAccountConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/DeleteTargetAccountConfiguration
+func (c *FIS) DeleteTargetAccountConfiguration(input *DeleteTargetAccountConfigurationInput) (*DeleteTargetAccountConfigurationOutput, error) {
+	req, out := c.DeleteTargetAccountConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteTargetAccountConfigurationWithContext is the same as DeleteTargetAccountConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteTargetAccountConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) DeleteTargetAccountConfigurationWithContext(ctx aws.Context, input *DeleteTargetAccountConfigurationInput, opts ...request.Option) (*DeleteTargetAccountConfigurationOutput, error) {
+	req, out := c.DeleteTargetAccountConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -368,6 +543,90 @@ func (c *FIS) GetExperimentWithContext(ctx aws.Context, input *GetExperimentInpu
 	return out, req.Send()
 }
 
+const opGetExperimentTargetAccountConfiguration = "GetExperimentTargetAccountConfiguration"
+
+// GetExperimentTargetAccountConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetExperimentTargetAccountConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetExperimentTargetAccountConfiguration for more information on using the GetExperimentTargetAccountConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetExperimentTargetAccountConfigurationRequest method.
+//	req, resp := client.GetExperimentTargetAccountConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetExperimentTargetAccountConfiguration
+func (c *FIS) GetExperimentTargetAccountConfigurationRequest(input *GetExperimentTargetAccountConfigurationInput) (req *request.Request, output *GetExperimentTargetAccountConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetExperimentTargetAccountConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/experiments/{id}/targetAccountConfigurations/{accountId}",
+	}
+
+	if input == nil {
+		input = &GetExperimentTargetAccountConfigurationInput{}
+	}
+
+	output = &GetExperimentTargetAccountConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetExperimentTargetAccountConfiguration API operation for AWS Fault Injection Simulator.
+//
+// Gets information about the specified target account configuration of the
+// experiment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation GetExperimentTargetAccountConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetExperimentTargetAccountConfiguration
+func (c *FIS) GetExperimentTargetAccountConfiguration(input *GetExperimentTargetAccountConfigurationInput) (*GetExperimentTargetAccountConfigurationOutput, error) {
+	req, out := c.GetExperimentTargetAccountConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetExperimentTargetAccountConfigurationWithContext is the same as GetExperimentTargetAccountConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetExperimentTargetAccountConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) GetExperimentTargetAccountConfigurationWithContext(ctx aws.Context, input *GetExperimentTargetAccountConfigurationInput, opts ...request.Option) (*GetExperimentTargetAccountConfigurationOutput, error) {
+	req, out := c.GetExperimentTargetAccountConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetExperimentTemplate = "GetExperimentTemplate"
 
 // GetExperimentTemplateRequest generates a "aws/request.Request" representing the
@@ -446,6 +705,90 @@ func (c *FIS) GetExperimentTemplate(input *GetExperimentTemplateInput) (*GetExpe
 // for more information on using Contexts.
 func (c *FIS) GetExperimentTemplateWithContext(ctx aws.Context, input *GetExperimentTemplateInput, opts ...request.Option) (*GetExperimentTemplateOutput, error) {
 	req, out := c.GetExperimentTemplateRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetTargetAccountConfiguration = "GetTargetAccountConfiguration"
+
+// GetTargetAccountConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetTargetAccountConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetTargetAccountConfiguration for more information on using the GetTargetAccountConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetTargetAccountConfigurationRequest method.
+//	req, resp := client.GetTargetAccountConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetTargetAccountConfiguration
+func (c *FIS) GetTargetAccountConfigurationRequest(input *GetTargetAccountConfigurationInput) (req *request.Request, output *GetTargetAccountConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetTargetAccountConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/experimentTemplates/{id}/targetAccountConfigurations/{accountId}",
+	}
+
+	if input == nil {
+		input = &GetTargetAccountConfigurationInput{}
+	}
+
+	output = &GetTargetAccountConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetTargetAccountConfiguration API operation for AWS Fault Injection Simulator.
+//
+// Gets information about the specified target account configuration of the
+// experiment template.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation GetTargetAccountConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/GetTargetAccountConfiguration
+func (c *FIS) GetTargetAccountConfiguration(input *GetTargetAccountConfigurationInput) (*GetTargetAccountConfigurationOutput, error) {
+	req, out := c.GetTargetAccountConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetTargetAccountConfigurationWithContext is the same as GetTargetAccountConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetTargetAccountConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) GetTargetAccountConfigurationWithContext(ctx aws.Context, input *GetTargetAccountConfigurationInput, opts ...request.Option) (*GetTargetAccountConfigurationOutput, error) {
+	req, out := c.GetTargetAccountConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -668,6 +1011,229 @@ func (c *FIS) ListActionsPagesWithContext(ctx aws.Context, input *ListActionsInp
 	}
 
 	return p.Err()
+}
+
+const opListExperimentResolvedTargets = "ListExperimentResolvedTargets"
+
+// ListExperimentResolvedTargetsRequest generates a "aws/request.Request" representing the
+// client's request for the ListExperimentResolvedTargets operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListExperimentResolvedTargets for more information on using the ListExperimentResolvedTargets
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListExperimentResolvedTargetsRequest method.
+//	req, resp := client.ListExperimentResolvedTargetsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperimentResolvedTargets
+func (c *FIS) ListExperimentResolvedTargetsRequest(input *ListExperimentResolvedTargetsInput) (req *request.Request, output *ListExperimentResolvedTargetsOutput) {
+	op := &request.Operation{
+		Name:       opListExperimentResolvedTargets,
+		HTTPMethod: "GET",
+		HTTPPath:   "/experiments/{id}/resolvedTargets",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListExperimentResolvedTargetsInput{}
+	}
+
+	output = &ListExperimentResolvedTargetsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListExperimentResolvedTargets API operation for AWS Fault Injection Simulator.
+//
+// Lists the resolved targets information of the specified experiment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation ListExperimentResolvedTargets for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperimentResolvedTargets
+func (c *FIS) ListExperimentResolvedTargets(input *ListExperimentResolvedTargetsInput) (*ListExperimentResolvedTargetsOutput, error) {
+	req, out := c.ListExperimentResolvedTargetsRequest(input)
+	return out, req.Send()
+}
+
+// ListExperimentResolvedTargetsWithContext is the same as ListExperimentResolvedTargets with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListExperimentResolvedTargets for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) ListExperimentResolvedTargetsWithContext(ctx aws.Context, input *ListExperimentResolvedTargetsInput, opts ...request.Option) (*ListExperimentResolvedTargetsOutput, error) {
+	req, out := c.ListExperimentResolvedTargetsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListExperimentResolvedTargetsPages iterates over the pages of a ListExperimentResolvedTargets operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListExperimentResolvedTargets method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListExperimentResolvedTargets operation.
+//	pageNum := 0
+//	err := client.ListExperimentResolvedTargetsPages(params,
+//	    func(page *fis.ListExperimentResolvedTargetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *FIS) ListExperimentResolvedTargetsPages(input *ListExperimentResolvedTargetsInput, fn func(*ListExperimentResolvedTargetsOutput, bool) bool) error {
+	return c.ListExperimentResolvedTargetsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListExperimentResolvedTargetsPagesWithContext same as ListExperimentResolvedTargetsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) ListExperimentResolvedTargetsPagesWithContext(ctx aws.Context, input *ListExperimentResolvedTargetsInput, fn func(*ListExperimentResolvedTargetsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListExperimentResolvedTargetsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListExperimentResolvedTargetsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListExperimentResolvedTargetsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListExperimentTargetAccountConfigurations = "ListExperimentTargetAccountConfigurations"
+
+// ListExperimentTargetAccountConfigurationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListExperimentTargetAccountConfigurations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListExperimentTargetAccountConfigurations for more information on using the ListExperimentTargetAccountConfigurations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListExperimentTargetAccountConfigurationsRequest method.
+//	req, resp := client.ListExperimentTargetAccountConfigurationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperimentTargetAccountConfigurations
+func (c *FIS) ListExperimentTargetAccountConfigurationsRequest(input *ListExperimentTargetAccountConfigurationsInput) (req *request.Request, output *ListExperimentTargetAccountConfigurationsOutput) {
+	op := &request.Operation{
+		Name:       opListExperimentTargetAccountConfigurations,
+		HTTPMethod: "GET",
+		HTTPPath:   "/experiments/{id}/targetAccountConfigurations",
+	}
+
+	if input == nil {
+		input = &ListExperimentTargetAccountConfigurationsInput{}
+	}
+
+	output = &ListExperimentTargetAccountConfigurationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListExperimentTargetAccountConfigurations API operation for AWS Fault Injection Simulator.
+//
+// Lists the target account configurations of the specified experiment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation ListExperimentTargetAccountConfigurations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListExperimentTargetAccountConfigurations
+func (c *FIS) ListExperimentTargetAccountConfigurations(input *ListExperimentTargetAccountConfigurationsInput) (*ListExperimentTargetAccountConfigurationsOutput, error) {
+	req, out := c.ListExperimentTargetAccountConfigurationsRequest(input)
+	return out, req.Send()
+}
+
+// ListExperimentTargetAccountConfigurationsWithContext is the same as ListExperimentTargetAccountConfigurations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListExperimentTargetAccountConfigurations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) ListExperimentTargetAccountConfigurationsWithContext(ctx aws.Context, input *ListExperimentTargetAccountConfigurationsInput, opts ...request.Option) (*ListExperimentTargetAccountConfigurationsOutput, error) {
+	req, out := c.ListExperimentTargetAccountConfigurationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
 }
 
 const opListExperimentTemplates = "ListExperimentTemplates"
@@ -1013,6 +1579,146 @@ func (c *FIS) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsFor
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opListTargetAccountConfigurations = "ListTargetAccountConfigurations"
+
+// ListTargetAccountConfigurationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListTargetAccountConfigurations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTargetAccountConfigurations for more information on using the ListTargetAccountConfigurations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTargetAccountConfigurationsRequest method.
+//	req, resp := client.ListTargetAccountConfigurationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListTargetAccountConfigurations
+func (c *FIS) ListTargetAccountConfigurationsRequest(input *ListTargetAccountConfigurationsInput) (req *request.Request, output *ListTargetAccountConfigurationsOutput) {
+	op := &request.Operation{
+		Name:       opListTargetAccountConfigurations,
+		HTTPMethod: "GET",
+		HTTPPath:   "/experimentTemplates/{id}/targetAccountConfigurations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListTargetAccountConfigurationsInput{}
+	}
+
+	output = &ListTargetAccountConfigurationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTargetAccountConfigurations API operation for AWS Fault Injection Simulator.
+//
+// Lists the target account configurations of the specified experiment template.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation ListTargetAccountConfigurations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/ListTargetAccountConfigurations
+func (c *FIS) ListTargetAccountConfigurations(input *ListTargetAccountConfigurationsInput) (*ListTargetAccountConfigurationsOutput, error) {
+	req, out := c.ListTargetAccountConfigurationsRequest(input)
+	return out, req.Send()
+}
+
+// ListTargetAccountConfigurationsWithContext is the same as ListTargetAccountConfigurations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTargetAccountConfigurations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) ListTargetAccountConfigurationsWithContext(ctx aws.Context, input *ListTargetAccountConfigurationsInput, opts ...request.Option) (*ListTargetAccountConfigurationsOutput, error) {
+	req, out := c.ListTargetAccountConfigurationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListTargetAccountConfigurationsPages iterates over the pages of a ListTargetAccountConfigurations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListTargetAccountConfigurations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListTargetAccountConfigurations operation.
+//	pageNum := 0
+//	err := client.ListTargetAccountConfigurationsPages(params,
+//	    func(page *fis.ListTargetAccountConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *FIS) ListTargetAccountConfigurationsPages(input *ListTargetAccountConfigurationsInput, fn func(*ListTargetAccountConfigurationsOutput, bool) bool) error {
+	return c.ListTargetAccountConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListTargetAccountConfigurationsPagesWithContext same as ListTargetAccountConfigurationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) ListTargetAccountConfigurationsPagesWithContext(ctx aws.Context, input *ListTargetAccountConfigurationsInput, fn func(*ListTargetAccountConfigurationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListTargetAccountConfigurationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListTargetAccountConfigurationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListTargetAccountConfigurationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListTargetResourceTypes = "ListTargetResourceTypes"
@@ -1557,6 +2263,89 @@ func (c *FIS) UpdateExperimentTemplateWithContext(ctx aws.Context, input *Update
 	return out, req.Send()
 }
 
+const opUpdateTargetAccountConfiguration = "UpdateTargetAccountConfiguration"
+
+// UpdateTargetAccountConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateTargetAccountConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateTargetAccountConfiguration for more information on using the UpdateTargetAccountConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateTargetAccountConfigurationRequest method.
+//	req, resp := client.UpdateTargetAccountConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/UpdateTargetAccountConfiguration
+func (c *FIS) UpdateTargetAccountConfigurationRequest(input *UpdateTargetAccountConfigurationInput) (req *request.Request, output *UpdateTargetAccountConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateTargetAccountConfiguration,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/experimentTemplates/{id}/targetAccountConfigurations/{accountId}",
+	}
+
+	if input == nil {
+		input = &UpdateTargetAccountConfigurationInput{}
+	}
+
+	output = &UpdateTargetAccountConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateTargetAccountConfiguration API operation for AWS Fault Injection Simulator.
+//
+// Updates the target account configuration for the specified experiment template.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Fault Injection Simulator's
+// API operation UpdateTargetAccountConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The specified input is not valid, or fails to satisfy the constraints for
+//     the request.
+//
+//   - ResourceNotFoundException
+//     The specified resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/fis-2020-12-01/UpdateTargetAccountConfiguration
+func (c *FIS) UpdateTargetAccountConfiguration(input *UpdateTargetAccountConfigurationInput) (*UpdateTargetAccountConfigurationOutput, error) {
+	req, out := c.UpdateTargetAccountConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateTargetAccountConfigurationWithContext is the same as UpdateTargetAccountConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateTargetAccountConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *FIS) UpdateTargetAccountConfigurationWithContext(ctx aws.Context, input *UpdateTargetAccountConfigurationInput, opts ...request.Option) (*UpdateTargetAccountConfigurationOutput, error) {
+	req, out := c.UpdateTargetAccountConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // Describes an action. For more information, see FIS actions (https://docs.aws.amazon.com/fis/latest/userguide/fis-actions-reference.html)
 // in the Fault Injection Simulator User Guide.
 type Action struct {
@@ -1909,6 +2698,47 @@ func (s *CreateExperimentTemplateActionInput) SetTargets(v map[string]*string) *
 	return s
 }
 
+// Specifies experiment options for an experiment template.
+type CreateExperimentTemplateExperimentOptionsInput_ struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the account targeting setting for experiment options.
+	AccountTargeting *string `locationName:"accountTargeting" type:"string" enum:"AccountTargeting"`
+
+	// Specifies the empty target resolution mode for experiment options.
+	EmptyTargetResolutionMode *string `locationName:"emptyTargetResolutionMode" type:"string" enum:"EmptyTargetResolutionMode"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateExperimentTemplateExperimentOptionsInput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateExperimentTemplateExperimentOptionsInput_) GoString() string {
+	return s.String()
+}
+
+// SetAccountTargeting sets the AccountTargeting field's value.
+func (s *CreateExperimentTemplateExperimentOptionsInput_) SetAccountTargeting(v string) *CreateExperimentTemplateExperimentOptionsInput_ {
+	s.AccountTargeting = &v
+	return s
+}
+
+// SetEmptyTargetResolutionMode sets the EmptyTargetResolutionMode field's value.
+func (s *CreateExperimentTemplateExperimentOptionsInput_) SetEmptyTargetResolutionMode(v string) *CreateExperimentTemplateExperimentOptionsInput_ {
+	s.EmptyTargetResolutionMode = &v
+	return s
+}
+
 type CreateExperimentTemplateInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1925,6 +2755,9 @@ type CreateExperimentTemplateInput struct {
 	//
 	// Description is a required field
 	Description *string `locationName:"description" type:"string" required:"true"`
+
+	// The experiment options for the experiment template.
+	ExperimentOptions *CreateExperimentTemplateExperimentOptionsInput_ `locationName:"experimentOptions" type:"structure"`
 
 	// The configuration for experiment logging.
 	LogConfiguration *CreateExperimentTemplateLogConfigurationInput_ `locationName:"logConfiguration" type:"structure"`
@@ -2043,6 +2876,12 @@ func (s *CreateExperimentTemplateInput) SetClientToken(v string) *CreateExperime
 // SetDescription sets the Description field's value.
 func (s *CreateExperimentTemplateInput) SetDescription(v string) *CreateExperimentTemplateInput {
 	s.Description = &v
+	return s
+}
+
+// SetExperimentOptions sets the ExperimentOptions field's value.
+func (s *CreateExperimentTemplateInput) SetExperimentOptions(v *CreateExperimentTemplateExperimentOptionsInput_) *CreateExperimentTemplateInput {
+	s.ExperimentOptions = v
 	return s
 }
 
@@ -2369,6 +3208,142 @@ func (s *CreateExperimentTemplateTargetInput) SetSelectionMode(v string) *Create
 	return s
 }
 
+type CreateTargetAccountConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID of the target account.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"uri" locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// Unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The description of the target account.
+	Description *string `locationName:"description" type:"string"`
+
+	// The experiment template ID.
+	//
+	// ExperimentTemplateId is a required field
+	ExperimentTemplateId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of an IAM role for the target account.
+	//
+	// RoleArn is a required field
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTargetAccountConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTargetAccountConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateTargetAccountConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateTargetAccountConfigurationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.ExperimentTemplateId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentTemplateId"))
+	}
+	if s.ExperimentTemplateId != nil && len(*s.ExperimentTemplateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentTemplateId", 1))
+	}
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
+	}
+	if s.RoleArn != nil && len(*s.RoleArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *CreateTargetAccountConfigurationInput) SetAccountId(v string) *CreateTargetAccountConfigurationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateTargetAccountConfigurationInput) SetClientToken(v string) *CreateTargetAccountConfigurationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateTargetAccountConfigurationInput) SetDescription(v string) *CreateTargetAccountConfigurationInput {
+	s.Description = &v
+	return s
+}
+
+// SetExperimentTemplateId sets the ExperimentTemplateId field's value.
+func (s *CreateTargetAccountConfigurationInput) SetExperimentTemplateId(v string) *CreateTargetAccountConfigurationInput {
+	s.ExperimentTemplateId = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CreateTargetAccountConfigurationInput) SetRoleArn(v string) *CreateTargetAccountConfigurationInput {
+	s.RoleArn = &v
+	return s
+}
+
+type CreateTargetAccountConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the target account configuration.
+	TargetAccountConfiguration *TargetAccountConfiguration `locationName:"targetAccountConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTargetAccountConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateTargetAccountConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetTargetAccountConfiguration sets the TargetAccountConfiguration field's value.
+func (s *CreateTargetAccountConfigurationOutput) SetTargetAccountConfiguration(v *TargetAccountConfiguration) *CreateTargetAccountConfigurationOutput {
+	s.TargetAccountConfiguration = v
+	return s
+}
+
 type DeleteExperimentTemplateInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -2449,6 +3424,103 @@ func (s *DeleteExperimentTemplateOutput) SetExperimentTemplate(v *ExperimentTemp
 	return s
 }
 
+type DeleteTargetAccountConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The AWS account ID of the target account.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"uri" locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The ID of the experiment template.
+	//
+	// ExperimentTemplateId is a required field
+	ExperimentTemplateId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTargetAccountConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTargetAccountConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteTargetAccountConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteTargetAccountConfigurationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+	if s.ExperimentTemplateId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentTemplateId"))
+	}
+	if s.ExperimentTemplateId != nil && len(*s.ExperimentTemplateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentTemplateId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteTargetAccountConfigurationInput) SetAccountId(v string) *DeleteTargetAccountConfigurationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetExperimentTemplateId sets the ExperimentTemplateId field's value.
+func (s *DeleteTargetAccountConfigurationInput) SetExperimentTemplateId(v string) *DeleteTargetAccountConfigurationInput {
+	s.ExperimentTemplateId = &v
+	return s
+}
+
+type DeleteTargetAccountConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the target account configuration.
+	TargetAccountConfiguration *TargetAccountConfiguration `locationName:"targetAccountConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTargetAccountConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteTargetAccountConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetTargetAccountConfiguration sets the TargetAccountConfiguration field's value.
+func (s *DeleteTargetAccountConfigurationOutput) SetTargetAccountConfiguration(v *TargetAccountConfiguration) *DeleteTargetAccountConfigurationOutput {
+	s.TargetAccountConfiguration = v
+	return s
+}
+
 // Describes an experiment.
 type Experiment struct {
 	_ struct{} `type:"structure"`
@@ -2461,6 +3533,9 @@ type Experiment struct {
 
 	// The time that the experiment ended.
 	EndTime *time.Time `locationName:"endTime" type:"timestamp"`
+
+	// The experiment options for the experiment.
+	ExperimentOptions *ExperimentOptions `locationName:"experimentOptions" type:"structure"`
 
 	// The ID of the experiment template.
 	ExperimentTemplateId *string `locationName:"experimentTemplateId" type:"string"`
@@ -2486,6 +3561,9 @@ type Experiment struct {
 
 	// The tags for the experiment.
 	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// The count of target account configurations for the experiment.
+	TargetAccountConfigurationsCount *int64 `locationName:"targetAccountConfigurationsCount" type:"long"`
 
 	// The targets for the experiment.
 	Targets map[string]*ExperimentTarget `locationName:"targets" type:"map"`
@@ -2524,6 +3602,12 @@ func (s *Experiment) SetCreationTime(v time.Time) *Experiment {
 // SetEndTime sets the EndTime field's value.
 func (s *Experiment) SetEndTime(v time.Time) *Experiment {
 	s.EndTime = &v
+	return s
+}
+
+// SetExperimentOptions sets the ExperimentOptions field's value.
+func (s *Experiment) SetExperimentOptions(v *ExperimentOptions) *Experiment {
+	s.ExperimentOptions = v
 	return s
 }
 
@@ -2572,6 +3656,12 @@ func (s *Experiment) SetStopConditions(v []*ExperimentStopCondition) *Experiment
 // SetTags sets the Tags field's value.
 func (s *Experiment) SetTags(v map[string]*string) *Experiment {
 	s.Tags = v
+	return s
+}
+
+// SetTargetAccountConfigurationsCount sets the TargetAccountConfigurationsCount field's value.
+func (s *Experiment) SetTargetAccountConfigurationsCount(v int64) *Experiment {
+	s.TargetAccountConfigurationsCount = &v
 	return s
 }
 
@@ -2797,6 +3887,47 @@ func (s *ExperimentLogConfiguration) SetLogSchemaVersion(v int64) *ExperimentLog
 // SetS3Configuration sets the S3Configuration field's value.
 func (s *ExperimentLogConfiguration) SetS3Configuration(v *ExperimentS3LogConfiguration) *ExperimentLogConfiguration {
 	s.S3Configuration = v
+	return s
+}
+
+// Describes the options for an experiment.
+type ExperimentOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The account targeting setting for an experiment.
+	AccountTargeting *string `locationName:"accountTargeting" type:"string" enum:"AccountTargeting"`
+
+	// The empty target resolution mode for an experiment.
+	EmptyTargetResolutionMode *string `locationName:"emptyTargetResolutionMode" type:"string" enum:"EmptyTargetResolutionMode"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentOptions) GoString() string {
+	return s.String()
+}
+
+// SetAccountTargeting sets the AccountTargeting field's value.
+func (s *ExperimentOptions) SetAccountTargeting(v string) *ExperimentOptions {
+	s.AccountTargeting = &v
+	return s
+}
+
+// SetEmptyTargetResolutionMode sets the EmptyTargetResolutionMode field's value.
+func (s *ExperimentOptions) SetEmptyTargetResolutionMode(v string) *ExperimentOptions {
+	s.EmptyTargetResolutionMode = &v
 	return s
 }
 
@@ -3068,6 +4199,106 @@ func (s *ExperimentTarget) SetSelectionMode(v string) *ExperimentTarget {
 	return s
 }
 
+// Describes a target account configuration for an experiment.
+type ExperimentTargetAccountConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID of the target account.
+	AccountId *string `locationName:"accountId" min:"12" type:"string"`
+
+	// The description of the target account.
+	Description *string `locationName:"description" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an IAM role for the target account.
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentTargetAccountConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentTargetAccountConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ExperimentTargetAccountConfiguration) SetAccountId(v string) *ExperimentTargetAccountConfiguration {
+	s.AccountId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ExperimentTargetAccountConfiguration) SetDescription(v string) *ExperimentTargetAccountConfiguration {
+	s.Description = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ExperimentTargetAccountConfiguration) SetRoleArn(v string) *ExperimentTargetAccountConfiguration {
+	s.RoleArn = &v
+	return s
+}
+
+// Provides a summary of a target account configuration.
+type ExperimentTargetAccountConfigurationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID of the target account.
+	AccountId *string `locationName:"accountId" min:"12" type:"string"`
+
+	// The description of the target account.
+	Description *string `locationName:"description" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an IAM role for the target account.
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentTargetAccountConfigurationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentTargetAccountConfigurationSummary) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ExperimentTargetAccountConfigurationSummary) SetAccountId(v string) *ExperimentTargetAccountConfigurationSummary {
+	s.AccountId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *ExperimentTargetAccountConfigurationSummary) SetDescription(v string) *ExperimentTargetAccountConfigurationSummary {
+	s.Description = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ExperimentTargetAccountConfigurationSummary) SetRoleArn(v string) *ExperimentTargetAccountConfigurationSummary {
+	s.RoleArn = &v
+	return s
+}
+
 // Describes a filter used for the target resources in an experiment.
 type ExperimentTargetFilter struct {
 	_ struct{} `type:"structure"`
@@ -3122,6 +4353,9 @@ type ExperimentTemplate struct {
 	// The description for the experiment template.
 	Description *string `locationName:"description" type:"string"`
 
+	// The experiment options for an experiment template.
+	ExperimentOptions *ExperimentTemplateExperimentOptions `locationName:"experimentOptions" type:"structure"`
+
 	// The ID of the experiment template.
 	Id *string `locationName:"id" type:"string"`
 
@@ -3139,6 +4373,9 @@ type ExperimentTemplate struct {
 
 	// The tags for the experiment template.
 	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// The count of target account configurations for the experiment template.
+	TargetAccountConfigurationsCount *int64 `locationName:"targetAccountConfigurationsCount" type:"long"`
 
 	// The targets for the experiment.
 	Targets map[string]*ExperimentTemplateTarget `locationName:"targets" type:"map"`
@@ -3180,6 +4417,12 @@ func (s *ExperimentTemplate) SetDescription(v string) *ExperimentTemplate {
 	return s
 }
 
+// SetExperimentOptions sets the ExperimentOptions field's value.
+func (s *ExperimentTemplate) SetExperimentOptions(v *ExperimentTemplateExperimentOptions) *ExperimentTemplate {
+	s.ExperimentOptions = v
+	return s
+}
+
 // SetId sets the Id field's value.
 func (s *ExperimentTemplate) SetId(v string) *ExperimentTemplate {
 	s.Id = &v
@@ -3213,6 +4456,12 @@ func (s *ExperimentTemplate) SetStopConditions(v []*ExperimentTemplateStopCondit
 // SetTags sets the Tags field's value.
 func (s *ExperimentTemplate) SetTags(v map[string]*string) *ExperimentTemplate {
 	s.Tags = v
+	return s
+}
+
+// SetTargetAccountConfigurationsCount sets the TargetAccountConfigurationsCount field's value.
+func (s *ExperimentTemplate) SetTargetAccountConfigurationsCount(v int64) *ExperimentTemplate {
+	s.TargetAccountConfigurationsCount = &v
 	return s
 }
 
@@ -3371,6 +4620,47 @@ func (s *ExperimentTemplateCloudWatchLogsLogConfigurationInput_) Validate() erro
 // SetLogGroupArn sets the LogGroupArn field's value.
 func (s *ExperimentTemplateCloudWatchLogsLogConfigurationInput_) SetLogGroupArn(v string) *ExperimentTemplateCloudWatchLogsLogConfigurationInput_ {
 	s.LogGroupArn = &v
+	return s
+}
+
+// Describes the experiment options for an experiment template.
+type ExperimentTemplateExperimentOptions struct {
+	_ struct{} `type:"structure"`
+
+	// The account targeting setting for an experiment template.
+	AccountTargeting *string `locationName:"accountTargeting" type:"string" enum:"AccountTargeting"`
+
+	// The empty target resolution mode for an experiment template.
+	EmptyTargetResolutionMode *string `locationName:"emptyTargetResolutionMode" type:"string" enum:"EmptyTargetResolutionMode"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentTemplateExperimentOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExperimentTemplateExperimentOptions) GoString() string {
+	return s.String()
+}
+
+// SetAccountTargeting sets the AccountTargeting field's value.
+func (s *ExperimentTemplateExperimentOptions) SetAccountTargeting(v string) *ExperimentTemplateExperimentOptions {
+	s.AccountTargeting = &v
+	return s
+}
+
+// SetEmptyTargetResolutionMode sets the EmptyTargetResolutionMode field's value.
+func (s *ExperimentTemplateExperimentOptions) SetEmptyTargetResolutionMode(v string) *ExperimentTemplateExperimentOptions {
+	s.EmptyTargetResolutionMode = &v
 	return s
 }
 
@@ -3978,6 +5268,103 @@ func (s *GetExperimentOutput) SetExperiment(v *Experiment) *GetExperimentOutput 
 	return s
 }
 
+type GetExperimentTargetAccountConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The AWS account ID of the target account.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"uri" locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The ID of the experiment.
+	//
+	// ExperimentId is a required field
+	ExperimentId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetExperimentTargetAccountConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetExperimentTargetAccountConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetExperimentTargetAccountConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetExperimentTargetAccountConfigurationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+	if s.ExperimentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentId"))
+	}
+	if s.ExperimentId != nil && len(*s.ExperimentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetExperimentTargetAccountConfigurationInput) SetAccountId(v string) *GetExperimentTargetAccountConfigurationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetExperimentId sets the ExperimentId field's value.
+func (s *GetExperimentTargetAccountConfigurationInput) SetExperimentId(v string) *GetExperimentTargetAccountConfigurationInput {
+	s.ExperimentId = &v
+	return s
+}
+
+type GetExperimentTargetAccountConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the target account configuration.
+	TargetAccountConfiguration *ExperimentTargetAccountConfiguration `locationName:"targetAccountConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetExperimentTargetAccountConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetExperimentTargetAccountConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetTargetAccountConfiguration sets the TargetAccountConfiguration field's value.
+func (s *GetExperimentTargetAccountConfigurationOutput) SetTargetAccountConfiguration(v *ExperimentTargetAccountConfiguration) *GetExperimentTargetAccountConfigurationOutput {
+	s.TargetAccountConfiguration = v
+	return s
+}
+
 type GetExperimentTemplateInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4055,6 +5442,103 @@ func (s GetExperimentTemplateOutput) GoString() string {
 // SetExperimentTemplate sets the ExperimentTemplate field's value.
 func (s *GetExperimentTemplateOutput) SetExperimentTemplate(v *ExperimentTemplate) *GetExperimentTemplateOutput {
 	s.ExperimentTemplate = v
+	return s
+}
+
+type GetTargetAccountConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The AWS account ID of the target account.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"uri" locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The ID of the experiment template.
+	//
+	// ExperimentTemplateId is a required field
+	ExperimentTemplateId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTargetAccountConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTargetAccountConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetTargetAccountConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetTargetAccountConfigurationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+	if s.ExperimentTemplateId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentTemplateId"))
+	}
+	if s.ExperimentTemplateId != nil && len(*s.ExperimentTemplateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentTemplateId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetTargetAccountConfigurationInput) SetAccountId(v string) *GetTargetAccountConfigurationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetExperimentTemplateId sets the ExperimentTemplateId field's value.
+func (s *GetTargetAccountConfigurationInput) SetExperimentTemplateId(v string) *GetTargetAccountConfigurationInput {
+	s.ExperimentTemplateId = &v
+	return s
+}
+
+type GetTargetAccountConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the target account configuration.
+	TargetAccountConfiguration *TargetAccountConfiguration `locationName:"targetAccountConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTargetAccountConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetTargetAccountConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetTargetAccountConfiguration sets the TargetAccountConfiguration field's value.
+func (s *GetTargetAccountConfigurationOutput) SetTargetAccountConfiguration(v *TargetAccountConfiguration) *GetTargetAccountConfigurationOutput {
+	s.TargetAccountConfiguration = v
 	return s
 }
 
@@ -4233,6 +5717,232 @@ func (s *ListActionsOutput) SetActions(v []*ActionSummary) *ListActionsOutput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListActionsOutput) SetNextToken(v string) *ListActionsOutput {
 	s.NextToken = &v
+	return s
+}
+
+type ListExperimentResolvedTargetsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the experiment.
+	//
+	// ExperimentId is a required field
+	ExperimentId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+
+	// The name of the target.
+	TargetName *string `location:"querystring" locationName:"targetName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentResolvedTargetsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentResolvedTargetsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListExperimentResolvedTargetsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListExperimentResolvedTargetsInput"}
+	if s.ExperimentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentId"))
+	}
+	if s.ExperimentId != nil && len(*s.ExperimentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentId", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExperimentId sets the ExperimentId field's value.
+func (s *ListExperimentResolvedTargetsInput) SetExperimentId(v string) *ListExperimentResolvedTargetsInput {
+	s.ExperimentId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListExperimentResolvedTargetsInput) SetMaxResults(v int64) *ListExperimentResolvedTargetsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListExperimentResolvedTargetsInput) SetNextToken(v string) *ListExperimentResolvedTargetsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTargetName sets the TargetName field's value.
+func (s *ListExperimentResolvedTargetsInput) SetTargetName(v string) *ListExperimentResolvedTargetsInput {
+	s.TargetName = &v
+	return s
+}
+
+type ListExperimentResolvedTargetsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The resolved targets.
+	ResolvedTargets []*ResolvedTarget `locationName:"resolvedTargets" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentResolvedTargetsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentResolvedTargetsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListExperimentResolvedTargetsOutput) SetNextToken(v string) *ListExperimentResolvedTargetsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResolvedTargets sets the ResolvedTargets field's value.
+func (s *ListExperimentResolvedTargetsOutput) SetResolvedTargets(v []*ResolvedTarget) *ListExperimentResolvedTargetsOutput {
+	s.ResolvedTargets = v
+	return s
+}
+
+type ListExperimentTargetAccountConfigurationsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the experiment.
+	//
+	// ExperimentId is a required field
+	ExperimentId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+
+	// The token for the next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentTargetAccountConfigurationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentTargetAccountConfigurationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListExperimentTargetAccountConfigurationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListExperimentTargetAccountConfigurationsInput"}
+	if s.ExperimentId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentId"))
+	}
+	if s.ExperimentId != nil && len(*s.ExperimentId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentId", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExperimentId sets the ExperimentId field's value.
+func (s *ListExperimentTargetAccountConfigurationsInput) SetExperimentId(v string) *ListExperimentTargetAccountConfigurationsInput {
+	s.ExperimentId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListExperimentTargetAccountConfigurationsInput) SetNextToken(v string) *ListExperimentTargetAccountConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListExperimentTargetAccountConfigurationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The target account configurations.
+	TargetAccountConfigurations []*ExperimentTargetAccountConfigurationSummary `locationName:"targetAccountConfigurations" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentTargetAccountConfigurationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListExperimentTargetAccountConfigurationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListExperimentTargetAccountConfigurationsOutput) SetNextToken(v string) *ListExperimentTargetAccountConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTargetAccountConfigurations sets the TargetAccountConfigurations field's value.
+func (s *ListExperimentTargetAccountConfigurationsOutput) SetTargetAccountConfigurations(v []*ExperimentTargetAccountConfigurationSummary) *ListExperimentTargetAccountConfigurationsOutput {
+	s.TargetAccountConfigurations = v
 	return s
 }
 
@@ -4512,6 +6222,121 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
+type ListTargetAccountConfigurationsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the experiment template.
+	//
+	// ExperimentTemplateId is a required field
+	ExperimentTemplateId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+
+	// The maximum number of results to return with a single call. To retrieve the
+	// remaining results, make another call with the returned nextToken value.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token for the next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTargetAccountConfigurationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTargetAccountConfigurationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTargetAccountConfigurationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTargetAccountConfigurationsInput"}
+	if s.ExperimentTemplateId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentTemplateId"))
+	}
+	if s.ExperimentTemplateId != nil && len(*s.ExperimentTemplateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentTemplateId", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExperimentTemplateId sets the ExperimentTemplateId field's value.
+func (s *ListTargetAccountConfigurationsInput) SetExperimentTemplateId(v string) *ListTargetAccountConfigurationsInput {
+	s.ExperimentTemplateId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListTargetAccountConfigurationsInput) SetMaxResults(v int64) *ListTargetAccountConfigurationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTargetAccountConfigurationsInput) SetNextToken(v string) *ListTargetAccountConfigurationsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListTargetAccountConfigurationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use to retrieve the next page of results. This value is null
+	// when there are no more results to return.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The target account configurations.
+	TargetAccountConfigurations []*TargetAccountConfigurationSummary `locationName:"targetAccountConfigurations" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTargetAccountConfigurationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTargetAccountConfigurationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListTargetAccountConfigurationsOutput) SetNextToken(v string) *ListTargetAccountConfigurationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTargetAccountConfigurations sets the TargetAccountConfigurations field's value.
+func (s *ListTargetAccountConfigurationsOutput) SetTargetAccountConfigurations(v []*TargetAccountConfigurationSummary) *ListTargetAccountConfigurationsOutput {
+	s.TargetAccountConfigurations = v
+	return s
+}
+
 type ListTargetResourceTypesInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4607,6 +6432,56 @@ func (s *ListTargetResourceTypesOutput) SetNextToken(v string) *ListTargetResour
 // SetTargetResourceTypes sets the TargetResourceTypes field's value.
 func (s *ListTargetResourceTypesOutput) SetTargetResourceTypes(v []*TargetResourceTypeSummary) *ListTargetResourceTypesOutput {
 	s.TargetResourceTypes = v
+	return s
+}
+
+// Describes a resolved target.
+type ResolvedTarget struct {
+	_ struct{} `type:"structure"`
+
+	// The resource type of the target.
+	ResourceType *string `locationName:"resourceType" type:"string"`
+
+	// Information about the target.
+	TargetInformation map[string]*string `locationName:"targetInformation" type:"map"`
+
+	// The name of the target.
+	TargetName *string `locationName:"targetName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResolvedTarget) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResolvedTarget) GoString() string {
+	return s.String()
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ResolvedTarget) SetResourceType(v string) *ResolvedTarget {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTargetInformation sets the TargetInformation field's value.
+func (s *ResolvedTarget) SetTargetInformation(v map[string]*string) *ResolvedTarget {
+	s.TargetInformation = v
+	return s
+}
+
+// SetTargetName sets the TargetName field's value.
+func (s *ResolvedTarget) SetTargetName(v string) *ResolvedTarget {
+	s.TargetName = &v
 	return s
 }
 
@@ -5002,6 +6877,106 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
+// Describes a target account configuration.
+type TargetAccountConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID of the target account.
+	AccountId *string `locationName:"accountId" min:"12" type:"string"`
+
+	// The description of the target account.
+	Description *string `locationName:"description" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an IAM role for the target account.
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetAccountConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetAccountConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *TargetAccountConfiguration) SetAccountId(v string) *TargetAccountConfiguration {
+	s.AccountId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *TargetAccountConfiguration) SetDescription(v string) *TargetAccountConfiguration {
+	s.Description = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *TargetAccountConfiguration) SetRoleArn(v string) *TargetAccountConfiguration {
+	s.RoleArn = &v
+	return s
+}
+
+// Provides a summary of a target account configuration.
+type TargetAccountConfigurationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID of the target account.
+	AccountId *string `locationName:"accountId" min:"12" type:"string"`
+
+	// The description of the target account.
+	Description *string `locationName:"description" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an IAM role for the target account.
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetAccountConfigurationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TargetAccountConfigurationSummary) GoString() string {
+	return s.String()
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *TargetAccountConfigurationSummary) SetAccountId(v string) *TargetAccountConfigurationSummary {
+	s.AccountId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *TargetAccountConfigurationSummary) SetDescription(v string) *TargetAccountConfigurationSummary {
+	s.Description = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *TargetAccountConfigurationSummary) SetRoleArn(v string) *TargetAccountConfigurationSummary {
+	s.RoleArn = &v
+	return s
+}
+
 // Describes a resource type.
 type TargetResourceType struct {
 	_ struct{} `type:"structure"`
@@ -5284,6 +7259,38 @@ func (s *UpdateExperimentTemplateActionInputItem) SetTargets(v map[string]*strin
 	return s
 }
 
+// Specifies an experiment option for an experiment template.
+type UpdateExperimentTemplateExperimentOptionsInput_ struct {
+	_ struct{} `type:"structure"`
+
+	// The empty target resolution mode of the experiment template.
+	EmptyTargetResolutionMode *string `locationName:"emptyTargetResolutionMode" type:"string" enum:"EmptyTargetResolutionMode"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateExperimentTemplateExperimentOptionsInput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateExperimentTemplateExperimentOptionsInput_) GoString() string {
+	return s.String()
+}
+
+// SetEmptyTargetResolutionMode sets the EmptyTargetResolutionMode field's value.
+func (s *UpdateExperimentTemplateExperimentOptionsInput_) SetEmptyTargetResolutionMode(v string) *UpdateExperimentTemplateExperimentOptionsInput_ {
+	s.EmptyTargetResolutionMode = &v
+	return s
+}
+
 type UpdateExperimentTemplateInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5292,6 +7299,9 @@ type UpdateExperimentTemplateInput struct {
 
 	// A description for the template.
 	Description *string `locationName:"description" type:"string"`
+
+	// The experiment options for the experiment template.
+	ExperimentOptions *UpdateExperimentTemplateExperimentOptionsInput_ `locationName:"experimentOptions" type:"structure"`
 
 	// The ID of the experiment template.
 	//
@@ -5383,6 +7393,12 @@ func (s *UpdateExperimentTemplateInput) SetActions(v map[string]*UpdateExperimen
 // SetDescription sets the Description field's value.
 func (s *UpdateExperimentTemplateInput) SetDescription(v string) *UpdateExperimentTemplateInput {
 	s.Description = &v
+	return s
+}
+
+// SetExperimentOptions sets the ExperimentOptions field's value.
+func (s *UpdateExperimentTemplateInput) SetExperimentOptions(v *UpdateExperimentTemplateExperimentOptionsInput_) *UpdateExperimentTemplateInput {
+	s.ExperimentOptions = v
 	return s
 }
 
@@ -5688,6 +7704,124 @@ func (s *UpdateExperimentTemplateTargetInput) SetSelectionMode(v string) *Update
 	return s
 }
 
+type UpdateTargetAccountConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID of the target account.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"uri" locationName:"accountId" min:"12" type:"string" required:"true"`
+
+	// The description of the target account.
+	Description *string `locationName:"description" type:"string"`
+
+	// The ID of the experiment template.
+	//
+	// ExperimentTemplateId is a required field
+	ExperimentTemplateId *string `location:"uri" locationName:"id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of an IAM role for the target account.
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTargetAccountConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTargetAccountConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateTargetAccountConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateTargetAccountConfigurationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 12))
+	}
+	if s.ExperimentTemplateId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExperimentTemplateId"))
+	}
+	if s.ExperimentTemplateId != nil && len(*s.ExperimentTemplateId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ExperimentTemplateId", 1))
+	}
+	if s.RoleArn != nil && len(*s.RoleArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UpdateTargetAccountConfigurationInput) SetAccountId(v string) *UpdateTargetAccountConfigurationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateTargetAccountConfigurationInput) SetDescription(v string) *UpdateTargetAccountConfigurationInput {
+	s.Description = &v
+	return s
+}
+
+// SetExperimentTemplateId sets the ExperimentTemplateId field's value.
+func (s *UpdateTargetAccountConfigurationInput) SetExperimentTemplateId(v string) *UpdateTargetAccountConfigurationInput {
+	s.ExperimentTemplateId = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *UpdateTargetAccountConfigurationInput) SetRoleArn(v string) *UpdateTargetAccountConfigurationInput {
+	s.RoleArn = &v
+	return s
+}
+
+type UpdateTargetAccountConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the target account configuration.
+	TargetAccountConfiguration *TargetAccountConfiguration `locationName:"targetAccountConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTargetAccountConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateTargetAccountConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetTargetAccountConfiguration sets the TargetAccountConfiguration field's value.
+func (s *UpdateTargetAccountConfigurationOutput) SetTargetAccountConfiguration(v *TargetAccountConfiguration) *UpdateTargetAccountConfigurationOutput {
+	s.TargetAccountConfiguration = v
+	return s
+}
+
 // The specified input is not valid, or fails to satisfy the constraints for
 // the request.
 type ValidationException struct {
@@ -5754,6 +7888,38 @@ func (s *ValidationException) RequestID() string {
 }
 
 const (
+	// AccountTargetingSingleAccount is a AccountTargeting enum value
+	AccountTargetingSingleAccount = "single-account"
+
+	// AccountTargetingMultiAccount is a AccountTargeting enum value
+	AccountTargetingMultiAccount = "multi-account"
+)
+
+// AccountTargeting_Values returns all elements of the AccountTargeting enum
+func AccountTargeting_Values() []string {
+	return []string{
+		AccountTargetingSingleAccount,
+		AccountTargetingMultiAccount,
+	}
+}
+
+const (
+	// EmptyTargetResolutionModeFail is a EmptyTargetResolutionMode enum value
+	EmptyTargetResolutionModeFail = "fail"
+
+	// EmptyTargetResolutionModeSkip is a EmptyTargetResolutionMode enum value
+	EmptyTargetResolutionModeSkip = "skip"
+)
+
+// EmptyTargetResolutionMode_Values returns all elements of the EmptyTargetResolutionMode enum
+func EmptyTargetResolutionMode_Values() []string {
+	return []string{
+		EmptyTargetResolutionModeFail,
+		EmptyTargetResolutionModeSkip,
+	}
+}
+
+const (
 	// ExperimentActionStatusPending is a ExperimentActionStatus enum value
 	ExperimentActionStatusPending = "pending"
 
@@ -5777,6 +7943,9 @@ const (
 
 	// ExperimentActionStatusFailed is a ExperimentActionStatus enum value
 	ExperimentActionStatusFailed = "failed"
+
+	// ExperimentActionStatusSkipped is a ExperimentActionStatus enum value
+	ExperimentActionStatusSkipped = "skipped"
 )
 
 // ExperimentActionStatus_Values returns all elements of the ExperimentActionStatus enum
@@ -5790,6 +7959,7 @@ func ExperimentActionStatus_Values() []string {
 		ExperimentActionStatusStopping,
 		ExperimentActionStatusStopped,
 		ExperimentActionStatusFailed,
+		ExperimentActionStatusSkipped,
 	}
 }
 

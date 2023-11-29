@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Voice ID.
 //	func myFunc(svc voiceidiface.VoiceIDAPI) bool {
-//	    // Make svc.CreateDomain request
+//	    // Make svc.AssociateFraudster request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockVoiceIDClient struct {
 //	    voiceidiface.VoiceIDAPI
 //	}
-//	func (m *mockVoiceIDClient) CreateDomain(input *voiceid.CreateDomainInput) (*voiceid.CreateDomainOutput, error) {
+//	func (m *mockVoiceIDClient) AssociateFraudster(input *voiceid.AssociateFraudsterInput) (*voiceid.AssociateFraudsterOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,9 +60,17 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type VoiceIDAPI interface {
+	AssociateFraudster(*voiceid.AssociateFraudsterInput) (*voiceid.AssociateFraudsterOutput, error)
+	AssociateFraudsterWithContext(aws.Context, *voiceid.AssociateFraudsterInput, ...request.Option) (*voiceid.AssociateFraudsterOutput, error)
+	AssociateFraudsterRequest(*voiceid.AssociateFraudsterInput) (*request.Request, *voiceid.AssociateFraudsterOutput)
+
 	CreateDomain(*voiceid.CreateDomainInput) (*voiceid.CreateDomainOutput, error)
 	CreateDomainWithContext(aws.Context, *voiceid.CreateDomainInput, ...request.Option) (*voiceid.CreateDomainOutput, error)
 	CreateDomainRequest(*voiceid.CreateDomainInput) (*request.Request, *voiceid.CreateDomainOutput)
+
+	CreateWatchlist(*voiceid.CreateWatchlistInput) (*voiceid.CreateWatchlistOutput, error)
+	CreateWatchlistWithContext(aws.Context, *voiceid.CreateWatchlistInput, ...request.Option) (*voiceid.CreateWatchlistOutput, error)
+	CreateWatchlistRequest(*voiceid.CreateWatchlistInput) (*request.Request, *voiceid.CreateWatchlistOutput)
 
 	DeleteDomain(*voiceid.DeleteDomainInput) (*voiceid.DeleteDomainOutput, error)
 	DeleteDomainWithContext(aws.Context, *voiceid.DeleteDomainInput, ...request.Option) (*voiceid.DeleteDomainOutput, error)
@@ -75,6 +83,10 @@ type VoiceIDAPI interface {
 	DeleteSpeaker(*voiceid.DeleteSpeakerInput) (*voiceid.DeleteSpeakerOutput, error)
 	DeleteSpeakerWithContext(aws.Context, *voiceid.DeleteSpeakerInput, ...request.Option) (*voiceid.DeleteSpeakerOutput, error)
 	DeleteSpeakerRequest(*voiceid.DeleteSpeakerInput) (*request.Request, *voiceid.DeleteSpeakerOutput)
+
+	DeleteWatchlist(*voiceid.DeleteWatchlistInput) (*voiceid.DeleteWatchlistOutput, error)
+	DeleteWatchlistWithContext(aws.Context, *voiceid.DeleteWatchlistInput, ...request.Option) (*voiceid.DeleteWatchlistOutput, error)
+	DeleteWatchlistRequest(*voiceid.DeleteWatchlistInput) (*request.Request, *voiceid.DeleteWatchlistOutput)
 
 	DescribeDomain(*voiceid.DescribeDomainInput) (*voiceid.DescribeDomainOutput, error)
 	DescribeDomainWithContext(aws.Context, *voiceid.DescribeDomainInput, ...request.Option) (*voiceid.DescribeDomainOutput, error)
@@ -96,6 +108,14 @@ type VoiceIDAPI interface {
 	DescribeSpeakerEnrollmentJobWithContext(aws.Context, *voiceid.DescribeSpeakerEnrollmentJobInput, ...request.Option) (*voiceid.DescribeSpeakerEnrollmentJobOutput, error)
 	DescribeSpeakerEnrollmentJobRequest(*voiceid.DescribeSpeakerEnrollmentJobInput) (*request.Request, *voiceid.DescribeSpeakerEnrollmentJobOutput)
 
+	DescribeWatchlist(*voiceid.DescribeWatchlistInput) (*voiceid.DescribeWatchlistOutput, error)
+	DescribeWatchlistWithContext(aws.Context, *voiceid.DescribeWatchlistInput, ...request.Option) (*voiceid.DescribeWatchlistOutput, error)
+	DescribeWatchlistRequest(*voiceid.DescribeWatchlistInput) (*request.Request, *voiceid.DescribeWatchlistOutput)
+
+	DisassociateFraudster(*voiceid.DisassociateFraudsterInput) (*voiceid.DisassociateFraudsterOutput, error)
+	DisassociateFraudsterWithContext(aws.Context, *voiceid.DisassociateFraudsterInput, ...request.Option) (*voiceid.DisassociateFraudsterOutput, error)
+	DisassociateFraudsterRequest(*voiceid.DisassociateFraudsterInput) (*request.Request, *voiceid.DisassociateFraudsterOutput)
+
 	EvaluateSession(*voiceid.EvaluateSessionInput) (*voiceid.EvaluateSessionOutput, error)
 	EvaluateSessionWithContext(aws.Context, *voiceid.EvaluateSessionInput, ...request.Option) (*voiceid.EvaluateSessionOutput, error)
 	EvaluateSessionRequest(*voiceid.EvaluateSessionInput) (*request.Request, *voiceid.EvaluateSessionOutput)
@@ -114,6 +134,13 @@ type VoiceIDAPI interface {
 	ListFraudsterRegistrationJobsPages(*voiceid.ListFraudsterRegistrationJobsInput, func(*voiceid.ListFraudsterRegistrationJobsOutput, bool) bool) error
 	ListFraudsterRegistrationJobsPagesWithContext(aws.Context, *voiceid.ListFraudsterRegistrationJobsInput, func(*voiceid.ListFraudsterRegistrationJobsOutput, bool) bool, ...request.Option) error
 
+	ListFraudsters(*voiceid.ListFraudstersInput) (*voiceid.ListFraudstersOutput, error)
+	ListFraudstersWithContext(aws.Context, *voiceid.ListFraudstersInput, ...request.Option) (*voiceid.ListFraudstersOutput, error)
+	ListFraudstersRequest(*voiceid.ListFraudstersInput) (*request.Request, *voiceid.ListFraudstersOutput)
+
+	ListFraudstersPages(*voiceid.ListFraudstersInput, func(*voiceid.ListFraudstersOutput, bool) bool) error
+	ListFraudstersPagesWithContext(aws.Context, *voiceid.ListFraudstersInput, func(*voiceid.ListFraudstersOutput, bool) bool, ...request.Option) error
+
 	ListSpeakerEnrollmentJobs(*voiceid.ListSpeakerEnrollmentJobsInput) (*voiceid.ListSpeakerEnrollmentJobsOutput, error)
 	ListSpeakerEnrollmentJobsWithContext(aws.Context, *voiceid.ListSpeakerEnrollmentJobsInput, ...request.Option) (*voiceid.ListSpeakerEnrollmentJobsOutput, error)
 	ListSpeakerEnrollmentJobsRequest(*voiceid.ListSpeakerEnrollmentJobsInput) (*request.Request, *voiceid.ListSpeakerEnrollmentJobsOutput)
@@ -131,6 +158,13 @@ type VoiceIDAPI interface {
 	ListTagsForResource(*voiceid.ListTagsForResourceInput) (*voiceid.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *voiceid.ListTagsForResourceInput, ...request.Option) (*voiceid.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*voiceid.ListTagsForResourceInput) (*request.Request, *voiceid.ListTagsForResourceOutput)
+
+	ListWatchlists(*voiceid.ListWatchlistsInput) (*voiceid.ListWatchlistsOutput, error)
+	ListWatchlistsWithContext(aws.Context, *voiceid.ListWatchlistsInput, ...request.Option) (*voiceid.ListWatchlistsOutput, error)
+	ListWatchlistsRequest(*voiceid.ListWatchlistsInput) (*request.Request, *voiceid.ListWatchlistsOutput)
+
+	ListWatchlistsPages(*voiceid.ListWatchlistsInput, func(*voiceid.ListWatchlistsOutput, bool) bool) error
+	ListWatchlistsPagesWithContext(aws.Context, *voiceid.ListWatchlistsInput, func(*voiceid.ListWatchlistsOutput, bool) bool, ...request.Option) error
 
 	OptOutSpeaker(*voiceid.OptOutSpeakerInput) (*voiceid.OptOutSpeakerOutput, error)
 	OptOutSpeakerWithContext(aws.Context, *voiceid.OptOutSpeakerInput, ...request.Option) (*voiceid.OptOutSpeakerOutput, error)
@@ -155,6 +189,10 @@ type VoiceIDAPI interface {
 	UpdateDomain(*voiceid.UpdateDomainInput) (*voiceid.UpdateDomainOutput, error)
 	UpdateDomainWithContext(aws.Context, *voiceid.UpdateDomainInput, ...request.Option) (*voiceid.UpdateDomainOutput, error)
 	UpdateDomainRequest(*voiceid.UpdateDomainInput) (*request.Request, *voiceid.UpdateDomainOutput)
+
+	UpdateWatchlist(*voiceid.UpdateWatchlistInput) (*voiceid.UpdateWatchlistOutput, error)
+	UpdateWatchlistWithContext(aws.Context, *voiceid.UpdateWatchlistInput, ...request.Option) (*voiceid.UpdateWatchlistOutput, error)
+	UpdateWatchlistRequest(*voiceid.UpdateWatchlistInput) (*request.Request, *voiceid.UpdateWatchlistOutput)
 }
 
 var _ VoiceIDAPI = (*voiceid.VoiceID)(nil)

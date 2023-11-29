@@ -11,10 +11,10 @@ const (
 	// ErrCodeBadRequestException for service response error code
 	// "BadRequestException".
 	//
-	// One or more arguments to the StartStreamTranscription or StartMedicalStreamTranscription
-	// operation was invalid. For example, MediaEncoding was not set to a valid
-	// encoding, or LanguageCode was not set to a valid code. Check the parameters
-	// and try your request again.
+	// One or more arguments to the StartStreamTranscription, StartMedicalStreamTranscription,
+	// or StartCallAnalyticsStreamTranscription operation was not valid. For example,
+	// MediaEncoding or LanguageCode used not valid values. Check the specified
+	// parameters and try your request again.
 	ErrCodeBadRequestException = "BadRequestException"
 
 	// ErrCodeConflictException for service response error code
@@ -27,23 +27,22 @@ const (
 	// ErrCodeInternalFailureException for service response error code
 	// "InternalFailureException".
 	//
-	// A problem occurred while processing the audio. Amazon Transcribe or Amazon
-	// Transcribe Medical terminated processing. Try your request again.
+	// A problem occurred while processing the audio. Amazon Transcribe terminated
+	// processing.
 	ErrCodeInternalFailureException = "InternalFailureException"
 
 	// ErrCodeLimitExceededException for service response error code
 	// "LimitExceededException".
 	//
-	// You have exceeded the maximum number of concurrent transcription streams,
-	// are starting transcription streams too quickly, or the maximum audio length
-	// of 4 hours. Wait until a stream has finished processing, or break your audio
-	// stream into smaller chunks and try your request again.
+	// Your client has exceeded one of the Amazon Transcribe limits. This is typically
+	// the audio length limit. Break your audio stream into smaller chunks and try
+	// your request again.
 	ErrCodeLimitExceededException = "LimitExceededException"
 
 	// ErrCodeServiceUnavailableException for service response error code
 	// "ServiceUnavailableException".
 	//
-	// Service is currently unavailable. Try your request later.
+	// The service is currently unavailable. Try your request later.
 	ErrCodeServiceUnavailableException = "ServiceUnavailableException"
 )
 

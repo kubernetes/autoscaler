@@ -88,6 +88,10 @@ type ManagedGrafanaAPI interface {
 	DescribeWorkspaceAuthenticationWithContext(aws.Context, *managedgrafana.DescribeWorkspaceAuthenticationInput, ...request.Option) (*managedgrafana.DescribeWorkspaceAuthenticationOutput, error)
 	DescribeWorkspaceAuthenticationRequest(*managedgrafana.DescribeWorkspaceAuthenticationInput) (*request.Request, *managedgrafana.DescribeWorkspaceAuthenticationOutput)
 
+	DescribeWorkspaceConfiguration(*managedgrafana.DescribeWorkspaceConfigurationInput) (*managedgrafana.DescribeWorkspaceConfigurationOutput, error)
+	DescribeWorkspaceConfigurationWithContext(aws.Context, *managedgrafana.DescribeWorkspaceConfigurationInput, ...request.Option) (*managedgrafana.DescribeWorkspaceConfigurationOutput, error)
+	DescribeWorkspaceConfigurationRequest(*managedgrafana.DescribeWorkspaceConfigurationInput) (*request.Request, *managedgrafana.DescribeWorkspaceConfigurationOutput)
+
 	DisassociateLicense(*managedgrafana.DisassociateLicenseInput) (*managedgrafana.DisassociateLicenseOutput, error)
 	DisassociateLicenseWithContext(aws.Context, *managedgrafana.DisassociateLicenseInput, ...request.Option) (*managedgrafana.DisassociateLicenseOutput, error)
 	DisassociateLicenseRequest(*managedgrafana.DisassociateLicenseInput) (*request.Request, *managedgrafana.DisassociateLicenseOutput)
@@ -102,6 +106,13 @@ type ManagedGrafanaAPI interface {
 	ListTagsForResource(*managedgrafana.ListTagsForResourceInput) (*managedgrafana.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *managedgrafana.ListTagsForResourceInput, ...request.Option) (*managedgrafana.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*managedgrafana.ListTagsForResourceInput) (*request.Request, *managedgrafana.ListTagsForResourceOutput)
+
+	ListVersions(*managedgrafana.ListVersionsInput) (*managedgrafana.ListVersionsOutput, error)
+	ListVersionsWithContext(aws.Context, *managedgrafana.ListVersionsInput, ...request.Option) (*managedgrafana.ListVersionsOutput, error)
+	ListVersionsRequest(*managedgrafana.ListVersionsInput) (*request.Request, *managedgrafana.ListVersionsOutput)
+
+	ListVersionsPages(*managedgrafana.ListVersionsInput, func(*managedgrafana.ListVersionsOutput, bool) bool) error
+	ListVersionsPagesWithContext(aws.Context, *managedgrafana.ListVersionsInput, func(*managedgrafana.ListVersionsOutput, bool) bool, ...request.Option) error
 
 	ListWorkspaces(*managedgrafana.ListWorkspacesInput) (*managedgrafana.ListWorkspacesOutput, error)
 	ListWorkspacesWithContext(aws.Context, *managedgrafana.ListWorkspacesInput, ...request.Option) (*managedgrafana.ListWorkspacesOutput, error)
@@ -129,6 +140,10 @@ type ManagedGrafanaAPI interface {
 	UpdateWorkspaceAuthentication(*managedgrafana.UpdateWorkspaceAuthenticationInput) (*managedgrafana.UpdateWorkspaceAuthenticationOutput, error)
 	UpdateWorkspaceAuthenticationWithContext(aws.Context, *managedgrafana.UpdateWorkspaceAuthenticationInput, ...request.Option) (*managedgrafana.UpdateWorkspaceAuthenticationOutput, error)
 	UpdateWorkspaceAuthenticationRequest(*managedgrafana.UpdateWorkspaceAuthenticationInput) (*request.Request, *managedgrafana.UpdateWorkspaceAuthenticationOutput)
+
+	UpdateWorkspaceConfiguration(*managedgrafana.UpdateWorkspaceConfigurationInput) (*managedgrafana.UpdateWorkspaceConfigurationOutput, error)
+	UpdateWorkspaceConfigurationWithContext(aws.Context, *managedgrafana.UpdateWorkspaceConfigurationInput, ...request.Option) (*managedgrafana.UpdateWorkspaceConfigurationOutput, error)
+	UpdateWorkspaceConfigurationRequest(*managedgrafana.UpdateWorkspaceConfigurationInput) (*request.Request, *managedgrafana.UpdateWorkspaceConfigurationOutput)
 }
 
 var _ ManagedGrafanaAPI = (*managedgrafana.ManagedGrafana)(nil)

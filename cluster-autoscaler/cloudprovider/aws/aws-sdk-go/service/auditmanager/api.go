@@ -57,7 +57,7 @@ func (c *AuditManager) AssociateAssessmentReportEvidenceFolderRequest(input *Ass
 
 // AssociateAssessmentReportEvidenceFolder API operation for AWS Audit Manager.
 //
-// Associates an evidence folder to an assessment report in a Audit Manager
+// Associates an evidence folder to an assessment report in an Audit Manager
 // assessment.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -509,7 +509,27 @@ func (c *AuditManager) BatchImportEvidenceToAssessmentControlRequest(input *Batc
 
 // BatchImportEvidenceToAssessmentControl API operation for AWS Audit Manager.
 //
-// Uploads one or more pieces of evidence to a control in an Audit Manager assessment.
+// Adds one or more pieces of evidence to a control in an Audit Manager assessment.
+//
+// You can import manual evidence from any S3 bucket by specifying the S3 URI
+// of the object. You can also upload a file from your browser, or enter plain
+// text in response to a risk assessment question.
+//
+// The following restrictions apply to this action:
+//
+//   - manualEvidence can be only one of the following: evidenceFileName, s3ResourcePath,
+//     or textResponse
+//
+//   - Maximum size of an individual evidence file: 100 MB
+//
+//   - Number of daily manual evidence uploads per control: 100
+//
+//   - Supported file formats: See Supported file types for manual evidence
+//     (https://docs.aws.amazon.com/audit-manager/latest/userguide/upload-evidence.html#supported-manual-evidence-files)
+//     in the Audit Manager User Guide
+//
+// For more information about Audit Manager service restrictions, see Quotas
+// and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -533,6 +553,9 @@ func (c *AuditManager) BatchImportEvidenceToAssessmentControlRequest(input *Batc
 //   - InternalServerException
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/BatchImportEvidenceToAssessmentControl
 func (c *AuditManager) BatchImportEvidenceToAssessmentControl(input *BatchImportEvidenceToAssessmentControlInput) (*BatchImportEvidenceToAssessmentControlOutput, error) {
@@ -624,6 +647,13 @@ func (c *AuditManager) CreateAssessmentRequest(input *CreateAssessmentInput) (re
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
 //
+//   - ServiceQuotaExceededException
+//     You've reached your account quota for this resource type. To perform the
+//     requested action, delete some existing resources or request a quota increase
+//     (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) from
+//     the Service Quotas console. For a list of Audit Manager service quotas, see
+//     Quotas and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/CreateAssessment
 func (c *AuditManager) CreateAssessment(input *CreateAssessmentInput) (*CreateAssessmentOutput, error) {
 	req, out := c.CreateAssessmentRequest(input)
@@ -713,6 +743,13 @@ func (c *AuditManager) CreateAssessmentFrameworkRequest(input *CreateAssessmentF
 //   - InternalServerException
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
+//
+//   - ServiceQuotaExceededException
+//     You've reached your account quota for this resource type. To perform the
+//     requested action, delete some existing resources or request a quota increase
+//     (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) from
+//     the Service Quotas console. For a list of Audit Manager service quotas, see
+//     Quotas and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/CreateAssessmentFramework
 func (c *AuditManager) CreateAssessmentFramework(input *CreateAssessmentFrameworkInput) (*CreateAssessmentFrameworkOutput, error) {
@@ -893,6 +930,13 @@ func (c *AuditManager) CreateControlRequest(input *CreateControlInput) (req *req
 //   - InternalServerException
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
+//
+//   - ServiceQuotaExceededException
+//     You've reached your account quota for this resource type. To perform the
+//     requested action, delete some existing resources or request a quota increase
+//     (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) from
+//     the Service Quotas console. For a list of Audit Manager service quotas, see
+//     Quotas and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/CreateControl
 func (c *AuditManager) CreateControl(input *CreateControlInput) (*CreateControlOutput, error) {
@@ -1348,6 +1392,12 @@ func (c *AuditManager) DeleteControlRequest(input *DeleteControlInput) (req *req
 //
 // Deletes a custom control in Audit Manager.
 //
+// When you invoke this operation, the custom control is deleted from any frameworks
+// or assessments that it’s currently part of. As a result, Audit Manager
+// will stop collecting evidence for that custom control in all of your assessments.
+// This includes assessments that you previously created before you deleted
+// the custom control.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -1438,36 +1488,13 @@ func (c *AuditManager) DeregisterAccountRequest(input *DeregisterAccountInput) (
 //
 // Deregisters an account in Audit Manager.
 //
-// When you deregister your account from Audit Manager, your data isn’t deleted.
-// If you want to delete your resource data, you must perform that task separately
-// before you deregister your account. Either, you can do this in the Audit
-// Manager console. Or, you can use one of the delete API operations that are
-// provided by Audit Manager.
+// Before you deregister, you can use the UpdateSettings (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_UpdateSettings.html)
+// API operation to set your preferred data retention policy. By default, Audit
+// Manager retains your data. If you want to delete your data, you can use the
+// DeregistrationPolicy attribute to request the deletion of your data.
 //
-// To delete your Audit Manager resource data, see the following instructions:
-//
-//   - DeleteAssessment (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeleteAssessment.html)
-//     (see also: Deleting an assessment (https://docs.aws.amazon.com/audit-manager/latest/userguide/delete-assessment.html)
-//     in the Audit Manager User Guide)
-//
-//   - DeleteAssessmentFramework (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeleteAssessmentFramework.html)
-//     (see also: Deleting a custom framework (https://docs.aws.amazon.com/audit-manager/latest/userguide/delete-custom-framework.html)
-//     in the Audit Manager User Guide)
-//
-//   - DeleteAssessmentFrameworkShare (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeleteAssessmentFrameworkShare.html)
-//     (see also: Deleting a share request (https://docs.aws.amazon.com/audit-manager/latest/userguide/deleting-shared-framework-requests.html)
-//     in the Audit Manager User Guide)
-//
-//   - DeleteAssessmentReport (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeleteAssessmentReport.html)
-//     (see also: Deleting an assessment report (https://docs.aws.amazon.com/audit-manager/latest/userguide/generate-assessment-report.html#delete-assessment-report-steps)
-//     in the Audit Manager User Guide)
-//
-//   - DeleteControl (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeleteControl.html)
-//     (see also: Deleting a custom control (https://docs.aws.amazon.com/audit-manager/latest/userguide/delete-controls.html)
-//     in the Audit Manager User Guide)
-//
-// At this time, Audit Manager doesn't provide an option to delete evidence.
-// All available delete operations are listed above.
+// For more information about data retention, see Data Protection (https://docs.aws.amazon.com/audit-manager/latest/userguide/data-protection.html)
+// in the Audit Manager User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1564,8 +1591,25 @@ func (c *AuditManager) DeregisterOrganizationAdminAccountRequest(input *Deregist
 // When you remove a delegated administrator from your Audit Manager settings,
 // you continue to have access to the evidence that you previously collected
 // under that account. This is also the case when you deregister a delegated
-// administrator from Organizations. However, Audit Manager will stop collecting
+// administrator from Organizations. However, Audit Manager stops collecting
 // and attaching evidence to that delegated administrator account moving forward.
+//
+// Keep in mind the following cleanup task if you use evidence finder:
+//
+// Before you use your management account to remove a delegated administrator,
+// make sure that the current delegated administrator account signs in to Audit
+// Manager and disables evidence finder first. Disabling evidence finder automatically
+// deletes the event data store that was created in their account when they
+// enabled evidence finder. If this task isn’t completed, the event data store
+// remains in their account. In this case, we recommend that the original delegated
+// administrator goes to CloudTrail Lake and manually deletes the event data
+// store (https://docs.aws.amazon.com/awscloudtrail/latest/userguide/query-eds-disable-termination.html).
+//
+// This cleanup task is necessary to ensure that you don't end up with multiple
+// event data stores. Audit Manager ignores an unused event data store after
+// you remove or change a delegated administrator account. However, the unused
+// event data store continues to incur storage costs from CloudTrail Lake if
+// you don't delete it.
 //
 // When you deregister a delegated administrator account for Audit Manager,
 // the data for that account isn’t deleted. If you want to delete resource
@@ -1596,8 +1640,10 @@ func (c *AuditManager) DeregisterOrganizationAdminAccountRequest(input *Deregist
 //     (see also: Deleting a custom control (https://docs.aws.amazon.com/audit-manager/latest/userguide/delete-controls.html)
 //     in the Audit Manager User Guide)
 //
-// At this time, Audit Manager doesn't provide an option to delete evidence.
-// All available delete operations are listed above.
+// At this time, Audit Manager doesn't provide an option to delete evidence
+// for a specific delegated administrator. Instead, when your management account
+// deregisters Audit Manager, we perform a cleanup for the current delegated
+// administrator account at the time of deregistration.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1779,7 +1825,7 @@ func (c *AuditManager) GetAccountStatusRequest(input *GetAccountStatusInput) (re
 
 // GetAccountStatus API operation for AWS Audit Manager.
 //
-// Returns the registration status of an account in Audit Manager.
+// Gets the registration status of an account in Audit Manager.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1858,7 +1904,7 @@ func (c *AuditManager) GetAssessmentRequest(input *GetAssessmentInput) (req *req
 
 // GetAssessment API operation for AWS Audit Manager.
 //
-// Returns an assessment from Audit Manager.
+// Gets information about a specified assessment.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1948,7 +1994,7 @@ func (c *AuditManager) GetAssessmentFrameworkRequest(input *GetAssessmentFramewo
 
 // GetAssessmentFramework API operation for AWS Audit Manager.
 //
-// Returns a framework from Audit Manager.
+// Gets information about a specified framework.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2038,7 +2084,7 @@ func (c *AuditManager) GetAssessmentReportUrlRequest(input *GetAssessmentReportU
 
 // GetAssessmentReportUrl API operation for AWS Audit Manager.
 //
-// Returns the URL of an assessment report in Audit Manager.
+// Gets the URL of an assessment report in Audit Manager.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2134,7 +2180,7 @@ func (c *AuditManager) GetChangeLogsRequest(input *GetChangeLogsInput) (req *req
 
 // GetChangeLogs API operation for AWS Audit Manager.
 //
-// Returns a list of changelogs from Audit Manager.
+// Gets a list of changelogs from Audit Manager.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2275,7 +2321,7 @@ func (c *AuditManager) GetControlRequest(input *GetControlInput) (req *request.R
 
 // GetControl API operation for AWS Audit Manager.
 //
-// Returns a control from Audit Manager.
+// Gets information about a specified control.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2371,7 +2417,7 @@ func (c *AuditManager) GetDelegationsRequest(input *GetDelegationsInput) (req *r
 
 // GetDelegations API operation for AWS Audit Manager.
 //
-// Returns a list of delegations from an audit owner to a delegate.
+// Gets a list of delegations from an audit owner to a delegate.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2509,7 +2555,7 @@ func (c *AuditManager) GetEvidenceRequest(input *GetEvidenceInput) (req *request
 
 // GetEvidence API operation for AWS Audit Manager.
 //
-// Returns evidence from Audit Manager.
+// Gets information about a specified evidence item.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2605,7 +2651,7 @@ func (c *AuditManager) GetEvidenceByEvidenceFolderRequest(input *GetEvidenceByEv
 
 // GetEvidenceByEvidenceFolder API operation for AWS Audit Manager.
 //
-// Returns all evidence from a specified evidence folder in Audit Manager.
+// Gets all evidence from a specified evidence folder in Audit Manager.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2703,6 +2749,112 @@ func (c *AuditManager) GetEvidenceByEvidenceFolderPagesWithContext(ctx aws.Conte
 	return p.Err()
 }
 
+const opGetEvidenceFileUploadUrl = "GetEvidenceFileUploadUrl"
+
+// GetEvidenceFileUploadUrlRequest generates a "aws/request.Request" representing the
+// client's request for the GetEvidenceFileUploadUrl operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetEvidenceFileUploadUrl for more information on using the GetEvidenceFileUploadUrl
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetEvidenceFileUploadUrlRequest method.
+//	req, resp := client.GetEvidenceFileUploadUrlRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/GetEvidenceFileUploadUrl
+func (c *AuditManager) GetEvidenceFileUploadUrlRequest(input *GetEvidenceFileUploadUrlInput) (req *request.Request, output *GetEvidenceFileUploadUrlOutput) {
+	op := &request.Operation{
+		Name:       opGetEvidenceFileUploadUrl,
+		HTTPMethod: "GET",
+		HTTPPath:   "/evidenceFileUploadUrl",
+	}
+
+	if input == nil {
+		input = &GetEvidenceFileUploadUrlInput{}
+	}
+
+	output = &GetEvidenceFileUploadUrlOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetEvidenceFileUploadUrl API operation for AWS Audit Manager.
+//
+// Creates a presigned Amazon S3 URL that can be used to upload a file as manual
+// evidence. For instructions on how to use this operation, see Upload a file
+// from your browser (https://docs.aws.amazon.com/audit-manager/latest/userguide/upload-evidence.html#how-to-upload-manual-evidence-files)
+// in the Audit Manager User Guide.
+//
+// The following restrictions apply to this operation:
+//
+//   - Maximum size of an individual evidence file: 100 MB
+//
+//   - Number of daily manual evidence uploads per control: 100
+//
+//   - Supported file formats: See Supported file types for manual evidence
+//     (https://docs.aws.amazon.com/audit-manager/latest/userguide/upload-evidence.html#supported-manual-evidence-files)
+//     in the Audit Manager User Guide
+//
+// For more information about Audit Manager service restrictions, see Quotas
+// and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Audit Manager's
+// API operation GetEvidenceFileUploadUrl for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - AccessDeniedException
+//     Your account isn't registered with Audit Manager. Check the delegated administrator
+//     setup on the Audit Manager settings page, and try again.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/GetEvidenceFileUploadUrl
+func (c *AuditManager) GetEvidenceFileUploadUrl(input *GetEvidenceFileUploadUrlInput) (*GetEvidenceFileUploadUrlOutput, error) {
+	req, out := c.GetEvidenceFileUploadUrlRequest(input)
+	return out, req.Send()
+}
+
+// GetEvidenceFileUploadUrlWithContext is the same as GetEvidenceFileUploadUrl with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetEvidenceFileUploadUrl for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *AuditManager) GetEvidenceFileUploadUrlWithContext(ctx aws.Context, input *GetEvidenceFileUploadUrlInput, opts ...request.Option) (*GetEvidenceFileUploadUrlOutput, error) {
+	req, out := c.GetEvidenceFileUploadUrlRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetEvidenceFolder = "GetEvidenceFolder"
 
 // GetEvidenceFolderRequest generates a "aws/request.Request" representing the
@@ -2746,7 +2898,7 @@ func (c *AuditManager) GetEvidenceFolderRequest(input *GetEvidenceFolderInput) (
 
 // GetEvidenceFolder API operation for AWS Audit Manager.
 //
-// Returns an evidence folder from the specified assessment in Audit Manager.
+// Gets an evidence folder from a specified assessment in Audit Manager.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2842,7 +2994,7 @@ func (c *AuditManager) GetEvidenceFoldersByAssessmentRequest(input *GetEvidenceF
 
 // GetEvidenceFoldersByAssessment API operation for AWS Audit Manager.
 //
-// Returns the evidence folders from a specified assessment in Audit Manager.
+// Gets the evidence folders from a specified assessment in Audit Manager.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2989,8 +3141,8 @@ func (c *AuditManager) GetEvidenceFoldersByAssessmentControlRequest(input *GetEv
 
 // GetEvidenceFoldersByAssessmentControl API operation for AWS Audit Manager.
 //
-// Returns a list of evidence folders that are associated with a specified control
-// of an assessment in Audit Manager.
+// Gets a list of evidence folders that are associated with a specified control
+// in an Audit Manager assessment.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3305,8 +3457,8 @@ func (c *AuditManager) GetOrganizationAdminAccountRequest(input *GetOrganization
 
 // GetOrganizationAdminAccount API operation for AWS Audit Manager.
 //
-// Returns the name of the delegated Amazon Web Services administrator account
-// for the organization.
+// Gets the name of the delegated Amazon Web Services administrator account
+// for a specified organization.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3396,8 +3548,10 @@ func (c *AuditManager) GetServicesInScopeRequest(input *GetServicesInScopeInput)
 
 // GetServicesInScope API operation for AWS Audit Manager.
 //
-// Returns a list of the in-scope Amazon Web Services services for the specified
-// assessment.
+// Gets a list of all of the Amazon Web Services that you can choose to include
+// in your assessment. When you create an assessment (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_CreateAssessment.html),
+// specify which of these services you want to include to narrow the assessment's
+// scope (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_Scope.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3484,7 +3638,7 @@ func (c *AuditManager) GetSettingsRequest(input *GetSettingsInput) (req *request
 
 // GetSettings API operation for AWS Audit Manager.
 //
-// Returns the settings for the specified Amazon Web Services account.
+// Gets the settings for a specified Amazon Web Services account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5299,6 +5453,9 @@ func (c *AuditManager) RegisterAccountRequest(input *RegisterAccountInput) (req 
 //   - ResourceNotFoundException
 //     The resource that's specified in the request can't be found.
 //
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/RegisterAccount
 func (c *AuditManager) RegisterAccount(input *RegisterAccountInput) (*RegisterAccountOutput, error) {
 	req, out := c.RegisterAccountRequest(input)
@@ -5460,6 +5617,31 @@ func (c *AuditManager) StartAssessmentFrameworkShareRequest(input *StartAssessme
 // The share request specifies a recipient and notifies them that a custom framework
 // is available. Recipients have 120 days to accept or decline the request.
 // If no action is taken, the share request expires.
+//
+// When you create a share request, Audit Manager stores a snapshot of your
+// custom framework in the US East (N. Virginia) Amazon Web Services Region.
+// Audit Manager also stores a backup of the same snapshot in the US West (Oregon)
+// Amazon Web Services Region.
+//
+// Audit Manager deletes the snapshot and the backup snapshot when one of the
+// following events occurs:
+//
+//   - The sender revokes the share request.
+//
+//   - The recipient declines the share request.
+//
+//   - The recipient encounters an error and doesn't successfully accept the
+//     share request.
+//
+//   - The share request expires before the recipient responds to the request.
+//
+// When a sender resends a share request (https://docs.aws.amazon.com/audit-manager/latest/userguide/framework-sharing.html#framework-sharing-resend),
+// the snapshot is replaced with an updated version that corresponds with the
+// latest version of the custom framework.
+//
+// When a recipient accepts a share request, the snapshot is replicated into
+// their Amazon Web Services account under the Amazon Web Services Region that
+// was specified in the share request.
 //
 // When you invoke the StartAssessmentFrameworkShare API, you are about to share
 // a custom framework with another Amazon Web Services account. You may not
@@ -6117,6 +6299,13 @@ func (c *AuditManager) UpdateAssessmentFrameworkShareRequest(input *UpdateAssess
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
 //
+//   - ServiceQuotaExceededException
+//     You've reached your account quota for this resource type. To perform the
+//     requested action, delete some existing resources or request a quota increase
+//     (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) from
+//     the Service Quotas console. For a list of Audit Manager service quotas, see
+//     Quotas and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/UpdateAssessmentFrameworkShare
 func (c *AuditManager) UpdateAssessmentFrameworkShare(input *UpdateAssessmentFrameworkShareInput) (*UpdateAssessmentFrameworkShareOutput, error) {
 	req, out := c.UpdateAssessmentFrameworkShareRequest(input)
@@ -6206,6 +6395,13 @@ func (c *AuditManager) UpdateAssessmentStatusRequest(input *UpdateAssessmentStat
 //   - InternalServerException
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
+//
+//   - ServiceQuotaExceededException
+//     You've reached your account quota for this resource type. To perform the
+//     requested action, delete some existing resources or request a quota increase
+//     (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) from
+//     the Service Quotas console. For a list of Audit Manager service quotas, see
+//     Quotas and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/auditmanager-2017-07-25/UpdateAssessmentStatus
 func (c *AuditManager) UpdateAssessmentStatus(input *UpdateAssessmentStatusInput) (*UpdateAssessmentStatusOutput, error) {
@@ -6362,7 +6558,7 @@ func (c *AuditManager) UpdateSettingsRequest(input *UpdateSettingsInput) (req *r
 
 // UpdateSettings API operation for AWS Audit Manager.
 //
-// Updates Audit Manager settings for the current user account.
+// Updates Audit Manager settings for the current account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6502,7 +6698,11 @@ type AWSAccount struct {
 	_ struct{} `type:"structure"`
 
 	// The email address that's associated with the Amazon Web Services account.
-	EmailAddress *string `locationName:"emailAddress" min:"1" type:"string"`
+	//
+	// EmailAddress is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AWSAccount's
+	// String and GoString methods.
+	EmailAddress *string `locationName:"emailAddress" min:"1" type:"string" sensitive:"true"`
 
 	// The identifier for the Amazon Web Services account.
 	Id *string `locationName:"id" min:"12" type:"string"`
@@ -6567,6 +6767,13 @@ func (s *AWSAccount) SetName(v string) *AWSAccount {
 }
 
 // An Amazon Web Service such as Amazon S3 or CloudTrail.
+//
+// For an example of how to find an Amazon Web Service name and how to define
+// it in your assessment scope, see the following:
+//
+//   - Finding an Amazon Web Service name to use in your assessment scope (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_GetServicesInScope.html#API_GetServicesInScope_Example_2)
+//
+//   - Defining an Amazon Web Service name in your assessment scope (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_GetServicesInScope.html#API_GetServicesInScope_Example_3)
 type AWSService struct {
 	_ struct{} `type:"structure"`
 
@@ -6688,7 +6895,11 @@ type Assessment struct {
 	AwsAccount *AWSAccount `locationName:"awsAccount" type:"structure"`
 
 	// The framework that the assessment was created from.
-	Framework *AssessmentFramework `locationName:"framework" type:"structure"`
+	//
+	// Framework is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Assessment's
+	// String and GoString methods.
+	Framework *AssessmentFramework `locationName:"framework" type:"structure" sensitive:"true"`
 
 	// The metadata for the assessment.
 	Metadata *AssessmentMetadata `locationName:"metadata" type:"structure"`
@@ -6759,7 +6970,7 @@ type AssessmentControl struct {
 	// The description of the control.
 	Description *string `locationName:"description" type:"string"`
 
-	// The amount of evidence that's generated for the control.
+	// The amount of evidence that's collected for the control.
 	EvidenceCount *int64 `locationName:"evidenceCount" type:"integer"`
 
 	// The list of data sources for the evidence.
@@ -6872,9 +7083,13 @@ type AssessmentControlSet struct {
 	ManualEvidenceCount *int64 `locationName:"manualEvidenceCount" type:"integer"`
 
 	// The roles that are associated with the control set.
-	Roles []*Role `locationName:"roles" type:"list"`
+	//
+	// Roles is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentControlSet's
+	// String and GoString methods.
+	Roles []*Role `locationName:"roles" type:"list" sensitive:"true"`
 
-	// Specifies the current status of the control set.
+	// The current status of the control set.
 	Status *string `locationName:"status" type:"string" enum:"ControlSetStatus"`
 
 	// The total number of evidence objects that are retrieved automatically for
@@ -6990,7 +7205,7 @@ type AssessmentEvidenceFolder struct {
 
 	// The number of evidence that falls under the configuration data category.
 	// This evidence is collected from configuration snapshots of other Amazon Web
-	// Services services such as Amazon EC2, Amazon S3, or IAM.
+	// Services such as Amazon EC2, Amazon S3, or IAM.
 	EvidenceByTypeConfigurationDataCount *int64 `locationName:"evidenceByTypeConfigurationDataCount" type:"integer"`
 
 	// The number of evidence that falls under the manual category. This evidence
@@ -7143,7 +7358,7 @@ func (s *AssessmentEvidenceFolder) SetTotalEvidence(v int64) *AssessmentEvidence
 // The file used to structure and automate Audit Manager assessments for a given
 // compliance standard.
 type AssessmentFramework struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
 	// The Amazon Resource Name (ARN) of the framework.
 	Arn *string `locationName:"arn" min:"20" type:"string"`
@@ -7209,7 +7424,11 @@ type AssessmentFrameworkMetadata struct {
 
 	// The compliance type that the new custom framework supports, such as CIS or
 	// HIPAA.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentFrameworkMetadata's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// The number of control sets that are associated with the framework.
 	ControlSetsCount *int64 `locationName:"controlSetsCount" type:"integer"`
@@ -7217,7 +7436,7 @@ type AssessmentFrameworkMetadata struct {
 	// The number of controls that are associated with the framework.
 	ControlsCount *int64 `locationName:"controlsCount" type:"integer"`
 
-	// Specifies when the framework was created.
+	// The time when the framework was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
 	// The description of the framework.
@@ -7226,7 +7445,7 @@ type AssessmentFrameworkMetadata struct {
 	// The unique identifier for the framework.
 	Id *string `locationName:"id" min:"36" type:"string"`
 
-	// Specifies when the framework was most recently updated.
+	// The time when the framework was most recently updated.
 	LastUpdatedAt *time.Time `locationName:"lastUpdatedAt" type:"timestamp"`
 
 	// The logo that's associated with the framework.
@@ -7332,7 +7551,11 @@ type AssessmentFrameworkShareRequest struct {
 
 	// The compliance type that the shared custom framework supports, such as CIS
 	// or HIPAA.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentFrameworkShareRequest's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// The time when the share request was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
@@ -7487,11 +7710,19 @@ type AssessmentMetadata struct {
 	_ struct{} `type:"structure"`
 
 	// The destination that evidence reports are stored in for the assessment.
-	AssessmentReportsDestination *AssessmentReportsDestination `locationName:"assessmentReportsDestination" type:"structure"`
+	//
+	// AssessmentReportsDestination is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadata's
+	// String and GoString methods.
+	AssessmentReportsDestination *AssessmentReportsDestination `locationName:"assessmentReportsDestination" type:"structure" sensitive:"true"`
 
 	// The name of the compliance standard that's related to the assessment, such
 	// as PCI-DSS.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadata's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// Specifies when the assessment was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
@@ -7500,7 +7731,11 @@ type AssessmentMetadata struct {
 	Delegations []*Delegation `locationName:"delegations" type:"list"`
 
 	// The description of the assessment.
-	Description *string `locationName:"description" type:"string"`
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadata's
+	// String and GoString methods.
+	Description *string `locationName:"description" type:"string" sensitive:"true"`
 
 	// The unique identifier for the assessment.
 	Id *string `locationName:"id" min:"36" type:"string"`
@@ -7509,14 +7744,26 @@ type AssessmentMetadata struct {
 	LastUpdated *time.Time `locationName:"lastUpdated" type:"timestamp"`
 
 	// The name of the assessment.
-	Name *string `locationName:"name" min:"1" type:"string"`
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadata's
+	// String and GoString methods.
+	Name *string `locationName:"name" min:"1" type:"string" sensitive:"true"`
 
 	// The roles that are associated with the assessment.
-	Roles []*Role `locationName:"roles" type:"list"`
+	//
+	// Roles is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadata's
+	// String and GoString methods.
+	Roles []*Role `locationName:"roles" type:"list" sensitive:"true"`
 
 	// The wrapper of Amazon Web Services accounts and services that are in scope
 	// for the assessment.
-	Scope *Scope `locationName:"scope" type:"structure"`
+	//
+	// Scope is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadata's
+	// String and GoString methods.
+	Scope *Scope `locationName:"scope" type:"structure" sensitive:"true"`
 
 	// The overall status of the assessment.
 	Status *string `locationName:"status" type:"string" enum:"AssessmentStatus"`
@@ -7612,7 +7859,11 @@ type AssessmentMetadataItem struct {
 
 	// The name of the compliance standard that's related to the assessment, such
 	// as PCI-DSS.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadataItem's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// Specifies when the assessment was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
@@ -7627,10 +7878,18 @@ type AssessmentMetadataItem struct {
 	LastUpdated *time.Time `locationName:"lastUpdated" type:"timestamp"`
 
 	// The name of the assessment.
-	Name *string `locationName:"name" min:"1" type:"string"`
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadataItem's
+	// String and GoString methods.
+	Name *string `locationName:"name" min:"1" type:"string" sensitive:"true"`
 
 	// The roles that are associated with the assessment.
-	Roles []*Role `locationName:"roles" type:"list"`
+	//
+	// Roles is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentMetadataItem's
+	// String and GoString methods.
+	Roles []*Role `locationName:"roles" type:"list" sensitive:"true"`
 
 	// The current status of the assessment.
 	Status *string `locationName:"status" type:"string" enum:"AssessmentStatus"`
@@ -7713,10 +7972,18 @@ type AssessmentReport struct {
 	AssessmentId *string `locationName:"assessmentId" min:"36" type:"string"`
 
 	// The name of the associated assessment.
-	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string"`
+	//
+	// AssessmentName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentReport's
+	// String and GoString methods.
+	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string" sensitive:"true"`
 
 	// The name of the user who created the assessment report.
-	Author *string `locationName:"author" min:"1" type:"string"`
+	//
+	// Author is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentReport's
+	// String and GoString methods.
+	Author *string `locationName:"author" min:"1" type:"string" sensitive:"true"`
 
 	// The identifier for the specified Amazon Web Services account.
 	AwsAccountId *string `locationName:"awsAccountId" min:"12" type:"string"`
@@ -7725,7 +7992,11 @@ type AssessmentReport struct {
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The description of the specified assessment report.
-	Description *string `locationName:"description" type:"string"`
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentReport's
+	// String and GoString methods.
+	Description *string `locationName:"description" type:"string" sensitive:"true"`
 
 	// The unique identifier for the assessment report.
 	Id *string `locationName:"id" min:"36" type:"string"`
@@ -7809,15 +8080,15 @@ func (s *AssessmentReport) SetStatus(v string) *AssessmentReport {
 	return s
 }
 
-// An error entity for the AssessmentReportEvidence API. This is used to provide
+// An error entity for assessment report evidence errors. This is used to provide
 // more meaningful errors than a simple string message.
 type AssessmentReportEvidenceError struct {
 	_ struct{} `type:"structure"`
 
-	// The error code that the AssessmentReportEvidence API returned.
+	// The error code that was returned.
 	ErrorCode *string `locationName:"errorCode" min:"3" type:"string"`
 
-	// The error message that the AssessmentReportEvidence API returned.
+	// The error message that was returned.
 	ErrorMessage *string `locationName:"errorMessage" type:"string"`
 
 	// The identifier for the evidence.
@@ -7868,16 +8139,28 @@ type AssessmentReportMetadata struct {
 	AssessmentId *string `locationName:"assessmentId" min:"36" type:"string"`
 
 	// The name of the associated assessment.
-	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string"`
+	//
+	// AssessmentName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentReportMetadata's
+	// String and GoString methods.
+	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string" sensitive:"true"`
 
 	// The name of the user who created the assessment report.
-	Author *string `locationName:"author" min:"1" type:"string"`
+	//
+	// Author is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentReportMetadata's
+	// String and GoString methods.
+	Author *string `locationName:"author" min:"1" type:"string" sensitive:"true"`
 
 	// Specifies when the assessment report was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
 	// The description of the assessment report.
-	Description *string `locationName:"description" type:"string"`
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AssessmentReportMetadata's
+	// String and GoString methods.
+	Description *string `locationName:"description" type:"string" sensitive:"true"`
 
 	// The unique identifier for the assessment report.
 	Id *string `locationName:"id" min:"36" type:"string"`
@@ -7957,9 +8240,9 @@ func (s *AssessmentReportMetadata) SetStatus(v string) *AssessmentReportMetadata
 
 // The location where Audit Manager saves assessment reports for the given assessment.
 type AssessmentReportsDestination struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
-	// The destination of the assessment report.
+	// The destination bucket where Audit Manager stores assessment reports.
 	Destination *string `locationName:"destination" min:"1" type:"string"`
 
 	// The destination type, such as Amazon S3.
@@ -8278,8 +8561,12 @@ type BatchCreateDelegationByAssessmentInput struct {
 
 	// The API request to batch create delegations in Audit Manager.
 	//
+	// CreateDelegationRequests is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by BatchCreateDelegationByAssessmentInput's
+	// String and GoString methods.
+	//
 	// CreateDelegationRequests is a required field
-	CreateDelegationRequests []*CreateDelegationRequest `locationName:"createDelegationRequests" min:"1" type:"list" required:"true"`
+	CreateDelegationRequests []*CreateDelegationRequest `locationName:"createDelegationRequests" min:"1" type:"list" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -8351,7 +8638,11 @@ type BatchCreateDelegationByAssessmentOutput struct {
 	Delegations []*Delegation `locationName:"delegations" type:"list"`
 
 	// A list of errors that the BatchCreateDelegationByAssessment API returned.
-	Errors []*BatchCreateDelegationByAssessmentError `locationName:"errors" type:"list"`
+	//
+	// Errors is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by BatchCreateDelegationByAssessmentOutput's
+	// String and GoString methods.
+	Errors []*BatchCreateDelegationByAssessmentError `locationName:"errors" type:"list" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -8505,7 +8796,11 @@ type BatchDeleteDelegationByAssessmentOutput struct {
 	_ struct{} `type:"structure"`
 
 	// A list of errors that the BatchDeleteDelegationByAssessment API returned.
-	Errors []*BatchDeleteDelegationByAssessmentError `locationName:"errors" type:"list"`
+	//
+	// Errors is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by BatchDeleteDelegationByAssessmentOutput's
+	// String and GoString methods.
+	Errors []*BatchDeleteDelegationByAssessmentError `locationName:"errors" type:"list" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -8855,7 +9150,7 @@ type ChangeLog struct {
 	// The time when the action was performed and the changelog record was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
-	// The IAM user or role that performed the action.
+	// The user or role that performed the action.
 	CreatedBy *string `locationName:"createdBy" min:"20" type:"string"`
 
 	// The name of the object that changed. This could be the name of an assessment,
@@ -8919,10 +9214,18 @@ type Control struct {
 	_ struct{} `type:"structure"`
 
 	// The recommended actions to carry out if the control isn't fulfilled.
-	ActionPlanInstructions *string `locationName:"actionPlanInstructions" type:"string"`
+	//
+	// ActionPlanInstructions is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Control's
+	// String and GoString methods.
+	ActionPlanInstructions *string `locationName:"actionPlanInstructions" type:"string" sensitive:"true"`
 
 	// The title of the action plan for remediating the control.
-	ActionPlanTitle *string `locationName:"actionPlanTitle" type:"string"`
+	//
+	// ActionPlanTitle is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Control's
+	// String and GoString methods.
+	ActionPlanTitle *string `locationName:"actionPlanTitle" type:"string" sensitive:"true"`
 
 	// The Amazon Resource Name (ARN) of the control.
 	Arn *string `locationName:"arn" min:"20" type:"string"`
@@ -8930,15 +9233,19 @@ type Control struct {
 	// The data mapping sources for the control.
 	ControlMappingSources []*ControlMappingSource `locationName:"controlMappingSources" min:"1" type:"list"`
 
-	// The data source that determines where Audit Manager collects evidence from
-	// for the control.
+	// The data source types that determine where Audit Manager collects evidence
+	// from for the control.
 	ControlSources *string `locationName:"controlSources" min:"1" type:"string"`
 
-	// Specifies when the control was created.
+	// The time when the control was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
-	// The IAM user or role that created the control.
-	CreatedBy *string `locationName:"createdBy" min:"1" type:"string"`
+	// The user or role that created the control.
+	//
+	// CreatedBy is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Control's
+	// String and GoString methods.
+	CreatedBy *string `locationName:"createdBy" min:"1" type:"string" sensitive:"true"`
 
 	// The description of the control.
 	Description *string `locationName:"description" type:"string"`
@@ -8946,11 +9253,15 @@ type Control struct {
 	// The unique identifier for the control.
 	Id *string `locationName:"id" min:"36" type:"string"`
 
-	// Specifies when the control was most recently updated.
+	// The time when the control was most recently updated.
 	LastUpdatedAt *time.Time `locationName:"lastUpdatedAt" type:"timestamp"`
 
-	// The IAM user or role that most recently updated the control.
-	LastUpdatedBy *string `locationName:"lastUpdatedBy" min:"1" type:"string"`
+	// The user or role that most recently updated the control.
+	//
+	// LastUpdatedBy is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Control's
+	// String and GoString methods.
+	LastUpdatedBy *string `locationName:"lastUpdatedBy" min:"1" type:"string" sensitive:"true"`
 
 	// The name of the control.
 	Name *string `locationName:"name" min:"1" type:"string"`
@@ -8959,9 +9270,13 @@ type Control struct {
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The steps that you should follow to determine if the control has been satisfied.
-	TestingInformation *string `locationName:"testingInformation" type:"string"`
+	//
+	// TestingInformation is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Control's
+	// String and GoString methods.
+	TestingInformation *string `locationName:"testingInformation" type:"string" sensitive:"true"`
 
-	// The type of control, such as a custom control or a standard control.
+	// Specifies whether the control is a standard control or a custom control.
 	Type *string `locationName:"type" type:"string" enum:"ControlType"`
 }
 
@@ -9079,10 +9394,18 @@ type ControlComment struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the user who authored the comment.
-	AuthorName *string `locationName:"authorName" min:"1" type:"string"`
+	//
+	// AuthorName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ControlComment's
+	// String and GoString methods.
+	AuthorName *string `locationName:"authorName" min:"1" type:"string" sensitive:"true"`
 
 	// The body text of a control comment.
-	CommentBody *string `locationName:"commentBody" type:"string"`
+	//
+	// CommentBody is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ControlComment's
+	// String and GoString methods.
+	CommentBody *string `locationName:"commentBody" type:"string" sensitive:"true"`
 
 	// The time when the comment was posted.
 	PostedDate *time.Time `locationName:"postedDate" type:"timestamp"`
@@ -9351,14 +9674,31 @@ type ControlMappingSource struct {
 	// The description of the source.
 	SourceDescription *string `locationName:"sourceDescription" type:"string"`
 
-	// The frequency of evidence collection for the control mapping source.
+	// Specifies how often evidence is collected from the control mapping source.
 	SourceFrequency *string `locationName:"sourceFrequency" type:"string" enum:"SourceFrequency"`
 
 	// The unique identifier for the source.
 	SourceId *string `locationName:"sourceId" min:"36" type:"string"`
 
-	// The keyword to search for in CloudTrail logs, Config rules, Security Hub
-	// checks, and Amazon Web Services API names.
+	// A keyword that relates to the control data source.
+	//
+	// For manual evidence, this keyword indicates if the manual evidence is a file
+	// or text.
+	//
+	// For automated evidence, this keyword identifies a specific CloudTrail event,
+	// Config rule, Security Hub control, or Amazon Web Services API name.
+	//
+	// To learn more about the supported keywords that you can use when mapping
+	// a control data source, see the following pages in the Audit Manager User
+	// Guide:
+	//
+	//    * Config rules supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-config.html)
+	//
+	//    * Security Hub controls supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-ash.html)
+	//
+	//    * API calls supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-api.html)
+	//
+	//    * CloudTrail event names supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-cloudtrail.html)
 	SourceKeyword *SourceKeyword `locationName:"sourceKeyword" type:"structure"`
 
 	// The name of the source.
@@ -9368,11 +9708,15 @@ type ControlMappingSource struct {
 	// collection is automated or manual.
 	SourceSetUpOption *string `locationName:"sourceSetUpOption" type:"string" enum:"SourceSetUpOption"`
 
-	// Specifies one of the five types of data sources for evidence collection.
+	// Specifies one of the five data source types for evidence collection.
 	SourceType *string `locationName:"sourceType" type:"string" enum:"SourceType"`
 
 	// The instructions for troubleshooting the control.
-	TroubleshootingText *string `locationName:"troubleshootingText" type:"string"`
+	//
+	// TroubleshootingText is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ControlMappingSource's
+	// String and GoString methods.
+	TroubleshootingText *string `locationName:"troubleshootingText" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -9473,13 +9817,13 @@ type ControlMetadata struct {
 	// for the control.
 	ControlSources *string `locationName:"controlSources" min:"1" type:"string"`
 
-	// Specifies when the control was created.
+	// The time when the control was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
 	// The unique identifier for the control.
 	Id *string `locationName:"id" min:"36" type:"string"`
 
-	// Specifies when the control was most recently updated.
+	// The time when the control was most recently updated.
 	LastUpdatedAt *time.Time `locationName:"lastUpdatedAt" type:"timestamp"`
 
 	// The name of the control.
@@ -9721,7 +10065,11 @@ type CreateAssessmentFrameworkInput struct {
 
 	// The compliance type that the new custom framework supports, such as CIS or
 	// HIPAA.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentFrameworkInput's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// The control sets that are associated with the framework.
 	//
@@ -9860,11 +10208,19 @@ type CreateAssessmentInput struct {
 	// The assessment report storage destination for the assessment that's being
 	// created.
 	//
+	// AssessmentReportsDestination is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentInput's
+	// String and GoString methods.
+	//
 	// AssessmentReportsDestination is a required field
-	AssessmentReportsDestination *AssessmentReportsDestination `locationName:"assessmentReportsDestination" type:"structure" required:"true"`
+	AssessmentReportsDestination *AssessmentReportsDestination `locationName:"assessmentReportsDestination" type:"structure" required:"true" sensitive:"true"`
 
 	// The optional description of the assessment to be created.
-	Description *string `locationName:"description" type:"string"`
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentInput's
+	// String and GoString methods.
+	Description *string `locationName:"description" type:"string" sensitive:"true"`
 
 	// The identifier for the framework that the assessment will be created from.
 	//
@@ -9873,19 +10229,31 @@ type CreateAssessmentInput struct {
 
 	// The name of the assessment to be created.
 	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentInput's
+	// String and GoString methods.
+	//
 	// Name is a required field
-	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+	Name *string `locationName:"name" min:"1" type:"string" required:"true" sensitive:"true"`
 
 	// The list of roles for the assessment.
 	//
+	// Roles is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentInput's
+	// String and GoString methods.
+	//
 	// Roles is a required field
-	Roles []*Role `locationName:"roles" type:"list" required:"true"`
+	Roles []*Role `locationName:"roles" type:"list" required:"true" sensitive:"true"`
 
 	// The wrapper that contains the Amazon Web Services accounts and services that
 	// are in scope for the assessment.
 	//
+	// Scope is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentInput's
+	// String and GoString methods.
+	//
 	// Scope is a required field
-	Scope *Scope `locationName:"scope" type:"structure" required:"true"`
+	Scope *Scope `locationName:"scope" type:"structure" required:"true" sensitive:"true"`
 
 	// The tags that are associated with the assessment.
 	Tags map[string]*string `locationName:"tags" type:"map"`
@@ -10043,12 +10411,33 @@ type CreateAssessmentReportInput struct {
 	AssessmentId *string `location:"uri" locationName:"assessmentId" min:"36" type:"string" required:"true"`
 
 	// The description of the assessment report.
-	Description *string `locationName:"description" type:"string"`
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAssessmentReportInput's
+	// String and GoString methods.
+	Description *string `locationName:"description" type:"string" sensitive:"true"`
 
 	// The name of the new assessment report.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// A SQL statement that represents an evidence finder query.
+	//
+	// Provide this parameter when you want to generate an assessment report from
+	// the results of an evidence finder search query. When you use this parameter,
+	// Audit Manager generates a one-time report using only the evidence from the
+	// query output. This report does not include any assessment evidence that was
+	// manually added to a report using the console (https://docs.aws.amazon.com/audit-manager/latest/userguide/generate-assessment-report.html#generate-assessment-report-include-evidence),
+	// or associated with a report using the API (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_BatchAssociateAssessmentReportEvidence.html).
+	//
+	// To use this parameter, the enablementStatus (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_EvidenceFinderEnablement.html#auditmanager-Type-EvidenceFinderEnablement-enablementStatus)
+	// of evidence finder must be ENABLED.
+	//
+	// For examples and help resolving queryStatement validation exceptions, see
+	// Troubleshooting evidence finder issues (https://docs.aws.amazon.com/audit-manager/latest/userguide/evidence-finder-issues.html#querystatement-exceptions)
+	// in the Audit Manager User Guide.
+	QueryStatement *string `locationName:"queryStatement" min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -10084,6 +10473,9 @@ func (s *CreateAssessmentReportInput) Validate() error {
 	if s.Name != nil && len(*s.Name) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
 	}
+	if s.QueryStatement != nil && len(*s.QueryStatement) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("QueryStatement", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -10106,6 +10498,12 @@ func (s *CreateAssessmentReportInput) SetDescription(v string) *CreateAssessment
 // SetName sets the Name field's value.
 func (s *CreateAssessmentReportInput) SetName(v string) *CreateAssessmentReportInput {
 	s.Name = &v
+	return s
+}
+
+// SetQueryStatement sets the QueryStatement field's value.
+func (s *CreateAssessmentReportInput) SetQueryStatement(v string) *CreateAssessmentReportInput {
+	s.QueryStatement = &v
 	return s
 }
 
@@ -10144,10 +10542,18 @@ type CreateControlInput struct {
 	_ struct{} `type:"structure"`
 
 	// The recommended actions to carry out if the control isn't fulfilled.
-	ActionPlanInstructions *string `locationName:"actionPlanInstructions" type:"string"`
+	//
+	// ActionPlanInstructions is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateControlInput's
+	// String and GoString methods.
+	ActionPlanInstructions *string `locationName:"actionPlanInstructions" type:"string" sensitive:"true"`
 
 	// The title of the action plan for remediating the control.
-	ActionPlanTitle *string `locationName:"actionPlanTitle" type:"string"`
+	//
+	// ActionPlanTitle is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateControlInput's
+	// String and GoString methods.
+	ActionPlanTitle *string `locationName:"actionPlanTitle" type:"string" sensitive:"true"`
 
 	// The data mapping sources for the control.
 	//
@@ -10166,7 +10572,11 @@ type CreateControlInput struct {
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The steps to follow to determine if the control is satisfied.
-	TestingInformation *string `locationName:"testingInformation" type:"string"`
+	//
+	// TestingInformation is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateControlInput's
+	// String and GoString methods.
+	TestingInformation *string `locationName:"testingInformation" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -10270,11 +10680,28 @@ type CreateControlMappingSource struct {
 	// evidence from for the control.
 	SourceDescription *string `locationName:"sourceDescription" type:"string"`
 
-	// The frequency of evidence collection for the control mapping source.
+	// Specifies how often evidence is collected from the control mapping source.
 	SourceFrequency *string `locationName:"sourceFrequency" type:"string" enum:"SourceFrequency"`
 
-	// The keyword to search for in CloudTrail logs, Config rules, Security Hub
-	// checks, and Amazon Web Services API names.
+	// A keyword that relates to the control data source.
+	//
+	// For manual evidence, this keyword indicates if the manual evidence is a file
+	// or text.
+	//
+	// For automated evidence, this keyword identifies a specific CloudTrail event,
+	// Config rule, Security Hub control, or Amazon Web Services API name.
+	//
+	// To learn more about the supported keywords that you can use when mapping
+	// a control data source, see the following pages in the Audit Manager User
+	// Guide:
+	//
+	//    * Config rules supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-config.html)
+	//
+	//    * Security Hub controls supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-ash.html)
+	//
+	//    * API calls supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-api.html)
+	//
+	//    * CloudTrail event names supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-cloudtrail.html)
 	SourceKeyword *SourceKeyword `locationName:"sourceKeyword" type:"structure"`
 
 	// The name of the control mapping data source.
@@ -10288,7 +10715,11 @@ type CreateControlMappingSource struct {
 	SourceType *string `locationName:"sourceType" type:"string" enum:"SourceType"`
 
 	// The instructions for troubleshooting the control.
-	TroubleshootingText *string `locationName:"troubleshootingText" type:"string"`
+	//
+	// TroubleshootingText is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateControlMappingSource's
+	// String and GoString methods.
+	TroubleshootingText *string `locationName:"troubleshootingText" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -10406,7 +10837,11 @@ type CreateDelegationRequest struct {
 	_ struct{} `type:"structure"`
 
 	// A comment that's related to the delegation request.
-	Comment *string `locationName:"comment" type:"string"`
+	//
+	// Comment is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateDelegationRequest's
+	// String and GoString methods.
+	Comment *string `locationName:"comment" type:"string" sensitive:"true"`
 
 	// The unique identifier for the control set.
 	ControlSetId *string `locationName:"controlSetId" min:"1" type:"string"`
@@ -10482,24 +10917,91 @@ func (s *CreateDelegationRequest) SetRoleType(v string) *CreateDelegationRequest
 	return s
 }
 
+// The default s3 bucket where Audit Manager saves the files that you export
+// from evidence finder.
+type DefaultExportDestination struct {
+	_ struct{} `type:"structure"`
+
+	// The destination bucket where Audit Manager stores exported files.
+	Destination *string `locationName:"destination" min:"1" type:"string"`
+
+	// The destination type, such as Amazon S3.
+	DestinationType *string `locationName:"destinationType" type:"string" enum:"ExportDestinationType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DefaultExportDestination) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DefaultExportDestination) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DefaultExportDestination) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DefaultExportDestination"}
+	if s.Destination != nil && len(*s.Destination) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Destination", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDestination sets the Destination field's value.
+func (s *DefaultExportDestination) SetDestination(v string) *DefaultExportDestination {
+	s.Destination = &v
+	return s
+}
+
+// SetDestinationType sets the DestinationType field's value.
+func (s *DefaultExportDestination) SetDestinationType(v string) *DefaultExportDestination {
+	s.DestinationType = &v
+	return s
+}
+
 // The assignment of a control set to a delegate for review.
 type Delegation struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
 	// The identifier for the assessment that's associated with the delegation.
 	AssessmentId *string `locationName:"assessmentId" min:"36" type:"string"`
 
 	// The name of the assessment that's associated with the delegation.
-	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string"`
+	//
+	// AssessmentName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Delegation's
+	// String and GoString methods.
+	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string" sensitive:"true"`
 
 	// The comment that's related to the delegation.
-	Comment *string `locationName:"comment" type:"string"`
+	//
+	// Comment is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Delegation's
+	// String and GoString methods.
+	Comment *string `locationName:"comment" type:"string" sensitive:"true"`
 
 	// The identifier for the control set that's associated with the delegation.
 	ControlSetId *string `locationName:"controlSetId" min:"1" type:"string"`
 
-	// The IAM user or role that created the delegation.
-	CreatedBy *string `locationName:"createdBy" min:"1" type:"string"`
+	// The user or role that created the delegation.
+	//
+	// CreatedBy is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Delegation's
+	// String and GoString methods.
+	CreatedBy *string `locationName:"createdBy" min:"1" type:"string" sensitive:"true"`
 
 	// Specifies when the delegation was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
@@ -10618,7 +11120,11 @@ type DelegationMetadata struct {
 	AssessmentId *string `locationName:"assessmentId" min:"36" type:"string"`
 
 	// The name of the associated assessment.
-	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string"`
+	//
+	// AssessmentName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by DelegationMetadata's
+	// String and GoString methods.
+	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string" sensitive:"true"`
 
 	// Specifies the name of the control set that was delegated for review.
 	ControlSetName *string `locationName:"controlSetName" min:"1" type:"string"`
@@ -11201,6 +11707,64 @@ func (s DeregisterOrganizationAdminAccountOutput) GoString() string {
 	return s.String()
 }
 
+// The deregistration policy for the data that's stored in Audit Manager. You
+// can use this attribute to determine how your data is handled when you deregister
+// Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeregisterAccount.html).
+//
+// By default, Audit Manager retains evidence data for two years from the time
+// of its creation. Other Audit Manager resources (including assessments, custom
+// controls, and custom frameworks) remain in Audit Manager indefinitely, and
+// are available if you re-register Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_RegisterAccount.html)
+// in the future. For more information about data retention, see Data Protection
+// (https://docs.aws.amazon.com/audit-manager/latest/userguide/data-protection.html)
+// in the Audit Manager User Guide.
+//
+// If you choose to delete all data, this action permanently deletes all evidence
+// data in your account within seven days. It also deletes all of the Audit
+// Manager resources that you created, including assessments, custom controls,
+// and custom frameworks. Your data will not be available if you re-register
+// Audit Manager in the future.
+type DeregistrationPolicy struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies which Audit Manager data will be deleted when you deregister Audit
+	// Manager.
+	//
+	//    * If you set the value to ALL, all of your data is deleted within seven
+	//    days of deregistration.
+	//
+	//    * If you set the value to DEFAULT, none of your data is deleted at the
+	//    time of deregistration. However, keep in mind that the Audit Manager data
+	//    retention policy still applies. As a result, any evidence data will be
+	//    deleted two years after its creation date. Your other Audit Manager resources
+	//    will continue to exist indefinitely.
+	DeleteResources *string `locationName:"deleteResources" type:"string" enum:"DeleteResources"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeregistrationPolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeregistrationPolicy) GoString() string {
+	return s.String()
+}
+
+// SetDeleteResources sets the DeleteResources field's value.
+func (s *DeregistrationPolicy) SetDeleteResources(v string) *DeregistrationPolicy {
+	s.DeleteResources = &v
+	return s
+}
+
 type DisassociateAssessmentReportEvidenceFolderInput struct {
 	_ struct{} `type:"structure"`
 
@@ -11291,7 +11855,7 @@ func (s DisassociateAssessmentReportEvidenceFolderOutput) GoString() string {
 
 // A record that contains the information needed to demonstrate compliance with
 // the requirements specified by a control. Examples of evidence include change
-// activity triggered by a user, or a system configuration snapshot.
+// activity invoked by a user, or a system configuration snapshot.
 type Evidence struct {
 	_ struct{} `type:"structure"`
 
@@ -11310,10 +11874,21 @@ type Evidence struct {
 	// its organization path.
 	AwsOrganization *string `locationName:"awsOrganization" type:"string"`
 
-	// The evaluation status for evidence that falls under the compliance check
-	// category. For evidence collected from Security Hub, a Pass or Fail result
-	// is shown. For evidence collected from Config, a Compliant or Noncompliant
-	// result is shown.
+	// The evaluation status for automated evidence that falls under the compliance
+	// check category.
+	//
+	//    * Audit Manager classes evidence as non-compliant if Security Hub reports
+	//    a Fail result, or if Config reports a Non-compliant result.
+	//
+	//    * Audit Manager classes evidence as compliant if Security Hub reports
+	//    a Pass result, or if Config reports a Compliant result.
+	//
+	//    * If a compliance check isn't available or applicable, then no compliance
+	//    evaluation can be made for that evidence. This is the case if the evidence
+	//    uses Config or Security Hub as the underlying data source type, but those
+	//    services aren't enabled. This is also the case if the evidence uses an
+	//    underlying data source type that doesn't support compliance checks (such
+	//    as manual evidence, Amazon Web Services API calls, or CloudTrail).
 	ComplianceCheck *string `locationName:"complianceCheck" type:"string"`
 
 	// The data source where the evidence was collected from.
@@ -11334,8 +11909,7 @@ type Evidence struct {
 	// The identifier for the folder that the evidence is stored in.
 	EvidenceFolderId *string `locationName:"evidenceFolderId" min:"36" type:"string"`
 
-	// The unique identifier for the IAM user or role that's associated with the
-	// evidence.
+	// The unique identifier for the user or role that's associated with the evidence.
 	IamId *string `locationName:"iamId" min:"20" type:"string"`
 
 	// The identifier for the evidence.
@@ -11456,6 +12030,99 @@ func (s *Evidence) SetTime(v time.Time) *Evidence {
 	return s
 }
 
+// The settings object that specifies whether evidence finder is enabled. This
+// object also describes the related event data store, and the backfill status
+// for populating the event data store with evidence data.
+type EvidenceFinderEnablement struct {
+	_ struct{} `type:"structure"`
+
+	// The current status of the evidence data backfill process.
+	//
+	// The backfill starts after you enable evidence finder. During this task, Audit
+	// Manager populates an event data store with your past two years’ worth of
+	// evidence data so that your evidence can be queried.
+	//
+	//    * NOT_STARTED means that the backfill hasn’t started yet.
+	//
+	//    * IN_PROGRESS means that the backfill is in progress. This can take up
+	//    to 7 days to complete, depending on the amount of evidence data.
+	//
+	//    * COMPLETED means that the backfill is complete. All of your past evidence
+	//    is now queryable.
+	BackfillStatus *string `locationName:"backfillStatus" type:"string" enum:"EvidenceFinderBackfillStatus"`
+
+	// The current status of the evidence finder feature and the related event data
+	// store.
+	//
+	//    * ENABLE_IN_PROGRESS means that you requested to enable evidence finder.
+	//    An event data store is currently being created to support evidence finder
+	//    queries.
+	//
+	//    * ENABLED means that an event data store was successfully created and
+	//    evidence finder is enabled. We recommend that you wait 7 days until the
+	//    event data store is backfilled with your past two years’ worth of evidence
+	//    data. You can use evidence finder in the meantime, but not all data might
+	//    be available until the backfill is complete.
+	//
+	//    * DISABLE_IN_PROGRESS means that you requested to disable evidence finder,
+	//    and your request is pending the deletion of the event data store.
+	//
+	//    * DISABLED means that you have permanently disabled evidence finder and
+	//    the event data store has been deleted. You can't re-enable evidence finder
+	//    after this point.
+	EnablementStatus *string `locationName:"enablementStatus" type:"string" enum:"EvidenceFinderEnablementStatus"`
+
+	// Represents any errors that occurred when enabling or disabling evidence finder.
+	Error *string `locationName:"error" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the CloudTrail Lake event data store that’s
+	// used by evidence finder. The event data store is the lake of evidence data
+	// that evidence finder runs queries against.
+	EventDataStoreArn *string `locationName:"eventDataStoreArn" min:"20" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EvidenceFinderEnablement) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EvidenceFinderEnablement) GoString() string {
+	return s.String()
+}
+
+// SetBackfillStatus sets the BackfillStatus field's value.
+func (s *EvidenceFinderEnablement) SetBackfillStatus(v string) *EvidenceFinderEnablement {
+	s.BackfillStatus = &v
+	return s
+}
+
+// SetEnablementStatus sets the EnablementStatus field's value.
+func (s *EvidenceFinderEnablement) SetEnablementStatus(v string) *EvidenceFinderEnablement {
+	s.EnablementStatus = &v
+	return s
+}
+
+// SetError sets the Error field's value.
+func (s *EvidenceFinderEnablement) SetError(v string) *EvidenceFinderEnablement {
+	s.Error = &v
+	return s
+}
+
+// SetEventDataStoreArn sets the EventDataStoreArn field's value.
+func (s *EvidenceFinderEnablement) SetEventDataStoreArn(v string) *EvidenceFinderEnablement {
+	s.EventDataStoreArn = &v
+	return s
+}
+
 // A breakdown of the latest compliance check status for the evidence in your
 // Audit Manager assessments.
 type EvidenceInsights struct {
@@ -11526,21 +12193,32 @@ type Framework struct {
 	// The Amazon Resource Name (ARN) of the framework.
 	Arn *string `locationName:"arn" min:"20" type:"string"`
 
-	// The compliance type that the new custom framework supports, such as CIS or
-	// HIPAA.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	// The compliance type that the framework supports, such as CIS or HIPAA.
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Framework's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// The control sets that are associated with the framework.
-	ControlSets []*ControlSet `locationName:"controlSets" min:"1" type:"list"`
+	//
+	// ControlSets is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Framework's
+	// String and GoString methods.
+	ControlSets []*ControlSet `locationName:"controlSets" min:"1" type:"list" sensitive:"true"`
 
-	// The sources that Audit Manager collects evidence from for the control.
+	// The control data sources where Audit Manager collects evidence from.
 	ControlSources *string `locationName:"controlSources" min:"1" type:"string"`
 
-	// Specifies when the framework was created.
+	// The time when the framework was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
-	// The IAM user or role that created the framework.
-	CreatedBy *string `locationName:"createdBy" min:"1" type:"string"`
+	// The user or role that created the framework.
+	//
+	// CreatedBy is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Framework's
+	// String and GoString methods.
+	CreatedBy *string `locationName:"createdBy" min:"1" type:"string" sensitive:"true"`
 
 	// The description of the framework.
 	Description *string `locationName:"description" min:"1" type:"string"`
@@ -11548,11 +12226,15 @@ type Framework struct {
 	// The unique identifier for the framework.
 	Id *string `locationName:"id" min:"36" type:"string"`
 
-	// Specifies when the framework was most recently updated.
+	// The time when the framework was most recently updated.
 	LastUpdatedAt *time.Time `locationName:"lastUpdatedAt" type:"timestamp"`
 
-	// The IAM user or role that most recently updated the framework.
-	LastUpdatedBy *string `locationName:"lastUpdatedBy" min:"1" type:"string"`
+	// The user or role that most recently updated the framework.
+	//
+	// LastUpdatedBy is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Framework's
+	// String and GoString methods.
+	LastUpdatedBy *string `locationName:"lastUpdatedBy" min:"1" type:"string" sensitive:"true"`
 
 	// The logo that's associated with the framework.
 	Logo *string `locationName:"logo" min:"1" type:"string"`
@@ -11563,7 +12245,7 @@ type Framework struct {
 	// The tags that are associated with the framework.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
-	// The framework type, such as a custom framework or a standard framework.
+	// Specifies whether the framework is a standard framework or a custom framework.
 	Type *string `locationName:"type" type:"string" enum:"FrameworkType"`
 }
 
@@ -11675,7 +12357,11 @@ type FrameworkMetadata struct {
 
 	// The compliance standard that's associated with the framework. For example,
 	// this could be PCI DSS or HIPAA.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by FrameworkMetadata's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// The description of the framework.
 	Description *string `locationName:"description" min:"1" type:"string"`
@@ -11684,7 +12370,11 @@ type FrameworkMetadata struct {
 	Logo *string `locationName:"logo" min:"1" type:"string"`
 
 	// The name of the framework.
-	Name *string `locationName:"name" min:"1" type:"string"`
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by FrameworkMetadata's
+	// String and GoString methods.
+	Name *string `locationName:"name" min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -12241,7 +12931,7 @@ func (s *GetControlInput) SetControlId(v string) *GetControlInput {
 type GetControlOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the control that the GetControl API returned.
+	// The details of the control that the GetControl API returned.
 	Control *Control `locationName:"control" type:"structure"`
 }
 
@@ -12511,6 +13201,102 @@ func (s *GetEvidenceByEvidenceFolderOutput) SetEvidence(v []*Evidence) *GetEvide
 // SetNextToken sets the NextToken field's value.
 func (s *GetEvidenceByEvidenceFolderOutput) SetNextToken(v string) *GetEvidenceByEvidenceFolderOutput {
 	s.NextToken = &v
+	return s
+}
+
+type GetEvidenceFileUploadUrlInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The file that you want to upload. For a list of supported file formats, see
+	// Supported file types for manual evidence (https://docs.aws.amazon.com/audit-manager/latest/userguide/upload-evidence.html#supported-manual-evidence-files)
+	// in the Audit Manager User Guide.
+	//
+	// FileName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by GetEvidenceFileUploadUrlInput's
+	// String and GoString methods.
+	//
+	// FileName is a required field
+	FileName *string `location:"querystring" locationName:"fileName" min:"1" type:"string" required:"true" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEvidenceFileUploadUrlInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEvidenceFileUploadUrlInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetEvidenceFileUploadUrlInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetEvidenceFileUploadUrlInput"}
+	if s.FileName == nil {
+		invalidParams.Add(request.NewErrParamRequired("FileName"))
+	}
+	if s.FileName != nil && len(*s.FileName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FileName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFileName sets the FileName field's value.
+func (s *GetEvidenceFileUploadUrlInput) SetFileName(v string) *GetEvidenceFileUploadUrlInput {
+	s.FileName = &v
+	return s
+}
+
+type GetEvidenceFileUploadUrlOutput struct {
+	_ struct{} `type:"structure" sensitive:"true"`
+
+	// The name of the uploaded manual evidence file that the presigned URL was
+	// generated for.
+	EvidenceFileName *string `locationName:"evidenceFileName" min:"1" type:"string"`
+
+	// The presigned URL that was generated.
+	UploadUrl *string `locationName:"uploadUrl" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEvidenceFileUploadUrlOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetEvidenceFileUploadUrlOutput) GoString() string {
+	return s.String()
+}
+
+// SetEvidenceFileName sets the EvidenceFileName field's value.
+func (s *GetEvidenceFileUploadUrlOutput) SetEvidenceFileName(v string) *GetEvidenceFileUploadUrlOutput {
+	s.EvidenceFileName = &v
+	return s
+}
+
+// SetUploadUrl sets the UploadUrl field's value.
+func (s *GetEvidenceFileUploadUrlOutput) SetUploadUrl(v string) *GetEvidenceFileUploadUrlOutput {
+	s.UploadUrl = &v
 	return s
 }
 
@@ -12995,7 +13781,7 @@ func (s *GetEvidenceInput) SetEvidenceId(v string) *GetEvidenceInput {
 type GetEvidenceOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The evidence that the GetEvidenceResponse API returned.
+	// The evidence that the GetEvidence API returned.
 	Evidence *Evidence `locationName:"evidence" type:"structure"`
 }
 
@@ -13274,7 +14060,7 @@ func (s *GetServicesInScopeOutput) SetServiceMetadata(v []*ServiceMetadata) *Get
 type GetSettingsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The list of SettingAttribute enum values.
+	// The list of setting attribute enum values.
 	//
 	// Attribute is a required field
 	Attribute *string `location:"uri" locationName:"attribute" type:"string" required:"true" enum:"SettingAttribute"`
@@ -13965,7 +14751,8 @@ func (s *ListAssessmentFrameworksInput) SetNextToken(v string) *ListAssessmentFr
 type ListAssessmentFrameworksOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The list of metadata objects for the framework.
+	// A list of metadata that the ListAssessmentFrameworks API returns for each
+	// framework.
 	FrameworkMetadataList []*AssessmentFrameworkMetadata `locationName:"frameworkMetadataList" type:"list"`
 
 	// The pagination token that's used to fetch the next set of results.
@@ -14168,7 +14955,7 @@ func (s *ListAssessmentsInput) SetStatus(v string) *ListAssessmentsInput {
 type ListAssessmentsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The metadata that's associated with the assessment.
+	// The metadata that the ListAssessments API returns for each assessment.
 	AssessmentMetadata []*AssessmentMetadataItem `locationName:"assessmentMetadata" type:"list"`
 
 	// The pagination token that's used to fetch the next set of results.
@@ -14607,7 +15394,7 @@ func (s *ListControlsInput) SetNextToken(v string) *ListControlsInput {
 type ListControlsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The list of control metadata objects that the ListControls API returned.
+	// A list of metadata that the ListControls API returns for each control.
 	ControlMetadataList []*ControlMetadata `locationName:"controlMetadataList" type:"list"`
 
 	// The pagination token that's used to fetch the next set of results.
@@ -14932,12 +15719,29 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
-// Evidence that's uploaded to Audit Manager manually.
+// Evidence that's manually added to a control in Audit Manager. manualEvidence
+// can be one of the following: evidenceFileName, s3ResourcePath, or textResponse.
 type ManualEvidence struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon S3 URL that points to a manual evidence object.
+	// The name of the file that's uploaded as manual evidence. This name is populated
+	// using the evidenceFileName value from the GetEvidenceFileUploadUrl (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_GetEvidenceFileUploadUrl.html)
+	// API response.
+	//
+	// EvidenceFileName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ManualEvidence's
+	// String and GoString methods.
+	EvidenceFileName *string `locationName:"evidenceFileName" min:"1" type:"string" sensitive:"true"`
+
+	// The S3 URL of the object that's imported as manual evidence.
 	S3ResourcePath *string `locationName:"s3ResourcePath" min:"1" type:"string"`
+
+	// The plain text response that's entered and saved as manual evidence.
+	//
+	// TextResponse is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ManualEvidence's
+	// String and GoString methods.
+	TextResponse *string `locationName:"textResponse" min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -14961,8 +15765,14 @@ func (s ManualEvidence) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ManualEvidence) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ManualEvidence"}
+	if s.EvidenceFileName != nil && len(*s.EvidenceFileName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("EvidenceFileName", 1))
+	}
 	if s.S3ResourcePath != nil && len(*s.S3ResourcePath) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("S3ResourcePath", 1))
+	}
+	if s.TextResponse != nil && len(*s.TextResponse) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TextResponse", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -14971,9 +15781,21 @@ func (s *ManualEvidence) Validate() error {
 	return nil
 }
 
+// SetEvidenceFileName sets the EvidenceFileName field's value.
+func (s *ManualEvidence) SetEvidenceFileName(v string) *ManualEvidence {
+	s.EvidenceFileName = &v
+	return s
+}
+
 // SetS3ResourcePath sets the S3ResourcePath field's value.
 func (s *ManualEvidence) SetS3ResourcePath(v string) *ManualEvidence {
 	s.S3ResourcePath = &v
+	return s
+}
+
+// SetTextResponse sets the TextResponse field's value.
+func (s *ManualEvidence) SetTextResponse(v string) *ManualEvidence {
+	s.TextResponse = &v
 	return s
 }
 
@@ -14987,7 +15809,11 @@ type Notification struct {
 	AssessmentId *string `locationName:"assessmentId" min:"36" type:"string"`
 
 	// The name of the related assessment.
-	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string"`
+	//
+	// AssessmentName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Notification's
+	// String and GoString methods.
+	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string" sensitive:"true"`
 
 	// The identifier for the control set.
 	ControlSetId *string `locationName:"controlSetId" min:"1" type:"string"`
@@ -15257,6 +16083,23 @@ type Resource struct {
 	// The Amazon Resource Name (ARN) for the resource.
 	Arn *string `locationName:"arn" min:"20" type:"string"`
 
+	// The evaluation status for a resource that was assessed when collecting compliance
+	// check evidence.
+	//
+	//    * Audit Manager classes the resource as non-compliant if Security Hub
+	//    reports a Fail result, or if Config reports a Non-compliant result.
+	//
+	//    * Audit Manager classes the resource as compliant if Security Hub reports
+	//    a Pass result, or if Config reports a Compliant result.
+	//
+	//    * If a compliance check isn't available or applicable, then no compliance
+	//    evaluation can be made for that resource. This is the case if a resource
+	//    assessment uses Config or Security Hub as the underlying data source type,
+	//    but those services aren't enabled. This is also the case if the resource
+	//    assessment uses an underlying data source type that doesn't support compliance
+	//    checks (such as manual evidence, Amazon Web Services API calls, or CloudTrail).
+	ComplianceCheck *string `locationName:"complianceCheck" type:"string"`
+
 	// The value of the resource.
 	Value *string `locationName:"value" type:"string"`
 }
@@ -15282,6 +16125,12 @@ func (s Resource) GoString() string {
 // SetArn sets the Arn field's value.
 func (s *Resource) SetArn(v string) *Resource {
 	s.Arn = &v
+	return s
+}
+
+// SetComplianceCheck sets the ComplianceCheck field's value.
+func (s *Resource) SetComplianceCheck(v string) *Resource {
+	s.ComplianceCheck = &v
 	return s
 }
 
@@ -15371,7 +16220,9 @@ type Role struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the IAM role.
-	RoleArn *string `locationName:"roleArn" min:"20" type:"string"`
+	//
+	// RoleArn is a required field
+	RoleArn *string `locationName:"roleArn" min:"20" type:"string" required:"true"`
 
 	// The type of customer persona.
 	//
@@ -15380,7 +16231,9 @@ type Role struct {
 	// In UpdateSettings, roleType can only be PROCESS_OWNER.
 	//
 	// In BatchCreateDelegationByAssessment, roleType can only be RESOURCE_OWNER.
-	RoleType *string `locationName:"roleType" type:"string" enum:"RoleType"`
+	//
+	// RoleType is a required field
+	RoleType *string `locationName:"roleType" type:"string" required:"true" enum:"RoleType"`
 }
 
 // String returns the string representation.
@@ -15404,8 +16257,14 @@ func (s Role) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *Role) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "Role"}
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
+	}
 	if s.RoleArn != nil && len(*s.RoleArn) < 20 {
 		invalidParams.Add(request.NewErrParamMinLen("RoleArn", 20))
+	}
+	if s.RoleType == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleType"))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -15429,10 +16288,14 @@ func (s *Role) SetRoleType(v string) *Role {
 // The wrapper that contains the Amazon Web Services accounts and services that
 // are in scope for the assessment.
 type Scope struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" sensitive:"true"`
 
 	// The Amazon Web Services accounts that are included in the scope of the assessment.
-	AwsAccounts []*AWSAccount `locationName:"awsAccounts" type:"list"`
+	//
+	// AwsAccounts is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Scope's
+	// String and GoString methods.
+	AwsAccounts []*AWSAccount `locationName:"awsAccounts" min:"1" type:"list" sensitive:"true"`
 
 	// The Amazon Web Services services that are included in the scope of the assessment.
 	AwsServices []*AWSService `locationName:"awsServices" type:"list"`
@@ -15459,6 +16322,9 @@ func (s Scope) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *Scope) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "Scope"}
+	if s.AwsAccounts != nil && len(s.AwsAccounts) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AwsAccounts", 1))
+	}
 	if s.AwsAccounts != nil {
 		for i, v := range s.AwsAccounts {
 			if v == nil {
@@ -15558,15 +16424,101 @@ func (s *ServiceMetadata) SetName(v string) *ServiceMetadata {
 	return s
 }
 
+// You've reached your account quota for this resource type. To perform the
+// requested action, delete some existing resources or request a quota increase
+// (https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html) from
+// the Service Quotas console. For a list of Audit Manager service quotas, see
+// Quotas and restrictions for Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/service-quotas.html).
+type ServiceQuotaExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceQuotaExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceQuotaExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorServiceQuotaExceededException(v protocol.ResponseMetadata) error {
+	return &ServiceQuotaExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ServiceQuotaExceededException) Code() string {
+	return "ServiceQuotaExceededException"
+}
+
+// Message returns the exception's message.
+func (s *ServiceQuotaExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ServiceQuotaExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *ServiceQuotaExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ServiceQuotaExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ServiceQuotaExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // The settings object that holds all supported Audit Manager settings.
 type Settings struct {
 	_ struct{} `type:"structure"`
 
-	// The default storage destination for assessment reports.
-	DefaultAssessmentReportsDestination *AssessmentReportsDestination `locationName:"defaultAssessmentReportsDestination" type:"structure"`
+	// The default S3 destination bucket for storing assessment reports.
+	//
+	// DefaultAssessmentReportsDestination is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Settings's
+	// String and GoString methods.
+	DefaultAssessmentReportsDestination *AssessmentReportsDestination `locationName:"defaultAssessmentReportsDestination" type:"structure" sensitive:"true"`
+
+	// The default S3 destination bucket for storing evidence finder exports.
+	DefaultExportDestination *DefaultExportDestination `locationName:"defaultExportDestination" type:"structure"`
 
 	// The designated default audit owners.
-	DefaultProcessOwners []*Role `locationName:"defaultProcessOwners" type:"list"`
+	//
+	// DefaultProcessOwners is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Settings's
+	// String and GoString methods.
+	DefaultProcessOwners []*Role `locationName:"defaultProcessOwners" type:"list" sensitive:"true"`
+
+	// The deregistration policy for your Audit Manager data. You can use this attribute
+	// to determine how your data is handled when you deregister Audit Manager.
+	DeregistrationPolicy *DeregistrationPolicy `locationName:"deregistrationPolicy" type:"structure"`
+
+	// The current evidence finder status and event data store details.
+	EvidenceFinderEnablement *EvidenceFinderEnablement `locationName:"evidenceFinderEnablement" type:"structure"`
 
 	// Specifies whether Organizations is enabled.
 	IsAwsOrgEnabled *bool `locationName:"isAwsOrgEnabled" type:"boolean"`
@@ -15575,7 +16527,11 @@ type Settings struct {
 	KmsKey *string `locationName:"kmsKey" min:"7" type:"string"`
 
 	// The designated Amazon Simple Notification Service (Amazon SNS) topic.
-	SnsTopic *string `locationName:"snsTopic" min:"1" type:"string"`
+	//
+	// SnsTopic is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Settings's
+	// String and GoString methods.
+	SnsTopic *string `locationName:"snsTopic" min:"1" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -15602,9 +16558,27 @@ func (s *Settings) SetDefaultAssessmentReportsDestination(v *AssessmentReportsDe
 	return s
 }
 
+// SetDefaultExportDestination sets the DefaultExportDestination field's value.
+func (s *Settings) SetDefaultExportDestination(v *DefaultExportDestination) *Settings {
+	s.DefaultExportDestination = v
+	return s
+}
+
 // SetDefaultProcessOwners sets the DefaultProcessOwners field's value.
 func (s *Settings) SetDefaultProcessOwners(v []*Role) *Settings {
 	s.DefaultProcessOwners = v
+	return s
+}
+
+// SetDeregistrationPolicy sets the DeregistrationPolicy field's value.
+func (s *Settings) SetDeregistrationPolicy(v *DeregistrationPolicy) *Settings {
+	s.DeregistrationPolicy = v
+	return s
+}
+
+// SetEvidenceFinderEnablement sets the EvidenceFinderEnablement field's value.
+func (s *Settings) SetEvidenceFinderEnablement(v *EvidenceFinderEnablement) *Settings {
+	s.EvidenceFinderEnablement = v
 	return s
 }
 
@@ -15626,12 +16600,40 @@ func (s *Settings) SetSnsTopic(v string) *Settings {
 	return s
 }
 
-// The keyword to search for in CloudTrail logs, Config rules, Security Hub
-// checks, and Amazon Web Services API names.
+// A keyword that relates to the control data source.
+//
+// For manual evidence, this keyword indicates if the manual evidence is a file
+// or text.
+//
+// For automated evidence, this keyword identifies a specific CloudTrail event,
+// Config rule, Security Hub control, or Amazon Web Services API name.
+//
+// To learn more about the supported keywords that you can use when mapping
+// a control data source, see the following pages in the Audit Manager User
+// Guide:
+//
+//   - Config rules supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-config.html)
+//
+//   - Security Hub controls supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-ash.html)
+//
+//   - API calls supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-api.html)
+//
+//   - CloudTrail event names supported by Audit Manager (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-cloudtrail.html)
 type SourceKeyword struct {
 	_ struct{} `type:"structure"`
 
 	// The input method for the keyword.
+	//
+	//    * SELECT_FROM_LIST is used when mapping a data source for automated evidence.
+	//    When keywordInputType is SELECT_FROM_LIST, a keyword must be selected
+	//    to collect automated evidence. For example, this keyword can be a CloudTrail
+	//    event name, a rule name for Config, a Security Hub control, or the name
+	//    of an Amazon Web Services API call.
+	//
+	//    * UPLOAD_FILE and INPUT_TEXT are only used when mapping a data source
+	//    for manual evidence. When keywordInputType is UPLOAD_FILE, a file must
+	//    be uploaded as manual evidence. When keywordInputType is INPUT_TEXT, text
+	//    must be entered as manual evidence.
 	KeywordInputType *string `locationName:"keywordInputType" type:"string" enum:"KeywordInputType"`
 
 	// The value of the keyword that's used when mapping a control data source.
@@ -15644,22 +16646,58 @@ type SourceKeyword struct {
 	//    * For managed rules (https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_use-managed-rules.html),
 	//    you can use the rule identifier as the keywordValue. You can find the
 	//    rule identifier from the list of Config managed rules (https://docs.aws.amazon.com/config/latest/developerguide/managed-rules-by-aws-config.html).
-	//    Managed rule name: s3-bucket-acl-prohibited (https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-acl-prohibited.html)
+	//    For some rules, the rule identifier is different from the rule name. For
+	//    example, the rule name restricted-ssh has the following rule identifier:
+	//    INCOMING_SSH_DISABLED. Make sure to use the rule identifier, not the rule
+	//    name. Keyword example for managed rules: Managed rule name: s3-bucket-acl-prohibited
+	//    (https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-acl-prohibited.html)
 	//    keywordValue: S3_BUCKET_ACL_PROHIBITED
 	//
 	//    * For custom rules (https://docs.aws.amazon.com/config/latest/developerguide/evaluate-config_develop-rules.html),
 	//    you form the keywordValue by adding the Custom_ prefix to the rule name.
-	//    This prefix distinguishes the rule from a managed rule. Custom rule name:
-	//    my-custom-config-rule keywordValue: Custom_my-custom-config-rule
+	//    This prefix distinguishes the custom rule from a managed rule. Keyword
+	//    example for custom rules: Custom rule name: my-custom-config-rule keywordValue:
+	//    Custom_my-custom-config-rule
 	//
 	//    * For service-linked rules (https://docs.aws.amazon.com/config/latest/developerguide/service-linked-awsconfig-rules.html),
 	//    you form the keywordValue by adding the Custom_ prefix to the rule name.
 	//    In addition, you remove the suffix ID that appears at the end of the rule
-	//    name. Service-linked rule name: CustomRuleForAccount-conformance-pack-szsm1uv0w
-	//    keywordValue: Custom_CustomRuleForAccount-conformance-pack Service-linked
-	//    rule name: securityhub-api-gw-cache-encrypted-101104e1 keywordValue: Custom_securityhub-api-gw-cache-encrypted
+	//    name. Keyword examples for service-linked rules: Service-linked rule name:
+	//    CustomRuleForAccount-conformance-pack-szsm1uv0w keywordValue: Custom_CustomRuleForAccount-conformance-pack
 	//    Service-linked rule name: OrgConfigRule-s3-bucket-versioning-enabled-dbgzf8ba
 	//    keywordValue: Custom_OrgConfigRule-s3-bucket-versioning-enabled
+	//
+	// The keywordValue is case sensitive. If you enter a value incorrectly, Audit
+	// Manager might not recognize the data source mapping. As a result, you might
+	// not successfully collect evidence from that data source as intended.
+	//
+	// Keep in mind the following requirements, depending on the data source type
+	// that you're using.
+	//
+	// For Config:
+	//
+	//    * For managed rules, make sure that the keywordValue is the rule identifier
+	//    in ALL_CAPS_WITH_UNDERSCORES. For example, CLOUDWATCH_LOG_GROUP_ENCRYPTED.
+	//    For accuracy, we recommend that you reference the list of supported Config
+	//    managed rules (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-config.html).
+	//
+	//    * For custom rules, make sure that the keywordValue has the Custom_ prefix
+	//    followed by the custom rule name. The format of the custom rule name itself
+	//    may vary. For accuracy, we recommend that you visit the Config console
+	//    (https://console.aws.amazon.com/config/) to verify your custom rule name.
+	//
+	// For Security Hub: The format varies for Security Hub control names. For accuracy,
+	// we recommend that you reference the list of supported Security Hub controls
+	// (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-ash.html).
+	//
+	// For Amazon Web Services API calls: Make sure that the keywordValue is written
+	// as serviceprefix_ActionName. For example, iam_ListGroups. For accuracy, we
+	// recommend that you reference the list of supported API calls (https://docs.aws.amazon.com/audit-manager/latest/userguide/control-data-sources-api.html).
+	//
+	// For CloudTrail: Make sure that the keywordValue is written as serviceprefix_ActionName.
+	// For example, cloudtrail_StartLogging. For accuracy, we recommend that you
+	// review the Amazon Web Service prefix and action names in the Service Authorization
+	// Reference (https://docs.aws.amazon.com/service-authorization/latest/reference/reference_policies_actions-resources-contextkeys.html).
 	KeywordValue *string `locationName:"keywordValue" min:"1" type:"string"`
 }
 
@@ -15911,6 +16949,70 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
+// The request was denied due to request throttling.
+type ThrottlingException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) GoString() string {
+	return s.String()
+}
+
+func newErrorThrottlingException(v protocol.ResponseMetadata) error {
+	return &ThrottlingException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ThrottlingException) Code() string {
+	return "ThrottlingException"
+}
+
+// Message returns the exception's message.
+func (s *ThrottlingException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ThrottlingException) OrigErr() error {
+	return nil
+}
+
+func (s *ThrottlingException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ThrottlingException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ThrottlingException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // Short for uniform resource locator. A URL is used as a unique identifier
 // to locate a resource on the internet.
 type URL struct {
@@ -16050,7 +17152,11 @@ type UpdateAssessmentControlInput struct {
 	AssessmentId *string `location:"uri" locationName:"assessmentId" min:"36" type:"string" required:"true"`
 
 	// The comment body text for the control.
-	CommentBody *string `locationName:"commentBody" type:"string"`
+	//
+	// CommentBody is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentControlInput's
+	// String and GoString methods.
+	CommentBody *string `locationName:"commentBody" type:"string" sensitive:"true"`
 
 	// The unique identifier for the control.
 	//
@@ -16184,8 +17290,12 @@ type UpdateAssessmentControlSetStatusInput struct {
 
 	// The comment that's related to the status update.
 	//
+	// Comment is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentControlSetStatusInput's
+	// String and GoString methods.
+	//
 	// Comment is a required field
-	Comment *string `locationName:"comment" type:"string" required:"true"`
+	Comment *string `locationName:"comment" type:"string" required:"true" sensitive:"true"`
 
 	// The unique identifier for the control set.
 	//
@@ -16395,7 +17505,11 @@ type UpdateAssessmentFrameworkInput struct {
 
 	// The compliance type that the new custom framework supports, such as CIS or
 	// HIPAA.
-	ComplianceType *string `locationName:"complianceType" type:"string"`
+	//
+	// ComplianceType is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentFrameworkInput's
+	// String and GoString methods.
+	ComplianceType *string `locationName:"complianceType" type:"string" sensitive:"true"`
 
 	// The control sets that are associated with the framework.
 	//
@@ -16649,7 +17763,11 @@ type UpdateAssessmentInput struct {
 	_ struct{} `type:"structure"`
 
 	// The description of the assessment.
-	AssessmentDescription *string `locationName:"assessmentDescription" type:"string"`
+	//
+	// AssessmentDescription is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentInput's
+	// String and GoString methods.
+	AssessmentDescription *string `locationName:"assessmentDescription" type:"string" sensitive:"true"`
 
 	// The unique identifier for the assessment.
 	//
@@ -16657,19 +17775,35 @@ type UpdateAssessmentInput struct {
 	AssessmentId *string `location:"uri" locationName:"assessmentId" min:"36" type:"string" required:"true"`
 
 	// The name of the assessment to be updated.
-	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string"`
+	//
+	// AssessmentName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentInput's
+	// String and GoString methods.
+	AssessmentName *string `locationName:"assessmentName" min:"1" type:"string" sensitive:"true"`
 
 	// The assessment report storage destination for the assessment that's being
 	// updated.
-	AssessmentReportsDestination *AssessmentReportsDestination `locationName:"assessmentReportsDestination" type:"structure"`
+	//
+	// AssessmentReportsDestination is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentInput's
+	// String and GoString methods.
+	AssessmentReportsDestination *AssessmentReportsDestination `locationName:"assessmentReportsDestination" type:"structure" sensitive:"true"`
 
 	// The list of roles for the assessment.
-	Roles []*Role `locationName:"roles" type:"list"`
+	//
+	// Roles is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentInput's
+	// String and GoString methods.
+	Roles []*Role `locationName:"roles" type:"list" sensitive:"true"`
 
 	// The scope of the assessment.
 	//
+	// Scope is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAssessmentInput's
+	// String and GoString methods.
+	//
 	// Scope is a required field
-	Scope *Scope `locationName:"scope" type:"structure" required:"true"`
+	Scope *Scope `locationName:"scope" type:"structure" required:"true" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -16771,8 +17905,8 @@ func (s *UpdateAssessmentInput) SetScope(v *Scope) *UpdateAssessmentInput {
 type UpdateAssessmentOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The response object for the UpdateAssessmentRequest API. This is the name
-	// of the updated assessment.
+	// The response object for the UpdateAssessment API. This is the name of the
+	// updated assessment.
 	Assessment *Assessment `locationName:"assessment" type:"structure"`
 }
 
@@ -16898,10 +18032,18 @@ type UpdateControlInput struct {
 	_ struct{} `type:"structure"`
 
 	// The recommended actions to carry out if the control isn't fulfilled.
-	ActionPlanInstructions *string `locationName:"actionPlanInstructions" type:"string"`
+	//
+	// ActionPlanInstructions is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateControlInput's
+	// String and GoString methods.
+	ActionPlanInstructions *string `locationName:"actionPlanInstructions" type:"string" sensitive:"true"`
 
 	// The title of the action plan for remediating the control.
-	ActionPlanTitle *string `locationName:"actionPlanTitle" type:"string"`
+	//
+	// ActionPlanTitle is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateControlInput's
+	// String and GoString methods.
+	ActionPlanTitle *string `locationName:"actionPlanTitle" type:"string" sensitive:"true"`
 
 	// The identifier for the control.
 	//
@@ -16922,7 +18064,11 @@ type UpdateControlInput struct {
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
 	// The steps that you should follow to determine if the control is met.
-	TestingInformation *string `locationName:"testingInformation" type:"string"`
+	//
+	// TestingInformation is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateControlInput's
+	// String and GoString methods.
+	TestingInformation *string `locationName:"testingInformation" type:"string" sensitive:"true"`
 }
 
 // String returns the string representation.
@@ -17057,11 +18203,37 @@ func (s *UpdateControlOutput) SetControl(v *Control) *UpdateControlOutput {
 type UpdateSettingsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The default storage destination for assessment reports.
-	DefaultAssessmentReportsDestination *AssessmentReportsDestination `locationName:"defaultAssessmentReportsDestination" type:"structure"`
+	// The default S3 destination bucket for storing assessment reports.
+	//
+	// DefaultAssessmentReportsDestination is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateSettingsInput's
+	// String and GoString methods.
+	DefaultAssessmentReportsDestination *AssessmentReportsDestination `locationName:"defaultAssessmentReportsDestination" type:"structure" sensitive:"true"`
+
+	// The default S3 destination bucket for storing evidence finder exports.
+	DefaultExportDestination *DefaultExportDestination `locationName:"defaultExportDestination" type:"structure"`
 
 	// A list of the default audit owners.
-	DefaultProcessOwners []*Role `locationName:"defaultProcessOwners" type:"list"`
+	//
+	// DefaultProcessOwners is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateSettingsInput's
+	// String and GoString methods.
+	DefaultProcessOwners []*Role `locationName:"defaultProcessOwners" type:"list" sensitive:"true"`
+
+	// The deregistration policy for your Audit Manager data. You can use this attribute
+	// to determine how your data is handled when you deregister Audit Manager.
+	DeregistrationPolicy *DeregistrationPolicy `locationName:"deregistrationPolicy" type:"structure"`
+
+	// Specifies whether the evidence finder feature is enabled. Change this attribute
+	// to enable or disable evidence finder.
+	//
+	// When you use this attribute to disable evidence finder, Audit Manager deletes
+	// the event data store that’s used to query your evidence data. As a result,
+	// you can’t re-enable evidence finder and use the feature again. Your only
+	// alternative is to deregister (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_DeregisterAccount.html)
+	// and then re-register (https://docs.aws.amazon.com/audit-manager/latest/APIReference/API_RegisterAccount.html)
+	// Audit Manager.
+	EvidenceFinderEnabled *bool `locationName:"evidenceFinderEnabled" type:"boolean"`
 
 	// The KMS key details.
 	KmsKey *string `locationName:"kmsKey" min:"7" type:"string"`
@@ -17103,6 +18275,11 @@ func (s *UpdateSettingsInput) Validate() error {
 			invalidParams.AddNested("DefaultAssessmentReportsDestination", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.DefaultExportDestination != nil {
+		if err := s.DefaultExportDestination.Validate(); err != nil {
+			invalidParams.AddNested("DefaultExportDestination", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.DefaultProcessOwners != nil {
 		for i, v := range s.DefaultProcessOwners {
 			if v == nil {
@@ -17126,9 +18303,27 @@ func (s *UpdateSettingsInput) SetDefaultAssessmentReportsDestination(v *Assessme
 	return s
 }
 
+// SetDefaultExportDestination sets the DefaultExportDestination field's value.
+func (s *UpdateSettingsInput) SetDefaultExportDestination(v *DefaultExportDestination) *UpdateSettingsInput {
+	s.DefaultExportDestination = v
+	return s
+}
+
 // SetDefaultProcessOwners sets the DefaultProcessOwners field's value.
 func (s *UpdateSettingsInput) SetDefaultProcessOwners(v []*Role) *UpdateSettingsInput {
 	s.DefaultProcessOwners = v
+	return s
+}
+
+// SetDeregistrationPolicy sets the DeregistrationPolicy field's value.
+func (s *UpdateSettingsInput) SetDeregistrationPolicy(v *DeregistrationPolicy) *UpdateSettingsInput {
+	s.DeregistrationPolicy = v
+	return s
+}
+
+// SetEvidenceFinderEnabled sets the EvidenceFinderEnabled field's value.
+func (s *UpdateSettingsInput) SetEvidenceFinderEnabled(v bool) *UpdateSettingsInput {
+	s.EvidenceFinderEnabled = &v
 	return s
 }
 
@@ -17617,6 +18812,78 @@ func DelegationStatus_Values() []string {
 }
 
 const (
+	// DeleteResourcesAll is a DeleteResources enum value
+	DeleteResourcesAll = "ALL"
+
+	// DeleteResourcesDefault is a DeleteResources enum value
+	DeleteResourcesDefault = "DEFAULT"
+)
+
+// DeleteResources_Values returns all elements of the DeleteResources enum
+func DeleteResources_Values() []string {
+	return []string{
+		DeleteResourcesAll,
+		DeleteResourcesDefault,
+	}
+}
+
+const (
+	// EvidenceFinderBackfillStatusNotStarted is a EvidenceFinderBackfillStatus enum value
+	EvidenceFinderBackfillStatusNotStarted = "NOT_STARTED"
+
+	// EvidenceFinderBackfillStatusInProgress is a EvidenceFinderBackfillStatus enum value
+	EvidenceFinderBackfillStatusInProgress = "IN_PROGRESS"
+
+	// EvidenceFinderBackfillStatusCompleted is a EvidenceFinderBackfillStatus enum value
+	EvidenceFinderBackfillStatusCompleted = "COMPLETED"
+)
+
+// EvidenceFinderBackfillStatus_Values returns all elements of the EvidenceFinderBackfillStatus enum
+func EvidenceFinderBackfillStatus_Values() []string {
+	return []string{
+		EvidenceFinderBackfillStatusNotStarted,
+		EvidenceFinderBackfillStatusInProgress,
+		EvidenceFinderBackfillStatusCompleted,
+	}
+}
+
+const (
+	// EvidenceFinderEnablementStatusEnabled is a EvidenceFinderEnablementStatus enum value
+	EvidenceFinderEnablementStatusEnabled = "ENABLED"
+
+	// EvidenceFinderEnablementStatusDisabled is a EvidenceFinderEnablementStatus enum value
+	EvidenceFinderEnablementStatusDisabled = "DISABLED"
+
+	// EvidenceFinderEnablementStatusEnableInProgress is a EvidenceFinderEnablementStatus enum value
+	EvidenceFinderEnablementStatusEnableInProgress = "ENABLE_IN_PROGRESS"
+
+	// EvidenceFinderEnablementStatusDisableInProgress is a EvidenceFinderEnablementStatus enum value
+	EvidenceFinderEnablementStatusDisableInProgress = "DISABLE_IN_PROGRESS"
+)
+
+// EvidenceFinderEnablementStatus_Values returns all elements of the EvidenceFinderEnablementStatus enum
+func EvidenceFinderEnablementStatus_Values() []string {
+	return []string{
+		EvidenceFinderEnablementStatusEnabled,
+		EvidenceFinderEnablementStatusDisabled,
+		EvidenceFinderEnablementStatusEnableInProgress,
+		EvidenceFinderEnablementStatusDisableInProgress,
+	}
+}
+
+const (
+	// ExportDestinationTypeS3 is a ExportDestinationType enum value
+	ExportDestinationTypeS3 = "S3"
+)
+
+// ExportDestinationType_Values returns all elements of the ExportDestinationType enum
+func ExportDestinationType_Values() []string {
+	return []string{
+		ExportDestinationTypeS3,
+	}
+}
+
+const (
 	// FrameworkTypeStandard is a FrameworkType enum value
 	FrameworkTypeStandard = "Standard"
 
@@ -17635,12 +18902,20 @@ func FrameworkType_Values() []string {
 const (
 	// KeywordInputTypeSelectFromList is a KeywordInputType enum value
 	KeywordInputTypeSelectFromList = "SELECT_FROM_LIST"
+
+	// KeywordInputTypeUploadFile is a KeywordInputType enum value
+	KeywordInputTypeUploadFile = "UPLOAD_FILE"
+
+	// KeywordInputTypeInputText is a KeywordInputType enum value
+	KeywordInputTypeInputText = "INPUT_TEXT"
 )
 
 // KeywordInputType_Values returns all elements of the KeywordInputType enum
 func KeywordInputType_Values() []string {
 	return []string{
 		KeywordInputTypeSelectFromList,
+		KeywordInputTypeUploadFile,
+		KeywordInputTypeInputText,
 	}
 }
 
@@ -17703,6 +18978,15 @@ const (
 
 	// SettingAttributeDefaultProcessOwners is a SettingAttribute enum value
 	SettingAttributeDefaultProcessOwners = "DEFAULT_PROCESS_OWNERS"
+
+	// SettingAttributeEvidenceFinderEnablement is a SettingAttribute enum value
+	SettingAttributeEvidenceFinderEnablement = "EVIDENCE_FINDER_ENABLEMENT"
+
+	// SettingAttributeDeregistrationPolicy is a SettingAttribute enum value
+	SettingAttributeDeregistrationPolicy = "DEREGISTRATION_POLICY"
+
+	// SettingAttributeDefaultExportDestination is a SettingAttribute enum value
+	SettingAttributeDefaultExportDestination = "DEFAULT_EXPORT_DESTINATION"
 )
 
 // SettingAttribute_Values returns all elements of the SettingAttribute enum
@@ -17713,6 +18997,9 @@ func SettingAttribute_Values() []string {
 		SettingAttributeSnsTopic,
 		SettingAttributeDefaultAssessmentReportsDestination,
 		SettingAttributeDefaultProcessOwners,
+		SettingAttributeEvidenceFinderEnablement,
+		SettingAttributeDeregistrationPolicy,
+		SettingAttributeDefaultExportDestination,
 	}
 }
 

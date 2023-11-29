@@ -204,9 +204,17 @@ type LicenseManagerAPI interface {
 	ListReceivedGrantsWithContext(aws.Context, *licensemanager.ListReceivedGrantsInput, ...request.Option) (*licensemanager.ListReceivedGrantsOutput, error)
 	ListReceivedGrantsRequest(*licensemanager.ListReceivedGrantsInput) (*request.Request, *licensemanager.ListReceivedGrantsOutput)
 
+	ListReceivedGrantsForOrganization(*licensemanager.ListReceivedGrantsForOrganizationInput) (*licensemanager.ListReceivedGrantsForOrganizationOutput, error)
+	ListReceivedGrantsForOrganizationWithContext(aws.Context, *licensemanager.ListReceivedGrantsForOrganizationInput, ...request.Option) (*licensemanager.ListReceivedGrantsForOrganizationOutput, error)
+	ListReceivedGrantsForOrganizationRequest(*licensemanager.ListReceivedGrantsForOrganizationInput) (*request.Request, *licensemanager.ListReceivedGrantsForOrganizationOutput)
+
 	ListReceivedLicenses(*licensemanager.ListReceivedLicensesInput) (*licensemanager.ListReceivedLicensesOutput, error)
 	ListReceivedLicensesWithContext(aws.Context, *licensemanager.ListReceivedLicensesInput, ...request.Option) (*licensemanager.ListReceivedLicensesOutput, error)
 	ListReceivedLicensesRequest(*licensemanager.ListReceivedLicensesInput) (*request.Request, *licensemanager.ListReceivedLicensesOutput)
+
+	ListReceivedLicensesForOrganization(*licensemanager.ListReceivedLicensesForOrganizationInput) (*licensemanager.ListReceivedLicensesForOrganizationOutput, error)
+	ListReceivedLicensesForOrganizationWithContext(aws.Context, *licensemanager.ListReceivedLicensesForOrganizationInput, ...request.Option) (*licensemanager.ListReceivedLicensesForOrganizationOutput, error)
+	ListReceivedLicensesForOrganizationRequest(*licensemanager.ListReceivedLicensesForOrganizationInput) (*request.Request, *licensemanager.ListReceivedLicensesForOrganizationOutput)
 
 	ListResourceInventory(*licensemanager.ListResourceInventoryInput) (*licensemanager.ListResourceInventoryOutput, error)
 	ListResourceInventoryWithContext(aws.Context, *licensemanager.ListResourceInventoryInput, ...request.Option) (*licensemanager.ListResourceInventoryOutput, error)

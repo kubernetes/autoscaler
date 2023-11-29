@@ -10,7 +10,180 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
+
+const opCreatePerformanceAnalysisReport = "CreatePerformanceAnalysisReport"
+
+// CreatePerformanceAnalysisReportRequest generates a "aws/request.Request" representing the
+// client's request for the CreatePerformanceAnalysisReport operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreatePerformanceAnalysisReport for more information on using the CreatePerformanceAnalysisReport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreatePerformanceAnalysisReportRequest method.
+//	req, resp := client.CreatePerformanceAnalysisReportRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/CreatePerformanceAnalysisReport
+func (c *PI) CreatePerformanceAnalysisReportRequest(input *CreatePerformanceAnalysisReportInput) (req *request.Request, output *CreatePerformanceAnalysisReportOutput) {
+	op := &request.Operation{
+		Name:       opCreatePerformanceAnalysisReport,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreatePerformanceAnalysisReportInput{}
+	}
+
+	output = &CreatePerformanceAnalysisReportOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreatePerformanceAnalysisReport API operation for AWS Performance Insights.
+//
+// Creates a new performance analysis report for a specific time period for
+// the DB instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation CreatePerformanceAnalysisReport for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/CreatePerformanceAnalysisReport
+func (c *PI) CreatePerformanceAnalysisReport(input *CreatePerformanceAnalysisReportInput) (*CreatePerformanceAnalysisReportOutput, error) {
+	req, out := c.CreatePerformanceAnalysisReportRequest(input)
+	return out, req.Send()
+}
+
+// CreatePerformanceAnalysisReportWithContext is the same as CreatePerformanceAnalysisReport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreatePerformanceAnalysisReport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) CreatePerformanceAnalysisReportWithContext(ctx aws.Context, input *CreatePerformanceAnalysisReportInput, opts ...request.Option) (*CreatePerformanceAnalysisReportOutput, error) {
+	req, out := c.CreatePerformanceAnalysisReportRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeletePerformanceAnalysisReport = "DeletePerformanceAnalysisReport"
+
+// DeletePerformanceAnalysisReportRequest generates a "aws/request.Request" representing the
+// client's request for the DeletePerformanceAnalysisReport operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeletePerformanceAnalysisReport for more information on using the DeletePerformanceAnalysisReport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeletePerformanceAnalysisReportRequest method.
+//	req, resp := client.DeletePerformanceAnalysisReportRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/DeletePerformanceAnalysisReport
+func (c *PI) DeletePerformanceAnalysisReportRequest(input *DeletePerformanceAnalysisReportInput) (req *request.Request, output *DeletePerformanceAnalysisReportOutput) {
+	op := &request.Operation{
+		Name:       opDeletePerformanceAnalysisReport,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeletePerformanceAnalysisReportInput{}
+	}
+
+	output = &DeletePerformanceAnalysisReportOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeletePerformanceAnalysisReport API operation for AWS Performance Insights.
+//
+// Deletes a performance analysis report.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation DeletePerformanceAnalysisReport for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/DeletePerformanceAnalysisReport
+func (c *PI) DeletePerformanceAnalysisReport(input *DeletePerformanceAnalysisReportInput) (*DeletePerformanceAnalysisReportOutput, error) {
+	req, out := c.DeletePerformanceAnalysisReportRequest(input)
+	return out, req.Send()
+}
+
+// DeletePerformanceAnalysisReportWithContext is the same as DeletePerformanceAnalysisReport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeletePerformanceAnalysisReport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) DeletePerformanceAnalysisReportWithContext(ctx aws.Context, input *DeletePerformanceAnalysisReportInput, opts ...request.Option) (*DeletePerformanceAnalysisReportOutput, error) {
+	req, out := c.DeletePerformanceAnalysisReportRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
 
 const opDescribeDimensionKeys = "DescribeDimensionKeys"
 
@@ -241,6 +414,93 @@ func (c *PI) GetDimensionKeyDetails(input *GetDimensionKeyDetailsInput) (*GetDim
 // for more information on using Contexts.
 func (c *PI) GetDimensionKeyDetailsWithContext(ctx aws.Context, input *GetDimensionKeyDetailsInput, opts ...request.Option) (*GetDimensionKeyDetailsOutput, error) {
 	req, out := c.GetDimensionKeyDetailsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetPerformanceAnalysisReport = "GetPerformanceAnalysisReport"
+
+// GetPerformanceAnalysisReportRequest generates a "aws/request.Request" representing the
+// client's request for the GetPerformanceAnalysisReport operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetPerformanceAnalysisReport for more information on using the GetPerformanceAnalysisReport
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetPerformanceAnalysisReportRequest method.
+//	req, resp := client.GetPerformanceAnalysisReportRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetPerformanceAnalysisReport
+func (c *PI) GetPerformanceAnalysisReportRequest(input *GetPerformanceAnalysisReportInput) (req *request.Request, output *GetPerformanceAnalysisReportOutput) {
+	op := &request.Operation{
+		Name:       opGetPerformanceAnalysisReport,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetPerformanceAnalysisReportInput{}
+	}
+
+	output = &GetPerformanceAnalysisReportOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetPerformanceAnalysisReport API operation for AWS Performance Insights.
+//
+// Retrieves the report including the report ID, status, time details, and the
+// insights with recommendations. The report status can be RUNNING, SUCCEEDED,
+// or FAILED. The insights include the description and recommendation fields.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation GetPerformanceAnalysisReport for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/GetPerformanceAnalysisReport
+func (c *PI) GetPerformanceAnalysisReport(input *GetPerformanceAnalysisReportInput) (*GetPerformanceAnalysisReportOutput, error) {
+	req, out := c.GetPerformanceAnalysisReportRequest(input)
+	return out, req.Send()
+}
+
+// GetPerformanceAnalysisReportWithContext is the same as GetPerformanceAnalysisReport with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetPerformanceAnalysisReport for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) GetPerformanceAnalysisReportWithContext(ctx aws.Context, input *GetPerformanceAnalysisReportInput, opts ...request.Option) (*GetPerformanceAnalysisReportOutput, error) {
+	req, out := c.GetPerformanceAnalysisReportRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -765,6 +1025,766 @@ func (c *PI) ListAvailableResourceMetricsPagesWithContext(ctx aws.Context, input
 	return p.Err()
 }
 
+const opListPerformanceAnalysisReports = "ListPerformanceAnalysisReports"
+
+// ListPerformanceAnalysisReportsRequest generates a "aws/request.Request" representing the
+// client's request for the ListPerformanceAnalysisReports operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListPerformanceAnalysisReports for more information on using the ListPerformanceAnalysisReports
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListPerformanceAnalysisReportsRequest method.
+//	req, resp := client.ListPerformanceAnalysisReportsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListPerformanceAnalysisReports
+func (c *PI) ListPerformanceAnalysisReportsRequest(input *ListPerformanceAnalysisReportsInput) (req *request.Request, output *ListPerformanceAnalysisReportsOutput) {
+	op := &request.Operation{
+		Name:       opListPerformanceAnalysisReports,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListPerformanceAnalysisReportsInput{}
+	}
+
+	output = &ListPerformanceAnalysisReportsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListPerformanceAnalysisReports API operation for AWS Performance Insights.
+//
+// Lists all the analysis reports created for the DB instance. The reports are
+// sorted based on the start time of each report.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation ListPerformanceAnalysisReports for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListPerformanceAnalysisReports
+func (c *PI) ListPerformanceAnalysisReports(input *ListPerformanceAnalysisReportsInput) (*ListPerformanceAnalysisReportsOutput, error) {
+	req, out := c.ListPerformanceAnalysisReportsRequest(input)
+	return out, req.Send()
+}
+
+// ListPerformanceAnalysisReportsWithContext is the same as ListPerformanceAnalysisReports with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListPerformanceAnalysisReports for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) ListPerformanceAnalysisReportsWithContext(ctx aws.Context, input *ListPerformanceAnalysisReportsInput, opts ...request.Option) (*ListPerformanceAnalysisReportsOutput, error) {
+	req, out := c.ListPerformanceAnalysisReportsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListPerformanceAnalysisReportsPages iterates over the pages of a ListPerformanceAnalysisReports operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPerformanceAnalysisReports method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPerformanceAnalysisReports operation.
+//	pageNum := 0
+//	err := client.ListPerformanceAnalysisReportsPages(params,
+//	    func(page *pi.ListPerformanceAnalysisReportsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *PI) ListPerformanceAnalysisReportsPages(input *ListPerformanceAnalysisReportsInput, fn func(*ListPerformanceAnalysisReportsOutput, bool) bool) error {
+	return c.ListPerformanceAnalysisReportsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPerformanceAnalysisReportsPagesWithContext same as ListPerformanceAnalysisReportsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) ListPerformanceAnalysisReportsPagesWithContext(ctx aws.Context, input *ListPerformanceAnalysisReportsInput, fn func(*ListPerformanceAnalysisReportsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPerformanceAnalysisReportsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPerformanceAnalysisReportsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPerformanceAnalysisReportsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTagsForResource for more information on using the ListTagsForResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListTagsForResource
+func (c *PI) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	output = &ListTagsForResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTagsForResource API operation for AWS Performance Insights.
+//
+// Retrieves all the metadata tags associated with Amazon RDS Performance Insights
+// resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation ListTagsForResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/ListTagsForResource
+func (c *PI) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	return out, req.Send()
+}
+
+// ListTagsForResourceWithContext is the same as ListTagsForResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTagsForResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TagResource for more information on using the TagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/TagResource
+func (c *PI) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	output = &TagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// TagResource API operation for AWS Performance Insights.
+//
+// Adds metadata tags to the Amazon RDS Performance Insights resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation TagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/TagResource
+func (c *PI) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	return out, req.Send()
+}
+
+// TagResourceWithContext is the same as TagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UntagResource for more information on using the UntagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/UntagResource
+func (c *PI) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	output = &UntagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UntagResource API operation for AWS Performance Insights.
+//
+// Deletes the metadata tags from the Amazon RDS Performance Insights resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Performance Insights's
+// API operation UntagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidArgumentException
+//     One of the arguments provided is invalid for this request.
+//
+//   - InternalServiceError
+//     The request failed due to an unknown error.
+//
+//   - NotAuthorizedException
+//     The user is not authorized to perform this request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pi-2018-02-27/UntagResource
+func (c *PI) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	return out, req.Send()
+}
+
+// UntagResourceWithContext is the same as UntagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UntagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PI) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// Retrieves the summary of the performance analysis report created for a time
+// period.
+type AnalysisReport struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the analysis report.
+	//
+	// AnalysisReportId is a required field
+	AnalysisReportId *string `min:"1" type:"string" required:"true"`
+
+	// The time you created the analysis report.
+	CreateTime *time.Time `type:"timestamp"`
+
+	// The analysis end time in the report.
+	EndTime *time.Time `type:"timestamp"`
+
+	// The unique identifier of the analysis report.
+	Identifier *string `type:"string"`
+
+	// The list of identified insights in the analysis report.
+	Insights []*Insight `type:"list"`
+
+	// List the tags for the Amazon Web Services service for which Performance Insights
+	// returns metrics. Valid values are as follows:
+	//
+	//    * RDS
+	//
+	//    * DOCDB
+	ServiceType *string `type:"string" enum:"ServiceType"`
+
+	// The analysis start time in the report.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The status of the created analysis report.
+	Status *string `type:"string" enum:"AnalysisStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnalysisReport) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnalysisReport) GoString() string {
+	return s.String()
+}
+
+// SetAnalysisReportId sets the AnalysisReportId field's value.
+func (s *AnalysisReport) SetAnalysisReportId(v string) *AnalysisReport {
+	s.AnalysisReportId = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *AnalysisReport) SetCreateTime(v time.Time) *AnalysisReport {
+	s.CreateTime = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *AnalysisReport) SetEndTime(v time.Time) *AnalysisReport {
+	s.EndTime = &v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *AnalysisReport) SetIdentifier(v string) *AnalysisReport {
+	s.Identifier = &v
+	return s
+}
+
+// SetInsights sets the Insights field's value.
+func (s *AnalysisReport) SetInsights(v []*Insight) *AnalysisReport {
+	s.Insights = v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *AnalysisReport) SetServiceType(v string) *AnalysisReport {
+	s.ServiceType = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *AnalysisReport) SetStartTime(v time.Time) *AnalysisReport {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AnalysisReport) SetStatus(v string) *AnalysisReport {
+	s.Status = &v
+	return s
+}
+
+// Retrieves the details of the performance analysis report.
+type AnalysisReportSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the analysis report.
+	AnalysisReportId *string `type:"string"`
+
+	// The time you created the analysis report.
+	CreateTime *time.Time `type:"timestamp"`
+
+	// The end time of the analysis in the report.
+	EndTime *time.Time `type:"timestamp"`
+
+	// The start time of the analysis in the report.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The status of the analysis report.
+	Status *string `type:"string" enum:"AnalysisStatus"`
+
+	// List of all the tags added to the analysis report.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnalysisReportSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AnalysisReportSummary) GoString() string {
+	return s.String()
+}
+
+// SetAnalysisReportId sets the AnalysisReportId field's value.
+func (s *AnalysisReportSummary) SetAnalysisReportId(v string) *AnalysisReportSummary {
+	s.AnalysisReportId = &v
+	return s
+}
+
+// SetCreateTime sets the CreateTime field's value.
+func (s *AnalysisReportSummary) SetCreateTime(v time.Time) *AnalysisReportSummary {
+	s.CreateTime = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *AnalysisReportSummary) SetEndTime(v time.Time) *AnalysisReportSummary {
+	s.EndTime = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *AnalysisReportSummary) SetStartTime(v time.Time) *AnalysisReportSummary {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AnalysisReportSummary) SetStatus(v string) *AnalysisReportSummary {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *AnalysisReportSummary) SetTags(v []*Tag) *AnalysisReportSummary {
+	s.Tags = v
+	return s
+}
+
+type CreatePerformanceAnalysisReportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The end time defined for the analysis report.
+	//
+	// EndTime is a required field
+	EndTime *time.Time `type:"timestamp" required:"true"`
+
+	// An immutable, Amazon Web Services Region-unique identifier for a data source.
+	// Performance Insights gathers metrics from this data source.
+	//
+	// To use an Amazon RDS instance as a data source, you specify its DbiResourceId
+	// value. For example, specify db-ADECBTYHKTSAUMUZQYPDS2GW4A.
+	//
+	// Identifier is a required field
+	Identifier *string `type:"string" required:"true"`
+
+	// The Amazon Web Services service for which Performance Insights will return
+	// metrics. Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+
+	// The start time defined for the analysis report.
+	//
+	// StartTime is a required field
+	StartTime *time.Time `type:"timestamp" required:"true"`
+
+	// The metadata assigned to the analysis report consisting of a key-value pair.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePerformanceAnalysisReportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePerformanceAnalysisReportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreatePerformanceAnalysisReportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreatePerformanceAnalysisReportInput"}
+	if s.EndTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("EndTime"))
+	}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+	if s.StartTime == nil {
+		invalidParams.Add(request.NewErrParamRequired("StartTime"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *CreatePerformanceAnalysisReportInput) SetEndTime(v time.Time) *CreatePerformanceAnalysisReportInput {
+	s.EndTime = &v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *CreatePerformanceAnalysisReportInput) SetIdentifier(v string) *CreatePerformanceAnalysisReportInput {
+	s.Identifier = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *CreatePerformanceAnalysisReportInput) SetServiceType(v string) *CreatePerformanceAnalysisReportInput {
+	s.ServiceType = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *CreatePerformanceAnalysisReportInput) SetStartTime(v time.Time) *CreatePerformanceAnalysisReportInput {
+	s.StartTime = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreatePerformanceAnalysisReportInput) SetTags(v []*Tag) *CreatePerformanceAnalysisReportInput {
+	s.Tags = v
+	return s
+}
+
+type CreatePerformanceAnalysisReportOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the created analysis report.
+	AnalysisReportId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePerformanceAnalysisReportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePerformanceAnalysisReportOutput) GoString() string {
+	return s.String()
+}
+
+// SetAnalysisReportId sets the AnalysisReportId field's value.
+func (s *CreatePerformanceAnalysisReportOutput) SetAnalysisReportId(v string) *CreatePerformanceAnalysisReportOutput {
+	s.AnalysisReportId = &v
+	return s
+}
+
+// List of data objects which provide details about source metrics. This field
+// can be used to determine the PI metric to render for the insight. This data
+// type also includes static values for the metrics for the Insight that were
+// calculated and included in text and annotations on the DB load chart.
+type Data struct {
+	_ struct{} `type:"structure"`
+
+	// This field determines the Performance Insights metric to render for the insight.
+	// The name field refers to a Performance Insights metric.
+	PerformanceInsightsMetric *PerformanceInsightsMetric `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Data) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Data) GoString() string {
+	return s.String()
+}
+
+// SetPerformanceInsightsMetric sets the PerformanceInsightsMetric field's value.
+func (s *Data) SetPerformanceInsightsMetric(v *PerformanceInsightsMetric) *Data {
+	s.PerformanceInsightsMetric = v
+	return s
+}
+
 // A timestamp, and a single numerical value, which together represent a measurement
 // at a particular point in time.
 type DataPoint struct {
@@ -809,6 +1829,112 @@ func (s *DataPoint) SetTimestamp(v time.Time) *DataPoint {
 func (s *DataPoint) SetValue(v float64) *DataPoint {
 	s.Value = &v
 	return s
+}
+
+type DeletePerformanceAnalysisReportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the analysis report for deletion.
+	//
+	// AnalysisReportId is a required field
+	AnalysisReportId *string `min:"1" type:"string" required:"true"`
+
+	// An immutable identifier for a data source that is unique for an Amazon Web
+	// Services Region. Performance Insights gathers metrics from this data source.
+	// In the console, the identifier is shown as ResourceID. When you call DescribeDBInstances,
+	// the identifier is returned as DbiResourceId.
+	//
+	// To use a DB instance as a data source, specify its DbiResourceId value. For
+	// example, specify db-ABCDEFGHIJKLMNOPQRSTU1VW2X.
+	//
+	// Identifier is a required field
+	Identifier *string `type:"string" required:"true"`
+
+	// The Amazon Web Services service for which Performance Insights will return
+	// metrics. Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePerformanceAnalysisReportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePerformanceAnalysisReportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeletePerformanceAnalysisReportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeletePerformanceAnalysisReportInput"}
+	if s.AnalysisReportId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AnalysisReportId"))
+	}
+	if s.AnalysisReportId != nil && len(*s.AnalysisReportId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AnalysisReportId", 1))
+	}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAnalysisReportId sets the AnalysisReportId field's value.
+func (s *DeletePerformanceAnalysisReportInput) SetAnalysisReportId(v string) *DeletePerformanceAnalysisReportInput {
+	s.AnalysisReportId = &v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *DeletePerformanceAnalysisReportInput) SetIdentifier(v string) *DeletePerformanceAnalysisReportInput {
+	s.Identifier = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *DeletePerformanceAnalysisReportInput) SetServiceType(v string) *DeletePerformanceAnalysisReportInput {
+	s.ServiceType = &v
+	return s
+}
+
+type DeletePerformanceAnalysisReportOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePerformanceAnalysisReportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePerformanceAnalysisReportOutput) GoString() string {
+	return s.String()
 }
 
 type DescribeDimensionKeysInput struct {
@@ -1746,6 +2872,140 @@ func (s *GetDimensionKeyDetailsOutput) SetDimensions(v []*DimensionKeyDetail) *G
 	return s
 }
 
+type GetPerformanceAnalysisReportInput struct {
+	_ struct{} `type:"structure"`
+
+	// The text language in the report. The default language is EN_US (English).
+	AcceptLanguage *string `type:"string" enum:"AcceptLanguage"`
+
+	// A unique identifier of the created analysis report. For example, report-12345678901234567
+	//
+	// AnalysisReportId is a required field
+	AnalysisReportId *string `min:"1" type:"string" required:"true"`
+
+	// An immutable identifier for a data source that is unique for an Amazon Web
+	// Services Region. Performance Insights gathers metrics from this data source.
+	// In the console, the identifier is shown as ResourceID. When you call DescribeDBInstances,
+	// the identifier is returned as DbiResourceId.
+	//
+	// To use a DB instance as a data source, specify its DbiResourceId value. For
+	// example, specify db-ABCDEFGHIJKLMNOPQRSTU1VW2X.
+	//
+	// Identifier is a required field
+	Identifier *string `type:"string" required:"true"`
+
+	// The Amazon Web Services service for which Performance Insights will return
+	// metrics. Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+
+	// Indicates the text format in the report. The options are PLAIN_TEXT or MARKDOWN.
+	// The default value is plain text.
+	TextFormat *string `type:"string" enum:"TextFormat"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPerformanceAnalysisReportInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPerformanceAnalysisReportInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetPerformanceAnalysisReportInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetPerformanceAnalysisReportInput"}
+	if s.AnalysisReportId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AnalysisReportId"))
+	}
+	if s.AnalysisReportId != nil && len(*s.AnalysisReportId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AnalysisReportId", 1))
+	}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAcceptLanguage sets the AcceptLanguage field's value.
+func (s *GetPerformanceAnalysisReportInput) SetAcceptLanguage(v string) *GetPerformanceAnalysisReportInput {
+	s.AcceptLanguage = &v
+	return s
+}
+
+// SetAnalysisReportId sets the AnalysisReportId field's value.
+func (s *GetPerformanceAnalysisReportInput) SetAnalysisReportId(v string) *GetPerformanceAnalysisReportInput {
+	s.AnalysisReportId = &v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *GetPerformanceAnalysisReportInput) SetIdentifier(v string) *GetPerformanceAnalysisReportInput {
+	s.Identifier = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *GetPerformanceAnalysisReportInput) SetServiceType(v string) *GetPerformanceAnalysisReportInput {
+	s.ServiceType = &v
+	return s
+}
+
+// SetTextFormat sets the TextFormat field's value.
+func (s *GetPerformanceAnalysisReportInput) SetTextFormat(v string) *GetPerformanceAnalysisReportInput {
+	s.TextFormat = &v
+	return s
+}
+
+type GetPerformanceAnalysisReportOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The summary of the performance analysis report created for a time period.
+	AnalysisReport *AnalysisReport `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPerformanceAnalysisReportOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetPerformanceAnalysisReportOutput) GoString() string {
+	return s.String()
+}
+
+// SetAnalysisReport sets the AnalysisReport field's value.
+func (s *GetPerformanceAnalysisReportOutput) SetAnalysisReport(v *AnalysisReport) *GetPerformanceAnalysisReportOutput {
+	s.AnalysisReport = v
+	return s
+}
+
 type GetResourceMetadataInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1892,6 +3152,10 @@ type GetResourceMetricsInput struct {
 	// the value specified by MaxRecords.
 	NextToken *string `min:"1" type:"string"`
 
+	// The returned timestamp which is the start or end time of the time periods.
+	// The default value is END_TIME.
+	PeriodAlignment *string `type:"string" enum:"PeriodAlignment"`
+
 	// The granularity, in seconds, of the data points returned from Performance
 	// Insights. A period can be as short as one second, or as long as one day (86400
 	// seconds). Valid values are:
@@ -2022,6 +3286,12 @@ func (s *GetResourceMetricsInput) SetNextToken(v string) *GetResourceMetricsInpu
 	return s
 }
 
+// SetPeriodAlignment sets the PeriodAlignment field's value.
+func (s *GetResourceMetricsInput) SetPeriodAlignment(v string) *GetResourceMetricsInput {
+	s.PeriodAlignment = &v
+	return s
+}
+
 // SetPeriodInSeconds sets the PeriodInSeconds field's value.
 func (s *GetResourceMetricsInput) SetPeriodInSeconds(v int64) *GetResourceMetricsInput {
 	s.PeriodInSeconds = &v
@@ -2114,6 +3384,140 @@ func (s *GetResourceMetricsOutput) SetMetricList(v []*MetricKeyDataPoints) *GetR
 // SetNextToken sets the NextToken field's value.
 func (s *GetResourceMetricsOutput) SetNextToken(v string) *GetResourceMetricsOutput {
 	s.NextToken = &v
+	return s
+}
+
+// Retrieves the list of performance issues which are identified.
+type Insight struct {
+	_ struct{} `type:"structure"`
+
+	// Metric names and values from the timeframe used as baseline to generate the
+	// insight.
+	BaselineData []*Data `type:"list"`
+
+	// Indicates if the insight is causal or correlated insight.
+	Context *string `type:"string" enum:"ContextType"`
+
+	// Description of the insight. For example: A high severity Insight found between
+	// 02:00 to 02:30, where there was an unusually high DB load 600x above baseline.
+	// Likely performance impact.
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Insight's
+	// String and GoString methods.
+	Description *string `type:"string" sensitive:"true"`
+
+	// The end time of the insight. For example, 2018-10-30T00:00:00Z.
+	EndTime *time.Time `type:"timestamp"`
+
+	// List of data objects containing metrics and references from the time range
+	// while generating the insight.
+	InsightData []*Data `type:"list"`
+
+	// The unique identifier for the insight. For example, insight-12345678901234567.
+	//
+	// InsightId is a required field
+	InsightId *string `type:"string" required:"true"`
+
+	// The type of insight. For example, HighDBLoad, HighCPU, or DominatingSQLs.
+	InsightType *string `type:"string"`
+
+	// List of recommendations for the insight. For example, Investigate the following
+	// SQLs that contributed to 100% of the total DBLoad during that time period:
+	// sql-id.
+	Recommendations []*Recommendation `type:"list"`
+
+	// The severity of the insight. The values are: Low, Medium, or High.
+	Severity *string `type:"string" enum:"Severity"`
+
+	// The start time of the insight. For example, 2018-10-30T00:00:00Z.
+	StartTime *time.Time `type:"timestamp"`
+
+	// List of supporting insights that provide additional factors for the insight.
+	SupportingInsights []*Insight `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Insight) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Insight) GoString() string {
+	return s.String()
+}
+
+// SetBaselineData sets the BaselineData field's value.
+func (s *Insight) SetBaselineData(v []*Data) *Insight {
+	s.BaselineData = v
+	return s
+}
+
+// SetContext sets the Context field's value.
+func (s *Insight) SetContext(v string) *Insight {
+	s.Context = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Insight) SetDescription(v string) *Insight {
+	s.Description = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *Insight) SetEndTime(v time.Time) *Insight {
+	s.EndTime = &v
+	return s
+}
+
+// SetInsightData sets the InsightData field's value.
+func (s *Insight) SetInsightData(v []*Data) *Insight {
+	s.InsightData = v
+	return s
+}
+
+// SetInsightId sets the InsightId field's value.
+func (s *Insight) SetInsightId(v string) *Insight {
+	s.InsightId = &v
+	return s
+}
+
+// SetInsightType sets the InsightType field's value.
+func (s *Insight) SetInsightType(v string) *Insight {
+	s.InsightType = &v
+	return s
+}
+
+// SetRecommendations sets the Recommendations field's value.
+func (s *Insight) SetRecommendations(v []*Recommendation) *Insight {
+	s.Recommendations = v
+	return s
+}
+
+// SetSeverity sets the Severity field's value.
+func (s *Insight) SetSeverity(v string) *Insight {
+	s.Severity = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *Insight) SetStartTime(v time.Time) *Insight {
+	s.StartTime = &v
+	return s
+}
+
+// SetSupportingInsights sets the SupportingInsights field's value.
+func (s *Insight) SetSupportingInsights(v []*Insight) *Insight {
+	s.SupportingInsights = v
 	return s
 }
 
@@ -2548,6 +3952,248 @@ func (s *ListAvailableResourceMetricsOutput) SetNextToken(v string) *ListAvailab
 	return s
 }
 
+type ListPerformanceAnalysisReportsInput struct {
+	_ struct{} `type:"structure"`
+
+	// An immutable identifier for a data source that is unique for an Amazon Web
+	// Services Region. Performance Insights gathers metrics from this data source.
+	// In the console, the identifier is shown as ResourceID. When you call DescribeDBInstances,
+	// the identifier is returned as DbiResourceId.
+	//
+	// To use a DB instance as a data source, specify its DbiResourceId value. For
+	// example, specify db-ABCDEFGHIJKLMNOPQRSTU1VW2X.
+	//
+	// Identifier is a required field
+	Identifier *string `type:"string" required:"true"`
+
+	// Specifies whether or not to include the list of tags in the response.
+	ListTags *bool `type:"boolean"`
+
+	// The maximum number of items to return in the response. If more items exist
+	// than the specified MaxResults value, a pagination token is included in the
+	// response so that the remaining results can be retrieved.
+	MaxResults *int64 `type:"integer"`
+
+	// An optional pagination token provided by a previous request. If this parameter
+	// is specified, the response includes only records beyond the token, up to
+	// the value specified by MaxResults.
+	NextToken *string `min:"1" type:"string"`
+
+	// The Amazon Web Services service for which Performance Insights returns metrics.
+	// Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPerformanceAnalysisReportsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPerformanceAnalysisReportsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPerformanceAnalysisReportsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPerformanceAnalysisReportsInput"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *ListPerformanceAnalysisReportsInput) SetIdentifier(v string) *ListPerformanceAnalysisReportsInput {
+	s.Identifier = &v
+	return s
+}
+
+// SetListTags sets the ListTags field's value.
+func (s *ListPerformanceAnalysisReportsInput) SetListTags(v bool) *ListPerformanceAnalysisReportsInput {
+	s.ListTags = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListPerformanceAnalysisReportsInput) SetMaxResults(v int64) *ListPerformanceAnalysisReportsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPerformanceAnalysisReportsInput) SetNextToken(v string) *ListPerformanceAnalysisReportsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *ListPerformanceAnalysisReportsInput) SetServiceType(v string) *ListPerformanceAnalysisReportsInput {
+	s.ServiceType = &v
+	return s
+}
+
+type ListPerformanceAnalysisReportsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// List of reports including the report identifier, start and end time, creation
+	// time, and status.
+	AnalysisReports []*AnalysisReportSummary `type:"list"`
+
+	// An optional pagination token provided by a previous request. If this parameter
+	// is specified, the response includes only records beyond the token, up to
+	// the value specified by MaxResults.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPerformanceAnalysisReportsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPerformanceAnalysisReportsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAnalysisReports sets the AnalysisReports field's value.
+func (s *ListPerformanceAnalysisReportsOutput) SetAnalysisReports(v []*AnalysisReportSummary) *ListPerformanceAnalysisReportsOutput {
+	s.AnalysisReports = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPerformanceAnalysisReportsOutput) SetNextToken(v string) *ListPerformanceAnalysisReportsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListTagsForResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Lists all the tags for the Amazon RDS Performance Insights resource. This
+	// value is an Amazon Resource Name (ARN). For information about creating an
+	// ARN, see Constructing an RDS Amazon Resource Name (ARN) (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.ARN.html#USER_Tagging.ARN.Constructing).
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// List the tags for the Amazon Web Services service for which Performance Insights
+	// returns metrics. Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *ListTagsForResourceInput) SetResourceARN(v string) *ListTagsForResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *ListTagsForResourceInput) SetServiceType(v string) *ListTagsForResourceInput {
+	s.ServiceType = &v
+	return s
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The metadata assigned to an Amazon RDS resource consisting of a key-value
+	// pair.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
 // The available dimension information for a metric type.
 type MetricDimensionGroups struct {
 	_ struct{} `type:"structure"`
@@ -2798,6 +4444,113 @@ func (s *NotAuthorizedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// This data type helps to determine Performance Insights metric to render for
+// the insight.
+type PerformanceInsightsMetric struct {
+	_ struct{} `type:"structure"`
+
+	// A dimension map that contains the dimensions for this partition.
+	Dimensions map[string]*string `type:"map"`
+
+	// The Performance Insights metric name.
+	DisplayName *string `min:"1" type:"string"`
+
+	// The Performance Insights metric.
+	Metric *string `min:"1" type:"string"`
+
+	// The value of the metric. For example, 9 for db.load.avg.
+	Value *float64 `type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PerformanceInsightsMetric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PerformanceInsightsMetric) GoString() string {
+	return s.String()
+}
+
+// SetDimensions sets the Dimensions field's value.
+func (s *PerformanceInsightsMetric) SetDimensions(v map[string]*string) *PerformanceInsightsMetric {
+	s.Dimensions = v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *PerformanceInsightsMetric) SetDisplayName(v string) *PerformanceInsightsMetric {
+	s.DisplayName = &v
+	return s
+}
+
+// SetMetric sets the Metric field's value.
+func (s *PerformanceInsightsMetric) SetMetric(v string) *PerformanceInsightsMetric {
+	s.Metric = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *PerformanceInsightsMetric) SetValue(v float64) *PerformanceInsightsMetric {
+	s.Value = &v
+	return s
+}
+
+// The list of recommendations for the insight.
+type Recommendation struct {
+	_ struct{} `type:"structure"`
+
+	// The recommendation details to help resolve the performance issue. For example,
+	// Investigate the following SQLs that contributed to 100% of the total DBLoad
+	// during that time period: sql-id
+	//
+	// RecommendationDescription is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Recommendation's
+	// String and GoString methods.
+	RecommendationDescription *string `type:"string" sensitive:"true"`
+
+	// The unique identifier for the recommendation.
+	RecommendationId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Recommendation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Recommendation) GoString() string {
+	return s.String()
+}
+
+// SetRecommendationDescription sets the RecommendationDescription field's value.
+func (s *Recommendation) SetRecommendationDescription(v string) *Recommendation {
+	s.RecommendationDescription = &v
+	return s
+}
+
+// SetRecommendationId sets the RecommendationId field's value.
+func (s *Recommendation) SetRecommendationId(v string) *Recommendation {
+	s.RecommendationId = &v
+	return s
+}
+
 // If PartitionBy was specified in a DescribeDimensionKeys request, the dimensions
 // are returned in an array. Each element in the array specifies one dimension.
 type ResponsePartitionKey struct {
@@ -2946,6 +4699,340 @@ func (s *ResponseResourceMetricKey) SetMetric(v string) *ResponseResourceMetricK
 	return s
 }
 
+// Metadata assigned to an Amazon RDS resource consisting of a key-value pair.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// A key is the required name of the tag. The string value can be from 1 to
+	// 128 Unicode characters in length and can't be prefixed with aws: or rds:.
+	// The string can only contain only the set of Unicode letters, digits, white-space,
+	// '_', '.', ':', '/', '=', '+', '-', '@' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$").
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// A value is the optional value of the tag. The string value can be from 1
+	// to 256 Unicode characters in length and can't be prefixed with aws: or rds:.
+	// The string can only contain only the set of Unicode letters, digits, white-space,
+	// '_', '.', ':', '/', '=', '+', '-', '@' (Java regex: "^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$").
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
+type TagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon RDS Performance Insights resource that the tags are added to.
+	// This value is an Amazon Resource Name (ARN). For information about creating
+	// an ARN, see Constructing an RDS Amazon Resource Name (ARN) (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.ARN.html#USER_Tagging.ARN.Constructing).
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon Web Services service for which Performance Insights returns metrics.
+	// Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+
+	// The metadata assigned to an Amazon RDS resource consisting of a key-value
+	// pair.
+	//
+	// Tags is a required field
+	Tags []*Tag `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *TagResourceInput) SetResourceARN(v string) *TagResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *TagResourceInput) SetServiceType(v string) *TagResourceInput {
+	s.ServiceType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) GoString() string {
+	return s.String()
+}
+
+type UntagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon RDS Performance Insights resource that the tags are added to.
+	// This value is an Amazon Resource Name (ARN). For information about creating
+	// an ARN, see Constructing an RDS Amazon Resource Name (ARN) (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_Tagging.ARN.html#USER_Tagging.ARN.Constructing).
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// List the tags for the Amazon Web Services service for which Performance Insights
+	// returns metrics. Valid value is RDS.
+	//
+	// ServiceType is a required field
+	ServiceType *string `type:"string" required:"true" enum:"ServiceType"`
+
+	// The metadata assigned to an Amazon RDS Performance Insights resource consisting
+	// of a key-value pair.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.ServiceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceType"))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *UntagResourceInput) SetResourceARN(v string) *UntagResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetServiceType sets the ServiceType field's value.
+func (s *UntagResourceInput) SetServiceType(v string) *UntagResourceInput {
+	s.ServiceType = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
+}
+
+const (
+	// AcceptLanguageEnUs is a AcceptLanguage enum value
+	AcceptLanguageEnUs = "EN_US"
+)
+
+// AcceptLanguage_Values returns all elements of the AcceptLanguage enum
+func AcceptLanguage_Values() []string {
+	return []string{
+		AcceptLanguageEnUs,
+	}
+}
+
+const (
+	// AnalysisStatusRunning is a AnalysisStatus enum value
+	AnalysisStatusRunning = "RUNNING"
+
+	// AnalysisStatusSucceeded is a AnalysisStatus enum value
+	AnalysisStatusSucceeded = "SUCCEEDED"
+
+	// AnalysisStatusFailed is a AnalysisStatus enum value
+	AnalysisStatusFailed = "FAILED"
+)
+
+// AnalysisStatus_Values returns all elements of the AnalysisStatus enum
+func AnalysisStatus_Values() []string {
+	return []string{
+		AnalysisStatusRunning,
+		AnalysisStatusSucceeded,
+		AnalysisStatusFailed,
+	}
+}
+
+const (
+	// ContextTypeCausal is a ContextType enum value
+	ContextTypeCausal = "CAUSAL"
+
+	// ContextTypeContextual is a ContextType enum value
+	ContextTypeContextual = "CONTEXTUAL"
+)
+
+// ContextType_Values returns all elements of the ContextType enum
+func ContextType_Values() []string {
+	return []string{
+		ContextTypeCausal,
+		ContextTypeContextual,
+	}
+}
+
 const (
 	// DetailStatusAvailable is a DetailStatus enum value
 	DetailStatusAvailable = "AVAILABLE"
@@ -2999,6 +5086,22 @@ func FeatureStatus_Values() []string {
 }
 
 const (
+	// PeriodAlignmentEndTime is a PeriodAlignment enum value
+	PeriodAlignmentEndTime = "END_TIME"
+
+	// PeriodAlignmentStartTime is a PeriodAlignment enum value
+	PeriodAlignmentStartTime = "START_TIME"
+)
+
+// PeriodAlignment_Values returns all elements of the PeriodAlignment enum
+func PeriodAlignment_Values() []string {
+	return []string{
+		PeriodAlignmentEndTime,
+		PeriodAlignmentStartTime,
+	}
+}
+
+const (
 	// ServiceTypeRds is a ServiceType enum value
 	ServiceTypeRds = "RDS"
 
@@ -3011,5 +5114,41 @@ func ServiceType_Values() []string {
 	return []string{
 		ServiceTypeRds,
 		ServiceTypeDocdb,
+	}
+}
+
+const (
+	// SeverityLow is a Severity enum value
+	SeverityLow = "LOW"
+
+	// SeverityMedium is a Severity enum value
+	SeverityMedium = "MEDIUM"
+
+	// SeverityHigh is a Severity enum value
+	SeverityHigh = "HIGH"
+)
+
+// Severity_Values returns all elements of the Severity enum
+func Severity_Values() []string {
+	return []string{
+		SeverityLow,
+		SeverityMedium,
+		SeverityHigh,
+	}
+}
+
+const (
+	// TextFormatPlainText is a TextFormat enum value
+	TextFormatPlainText = "PLAIN_TEXT"
+
+	// TextFormatMarkdown is a TextFormat enum value
+	TextFormatMarkdown = "MARKDOWN"
+)
+
+// TextFormat_Values returns all elements of the TextFormat enum
+func TextFormat_Values() []string {
+	return []string{
+		TextFormatPlainText,
+		TextFormatMarkdown,
 	}
 }
