@@ -227,7 +227,7 @@ func buildDSPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
 	pod.Name = ds.Name
 	ptrVal := true
 	pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
-		{Kind: "DaemonSet", UID: ds.UID, Controller: &ptrVal},
+		{APIVersion: "apps/v1", Kind: "DaemonSet", UID: ds.UID, Controller: &ptrVal},
 	}
 	return pod
 }

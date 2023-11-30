@@ -124,7 +124,7 @@ func TestDaemonSetEvictionForEmptyNodes(t *testing.T) {
 			for i, dsName := range scenario.dsPods {
 				ds := BuildTestPod(dsName, 100, 0)
 				ds.Spec.NodeName = "n1"
-				ds.OwnerReferences = GenerateOwnerReferences("", "DaemonSet", "", "")
+				ds.OwnerReferences = GenerateOwnerReferences("", "DaemonSet", "apps/v1", "")
 				if v, ok := scenario.extraAnnotationValue[dsName]; ok {
 					ds.Annotations[daemonset.EnableDsEvictionKey] = v
 				}

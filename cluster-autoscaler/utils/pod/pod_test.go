@@ -43,7 +43,7 @@ func TestIsDaemonSetPod(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "Pod with empty OwnerRef.Kind == DaemonSet",
+			name: "Pod with OwnerRef.Kind == DaemonSet",
 			pod: &apiv1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "foo",
@@ -51,12 +51,30 @@ func TestIsDaemonSetPod(t *testing.T) {
 					OwnerReferences: []metav1.OwnerReference{
 						{
 							Controller: newBool(true),
+							APIVersion: "apps/v1",
 							Kind:       "DaemonSet",
 						},
 					},
 				},
 			},
 			want: true,
+		},
+		{
+			name: "Pod with OwnerRef.Kind == DaemonSet and OwnerRef.APIVersion != apps/v1",
+			pod: &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "foo",
+					Namespace: "bar",
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							Controller: newBool(true),
+							APIVersion: "apps.tomain.tld/v1alpha1",
+							Kind:       "DaemonSet",
+						},
+					},
+				},
+			},
+			want: false,
 		},
 		{
 			name: "Pod with annotation but not with `DaemonSetPodAnnotationKey`",
