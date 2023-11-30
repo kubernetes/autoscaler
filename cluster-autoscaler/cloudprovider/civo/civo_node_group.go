@@ -48,11 +48,14 @@ type NodeGroup struct {
 
 // CivoNodeTemplate reference to implements TemplateNodeInfo
 type CivoNodeTemplate struct {
-	CPUCores      int    `json:"cpu_cores,omitempty"`
-	RAMMegabytes  int    `json:"ram_mb,omitempty"`
-	DiskGigabytes int    `json:"disk_gb,omitempty"`
-	GpuCount      int    `json:"gpu_count,omitempty"`
-	Region        string `json:"region,omitempty"`
+	// Size represents the pool size of civocloud
+	Size          string            `json:"size,omitempty"`
+	CPUCores      int               `json:"cpu_cores,omitempty"`
+	RAMMegabytes  int               `json:"ram_mb,omitempty"`
+	DiskGigabytes int               `json:"disk_gb,omitempty"`
+	Labels        map[string]string `json:"labels,omitempty"`
+	Taints        []apiv1.Taint     `json:"taint,omitempty"`
+	Region        string            `json:"region,omitempty"`
 }
 
 // MaxSize returns maximum size of the node group.
@@ -177,7 +180,7 @@ func (n *NodeGroup) Id() string {
 
 // Debug returns a string containing all information regarding this node group.
 func (n *NodeGroup) Debug() string {
-	return fmt.Sprintf("cluster ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
+	return fmt.Sprintf("id: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
 }
 
 // Nodes returns a list of all nodes that belong to this node group.  It is
@@ -297,12 +300,39 @@ func (n *NodeGroup) buildNodeFromTemplate(name string, template *CivoNodeTemplat
 	}
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(template.CPUCores*1000), resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.RAMMegabytes*1024*1024*1024), resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.DiskGigabytes*1024*1024*1024), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.RAMMegabytes*1024*1024), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.DiskGigabytes*1024*1024), resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
+
+	// GenericLabels and NodeLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildLabels(template, nodeName))
+
+	_, ok := node.Labels["kubernetes.civo.com/civo-node-pool"]
+	if !ok {
+		node.Labels["kubernetes.civo.com/civo-node-pool"] = n.Id()
+	}
+
+	node.Spec.Taints = template.Taints
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	return node, nil
+}
+
+func buildLabels(template *CivoNodeTemplate, nodeName string) map[string]string {
+	result := make(map[string]string)
+
+	// NodeLabels
+	for key, value := range template.Labels {
+		result[key] = value
+	}
+
+	// GenericLabels
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
+	result[apiv1.LabelInstanceTypeStable] = template.Size
+	result[apiv1.LabelTopologyRegion] = template.Region
+	result[apiv1.LabelHostname] = nodeName
+
+	return result
 }
