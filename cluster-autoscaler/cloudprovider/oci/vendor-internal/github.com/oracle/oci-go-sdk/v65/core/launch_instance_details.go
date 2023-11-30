@@ -33,11 +33,6 @@ type LaunchInstanceDetails struct {
 	// The OCID of the compartment.
 	CompartmentId *string `mandatory:"true" json:"compartmentId"`
 
-	// The shape of an instance. The shape determines the number of CPUs, amount of memory,
-	// and other resources allocated to the instance.
-	// You can enumerate all available shapes by calling ListShapes.
-	Shape *string `mandatory:"true" json:"shape"`
-
 	// The OCID of the compute capacity reservation this instance is launched under.
 	// You can opt out of all default reservations by specifying an empty string as input for this field.
 	// For more information, see Capacity Reservations (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/reserve-capacity.htm#default).
@@ -83,7 +78,8 @@ type LaunchInstanceDetails struct {
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) that the instance will be created in.
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the
+	// compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) that the instance will be created in.
 	ComputeClusterId *string `mandatory:"false" json:"computeClusterId"`
 
 	// Deprecated. Instead use `hostnameLabel` in
@@ -110,9 +106,9 @@ type LaunchInstanceDetails struct {
 	// over iSCSI the same way as the default iPXE script, use the
 	// following iSCSI IP address: 169.254.0.2, and boot volume IQN:
 	// iqn.2015-02.oracle.boot.
-	// If your instance boot volume type is paravirtualized,
+	// If your instance boot volume attachment type is paravirtualized,
 	// the boot volume is attached to the instance through virtio-scsi and no iPXE script is used.
-	// If your instance boot volume type is paravirtualized
+	// If your instance boot volume attachment type is paravirtualized
 	// and you use custom iPXE to network boot into your instance,
 	// the primary boot volume is attached as a data volume through virtio-scsi drive.
 	// For more information about the Bring Your Own Image feature of
@@ -168,6 +164,11 @@ type LaunchInstanceDetails struct {
 
 	AgentConfig *LaunchInstanceAgentConfigDetails `mandatory:"false" json:"agentConfig"`
 
+	// The shape of an instance. The shape determines the number of CPUs, amount of memory,
+	// and other resources allocated to the instance.
+	// You can enumerate all available shapes by calling ListShapes.
+	Shape *string `mandatory:"false" json:"shape"`
+
 	ShapeConfig *LaunchInstanceShapeConfigDetails `mandatory:"false" json:"shapeConfig"`
 
 	SourceDetails InstanceSourceDetails `mandatory:"false" json:"sourceDetails"`
@@ -181,6 +182,9 @@ type LaunchInstanceDetails struct {
 	IsPvEncryptionInTransitEnabled *bool `mandatory:"false" json:"isPvEncryptionInTransitEnabled"`
 
 	PlatformConfig LaunchInstancePlatformConfig `mandatory:"false" json:"platformConfig"`
+
+	// The OCID of the Instance Configuration containing instance launch details. Any other fields supplied in this instance launch request will override the details stored in the Instance Configuration for this instance launch.
+	InstanceConfigurationId *string `mandatory:"false" json:"instanceConfigurationId"`
 }
 
 func (m LaunchInstanceDetails) String() string {
@@ -220,14 +224,15 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		PreemptibleInstanceConfig      *PreemptibleInstanceConfigDetails        `json:"preemptibleInstanceConfig"`
 		Metadata                       map[string]string                        `json:"metadata"`
 		AgentConfig                    *LaunchInstanceAgentConfigDetails        `json:"agentConfig"`
+		Shape                          *string                                  `json:"shape"`
 		ShapeConfig                    *LaunchInstanceShapeConfigDetails        `json:"shapeConfig"`
 		SourceDetails                  instancesourcedetails                    `json:"sourceDetails"`
 		SubnetId                       *string                                  `json:"subnetId"`
 		IsPvEncryptionInTransitEnabled *bool                                    `json:"isPvEncryptionInTransitEnabled"`
 		PlatformConfig                 launchinstanceplatformconfig             `json:"platformConfig"`
+		InstanceConfigurationId        *string                                  `json:"instanceConfigurationId"`
 		AvailabilityDomain             *string                                  `json:"availabilityDomain"`
 		CompartmentId                  *string                                  `json:"compartmentId"`
-		Shape                          *string                                  `json:"shape"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -271,6 +276,8 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 
 	m.AgentConfig = model.AgentConfig
 
+	m.Shape = model.Shape
+
 	m.ShapeConfig = model.ShapeConfig
 
 	nn, e = model.SourceDetails.UnmarshalPolymorphicJSON(model.SourceDetails.JsonData)
@@ -297,11 +304,11 @@ func (m *LaunchInstanceDetails) UnmarshalJSON(data []byte) (e error) {
 		m.PlatformConfig = nil
 	}
 
+	m.InstanceConfigurationId = model.InstanceConfigurationId
+
 	m.AvailabilityDomain = model.AvailabilityDomain
 
 	m.CompartmentId = model.CompartmentId
-
-	m.Shape = model.Shape
 
 	return
 }

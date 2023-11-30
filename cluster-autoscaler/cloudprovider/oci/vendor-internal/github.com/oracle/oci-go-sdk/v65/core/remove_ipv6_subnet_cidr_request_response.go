@@ -21,7 +21,7 @@ type RemoveIpv6SubnetCidrRequest struct {
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the subnet.
 	SubnetId *string `mandatory:"true" contributesTo:"path" name:"subnetId"`
 
-	// Details object for removing an IPv6 SUBNET CIDR.
+	// Details object for removing an IPv6 SUBNET prefix.
 	RemoveSubnetIpv6CidrDetails `contributesTo:"body"`
 
 	// A token that uniquely identifies a request so it can be retried in case of a timeout or

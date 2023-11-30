@@ -112,10 +112,7 @@ func (m *UpdateVolumeDetails) UnmarshalJSON(data []byte) (e error) {
 	m.IsAutoTuneEnabled = model.IsAutoTuneEnabled
 
 	m.BlockVolumeReplicas = make([]BlockVolumeReplicaDetails, len(model.BlockVolumeReplicas))
-	for i, n := range model.BlockVolumeReplicas {
-		m.BlockVolumeReplicas[i] = n
-	}
-
+	copy(m.BlockVolumeReplicas, model.BlockVolumeReplicas)
 	m.AutotunePolicies = make([]AutotunePolicy, len(model.AutotunePolicies))
 	for i, n := range model.AutotunePolicies {
 		nn, e = n.UnmarshalPolymorphicJSON(n.JsonData)
@@ -128,6 +125,5 @@ func (m *UpdateVolumeDetails) UnmarshalJSON(data []byte) (e error) {
 			m.AutotunePolicies[i] = nil
 		}
 	}
-
 	return
 }

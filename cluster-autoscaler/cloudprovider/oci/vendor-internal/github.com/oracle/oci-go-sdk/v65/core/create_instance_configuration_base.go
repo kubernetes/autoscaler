@@ -46,10 +46,10 @@ type CreateInstanceConfigurationBase interface {
 
 type createinstanceconfigurationbase struct {
 	JsonData      []byte
-	CompartmentId *string                           `mandatory:"true" json:"compartmentId"`
 	DefinedTags   map[string]map[string]interface{} `mandatory:"false" json:"definedTags"`
 	DisplayName   *string                           `mandatory:"false" json:"displayName"`
 	FreeformTags  map[string]string                 `mandatory:"false" json:"freeformTags"`
+	CompartmentId *string                           `mandatory:"true" json:"compartmentId"`
 	Source        string                            `json:"source"`
 }
 
@@ -91,13 +91,9 @@ func (m *createinstanceconfigurationbase) UnmarshalPolymorphicJSON(data []byte) 
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for CreateInstanceConfigurationBase: %s.", m.Source)
 		return *m, nil
 	}
-}
-
-// GetCompartmentId returns CompartmentId
-func (m createinstanceconfigurationbase) GetCompartmentId() *string {
-	return m.CompartmentId
 }
 
 // GetDefinedTags returns DefinedTags
@@ -113,6 +109,11 @@ func (m createinstanceconfigurationbase) GetDisplayName() *string {
 // GetFreeformTags returns FreeformTags
 func (m createinstanceconfigurationbase) GetFreeformTags() map[string]string {
 	return m.FreeformTags
+}
+
+// GetCompartmentId returns CompartmentId
+func (m createinstanceconfigurationbase) GetCompartmentId() *string {
+	return m.CompartmentId
 }
 
 func (m createinstanceconfigurationbase) String() string {

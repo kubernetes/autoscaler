@@ -59,6 +59,16 @@ type CreateIpSecConnectionTunnelDetails struct {
 
 	DpdConfig *DpdConfig `mandatory:"false" json:"dpdConfig"`
 
+	// The headend IP that you can choose on the Oracle side to terminate your private IPSec tunnel.
+	OracleTunnelIp *string `mandatory:"false" json:"oracleTunnelIp"`
+
+	// The list of virtual circuit OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm)s over which your network can reach this tunnel.
+	AssociatedVirtualCircuits []string `mandatory:"false" json:"associatedVirtualCircuits"`
+
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the DRG route table assigned to this attachment.
+	// The DRG route table manages traffic inside the DRG.
+	DrgRouteTableId *string `mandatory:"false" json:"drgRouteTableId"`
+
 	EncryptionDomainConfig *CreateIpSecTunnelEncryptionDomainDetails `mandatory:"false" json:"encryptionDomainConfig"`
 }
 

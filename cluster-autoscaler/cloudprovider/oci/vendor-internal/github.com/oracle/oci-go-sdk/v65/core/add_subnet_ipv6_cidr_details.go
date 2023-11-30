@@ -21,10 +21,10 @@ import (
 	"strings"
 )
 
-// AddSubnetIpv6CidrDetails Details used when adding an IPv6 CIDR block to a subnet.
+// AddSubnetIpv6CidrDetails Details used when adding an IPv6 prefix to a subnet.
 type AddSubnetIpv6CidrDetails struct {
 
-	// This field is not required and should only be specified when adding an IPv6 CIDR
+	// This field is not required and should only be specified when adding an IPv6 prefix
 	// to a subnet's IPv6 address space.
 	// SeeIPv6 Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
 	// Example: `2001:0db8:0123::/64`

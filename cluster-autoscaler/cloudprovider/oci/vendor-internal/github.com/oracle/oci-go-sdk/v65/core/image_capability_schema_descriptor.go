@@ -72,6 +72,7 @@ func (m *imagecapabilityschemadescriptor) UnmarshalPolymorphicJSON(data []byte) 
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for ImageCapabilitySchemaDescriptor: %s.", m.DescriptorType)
 		return *m, nil
 	}
 }

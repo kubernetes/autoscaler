@@ -61,6 +61,7 @@ func (m *preemptionaction) UnmarshalPolymorphicJSON(data []byte) (interface{}, e
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for PreemptionAction: %s.", m.Type)
 		return *m, nil
 	}
 }

@@ -21,10 +21,10 @@ import (
 	"strings"
 )
 
-// RemoveSubnetIpv6CidrDetails Details object for removing an IPv6 CIDR Block from a Subnet.
+// RemoveSubnetIpv6CidrDetails Details object for removing an IPv6 prefix from a subnet.
 type RemoveSubnetIpv6CidrDetails struct {
 
-	// This field is not required and should only be specified when removing an IPv6 CIDR
+	// This field is not required and should only be specified when removing an IPv6 prefix
 	// from a subnet's IPv6 address space.
 	// SeeIPv6 Addresses (https://docs.cloud.oracle.com/iaas/Content/Network/Concepts/ipv6.htm).
 	// Example: `2001:0db8:0123::/64`

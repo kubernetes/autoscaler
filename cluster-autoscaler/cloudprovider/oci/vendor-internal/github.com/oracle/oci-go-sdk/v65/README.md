@@ -9,7 +9,7 @@ Are you a Developer using the OCI SDK? If so, please fill out our survey to help
 
 
 ## Dependencies
-- Install [Go programming language](https://golang.org/dl/), Go1.14, 1.15, 1.16, 1.17 and 1.18 is supported By OCI Go SDK.
+- Install [Go programming language](https://golang.org/dl/), Go1.17, 1.18, 1.19 and 1.20 is supported By OCI Go SDK.
 - Install [GNU Make](https://www.gnu.org/software/make/), using the package manager or binary distribution tool appropriate for your platform.
  
 ## Versioning
@@ -150,13 +150,13 @@ Full documentation can be found [on the godocs site](https://godoc.org/github.co
 
 
 ## Contributing
-`oci-go-sdk` is an open source project. See [CONTRIBUTING](/CONTRIBUTING.md) for details.
+This project welcomes contributions from the community. Before submitting a pull request, please [review our contribution guide](./CONTRIBUTING.md)
 
-Oracle gratefully acknowledges the contributions to oci-go-sdk that have been made by the community.
-
+## Security
+Please consult the [security guide](./SECURITY.md) for our responsible security vulnerability disclosure process
 
 ## License
-Copyright (c) 2016, 2018, 2021, Oracle and/or its affiliates.  All rights reserved.
+Copyright (c) 2016, 2023, Oracle and/or its affiliates.  All rights reserved.
 This software is dual-licensed to you under the Universal Permissive License (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl
 or Apache License 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose either license.
 
@@ -206,6 +206,35 @@ go install github.com/gofrs/flock
 - Install [go lint](https://github.com/golang/lint) with the command:
 ```
 go install github.com/golang/lint/golint
+```
+- Install [staticcheck](https://github.com/dominikh/go-tools) with the command:
+```
+go install honnef.co/go/tools/cmd/staticcheck@2023.1.3
+```
+
+### Linting and Staticcheck
+Linting (performed by golint) can be done with the following command:
+
+```
+make lint
+```
+Linting will perform a number of formatting changes across the code base.
+
+
+```
+make static-check
+```
+This command is also run by the make build and make test commands.
+Staticcheck will provide formatting warnings but will not make any changes to any files.
+You can also cause staticcheck to be run before calls to "git commit" with the pre-commit plugin.
+
+```
+pre-commit install
+```
+You can install pre-commit itself, you can use your package manager of choice, such as
+
+```
+brew install pre-commit
 ```
 
 ### Build

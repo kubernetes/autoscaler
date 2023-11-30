@@ -128,6 +128,10 @@ type Vnic struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the subnet the VNIC is in.
 	SubnetId *string `mandatory:"false" json:"subnetId"`
+
+	// List of IPv6 addresses assigned to the VNIC.
+	// Example: `2001:DB8::`
+	Ipv6Addresses []string `mandatory:"false" json:"ipv6Addresses"`
 }
 
 func (m Vnic) String() string {

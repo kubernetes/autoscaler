@@ -29,7 +29,7 @@ type UpdateDrgRouteRuleDetails struct {
 
 	// The range of IP addresses used for matching when routing traffic.
 	// Potential values:
-	//   * IP address range in CIDR notation. Can be an IPv4 or IPv6 CIDR. For example: `192.168.1.0/24`
+	//   * IP address range in CIDR notation. Can be an IPv4 CIDR block or IPv6 prefix. For example: `192.168.1.0/24`
 	//   or `2001:0db8:0123:45::/56`.
 	Destination *string `mandatory:"false" json:"destination"`
 

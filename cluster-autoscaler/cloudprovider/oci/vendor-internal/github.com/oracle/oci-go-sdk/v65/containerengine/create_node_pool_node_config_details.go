@@ -89,10 +89,7 @@ func (m *CreateNodePoolNodeConfigDetails) UnmarshalJSON(data []byte) (e error) {
 	}
 	var nn interface{}
 	m.NsgIds = make([]string, len(model.NsgIds))
-	for i, n := range model.NsgIds {
-		m.NsgIds[i] = n
-	}
-
+	copy(m.NsgIds, model.NsgIds)
 	m.KmsKeyId = model.KmsKeyId
 
 	m.IsPvEncryptionInTransitEnabled = model.IsPvEncryptionInTransitEnabled
@@ -114,9 +111,6 @@ func (m *CreateNodePoolNodeConfigDetails) UnmarshalJSON(data []byte) (e error) {
 	m.Size = model.Size
 
 	m.PlacementConfigs = make([]NodePoolPlacementConfigDetails, len(model.PlacementConfigs))
-	for i, n := range model.PlacementConfigs {
-		m.PlacementConfigs[i] = n
-	}
-
+	copy(m.PlacementConfigs, model.PlacementConfigs)
 	return
 }

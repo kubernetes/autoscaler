@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// UpdateClusterNetworkDetails The data to update a cluster network.
+// UpdateClusterNetworkDetails The data to update a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
 type UpdateClusterNetworkDetails struct {
 
 	// Defined tags for this resource. Each key is predefined and scoped to a

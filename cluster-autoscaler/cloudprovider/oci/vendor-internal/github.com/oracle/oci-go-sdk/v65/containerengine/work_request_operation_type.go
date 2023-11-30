@@ -27,6 +27,7 @@ const (
 	WorkRequestOperationTypeNodepoolUpdate        WorkRequestOperationTypeEnum = "NODEPOOL_UPDATE"
 	WorkRequestOperationTypeNodepoolDelete        WorkRequestOperationTypeEnum = "NODEPOOL_DELETE"
 	WorkRequestOperationTypeNodepoolReconcile     WorkRequestOperationTypeEnum = "NODEPOOL_RECONCILE"
+	WorkRequestOperationTypeNodepoolCycling       WorkRequestOperationTypeEnum = "NODEPOOL_CYCLING"
 	WorkRequestOperationTypeWorkrequestCancel     WorkRequestOperationTypeEnum = "WORKREQUEST_CANCEL"
 	WorkRequestOperationTypeVirtualnodepoolCreate WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_CREATE"
 	WorkRequestOperationTypeVirtualnodepoolUpdate WorkRequestOperationTypeEnum = "VIRTUALNODEPOOL_UPDATE"
@@ -46,6 +47,7 @@ var mappingWorkRequestOperationTypeEnum = map[string]WorkRequestOperationTypeEnu
 	"NODEPOOL_UPDATE":        WorkRequestOperationTypeNodepoolUpdate,
 	"NODEPOOL_DELETE":        WorkRequestOperationTypeNodepoolDelete,
 	"NODEPOOL_RECONCILE":     WorkRequestOperationTypeNodepoolReconcile,
+	"NODEPOOL_CYCLING":       WorkRequestOperationTypeNodepoolCycling,
 	"WORKREQUEST_CANCEL":     WorkRequestOperationTypeWorkrequestCancel,
 	"VIRTUALNODEPOOL_CREATE": WorkRequestOperationTypeVirtualnodepoolCreate,
 	"VIRTUALNODEPOOL_UPDATE": WorkRequestOperationTypeVirtualnodepoolUpdate,
@@ -65,6 +67,7 @@ var mappingWorkRequestOperationTypeEnumLowerCase = map[string]WorkRequestOperati
 	"nodepool_update":        WorkRequestOperationTypeNodepoolUpdate,
 	"nodepool_delete":        WorkRequestOperationTypeNodepoolDelete,
 	"nodepool_reconcile":     WorkRequestOperationTypeNodepoolReconcile,
+	"nodepool_cycling":       WorkRequestOperationTypeNodepoolCycling,
 	"workrequest_cancel":     WorkRequestOperationTypeWorkrequestCancel,
 	"virtualnodepool_create": WorkRequestOperationTypeVirtualnodepoolCreate,
 	"virtualnodepool_update": WorkRequestOperationTypeVirtualnodepoolUpdate,
@@ -95,6 +98,7 @@ func GetWorkRequestOperationTypeEnumStringValues() []string {
 		"NODEPOOL_UPDATE",
 		"NODEPOOL_DELETE",
 		"NODEPOOL_RECONCILE",
+		"NODEPOOL_CYCLING",
 		"WORKREQUEST_CANCEL",
 		"VIRTUALNODEPOOL_CREATE",
 		"VIRTUALNODEPOOL_UPDATE",

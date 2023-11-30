@@ -140,7 +140,6 @@ func (m *DhcpOptions) UnmarshalJSON(data []byte) (e error) {
 			m.Options[i] = nil
 		}
 	}
-
 	m.TimeCreated = model.TimeCreated
 
 	m.VcnId = model.VcnId

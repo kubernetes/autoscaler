@@ -42,6 +42,9 @@ type UpdateClusterNetworkInstancePoolDetails struct {
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
 
 	// The number of instances that should be in the instance pool.
+	// To determine whether capacity is available for a specific shape before you resize an instance pool,
+	// use the CreateComputeCapacityReport
+	// operation.
 	Size *int `mandatory:"false" json:"size"`
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the instance configuration associated with the instance pool.

@@ -56,6 +56,9 @@ type CreateCpeDetails struct {
 	//   * GetTunnelCpeDeviceConfigContent
 	//   * GetTunnelCpeDeviceConfig
 	CpeDeviceShapeId *string `mandatory:"false" json:"cpeDeviceShapeId"`
+
+	// Indicates whether this CPE is of type `private` or not.
+	IsPrivate *bool `mandatory:"false" json:"isPrivate"`
 }
 
 func (m CreateCpeDetails) String() string {

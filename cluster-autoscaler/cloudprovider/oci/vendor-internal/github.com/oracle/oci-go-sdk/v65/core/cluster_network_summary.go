@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// ClusterNetworkSummary Summary information for a cluster network.
+// ClusterNetworkSummary Summary information for a cluster network with instance pools (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/managingclusternetworks.htm).
 type ClusterNetworkSummary struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the cluster network.

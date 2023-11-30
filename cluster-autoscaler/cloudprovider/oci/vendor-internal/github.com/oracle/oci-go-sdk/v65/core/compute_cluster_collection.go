@@ -21,7 +21,8 @@ import (
 	"strings"
 )
 
-// ComputeClusterCollection A list of compute clusters that match filter criteria, if any. A compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) is a remote direct memory access (RDMA) network group.
+// ComputeClusterCollection A list of compute clusters that match filter criteria, if any. A compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm)
+// is a remote direct memory access (RDMA) network group.
 type ComputeClusterCollection struct {
 
 	// The list of compute clusters.

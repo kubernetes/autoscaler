@@ -77,6 +77,9 @@ type UpdateInstanceDetails struct {
 	// The new shape must be compatible with the image that was used to launch the instance. You
 	// can enumerate all available shapes and determine image compatibility by calling
 	// ListShapes.
+	// To determine whether capacity is available for a specific shape before you change the shape of an instance,
+	// use the CreateComputeCapacityReport
+	// operation.
 	// If the instance is running when you change the shape, the instance is rebooted.
 	// Example: `VM.Standard2.1`
 	Shape *string `mandatory:"false" json:"shape"`

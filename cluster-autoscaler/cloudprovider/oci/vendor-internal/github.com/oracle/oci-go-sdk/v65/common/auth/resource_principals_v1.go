@@ -8,12 +8,11 @@ import (
 	"crypto/rsa"
 	"fmt"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
-
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 )
 
 // resourcePrincipalFederationClient is the client used to to talk acquire resource principals

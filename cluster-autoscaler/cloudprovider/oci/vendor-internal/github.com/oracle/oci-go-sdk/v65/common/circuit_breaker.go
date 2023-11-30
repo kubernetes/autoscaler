@@ -62,7 +62,7 @@ type CircuitBreakerSetting struct {
 	numberOfRecordedHistoryResponse int
 }
 
-// Convert CircuitBreakerSetting to human-readable string representation
+// String Converts CircuitBreakerSetting to human-readable string representation
 func (cbst CircuitBreakerSetting) String() string {
 	return fmt.Sprintf("{name=%v, isEnabled=%v, closeStateWindow=%v, openStateWindow=%v, failureRateThreshold=%v, minimumRequests=%v, successStatCodeMap=%v, successStatErrCodeMap=%v, serviceName=%v, historyCount=%v}",
 		cbst.name, cbst.isEnabled, cbst.closeStateWindow, cbst.openStateWindow, cbst.failureRateThreshold, cbst.minimumRequests, cbst.successStatCodeMap, cbst.successStatErrCodeMap, cbst.serviceName, cbst.numberOfRecordedHistoryResponse)
@@ -77,7 +77,7 @@ type ResponseHistory struct {
 	statusCode   int
 }
 
-// Convert ResponseHistory to human-readable string representation
+// String Converts ResponseHistory to human-readable string representation
 func (rh ResponseHistory) String() string {
 	return fmt.Sprintf("Opc-Req-id - %v\nErrorCode - %v - %v\nErrorMessage - %v\n\n", rh.opcReqID, rh.statusCode, rh.errorCode, rh.errorMessage)
 }

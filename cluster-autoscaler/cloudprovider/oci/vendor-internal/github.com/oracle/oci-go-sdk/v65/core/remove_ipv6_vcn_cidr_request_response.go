@@ -37,7 +37,7 @@ type RemoveIpv6VcnCidrRequest struct {
 	// will be updated or deleted only if the etag you provide matches the resource's current etag value.
 	IfMatch *string `mandatory:"false" contributesTo:"header" name:"if-match"`
 
-	// Details object for removing a VCN ipv6 CIDR.
+	// Details object for removing a VCN IPv6 prefix.
 	RemoveVcnIpv6CidrDetails `contributesTo:"body"`
 
 	// Metadata about the request. This information will not be transmitted to the service, but

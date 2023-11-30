@@ -65,6 +65,7 @@ func (m *instanceconfigurationautotunepolicy) UnmarshalPolymorphicJSON(data []by
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for InstanceConfigurationAutotunePolicy: %s.", m.AutotuneType)
 		return *m, nil
 	}
 }

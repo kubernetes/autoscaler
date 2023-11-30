@@ -65,6 +65,9 @@ type AmdMilanBmPlatformConfig struct {
 	// itself is billed for the full shape, regardless of whether all cores are enabled.
 	PercentageOfCoresEnabled *int `mandatory:"false" json:"percentageOfCoresEnabled"`
 
+	// Instance Platform Configuration Configuration Map for flexible setting input.
+	ConfigMap map[string]string `mandatory:"false" json:"configMap"`
+
 	// The number of NUMA nodes per socket (NPS).
 	NumaNodesPerSocket AmdMilanBmPlatformConfigNumaNodesPerSocketEnum `mandatory:"false" json:"numaNodesPerSocket,omitempty"`
 }

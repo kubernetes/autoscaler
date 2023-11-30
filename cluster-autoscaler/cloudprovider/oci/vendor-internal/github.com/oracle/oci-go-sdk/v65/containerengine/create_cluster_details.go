@@ -130,7 +130,6 @@ func (m *CreateClusterDetails) UnmarshalJSON(data []byte) (e error) {
 			m.ClusterPodNetworkOptions[i] = nil
 		}
 	}
-
 	m.Type = model.Type
 
 	m.Name = model.Name

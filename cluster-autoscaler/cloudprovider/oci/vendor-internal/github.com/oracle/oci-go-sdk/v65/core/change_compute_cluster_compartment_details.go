@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// ChangeComputeClusterCompartmentDetails The configuration details for the compartment to move the compute cluster to. A compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) is a remote direct memory access (RDMA) network group.
+// ChangeComputeClusterCompartmentDetails The configuration details for the move operation.
 type ChangeComputeClusterCompartmentDetails struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment to move the compute cluster to.

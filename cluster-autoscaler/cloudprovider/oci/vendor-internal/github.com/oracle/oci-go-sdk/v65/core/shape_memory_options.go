@@ -39,6 +39,9 @@ type ShapeMemoryOptions struct {
 
 	// The maximum amount of memory per OCPU available for this shape, in gigabytes.
 	MaxPerOcpuInGBs *float32 `mandatory:"false" json:"maxPerOcpuInGBs"`
+
+	// The maximum amount of memory per NUMA node, in gigabytes.
+	MaxPerNumaNodeInGBs *float32 `mandatory:"false" json:"maxPerNumaNodeInGBs"`
 }
 
 func (m ShapeMemoryOptions) String() string {

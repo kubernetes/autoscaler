@@ -26,7 +26,11 @@ import (
 type VirtualCircuitDrgAttachmentNetworkDetails struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the network attached to the DRG.
-	Id *string `mandatory:"true" json:"id"`
+	Id *string `mandatory:"false" json:"id"`
+
+	// Boolean flag that determines wether all traffic over the virtual circuits is encrypted.
+	// Example: `true`
+	TransportOnlyMode *bool `mandatory:"false" json:"transportOnlyMode"`
 }
 
 // GetId returns Id

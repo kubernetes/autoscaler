@@ -19,8 +19,8 @@ import (
 type GetComputeClusterRequest struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compute cluster.
-	// A compute cluster is a remote direct memory access (RDMA) network group.
-	// For more information, see Compute Clusters (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm).
+	// A compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) is a remote direct memory
+	// access (RDMA) network group.
 	ComputeClusterId *string `mandatory:"true" contributesTo:"path" name:"computeClusterId"`
 
 	// Unique identifier for the request.

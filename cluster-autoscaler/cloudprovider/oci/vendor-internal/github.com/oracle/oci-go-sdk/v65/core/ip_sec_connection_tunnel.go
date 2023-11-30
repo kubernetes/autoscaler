@@ -92,6 +92,9 @@ type IpSecConnectionTunnel struct {
 	PhaseOneDetails *TunnelPhaseOneDetails `mandatory:"false" json:"phaseOneDetails"`
 
 	PhaseTwoDetails *TunnelPhaseTwoDetails `mandatory:"false" json:"phaseTwoDetails"`
+
+	// The list of virtual circuit OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm)s over which your network can reach this tunnel.
+	AssociatedVirtualCircuits []string `mandatory:"false" json:"associatedVirtualCircuits"`
 }
 
 func (m IpSecConnectionTunnel) String() string {

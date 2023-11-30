@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// ChangeCaptureFilterCompartmentDetails These configuration details are used in the move operation when changing the compartment containing a virtual test access point (VTAP) capture filter.
+// ChangeCaptureFilterCompartmentDetails These configuration details are used in the move operation when changing the compartment containing a capture filter.
 type ChangeCaptureFilterCompartmentDetails struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the destination compartment for the VTAP

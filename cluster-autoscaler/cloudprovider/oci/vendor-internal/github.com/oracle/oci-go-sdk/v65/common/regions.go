@@ -72,6 +72,10 @@ const (
 	RegionEUMadrid1 Region = "eu-madrid-1"
 	//RegionUSChicago1 region Chicago
 	RegionUSChicago1 Region = "us-chicago-1"
+	//RegionMXMonterrey1 region Monterrey
+	RegionMXMonterrey1 Region = "mx-monterrey-1"
+	//RegionUSSaltlake2 region Saltlake
+	RegionUSSaltlake2 Region = "us-saltlake-2"
 	//RegionUSLangley1 region Langley
 	RegionUSLangley1 Region = "us-langley-1"
 	//RegionUSLuke1 region Luke
@@ -106,6 +110,12 @@ const (
 	RegionEUDccRating1 Region = "eu-dcc-rating-1"
 	//RegionEUDccDublin1 region Dublin
 	RegionEUDccDublin1 Region = "eu-dcc-dublin-1"
+	//RegionEUMadrid2 region Madrid
+	RegionEUMadrid2 Region = "eu-madrid-2"
+	//RegionEUFrankfurt2 region Frankfurt
+	RegionEUFrankfurt2 Region = "eu-frankfurt-2"
+	//RegionEUJovanovac1 region Jovanovac
+	RegionEUJovanovac1 Region = "eu-jovanovac-1"
 )
 
 var shortNameRegion = map[string]Region{
@@ -143,6 +153,8 @@ var shortNameRegion = map[string]Region{
 	"qro": RegionMXQueretaro1,
 	"mad": RegionEUMadrid1,
 	"ord": RegionUSChicago1,
+	"mty": RegionMXMonterrey1,
+	"aga": RegionUSSaltlake2,
 	"lfi": RegionUSLangley1,
 	"luf": RegionUSLuke1,
 	"ric": RegionUSGovAshburn1,
@@ -160,6 +172,9 @@ var shortNameRegion = map[string]Region{
 	"dtm": RegionEUDccRating2,
 	"dus": RegionEUDccRating1,
 	"ork": RegionEUDccDublin1,
+	"vll": RegionEUMadrid2,
+	"str": RegionEUFrankfurt2,
+	"beg": RegionEUJovanovac1,
 }
 
 var realm = map[string]string{
@@ -171,6 +186,8 @@ var realm = map[string]string{
 	"oc9":  "oraclecloud9.com",
 	"oc10": "oraclecloud10.com",
 	"oc14": "oraclecloud14.com",
+	"oc19": "oraclecloud.eu",
+	"oc20": "oraclecloud20.com",
 }
 
 var regionRealm = map[Region]string{
@@ -208,6 +225,8 @@ var regionRealm = map[Region]string{
 	RegionMXQueretaro1:    "oc1",
 	RegionEUMadrid1:       "oc1",
 	RegionUSChicago1:      "oc1",
+	RegionMXMonterrey1:    "oc1",
+	RegionUSSaltlake2:     "oc1",
 
 	RegionUSLangley1: "oc2",
 	RegionUSLuke1:    "oc2",
@@ -232,4 +251,9 @@ var regionRealm = map[Region]string{
 	RegionEUDccRating2: "oc14",
 	RegionEUDccRating1: "oc14",
 	RegionEUDccDublin1: "oc14",
+
+	RegionEUMadrid2:    "oc19",
+	RegionEUFrankfurt2: "oc19",
+
+	RegionEUJovanovac1: "oc20",
 }

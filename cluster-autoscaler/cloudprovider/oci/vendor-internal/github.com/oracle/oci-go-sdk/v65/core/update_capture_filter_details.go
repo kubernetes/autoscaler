@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// UpdateCaptureFilterDetails These details can be included in a request to update a capture filter. A capture filter contains a set of rules governing what traffic a VTAP mirrors.
+// UpdateCaptureFilterDetails These details can be included in a request to update a capture filter. A capture filter contains a set of rules governing what traffic a VTAP mirrors or a VCN flow log collects.
 type UpdateCaptureFilterDetails struct {
 
 	// Defined tags for this resource. Each key is predefined and scoped to a
@@ -35,6 +35,9 @@ type UpdateCaptureFilterDetails struct {
 
 	// The set of rules governing what traffic a VTAP mirrors.
 	VtapCaptureFilterRules []VtapCaptureFilterRuleDetails `mandatory:"false" json:"vtapCaptureFilterRules"`
+
+	// The set of rules governing what traffic the VCN flow log collects.
+	FlowLogCaptureFilterRules []FlowLogCaptureFilterRuleDetails `mandatory:"false" json:"flowLogCaptureFilterRules"`
 
 	// Free-form tags for this resource. Each tag is a simple key-value pair with no
 	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).

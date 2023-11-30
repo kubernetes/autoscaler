@@ -189,10 +189,7 @@ func (m *Volume) UnmarshalJSON(data []byte) (e error) {
 	m.AutoTunedVpusPerGB = model.AutoTunedVpusPerGB
 
 	m.BlockVolumeReplicas = make([]BlockVolumeReplicaInfo, len(model.BlockVolumeReplicas))
-	for i, n := range model.BlockVolumeReplicas {
-		m.BlockVolumeReplicas[i] = n
-	}
-
+	copy(m.BlockVolumeReplicas, model.BlockVolumeReplicas)
 	m.AutotunePolicies = make([]AutotunePolicy, len(model.AutotunePolicies))
 	for i, n := range model.AutotunePolicies {
 		nn, e = n.UnmarshalPolymorphicJSON(n.JsonData)
@@ -205,7 +202,6 @@ func (m *Volume) UnmarshalJSON(data []byte) (e error) {
 			m.AutotunePolicies[i] = nil
 		}
 	}
-
 	m.AvailabilityDomain = model.AvailabilityDomain
 
 	m.CompartmentId = model.CompartmentId

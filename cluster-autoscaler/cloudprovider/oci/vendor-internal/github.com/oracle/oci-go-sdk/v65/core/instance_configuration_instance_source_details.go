@@ -65,6 +65,7 @@ func (m *instanceconfigurationinstancesourcedetails) UnmarshalPolymorphicJSON(da
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for InstanceConfigurationInstanceSourceDetails: %s.", m.SourceType)
 		return *m, nil
 	}
 }

@@ -29,8 +29,8 @@ type ListInstancesRequest struct {
 	CapacityReservationId *string `mandatory:"false" contributesTo:"query" name:"capacityReservationId"`
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compute cluster.
-	// A compute cluster is a remote direct memory access (RDMA) network group.
-	// For more information, see Compute Clusters (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm).
+	// A compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm) is a remote direct memory
+	// access (RDMA) network group.
 	ComputeClusterId *string `mandatory:"false" contributesTo:"query" name:"computeClusterId"`
 
 	// A filter to return only resources that match the given display name exactly.

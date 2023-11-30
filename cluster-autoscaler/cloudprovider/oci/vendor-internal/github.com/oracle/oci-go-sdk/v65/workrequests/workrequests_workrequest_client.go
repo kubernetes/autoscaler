@@ -30,6 +30,9 @@ type WorkRequestClient struct {
 // NewWorkRequestClientWithConfigurationProvider Creates a new default WorkRequest client with the given configuration provider.
 // the configuration provider will be used for the default signer as well as reading the region
 func NewWorkRequestClientWithConfigurationProvider(configProvider common.ConfigurationProvider) (client WorkRequestClient, err error) {
+	if enabled := common.CheckForEnabledServices("workrequests"); !enabled {
+		return client, fmt.Errorf("the Alloy configuration disabled this service, this behavior is controlled by OciSdkEnabledServicesMap variables. Please check if your local alloy_config file configured the service you're targeting or contact the cloud provider on the availability of this service")
+	}
 	provider, err := auth.GetGenericConfigurationProvider(configProvider)
 	if err != nil {
 		return client, err
@@ -81,7 +84,7 @@ func (client *WorkRequestClient) setConfigurationProvider(configProvider common.
 	region, _ := configProvider.Region()
 	client.SetRegion(region)
 	if client.Host == "" {
-		return fmt.Errorf("Invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
+		return fmt.Errorf("invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
 	}
 	client.config = &configProvider
 	return nil

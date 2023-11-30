@@ -37,8 +37,10 @@ const (
 	ResourcePrincipalTokenEndpoint = "OCI_RESOURCE_PRINCIPAL_RPT_ENDPOINT"
 	// KubernetesServiceAccountTokenPath that contains cluster information
 	KubernetesServiceAccountTokenPath = "/var/run/secrets/kubernetes.io/serviceaccount/token"
-	// KubernetesServiceAccountCertPath that contains cluster information
-	KubernetesServiceAccountCertPath = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+	// DefaultKubernetesServiceAccountCertPath that contains cluster information
+	DefaultKubernetesServiceAccountCertPath = "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt"
+	// OciKubernetesServiceAccountCertPath Environment variable for Kubernetes Service Account Cert Path
+	OciKubernetesServiceAccountCertPath = "OCI_KUBERNETES_SERVICE_ACCOUNT_CERT_PATH"
 	// KubernetesServiceHostEnvVar environment var holding the kubernetes host
 	KubernetesServiceHostEnvVar = "KUBERNETES_SERVICE_HOST"
 	// KubernetesProxymuxServicePort environment var holding the kubernetes port
@@ -96,6 +98,12 @@ func ResourcePrincipalConfigurationProvider() (ConfigurationProviderWithClaimAcc
 
 // OkeWorkloadIdentityConfigurationProvider returns a resource principal configuration provider by OKE Workload Identity
 func OkeWorkloadIdentityConfigurationProvider() (ConfigurationProviderWithClaimAccess, error) {
+	return OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider(NewDefaultServiceAccountTokenProvider())
+}
+
+// OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider returns a resource principal configuration provider by OKE Workload Identity
+// with service account token provider
+func OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider(saTokenProvider ServiceAccountTokenProvider) (ConfigurationProviderWithClaimAccess, error) {
 	var version string
 	var ok bool
 	if version, ok = os.LookupEnv(ResourcePrincipalVersionEnvVar); !ok {
@@ -104,17 +112,17 @@ func OkeWorkloadIdentityConfigurationProvider() (ConfigurationProviderWithClaimA
 	}
 
 	if version == ResourcePrincipalVersion1_1 || version == ResourcePrincipalVersion2_2 {
-		kubernetesServiceAccountToken, err := ioutil.ReadFile(KubernetesServiceAccountTokenPath)
-		if err != nil {
-			err = fmt.Errorf("can not create resource principal, error getting Kubernetes Service Account Token at %s",
-				KubernetesServiceAccountTokenPath)
-			return nil, resourcePrincipalError{err: err}
+
+		saCertPath := requireEnv(OciKubernetesServiceAccountCertPath)
+
+		if saCertPath == nil {
+			tmp := DefaultKubernetesServiceAccountCertPath
+			saCertPath = &tmp
 		}
 
-		kubernetesServiceAccountCertRaw, err := ioutil.ReadFile(KubernetesServiceAccountCertPath)
+		kubernetesServiceAccountCertRaw, err := ioutil.ReadFile(*saCertPath)
 		if err != nil {
-			err = fmt.Errorf("can not create resource principal, error getting Kubernetes Service Account Token at %s",
-				KubernetesServiceAccountCertPath)
+			err = fmt.Errorf("can not create resource principal, error getting Kubernetes Service Account Token at %s", *saCertPath)
 			return nil, resourcePrincipalError{err: err}
 		}
 
@@ -136,12 +144,50 @@ func OkeWorkloadIdentityConfigurationProvider() (ConfigurationProviderWithClaimA
 		}
 		proxymuxEndpoint := fmt.Sprintf("https://%s:%s/resourcePrincipalSessionTokens", *k8sServiceHost, KubernetesProxymuxServicePort)
 
-		return newOkeWorkloadIdentityProvider(proxymuxEndpoint, string(kubernetesServiceAccountToken),
-			kubernetesServiceAccountCert, *region)
+		return newOkeWorkloadIdentityProvider(proxymuxEndpoint, saTokenProvider, kubernetesServiceAccountCert, *region)
 	}
 
 	err := fmt.Errorf("can not create resource principal, environment variable: %s, must be valid", ResourcePrincipalVersionEnvVar)
 	return nil, resourcePrincipalError{err: err}
+}
+
+// ResourcePrincipalConfigurationProviderForRegion returns a resource principal configuration provider using well known
+// environment variables to look up token information, for a given region. The environment variables can either paths or contain the material value
+// of the keys. However, in the case of the keys and tokens paths and values can not be mixed
+func ResourcePrincipalConfigurationProviderForRegion(region common.Region) (ConfigurationProviderWithClaimAccess, error) {
+	var version string
+	var ok bool
+	if version, ok = os.LookupEnv(ResourcePrincipalVersionEnvVar); !ok {
+		err := fmt.Errorf("can not create resource principal, environment variable: %s, not present", ResourcePrincipalVersionEnvVar)
+		return nil, resourcePrincipalError{err: err}
+	}
+
+	switch version {
+	case ResourcePrincipalVersion2_2:
+		rpst := requireEnv(ResourcePrincipalRPSTEnvVar)
+		if rpst == nil {
+			err := fmt.Errorf("can not create resource principal, environment variable: %s, not present", ResourcePrincipalVersionEnvVar)
+			return nil, resourcePrincipalError{err: err}
+		}
+		private := requireEnv(ResourcePrincipalPrivatePEMEnvVar)
+		if private == nil {
+			err := fmt.Errorf("can not create resource principal, environment variable: %s, not present", ResourcePrincipalVersionEnvVar)
+			return nil, resourcePrincipalError{err: err}
+		}
+		passphrase := requireEnv(ResourcePrincipalPrivatePEMPassphraseEnvVar)
+		region := string(region)
+		if region == "" {
+			err := fmt.Errorf("can not create resource principal, region cannot be empty")
+			return nil, resourcePrincipalError{err: err}
+		}
+		return newResourcePrincipalKeyProvider22(
+			*rpst, *private, passphrase, region)
+	case ResourcePrincipalVersion1_1:
+		return newResourcePrincipalKeyProvider11(DefaultRptPathProvider{})
+	default:
+		err := fmt.Errorf("can not create resource principal, environment variable: %s, must be valid", ResourcePrincipalVersionEnvVar)
+		return nil, resourcePrincipalError{err: err}
+	}
 }
 
 // ResourcePrincipalConfigurationProviderWithPathProvider returns a resource principal configuration provider using path provider.
@@ -249,11 +295,11 @@ func newResourcePrincipalKeyProvider22(sessionTokenLocation, privatePemLocation 
 	return &rs, nil
 }
 
-func newOkeWorkloadIdentityProvider(proxymuxEndpoint string, kubernetesServiceAccountToken string,
+func newOkeWorkloadIdentityProvider(proxymuxEndpoint string, saTokenProvider ServiceAccountTokenProvider,
 	kubernetesServiceAccountCert *x509.CertPool, region string) (*resourcePrincipalKeyProvider, error) {
 	var err error
 	var fd federationClient
-	fd, err = newX509FederationClientForOkeWorkloadIdentity(proxymuxEndpoint, kubernetesServiceAccountToken, kubernetesServiceAccountCert)
+	fd, err = newX509FederationClientForOkeWorkloadIdentity(proxymuxEndpoint, saTokenProvider, kubernetesServiceAccountCert)
 
 	if err != nil {
 		err := fmt.Errorf("can not create resource principal, due to: %s ", err.Error())

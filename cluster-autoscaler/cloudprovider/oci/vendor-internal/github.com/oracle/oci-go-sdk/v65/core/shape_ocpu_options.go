@@ -30,6 +30,9 @@ type ShapeOcpuOptions struct {
 
 	// The maximum number of OCPUs.
 	Max *float32 `mandatory:"false" json:"max"`
+
+	// The maximum number of cores available per NUMA node.
+	MaxPerNumaNode *float32 `mandatory:"false" json:"maxPerNumaNode"`
 }
 
 func (m ShapeOcpuOptions) String() string {

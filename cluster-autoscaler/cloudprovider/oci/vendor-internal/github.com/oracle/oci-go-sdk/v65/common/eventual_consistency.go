@@ -51,6 +51,7 @@ var (
 		{400, "RelatedResourceNotAuthorizedOrNotFound"}: true,
 		{404, "NotAuthorizedOrNotFound"}:                true,
 		{409, "NotAuthorizedOrResourceAlreadyExists"}:   true,
+		{409, "ResourceAlreadyExists"}:                  true,
 		{400, "InsufficientServicePermissions"}:         true,
 		{400, "ResourceDisabled"}:                       true,
 	}

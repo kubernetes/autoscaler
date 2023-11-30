@@ -61,6 +61,7 @@ func (m *clusterpodnetworkoptiondetails) UnmarshalPolymorphicJSON(data []byte) (
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for ClusterPodNetworkOptionDetails: %s.", m.CniType)
 		return *m, nil
 	}
 }

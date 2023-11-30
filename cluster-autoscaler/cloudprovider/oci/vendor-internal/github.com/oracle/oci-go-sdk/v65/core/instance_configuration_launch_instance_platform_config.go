@@ -97,6 +97,10 @@ func (m *instanceconfigurationlaunchinstanceplatformconfig) UnmarshalPolymorphic
 		mm := InstanceConfigurationIntelIcelakeBmLaunchInstancePlatformConfig{}
 		err = json.Unmarshal(data, &mm)
 		return mm, err
+	case "GENERIC_BM":
+		mm := InstanceConfigurationGenericBmLaunchInstancePlatformConfig{}
+		err = json.Unmarshal(data, &mm)
+		return mm, err
 	case "AMD_ROME_BM":
 		mm := InstanceConfigurationAmdRomeBmLaunchInstancePlatformConfig{}
 		err = json.Unmarshal(data, &mm)
@@ -114,6 +118,7 @@ func (m *instanceconfigurationlaunchinstanceplatformconfig) UnmarshalPolymorphic
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for InstanceConfigurationLaunchInstancePlatformConfig: %s.", m.Type)
 		return *m, nil
 	}
 }
@@ -163,6 +168,7 @@ const (
 	InstanceConfigurationLaunchInstancePlatformConfigTypeAmdMilanBmGpu  InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "AMD_MILAN_BM_GPU"
 	InstanceConfigurationLaunchInstancePlatformConfigTypeAmdRomeBm      InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "AMD_ROME_BM"
 	InstanceConfigurationLaunchInstancePlatformConfigTypeAmdRomeBmGpu   InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "AMD_ROME_BM_GPU"
+	InstanceConfigurationLaunchInstancePlatformConfigTypeGenericBm      InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "GENERIC_BM"
 	InstanceConfigurationLaunchInstancePlatformConfigTypeIntelIcelakeBm InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "INTEL_ICELAKE_BM"
 	InstanceConfigurationLaunchInstancePlatformConfigTypeIntelSkylakeBm InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "INTEL_SKYLAKE_BM"
 	InstanceConfigurationLaunchInstancePlatformConfigTypeAmdVm          InstanceConfigurationLaunchInstancePlatformConfigTypeEnum = "AMD_VM"
@@ -174,6 +180,7 @@ var mappingInstanceConfigurationLaunchInstancePlatformConfigTypeEnum = map[strin
 	"AMD_MILAN_BM_GPU": InstanceConfigurationLaunchInstancePlatformConfigTypeAmdMilanBmGpu,
 	"AMD_ROME_BM":      InstanceConfigurationLaunchInstancePlatformConfigTypeAmdRomeBm,
 	"AMD_ROME_BM_GPU":  InstanceConfigurationLaunchInstancePlatformConfigTypeAmdRomeBmGpu,
+	"GENERIC_BM":       InstanceConfigurationLaunchInstancePlatformConfigTypeGenericBm,
 	"INTEL_ICELAKE_BM": InstanceConfigurationLaunchInstancePlatformConfigTypeIntelIcelakeBm,
 	"INTEL_SKYLAKE_BM": InstanceConfigurationLaunchInstancePlatformConfigTypeIntelSkylakeBm,
 	"AMD_VM":           InstanceConfigurationLaunchInstancePlatformConfigTypeAmdVm,
@@ -185,6 +192,7 @@ var mappingInstanceConfigurationLaunchInstancePlatformConfigTypeEnumLowerCase = 
 	"amd_milan_bm_gpu": InstanceConfigurationLaunchInstancePlatformConfigTypeAmdMilanBmGpu,
 	"amd_rome_bm":      InstanceConfigurationLaunchInstancePlatformConfigTypeAmdRomeBm,
 	"amd_rome_bm_gpu":  InstanceConfigurationLaunchInstancePlatformConfigTypeAmdRomeBmGpu,
+	"generic_bm":       InstanceConfigurationLaunchInstancePlatformConfigTypeGenericBm,
 	"intel_icelake_bm": InstanceConfigurationLaunchInstancePlatformConfigTypeIntelIcelakeBm,
 	"intel_skylake_bm": InstanceConfigurationLaunchInstancePlatformConfigTypeIntelSkylakeBm,
 	"amd_vm":           InstanceConfigurationLaunchInstancePlatformConfigTypeAmdVm,
@@ -207,6 +215,7 @@ func GetInstanceConfigurationLaunchInstancePlatformConfigTypeEnumStringValues() 
 		"AMD_MILAN_BM_GPU",
 		"AMD_ROME_BM",
 		"AMD_ROME_BM_GPU",
+		"GENERIC_BM",
 		"INTEL_ICELAKE_BM",
 		"INTEL_SKYLAKE_BM",
 		"AMD_VM",

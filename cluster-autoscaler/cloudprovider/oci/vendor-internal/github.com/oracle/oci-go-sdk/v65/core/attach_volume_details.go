@@ -50,12 +50,12 @@ type AttachVolumeDetails interface {
 
 type attachvolumedetails struct {
 	JsonData    []byte
-	InstanceId  *string `mandatory:"true" json:"instanceId"`
-	VolumeId    *string `mandatory:"true" json:"volumeId"`
 	Device      *string `mandatory:"false" json:"device"`
 	DisplayName *string `mandatory:"false" json:"displayName"`
 	IsReadOnly  *bool   `mandatory:"false" json:"isReadOnly"`
 	IsShareable *bool   `mandatory:"false" json:"isShareable"`
+	InstanceId  *string `mandatory:"true" json:"instanceId"`
+	VolumeId    *string `mandatory:"true" json:"volumeId"`
 	Type        string  `json:"type"`
 }
 
@@ -107,18 +107,9 @@ func (m *attachvolumedetails) UnmarshalPolymorphicJSON(data []byte) (interface{}
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for AttachVolumeDetails: %s.", m.Type)
 		return *m, nil
 	}
-}
-
-// GetInstanceId returns InstanceId
-func (m attachvolumedetails) GetInstanceId() *string {
-	return m.InstanceId
-}
-
-// GetVolumeId returns VolumeId
-func (m attachvolumedetails) GetVolumeId() *string {
-	return m.VolumeId
 }
 
 // GetDevice returns Device
@@ -139,6 +130,16 @@ func (m attachvolumedetails) GetIsReadOnly() *bool {
 // GetIsShareable returns IsShareable
 func (m attachvolumedetails) GetIsShareable() *bool {
 	return m.IsShareable
+}
+
+// GetInstanceId returns InstanceId
+func (m attachvolumedetails) GetInstanceId() *string {
+	return m.InstanceId
+}
+
+// GetVolumeId returns VolumeId
+func (m attachvolumedetails) GetVolumeId() *string {
+	return m.VolumeId
 }
 
 func (m attachvolumedetails) String() string {

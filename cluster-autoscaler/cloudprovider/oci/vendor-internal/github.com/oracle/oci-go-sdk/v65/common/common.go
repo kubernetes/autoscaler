@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -52,6 +52,26 @@ var getRegionInfoFromInstanceMetadataService = getRegionInfoFromInstanceMetadata
 
 // OciRealmSpecificServiceEndpointTemplateEnabled is the flag to enable the realm specific service endpoint template. This one has higher priority than the environment variable.
 var OciRealmSpecificServiceEndpointTemplateEnabled *bool = nil
+
+// OciSdkEnabledServicesMap is a list of services that are enabled, default is an empty list which means all services are enabled
+var OciSdkEnabledServicesMap map[string]bool
+
+// OciAlloyConfigFilePathEnvVar is the environment variable name for the OCI Alloy Config File Path
+const OciAlloyConfigFilePathEnvVar = "OCI_ALLOY_CONFIG_FILE_PATH"
+
+// OciAlloyRegionCoexistEnvVar is the environment variable name for the OCI Alloy Region Coexist
+const OciAlloyRegionCoexistEnvVar = "OCI_ALLOY_REGION_COEXIST"
+
+// defaultRealmForUnknownAlloyRegion is the default realm for unknown alloy region
+const defaultRealmForUnknownAlloyRegion = "oraclecloud.com"
+
+// OciAlloyConfigFileProvider is the provider name for the OCI Alloy Config File
+var OciAlloyConfigFileProvider string
+
+// ociAlloyRegionCoexist is the flag to enable the OCI Alloy Region Coexist. This one has lower priority than the environment variable.
+var ociAlloyRegionCoexist bool
+
+var ociAlloyRegionSchemaList []map[string]string
 
 // Endpoint returns a endpoint for a service
 func (region Region) Endpoint(service string) string {
@@ -117,7 +137,7 @@ func (region Region) EndpointForTemplateDottedRegion(service string, serviceEndp
 				return endpoint, fmt.Errorf("Endpoint service name not present in endpoint template")
 			}
 		} else {
-			return endpoint, fmt.Errorf("Invalid serviceEndpointTemplates. ServiceEndpointTemplate should start with https://")
+			return endpoint, fmt.Errorf("invalid serviceEndpointTemplates. ServiceEndpointTemplate should start with https://")
 		}
 		return endpoint, nil
 	}
@@ -134,6 +154,9 @@ func (region Region) secondLevelDomain() string {
 		return value
 	}
 	Debugf("cannot find realm for region : %s, return default realm value.", region)
+	if _, ok := realm["oc1"]; !ok {
+		return defaultRealmForUnknownAlloyRegion
+	}
 	return realm["oc1"]
 }
 
@@ -149,6 +172,21 @@ func (region Region) RealmID() (string, error) {
 // StringToRegion convert a string to Region type
 func StringToRegion(stringRegion string) (r Region) {
 	regionStr := strings.ToLower(stringRegion)
+	// check for PLC related regions
+	if !checkAllowOCIRegionCoexist() && (checkAlloyConfigFile() || len(ociAlloyRegionSchemaList) != 0) {
+		Debugf("Alloy config detected and OCI_ALLOY_REGION_COEXIST is not set to True, SDK will only use regions defined for Alloy regions")
+		setRegionMetadataFromAlloyCfgFile(&stringRegion)
+		if len(ociAlloyRegionSchemaList) != 0 {
+			resetRegionInfo()
+			bulkAddRegionSchema(ociAlloyRegionSchemaList)
+		}
+		r = Region(stringRegion)
+		if _, ok := regionRealm[r]; !ok {
+			Logf("You're using the %s Alloy configuration file, the region you're targeting is not declared in this config file. Please check if this is the correct region you're targeting or contact the %s cloud provider for help. If you want to target both OCI regions and %s regions, please set the OCI_PLC_REGION_COEXIST env var to True.", OciAlloyConfigFileProvider, OciAlloyConfigFileProvider, regionStr)
+		}
+		return r
+	}
+
 	// check if short region name provided
 	if region, ok := shortNameRegion[regionStr]; ok {
 		r = region
@@ -169,7 +207,7 @@ func StringToRegion(stringRegion string) (r Region) {
 
 // canStringBeRegion test if the string can be a region, if it can, returns the string as is, otherwise it
 // returns an error
-var blankRegex = regexp.MustCompile("\\s")
+var blankRegex = regexp.MustCompile(`\s`)
 
 func canStringBeRegion(stringRegion string) (region string, err error) {
 	if blankRegex.MatchString(stringRegion) || stringRegion == "" {
@@ -202,7 +240,7 @@ func EnableInstanceMetadataServiceLookup() {
 // Once successfully find the expected region(region name or short code), return true, region name will be stored in
 // the input pointer.
 func setRegionMetadataFromEnvVar(region *string) bool {
-	if readEnvVar == false {
+	if !readEnvVar {
 		Debugf("metadata region env variable had already been checked, no need to check again.")
 		return false //no need to check it again.
 	}
@@ -232,19 +270,29 @@ func setRegionMetadataFromEnvVar(region *string) bool {
 	return false
 }
 
+func setRegionMetadataFromCfgFile(region *string) bool {
+	if setRegionMetadataFromAlloyCfgFile(region) {
+		return true
+	}
+	if setRegionMetadataFromRegionCfgFile(region) {
+		return true
+	}
+	return false
+}
+
 // setRegionMetadataFromCfgFile checks if region metadata config file is provided, once it's there, parse and add all
 // the valid regions to region map, the configuration file can only be visited once.
 // Once successfully find the expected region(region name or short code), return true, region name will be stored in
 // the input pointer.
-func setRegionMetadataFromCfgFile(region *string) bool {
-	if readCfgFile == false {
+func setRegionMetadataFromRegionCfgFile(region *string) bool {
+	if !readCfgFile {
 		Debugf("metadata region config file had already been checked, no need to check again.")
 		return false //no need to check it again.
 	}
 	// Mark readCfgFile Flag as false since it has already been visited.
 	readCfgFile = false
 	homeFolder := getHomeFolder()
-	configFile := path.Join(homeFolder, regionMetadataCfgDirName, regionMetadataCfgFileName)
+	configFile := filepath.Join(homeFolder, regionMetadataCfgDirName, regionMetadataCfgFileName)
 	if jsonArr, ok := readAndParseConfigFile(&configFile); ok {
 		added := false
 		for _, jsonItem := range jsonArr {
@@ -262,8 +310,46 @@ func setRegionMetadataFromCfgFile(region *string) bool {
 	return false
 }
 
-func readAndParseConfigFile(configFileName *string) (fileContent []map[string]string, ok bool) {
+// setRegionMetadataFromAlloyFile checks if alloy config file is provided, once it's there, parse and add all
+// The default location of the alloy config file is ~/.oci/alloy-config.json. It will also check the environment variable
+// the valid regions to region map, the configuration file can only be visited once.
+// Once successfully find the expected region(region name or short code), return true, region name will be stored in
+// the input pointer.
+func setRegionMetadataFromAlloyCfgFile(region *string) bool {
+	if jsonArr, ok := readAndParseAlloyConfigFile(); ok {
+		added := false
+		if jsonArr["regions"] == nil {
+			return false
+		}
+		var regionJSON []map[string]string
+		originalJSONContent, err := json.Marshal(jsonArr["regions"])
+		if err != nil {
+			return false
+		}
+		err = json.Unmarshal(originalJSONContent, &regionJSON)
+		if err != nil {
+			return false
+		}
 
+		if !IsEnvVarTrue(OciAlloyRegionCoexistEnvVar) {
+			resetRegionInfo()
+		}
+		for _, jsonItem := range regionJSON {
+			if checkSchemaItems(jsonItem) {
+				addRegionSchema(jsonItem)
+				if jsonItem[regionKeyPropertyName] == *region ||
+					jsonItem[regionIdentifierPropertyName] == *region {
+					*region = jsonItem[regionIdentifierPropertyName]
+					added = true
+				}
+			}
+		}
+		return added
+	}
+	return false
+}
+
+func readAndParseConfigFile(configFileName *string) (fileContent []map[string]string, ok bool) {
 	if content, err := ioutil.ReadFile(*configFileName); err == nil {
 		Debugf("Raw content of region metadata config file content:", string(content[:]))
 		if err := json.Unmarshal(content, &fileContent); err != nil {
@@ -275,7 +361,37 @@ func readAndParseConfigFile(configFileName *string) (fileContent []map[string]st
 	}
 	Debugf("No Region Metadata Config File provided.")
 	return
+}
 
+func readAndParseAlloyConfigFile() (fileContent map[string]interface{}, ok bool) {
+	homeFolder := getHomeFolder()
+	configFileName := filepath.Join(homeFolder, regionMetadataCfgDirName, "alloy-config.json")
+	if path := os.Getenv(OciAlloyConfigFilePathEnvVar); path != "" {
+		configFileName = path
+	}
+	if content, err := ioutil.ReadFile(configFileName); err == nil {
+		Debugf("Raw content of alloy config file content:", string(content[:]))
+		if err := json.Unmarshal(content, &fileContent); err != nil {
+			Debugf("Can't unmarshal env var, the error info is", err)
+			return
+		}
+		ok = true
+		return
+	}
+	Debugf("No Alloy Config File provided.")
+	return
+}
+
+func checkAlloyConfigFile() bool {
+	homeFolder := getHomeFolder()
+	configFileName := filepath.Join(homeFolder, regionMetadataCfgDirName, "alloy-config.json")
+	if path := os.Getenv(OciAlloyConfigFilePathEnvVar); path != "" {
+		configFileName = path
+	}
+	if _, err := os.Stat(configFileName); err == nil {
+		return true
+	}
+	return false
 }
 
 // check map regionRealm's region name, if it's already there, no need to add it.
@@ -289,6 +405,33 @@ func addRegionSchema(regionSchema map[string]string) {
 		return
 	}
 	Debugf("Region {} has already been added, no need to add again.", regionSchema[regionIdentifierPropertyName])
+}
+
+// AddRegionSchemaForPlc add region schema to region map
+func AddRegionSchemaForPlc(regionSchema map[string]string) {
+	ociAlloyRegionSchemaList = append(ociAlloyRegionSchemaList, regionSchema)
+	addRegionSchema(regionSchema)
+	// if !IsEnvVarTrue(OciPlcRegionExclusiveEnvVar) {
+	// 	addRegionSchema(regionSchema)
+	// 	return
+	// }
+	// Debugf("Plc region coexist is not enabled, remove exisiting OCI region schema and add PLC region schema.")
+	// resetRegionInfo()
+	// bulkAddRegionSchema(ociPlcRegionSchemaList)
+}
+
+func resetRegionInfo() {
+	shortNameRegion = make(map[string]Region)
+	realm = make(map[string]string)
+	regionRealm = make(map[Region]string)
+}
+
+func bulkAddRegionSchema(regionSchemaList []map[string]string) {
+	for _, regionSchema := range regionSchemaList {
+		if checkSchemaItems(regionSchema) {
+			addRegionSchema(regionSchema)
+		}
+	}
 }
 
 // check region schema content if all the required contents are provided
@@ -330,7 +473,7 @@ func setRegionFromInstanceMetadataService(region *string) bool {
 	// 	"regionIdentifier" : "ca-montreal-1"
 	// }
 	// Mark visitIMDS Flag as false since it has already been visited.
-	if visitIMDS == false {
+	if !visitIMDS {
 		Debugf("check from IMDS is disabled or IMDS had already been successfully visited, no need to check again.")
 		return false
 	}
@@ -366,7 +509,7 @@ func setRegionFromInstanceMetadataService(region *string) bool {
 
 // getRegionInfoFromInstanceMetadataServiceProd calls instance metadata service and get the region information
 func getRegionInfoFromInstanceMetadataServiceProd() ([]byte, error) {
-	request, err := http.NewRequest(http.MethodGet, instanceMetadataRegionInfoURLV2, nil)
+	request, _ := http.NewRequest(http.MethodGet, instanceMetadataRegionInfoURLV2, nil)
 	request.Header.Add("Authorization", "Bearer Oracle")
 
 	client := &http.Client{
@@ -374,7 +517,7 @@ func getRegionInfoFromInstanceMetadataServiceProd() ([]byte, error) {
 	}
 	resp, err := client.Do(request)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to call instance metadata service. Error: %v", err)
+		return nil, fmt.Errorf("failed to call instance metadata service. Error: %v", err)
 	}
 
 	statusCode := resp.StatusCode
@@ -383,7 +526,7 @@ func getRegionInfoFromInstanceMetadataServiceProd() ([]byte, error) {
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get region information from response body. Error: %v", err)
+		return nil, fmt.Errorf("failed to get region information from response body. Error: %v", err)
 	}
 
 	if statusCode != http.StatusOK {
@@ -408,4 +551,71 @@ func SetMissingTemplateParams(client *BaseClient) {
 	for _, template := range templates {
 		client.Host = strings.Replace(client.Host, template, "", -1)
 	}
+}
+
+func getOciSdkEnabledServicesMap() map[string]bool {
+	var enabledMap = make(map[string]bool)
+	if jsonArr, ok := readAndParseAlloyConfigFile(); ok {
+		if jsonArr["provider"] != nil {
+			OciAlloyConfigFileProvider = jsonArr["provider"].(string)
+		}
+		if jsonArr["ociRegionCoexist"] != nil && jsonArr["ociRegionCoexist"] == true {
+			ociAlloyRegionCoexist = jsonArr["ociRegionCoexist"].(bool)
+		}
+		if jsonArr["services"] == nil {
+			return enabledMap
+		}
+		serviesJSON, ok := jsonArr["services"].([]interface{})
+		if !ok {
+			return enabledMap
+		}
+		re, _ := regexp.Compile(`[^\w]`)
+		for _, jsonItem := range serviesJSON {
+			serviceName := strings.ToLower(fmt.Sprint(jsonItem))
+			serviceName = re.ReplaceAllString(serviceName, "")
+			enabledMap[serviceName] = true
+		}
+	}
+	return enabledMap
+}
+
+// AddServiceToEnabledServicesMap adds the service to the enabledServiceMap
+// The service name will auto transit to lower case and remove all the non-word characters.
+func AddServiceToEnabledServicesMap(serviceName string) {
+	if OciSdkEnabledServicesMap == nil {
+		OciSdkEnabledServicesMap = make(map[string]bool)
+	}
+	re, _ := regexp.Compile(`[^\w]`)
+	serviceName = strings.ToLower(serviceName)
+	serviceName = re.ReplaceAllString(serviceName, "")
+	OciSdkEnabledServicesMap[serviceName] = true
+}
+
+// CheckForEnabledServices checks if the service is enabled in the enabledServiceMap.
+// It will first check if the map is initialized, if not, it will initialize the map.
+// If the map is empty, it means all the services are enabled.
+// If the map is not empty, it means only the services in the map and value is true are enabled.
+func CheckForEnabledServices(serviceName string) bool {
+	if OciSdkEnabledServicesMap == nil {
+		OciSdkEnabledServicesMap = getOciSdkEnabledServicesMap()
+	}
+	serviceName = strings.ToLower(serviceName)
+	if len(OciSdkEnabledServicesMap) == 0 {
+		return true
+	}
+	if _, ok := OciSdkEnabledServicesMap[serviceName]; !ok {
+		return false
+	}
+	return OciSdkEnabledServicesMap[serviceName]
+}
+
+// CheckAllowOCIRegionCoexist checks if the OCI region coexist is allowed.
+// This function will first check if the OCI_REGION_COEXIST environment variable is set.
+// If it is set, it will return the value.
+// If it is not set, it will return the value from the OciAlloyRegionCoexist variable.
+func checkAllowOCIRegionCoexist() bool {
+	if val, ok := os.LookupEnv("OCI_REGION_COEXIST"); ok {
+		return val == "true"
+	}
+	return ociAlloyRegionCoexist
 }

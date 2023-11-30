@@ -36,6 +36,14 @@ type InstanceConfigurationCreateVolumeDetails struct {
 	// The OCID of the compartment that contains the volume.
 	CompartmentId *string `mandatory:"false" json:"compartmentId"`
 
+	// Specifies whether the auto-tune performance is enabled for this boot volume. This field is deprecated.
+	// Use the `InstanceConfigurationDetachedVolumeAutotunePolicy` instead to enable the volume for detached autotune.
+	IsAutoTuneEnabled *bool `mandatory:"false" json:"isAutoTuneEnabled"`
+
+	// The list of block volume replicas to be enabled for this volume
+	// in the specified destination availability domains.
+	BlockVolumeReplicas []InstanceConfigurationBlockVolumeReplicaDetails `mandatory:"false" json:"blockVolumeReplicas"`
+
 	// Defined tags for this resource. Each key is predefined and scoped to a
 	// namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Operations": {"CostCenter": "42"}}`
@@ -93,17 +101,19 @@ func (m InstanceConfigurationCreateVolumeDetails) ValidateEnumValue() (bool, err
 // UnmarshalJSON unmarshals from json
 func (m *InstanceConfigurationCreateVolumeDetails) UnmarshalJSON(data []byte) (e error) {
 	model := struct {
-		AvailabilityDomain *string                                  `json:"availabilityDomain"`
-		BackupPolicyId     *string                                  `json:"backupPolicyId"`
-		CompartmentId      *string                                  `json:"compartmentId"`
-		DefinedTags        map[string]map[string]interface{}        `json:"definedTags"`
-		DisplayName        *string                                  `json:"displayName"`
-		FreeformTags       map[string]string                        `json:"freeformTags"`
-		KmsKeyId           *string                                  `json:"kmsKeyId"`
-		VpusPerGB          *int64                                   `json:"vpusPerGB"`
-		SizeInGBs          *int64                                   `json:"sizeInGBs"`
-		SourceDetails      instanceconfigurationvolumesourcedetails `json:"sourceDetails"`
-		AutotunePolicies   []instanceconfigurationautotunepolicy    `json:"autotunePolicies"`
+		AvailabilityDomain  *string                                          `json:"availabilityDomain"`
+		BackupPolicyId      *string                                          `json:"backupPolicyId"`
+		CompartmentId       *string                                          `json:"compartmentId"`
+		IsAutoTuneEnabled   *bool                                            `json:"isAutoTuneEnabled"`
+		BlockVolumeReplicas []InstanceConfigurationBlockVolumeReplicaDetails `json:"blockVolumeReplicas"`
+		DefinedTags         map[string]map[string]interface{}                `json:"definedTags"`
+		DisplayName         *string                                          `json:"displayName"`
+		FreeformTags        map[string]string                                `json:"freeformTags"`
+		KmsKeyId            *string                                          `json:"kmsKeyId"`
+		VpusPerGB           *int64                                           `json:"vpusPerGB"`
+		SizeInGBs           *int64                                           `json:"sizeInGBs"`
+		SourceDetails       instanceconfigurationvolumesourcedetails         `json:"sourceDetails"`
+		AutotunePolicies    []instanceconfigurationautotunepolicy            `json:"autotunePolicies"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -117,6 +127,10 @@ func (m *InstanceConfigurationCreateVolumeDetails) UnmarshalJSON(data []byte) (e
 
 	m.CompartmentId = model.CompartmentId
 
+	m.IsAutoTuneEnabled = model.IsAutoTuneEnabled
+
+	m.BlockVolumeReplicas = make([]InstanceConfigurationBlockVolumeReplicaDetails, len(model.BlockVolumeReplicas))
+	copy(m.BlockVolumeReplicas, model.BlockVolumeReplicas)
 	m.DefinedTags = model.DefinedTags
 
 	m.DisplayName = model.DisplayName
@@ -151,6 +165,5 @@ func (m *InstanceConfigurationCreateVolumeDetails) UnmarshalJSON(data []byte) (e
 			m.AutotunePolicies[i] = nil
 		}
 	}
-
 	return
 }

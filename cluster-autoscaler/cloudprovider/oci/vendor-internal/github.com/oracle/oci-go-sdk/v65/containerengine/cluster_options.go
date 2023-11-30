@@ -57,10 +57,7 @@ func (m *ClusterOptions) UnmarshalJSON(data []byte) (e error) {
 	}
 	var nn interface{}
 	m.KubernetesVersions = make([]string, len(model.KubernetesVersions))
-	for i, n := range model.KubernetesVersions {
-		m.KubernetesVersions[i] = n
-	}
-
+	copy(m.KubernetesVersions, model.KubernetesVersions)
 	m.ClusterPodNetworkOptions = make([]ClusterPodNetworkOptionDetails, len(model.ClusterPodNetworkOptions))
 	for i, n := range model.ClusterPodNetworkOptions {
 		nn, e = n.UnmarshalPolymorphicJSON(n.JsonData)
@@ -73,6 +70,5 @@ func (m *ClusterOptions) UnmarshalJSON(data []byte) (e error) {
 			m.ClusterPodNetworkOptions[i] = nil
 		}
 	}
-
 	return
 }

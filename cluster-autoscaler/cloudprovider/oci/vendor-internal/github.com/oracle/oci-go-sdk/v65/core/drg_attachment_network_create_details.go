@@ -31,7 +31,7 @@ type DrgAttachmentNetworkCreateDetails interface {
 
 type drgattachmentnetworkcreatedetails struct {
 	JsonData []byte
-	Id       *string `mandatory:"true" json:"id"`
+	Id       *string `mandatory:"false" json:"id"`
 	Type     string  `json:"type"`
 }
 
@@ -66,6 +66,7 @@ func (m *drgattachmentnetworkcreatedetails) UnmarshalPolymorphicJSON(data []byte
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for DrgAttachmentNetworkCreateDetails: %s.", m.Type)
 		return *m, nil
 	}
 }

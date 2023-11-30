@@ -71,6 +71,9 @@ type Cpe struct {
 	// The date and time the CPE was created, in the format defined by RFC3339 (https://tools.ietf.org/html/rfc3339).
 	// Example: `2016-08-25T21:10:29.600Z`
 	TimeCreated *common.SDKTime `mandatory:"false" json:"timeCreated"`
+
+	// Indicates whether this CPE is of type `private` or not.
+	IsPrivate *bool `mandatory:"false" json:"isPrivate"`
 }
 
 func (m Cpe) String() string {

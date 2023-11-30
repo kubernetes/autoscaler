@@ -46,6 +46,9 @@ type ClusterMetadata struct {
 
 	// The OCID of the work request which updated the cluster.
 	UpdatedByWorkRequestId *string `mandatory:"false" json:"updatedByWorkRequestId"`
+
+	// The time until which the cluster credential is valid.
+	TimeCredentialExpiration *common.SDKTime `mandatory:"false" json:"timeCredentialExpiration"`
 }
 
 func (m ClusterMetadata) String() string {

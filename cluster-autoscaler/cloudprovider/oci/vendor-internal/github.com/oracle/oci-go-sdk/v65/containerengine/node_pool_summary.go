@@ -90,6 +90,8 @@ type NodePoolSummary struct {
 	SystemTags map[string]map[string]interface{} `mandatory:"false" json:"systemTags"`
 
 	NodeEvictionNodePoolSettings *NodeEvictionNodePoolSettings `mandatory:"false" json:"nodeEvictionNodePoolSettings"`
+
+	NodePoolCyclingDetails *NodePoolCyclingDetails `mandatory:"false" json:"nodePoolCyclingDetails"`
 }
 
 func (m NodePoolSummary) String() string {
@@ -136,6 +138,7 @@ func (m *NodePoolSummary) UnmarshalJSON(data []byte) (e error) {
 		DefinedTags                  map[string]map[string]interface{} `json:"definedTags"`
 		SystemTags                   map[string]map[string]interface{} `json:"systemTags"`
 		NodeEvictionNodePoolSettings *NodeEvictionNodePoolSettings     `json:"nodeEvictionNodePoolSettings"`
+		NodePoolCyclingDetails       *NodePoolCyclingDetails           `json:"nodePoolCyclingDetails"`
 	}{}
 
 	e = json.Unmarshal(data, &model)
@@ -186,19 +189,13 @@ func (m *NodePoolSummary) UnmarshalJSON(data []byte) (e error) {
 	m.NodeShape = model.NodeShape
 
 	m.InitialNodeLabels = make([]KeyValue, len(model.InitialNodeLabels))
-	for i, n := range model.InitialNodeLabels {
-		m.InitialNodeLabels[i] = n
-	}
-
+	copy(m.InitialNodeLabels, model.InitialNodeLabels)
 	m.SshPublicKey = model.SshPublicKey
 
 	m.QuantityPerSubnet = model.QuantityPerSubnet
 
 	m.SubnetIds = make([]string, len(model.SubnetIds))
-	for i, n := range model.SubnetIds {
-		m.SubnetIds[i] = n
-	}
-
+	copy(m.SubnetIds, model.SubnetIds)
 	m.NodeConfigDetails = model.NodeConfigDetails
 
 	m.FreeformTags = model.FreeformTags
@@ -208,6 +205,8 @@ func (m *NodePoolSummary) UnmarshalJSON(data []byte) (e error) {
 	m.SystemTags = model.SystemTags
 
 	m.NodeEvictionNodePoolSettings = model.NodeEvictionNodePoolSettings
+
+	m.NodePoolCyclingDetails = model.NodePoolCyclingDetails
 
 	return
 }

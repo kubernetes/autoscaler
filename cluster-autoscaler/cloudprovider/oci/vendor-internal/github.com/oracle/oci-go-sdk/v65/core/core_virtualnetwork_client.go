@@ -32,6 +32,9 @@ type VirtualNetworkClient struct {
 // NewVirtualNetworkClientWithConfigurationProvider Creates a new default VirtualNetwork client with the given configuration provider.
 // the configuration provider will be used for the default signer as well as reading the region
 func NewVirtualNetworkClientWithConfigurationProvider(configProvider common.ConfigurationProvider) (client VirtualNetworkClient, err error) {
+	if enabled := common.CheckForEnabledServices("core"); !enabled {
+		return client, fmt.Errorf("the Alloy configuration disabled this service, this behavior is controlled by OciSdkEnabledServicesMap variables. Please check if your local alloy_config file configured the service you're targeting or contact the cloud provider on the availability of this service")
+	}
 	provider, err := auth.GetGenericConfigurationProvider(configProvider)
 	if err != nil {
 		return client, err
@@ -83,7 +86,7 @@ func (client *VirtualNetworkClient) setConfigurationProvider(configProvider comm
 	region, _ := configProvider.Region()
 	client.SetRegion(region)
 	if client.Host == "" {
-		return fmt.Errorf("Invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
+		return fmt.Errorf("invalid region or Host. Endpoint cannot be constructed without endpointServiceName or serviceEndpointTemplate for a dotted region")
 	}
 	client.config = &configProvider
 	return nil
@@ -213,7 +216,7 @@ func (client VirtualNetworkClient) addDrgRouteRules(ctx context.Context, request
 	return response, err
 }
 
-// AddIpv6SubnetCidr Add an IPv6 CIDR to a subnet.
+// AddIpv6SubnetCidr Add an IPv6 prefix to a subnet.
 //
 // # See also
 //
@@ -275,8 +278,8 @@ func (client VirtualNetworkClient) addIpv6SubnetCidr(ctx context.Context, reques
 	return response, err
 }
 
-// AddIpv6VcnCidr Add an IPv6 CIDR to a VCN. The VCN size is always /56 and assigned by Oracle.
-// Once added the IPv6 CIDR block cannot be removed or modified.
+// AddIpv6VcnCidr Add an IPv6 prefix to a VCN. The VCN size is always /56 and assigned by Oracle.
+// Once added the IPv6 prefix cannot be removed or modified.
 //
 // # See also
 //
@@ -11715,6 +11718,64 @@ func (client VirtualNetworkClient) listVcns(ctx context.Context, request common.
 	return response, err
 }
 
+// ListVirtualCircuitAssociatedTunnels Gets the specified virtual circuit's associatedTunnelsInfo.
+//
+// # See also
+//
+// Click https://docs.cloud.oracle.com/en-us/iaas/tools/go-sdk-examples/latest/core/ListVirtualCircuitAssociatedTunnels.go.html to see an example of how to use ListVirtualCircuitAssociatedTunnels API.
+// A default retry strategy applies to this operation ListVirtualCircuitAssociatedTunnels()
+func (client VirtualNetworkClient) ListVirtualCircuitAssociatedTunnels(ctx context.Context, request ListVirtualCircuitAssociatedTunnelsRequest) (response ListVirtualCircuitAssociatedTunnelsResponse, err error) {
+	var ociResponse common.OCIResponse
+	policy := common.DefaultRetryPolicy()
+	if client.RetryPolicy() != nil {
+		policy = *client.RetryPolicy()
+	}
+	if request.RetryPolicy() != nil {
+		policy = *request.RetryPolicy()
+	}
+	ociResponse, err = common.Retry(ctx, request, client.listVirtualCircuitAssociatedTunnels, policy)
+	if err != nil {
+		if ociResponse != nil {
+			if httpResponse := ociResponse.HTTPResponse(); httpResponse != nil {
+				opcRequestId := httpResponse.Header.Get("opc-request-id")
+				response = ListVirtualCircuitAssociatedTunnelsResponse{RawResponse: httpResponse, OpcRequestId: &opcRequestId}
+			} else {
+				response = ListVirtualCircuitAssociatedTunnelsResponse{}
+			}
+		}
+		return
+	}
+	if convertedResponse, ok := ociResponse.(ListVirtualCircuitAssociatedTunnelsResponse); ok {
+		response = convertedResponse
+	} else {
+		err = fmt.Errorf("failed to convert OCIResponse into ListVirtualCircuitAssociatedTunnelsResponse")
+	}
+	return
+}
+
+// listVirtualCircuitAssociatedTunnels implements the OCIOperation interface (enables retrying operations)
+func (client VirtualNetworkClient) listVirtualCircuitAssociatedTunnels(ctx context.Context, request common.OCIRequest, binaryReqBody *common.OCIReadSeekCloser, extraHeaders map[string]string) (common.OCIResponse, error) {
+
+	httpRequest, err := request.HTTPRequest(http.MethodGet, "/virtualCircuits/{virtualCircuitId}/associatedTunnels", binaryReqBody, extraHeaders)
+	if err != nil {
+		return nil, err
+	}
+
+	var response ListVirtualCircuitAssociatedTunnelsResponse
+	var httpResponse *http.Response
+	httpResponse, err = client.Call(ctx, &httpRequest)
+	defer common.CloseBodyIfValid(httpResponse)
+	response.RawResponse = httpResponse
+	if err != nil {
+		apiReferenceLink := "https://docs.oracle.com/iaas/api/#/en/iaas/20160918/VirtualCircuitAssociatedTunnelDetails/ListVirtualCircuitAssociatedTunnels"
+		err = common.PostProcessServiceError(err, "VirtualNetwork", "ListVirtualCircuitAssociatedTunnels", apiReferenceLink)
+		return response, err
+	}
+
+	err = common.UnmarshalResponse(httpResponse, &response)
+	return response, err
+}
+
 // ListVirtualCircuitBandwidthShapes The deprecated operation lists available bandwidth levels for virtual circuits. For the compartment ID, provide the OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of your tenancy (the root compartment).
 //
 // # See also
@@ -12301,7 +12362,7 @@ func (client VirtualNetworkClient) removeImportDrgRouteDistribution(ctx context.
 	return response, err
 }
 
-// RemoveIpv6SubnetCidr Remove an IPv6 CIDR from a subnet. At least one IPv6 CIDR should remain.
+// RemoveIpv6SubnetCidr Remove an IPv6 prefix from a subnet. At least one IPv6 CIDR should remain.
 //
 // # See also
 //
@@ -12363,7 +12424,7 @@ func (client VirtualNetworkClient) removeIpv6SubnetCidr(ctx context.Context, req
 	return response, err
 }
 
-// RemoveIpv6VcnCidr Removing an existing IPv6 CIDR from a VCN.
+// RemoveIpv6VcnCidr Removing an existing IPv6 prefix from a VCN.
 //
 // # See also
 //

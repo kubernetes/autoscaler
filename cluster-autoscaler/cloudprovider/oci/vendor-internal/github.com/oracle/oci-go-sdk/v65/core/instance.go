@@ -125,9 +125,9 @@ type Instance struct {
 	// over iSCSI the same way as the default iPXE script, use the
 	// following iSCSI IP address: 169.254.0.2, and boot volume IQN:
 	// iqn.2015-02.oracle.boot.
-	// If your instance boot volume type is paravirtualized,
+	// If your instance boot volume attachment type is paravirtualized,
 	// the boot volume is attached to the instance through virtio-scsi and no iPXE script is used.
-	// If your instance boot volume type is paravirtualized
+	// If your instance boot volume attachment type is paravirtualized
 	// and you use custom iPXE to network boot into your instance,
 	// the primary boot volume is attached as a data volume through virtio-scsi drive.
 	// For more information about the Bring Your Own Image feature of
@@ -156,6 +156,9 @@ type Instance struct {
 
 	ShapeConfig *InstanceShapeConfig `mandatory:"false" json:"shapeConfig"`
 
+	// Whether the instance’s OCPUs and memory are distributed across multiple NUMA nodes.
+	IsCrossNumaNode *bool `mandatory:"false" json:"isCrossNumaNode"`
+
 	SourceDetails InstanceSourceDetails `mandatory:"false" json:"sourceDetails"`
 
 	// System tags for this resource. Each key is predefined and scoped to a namespace.
@@ -171,6 +174,9 @@ type Instance struct {
 	TimeMaintenanceRebootDue *common.SDKTime `mandatory:"false" json:"timeMaintenanceRebootDue"`
 
 	PlatformConfig PlatformConfig `mandatory:"false" json:"platformConfig"`
+
+	// The OCID of the Instance Configuration used to source launch details for this instance. Any other fields supplied in the instance launch request override the details stored in the Instance Configuration for this instance launch.
+	InstanceConfigurationId *string `mandatory:"false" json:"instanceConfigurationId"`
 }
 
 func (m Instance) String() string {
@@ -214,11 +220,13 @@ func (m *Instance) UnmarshalJSON(data []byte) (e error) {
 		PreemptibleInstanceConfig *PreemptibleInstanceConfigDetails `json:"preemptibleInstanceConfig"`
 		Metadata                  map[string]string                 `json:"metadata"`
 		ShapeConfig               *InstanceShapeConfig              `json:"shapeConfig"`
+		IsCrossNumaNode           *bool                             `json:"isCrossNumaNode"`
 		SourceDetails             instancesourcedetails             `json:"sourceDetails"`
 		SystemTags                map[string]map[string]interface{} `json:"systemTags"`
 		AgentConfig               *InstanceAgentConfig              `json:"agentConfig"`
 		TimeMaintenanceRebootDue  *common.SDKTime                   `json:"timeMaintenanceRebootDue"`
 		PlatformConfig            platformconfig                    `json:"platformConfig"`
+		InstanceConfigurationId   *string                           `json:"instanceConfigurationId"`
 		AvailabilityDomain        *string                           `json:"availabilityDomain"`
 		CompartmentId             *string                           `json:"compartmentId"`
 		Id                        *string                           `json:"id"`
@@ -265,6 +273,8 @@ func (m *Instance) UnmarshalJSON(data []byte) (e error) {
 
 	m.ShapeConfig = model.ShapeConfig
 
+	m.IsCrossNumaNode = model.IsCrossNumaNode
+
 	nn, e = model.SourceDetails.UnmarshalPolymorphicJSON(model.SourceDetails.JsonData)
 	if e != nil {
 		return
@@ -290,6 +300,8 @@ func (m *Instance) UnmarshalJSON(data []byte) (e error) {
 	} else {
 		m.PlatformConfig = nil
 	}
+
+	m.InstanceConfigurationId = model.InstanceConfigurationId
 
 	m.AvailabilityDomain = model.AvailabilityDomain
 

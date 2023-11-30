@@ -21,7 +21,7 @@ import (
 	"strings"
 )
 
-// ByoipRangeVcnIpv6AllocationSummary A summary of IPv6 CIDR block subranges currently allocated to a VCN.
+// ByoipRangeVcnIpv6AllocationSummary A summary of IPv6 prefix subranges currently allocated to a VCN.
 type ByoipRangeVcnIpv6AllocationSummary struct {
 
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the `ByoipRange` resource to which the CIDR block belongs.
@@ -30,7 +30,7 @@ type ByoipRangeVcnIpv6AllocationSummary struct {
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment containing the `ByoipRange`.
 	CompartmentId *string `mandatory:"false" json:"compartmentId"`
 
-	// The BYOIPv6 CIDR block range or subrange allocated to a VCN. This could be all or part of a BYOIPv6 CIDR block.
+	// The BYOIPv6 prefix range or subrange allocated to a VCN. This could be all or part of a BYOIPv6 prefix.
 	// Each VCN allocation must be /64 or larger.
 	Ipv6CidrBlock *string `mandatory:"false" json:"ipv6CidrBlock"`
 

@@ -320,9 +320,8 @@ func checkBinaryBodyLength(request *http.Request) (contentLen int64, err error) 
 }
 
 func getNormalBinaryBodyLength(request *http.Request) (contentLen int64, err error) {
-	dumpRequestBody := ioutil.NopCloser(bytes.NewBuffer(nil))
+	var dumpRequestBody io.ReadCloser
 	if dumpRequestBody, request.Body, err = drainBody(request.Body); err != nil {
-		dumpRequestBody = ioutil.NopCloser(bytes.NewBuffer(nil))
 		return contentLen, err
 	}
 	contentBody, err := ioutil.ReadAll(dumpRequestBody)
@@ -972,7 +971,7 @@ func addFromHeaderCollection(response *http.Response, value *reflect.Value, fiel
 	Debugln("Unmarshaling from header-collection to field:", field.Name)
 	var headerPrefix string
 	if headerPrefix = field.Tag.Get("prefix"); headerPrefix == "" {
-		return fmt.Errorf("Unmarshaling response to a header-collection requires the 'prefix' tag for field: %s", field.Name)
+		return fmt.Errorf("unmarshaling response to a header-collection requires the 'prefix' tag for field: %s", field.Name)
 	}
 
 	mapCollection := make(map[string]string)

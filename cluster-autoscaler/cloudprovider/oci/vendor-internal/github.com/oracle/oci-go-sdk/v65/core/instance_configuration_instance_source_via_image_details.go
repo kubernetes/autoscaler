@@ -32,6 +32,9 @@ type InstanceConfigurationInstanceSourceViaImageDetails struct {
 	// The OCID of the image used to boot the instance.
 	ImageId *string `mandatory:"false" json:"imageId"`
 
+	// The OCID of the Vault service key to assign as the master encryption key for the boot volume.
+	KmsKeyId *string `mandatory:"false" json:"kmsKeyId"`
+
 	// The number of volume performance units (VPUs) that will be applied to this volume per GB,
 	// representing the Block Volume service's elastic performance options.
 	// See Block Volume Performance Levels (https://docs.cloud.oracle.com/iaas/Content/Block/Concepts/blockvolumeperformance.htm#perf_levels) for more information.
@@ -41,6 +44,8 @@ type InstanceConfigurationInstanceSourceViaImageDetails struct {
 	//   * `30`-`120`: Represents the Ultra High Performance option.
 	// For performance autotune enabled volumes, it would be the Default(Minimum) VPUs/GB.
 	BootVolumeVpusPerGB *int64 `mandatory:"false" json:"bootVolumeVpusPerGB"`
+
+	InstanceSourceImageFilterDetails *InstanceConfigurationInstanceSourceImageFilterDetails `mandatory:"false" json:"instanceSourceImageFilterDetails"`
 }
 
 func (m InstanceConfigurationInstanceSourceViaImageDetails) String() string {

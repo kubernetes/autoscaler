@@ -83,7 +83,6 @@ func (m *AddDrgRouteDistributionStatementDetails) UnmarshalJSON(data []byte) (e 
 			m.MatchCriteria[i] = nil
 		}
 	}
-
 	m.Action = model.Action
 
 	m.Priority = model.Priority

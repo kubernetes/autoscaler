@@ -22,7 +22,8 @@ import (
 	"strings"
 )
 
-// AmdMilanBmGpuLaunchInstancePlatformConfig The platform configuration used when launching a bare metal instance with a GPU shape on the AMD Milan platform.
+// AmdMilanBmGpuLaunchInstancePlatformConfig The platform configuration used when launching a bare metal GPU instance with the following shape: BM.GPU.GM4.8 (also
+// named BM.GPU.A100-v2.8) (the AMD Milan platform).
 type AmdMilanBmGpuLaunchInstancePlatformConfig struct {
 
 	// Whether Secure Boot is enabled on the instance.
@@ -55,6 +56,9 @@ type AmdMilanBmGpuLaunchInstancePlatformConfig struct {
 
 	// Whether the input-output memory management unit is enabled.
 	IsInputOutputMemoryManagementUnitEnabled *bool `mandatory:"false" json:"isInputOutputMemoryManagementUnitEnabled"`
+
+	// Instance Platform Configuration Configuration Map for flexible setting input.
+	ConfigMap map[string]string `mandatory:"false" json:"configMap"`
 
 	// The number of NUMA nodes per socket (NPS).
 	NumaNodesPerSocket AmdMilanBmGpuLaunchInstancePlatformConfigNumaNodesPerSocketEnum `mandatory:"false" json:"numaNodesPerSocket,omitempty"`

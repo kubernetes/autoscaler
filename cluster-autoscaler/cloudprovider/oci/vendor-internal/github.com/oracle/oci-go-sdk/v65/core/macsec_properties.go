@@ -31,6 +31,9 @@ type MacsecProperties struct {
 
 	// Type of encryption cipher suite to use for the MACsec connection.
 	EncryptionCipher MacsecEncryptionCipherEnum `mandatory:"false" json:"encryptionCipher,omitempty"`
+
+	// Indicates whether unencrypted traffic is allowed if MACsec Key Agreement protocol (MKA) fails.
+	IsUnprotectedTrafficAllowed *bool `mandatory:"false" json:"isUnprotectedTrafficAllowed"`
 }
 
 func (m MacsecProperties) String() string {

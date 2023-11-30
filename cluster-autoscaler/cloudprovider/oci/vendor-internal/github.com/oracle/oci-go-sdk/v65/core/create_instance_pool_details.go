@@ -57,6 +57,14 @@ type CreateInstancePoolDetails struct {
 
 	// The load balancers to attach to the instance pool.
 	LoadBalancers []AttachLoadBalancerDetails `mandatory:"false" json:"loadBalancers"`
+
+	// A user-friendly formatter for the instance pool's instances. Instance displaynames follow the format.
+	// The formatter does not retroactively change instance's displaynames, only instance displaynames in the future follow the format
+	InstanceDisplayNameFormatter *string `mandatory:"false" json:"instanceDisplayNameFormatter"`
+
+	// A user-friendly formatter for the instance pool's instances. Instance hostnames follow the format.
+	// The formatter does not retroactively change instance's hostnames, only instance hostnames in the future follow the format
+	InstanceHostnameFormatter *string `mandatory:"false" json:"instanceHostnameFormatter"`
 }
 
 func (m CreateInstancePoolDetails) String() string {

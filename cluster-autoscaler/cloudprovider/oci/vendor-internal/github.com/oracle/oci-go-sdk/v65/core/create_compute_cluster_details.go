@@ -21,20 +21,22 @@ import (
 	"strings"
 )
 
-// CreateComputeClusterDetails The data for creating a compute cluster, which is an empty remote direct memory access (RDMA) network group.
+// CreateComputeClusterDetails The data for creating a compute cluster (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm). A compute cluster
+// is an empty remote direct memory access (RDMA) network group
 // After the compute cluster is created, you can use the compute cluster's OCID with the
 // LaunchInstance operation to create instances in the compute cluster.
-// Compute clusters allow you to manage instances in the cluster individually.
-// For more information, see Compute Clusters (https://docs.cloud.oracle.com/iaas/Content/Compute/Tasks/compute-clusters.htm).
-// For details about creating a cluster network that uses intance pools to manage groups of identical instances,
+// The instances must be created in the same compartment and availability domain as the cluster.
+// Use compute clusters when you want to manage instances in the cluster individually, or when you want
+// to use different types of instances in the RDMA network group.
+// For details about creating a cluster network that uses instance pools to manage groups of identical instances,
 // see CreateClusterNetworkDetails.
 type CreateComputeClusterDetails struct {
 
-	// The availability domain that the compute cluster is running in.
+	// The availability domain to place the compute cluster in.
 	// Example: `Uocm:PHX-AD-1`
 	AvailabilityDomain *string `mandatory:"true" json:"availabilityDomain"`
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment that contains this compute cluster.
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the compartment.
 	CompartmentId *string `mandatory:"true" json:"compartmentId"`
 
 	// A user-friendly name. Does not have to be unique, and it's changeable.

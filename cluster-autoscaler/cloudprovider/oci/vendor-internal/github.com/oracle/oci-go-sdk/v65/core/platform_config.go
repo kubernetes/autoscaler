@@ -104,11 +104,16 @@ func (m *platformconfig) UnmarshalPolymorphicJSON(data []byte) (interface{}, err
 		mm := IntelVmPlatformConfig{}
 		err = json.Unmarshal(data, &mm)
 		return mm, err
+	case "GENERIC_BM":
+		mm := GenericBmPlatformConfig{}
+		err = json.Unmarshal(data, &mm)
+		return mm, err
 	case "AMD_MILAN_BM_GPU":
 		mm := AmdMilanBmGpuPlatformConfig{}
 		err = json.Unmarshal(data, &mm)
 		return mm, err
 	default:
+		common.Logf("Recieved unsupported enum value for PlatformConfig: %s.", m.Type)
 		return *m, nil
 	}
 }
@@ -158,6 +163,7 @@ const (
 	PlatformConfigTypeAmdMilanBmGpu  PlatformConfigTypeEnum = "AMD_MILAN_BM_GPU"
 	PlatformConfigTypeAmdRomeBm      PlatformConfigTypeEnum = "AMD_ROME_BM"
 	PlatformConfigTypeAmdRomeBmGpu   PlatformConfigTypeEnum = "AMD_ROME_BM_GPU"
+	PlatformConfigTypeGenericBm      PlatformConfigTypeEnum = "GENERIC_BM"
 	PlatformConfigTypeIntelIcelakeBm PlatformConfigTypeEnum = "INTEL_ICELAKE_BM"
 	PlatformConfigTypeIntelSkylakeBm PlatformConfigTypeEnum = "INTEL_SKYLAKE_BM"
 	PlatformConfigTypeAmdVm          PlatformConfigTypeEnum = "AMD_VM"
@@ -169,6 +175,7 @@ var mappingPlatformConfigTypeEnum = map[string]PlatformConfigTypeEnum{
 	"AMD_MILAN_BM_GPU": PlatformConfigTypeAmdMilanBmGpu,
 	"AMD_ROME_BM":      PlatformConfigTypeAmdRomeBm,
 	"AMD_ROME_BM_GPU":  PlatformConfigTypeAmdRomeBmGpu,
+	"GENERIC_BM":       PlatformConfigTypeGenericBm,
 	"INTEL_ICELAKE_BM": PlatformConfigTypeIntelIcelakeBm,
 	"INTEL_SKYLAKE_BM": PlatformConfigTypeIntelSkylakeBm,
 	"AMD_VM":           PlatformConfigTypeAmdVm,
@@ -180,6 +187,7 @@ var mappingPlatformConfigTypeEnumLowerCase = map[string]PlatformConfigTypeEnum{
 	"amd_milan_bm_gpu": PlatformConfigTypeAmdMilanBmGpu,
 	"amd_rome_bm":      PlatformConfigTypeAmdRomeBm,
 	"amd_rome_bm_gpu":  PlatformConfigTypeAmdRomeBmGpu,
+	"generic_bm":       PlatformConfigTypeGenericBm,
 	"intel_icelake_bm": PlatformConfigTypeIntelIcelakeBm,
 	"intel_skylake_bm": PlatformConfigTypeIntelSkylakeBm,
 	"amd_vm":           PlatformConfigTypeAmdVm,
@@ -202,6 +210,7 @@ func GetPlatformConfigTypeEnumStringValues() []string {
 		"AMD_MILAN_BM_GPU",
 		"AMD_ROME_BM",
 		"AMD_ROME_BM_GPU",
+		"GENERIC_BM",
 		"INTEL_ICELAKE_BM",
 		"INTEL_SKYLAKE_BM",
 		"AMD_VM",

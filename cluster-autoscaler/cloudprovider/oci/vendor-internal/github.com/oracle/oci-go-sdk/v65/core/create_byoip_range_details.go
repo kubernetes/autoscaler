@@ -31,7 +31,7 @@ type CreateByoipRangeDetails struct {
 	// Example: `10.0.1.0/24`
 	CidrBlock *string `mandatory:"false" json:"cidrBlock"`
 
-	// The BYOIPv6 CIDR block. You can assign some or all of it to a VCN after it is validated.
+	// The BYOIPv6 prefix. You can assign some or all of it to a VCN after it is validated.
 	Ipv6CidrBlock *string `mandatory:"false" json:"ipv6CidrBlock"`
 
 	// Defined tags for this resource. Each key is predefined and scoped to a

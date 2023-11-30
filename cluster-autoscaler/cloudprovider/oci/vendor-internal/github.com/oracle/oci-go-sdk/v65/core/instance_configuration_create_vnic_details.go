@@ -25,6 +25,13 @@ import (
 // and Instance Configurations (https://docs.cloud.oracle.com/iaas/Content/Compute/Concepts/instancemanagement.htm#config) for more information.
 type InstanceConfigurationCreateVnicDetails struct {
 
+	// Whether to allocate an IPv6 address at instance and VNIC creation from an IPv6 enabled
+	// subnet. Default: False. When provided you may optionally provide an IPv6 prefix
+	// (`ipv6SubnetCidr`) of your choice to assign the IPv6 address from. If `ipv6SubnetCidr`
+	// is not provided then an IPv6 prefix is chosen
+	// for you.
+	AssignIpv6Ip *bool `mandatory:"false" json:"assignIpv6Ip"`
+
 	// Whether the VNIC should be assigned a public IP address. See the `assignPublicIp` attribute of CreateVnicDetails
 	// for more information.
 	AssignPublicIp *bool `mandatory:"false" json:"assignPublicIp"`
@@ -46,6 +53,12 @@ type InstanceConfigurationCreateVnicDetails struct {
 	// predefined name, type, or namespace. For more information, see Resource Tags (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm).
 	// Example: `{"Department": "Finance"}`
 	FreeformTags map[string]string `mandatory:"false" json:"freeformTags"`
+
+	// A list of IPv6 prefixes from which the VNIC should be assigned an IPv6 address.
+	// You can provide only the prefix and OCI selects an available
+	// address from the range. You can optionally choose to leave the prefix range empty
+	// and instead provide the specific IPv6 address that should be used from within that range.
+	Ipv6AddressIpv6SubnetCidrPairDetails []InstanceConfigurationIpv6AddressIpv6SubnetCidrPairDetails `mandatory:"false" json:"ipv6AddressIpv6SubnetCidrPairDetails"`
 
 	// The hostname for the VNIC's primary private IP.
 	// See the `hostnameLabel` attribute of CreateVnicDetails for more information.

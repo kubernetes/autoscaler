@@ -197,7 +197,7 @@ func GetBodyHash(request *http.Request) (hashString string, err error) {
 	}
 
 	var data []byte
-	bReader := request.Body
+	var bReader io.Reader
 	bReader, request.Body, err = drainBody(request.Body)
 	if err != nil {
 		return "", fmt.Errorf("can not read body of request while calculating body hash: %s", err.Error())

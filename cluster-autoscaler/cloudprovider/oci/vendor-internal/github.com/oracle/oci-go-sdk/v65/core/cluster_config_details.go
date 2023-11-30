@@ -28,10 +28,10 @@ import (
 // is returned.
 type ClusterConfigDetails struct {
 
-	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the HpcIsland.
+	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the HPC island.
 	HpcIslandId *string `mandatory:"true" json:"hpcIslandId"`
 
-	// The list of OCID of the network blocks.
+	// The list of OCIDs of the network blocks.
 	NetworkBlockIds []string `mandatory:"false" json:"networkBlockIds"`
 }
 

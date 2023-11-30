@@ -21,7 +21,7 @@ type AddIpv6SubnetCidrRequest struct {
 	// The OCID (https://docs.cloud.oracle.com/iaas/Content/General/Concepts/identifiers.htm) of the subnet.
 	SubnetId *string `mandatory:"true" contributesTo:"path" name:"subnetId"`
 
-	// Details object for adding an IPv6 CIDR to a subnet.
+	// Details object for adding an IPv6 prefix to a subnet.
 	AddSubnetIpv6CidrDetails `contributesTo:"body"`
 
 	// A token that uniquely identifies a request so it can be retried in case of a timeout or

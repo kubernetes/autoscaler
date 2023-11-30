@@ -304,5 +304,35 @@
         "realmKey": "oc14",
         "regionIdentifier": "eu-dcc-dublin-1",
         "realmDomainComponent": "oraclecloud14.com"
+    },
+    {
+        "regionKey": "beg",
+        "realmKey": "oc20",
+        "regionIdentifier": "eu-jovanovac-1",
+        "realmDomainComponent": "oraclecloud20.com"
+    },
+    {
+        "regionKey": "vll",
+        "realmKey": "oc19",
+        "regionIdentifier": "eu-madrid-2",
+        "realmDomainComponent": "oraclecloud.eu"
+    },
+    {
+        "regionKey": "str",
+        "realmKey": "oc19",
+        "regionIdentifier": "eu-frankfurt-2",
+        "realmDomainComponent": "oraclecloud.eu"
+    },
+    {
+        "regionKey": "mty",
+        "realmKey": "oc1",
+        "regionIdentifier": "mx-monterrey-1",
+        "realmDomainComponent": "oraclecloud.com"
+    },
+    {
+        "regionKey": "aga",
+        "realmKey": "oc1",
+        "regionIdentifier": "us-saltlake-2",
+        "realmDomainComponent": "oraclecloud.com"
     }
 ]

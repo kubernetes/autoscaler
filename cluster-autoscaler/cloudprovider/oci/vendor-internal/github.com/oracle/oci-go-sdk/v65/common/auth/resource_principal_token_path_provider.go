@@ -6,7 +6,9 @@ package auth
 import (
 	"fmt"
 	"io/ioutil"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/oci/vendor-internal/github.com/oracle/oci-go-sdk/v65/common"
 	"net/http"
+	"time"
 )
 
 const (
@@ -135,4 +137,84 @@ func getInstanceIDFromMetadata() (instanceID string, err error) {
 	}
 	bodyString := string(bodyBytes)
 	return bodyString, nil
+}
+
+// ServiceAccountTokenProvider comment
+type ServiceAccountTokenProvider interface {
+	ServiceAccountToken() (string, error)
+}
+
+// DefaultServiceAccountTokenProvider is supplied by user when instantiating
+// OkeWorkloadIdentityConfigurationProvider
+type DefaultServiceAccountTokenProvider struct {
+	tokenPath string `mandatory:"false"`
+}
+
+// NewDefaultServiceAccountTokenProvider returns a new instance of defaultServiceAccountTokenProvider
+func NewDefaultServiceAccountTokenProvider() DefaultServiceAccountTokenProvider {
+	return DefaultServiceAccountTokenProvider{
+		tokenPath: KubernetesServiceAccountTokenPath,
+	}
+}
+
+// WithSaTokenPath Builder method to override the to SA ken path
+func (d DefaultServiceAccountTokenProvider) WithSaTokenPath(tokenPath string) DefaultServiceAccountTokenProvider {
+	d.tokenPath = tokenPath
+	return d
+}
+
+// ServiceAccountToken returns a service account token
+func (d DefaultServiceAccountTokenProvider) ServiceAccountToken() (string, error) {
+	saTokenString, err := ioutil.ReadFile(d.tokenPath)
+	if err != nil {
+		common.Logf("error %s", err)
+		return "", fmt.Errorf("error reading service account token: %s", err)
+	}
+	isSaTokenValid, err := isValidSaToken(string(saTokenString))
+	if !isSaTokenValid {
+		common.Logf("error %s", err)
+		return "", fmt.Errorf("error validating service account token: %s", err)
+	}
+	return string(saTokenString), err
+}
+
+// SuppliedServiceAccountTokenProvider is supplied by user when instantiating
+// OkeWorkloadIdentityConfigurationProviderWithServiceAccountTokenProvider
+type SuppliedServiceAccountTokenProvider struct {
+	tokenString string `mandatory:"false"`
+}
+
+// NewSuppliedServiceAccountTokenProvider returns a new instance of defaultServiceAccountTokenProvider
+func NewSuppliedServiceAccountTokenProvider(tokenString string) SuppliedServiceAccountTokenProvider {
+	return SuppliedServiceAccountTokenProvider{tokenString: tokenString}
+}
+
+// ServiceAccountToken returns a service account token
+func (d SuppliedServiceAccountTokenProvider) ServiceAccountToken() (string, error) {
+	isSaTokenValid, err := isValidSaToken(d.tokenString)
+	if !isSaTokenValid {
+		common.Logf("error %s", err)
+		return "", fmt.Errorf("error validating service account token %s", err)
+	}
+	return d.tokenString, nil
+}
+
+// isValidSaToken returns true is a saTokenString provides a valid service account token
+func isValidSaToken(saTokenString string) (bool, error) {
+	var jwtToken *jwtToken
+	var err error
+	if jwtToken, err = parseJwt(saTokenString); err != nil {
+		return false, fmt.Errorf("failed to parse the default service token string \"%s\": %s", saTokenString, err.Error())
+	}
+	now := time.Now().Unix() + int64(bufferTimeBeforeTokenExpiration.Seconds())
+	if jwtToken.payload["exp"] == nil {
+		return false, fmt.Errorf("service token doesn't have an `exp` field")
+	}
+	expiredAt := int64(jwtToken.payload["exp"].(float64))
+	expired := expiredAt <= now
+	if expired {
+		return false, fmt.Errorf("service token expired at: %v", time.Unix(expiredAt, 0).Format("15:04:05.000"))
+	}
+
+	return true, nil
 }
