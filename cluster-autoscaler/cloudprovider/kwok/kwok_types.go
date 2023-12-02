@@ -18,11 +18,12 @@ package kwok
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
+	listersv1 "k8s.io/client-go/listers/core/v1"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/client-go/kubernetes"
-	listersv1 "k8s.io/client-go/listers/core/v1"
 )
 
 // KwokCloudProvider implements CloudProvider interface for kwok
@@ -32,6 +33,8 @@ type KwokCloudProvider struct {
 	resourceLimiter *cloudprovider.ResourceLimiter
 	// kubeClient is to be used only for create, delete and update
 	kubeClient kubernetes.Interface
+	//allNodesLister is a lister to list all nodes in cluster
+	allNodesLister listersv1.NodeLister
 }
 
 type kwokOptions struct {

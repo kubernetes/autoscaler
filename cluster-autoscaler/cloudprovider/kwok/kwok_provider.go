@@ -22,19 +22,21 @@ import (
 	"os"
 	"strings"
 
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
 	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	klog "k8s.io/klog/v2"
+	"k8s.io/klog/v2"
 )
 
 // Name returns name of the cloud provider.
@@ -123,24 +125,28 @@ func (kwok *KwokCloudProvider) GetNodeGpuConfig(node *apiv1.Node) *cloudprovider
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-// TODO(vadasambar): implement this
 func (kwok *KwokCloudProvider) Refresh() error {
 
-	// TODO(vadasambar): causes CA to not recognize kwok nodegroups
-	// needs better implementation
-	// nodeList, err := kwok.lister.List()
-	// if err != nil {
-	// 	return err
-	// }
+	allNodes, err := kwok.allNodesLister.List(labels.Everything())
+	if err != nil {
+		klog.ErrorS(err, "failed to list all nodes from lister")
+		return err
+	}
 
-	// ngs := []*NodeGroup{}
-	// for _, no := range nodeList {
-	// 	ng := parseAnnotationsToNodegroup(no)
-	// 	ng.kubeClient = kwok.kubeClient
-	// 	ngs = append(ngs, ng)
-	// }
+	targetSizeInCluster := make(map[string]int)
 
-	// kwok.nodeGroups = ngs
+	for _, node := range allNodes {
+		ngName := getNGName(node, kwok.config)
+		if ngName == "" {
+			continue
+		}
+
+		targetSizeInCluster[ngName] += 1
+	}
+
+	for _, ng := range kwok.nodeGroups {
+		ng.targetSize = targetSizeInCluster[ng.Id()]
+	}
 
 	return nil
 }
@@ -245,6 +251,7 @@ func BuildKwokProvider(ko *kwokOptions) (*KwokCloudProvider, error) {
 		kubeClient:      ko.kubeClient,
 		resourceLimiter: ko.resourceLimiter,
 		config:          kwokConfig,
+		allNodesLister:  ko.allNodesLister,
 	}, nil
 }
 
