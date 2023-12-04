@@ -271,9 +271,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
-	if err := m.updateCapacityWithRequirementsOverrides(&node.Status.Capacity, asg.MixedInstancesPolicy); err != nil {
-		return nil, err
-	}
+	m.updateCapacityWithRequirementsOverrides(&node.Status.Capacity, asg.MixedInstancesPolicy)
 
 	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
 	klog.V(5).Infof("Extracted resources from ASG tags %v", resourcesFromTags)
@@ -348,15 +346,12 @@ func joinNodeLabelsChoosingUserValuesOverAPIValues(extractedLabels map[string]st
 	return result
 }
 
-func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) error {
-	if policy == nil || len(policy.instanceTypesOverrides) > 0 {
-		return nil
+func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.ResourceList, policy *mixedInstancesPolicy) {
+	if policy == nil || len(policy.instanceTypesOverrides) > 0 || policy.instanceRequirements == nil {
+		return
 	}
 
-	instanceRequirements, err := m.getInstanceRequirementsFromMixedInstancesPolicy(policy)
-	if err != nil {
-		return fmt.Errorf("error while building node template using instance requirements: (%s)", err)
-	}
+	instanceRequirements := policy.instanceRequirements
 
 	if instanceRequirements.VCpuCount != nil && instanceRequirements.VCpuCount.Min != nil {
 		(*capacity)[apiv1.ResourceCPU] = *resource.NewQuantity(*instanceRequirements.VCpuCount.Min, resource.DecimalSI)
@@ -375,29 +370,6 @@ func (m *AwsManager) updateCapacityWithRequirementsOverrides(capacity *apiv1.Res
 			}
 		}
 	}
-
-	return nil
-}
-
-func (m *AwsManager) getInstanceRequirementsFromMixedInstancesPolicy(policy *mixedInstancesPolicy) (*ec2.InstanceRequirements, error) {
-	instanceRequirements := &ec2.InstanceRequirements{}
-	if policy.instanceRequirementsOverrides != nil {
-		var err error
-		instanceRequirements, err = m.awsService.getEC2RequirementsFromAutoscaling(policy.instanceRequirementsOverrides)
-		if err != nil {
-			return nil, err
-		}
-	} else if policy.launchTemplate != nil {
-		templateData, err := m.awsService.getLaunchTemplateData(policy.launchTemplate.name, policy.launchTemplate.version)
-		if err != nil {
-			return nil, err
-		}
-
-		if templateData.InstanceRequirements != nil {
-			instanceRequirements = templateData.InstanceRequirements
-		}
-	}
-	return instanceRequirements, nil
 }
 
 func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
