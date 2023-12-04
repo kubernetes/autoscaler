@@ -70,7 +70,7 @@ To create a valid configuration, follow instructions for your cloud provider:
 
 - [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
 - [GCE](#gce)
-- [Azure AKS](#azure-aks)
+- [Azure](#azure)
 - [OpenStack Magnum](#openstack-magnum)
 - [Cluster API](#cluster-api)
 
@@ -187,20 +187,18 @@ In the event you want to explicitly specify MIGs instead of using auto-discovery
 --set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
 ```
 
-### Azure AKS
+### Azure
 
 The following parameters are required:
 
 - `cloudProvider=azure`
-- `autoscalingGroups[0].name=your-agent-pool,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
+- `autoscalingGroups[0].name=your-vmss,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
 - `azureClientID: "your-service-principal-app-id"`
 - `azureClientSecret: "your-service-principal-client-secret"`
 - `azureSubscriptionID: "your-azure-subscription-id"`
 - `azureTenantID: "your-azure-tenant-id"`
-- `azureClusterName: "your-aks-cluster-name"`
 - `azureResourceGroup: "your-aks-cluster-resource-group-name"`
-- `azureVMType: "AKS"`
-- `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
+- `azureVMType: "vmss"`
 
 ### OpenStack Magnum
 
@@ -384,8 +382,6 @@ vpa:
 | awsSecretAccessKey | string | `""` | AWS access secret key ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | azureClientID | string | `""` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
-| azureClusterName | string | `""` | Azure AKS cluster name. Required if `cloudProvider=azure` |
-| azureNodeResourceGroup | string | `""` | Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`. Required if `cloudProvider=azure` |
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |

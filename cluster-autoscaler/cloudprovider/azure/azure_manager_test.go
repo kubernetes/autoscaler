@@ -355,8 +355,6 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 		AADClientCertPath:            "aadClientCertPath",
 		AADClientCertPassword:        "aadClientCertPassword",
 		Deployment:                   "deployment",
-		ClusterName:                  "clusterName",
-		NodeResourceGroup:            "resourcegroup",
 		UseManagedIdentityExtension:  true,
 		UserAssignedIdentityID:       "UserAssignedIdentityID",
 		VmssCacheTTL:                 100,
@@ -427,15 +425,15 @@ func TestCreateAzureManagerWithNilConfig(t *testing.T) {
 	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_SUBSCRIPTION_ID", "subscriptionId")
 	t.Setenv("ARM_RESOURCE_GROUP", "resourceGroup")
+	t.Setenv("AZURE_TENANT_ID", "tenantId")
 	t.Setenv("ARM_TENANT_ID", "tenantId")
+	t.Setenv("AZURE_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_CLIENT_ID", "aadClientId")
 	t.Setenv("ARM_CLIENT_SECRET", "aadClientSecret")
 	t.Setenv("ARM_VM_TYPE", "vmss")
 	t.Setenv("ARM_CLIENT_CERT_PATH", "aadClientCertPath")
 	t.Setenv("ARM_CLIENT_CERT_PASSWORD", "aadClientCertPassword")
 	t.Setenv("ARM_DEPLOYMENT", "deployment")
-	t.Setenv("AZURE_CLUSTER_NAME", "clusterName")
-	t.Setenv("AZURE_NODE_RESOURCE_GROUP", "resourcegroup")
 	t.Setenv("ARM_USE_MANAGED_IDENTITY_EXTENSION", "true")
 	t.Setenv("ARM_USER_ASSIGNED_IDENTITY_ID", "UserAssignedIdentityID")
 	t.Setenv("AZURE_VMSS_CACHE_TTL", "100")
@@ -701,19 +699,13 @@ func TestGetFilteredAutoscalingGroupsWithInvalidVMType(t *testing.T) {
 	mockVMSSClient := mockvmssclient.NewMockInterface(ctrl)
 	mockVMSSClient.EXPECT().List(gomock.Any(), manager.config.ResourceGroup).Return(expectedScaleSets, nil).AnyTimes()
 	manager.azClient.virtualMachineScaleSetsClient = mockVMSSClient
-	manager.config.VMType = vmTypeAKS
 
+	manager.config.VMType = "invalidVMType"
 	specs, err := ParseLabelAutoDiscoverySpecs(ngdo)
 	assert.NoError(t, err)
 
-	expectedErr := fmt.Errorf("vmType \"aks\" does not support autodiscovery")
+	expectedErr := fmt.Errorf("vmType \"invalidVMType\" does not support autodiscovery")
 	asgs, err2 := manager.getFilteredNodeGroups(specs)
-	assert.Nil(t, asgs)
-	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
-
-	manager.config.VMType = "invalidVMType"
-	expectedErr = fmt.Errorf("vmType \"invalidVMType\" does not support autodiscovery")
-	asgs, err2 = manager.getFilteredNodeGroups(specs)
 	assert.Nil(t, asgs)
 	assert.Equal(t, expectedErr, err2, "Not match, expected: %v, actual: %v", expectedErr, err2)
 }

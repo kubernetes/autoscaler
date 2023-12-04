@@ -75,14 +75,6 @@ azureClientID: ""
 # Required if `cloudProvider=azure`
 azureClientSecret: ""
 
-# azureClusterName -- Azure AKS cluster name.
-# Required if `cloudProvider=azure`
-azureClusterName: ""
-
-# azureNodeResourceGroup -- Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`.
-# Required if `cloudProvider=azure`
-azureNodeResourceGroup: ""
-
 # azureResourceGroup -- Azure resource group that the cluster is located.
 # Required if `cloudProvider=azure`
 azureResourceGroup: ""
