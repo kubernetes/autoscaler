@@ -71,6 +71,10 @@ type CostandUsageReportServiceAPI interface {
 	DescribeReportDefinitionsPages(*costandusagereportservice.DescribeReportDefinitionsInput, func(*costandusagereportservice.DescribeReportDefinitionsOutput, bool) bool) error
 	DescribeReportDefinitionsPagesWithContext(aws.Context, *costandusagereportservice.DescribeReportDefinitionsInput, func(*costandusagereportservice.DescribeReportDefinitionsOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*costandusagereportservice.ListTagsForResourceInput) (*costandusagereportservice.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *costandusagereportservice.ListTagsForResourceInput, ...request.Option) (*costandusagereportservice.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*costandusagereportservice.ListTagsForResourceInput) (*request.Request, *costandusagereportservice.ListTagsForResourceOutput)
+
 	ModifyReportDefinition(*costandusagereportservice.ModifyReportDefinitionInput) (*costandusagereportservice.ModifyReportDefinitionOutput, error)
 	ModifyReportDefinitionWithContext(aws.Context, *costandusagereportservice.ModifyReportDefinitionInput, ...request.Option) (*costandusagereportservice.ModifyReportDefinitionOutput, error)
 	ModifyReportDefinitionRequest(*costandusagereportservice.ModifyReportDefinitionInput) (*request.Request, *costandusagereportservice.ModifyReportDefinitionOutput)
@@ -78,6 +82,14 @@ type CostandUsageReportServiceAPI interface {
 	PutReportDefinition(*costandusagereportservice.PutReportDefinitionInput) (*costandusagereportservice.PutReportDefinitionOutput, error)
 	PutReportDefinitionWithContext(aws.Context, *costandusagereportservice.PutReportDefinitionInput, ...request.Option) (*costandusagereportservice.PutReportDefinitionOutput, error)
 	PutReportDefinitionRequest(*costandusagereportservice.PutReportDefinitionInput) (*request.Request, *costandusagereportservice.PutReportDefinitionOutput)
+
+	TagResource(*costandusagereportservice.TagResourceInput) (*costandusagereportservice.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *costandusagereportservice.TagResourceInput, ...request.Option) (*costandusagereportservice.TagResourceOutput, error)
+	TagResourceRequest(*costandusagereportservice.TagResourceInput) (*request.Request, *costandusagereportservice.TagResourceOutput)
+
+	UntagResource(*costandusagereportservice.UntagResourceInput) (*costandusagereportservice.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *costandusagereportservice.UntagResourceInput, ...request.Option) (*costandusagereportservice.UntagResourceOutput, error)
+	UntagResourceRequest(*costandusagereportservice.UntagResourceInput) (*request.Request, *costandusagereportservice.UntagResourceOutput)
 }
 
 var _ CostandUsageReportServiceAPI = (*costandusagereportservice.CostandUsageReportService)(nil)

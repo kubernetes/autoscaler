@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Synthetics.
 //	func myFunc(svc syntheticsiface.SyntheticsAPI) bool {
-//	    // Make svc.CreateCanary request
+//	    // Make svc.AssociateResource request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockSyntheticsClient struct {
 //	    syntheticsiface.SyntheticsAPI
 //	}
-//	func (m *mockSyntheticsClient) CreateCanary(input *synthetics.CreateCanaryInput) (*synthetics.CreateCanaryOutput, error) {
+//	func (m *mockSyntheticsClient) AssociateResource(input *synthetics.AssociateResourceInput) (*synthetics.AssociateResourceOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,13 +60,25 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type SyntheticsAPI interface {
+	AssociateResource(*synthetics.AssociateResourceInput) (*synthetics.AssociateResourceOutput, error)
+	AssociateResourceWithContext(aws.Context, *synthetics.AssociateResourceInput, ...request.Option) (*synthetics.AssociateResourceOutput, error)
+	AssociateResourceRequest(*synthetics.AssociateResourceInput) (*request.Request, *synthetics.AssociateResourceOutput)
+
 	CreateCanary(*synthetics.CreateCanaryInput) (*synthetics.CreateCanaryOutput, error)
 	CreateCanaryWithContext(aws.Context, *synthetics.CreateCanaryInput, ...request.Option) (*synthetics.CreateCanaryOutput, error)
 	CreateCanaryRequest(*synthetics.CreateCanaryInput) (*request.Request, *synthetics.CreateCanaryOutput)
 
+	CreateGroup(*synthetics.CreateGroupInput) (*synthetics.CreateGroupOutput, error)
+	CreateGroupWithContext(aws.Context, *synthetics.CreateGroupInput, ...request.Option) (*synthetics.CreateGroupOutput, error)
+	CreateGroupRequest(*synthetics.CreateGroupInput) (*request.Request, *synthetics.CreateGroupOutput)
+
 	DeleteCanary(*synthetics.DeleteCanaryInput) (*synthetics.DeleteCanaryOutput, error)
 	DeleteCanaryWithContext(aws.Context, *synthetics.DeleteCanaryInput, ...request.Option) (*synthetics.DeleteCanaryOutput, error)
 	DeleteCanaryRequest(*synthetics.DeleteCanaryInput) (*request.Request, *synthetics.DeleteCanaryOutput)
+
+	DeleteGroup(*synthetics.DeleteGroupInput) (*synthetics.DeleteGroupOutput, error)
+	DeleteGroupWithContext(aws.Context, *synthetics.DeleteGroupInput, ...request.Option) (*synthetics.DeleteGroupOutput, error)
+	DeleteGroupRequest(*synthetics.DeleteGroupInput) (*request.Request, *synthetics.DeleteGroupOutput)
 
 	DescribeCanaries(*synthetics.DescribeCanariesInput) (*synthetics.DescribeCanariesOutput, error)
 	DescribeCanariesWithContext(aws.Context, *synthetics.DescribeCanariesInput, ...request.Option) (*synthetics.DescribeCanariesOutput, error)
@@ -89,6 +101,10 @@ type SyntheticsAPI interface {
 	DescribeRuntimeVersionsPages(*synthetics.DescribeRuntimeVersionsInput, func(*synthetics.DescribeRuntimeVersionsOutput, bool) bool) error
 	DescribeRuntimeVersionsPagesWithContext(aws.Context, *synthetics.DescribeRuntimeVersionsInput, func(*synthetics.DescribeRuntimeVersionsOutput, bool) bool, ...request.Option) error
 
+	DisassociateResource(*synthetics.DisassociateResourceInput) (*synthetics.DisassociateResourceOutput, error)
+	DisassociateResourceWithContext(aws.Context, *synthetics.DisassociateResourceInput, ...request.Option) (*synthetics.DisassociateResourceOutput, error)
+	DisassociateResourceRequest(*synthetics.DisassociateResourceInput) (*request.Request, *synthetics.DisassociateResourceOutput)
+
 	GetCanary(*synthetics.GetCanaryInput) (*synthetics.GetCanaryOutput, error)
 	GetCanaryWithContext(aws.Context, *synthetics.GetCanaryInput, ...request.Option) (*synthetics.GetCanaryOutput, error)
 	GetCanaryRequest(*synthetics.GetCanaryInput) (*request.Request, *synthetics.GetCanaryOutput)
@@ -99,6 +115,31 @@ type SyntheticsAPI interface {
 
 	GetCanaryRunsPages(*synthetics.GetCanaryRunsInput, func(*synthetics.GetCanaryRunsOutput, bool) bool) error
 	GetCanaryRunsPagesWithContext(aws.Context, *synthetics.GetCanaryRunsInput, func(*synthetics.GetCanaryRunsOutput, bool) bool, ...request.Option) error
+
+	GetGroup(*synthetics.GetGroupInput) (*synthetics.GetGroupOutput, error)
+	GetGroupWithContext(aws.Context, *synthetics.GetGroupInput, ...request.Option) (*synthetics.GetGroupOutput, error)
+	GetGroupRequest(*synthetics.GetGroupInput) (*request.Request, *synthetics.GetGroupOutput)
+
+	ListAssociatedGroups(*synthetics.ListAssociatedGroupsInput) (*synthetics.ListAssociatedGroupsOutput, error)
+	ListAssociatedGroupsWithContext(aws.Context, *synthetics.ListAssociatedGroupsInput, ...request.Option) (*synthetics.ListAssociatedGroupsOutput, error)
+	ListAssociatedGroupsRequest(*synthetics.ListAssociatedGroupsInput) (*request.Request, *synthetics.ListAssociatedGroupsOutput)
+
+	ListAssociatedGroupsPages(*synthetics.ListAssociatedGroupsInput, func(*synthetics.ListAssociatedGroupsOutput, bool) bool) error
+	ListAssociatedGroupsPagesWithContext(aws.Context, *synthetics.ListAssociatedGroupsInput, func(*synthetics.ListAssociatedGroupsOutput, bool) bool, ...request.Option) error
+
+	ListGroupResources(*synthetics.ListGroupResourcesInput) (*synthetics.ListGroupResourcesOutput, error)
+	ListGroupResourcesWithContext(aws.Context, *synthetics.ListGroupResourcesInput, ...request.Option) (*synthetics.ListGroupResourcesOutput, error)
+	ListGroupResourcesRequest(*synthetics.ListGroupResourcesInput) (*request.Request, *synthetics.ListGroupResourcesOutput)
+
+	ListGroupResourcesPages(*synthetics.ListGroupResourcesInput, func(*synthetics.ListGroupResourcesOutput, bool) bool) error
+	ListGroupResourcesPagesWithContext(aws.Context, *synthetics.ListGroupResourcesInput, func(*synthetics.ListGroupResourcesOutput, bool) bool, ...request.Option) error
+
+	ListGroups(*synthetics.ListGroupsInput) (*synthetics.ListGroupsOutput, error)
+	ListGroupsWithContext(aws.Context, *synthetics.ListGroupsInput, ...request.Option) (*synthetics.ListGroupsOutput, error)
+	ListGroupsRequest(*synthetics.ListGroupsInput) (*request.Request, *synthetics.ListGroupsOutput)
+
+	ListGroupsPages(*synthetics.ListGroupsInput, func(*synthetics.ListGroupsOutput, bool) bool) error
+	ListGroupsPagesWithContext(aws.Context, *synthetics.ListGroupsInput, func(*synthetics.ListGroupsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*synthetics.ListTagsForResourceInput) (*synthetics.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *synthetics.ListTagsForResourceInput, ...request.Option) (*synthetics.ListTagsForResourceOutput, error)

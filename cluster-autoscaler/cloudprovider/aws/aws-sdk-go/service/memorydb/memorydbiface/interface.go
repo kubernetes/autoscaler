@@ -120,41 +120,85 @@ type MemoryDBAPI interface {
 	DescribeACLsWithContext(aws.Context, *memorydb.DescribeACLsInput, ...request.Option) (*memorydb.DescribeACLsOutput, error)
 	DescribeACLsRequest(*memorydb.DescribeACLsInput) (*request.Request, *memorydb.DescribeACLsOutput)
 
+	DescribeACLsPages(*memorydb.DescribeACLsInput, func(*memorydb.DescribeACLsOutput, bool) bool) error
+	DescribeACLsPagesWithContext(aws.Context, *memorydb.DescribeACLsInput, func(*memorydb.DescribeACLsOutput, bool) bool, ...request.Option) error
+
 	DescribeClusters(*memorydb.DescribeClustersInput) (*memorydb.DescribeClustersOutput, error)
 	DescribeClustersWithContext(aws.Context, *memorydb.DescribeClustersInput, ...request.Option) (*memorydb.DescribeClustersOutput, error)
 	DescribeClustersRequest(*memorydb.DescribeClustersInput) (*request.Request, *memorydb.DescribeClustersOutput)
+
+	DescribeClustersPages(*memorydb.DescribeClustersInput, func(*memorydb.DescribeClustersOutput, bool) bool) error
+	DescribeClustersPagesWithContext(aws.Context, *memorydb.DescribeClustersInput, func(*memorydb.DescribeClustersOutput, bool) bool, ...request.Option) error
 
 	DescribeEngineVersions(*memorydb.DescribeEngineVersionsInput) (*memorydb.DescribeEngineVersionsOutput, error)
 	DescribeEngineVersionsWithContext(aws.Context, *memorydb.DescribeEngineVersionsInput, ...request.Option) (*memorydb.DescribeEngineVersionsOutput, error)
 	DescribeEngineVersionsRequest(*memorydb.DescribeEngineVersionsInput) (*request.Request, *memorydb.DescribeEngineVersionsOutput)
 
+	DescribeEngineVersionsPages(*memorydb.DescribeEngineVersionsInput, func(*memorydb.DescribeEngineVersionsOutput, bool) bool) error
+	DescribeEngineVersionsPagesWithContext(aws.Context, *memorydb.DescribeEngineVersionsInput, func(*memorydb.DescribeEngineVersionsOutput, bool) bool, ...request.Option) error
+
 	DescribeEvents(*memorydb.DescribeEventsInput) (*memorydb.DescribeEventsOutput, error)
 	DescribeEventsWithContext(aws.Context, *memorydb.DescribeEventsInput, ...request.Option) (*memorydb.DescribeEventsOutput, error)
 	DescribeEventsRequest(*memorydb.DescribeEventsInput) (*request.Request, *memorydb.DescribeEventsOutput)
+
+	DescribeEventsPages(*memorydb.DescribeEventsInput, func(*memorydb.DescribeEventsOutput, bool) bool) error
+	DescribeEventsPagesWithContext(aws.Context, *memorydb.DescribeEventsInput, func(*memorydb.DescribeEventsOutput, bool) bool, ...request.Option) error
 
 	DescribeParameterGroups(*memorydb.DescribeParameterGroupsInput) (*memorydb.DescribeParameterGroupsOutput, error)
 	DescribeParameterGroupsWithContext(aws.Context, *memorydb.DescribeParameterGroupsInput, ...request.Option) (*memorydb.DescribeParameterGroupsOutput, error)
 	DescribeParameterGroupsRequest(*memorydb.DescribeParameterGroupsInput) (*request.Request, *memorydb.DescribeParameterGroupsOutput)
 
+	DescribeParameterGroupsPages(*memorydb.DescribeParameterGroupsInput, func(*memorydb.DescribeParameterGroupsOutput, bool) bool) error
+	DescribeParameterGroupsPagesWithContext(aws.Context, *memorydb.DescribeParameterGroupsInput, func(*memorydb.DescribeParameterGroupsOutput, bool) bool, ...request.Option) error
+
 	DescribeParameters(*memorydb.DescribeParametersInput) (*memorydb.DescribeParametersOutput, error)
 	DescribeParametersWithContext(aws.Context, *memorydb.DescribeParametersInput, ...request.Option) (*memorydb.DescribeParametersOutput, error)
 	DescribeParametersRequest(*memorydb.DescribeParametersInput) (*request.Request, *memorydb.DescribeParametersOutput)
+
+	DescribeParametersPages(*memorydb.DescribeParametersInput, func(*memorydb.DescribeParametersOutput, bool) bool) error
+	DescribeParametersPagesWithContext(aws.Context, *memorydb.DescribeParametersInput, func(*memorydb.DescribeParametersOutput, bool) bool, ...request.Option) error
+
+	DescribeReservedNodes(*memorydb.DescribeReservedNodesInput) (*memorydb.DescribeReservedNodesOutput, error)
+	DescribeReservedNodesWithContext(aws.Context, *memorydb.DescribeReservedNodesInput, ...request.Option) (*memorydb.DescribeReservedNodesOutput, error)
+	DescribeReservedNodesRequest(*memorydb.DescribeReservedNodesInput) (*request.Request, *memorydb.DescribeReservedNodesOutput)
+
+	DescribeReservedNodesPages(*memorydb.DescribeReservedNodesInput, func(*memorydb.DescribeReservedNodesOutput, bool) bool) error
+	DescribeReservedNodesPagesWithContext(aws.Context, *memorydb.DescribeReservedNodesInput, func(*memorydb.DescribeReservedNodesOutput, bool) bool, ...request.Option) error
+
+	DescribeReservedNodesOfferings(*memorydb.DescribeReservedNodesOfferingsInput) (*memorydb.DescribeReservedNodesOfferingsOutput, error)
+	DescribeReservedNodesOfferingsWithContext(aws.Context, *memorydb.DescribeReservedNodesOfferingsInput, ...request.Option) (*memorydb.DescribeReservedNodesOfferingsOutput, error)
+	DescribeReservedNodesOfferingsRequest(*memorydb.DescribeReservedNodesOfferingsInput) (*request.Request, *memorydb.DescribeReservedNodesOfferingsOutput)
+
+	DescribeReservedNodesOfferingsPages(*memorydb.DescribeReservedNodesOfferingsInput, func(*memorydb.DescribeReservedNodesOfferingsOutput, bool) bool) error
+	DescribeReservedNodesOfferingsPagesWithContext(aws.Context, *memorydb.DescribeReservedNodesOfferingsInput, func(*memorydb.DescribeReservedNodesOfferingsOutput, bool) bool, ...request.Option) error
 
 	DescribeServiceUpdates(*memorydb.DescribeServiceUpdatesInput) (*memorydb.DescribeServiceUpdatesOutput, error)
 	DescribeServiceUpdatesWithContext(aws.Context, *memorydb.DescribeServiceUpdatesInput, ...request.Option) (*memorydb.DescribeServiceUpdatesOutput, error)
 	DescribeServiceUpdatesRequest(*memorydb.DescribeServiceUpdatesInput) (*request.Request, *memorydb.DescribeServiceUpdatesOutput)
 
+	DescribeServiceUpdatesPages(*memorydb.DescribeServiceUpdatesInput, func(*memorydb.DescribeServiceUpdatesOutput, bool) bool) error
+	DescribeServiceUpdatesPagesWithContext(aws.Context, *memorydb.DescribeServiceUpdatesInput, func(*memorydb.DescribeServiceUpdatesOutput, bool) bool, ...request.Option) error
+
 	DescribeSnapshots(*memorydb.DescribeSnapshotsInput) (*memorydb.DescribeSnapshotsOutput, error)
 	DescribeSnapshotsWithContext(aws.Context, *memorydb.DescribeSnapshotsInput, ...request.Option) (*memorydb.DescribeSnapshotsOutput, error)
 	DescribeSnapshotsRequest(*memorydb.DescribeSnapshotsInput) (*request.Request, *memorydb.DescribeSnapshotsOutput)
+
+	DescribeSnapshotsPages(*memorydb.DescribeSnapshotsInput, func(*memorydb.DescribeSnapshotsOutput, bool) bool) error
+	DescribeSnapshotsPagesWithContext(aws.Context, *memorydb.DescribeSnapshotsInput, func(*memorydb.DescribeSnapshotsOutput, bool) bool, ...request.Option) error
 
 	DescribeSubnetGroups(*memorydb.DescribeSubnetGroupsInput) (*memorydb.DescribeSubnetGroupsOutput, error)
 	DescribeSubnetGroupsWithContext(aws.Context, *memorydb.DescribeSubnetGroupsInput, ...request.Option) (*memorydb.DescribeSubnetGroupsOutput, error)
 	DescribeSubnetGroupsRequest(*memorydb.DescribeSubnetGroupsInput) (*request.Request, *memorydb.DescribeSubnetGroupsOutput)
 
+	DescribeSubnetGroupsPages(*memorydb.DescribeSubnetGroupsInput, func(*memorydb.DescribeSubnetGroupsOutput, bool) bool) error
+	DescribeSubnetGroupsPagesWithContext(aws.Context, *memorydb.DescribeSubnetGroupsInput, func(*memorydb.DescribeSubnetGroupsOutput, bool) bool, ...request.Option) error
+
 	DescribeUsers(*memorydb.DescribeUsersInput) (*memorydb.DescribeUsersOutput, error)
 	DescribeUsersWithContext(aws.Context, *memorydb.DescribeUsersInput, ...request.Option) (*memorydb.DescribeUsersOutput, error)
 	DescribeUsersRequest(*memorydb.DescribeUsersInput) (*request.Request, *memorydb.DescribeUsersOutput)
+
+	DescribeUsersPages(*memorydb.DescribeUsersInput, func(*memorydb.DescribeUsersOutput, bool) bool) error
+	DescribeUsersPagesWithContext(aws.Context, *memorydb.DescribeUsersInput, func(*memorydb.DescribeUsersOutput, bool) bool, ...request.Option) error
 
 	FailoverShard(*memorydb.FailoverShardInput) (*memorydb.FailoverShardOutput, error)
 	FailoverShardWithContext(aws.Context, *memorydb.FailoverShardInput, ...request.Option) (*memorydb.FailoverShardOutput, error)
@@ -167,6 +211,10 @@ type MemoryDBAPI interface {
 	ListTags(*memorydb.ListTagsInput) (*memorydb.ListTagsOutput, error)
 	ListTagsWithContext(aws.Context, *memorydb.ListTagsInput, ...request.Option) (*memorydb.ListTagsOutput, error)
 	ListTagsRequest(*memorydb.ListTagsInput) (*request.Request, *memorydb.ListTagsOutput)
+
+	PurchaseReservedNodesOffering(*memorydb.PurchaseReservedNodesOfferingInput) (*memorydb.PurchaseReservedNodesOfferingOutput, error)
+	PurchaseReservedNodesOfferingWithContext(aws.Context, *memorydb.PurchaseReservedNodesOfferingInput, ...request.Option) (*memorydb.PurchaseReservedNodesOfferingOutput, error)
+	PurchaseReservedNodesOfferingRequest(*memorydb.PurchaseReservedNodesOfferingInput) (*request.Request, *memorydb.PurchaseReservedNodesOfferingOutput)
 
 	ResetParameterGroup(*memorydb.ResetParameterGroupInput) (*memorydb.ResetParameterGroupOutput, error)
 	ResetParameterGroupWithContext(aws.Context, *memorydb.ResetParameterGroupInput, ...request.Option) (*memorydb.ResetParameterGroupOutput, error)

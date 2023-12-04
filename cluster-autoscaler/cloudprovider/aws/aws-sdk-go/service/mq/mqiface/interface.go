@@ -135,6 +135,10 @@ type MQAPI interface {
 	ListUsersWithContext(aws.Context, *mq.ListUsersInput, ...request.Option) (*mq.ListUsersResponse, error)
 	ListUsersRequest(*mq.ListUsersInput) (*request.Request, *mq.ListUsersResponse)
 
+	Promote(*mq.PromoteInput) (*mq.PromoteOutput, error)
+	PromoteWithContext(aws.Context, *mq.PromoteInput, ...request.Option) (*mq.PromoteOutput, error)
+	PromoteRequest(*mq.PromoteInput) (*request.Request, *mq.PromoteOutput)
+
 	RebootBroker(*mq.RebootBrokerInput) (*mq.RebootBrokerOutput, error)
 	RebootBrokerWithContext(aws.Context, *mq.RebootBrokerInput, ...request.Option) (*mq.RebootBrokerOutput, error)
 	RebootBrokerRequest(*mq.RebootBrokerInput) (*request.Request, *mq.RebootBrokerOutput)
