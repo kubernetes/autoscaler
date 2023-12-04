@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// AWS S3 Control.
 //	func myFunc(svc s3controliface.S3ControlAPI) bool {
-//	    // Make svc.CreateAccessPoint request
+//	    // Make svc.AssociateAccessGrantsIdentityCenter request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockS3ControlClient struct {
 //	    s3controliface.S3ControlAPI
 //	}
-//	func (m *mockS3ControlClient) CreateAccessPoint(input *s3control.CreateAccessPointInput) (*s3control.CreateAccessPointOutput, error) {
+//	func (m *mockS3ControlClient) AssociateAccessGrantsIdentityCenter(input *s3control.AssociateAccessGrantsIdentityCenterInput) (*s3control.AssociateAccessGrantsIdentityCenterOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,22 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type S3ControlAPI interface {
+	AssociateAccessGrantsIdentityCenter(*s3control.AssociateAccessGrantsIdentityCenterInput) (*s3control.AssociateAccessGrantsIdentityCenterOutput, error)
+	AssociateAccessGrantsIdentityCenterWithContext(aws.Context, *s3control.AssociateAccessGrantsIdentityCenterInput, ...request.Option) (*s3control.AssociateAccessGrantsIdentityCenterOutput, error)
+	AssociateAccessGrantsIdentityCenterRequest(*s3control.AssociateAccessGrantsIdentityCenterInput) (*request.Request, *s3control.AssociateAccessGrantsIdentityCenterOutput)
+
+	CreateAccessGrant(*s3control.CreateAccessGrantInput) (*s3control.CreateAccessGrantOutput, error)
+	CreateAccessGrantWithContext(aws.Context, *s3control.CreateAccessGrantInput, ...request.Option) (*s3control.CreateAccessGrantOutput, error)
+	CreateAccessGrantRequest(*s3control.CreateAccessGrantInput) (*request.Request, *s3control.CreateAccessGrantOutput)
+
+	CreateAccessGrantsInstance(*s3control.CreateAccessGrantsInstanceInput) (*s3control.CreateAccessGrantsInstanceOutput, error)
+	CreateAccessGrantsInstanceWithContext(aws.Context, *s3control.CreateAccessGrantsInstanceInput, ...request.Option) (*s3control.CreateAccessGrantsInstanceOutput, error)
+	CreateAccessGrantsInstanceRequest(*s3control.CreateAccessGrantsInstanceInput) (*request.Request, *s3control.CreateAccessGrantsInstanceOutput)
+
+	CreateAccessGrantsLocation(*s3control.CreateAccessGrantsLocationInput) (*s3control.CreateAccessGrantsLocationOutput, error)
+	CreateAccessGrantsLocationWithContext(aws.Context, *s3control.CreateAccessGrantsLocationInput, ...request.Option) (*s3control.CreateAccessGrantsLocationOutput, error)
+	CreateAccessGrantsLocationRequest(*s3control.CreateAccessGrantsLocationInput) (*request.Request, *s3control.CreateAccessGrantsLocationOutput)
+
 	CreateAccessPoint(*s3control.CreateAccessPointInput) (*s3control.CreateAccessPointOutput, error)
 	CreateAccessPointWithContext(aws.Context, *s3control.CreateAccessPointInput, ...request.Option) (*s3control.CreateAccessPointOutput, error)
 	CreateAccessPointRequest(*s3control.CreateAccessPointInput) (*request.Request, *s3control.CreateAccessPointOutput)
@@ -79,6 +95,26 @@ type S3ControlAPI interface {
 	CreateMultiRegionAccessPoint(*s3control.CreateMultiRegionAccessPointInput) (*s3control.CreateMultiRegionAccessPointOutput, error)
 	CreateMultiRegionAccessPointWithContext(aws.Context, *s3control.CreateMultiRegionAccessPointInput, ...request.Option) (*s3control.CreateMultiRegionAccessPointOutput, error)
 	CreateMultiRegionAccessPointRequest(*s3control.CreateMultiRegionAccessPointInput) (*request.Request, *s3control.CreateMultiRegionAccessPointOutput)
+
+	CreateStorageLensGroup(*s3control.CreateStorageLensGroupInput) (*s3control.CreateStorageLensGroupOutput, error)
+	CreateStorageLensGroupWithContext(aws.Context, *s3control.CreateStorageLensGroupInput, ...request.Option) (*s3control.CreateStorageLensGroupOutput, error)
+	CreateStorageLensGroupRequest(*s3control.CreateStorageLensGroupInput) (*request.Request, *s3control.CreateStorageLensGroupOutput)
+
+	DeleteAccessGrant(*s3control.DeleteAccessGrantInput) (*s3control.DeleteAccessGrantOutput, error)
+	DeleteAccessGrantWithContext(aws.Context, *s3control.DeleteAccessGrantInput, ...request.Option) (*s3control.DeleteAccessGrantOutput, error)
+	DeleteAccessGrantRequest(*s3control.DeleteAccessGrantInput) (*request.Request, *s3control.DeleteAccessGrantOutput)
+
+	DeleteAccessGrantsInstance(*s3control.DeleteAccessGrantsInstanceInput) (*s3control.DeleteAccessGrantsInstanceOutput, error)
+	DeleteAccessGrantsInstanceWithContext(aws.Context, *s3control.DeleteAccessGrantsInstanceInput, ...request.Option) (*s3control.DeleteAccessGrantsInstanceOutput, error)
+	DeleteAccessGrantsInstanceRequest(*s3control.DeleteAccessGrantsInstanceInput) (*request.Request, *s3control.DeleteAccessGrantsInstanceOutput)
+
+	DeleteAccessGrantsInstanceResourcePolicy(*s3control.DeleteAccessGrantsInstanceResourcePolicyInput) (*s3control.DeleteAccessGrantsInstanceResourcePolicyOutput, error)
+	DeleteAccessGrantsInstanceResourcePolicyWithContext(aws.Context, *s3control.DeleteAccessGrantsInstanceResourcePolicyInput, ...request.Option) (*s3control.DeleteAccessGrantsInstanceResourcePolicyOutput, error)
+	DeleteAccessGrantsInstanceResourcePolicyRequest(*s3control.DeleteAccessGrantsInstanceResourcePolicyInput) (*request.Request, *s3control.DeleteAccessGrantsInstanceResourcePolicyOutput)
+
+	DeleteAccessGrantsLocation(*s3control.DeleteAccessGrantsLocationInput) (*s3control.DeleteAccessGrantsLocationOutput, error)
+	DeleteAccessGrantsLocationWithContext(aws.Context, *s3control.DeleteAccessGrantsLocationInput, ...request.Option) (*s3control.DeleteAccessGrantsLocationOutput, error)
+	DeleteAccessGrantsLocationRequest(*s3control.DeleteAccessGrantsLocationInput) (*request.Request, *s3control.DeleteAccessGrantsLocationOutput)
 
 	DeleteAccessPoint(*s3control.DeleteAccessPointInput) (*s3control.DeleteAccessPointOutput, error)
 	DeleteAccessPointWithContext(aws.Context, *s3control.DeleteAccessPointInput, ...request.Option) (*s3control.DeleteAccessPointOutput, error)
@@ -108,6 +144,10 @@ type S3ControlAPI interface {
 	DeleteBucketPolicyWithContext(aws.Context, *s3control.DeleteBucketPolicyInput, ...request.Option) (*s3control.DeleteBucketPolicyOutput, error)
 	DeleteBucketPolicyRequest(*s3control.DeleteBucketPolicyInput) (*request.Request, *s3control.DeleteBucketPolicyOutput)
 
+	DeleteBucketReplication(*s3control.DeleteBucketReplicationInput) (*s3control.DeleteBucketReplicationOutput, error)
+	DeleteBucketReplicationWithContext(aws.Context, *s3control.DeleteBucketReplicationInput, ...request.Option) (*s3control.DeleteBucketReplicationOutput, error)
+	DeleteBucketReplicationRequest(*s3control.DeleteBucketReplicationInput) (*request.Request, *s3control.DeleteBucketReplicationOutput)
+
 	DeleteBucketTagging(*s3control.DeleteBucketTaggingInput) (*s3control.DeleteBucketTaggingOutput, error)
 	DeleteBucketTaggingWithContext(aws.Context, *s3control.DeleteBucketTaggingInput, ...request.Option) (*s3control.DeleteBucketTaggingOutput, error)
 	DeleteBucketTaggingRequest(*s3control.DeleteBucketTaggingInput) (*request.Request, *s3control.DeleteBucketTaggingOutput)
@@ -132,6 +172,10 @@ type S3ControlAPI interface {
 	DeleteStorageLensConfigurationTaggingWithContext(aws.Context, *s3control.DeleteStorageLensConfigurationTaggingInput, ...request.Option) (*s3control.DeleteStorageLensConfigurationTaggingOutput, error)
 	DeleteStorageLensConfigurationTaggingRequest(*s3control.DeleteStorageLensConfigurationTaggingInput) (*request.Request, *s3control.DeleteStorageLensConfigurationTaggingOutput)
 
+	DeleteStorageLensGroup(*s3control.DeleteStorageLensGroupInput) (*s3control.DeleteStorageLensGroupOutput, error)
+	DeleteStorageLensGroupWithContext(aws.Context, *s3control.DeleteStorageLensGroupInput, ...request.Option) (*s3control.DeleteStorageLensGroupOutput, error)
+	DeleteStorageLensGroupRequest(*s3control.DeleteStorageLensGroupInput) (*request.Request, *s3control.DeleteStorageLensGroupOutput)
+
 	DescribeJob(*s3control.DescribeJobInput) (*s3control.DescribeJobOutput, error)
 	DescribeJobWithContext(aws.Context, *s3control.DescribeJobInput, ...request.Option) (*s3control.DescribeJobOutput, error)
 	DescribeJobRequest(*s3control.DescribeJobInput) (*request.Request, *s3control.DescribeJobOutput)
@@ -139,6 +183,30 @@ type S3ControlAPI interface {
 	DescribeMultiRegionAccessPointOperation(*s3control.DescribeMultiRegionAccessPointOperationInput) (*s3control.DescribeMultiRegionAccessPointOperationOutput, error)
 	DescribeMultiRegionAccessPointOperationWithContext(aws.Context, *s3control.DescribeMultiRegionAccessPointOperationInput, ...request.Option) (*s3control.DescribeMultiRegionAccessPointOperationOutput, error)
 	DescribeMultiRegionAccessPointOperationRequest(*s3control.DescribeMultiRegionAccessPointOperationInput) (*request.Request, *s3control.DescribeMultiRegionAccessPointOperationOutput)
+
+	DissociateAccessGrantsIdentityCenter(*s3control.DissociateAccessGrantsIdentityCenterInput) (*s3control.DissociateAccessGrantsIdentityCenterOutput, error)
+	DissociateAccessGrantsIdentityCenterWithContext(aws.Context, *s3control.DissociateAccessGrantsIdentityCenterInput, ...request.Option) (*s3control.DissociateAccessGrantsIdentityCenterOutput, error)
+	DissociateAccessGrantsIdentityCenterRequest(*s3control.DissociateAccessGrantsIdentityCenterInput) (*request.Request, *s3control.DissociateAccessGrantsIdentityCenterOutput)
+
+	GetAccessGrant(*s3control.GetAccessGrantInput) (*s3control.GetAccessGrantOutput, error)
+	GetAccessGrantWithContext(aws.Context, *s3control.GetAccessGrantInput, ...request.Option) (*s3control.GetAccessGrantOutput, error)
+	GetAccessGrantRequest(*s3control.GetAccessGrantInput) (*request.Request, *s3control.GetAccessGrantOutput)
+
+	GetAccessGrantsInstance(*s3control.GetAccessGrantsInstanceInput) (*s3control.GetAccessGrantsInstanceOutput, error)
+	GetAccessGrantsInstanceWithContext(aws.Context, *s3control.GetAccessGrantsInstanceInput, ...request.Option) (*s3control.GetAccessGrantsInstanceOutput, error)
+	GetAccessGrantsInstanceRequest(*s3control.GetAccessGrantsInstanceInput) (*request.Request, *s3control.GetAccessGrantsInstanceOutput)
+
+	GetAccessGrantsInstanceForPrefix(*s3control.GetAccessGrantsInstanceForPrefixInput) (*s3control.GetAccessGrantsInstanceForPrefixOutput, error)
+	GetAccessGrantsInstanceForPrefixWithContext(aws.Context, *s3control.GetAccessGrantsInstanceForPrefixInput, ...request.Option) (*s3control.GetAccessGrantsInstanceForPrefixOutput, error)
+	GetAccessGrantsInstanceForPrefixRequest(*s3control.GetAccessGrantsInstanceForPrefixInput) (*request.Request, *s3control.GetAccessGrantsInstanceForPrefixOutput)
+
+	GetAccessGrantsInstanceResourcePolicy(*s3control.GetAccessGrantsInstanceResourcePolicyInput) (*s3control.GetAccessGrantsInstanceResourcePolicyOutput, error)
+	GetAccessGrantsInstanceResourcePolicyWithContext(aws.Context, *s3control.GetAccessGrantsInstanceResourcePolicyInput, ...request.Option) (*s3control.GetAccessGrantsInstanceResourcePolicyOutput, error)
+	GetAccessGrantsInstanceResourcePolicyRequest(*s3control.GetAccessGrantsInstanceResourcePolicyInput) (*request.Request, *s3control.GetAccessGrantsInstanceResourcePolicyOutput)
+
+	GetAccessGrantsLocation(*s3control.GetAccessGrantsLocationInput) (*s3control.GetAccessGrantsLocationOutput, error)
+	GetAccessGrantsLocationWithContext(aws.Context, *s3control.GetAccessGrantsLocationInput, ...request.Option) (*s3control.GetAccessGrantsLocationOutput, error)
+	GetAccessGrantsLocationRequest(*s3control.GetAccessGrantsLocationInput) (*request.Request, *s3control.GetAccessGrantsLocationOutput)
 
 	GetAccessPoint(*s3control.GetAccessPointInput) (*s3control.GetAccessPointOutput, error)
 	GetAccessPointWithContext(aws.Context, *s3control.GetAccessPointInput, ...request.Option) (*s3control.GetAccessPointOutput, error)
@@ -180,9 +248,21 @@ type S3ControlAPI interface {
 	GetBucketPolicyWithContext(aws.Context, *s3control.GetBucketPolicyInput, ...request.Option) (*s3control.GetBucketPolicyOutput, error)
 	GetBucketPolicyRequest(*s3control.GetBucketPolicyInput) (*request.Request, *s3control.GetBucketPolicyOutput)
 
+	GetBucketReplication(*s3control.GetBucketReplicationInput) (*s3control.GetBucketReplicationOutput, error)
+	GetBucketReplicationWithContext(aws.Context, *s3control.GetBucketReplicationInput, ...request.Option) (*s3control.GetBucketReplicationOutput, error)
+	GetBucketReplicationRequest(*s3control.GetBucketReplicationInput) (*request.Request, *s3control.GetBucketReplicationOutput)
+
 	GetBucketTagging(*s3control.GetBucketTaggingInput) (*s3control.GetBucketTaggingOutput, error)
 	GetBucketTaggingWithContext(aws.Context, *s3control.GetBucketTaggingInput, ...request.Option) (*s3control.GetBucketTaggingOutput, error)
 	GetBucketTaggingRequest(*s3control.GetBucketTaggingInput) (*request.Request, *s3control.GetBucketTaggingOutput)
+
+	GetBucketVersioning(*s3control.GetBucketVersioningInput) (*s3control.GetBucketVersioningOutput, error)
+	GetBucketVersioningWithContext(aws.Context, *s3control.GetBucketVersioningInput, ...request.Option) (*s3control.GetBucketVersioningOutput, error)
+	GetBucketVersioningRequest(*s3control.GetBucketVersioningInput) (*request.Request, *s3control.GetBucketVersioningOutput)
+
+	GetDataAccess(*s3control.GetDataAccessInput) (*s3control.GetDataAccessOutput, error)
+	GetDataAccessWithContext(aws.Context, *s3control.GetDataAccessInput, ...request.Option) (*s3control.GetDataAccessOutput, error)
+	GetDataAccessRequest(*s3control.GetDataAccessInput) (*request.Request, *s3control.GetDataAccessOutput)
 
 	GetJobTagging(*s3control.GetJobTaggingInput) (*s3control.GetJobTaggingOutput, error)
 	GetJobTaggingWithContext(aws.Context, *s3control.GetJobTaggingInput, ...request.Option) (*s3control.GetJobTaggingOutput, error)
@@ -200,6 +280,10 @@ type S3ControlAPI interface {
 	GetMultiRegionAccessPointPolicyStatusWithContext(aws.Context, *s3control.GetMultiRegionAccessPointPolicyStatusInput, ...request.Option) (*s3control.GetMultiRegionAccessPointPolicyStatusOutput, error)
 	GetMultiRegionAccessPointPolicyStatusRequest(*s3control.GetMultiRegionAccessPointPolicyStatusInput) (*request.Request, *s3control.GetMultiRegionAccessPointPolicyStatusOutput)
 
+	GetMultiRegionAccessPointRoutes(*s3control.GetMultiRegionAccessPointRoutesInput) (*s3control.GetMultiRegionAccessPointRoutesOutput, error)
+	GetMultiRegionAccessPointRoutesWithContext(aws.Context, *s3control.GetMultiRegionAccessPointRoutesInput, ...request.Option) (*s3control.GetMultiRegionAccessPointRoutesOutput, error)
+	GetMultiRegionAccessPointRoutesRequest(*s3control.GetMultiRegionAccessPointRoutesInput) (*request.Request, *s3control.GetMultiRegionAccessPointRoutesOutput)
+
 	GetPublicAccessBlock(*s3control.GetPublicAccessBlockInput) (*s3control.GetPublicAccessBlockOutput, error)
 	GetPublicAccessBlockWithContext(aws.Context, *s3control.GetPublicAccessBlockInput, ...request.Option) (*s3control.GetPublicAccessBlockOutput, error)
 	GetPublicAccessBlockRequest(*s3control.GetPublicAccessBlockInput) (*request.Request, *s3control.GetPublicAccessBlockOutput)
@@ -211,6 +295,31 @@ type S3ControlAPI interface {
 	GetStorageLensConfigurationTagging(*s3control.GetStorageLensConfigurationTaggingInput) (*s3control.GetStorageLensConfigurationTaggingOutput, error)
 	GetStorageLensConfigurationTaggingWithContext(aws.Context, *s3control.GetStorageLensConfigurationTaggingInput, ...request.Option) (*s3control.GetStorageLensConfigurationTaggingOutput, error)
 	GetStorageLensConfigurationTaggingRequest(*s3control.GetStorageLensConfigurationTaggingInput) (*request.Request, *s3control.GetStorageLensConfigurationTaggingOutput)
+
+	GetStorageLensGroup(*s3control.GetStorageLensGroupInput) (*s3control.GetStorageLensGroupOutput, error)
+	GetStorageLensGroupWithContext(aws.Context, *s3control.GetStorageLensGroupInput, ...request.Option) (*s3control.GetStorageLensGroupOutput, error)
+	GetStorageLensGroupRequest(*s3control.GetStorageLensGroupInput) (*request.Request, *s3control.GetStorageLensGroupOutput)
+
+	ListAccessGrants(*s3control.ListAccessGrantsInput) (*s3control.ListAccessGrantsOutput, error)
+	ListAccessGrantsWithContext(aws.Context, *s3control.ListAccessGrantsInput, ...request.Option) (*s3control.ListAccessGrantsOutput, error)
+	ListAccessGrantsRequest(*s3control.ListAccessGrantsInput) (*request.Request, *s3control.ListAccessGrantsOutput)
+
+	ListAccessGrantsPages(*s3control.ListAccessGrantsInput, func(*s3control.ListAccessGrantsOutput, bool) bool) error
+	ListAccessGrantsPagesWithContext(aws.Context, *s3control.ListAccessGrantsInput, func(*s3control.ListAccessGrantsOutput, bool) bool, ...request.Option) error
+
+	ListAccessGrantsInstances(*s3control.ListAccessGrantsInstancesInput) (*s3control.ListAccessGrantsInstancesOutput, error)
+	ListAccessGrantsInstancesWithContext(aws.Context, *s3control.ListAccessGrantsInstancesInput, ...request.Option) (*s3control.ListAccessGrantsInstancesOutput, error)
+	ListAccessGrantsInstancesRequest(*s3control.ListAccessGrantsInstancesInput) (*request.Request, *s3control.ListAccessGrantsInstancesOutput)
+
+	ListAccessGrantsInstancesPages(*s3control.ListAccessGrantsInstancesInput, func(*s3control.ListAccessGrantsInstancesOutput, bool) bool) error
+	ListAccessGrantsInstancesPagesWithContext(aws.Context, *s3control.ListAccessGrantsInstancesInput, func(*s3control.ListAccessGrantsInstancesOutput, bool) bool, ...request.Option) error
+
+	ListAccessGrantsLocations(*s3control.ListAccessGrantsLocationsInput) (*s3control.ListAccessGrantsLocationsOutput, error)
+	ListAccessGrantsLocationsWithContext(aws.Context, *s3control.ListAccessGrantsLocationsInput, ...request.Option) (*s3control.ListAccessGrantsLocationsOutput, error)
+	ListAccessGrantsLocationsRequest(*s3control.ListAccessGrantsLocationsInput) (*request.Request, *s3control.ListAccessGrantsLocationsOutput)
+
+	ListAccessGrantsLocationsPages(*s3control.ListAccessGrantsLocationsInput, func(*s3control.ListAccessGrantsLocationsOutput, bool) bool) error
+	ListAccessGrantsLocationsPagesWithContext(aws.Context, *s3control.ListAccessGrantsLocationsInput, func(*s3control.ListAccessGrantsLocationsOutput, bool) bool, ...request.Option) error
 
 	ListAccessPoints(*s3control.ListAccessPointsInput) (*s3control.ListAccessPointsOutput, error)
 	ListAccessPointsWithContext(aws.Context, *s3control.ListAccessPointsInput, ...request.Option) (*s3control.ListAccessPointsOutput, error)
@@ -254,6 +363,21 @@ type S3ControlAPI interface {
 	ListStorageLensConfigurationsPages(*s3control.ListStorageLensConfigurationsInput, func(*s3control.ListStorageLensConfigurationsOutput, bool) bool) error
 	ListStorageLensConfigurationsPagesWithContext(aws.Context, *s3control.ListStorageLensConfigurationsInput, func(*s3control.ListStorageLensConfigurationsOutput, bool) bool, ...request.Option) error
 
+	ListStorageLensGroups(*s3control.ListStorageLensGroupsInput) (*s3control.ListStorageLensGroupsOutput, error)
+	ListStorageLensGroupsWithContext(aws.Context, *s3control.ListStorageLensGroupsInput, ...request.Option) (*s3control.ListStorageLensGroupsOutput, error)
+	ListStorageLensGroupsRequest(*s3control.ListStorageLensGroupsInput) (*request.Request, *s3control.ListStorageLensGroupsOutput)
+
+	ListStorageLensGroupsPages(*s3control.ListStorageLensGroupsInput, func(*s3control.ListStorageLensGroupsOutput, bool) bool) error
+	ListStorageLensGroupsPagesWithContext(aws.Context, *s3control.ListStorageLensGroupsInput, func(*s3control.ListStorageLensGroupsOutput, bool) bool, ...request.Option) error
+
+	ListTagsForResource(*s3control.ListTagsForResourceInput) (*s3control.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *s3control.ListTagsForResourceInput, ...request.Option) (*s3control.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*s3control.ListTagsForResourceInput) (*request.Request, *s3control.ListTagsForResourceOutput)
+
+	PutAccessGrantsInstanceResourcePolicy(*s3control.PutAccessGrantsInstanceResourcePolicyInput) (*s3control.PutAccessGrantsInstanceResourcePolicyOutput, error)
+	PutAccessGrantsInstanceResourcePolicyWithContext(aws.Context, *s3control.PutAccessGrantsInstanceResourcePolicyInput, ...request.Option) (*s3control.PutAccessGrantsInstanceResourcePolicyOutput, error)
+	PutAccessGrantsInstanceResourcePolicyRequest(*s3control.PutAccessGrantsInstanceResourcePolicyInput) (*request.Request, *s3control.PutAccessGrantsInstanceResourcePolicyOutput)
+
 	PutAccessPointConfigurationForObjectLambda(*s3control.PutAccessPointConfigurationForObjectLambdaInput) (*s3control.PutAccessPointConfigurationForObjectLambdaOutput, error)
 	PutAccessPointConfigurationForObjectLambdaWithContext(aws.Context, *s3control.PutAccessPointConfigurationForObjectLambdaInput, ...request.Option) (*s3control.PutAccessPointConfigurationForObjectLambdaOutput, error)
 	PutAccessPointConfigurationForObjectLambdaRequest(*s3control.PutAccessPointConfigurationForObjectLambdaInput) (*request.Request, *s3control.PutAccessPointConfigurationForObjectLambdaOutput)
@@ -274,9 +398,17 @@ type S3ControlAPI interface {
 	PutBucketPolicyWithContext(aws.Context, *s3control.PutBucketPolicyInput, ...request.Option) (*s3control.PutBucketPolicyOutput, error)
 	PutBucketPolicyRequest(*s3control.PutBucketPolicyInput) (*request.Request, *s3control.PutBucketPolicyOutput)
 
+	PutBucketReplication(*s3control.PutBucketReplicationInput) (*s3control.PutBucketReplicationOutput, error)
+	PutBucketReplicationWithContext(aws.Context, *s3control.PutBucketReplicationInput, ...request.Option) (*s3control.PutBucketReplicationOutput, error)
+	PutBucketReplicationRequest(*s3control.PutBucketReplicationInput) (*request.Request, *s3control.PutBucketReplicationOutput)
+
 	PutBucketTagging(*s3control.PutBucketTaggingInput) (*s3control.PutBucketTaggingOutput, error)
 	PutBucketTaggingWithContext(aws.Context, *s3control.PutBucketTaggingInput, ...request.Option) (*s3control.PutBucketTaggingOutput, error)
 	PutBucketTaggingRequest(*s3control.PutBucketTaggingInput) (*request.Request, *s3control.PutBucketTaggingOutput)
+
+	PutBucketVersioning(*s3control.PutBucketVersioningInput) (*s3control.PutBucketVersioningOutput, error)
+	PutBucketVersioningWithContext(aws.Context, *s3control.PutBucketVersioningInput, ...request.Option) (*s3control.PutBucketVersioningOutput, error)
+	PutBucketVersioningRequest(*s3control.PutBucketVersioningInput) (*request.Request, *s3control.PutBucketVersioningOutput)
 
 	PutJobTagging(*s3control.PutJobTaggingInput) (*s3control.PutJobTaggingOutput, error)
 	PutJobTaggingWithContext(aws.Context, *s3control.PutJobTaggingInput, ...request.Option) (*s3control.PutJobTaggingOutput, error)
@@ -298,6 +430,22 @@ type S3ControlAPI interface {
 	PutStorageLensConfigurationTaggingWithContext(aws.Context, *s3control.PutStorageLensConfigurationTaggingInput, ...request.Option) (*s3control.PutStorageLensConfigurationTaggingOutput, error)
 	PutStorageLensConfigurationTaggingRequest(*s3control.PutStorageLensConfigurationTaggingInput) (*request.Request, *s3control.PutStorageLensConfigurationTaggingOutput)
 
+	SubmitMultiRegionAccessPointRoutes(*s3control.SubmitMultiRegionAccessPointRoutesInput) (*s3control.SubmitMultiRegionAccessPointRoutesOutput, error)
+	SubmitMultiRegionAccessPointRoutesWithContext(aws.Context, *s3control.SubmitMultiRegionAccessPointRoutesInput, ...request.Option) (*s3control.SubmitMultiRegionAccessPointRoutesOutput, error)
+	SubmitMultiRegionAccessPointRoutesRequest(*s3control.SubmitMultiRegionAccessPointRoutesInput) (*request.Request, *s3control.SubmitMultiRegionAccessPointRoutesOutput)
+
+	TagResource(*s3control.TagResourceInput) (*s3control.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *s3control.TagResourceInput, ...request.Option) (*s3control.TagResourceOutput, error)
+	TagResourceRequest(*s3control.TagResourceInput) (*request.Request, *s3control.TagResourceOutput)
+
+	UntagResource(*s3control.UntagResourceInput) (*s3control.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *s3control.UntagResourceInput, ...request.Option) (*s3control.UntagResourceOutput, error)
+	UntagResourceRequest(*s3control.UntagResourceInput) (*request.Request, *s3control.UntagResourceOutput)
+
+	UpdateAccessGrantsLocation(*s3control.UpdateAccessGrantsLocationInput) (*s3control.UpdateAccessGrantsLocationOutput, error)
+	UpdateAccessGrantsLocationWithContext(aws.Context, *s3control.UpdateAccessGrantsLocationInput, ...request.Option) (*s3control.UpdateAccessGrantsLocationOutput, error)
+	UpdateAccessGrantsLocationRequest(*s3control.UpdateAccessGrantsLocationInput) (*request.Request, *s3control.UpdateAccessGrantsLocationOutput)
+
 	UpdateJobPriority(*s3control.UpdateJobPriorityInput) (*s3control.UpdateJobPriorityOutput, error)
 	UpdateJobPriorityWithContext(aws.Context, *s3control.UpdateJobPriorityInput, ...request.Option) (*s3control.UpdateJobPriorityOutput, error)
 	UpdateJobPriorityRequest(*s3control.UpdateJobPriorityInput) (*request.Request, *s3control.UpdateJobPriorityOutput)
@@ -305,6 +453,10 @@ type S3ControlAPI interface {
 	UpdateJobStatus(*s3control.UpdateJobStatusInput) (*s3control.UpdateJobStatusOutput, error)
 	UpdateJobStatusWithContext(aws.Context, *s3control.UpdateJobStatusInput, ...request.Option) (*s3control.UpdateJobStatusOutput, error)
 	UpdateJobStatusRequest(*s3control.UpdateJobStatusInput) (*request.Request, *s3control.UpdateJobStatusOutput)
+
+	UpdateStorageLensGroup(*s3control.UpdateStorageLensGroupInput) (*s3control.UpdateStorageLensGroupOutput, error)
+	UpdateStorageLensGroupWithContext(aws.Context, *s3control.UpdateStorageLensGroupInput, ...request.Option) (*s3control.UpdateStorageLensGroupOutput, error)
+	UpdateStorageLensGroupRequest(*s3control.UpdateStorageLensGroupInput) (*request.Request, *s3control.UpdateStorageLensGroupOutput)
 }
 
 var _ S3ControlAPI = (*s3control.S3Control)(nil)

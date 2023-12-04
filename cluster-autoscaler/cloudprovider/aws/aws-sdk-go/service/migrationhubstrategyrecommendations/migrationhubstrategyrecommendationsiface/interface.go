@@ -76,6 +76,10 @@ type MigrationHubStrategyRecommendationsAPI interface {
 	GetImportFileTaskWithContext(aws.Context, *migrationhubstrategyrecommendations.GetImportFileTaskInput, ...request.Option) (*migrationhubstrategyrecommendations.GetImportFileTaskOutput, error)
 	GetImportFileTaskRequest(*migrationhubstrategyrecommendations.GetImportFileTaskInput) (*request.Request, *migrationhubstrategyrecommendations.GetImportFileTaskOutput)
 
+	GetLatestAssessmentId(*migrationhubstrategyrecommendations.GetLatestAssessmentIdInput) (*migrationhubstrategyrecommendations.GetLatestAssessmentIdOutput, error)
+	GetLatestAssessmentIdWithContext(aws.Context, *migrationhubstrategyrecommendations.GetLatestAssessmentIdInput, ...request.Option) (*migrationhubstrategyrecommendations.GetLatestAssessmentIdOutput, error)
+	GetLatestAssessmentIdRequest(*migrationhubstrategyrecommendations.GetLatestAssessmentIdInput) (*request.Request, *migrationhubstrategyrecommendations.GetLatestAssessmentIdOutput)
+
 	GetPortfolioPreferences(*migrationhubstrategyrecommendations.GetPortfolioPreferencesInput) (*migrationhubstrategyrecommendations.GetPortfolioPreferencesOutput, error)
 	GetPortfolioPreferencesWithContext(aws.Context, *migrationhubstrategyrecommendations.GetPortfolioPreferencesInput, ...request.Option) (*migrationhubstrategyrecommendations.GetPortfolioPreferencesOutput, error)
 	GetPortfolioPreferencesRequest(*migrationhubstrategyrecommendations.GetPortfolioPreferencesInput) (*request.Request, *migrationhubstrategyrecommendations.GetPortfolioPreferencesOutput)
@@ -98,6 +102,13 @@ type MigrationHubStrategyRecommendationsAPI interface {
 	GetServerStrategies(*migrationhubstrategyrecommendations.GetServerStrategiesInput) (*migrationhubstrategyrecommendations.GetServerStrategiesOutput, error)
 	GetServerStrategiesWithContext(aws.Context, *migrationhubstrategyrecommendations.GetServerStrategiesInput, ...request.Option) (*migrationhubstrategyrecommendations.GetServerStrategiesOutput, error)
 	GetServerStrategiesRequest(*migrationhubstrategyrecommendations.GetServerStrategiesInput) (*request.Request, *migrationhubstrategyrecommendations.GetServerStrategiesOutput)
+
+	ListAnalyzableServers(*migrationhubstrategyrecommendations.ListAnalyzableServersInput) (*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, error)
+	ListAnalyzableServersWithContext(aws.Context, *migrationhubstrategyrecommendations.ListAnalyzableServersInput, ...request.Option) (*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, error)
+	ListAnalyzableServersRequest(*migrationhubstrategyrecommendations.ListAnalyzableServersInput) (*request.Request, *migrationhubstrategyrecommendations.ListAnalyzableServersOutput)
+
+	ListAnalyzableServersPages(*migrationhubstrategyrecommendations.ListAnalyzableServersInput, func(*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, bool) bool) error
+	ListAnalyzableServersPagesWithContext(aws.Context, *migrationhubstrategyrecommendations.ListAnalyzableServersInput, func(*migrationhubstrategyrecommendations.ListAnalyzableServersOutput, bool) bool, ...request.Option) error
 
 	ListApplicationComponents(*migrationhubstrategyrecommendations.ListApplicationComponentsInput) (*migrationhubstrategyrecommendations.ListApplicationComponentsOutput, error)
 	ListApplicationComponentsWithContext(aws.Context, *migrationhubstrategyrecommendations.ListApplicationComponentsInput, ...request.Option) (*migrationhubstrategyrecommendations.ListApplicationComponentsOutput, error)

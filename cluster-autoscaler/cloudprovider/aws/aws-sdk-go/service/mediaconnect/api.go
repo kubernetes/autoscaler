@@ -12,6 +12,228 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+const opAddBridgeOutputs = "AddBridgeOutputs"
+
+// AddBridgeOutputsRequest generates a "aws/request.Request" representing the
+// client's request for the AddBridgeOutputs operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AddBridgeOutputs for more information on using the AddBridgeOutputs
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AddBridgeOutputsRequest method.
+//	req, resp := client.AddBridgeOutputsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddBridgeOutputs
+func (c *MediaConnect) AddBridgeOutputsRequest(input *AddBridgeOutputsInput) (req *request.Request, output *AddBridgeOutputsOutput) {
+	op := &request.Operation{
+		Name:       opAddBridgeOutputs,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/outputs",
+	}
+
+	if input == nil {
+		input = &AddBridgeOutputsInput{}
+	}
+
+	output = &AddBridgeOutputsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AddBridgeOutputs API operation for AWS MediaConnect.
+//
+// Adds outputs to an existing bridge.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation AddBridgeOutputs for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddBridgeOutputs
+func (c *MediaConnect) AddBridgeOutputs(input *AddBridgeOutputsInput) (*AddBridgeOutputsOutput, error) {
+	req, out := c.AddBridgeOutputsRequest(input)
+	return out, req.Send()
+}
+
+// AddBridgeOutputsWithContext is the same as AddBridgeOutputs with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AddBridgeOutputs for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) AddBridgeOutputsWithContext(ctx aws.Context, input *AddBridgeOutputsInput, opts ...request.Option) (*AddBridgeOutputsOutput, error) {
+	req, out := c.AddBridgeOutputsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opAddBridgeSources = "AddBridgeSources"
+
+// AddBridgeSourcesRequest generates a "aws/request.Request" representing the
+// client's request for the AddBridgeSources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AddBridgeSources for more information on using the AddBridgeSources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AddBridgeSourcesRequest method.
+//	req, resp := client.AddBridgeSourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddBridgeSources
+func (c *MediaConnect) AddBridgeSourcesRequest(input *AddBridgeSourcesInput) (req *request.Request, output *AddBridgeSourcesOutput) {
+	op := &request.Operation{
+		Name:       opAddBridgeSources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/sources",
+	}
+
+	if input == nil {
+		input = &AddBridgeSourcesInput{}
+	}
+
+	output = &AddBridgeSourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AddBridgeSources API operation for AWS MediaConnect.
+//
+// Adds sources to an existing bridge.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation AddBridgeSources for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/AddBridgeSources
+func (c *MediaConnect) AddBridgeSources(input *AddBridgeSourcesInput) (*AddBridgeSourcesOutput, error) {
+	req, out := c.AddBridgeSourcesRequest(input)
+	return out, req.Send()
+}
+
+// AddBridgeSourcesWithContext is the same as AddBridgeSources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AddBridgeSources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) AddBridgeSourcesWithContext(ctx aws.Context, input *AddBridgeSourcesInput, opts ...request.Option) (*AddBridgeSourcesOutput, error) {
+	req, out := c.AddBridgeSourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opAddFlowMediaStreams = "AddFlowMediaStreams"
 
 // AddFlowMediaStreamsRequest generates a "aws/request.Request" representing the
@@ -443,6 +665,117 @@ func (c *MediaConnect) AddFlowVpcInterfacesWithContext(ctx aws.Context, input *A
 	return out, req.Send()
 }
 
+const opCreateBridge = "CreateBridge"
+
+// CreateBridgeRequest generates a "aws/request.Request" representing the
+// client's request for the CreateBridge operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateBridge for more information on using the CreateBridge
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateBridgeRequest method.
+//	req, resp := client.CreateBridgeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/CreateBridge
+func (c *MediaConnect) CreateBridgeRequest(input *CreateBridgeInput) (req *request.Request, output *CreateBridgeOutput) {
+	op := &request.Operation{
+		Name:       opCreateBridge,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/bridges",
+	}
+
+	if input == nil {
+		input = &CreateBridgeInput{}
+	}
+
+	output = &CreateBridgeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateBridge API operation for AWS MediaConnect.
+//
+// Creates a new bridge. The request must include one source.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation CreateBridge for usage and error information.
+//
+// Returned Error Types:
+//
+//   - CreateBridge420Exception
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/CreateBridge
+func (c *MediaConnect) CreateBridge(input *CreateBridgeInput) (*CreateBridgeOutput, error) {
+	req, out := c.CreateBridgeRequest(input)
+	return out, req.Send()
+}
+
+// CreateBridgeWithContext is the same as CreateBridge with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateBridge for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) CreateBridgeWithContext(ctx aws.Context, input *CreateBridgeInput, opts ...request.Option) (*CreateBridgeOutput, error) {
+	req, out := c.CreateBridgeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateFlow = "CreateFlow"
 
 // CreateFlowRequest generates a "aws/request.Request" representing the
@@ -545,6 +878,229 @@ func (c *MediaConnect) CreateFlow(input *CreateFlowInput) (*CreateFlowOutput, er
 // for more information on using Contexts.
 func (c *MediaConnect) CreateFlowWithContext(ctx aws.Context, input *CreateFlowInput, opts ...request.Option) (*CreateFlowOutput, error) {
 	req, out := c.CreateFlowRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateGateway = "CreateGateway"
+
+// CreateGatewayRequest generates a "aws/request.Request" representing the
+// client's request for the CreateGateway operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateGateway for more information on using the CreateGateway
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateGatewayRequest method.
+//	req, resp := client.CreateGatewayRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/CreateGateway
+func (c *MediaConnect) CreateGatewayRequest(input *CreateGatewayInput) (req *request.Request, output *CreateGatewayOutput) {
+	op := &request.Operation{
+		Name:       opCreateGateway,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v1/gateways",
+	}
+
+	if input == nil {
+		input = &CreateGatewayInput{}
+	}
+
+	output = &CreateGatewayOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateGateway API operation for AWS MediaConnect.
+//
+// Creates a new gateway. The request must include at least one network (up
+// to 4).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation CreateGateway for usage and error information.
+//
+// Returned Error Types:
+//
+//   - CreateGateway420Exception
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/CreateGateway
+func (c *MediaConnect) CreateGateway(input *CreateGatewayInput) (*CreateGatewayOutput, error) {
+	req, out := c.CreateGatewayRequest(input)
+	return out, req.Send()
+}
+
+// CreateGatewayWithContext is the same as CreateGateway with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateGateway for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) CreateGatewayWithContext(ctx aws.Context, input *CreateGatewayInput, opts ...request.Option) (*CreateGatewayOutput, error) {
+	req, out := c.CreateGatewayRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteBridge = "DeleteBridge"
+
+// DeleteBridgeRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteBridge operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteBridge for more information on using the DeleteBridge
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteBridgeRequest method.
+//	req, resp := client.DeleteBridgeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeleteBridge
+func (c *MediaConnect) DeleteBridgeRequest(input *DeleteBridgeInput) (req *request.Request, output *DeleteBridgeOutput) {
+	op := &request.Operation{
+		Name:       opDeleteBridge,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/bridges/{bridgeArn}",
+	}
+
+	if input == nil {
+		input = &DeleteBridgeInput{}
+	}
+
+	output = &DeleteBridgeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteBridge API operation for AWS MediaConnect.
+//
+// Deletes a bridge. Before you can delete a bridge, you must stop the bridge.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation DeleteBridge for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeleteBridge
+func (c *MediaConnect) DeleteBridge(input *DeleteBridgeInput) (*DeleteBridgeOutput, error) {
+	req, out := c.DeleteBridgeRequest(input)
+	return out, req.Send()
+}
+
+// DeleteBridgeWithContext is the same as DeleteBridge with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteBridge for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) DeleteBridgeWithContext(ctx aws.Context, input *DeleteBridgeInput, opts ...request.Option) (*DeleteBridgeOutput, error) {
+	req, out := c.DeleteBridgeRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -656,6 +1212,342 @@ func (c *MediaConnect) DeleteFlowWithContext(ctx aws.Context, input *DeleteFlowI
 	return out, req.Send()
 }
 
+const opDeleteGateway = "DeleteGateway"
+
+// DeleteGatewayRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteGateway operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteGateway for more information on using the DeleteGateway
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteGatewayRequest method.
+//	req, resp := client.DeleteGatewayRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeleteGateway
+func (c *MediaConnect) DeleteGatewayRequest(input *DeleteGatewayInput) (req *request.Request, output *DeleteGatewayOutput) {
+	op := &request.Operation{
+		Name:       opDeleteGateway,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/gateways/{gatewayArn}",
+	}
+
+	if input == nil {
+		input = &DeleteGatewayInput{}
+	}
+
+	output = &DeleteGatewayOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteGateway API operation for AWS MediaConnect.
+//
+// Deletes a gateway. Before you can delete a gateway, you must deregister its
+// instances and delete its bridges.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation DeleteGateway for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeleteGateway
+func (c *MediaConnect) DeleteGateway(input *DeleteGatewayInput) (*DeleteGatewayOutput, error) {
+	req, out := c.DeleteGatewayRequest(input)
+	return out, req.Send()
+}
+
+// DeleteGatewayWithContext is the same as DeleteGateway with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteGateway for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) DeleteGatewayWithContext(ctx aws.Context, input *DeleteGatewayInput, opts ...request.Option) (*DeleteGatewayOutput, error) {
+	req, out := c.DeleteGatewayRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeregisterGatewayInstance = "DeregisterGatewayInstance"
+
+// DeregisterGatewayInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the DeregisterGatewayInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeregisterGatewayInstance for more information on using the DeregisterGatewayInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeregisterGatewayInstanceRequest method.
+//	req, resp := client.DeregisterGatewayInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeregisterGatewayInstance
+func (c *MediaConnect) DeregisterGatewayInstanceRequest(input *DeregisterGatewayInstanceInput) (req *request.Request, output *DeregisterGatewayInstanceOutput) {
+	op := &request.Operation{
+		Name:       opDeregisterGatewayInstance,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/gateway-instances/{gatewayInstanceArn}",
+	}
+
+	if input == nil {
+		input = &DeregisterGatewayInstanceInput{}
+	}
+
+	output = &DeregisterGatewayInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeregisterGatewayInstance API operation for AWS MediaConnect.
+//
+// Deregisters an instance. Before you deregister an instance, all bridges running
+// on the instance must be stopped. If you want to deregister an instance without
+// stopping the bridges, you must use the --force option.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation DeregisterGatewayInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DeregisterGatewayInstance
+func (c *MediaConnect) DeregisterGatewayInstance(input *DeregisterGatewayInstanceInput) (*DeregisterGatewayInstanceOutput, error) {
+	req, out := c.DeregisterGatewayInstanceRequest(input)
+	return out, req.Send()
+}
+
+// DeregisterGatewayInstanceWithContext is the same as DeregisterGatewayInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeregisterGatewayInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) DeregisterGatewayInstanceWithContext(ctx aws.Context, input *DeregisterGatewayInstanceInput, opts ...request.Option) (*DeregisterGatewayInstanceOutput, error) {
+	req, out := c.DeregisterGatewayInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeBridge = "DescribeBridge"
+
+// DescribeBridgeRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeBridge operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeBridge for more information on using the DescribeBridge
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeBridgeRequest method.
+//	req, resp := client.DescribeBridgeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeBridge
+func (c *MediaConnect) DescribeBridgeRequest(input *DescribeBridgeInput) (req *request.Request, output *DescribeBridgeOutput) {
+	op := &request.Operation{
+		Name:       opDescribeBridge,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/bridges/{bridgeArn}",
+	}
+
+	if input == nil {
+		input = &DescribeBridgeInput{}
+	}
+
+	output = &DescribeBridgeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeBridge API operation for AWS MediaConnect.
+//
+// Displays the details of a bridge.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation DescribeBridge for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeBridge
+func (c *MediaConnect) DescribeBridge(input *DescribeBridgeInput) (*DescribeBridgeOutput, error) {
+	req, out := c.DescribeBridgeRequest(input)
+	return out, req.Send()
+}
+
+// DescribeBridgeWithContext is the same as DescribeBridge with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeBridge for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) DescribeBridgeWithContext(ctx aws.Context, input *DescribeBridgeInput, opts ...request.Option) (*DescribeBridgeOutput, error) {
+	req, out := c.DescribeBridgeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeFlow = "DescribeFlow"
 
 // DescribeFlowRequest generates a "aws/request.Request" representing the
@@ -759,6 +1651,229 @@ func (c *MediaConnect) DescribeFlow(input *DescribeFlowInput) (*DescribeFlowOutp
 // for more information on using Contexts.
 func (c *MediaConnect) DescribeFlowWithContext(ctx aws.Context, input *DescribeFlowInput, opts ...request.Option) (*DescribeFlowOutput, error) {
 	req, out := c.DescribeFlowRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeGateway = "DescribeGateway"
+
+// DescribeGatewayRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeGateway operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeGateway for more information on using the DescribeGateway
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeGatewayRequest method.
+//	req, resp := client.DescribeGatewayRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeGateway
+func (c *MediaConnect) DescribeGatewayRequest(input *DescribeGatewayInput) (req *request.Request, output *DescribeGatewayOutput) {
+	op := &request.Operation{
+		Name:       opDescribeGateway,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/gateways/{gatewayArn}",
+	}
+
+	if input == nil {
+		input = &DescribeGatewayInput{}
+	}
+
+	output = &DescribeGatewayOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeGateway API operation for AWS MediaConnect.
+//
+// Displays the details of a gateway. The response includes the gateway ARN,
+// name, and CIDR blocks, as well as details about the networks.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation DescribeGateway for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeGateway
+func (c *MediaConnect) DescribeGateway(input *DescribeGatewayInput) (*DescribeGatewayOutput, error) {
+	req, out := c.DescribeGatewayRequest(input)
+	return out, req.Send()
+}
+
+// DescribeGatewayWithContext is the same as DescribeGateway with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeGateway for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) DescribeGatewayWithContext(ctx aws.Context, input *DescribeGatewayInput, opts ...request.Option) (*DescribeGatewayOutput, error) {
+	req, out := c.DescribeGatewayRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeGatewayInstance = "DescribeGatewayInstance"
+
+// DescribeGatewayInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeGatewayInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeGatewayInstance for more information on using the DescribeGatewayInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeGatewayInstanceRequest method.
+//	req, resp := client.DescribeGatewayInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeGatewayInstance
+func (c *MediaConnect) DescribeGatewayInstanceRequest(input *DescribeGatewayInstanceInput) (req *request.Request, output *DescribeGatewayInstanceOutput) {
+	op := &request.Operation{
+		Name:       opDescribeGatewayInstance,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/gateway-instances/{gatewayInstanceArn}",
+	}
+
+	if input == nil {
+		input = &DescribeGatewayInstanceInput{}
+	}
+
+	output = &DescribeGatewayInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeGatewayInstance API operation for AWS MediaConnect.
+//
+// Displays the details of an instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation DescribeGatewayInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/DescribeGatewayInstance
+func (c *MediaConnect) DescribeGatewayInstance(input *DescribeGatewayInstanceInput) (*DescribeGatewayInstanceOutput, error) {
+	req, out := c.DescribeGatewayInstanceRequest(input)
+	return out, req.Send()
+}
+
+// DescribeGatewayInstanceWithContext is the same as DescribeGatewayInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeGatewayInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) DescribeGatewayInstanceWithContext(ctx aws.Context, input *DescribeGatewayInstanceInput, opts ...request.Option) (*DescribeGatewayInstanceOutput, error) {
+	req, out := c.DescribeGatewayInstanceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1080,6 +2195,165 @@ func (c *MediaConnect) GrantFlowEntitlementsWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opListBridges = "ListBridges"
+
+// ListBridgesRequest generates a "aws/request.Request" representing the
+// client's request for the ListBridges operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListBridges for more information on using the ListBridges
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListBridgesRequest method.
+//	req, resp := client.ListBridgesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListBridges
+func (c *MediaConnect) ListBridgesRequest(input *ListBridgesInput) (req *request.Request, output *ListBridgesOutput) {
+	op := &request.Operation{
+		Name:       opListBridges,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/bridges",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListBridgesInput{}
+	}
+
+	output = &ListBridgesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListBridges API operation for AWS MediaConnect.
+//
+// Displays a list of bridges that are associated with this account and an optionally
+// specified Arn. This request returns a paginated result.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation ListBridges for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListBridges
+func (c *MediaConnect) ListBridges(input *ListBridgesInput) (*ListBridgesOutput, error) {
+	req, out := c.ListBridgesRequest(input)
+	return out, req.Send()
+}
+
+// ListBridgesWithContext is the same as ListBridges with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListBridges for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) ListBridgesWithContext(ctx aws.Context, input *ListBridgesInput, opts ...request.Option) (*ListBridgesOutput, error) {
+	req, out := c.ListBridgesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListBridgesPages iterates over the pages of a ListBridges operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListBridges method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListBridges operation.
+//	pageNum := 0
+//	err := client.ListBridgesPages(params,
+//	    func(page *mediaconnect.ListBridgesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MediaConnect) ListBridgesPages(input *ListBridgesInput, fn func(*ListBridgesOutput, bool) bool) error {
+	return c.ListBridgesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListBridgesPagesWithContext same as ListBridgesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) ListBridgesPagesWithContext(ctx aws.Context, input *ListBridgesInput, fn func(*ListBridgesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListBridgesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListBridgesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListBridgesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListEntitlements = "ListEntitlements"
 
 // ListEntitlementsRequest generates a "aws/request.Request" representing the
@@ -1381,6 +2655,326 @@ func (c *MediaConnect) ListFlowsPagesWithContext(ctx aws.Context, input *ListFlo
 
 	for p.Next() {
 		if !fn(p.Page().(*ListFlowsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListGatewayInstances = "ListGatewayInstances"
+
+// ListGatewayInstancesRequest generates a "aws/request.Request" representing the
+// client's request for the ListGatewayInstances operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListGatewayInstances for more information on using the ListGatewayInstances
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListGatewayInstancesRequest method.
+//	req, resp := client.ListGatewayInstancesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListGatewayInstances
+func (c *MediaConnect) ListGatewayInstancesRequest(input *ListGatewayInstancesInput) (req *request.Request, output *ListGatewayInstancesOutput) {
+	op := &request.Operation{
+		Name:       opListGatewayInstances,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/gateway-instances",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListGatewayInstancesInput{}
+	}
+
+	output = &ListGatewayInstancesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListGatewayInstances API operation for AWS MediaConnect.
+//
+// Displays a list of instances associated with the AWS account. This request
+// returns a paginated result. You can use the filterArn property to display
+// only the instances associated with the selected Gateway Amazon Resource Name
+// (ARN).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation ListGatewayInstances for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListGatewayInstances
+func (c *MediaConnect) ListGatewayInstances(input *ListGatewayInstancesInput) (*ListGatewayInstancesOutput, error) {
+	req, out := c.ListGatewayInstancesRequest(input)
+	return out, req.Send()
+}
+
+// ListGatewayInstancesWithContext is the same as ListGatewayInstances with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListGatewayInstances for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) ListGatewayInstancesWithContext(ctx aws.Context, input *ListGatewayInstancesInput, opts ...request.Option) (*ListGatewayInstancesOutput, error) {
+	req, out := c.ListGatewayInstancesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListGatewayInstancesPages iterates over the pages of a ListGatewayInstances operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListGatewayInstances method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListGatewayInstances operation.
+//	pageNum := 0
+//	err := client.ListGatewayInstancesPages(params,
+//	    func(page *mediaconnect.ListGatewayInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MediaConnect) ListGatewayInstancesPages(input *ListGatewayInstancesInput, fn func(*ListGatewayInstancesOutput, bool) bool) error {
+	return c.ListGatewayInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListGatewayInstancesPagesWithContext same as ListGatewayInstancesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) ListGatewayInstancesPagesWithContext(ctx aws.Context, input *ListGatewayInstancesInput, fn func(*ListGatewayInstancesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListGatewayInstancesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListGatewayInstancesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListGatewayInstancesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListGateways = "ListGateways"
+
+// ListGatewaysRequest generates a "aws/request.Request" representing the
+// client's request for the ListGateways operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListGateways for more information on using the ListGateways
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListGatewaysRequest method.
+//	req, resp := client.ListGatewaysRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListGateways
+func (c *MediaConnect) ListGatewaysRequest(input *ListGatewaysInput) (req *request.Request, output *ListGatewaysOutput) {
+	op := &request.Operation{
+		Name:       opListGateways,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/gateways",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListGatewaysInput{}
+	}
+
+	output = &ListGatewaysOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListGateways API operation for AWS MediaConnect.
+//
+// Displays a list of gateways that are associated with this account. This request
+// returns a paginated result.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation ListGateways for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/ListGateways
+func (c *MediaConnect) ListGateways(input *ListGatewaysInput) (*ListGatewaysOutput, error) {
+	req, out := c.ListGatewaysRequest(input)
+	return out, req.Send()
+}
+
+// ListGatewaysWithContext is the same as ListGateways with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListGateways for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) ListGatewaysWithContext(ctx aws.Context, input *ListGatewaysInput, opts ...request.Option) (*ListGatewaysOutput, error) {
+	req, out := c.ListGatewaysRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListGatewaysPages iterates over the pages of a ListGateways operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListGateways method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListGateways operation.
+//	pageNum := 0
+//	err := client.ListGatewaysPages(params,
+//	    func(page *mediaconnect.ListGatewaysOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MediaConnect) ListGatewaysPages(input *ListGatewaysInput, fn func(*ListGatewaysOutput, bool) bool) error {
+	return c.ListGatewaysPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListGatewaysPagesWithContext same as ListGatewaysPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) ListGatewaysPagesWithContext(ctx aws.Context, input *ListGatewaysInput, fn func(*ListGatewaysOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListGatewaysInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListGatewaysRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListGatewaysOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -1892,6 +3486,228 @@ func (c *MediaConnect) PurchaseOffering(input *PurchaseOfferingInput) (*Purchase
 // for more information on using Contexts.
 func (c *MediaConnect) PurchaseOfferingWithContext(ctx aws.Context, input *PurchaseOfferingInput, opts ...request.Option) (*PurchaseOfferingOutput, error) {
 	req, out := c.PurchaseOfferingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRemoveBridgeOutput = "RemoveBridgeOutput"
+
+// RemoveBridgeOutputRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveBridgeOutput operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RemoveBridgeOutput for more information on using the RemoveBridgeOutput
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RemoveBridgeOutputRequest method.
+//	req, resp := client.RemoveBridgeOutputRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveBridgeOutput
+func (c *MediaConnect) RemoveBridgeOutputRequest(input *RemoveBridgeOutputInput) (req *request.Request, output *RemoveBridgeOutputOutput) {
+	op := &request.Operation{
+		Name:       opRemoveBridgeOutput,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/outputs/{outputName}",
+	}
+
+	if input == nil {
+		input = &RemoveBridgeOutputInput{}
+	}
+
+	output = &RemoveBridgeOutputOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RemoveBridgeOutput API operation for AWS MediaConnect.
+//
+// Removes an output from a bridge.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation RemoveBridgeOutput for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveBridgeOutput
+func (c *MediaConnect) RemoveBridgeOutput(input *RemoveBridgeOutputInput) (*RemoveBridgeOutputOutput, error) {
+	req, out := c.RemoveBridgeOutputRequest(input)
+	return out, req.Send()
+}
+
+// RemoveBridgeOutputWithContext is the same as RemoveBridgeOutput with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RemoveBridgeOutput for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) RemoveBridgeOutputWithContext(ctx aws.Context, input *RemoveBridgeOutputInput, opts ...request.Option) (*RemoveBridgeOutputOutput, error) {
+	req, out := c.RemoveBridgeOutputRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRemoveBridgeSource = "RemoveBridgeSource"
+
+// RemoveBridgeSourceRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveBridgeSource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RemoveBridgeSource for more information on using the RemoveBridgeSource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RemoveBridgeSourceRequest method.
+//	req, resp := client.RemoveBridgeSourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveBridgeSource
+func (c *MediaConnect) RemoveBridgeSourceRequest(input *RemoveBridgeSourceInput) (req *request.Request, output *RemoveBridgeSourceOutput) {
+	op := &request.Operation{
+		Name:       opRemoveBridgeSource,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/sources/{sourceName}",
+	}
+
+	if input == nil {
+		input = &RemoveBridgeSourceInput{}
+	}
+
+	output = &RemoveBridgeSourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RemoveBridgeSource API operation for AWS MediaConnect.
+//
+// Removes a source from a bridge.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation RemoveBridgeSource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/RemoveBridgeSource
+func (c *MediaConnect) RemoveBridgeSource(input *RemoveBridgeSourceInput) (*RemoveBridgeSourceOutput, error) {
+	req, out := c.RemoveBridgeSourceRequest(input)
+	return out, req.Send()
+}
+
+// RemoveBridgeSourceWithContext is the same as RemoveBridgeSource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RemoveBridgeSource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) RemoveBridgeSourceWithContext(ctx aws.Context, input *RemoveBridgeSourceInput, opts ...request.Option) (*RemoveBridgeSourceOutput, error) {
+	req, out := c.RemoveBridgeSourceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2836,6 +4652,450 @@ func (c *MediaConnect) UntagResourceWithContext(ctx aws.Context, input *UntagRes
 	return out, req.Send()
 }
 
+const opUpdateBridge = "UpdateBridge"
+
+// UpdateBridgeRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateBridge operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateBridge for more information on using the UpdateBridge
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateBridgeRequest method.
+//	req, resp := client.UpdateBridgeRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridge
+func (c *MediaConnect) UpdateBridgeRequest(input *UpdateBridgeInput) (req *request.Request, output *UpdateBridgeOutput) {
+	op := &request.Operation{
+		Name:       opUpdateBridge,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/bridges/{bridgeArn}",
+	}
+
+	if input == nil {
+		input = &UpdateBridgeInput{}
+	}
+
+	output = &UpdateBridgeOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateBridge API operation for AWS MediaConnect.
+//
+// # Updates the bridge
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation UpdateBridge for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridge
+func (c *MediaConnect) UpdateBridge(input *UpdateBridgeInput) (*UpdateBridgeOutput, error) {
+	req, out := c.UpdateBridgeRequest(input)
+	return out, req.Send()
+}
+
+// UpdateBridgeWithContext is the same as UpdateBridge with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateBridge for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) UpdateBridgeWithContext(ctx aws.Context, input *UpdateBridgeInput, opts ...request.Option) (*UpdateBridgeOutput, error) {
+	req, out := c.UpdateBridgeRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateBridgeOutput = "UpdateBridgeOutput"
+
+// UpdateBridgeOutputRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateBridgeOutput operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateBridgeOutput for more information on using the UpdateBridgeOutput
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateBridgeOutputRequest method.
+//	req, resp := client.UpdateBridgeOutputRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridgeOutput
+func (c *MediaConnect) UpdateBridgeOutputRequest(input *UpdateBridgeOutputInput) (req *request.Request, output *UpdateBridgeOutputOutput) {
+	op := &request.Operation{
+		Name:       opUpdateBridgeOutput,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/outputs/{outputName}",
+	}
+
+	if input == nil {
+		input = &UpdateBridgeOutputInput{}
+	}
+
+	output = &UpdateBridgeOutputOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateBridgeOutput API operation for AWS MediaConnect.
+//
+// Updates an existing bridge output.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation UpdateBridgeOutput for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridgeOutput
+func (c *MediaConnect) UpdateBridgeOutput(input *UpdateBridgeOutputInput) (*UpdateBridgeOutputOutput, error) {
+	req, out := c.UpdateBridgeOutputRequest(input)
+	return out, req.Send()
+}
+
+// UpdateBridgeOutputWithContext is the same as UpdateBridgeOutput with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateBridgeOutput for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) UpdateBridgeOutputWithContext(ctx aws.Context, input *UpdateBridgeOutputInput, opts ...request.Option) (*UpdateBridgeOutputOutput, error) {
+	req, out := c.UpdateBridgeOutputRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateBridgeSource = "UpdateBridgeSource"
+
+// UpdateBridgeSourceRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateBridgeSource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateBridgeSource for more information on using the UpdateBridgeSource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateBridgeSourceRequest method.
+//	req, resp := client.UpdateBridgeSourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridgeSource
+func (c *MediaConnect) UpdateBridgeSourceRequest(input *UpdateBridgeSourceInput) (req *request.Request, output *UpdateBridgeSourceOutput) {
+	op := &request.Operation{
+		Name:       opUpdateBridgeSource,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/sources/{sourceName}",
+	}
+
+	if input == nil {
+		input = &UpdateBridgeSourceInput{}
+	}
+
+	output = &UpdateBridgeSourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateBridgeSource API operation for AWS MediaConnect.
+//
+// Updates an existing bridge source.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation UpdateBridgeSource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridgeSource
+func (c *MediaConnect) UpdateBridgeSource(input *UpdateBridgeSourceInput) (*UpdateBridgeSourceOutput, error) {
+	req, out := c.UpdateBridgeSourceRequest(input)
+	return out, req.Send()
+}
+
+// UpdateBridgeSourceWithContext is the same as UpdateBridgeSource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateBridgeSource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) UpdateBridgeSourceWithContext(ctx aws.Context, input *UpdateBridgeSourceInput, opts ...request.Option) (*UpdateBridgeSourceOutput, error) {
+	req, out := c.UpdateBridgeSourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateBridgeState = "UpdateBridgeState"
+
+// UpdateBridgeStateRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateBridgeState operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateBridgeState for more information on using the UpdateBridgeState
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateBridgeStateRequest method.
+//	req, resp := client.UpdateBridgeStateRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridgeState
+func (c *MediaConnect) UpdateBridgeStateRequest(input *UpdateBridgeStateInput) (req *request.Request, output *UpdateBridgeStateOutput) {
+	op := &request.Operation{
+		Name:       opUpdateBridgeState,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/bridges/{bridgeArn}/state",
+	}
+
+	if input == nil {
+		input = &UpdateBridgeStateInput{}
+	}
+
+	output = &UpdateBridgeStateOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateBridgeState API operation for AWS MediaConnect.
+//
+// # Updates the bridge state
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation UpdateBridgeState for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateBridgeState
+func (c *MediaConnect) UpdateBridgeState(input *UpdateBridgeStateInput) (*UpdateBridgeStateOutput, error) {
+	req, out := c.UpdateBridgeStateRequest(input)
+	return out, req.Send()
+}
+
+// UpdateBridgeStateWithContext is the same as UpdateBridgeState with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateBridgeState for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) UpdateBridgeStateWithContext(ctx aws.Context, input *UpdateBridgeStateInput, opts ...request.Option) (*UpdateBridgeStateOutput, error) {
+	req, out := c.UpdateBridgeStateRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateFlow = "UpdateFlow"
 
 // UpdateFlowRequest generates a "aws/request.Request" representing the
@@ -3368,6 +5628,791 @@ func (c *MediaConnect) UpdateFlowSourceWithContext(ctx aws.Context, input *Updat
 	return out, req.Send()
 }
 
+const opUpdateGatewayInstance = "UpdateGatewayInstance"
+
+// UpdateGatewayInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateGatewayInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateGatewayInstance for more information on using the UpdateGatewayInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateGatewayInstanceRequest method.
+//	req, resp := client.UpdateGatewayInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateGatewayInstance
+func (c *MediaConnect) UpdateGatewayInstanceRequest(input *UpdateGatewayInstanceInput) (req *request.Request, output *UpdateGatewayInstanceOutput) {
+	op := &request.Operation{
+		Name:       opUpdateGatewayInstance,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v1/gateway-instances/{gatewayInstanceArn}",
+	}
+
+	if input == nil {
+		input = &UpdateGatewayInstanceInput{}
+	}
+
+	output = &UpdateGatewayInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateGatewayInstance API operation for AWS MediaConnect.
+//
+// Updates the configuration of an existing Gateway Instance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS MediaConnect's
+// API operation UpdateGatewayInstance for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - InternalServerErrorException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ForbiddenException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - NotFoundException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ServiceUnavailableException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - TooManyRequestsException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+//   - ConflictException
+//     Exception raised by AWS Elemental MediaConnect. See the error message and
+//     documentation for the operation for more information on the cause of this
+//     exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/mediaconnect-2018-11-14/UpdateGatewayInstance
+func (c *MediaConnect) UpdateGatewayInstance(input *UpdateGatewayInstanceInput) (*UpdateGatewayInstanceOutput, error) {
+	req, out := c.UpdateGatewayInstanceRequest(input)
+	return out, req.Send()
+}
+
+// UpdateGatewayInstanceWithContext is the same as UpdateGatewayInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateGatewayInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MediaConnect) UpdateGatewayInstanceWithContext(ctx aws.Context, input *UpdateGatewayInstanceInput, opts ...request.Option) (*UpdateGatewayInstanceOutput, error) {
+	req, out := c.UpdateGatewayInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// Add a flow source to an existing bridge.
+type AddBridgeFlowSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the cloud flow to use as a source of
+	// this bridge.
+	//
+	// FlowArn is a required field
+	FlowArn *string `locationName:"flowArn" type:"string" required:"true"`
+
+	// The name of the VPC interface attachment to use for this source.
+	FlowVpcInterfaceAttachment *VpcInterfaceAttachment `locationName:"flowVpcInterfaceAttachment" type:"structure"`
+
+	// The name of the flow source. This name is used to reference the source and
+	// must be unique among sources in this bridge.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeFlowSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeFlowSourceRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeFlowSourceRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeFlowSourceRequest"}
+	if s.FlowArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("FlowArn"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFlowArn sets the FlowArn field's value.
+func (s *AddBridgeFlowSourceRequest) SetFlowArn(v string) *AddBridgeFlowSourceRequest {
+	s.FlowArn = &v
+	return s
+}
+
+// SetFlowVpcInterfaceAttachment sets the FlowVpcInterfaceAttachment field's value.
+func (s *AddBridgeFlowSourceRequest) SetFlowVpcInterfaceAttachment(v *VpcInterfaceAttachment) *AddBridgeFlowSourceRequest {
+	s.FlowVpcInterfaceAttachment = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AddBridgeFlowSourceRequest) SetName(v string) *AddBridgeFlowSourceRequest {
+	s.Name = &v
+	return s
+}
+
+// Add a network output to an existing bridge.
+type AddBridgeNetworkOutputRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The network output IP Address.
+	//
+	// IpAddress is a required field
+	IpAddress *string `locationName:"ipAddress" type:"string" required:"true"`
+
+	// The network output name. This name is used to reference the output and must
+	// be unique among outputs in this bridge.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The network output's gateway network name.
+	//
+	// NetworkName is a required field
+	NetworkName *string `locationName:"networkName" type:"string" required:"true"`
+
+	// The network output port.
+	//
+	// Port is a required field
+	Port *int64 `locationName:"port" type:"integer" required:"true"`
+
+	// The network output protocol.
+	//
+	// Protocol is a required field
+	Protocol *string `locationName:"protocol" type:"string" required:"true" enum:"Protocol"`
+
+	// The network output TTL.
+	//
+	// Ttl is a required field
+	Ttl *int64 `locationName:"ttl" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeNetworkOutputRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeNetworkOutputRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeNetworkOutputRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeNetworkOutputRequest"}
+	if s.IpAddress == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpAddress"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.NetworkName == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkName"))
+	}
+	if s.Port == nil {
+		invalidParams.Add(request.NewErrParamRequired("Port"))
+	}
+	if s.Protocol == nil {
+		invalidParams.Add(request.NewErrParamRequired("Protocol"))
+	}
+	if s.Ttl == nil {
+		invalidParams.Add(request.NewErrParamRequired("Ttl"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *AddBridgeNetworkOutputRequest) SetIpAddress(v string) *AddBridgeNetworkOutputRequest {
+	s.IpAddress = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AddBridgeNetworkOutputRequest) SetName(v string) *AddBridgeNetworkOutputRequest {
+	s.Name = &v
+	return s
+}
+
+// SetNetworkName sets the NetworkName field's value.
+func (s *AddBridgeNetworkOutputRequest) SetNetworkName(v string) *AddBridgeNetworkOutputRequest {
+	s.NetworkName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *AddBridgeNetworkOutputRequest) SetPort(v int64) *AddBridgeNetworkOutputRequest {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *AddBridgeNetworkOutputRequest) SetProtocol(v string) *AddBridgeNetworkOutputRequest {
+	s.Protocol = &v
+	return s
+}
+
+// SetTtl sets the Ttl field's value.
+func (s *AddBridgeNetworkOutputRequest) SetTtl(v int64) *AddBridgeNetworkOutputRequest {
+	s.Ttl = &v
+	return s
+}
+
+// Add a network source to an existing bridge.
+type AddBridgeNetworkSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The network source multicast IP.
+	//
+	// MulticastIp is a required field
+	MulticastIp *string `locationName:"multicastIp" type:"string" required:"true"`
+
+	// The name of the network source. This name is used to reference the source
+	// and must be unique among sources in this bridge.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The network source's gateway network name.
+	//
+	// NetworkName is a required field
+	NetworkName *string `locationName:"networkName" type:"string" required:"true"`
+
+	// The network source port.
+	//
+	// Port is a required field
+	Port *int64 `locationName:"port" type:"integer" required:"true"`
+
+	// The network source protocol.
+	//
+	// Protocol is a required field
+	Protocol *string `locationName:"protocol" type:"string" required:"true" enum:"Protocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeNetworkSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeNetworkSourceRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeNetworkSourceRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeNetworkSourceRequest"}
+	if s.MulticastIp == nil {
+		invalidParams.Add(request.NewErrParamRequired("MulticastIp"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.NetworkName == nil {
+		invalidParams.Add(request.NewErrParamRequired("NetworkName"))
+	}
+	if s.Port == nil {
+		invalidParams.Add(request.NewErrParamRequired("Port"))
+	}
+	if s.Protocol == nil {
+		invalidParams.Add(request.NewErrParamRequired("Protocol"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMulticastIp sets the MulticastIp field's value.
+func (s *AddBridgeNetworkSourceRequest) SetMulticastIp(v string) *AddBridgeNetworkSourceRequest {
+	s.MulticastIp = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AddBridgeNetworkSourceRequest) SetName(v string) *AddBridgeNetworkSourceRequest {
+	s.Name = &v
+	return s
+}
+
+// SetNetworkName sets the NetworkName field's value.
+func (s *AddBridgeNetworkSourceRequest) SetNetworkName(v string) *AddBridgeNetworkSourceRequest {
+	s.NetworkName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *AddBridgeNetworkSourceRequest) SetPort(v int64) *AddBridgeNetworkSourceRequest {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *AddBridgeNetworkSourceRequest) SetProtocol(v string) *AddBridgeNetworkSourceRequest {
+	s.Protocol = &v
+	return s
+}
+
+// Add an output to a bridge.
+type AddBridgeOutputRequest struct {
+	_ struct{} `type:"structure"`
+
+	// Add a network output to an existing bridge.
+	NetworkOutput *AddBridgeNetworkOutputRequest `locationName:"networkOutput" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeOutputRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeOutputRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeOutputRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeOutputRequest"}
+	if s.NetworkOutput != nil {
+		if err := s.NetworkOutput.Validate(); err != nil {
+			invalidParams.AddNested("NetworkOutput", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNetworkOutput sets the NetworkOutput field's value.
+func (s *AddBridgeOutputRequest) SetNetworkOutput(v *AddBridgeNetworkOutputRequest) *AddBridgeOutputRequest {
+	s.NetworkOutput = v
+	return s
+}
+
+// Adds outputs to an existing bridge. You can create up to 2 outputs per bridge.
+type AddBridgeOutputsInput struct {
+	_ struct{} `type:"structure"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// The outputs that you want to add to this bridge.
+	//
+	// Outputs is a required field
+	Outputs []*AddBridgeOutputRequest `locationName:"outputs" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeOutputsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeOutputsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeOutputsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeOutputsInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.Outputs == nil {
+		invalidParams.Add(request.NewErrParamRequired("Outputs"))
+	}
+	if s.Outputs != nil {
+		for i, v := range s.Outputs {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Outputs", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *AddBridgeOutputsInput) SetBridgeArn(v string) *AddBridgeOutputsInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *AddBridgeOutputsInput) SetOutputs(v []*AddBridgeOutputRequest) *AddBridgeOutputsInput {
+	s.Outputs = v
+	return s
+}
+
+// The result of a successful AddBridgeOutputs request.
+type AddBridgeOutputsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the bridge.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The outputs that you added to this bridge.
+	Outputs []*BridgeOutput_ `locationName:"outputs" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeOutputsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeOutputsOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *AddBridgeOutputsOutput) SetBridgeArn(v string) *AddBridgeOutputsOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *AddBridgeOutputsOutput) SetOutputs(v []*BridgeOutput_) *AddBridgeOutputsOutput {
+	s.Outputs = v
+	return s
+}
+
+// Add a source to an existing bridge.
+type AddBridgeSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// Add a flow source to an existing bridge.
+	FlowSource *AddBridgeFlowSourceRequest `locationName:"flowSource" type:"structure"`
+
+	// Add a network source to an existing bridge.
+	NetworkSource *AddBridgeNetworkSourceRequest `locationName:"networkSource" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeSourceRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeSourceRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeSourceRequest"}
+	if s.FlowSource != nil {
+		if err := s.FlowSource.Validate(); err != nil {
+			invalidParams.AddNested("FlowSource", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.NetworkSource != nil {
+		if err := s.NetworkSource.Validate(); err != nil {
+			invalidParams.AddNested("NetworkSource", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFlowSource sets the FlowSource field's value.
+func (s *AddBridgeSourceRequest) SetFlowSource(v *AddBridgeFlowSourceRequest) *AddBridgeSourceRequest {
+	s.FlowSource = v
+	return s
+}
+
+// SetNetworkSource sets the NetworkSource field's value.
+func (s *AddBridgeSourceRequest) SetNetworkSource(v *AddBridgeNetworkSourceRequest) *AddBridgeSourceRequest {
+	s.NetworkSource = v
+	return s
+}
+
+// Add sources to an existing bridge. You can create up to 2 sources per bridge.
+type AddBridgeSourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// The sources that you want to add to this bridge.
+	//
+	// Sources is a required field
+	Sources []*AddBridgeSourceRequest `locationName:"sources" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeSourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeSourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddBridgeSourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddBridgeSourcesInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.Sources == nil {
+		invalidParams.Add(request.NewErrParamRequired("Sources"))
+	}
+	if s.Sources != nil {
+		for i, v := range s.Sources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Sources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *AddBridgeSourcesInput) SetBridgeArn(v string) *AddBridgeSourcesInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *AddBridgeSourcesInput) SetSources(v []*AddBridgeSourceRequest) *AddBridgeSourcesInput {
+	s.Sources = v
+	return s
+}
+
+// The result of a successful AddBridgeSources request.
+type AddBridgeSourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the bridge.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The sources that you added to this bridge.
+	Sources []*BridgeSource `locationName:"sources" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeSourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddBridgeSourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *AddBridgeSourcesOutput) SetBridgeArn(v string) *AddBridgeSourcesOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *AddBridgeSourcesOutput) SetSources(v []*BridgeSource) *AddBridgeSourcesOutput {
+	s.Sources = v
+	return s
+}
+
+type AddEgressGatewayBridgeRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum expected bitrate (in bps).
+	//
+	// MaxBitrate is a required field
+	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddEgressGatewayBridgeRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddEgressGatewayBridgeRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddEgressGatewayBridgeRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddEgressGatewayBridgeRequest"}
+	if s.MaxBitrate == nil {
+		invalidParams.Add(request.NewErrParamRequired("MaxBitrate"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxBitrate sets the MaxBitrate field's value.
+func (s *AddEgressGatewayBridgeRequest) SetMaxBitrate(v int64) *AddEgressGatewayBridgeRequest {
+	s.MaxBitrate = &v
+	return s
+}
+
 // Adds media streams to an existing flow.
 type AddFlowMediaStreamsInput struct {
 	_ struct{} `type:"structure"`
@@ -3440,8 +6485,8 @@ func (s *AddFlowMediaStreamsInput) SetMediaStreams(v []*AddMediaStreamRequest) *
 	return s
 }
 
-// The result of a successful AddFlowMediaStreamsRequest request. The response
-// includes the details of the newly added media streams.
+// The result of a successful AddFlowMediaStreams request. The response includes
+// the details of the newly added media streams.
 type AddFlowMediaStreamsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3890,6 +6935,66 @@ func (s *AddFlowVpcInterfacesOutput) SetVpcInterfaces(v []*VpcInterface) *AddFlo
 	return s
 }
 
+type AddIngressGatewayBridgeRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum expected bitrate (in bps).
+	//
+	// MaxBitrate is a required field
+	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer" required:"true"`
+
+	// The maximum number of expected outputs.
+	//
+	// MaxOutputs is a required field
+	MaxOutputs *int64 `locationName:"maxOutputs" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddIngressGatewayBridgeRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AddIngressGatewayBridgeRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AddIngressGatewayBridgeRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AddIngressGatewayBridgeRequest"}
+	if s.MaxBitrate == nil {
+		invalidParams.Add(request.NewErrParamRequired("MaxBitrate"))
+	}
+	if s.MaxOutputs == nil {
+		invalidParams.Add(request.NewErrParamRequired("MaxOutputs"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxBitrate sets the MaxBitrate field's value.
+func (s *AddIngressGatewayBridgeRequest) SetMaxBitrate(v int64) *AddIngressGatewayBridgeRequest {
+	s.MaxBitrate = &v
+	return s
+}
+
+// SetMaxOutputs sets the MaxOutputs field's value.
+func (s *AddIngressGatewayBridgeRequest) SetMaxOutputs(v int64) *AddIngressGatewayBridgeRequest {
+	s.MaxOutputs = &v
+	return s
+}
+
 // Create maintenance setting for a flow
 type AddMaintenance struct {
 	_ struct{} `type:"structure"`
@@ -4123,7 +7228,7 @@ type AddOutputRequest struct {
 	SmoothingLatency *int64 `locationName:"smoothingLatency" type:"integer"`
 
 	// The stream ID that you want to use for this transport. This parameter applies
-	// only to Zixi-based streams.
+	// only to Zixi and SRT caller-based streams.
 	StreamId *string `locationName:"streamId" type:"string"`
 
 	// The name of the VPC interface attachment to use for this output.
@@ -4330,6 +7435,805 @@ func (s *BadRequestException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *BadRequestException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// A Bridge is the connection between your datacenter's Instances and the AWS
+// cloud. A bridge can be used to send video from the AWS cloud to your datacenter
+// or from your datacenter to the AWS cloud.
+type Bridge struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the bridge.
+	//
+	// BridgeArn is a required field
+	BridgeArn *string `locationName:"bridgeArn" type:"string" required:"true"`
+
+	BridgeMessages []*MessageDetail `locationName:"bridgeMessages" type:"list"`
+
+	// BridgeState is a required field
+	BridgeState *string `locationName:"bridgeState" type:"string" required:"true" enum:"BridgeState"`
+
+	EgressGatewayBridge *EgressGatewayBridge `locationName:"egressGatewayBridge" type:"structure"`
+
+	IngressGatewayBridge *IngressGatewayBridge `locationName:"ingressGatewayBridge" type:"structure"`
+
+	// The name of the bridge.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The outputs on this bridge.
+	Outputs []*BridgeOutput_ `locationName:"outputs" type:"list"`
+
+	// The placement Amazon Resource Number (ARN) of the bridge.
+	//
+	// PlacementArn is a required field
+	PlacementArn *string `locationName:"placementArn" type:"string" required:"true"`
+
+	// The settings for source failover.
+	SourceFailoverConfig *FailoverConfig `locationName:"sourceFailoverConfig" type:"structure"`
+
+	// The sources on this bridge.
+	Sources []*BridgeSource `locationName:"sources" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Bridge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Bridge) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *Bridge) SetBridgeArn(v string) *Bridge {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetBridgeMessages sets the BridgeMessages field's value.
+func (s *Bridge) SetBridgeMessages(v []*MessageDetail) *Bridge {
+	s.BridgeMessages = v
+	return s
+}
+
+// SetBridgeState sets the BridgeState field's value.
+func (s *Bridge) SetBridgeState(v string) *Bridge {
+	s.BridgeState = &v
+	return s
+}
+
+// SetEgressGatewayBridge sets the EgressGatewayBridge field's value.
+func (s *Bridge) SetEgressGatewayBridge(v *EgressGatewayBridge) *Bridge {
+	s.EgressGatewayBridge = v
+	return s
+}
+
+// SetIngressGatewayBridge sets the IngressGatewayBridge field's value.
+func (s *Bridge) SetIngressGatewayBridge(v *IngressGatewayBridge) *Bridge {
+	s.IngressGatewayBridge = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Bridge) SetName(v string) *Bridge {
+	s.Name = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *Bridge) SetOutputs(v []*BridgeOutput_) *Bridge {
+	s.Outputs = v
+	return s
+}
+
+// SetPlacementArn sets the PlacementArn field's value.
+func (s *Bridge) SetPlacementArn(v string) *Bridge {
+	s.PlacementArn = &v
+	return s
+}
+
+// SetSourceFailoverConfig sets the SourceFailoverConfig field's value.
+func (s *Bridge) SetSourceFailoverConfig(v *FailoverConfig) *Bridge {
+	s.SourceFailoverConfig = v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *Bridge) SetSources(v []*BridgeSource) *Bridge {
+	s.Sources = v
+	return s
+}
+
+// The output of the bridge. A flow output is delivered to the AWS cloud.
+type BridgeFlowOutput_ struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the cloud flow.
+	//
+	// FlowArn is a required field
+	FlowArn *string `locationName:"flowArn" type:"string" required:"true"`
+
+	// The Amazon Resource Number (ARN) of the flow source.
+	//
+	// FlowSourceArn is a required field
+	FlowSourceArn *string `locationName:"flowSourceArn" type:"string" required:"true"`
+
+	// The name of the bridge's output.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeFlowOutput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeFlowOutput_) GoString() string {
+	return s.String()
+}
+
+// SetFlowArn sets the FlowArn field's value.
+func (s *BridgeFlowOutput_) SetFlowArn(v string) *BridgeFlowOutput_ {
+	s.FlowArn = &v
+	return s
+}
+
+// SetFlowSourceArn sets the FlowSourceArn field's value.
+func (s *BridgeFlowOutput_) SetFlowSourceArn(v string) *BridgeFlowOutput_ {
+	s.FlowSourceArn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *BridgeFlowOutput_) SetName(v string) *BridgeFlowOutput_ {
+	s.Name = &v
+	return s
+}
+
+// The source of the bridge. A flow source originates in MediaConnect as an
+// existing cloud flow.
+type BridgeFlowSource struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the cloud flow used as a source of this bridge.
+	//
+	// FlowArn is a required field
+	FlowArn *string `locationName:"flowArn" type:"string" required:"true"`
+
+	// The name of the VPC interface attachment to use for this source.
+	FlowVpcInterfaceAttachment *VpcInterfaceAttachment `locationName:"flowVpcInterfaceAttachment" type:"structure"`
+
+	// The name of the flow source.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The Amazon Resource Number (ARN) of the output.
+	OutputArn *string `locationName:"outputArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeFlowSource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeFlowSource) GoString() string {
+	return s.String()
+}
+
+// SetFlowArn sets the FlowArn field's value.
+func (s *BridgeFlowSource) SetFlowArn(v string) *BridgeFlowSource {
+	s.FlowArn = &v
+	return s
+}
+
+// SetFlowVpcInterfaceAttachment sets the FlowVpcInterfaceAttachment field's value.
+func (s *BridgeFlowSource) SetFlowVpcInterfaceAttachment(v *VpcInterfaceAttachment) *BridgeFlowSource {
+	s.FlowVpcInterfaceAttachment = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *BridgeFlowSource) SetName(v string) *BridgeFlowSource {
+	s.Name = &v
+	return s
+}
+
+// SetOutputArn sets the OutputArn field's value.
+func (s *BridgeFlowSource) SetOutputArn(v string) *BridgeFlowSource {
+	s.OutputArn = &v
+	return s
+}
+
+// The output of the bridge. A network output is delivered to your premises.
+type BridgeNetworkOutput_ struct {
+	_ struct{} `type:"structure"`
+
+	// The network output IP Address.
+	//
+	// IpAddress is a required field
+	IpAddress *string `locationName:"ipAddress" type:"string" required:"true"`
+
+	// The network output name.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The network output's gateway network name.
+	//
+	// NetworkName is a required field
+	NetworkName *string `locationName:"networkName" type:"string" required:"true"`
+
+	// The network output port.
+	//
+	// Port is a required field
+	Port *int64 `locationName:"port" type:"integer" required:"true"`
+
+	// The network output protocol.
+	//
+	// Protocol is a required field
+	Protocol *string `locationName:"protocol" type:"string" required:"true" enum:"Protocol"`
+
+	// The network output TTL.
+	//
+	// Ttl is a required field
+	Ttl *int64 `locationName:"ttl" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeNetworkOutput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeNetworkOutput_) GoString() string {
+	return s.String()
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *BridgeNetworkOutput_) SetIpAddress(v string) *BridgeNetworkOutput_ {
+	s.IpAddress = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *BridgeNetworkOutput_) SetName(v string) *BridgeNetworkOutput_ {
+	s.Name = &v
+	return s
+}
+
+// SetNetworkName sets the NetworkName field's value.
+func (s *BridgeNetworkOutput_) SetNetworkName(v string) *BridgeNetworkOutput_ {
+	s.NetworkName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *BridgeNetworkOutput_) SetPort(v int64) *BridgeNetworkOutput_ {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *BridgeNetworkOutput_) SetProtocol(v string) *BridgeNetworkOutput_ {
+	s.Protocol = &v
+	return s
+}
+
+// SetTtl sets the Ttl field's value.
+func (s *BridgeNetworkOutput_) SetTtl(v int64) *BridgeNetworkOutput_ {
+	s.Ttl = &v
+	return s
+}
+
+// The source of the bridge. A network source originates at your premises.
+type BridgeNetworkSource struct {
+	_ struct{} `type:"structure"`
+
+	// The network source multicast IP.
+	//
+	// MulticastIp is a required field
+	MulticastIp *string `locationName:"multicastIp" type:"string" required:"true"`
+
+	// The name of the network source.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The network source's gateway network name.
+	//
+	// NetworkName is a required field
+	NetworkName *string `locationName:"networkName" type:"string" required:"true"`
+
+	// The network source port.
+	//
+	// Port is a required field
+	Port *int64 `locationName:"port" type:"integer" required:"true"`
+
+	// The network source protocol.
+	//
+	// Protocol is a required field
+	Protocol *string `locationName:"protocol" type:"string" required:"true" enum:"Protocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeNetworkSource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeNetworkSource) GoString() string {
+	return s.String()
+}
+
+// SetMulticastIp sets the MulticastIp field's value.
+func (s *BridgeNetworkSource) SetMulticastIp(v string) *BridgeNetworkSource {
+	s.MulticastIp = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *BridgeNetworkSource) SetName(v string) *BridgeNetworkSource {
+	s.Name = &v
+	return s
+}
+
+// SetNetworkName sets the NetworkName field's value.
+func (s *BridgeNetworkSource) SetNetworkName(v string) *BridgeNetworkSource {
+	s.NetworkName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *BridgeNetworkSource) SetPort(v int64) *BridgeNetworkSource {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *BridgeNetworkSource) SetProtocol(v string) *BridgeNetworkSource {
+	s.Protocol = &v
+	return s
+}
+
+// The output of the bridge.
+type BridgeOutput_ struct {
+	_ struct{} `type:"structure"`
+
+	// The output of the bridge. A flow output is delivered to the AWS cloud.
+	FlowOutput *BridgeFlowOutput_ `locationName:"flowOutput" type:"structure"`
+
+	// The output of the bridge. A network output is delivered to your premises.
+	NetworkOutput *BridgeNetworkOutput_ `locationName:"networkOutput" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeOutput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeOutput_) GoString() string {
+	return s.String()
+}
+
+// SetFlowOutput sets the FlowOutput field's value.
+func (s *BridgeOutput_) SetFlowOutput(v *BridgeFlowOutput_) *BridgeOutput_ {
+	s.FlowOutput = v
+	return s
+}
+
+// SetNetworkOutput sets the NetworkOutput field's value.
+func (s *BridgeOutput_) SetNetworkOutput(v *BridgeNetworkOutput_) *BridgeOutput_ {
+	s.NetworkOutput = v
+	return s
+}
+
+// The bridge's source.
+type BridgeSource struct {
+	_ struct{} `type:"structure"`
+
+	// The source of the bridge. A flow source originates in MediaConnect as an
+	// existing cloud flow.
+	FlowSource *BridgeFlowSource `locationName:"flowSource" type:"structure"`
+
+	// The source of the bridge. A network source originates at your premises.
+	NetworkSource *BridgeNetworkSource `locationName:"networkSource" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeSource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BridgeSource) GoString() string {
+	return s.String()
+}
+
+// SetFlowSource sets the FlowSource field's value.
+func (s *BridgeSource) SetFlowSource(v *BridgeFlowSource) *BridgeSource {
+	s.FlowSource = v
+	return s
+}
+
+// SetNetworkSource sets the NetworkSource field's value.
+func (s *BridgeSource) SetNetworkSource(v *BridgeNetworkSource) *BridgeSource {
+	s.NetworkSource = v
+	return s
+}
+
+// Exception raised by AWS Elemental MediaConnect. See the error message and
+// documentation for the operation for more information on the cause of this
+// exception.
+type ConflictException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) GoString() string {
+	return s.String()
+}
+
+func newErrorConflictException(v protocol.ResponseMetadata) error {
+	return &ConflictException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ConflictException) Code() string {
+	return "ConflictException"
+}
+
+// Message returns the exception's message.
+func (s *ConflictException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ConflictException) OrigErr() error {
+	return nil
+}
+
+func (s *ConflictException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ConflictException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ConflictException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Exception raised by AWS Elemental MediaConnect. See the error message and
+// documentation for the operation for more information on the cause of this
+// exception.
+type CreateBridge420Exception struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateBridge420Exception) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateBridge420Exception) GoString() string {
+	return s.String()
+}
+
+func newErrorCreateBridge420Exception(v protocol.ResponseMetadata) error {
+	return &CreateBridge420Exception{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *CreateBridge420Exception) Code() string {
+	return "CreateBridge420Exception"
+}
+
+// Message returns the exception's message.
+func (s *CreateBridge420Exception) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *CreateBridge420Exception) OrigErr() error {
+	return nil
+}
+
+func (s *CreateBridge420Exception) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *CreateBridge420Exception) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *CreateBridge420Exception) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Creates a new bridge. The request must include one source.
+type CreateBridgeInput struct {
+	_ struct{} `type:"structure"`
+
+	// Create a bridge with the egress bridge type. An egress bridge is a cloud-to-ground
+	// bridge. The content comes from an existing MediaConnect flow and is delivered
+	// to your premises.
+	EgressGatewayBridge *AddEgressGatewayBridgeRequest `locationName:"egressGatewayBridge" type:"structure"`
+
+	// Create a bridge with the ingress bridge type. An ingress bridge is a ground-to-cloud
+	// bridge. The content originates at your premises and is delivered to the cloud.
+	IngressGatewayBridge *AddIngressGatewayBridgeRequest `locationName:"ingressGatewayBridge" type:"structure"`
+
+	// The name of the bridge. This name can not be modified after the bridge is
+	// created.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The outputs that you want to add to this bridge.
+	Outputs []*AddBridgeOutputRequest `locationName:"outputs" type:"list"`
+
+	// The bridge placement Amazon Resource Number (ARN).
+	//
+	// PlacementArn is a required field
+	PlacementArn *string `locationName:"placementArn" type:"string" required:"true"`
+
+	// The settings for source failover.
+	SourceFailoverConfig *FailoverConfig `locationName:"sourceFailoverConfig" type:"structure"`
+
+	// The sources that you want to add to this bridge.
+	//
+	// Sources is a required field
+	Sources []*AddBridgeSourceRequest `locationName:"sources" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateBridgeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateBridgeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateBridgeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateBridgeInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.PlacementArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PlacementArn"))
+	}
+	if s.Sources == nil {
+		invalidParams.Add(request.NewErrParamRequired("Sources"))
+	}
+	if s.EgressGatewayBridge != nil {
+		if err := s.EgressGatewayBridge.Validate(); err != nil {
+			invalidParams.AddNested("EgressGatewayBridge", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.IngressGatewayBridge != nil {
+		if err := s.IngressGatewayBridge.Validate(); err != nil {
+			invalidParams.AddNested("IngressGatewayBridge", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Outputs != nil {
+		for i, v := range s.Outputs {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Outputs", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Sources != nil {
+		for i, v := range s.Sources {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Sources", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEgressGatewayBridge sets the EgressGatewayBridge field's value.
+func (s *CreateBridgeInput) SetEgressGatewayBridge(v *AddEgressGatewayBridgeRequest) *CreateBridgeInput {
+	s.EgressGatewayBridge = v
+	return s
+}
+
+// SetIngressGatewayBridge sets the IngressGatewayBridge field's value.
+func (s *CreateBridgeInput) SetIngressGatewayBridge(v *AddIngressGatewayBridgeRequest) *CreateBridgeInput {
+	s.IngressGatewayBridge = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateBridgeInput) SetName(v string) *CreateBridgeInput {
+	s.Name = &v
+	return s
+}
+
+// SetOutputs sets the Outputs field's value.
+func (s *CreateBridgeInput) SetOutputs(v []*AddBridgeOutputRequest) *CreateBridgeInput {
+	s.Outputs = v
+	return s
+}
+
+// SetPlacementArn sets the PlacementArn field's value.
+func (s *CreateBridgeInput) SetPlacementArn(v string) *CreateBridgeInput {
+	s.PlacementArn = &v
+	return s
+}
+
+// SetSourceFailoverConfig sets the SourceFailoverConfig field's value.
+func (s *CreateBridgeInput) SetSourceFailoverConfig(v *FailoverConfig) *CreateBridgeInput {
+	s.SourceFailoverConfig = v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *CreateBridgeInput) SetSources(v []*AddBridgeSourceRequest) *CreateBridgeInput {
+	s.Sources = v
+	return s
+}
+
+// The result of a successful CreateBridge request.
+type CreateBridgeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A Bridge is the connection between your datacenter's Instances and the AWS
+	// cloud. A bridge can be used to send video from the AWS cloud to your datacenter
+	// or from your datacenter to the AWS cloud.
+	Bridge *Bridge `locationName:"bridge" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateBridgeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateBridgeOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridge sets the Bridge field's value.
+func (s *CreateBridgeOutput) SetBridge(v *Bridge) *CreateBridgeOutput {
+	s.Bridge = v
+	return s
 }
 
 // Exception raised by AWS Elemental MediaConnect. See the error message and
@@ -4620,6 +8524,271 @@ func (s *CreateFlowOutput) SetFlow(v *Flow) *CreateFlowOutput {
 	return s
 }
 
+// Exception raised by AWS Elemental MediaConnect. See the error message and
+// documentation for the operation for more information on the cause of this
+// exception.
+type CreateGateway420Exception struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGateway420Exception) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGateway420Exception) GoString() string {
+	return s.String()
+}
+
+func newErrorCreateGateway420Exception(v protocol.ResponseMetadata) error {
+	return &CreateGateway420Exception{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *CreateGateway420Exception) Code() string {
+	return "CreateGateway420Exception"
+}
+
+// Message returns the exception's message.
+func (s *CreateGateway420Exception) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *CreateGateway420Exception) OrigErr() error {
+	return nil
+}
+
+func (s *CreateGateway420Exception) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *CreateGateway420Exception) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *CreateGateway420Exception) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Creates a new gateway. The request must include one network (up to 4).
+type CreateGatewayInput struct {
+	_ struct{} `type:"structure"`
+
+	// The range of IP addresses that are allowed to contribute content or initiate
+	// output requests for flows communicating with this gateway. These IP addresses
+	// should be in the form of a Classless Inter-Domain Routing (CIDR) block; for
+	// example, 10.0.0.0/16.
+	//
+	// EgressCidrBlocks is a required field
+	EgressCidrBlocks []*string `locationName:"egressCidrBlocks" type:"list" required:"true"`
+
+	// The name of the gateway. This name can not be modified after the gateway
+	// is created.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The list of networks that you want to add.
+	//
+	// Networks is a required field
+	Networks []*GatewayNetwork `locationName:"networks" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateGatewayInput"}
+	if s.EgressCidrBlocks == nil {
+		invalidParams.Add(request.NewErrParamRequired("EgressCidrBlocks"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Networks == nil {
+		invalidParams.Add(request.NewErrParamRequired("Networks"))
+	}
+	if s.Networks != nil {
+		for i, v := range s.Networks {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Networks", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEgressCidrBlocks sets the EgressCidrBlocks field's value.
+func (s *CreateGatewayInput) SetEgressCidrBlocks(v []*string) *CreateGatewayInput {
+	s.EgressCidrBlocks = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateGatewayInput) SetName(v string) *CreateGatewayInput {
+	s.Name = &v
+	return s
+}
+
+// SetNetworks sets the Networks field's value.
+func (s *CreateGatewayInput) SetNetworks(v []*GatewayNetwork) *CreateGatewayInput {
+	s.Networks = v
+	return s
+}
+
+type CreateGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The settings for a gateway, including its networks.
+	Gateway *Gateway `locationName:"gateway" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetGateway sets the Gateway field's value.
+func (s *CreateGatewayOutput) SetGateway(v *Gateway) *CreateGatewayOutput {
+	s.Gateway = v
+	return s
+}
+
+type DeleteBridgeInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBridgeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBridgeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBridgeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBridgeInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *DeleteBridgeInput) SetBridgeArn(v string) *DeleteBridgeInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// The result of a successful DeleteBridge request.
+type DeleteBridgeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the deleted bridge.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBridgeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBridgeOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *DeleteBridgeOutput) SetBridgeArn(v string) *DeleteBridgeOutput {
+	s.BridgeArn = &v
+	return s
+}
+
 type DeleteFlowInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4708,6 +8877,262 @@ func (s *DeleteFlowOutput) SetStatus(v string) *DeleteFlowOutput {
 	return s
 }
 
+type DeleteGatewayInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// GatewayArn is a required field
+	GatewayArn *string `location:"uri" locationName:"gatewayArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteGatewayInput"}
+	if s.GatewayArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayArn"))
+	}
+	if s.GatewayArn != nil && len(*s.GatewayArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GatewayArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *DeleteGatewayInput) SetGatewayArn(v string) *DeleteGatewayInput {
+	s.GatewayArn = &v
+	return s
+}
+
+// The result of a successful DeleteGateway request.
+type DeleteGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the gateway that was deleted.
+	GatewayArn *string `locationName:"gatewayArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *DeleteGatewayOutput) SetGatewayArn(v string) *DeleteGatewayOutput {
+	s.GatewayArn = &v
+	return s
+}
+
+type DeregisterGatewayInstanceInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	Force *bool `location:"querystring" locationName:"force" type:"boolean"`
+
+	// GatewayInstanceArn is a required field
+	GatewayInstanceArn *string `location:"uri" locationName:"gatewayInstanceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeregisterGatewayInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeregisterGatewayInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeregisterGatewayInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeregisterGatewayInstanceInput"}
+	if s.GatewayInstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayInstanceArn"))
+	}
+	if s.GatewayInstanceArn != nil && len(*s.GatewayInstanceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GatewayInstanceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetForce sets the Force field's value.
+func (s *DeregisterGatewayInstanceInput) SetForce(v bool) *DeregisterGatewayInstanceInput {
+	s.Force = &v
+	return s
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *DeregisterGatewayInstanceInput) SetGatewayInstanceArn(v string) *DeregisterGatewayInstanceInput {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+// The result of a successful DeregisterGatewayInstance request.
+type DeregisterGatewayInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the instance.
+	GatewayInstanceArn *string `locationName:"gatewayInstanceArn" type:"string"`
+
+	// The status of the instance.
+	InstanceState *string `locationName:"instanceState" type:"string" enum:"InstanceState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeregisterGatewayInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeregisterGatewayInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *DeregisterGatewayInstanceOutput) SetGatewayInstanceArn(v string) *DeregisterGatewayInstanceOutput {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+// SetInstanceState sets the InstanceState field's value.
+func (s *DeregisterGatewayInstanceOutput) SetInstanceState(v string) *DeregisterGatewayInstanceOutput {
+	s.InstanceState = &v
+	return s
+}
+
+type DescribeBridgeInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeBridgeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeBridgeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeBridgeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeBridgeInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *DescribeBridgeInput) SetBridgeArn(v string) *DescribeBridgeInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// The result of a successful DescribeBridge request.
+type DescribeBridgeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A Bridge is the connection between your datacenter's Instances and the AWS
+	// cloud. A bridge can be used to send video from the AWS cloud to your datacenter
+	// or from your datacenter to the AWS cloud.
+	Bridge *Bridge `locationName:"bridge" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeBridgeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeBridgeOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridge sets the Bridge field's value.
+func (s *DescribeBridgeOutput) SetBridge(v *Bridge) *DescribeBridgeOutput {
+	s.Bridge = v
+	return s
+}
+
 type DescribeFlowInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4793,6 +9218,164 @@ func (s *DescribeFlowOutput) SetFlow(v *Flow) *DescribeFlowOutput {
 // SetMessages sets the Messages field's value.
 func (s *DescribeFlowOutput) SetMessages(v *Messages) *DescribeFlowOutput {
 	s.Messages = v
+	return s
+}
+
+type DescribeGatewayInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// GatewayArn is a required field
+	GatewayArn *string `location:"uri" locationName:"gatewayArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeGatewayInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeGatewayInput"}
+	if s.GatewayArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayArn"))
+	}
+	if s.GatewayArn != nil && len(*s.GatewayArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GatewayArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *DescribeGatewayInput) SetGatewayArn(v string) *DescribeGatewayInput {
+	s.GatewayArn = &v
+	return s
+}
+
+type DescribeGatewayInstanceInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// GatewayInstanceArn is a required field
+	GatewayInstanceArn *string `location:"uri" locationName:"gatewayInstanceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeGatewayInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeGatewayInstanceInput"}
+	if s.GatewayInstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayInstanceArn"))
+	}
+	if s.GatewayInstanceArn != nil && len(*s.GatewayInstanceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GatewayInstanceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *DescribeGatewayInstanceInput) SetGatewayInstanceArn(v string) *DescribeGatewayInstanceInput {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+// The result of a successful DescribeGatewayInstance request.
+type DescribeGatewayInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The settings for an instance in a gateway.
+	GatewayInstance *GatewayInstance `locationName:"gatewayInstance" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetGatewayInstance sets the GatewayInstance field's value.
+func (s *DescribeGatewayInstanceOutput) SetGatewayInstance(v *GatewayInstance) *DescribeGatewayInstanceOutput {
+	s.GatewayInstance = v
+	return s
+}
+
+// The result of a successful DescribeGateway request.
+type DescribeGatewayOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The settings for a gateway, including its networks.
+	Gateway *Gateway `locationName:"gateway" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGatewayOutput) GoString() string {
+	return s.String()
+}
+
+// SetGateway sets the Gateway field's value.
+func (s *DescribeGatewayOutput) SetGateway(v *Gateway) *DescribeGatewayOutput {
+	s.Gateway = v
 	return s
 }
 
@@ -5112,6 +9695,48 @@ func (s *DestinationConfigurationRequest) SetDestinationPort(v int64) *Destinati
 // SetInterface sets the Interface field's value.
 func (s *DestinationConfigurationRequest) SetInterface(v *InterfaceRequest) *DestinationConfigurationRequest {
 	s.Interface = v
+	return s
+}
+
+type EgressGatewayBridge struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the instance running this bridge.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The maximum expected bitrate (in bps) of the egress bridge.
+	//
+	// MaxBitrate is a required field
+	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EgressGatewayBridge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EgressGatewayBridge) GoString() string {
+	return s.String()
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *EgressGatewayBridge) SetInstanceId(v string) *EgressGatewayBridge {
+	s.InstanceId = &v
+	return s
+}
+
+// SetMaxBitrate sets the MaxBitrate field's value.
+func (s *EgressGatewayBridge) SetMaxBitrate(v int64) *EgressGatewayBridge {
+	s.MaxBitrate = &v
 	return s
 }
 
@@ -5548,8 +10173,7 @@ type Flow struct {
 	// Entitlements is a required field
 	Entitlements []*Entitlement `locationName:"entitlements" type:"list" required:"true"`
 
-	// The Amazon Resource Name (ARN), a unique identifier for any AWS resource,
-	// of the flow.
+	// The Amazon Resource Name (ARN) of the flow.
 	//
 	// FlowArn is a required field
 	FlowArn *string `locationName:"flowArn" type:"string" required:"true"`
@@ -5935,6 +10559,312 @@ func (s *ForbiddenException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The settings for a gateway, including its networks.
+type Gateway struct {
+	_ struct{} `type:"structure"`
+
+	// The range of IP addresses that contribute content or initiate output requests
+	// for flows communicating with this gateway. These IP addresses should be in
+	// the form of a Classless Inter-Domain Routing (CIDR) block; for example, 10.0.0.0/16.
+	//
+	// EgressCidrBlocks is a required field
+	EgressCidrBlocks []*string `locationName:"egressCidrBlocks" type:"list" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the gateway.
+	//
+	// GatewayArn is a required field
+	GatewayArn *string `locationName:"gatewayArn" type:"string" required:"true"`
+
+	GatewayMessages []*MessageDetail `locationName:"gatewayMessages" type:"list"`
+
+	// The current status of the gateway.
+	GatewayState *string `locationName:"gatewayState" type:"string" enum:"GatewayState"`
+
+	// The name of the gateway. This name can not be modified after the gateway
+	// is created.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The list of networks in the gateway.
+	//
+	// Networks is a required field
+	Networks []*GatewayNetwork `locationName:"networks" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Gateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Gateway) GoString() string {
+	return s.String()
+}
+
+// SetEgressCidrBlocks sets the EgressCidrBlocks field's value.
+func (s *Gateway) SetEgressCidrBlocks(v []*string) *Gateway {
+	s.EgressCidrBlocks = v
+	return s
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *Gateway) SetGatewayArn(v string) *Gateway {
+	s.GatewayArn = &v
+	return s
+}
+
+// SetGatewayMessages sets the GatewayMessages field's value.
+func (s *Gateway) SetGatewayMessages(v []*MessageDetail) *Gateway {
+	s.GatewayMessages = v
+	return s
+}
+
+// SetGatewayState sets the GatewayState field's value.
+func (s *Gateway) SetGatewayState(v string) *Gateway {
+	s.GatewayState = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Gateway) SetName(v string) *Gateway {
+	s.Name = &v
+	return s
+}
+
+// SetNetworks sets the Networks field's value.
+func (s *Gateway) SetNetworks(v []*GatewayNetwork) *Gateway {
+	s.Networks = v
+	return s
+}
+
+// The source configuration for cloud flows receiving a stream from a bridge.
+type GatewayBridgeSource struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the bridge feeding this flow.
+	//
+	// BridgeArn is a required field
+	BridgeArn *string `locationName:"bridgeArn" type:"string" required:"true"`
+
+	// The name of the VPC interface attachment to use for this bridge source.
+	VpcInterfaceAttachment *VpcInterfaceAttachment `locationName:"vpcInterfaceAttachment" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GatewayBridgeSource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GatewayBridgeSource) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *GatewayBridgeSource) SetBridgeArn(v string) *GatewayBridgeSource {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetVpcInterfaceAttachment sets the VpcInterfaceAttachment field's value.
+func (s *GatewayBridgeSource) SetVpcInterfaceAttachment(v *VpcInterfaceAttachment) *GatewayBridgeSource {
+	s.VpcInterfaceAttachment = v
+	return s
+}
+
+// The settings for an instance in a gateway.
+type GatewayInstance struct {
+	_ struct{} `type:"structure"`
+
+	// The availability of the instance to host new bridges. The bridgePlacement
+	// property can be LOCKED or AVAILABLE. If it is LOCKED, no new bridges can
+	// be deployed to this instance. If it is AVAILABLE, new bridges can be added
+	// to this instance.
+	//
+	// BridgePlacement is a required field
+	BridgePlacement *string `locationName:"bridgePlacement" type:"string" required:"true" enum:"BridgePlacement"`
+
+	// The connection state of the instance.
+	//
+	// ConnectionStatus is a required field
+	ConnectionStatus *string `locationName:"connectionStatus" type:"string" required:"true" enum:"ConnectionStatus"`
+
+	// The Amazon Resource Name (ARN) of the instance.
+	//
+	// GatewayArn is a required field
+	GatewayArn *string `locationName:"gatewayArn" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the gateway.
+	//
+	// GatewayInstanceArn is a required field
+	GatewayInstanceArn *string `locationName:"gatewayInstanceArn" type:"string" required:"true"`
+
+	// The managed instance ID generated by the SSM install. This will begin with
+	// "mi-".
+	//
+	// InstanceId is a required field
+	InstanceId *string `locationName:"instanceId" type:"string" required:"true"`
+
+	InstanceMessages []*MessageDetail `locationName:"instanceMessages" type:"list"`
+
+	// The status of the instance.
+	//
+	// InstanceState is a required field
+	InstanceState *string `locationName:"instanceState" type:"string" required:"true" enum:"InstanceState"`
+
+	// The running bridge count.
+	//
+	// RunningBridgeCount is a required field
+	RunningBridgeCount *int64 `locationName:"runningBridgeCount" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GatewayInstance) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GatewayInstance) GoString() string {
+	return s.String()
+}
+
+// SetBridgePlacement sets the BridgePlacement field's value.
+func (s *GatewayInstance) SetBridgePlacement(v string) *GatewayInstance {
+	s.BridgePlacement = &v
+	return s
+}
+
+// SetConnectionStatus sets the ConnectionStatus field's value.
+func (s *GatewayInstance) SetConnectionStatus(v string) *GatewayInstance {
+	s.ConnectionStatus = &v
+	return s
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *GatewayInstance) SetGatewayArn(v string) *GatewayInstance {
+	s.GatewayArn = &v
+	return s
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *GatewayInstance) SetGatewayInstanceArn(v string) *GatewayInstance {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *GatewayInstance) SetInstanceId(v string) *GatewayInstance {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceMessages sets the InstanceMessages field's value.
+func (s *GatewayInstance) SetInstanceMessages(v []*MessageDetail) *GatewayInstance {
+	s.InstanceMessages = v
+	return s
+}
+
+// SetInstanceState sets the InstanceState field's value.
+func (s *GatewayInstance) SetInstanceState(v string) *GatewayInstance {
+	s.InstanceState = &v
+	return s
+}
+
+// SetRunningBridgeCount sets the RunningBridgeCount field's value.
+func (s *GatewayInstance) SetRunningBridgeCount(v int64) *GatewayInstance {
+	s.RunningBridgeCount = &v
+	return s
+}
+
+// The network settings for a gateway.
+type GatewayNetwork struct {
+	_ struct{} `type:"structure"`
+
+	// A unique IP address range to use for this network. These IP addresses should
+	// be in the form of a Classless Inter-Domain Routing (CIDR) block; for example,
+	// 10.0.0.0/16.
+	//
+	// CidrBlock is a required field
+	CidrBlock *string `locationName:"cidrBlock" type:"string" required:"true"`
+
+	// The name of the network. This name is used to reference the network and must
+	// be unique among networks in this gateway.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GatewayNetwork) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GatewayNetwork) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GatewayNetwork) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GatewayNetwork"}
+	if s.CidrBlock == nil {
+		invalidParams.Add(request.NewErrParamRequired("CidrBlock"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCidrBlock sets the CidrBlock field's value.
+func (s *GatewayNetwork) SetCidrBlock(v string) *GatewayNetwork {
+	s.CidrBlock = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GatewayNetwork) SetName(v string) *GatewayNetwork {
+	s.Name = &v
+	return s
+}
+
 // The entitlements that you want to grant on a flow.
 type GrantEntitlementRequest struct {
 	_ struct{} `type:"structure"`
@@ -6178,7 +11108,7 @@ func (s *GrantFlowEntitlementsInput) SetFlowArn(v string) *GrantFlowEntitlements
 	return s
 }
 
-// The entitlements that were just granted.
+// The result of a successful GrantFlowEntitlements request.
 type GrantFlowEntitlementsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -6216,6 +11146,59 @@ func (s *GrantFlowEntitlementsOutput) SetEntitlements(v []*Entitlement) *GrantFl
 // SetFlowArn sets the FlowArn field's value.
 func (s *GrantFlowEntitlementsOutput) SetFlowArn(v string) *GrantFlowEntitlementsOutput {
 	s.FlowArn = &v
+	return s
+}
+
+type IngressGatewayBridge struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the instance running this bridge.
+	InstanceId *string `locationName:"instanceId" type:"string"`
+
+	// The maximum expected bitrate (in bps) of the ingress bridge.
+	//
+	// MaxBitrate is a required field
+	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer" required:"true"`
+
+	// The maximum number of outputs on the ingress bridge.
+	//
+	// MaxOutputs is a required field
+	MaxOutputs *int64 `locationName:"maxOutputs" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IngressGatewayBridge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IngressGatewayBridge) GoString() string {
+	return s.String()
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *IngressGatewayBridge) SetInstanceId(v string) *IngressGatewayBridge {
+	s.InstanceId = &v
+	return s
+}
+
+// SetMaxBitrate sets the MaxBitrate field's value.
+func (s *IngressGatewayBridge) SetMaxBitrate(v int64) *IngressGatewayBridge {
+	s.MaxBitrate = &v
+	return s
+}
+
+// SetMaxOutputs sets the MaxOutputs field's value.
+func (s *IngressGatewayBridge) SetMaxOutputs(v int64) *IngressGatewayBridge {
+	s.MaxOutputs = &v
 	return s
 }
 
@@ -6492,6 +11475,111 @@ func (s *InternalServerErrorException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ListBridgesInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	FilterArn *string `location:"querystring" locationName:"filterArn" type:"string"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListBridgesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListBridgesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListBridgesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListBridgesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilterArn sets the FilterArn field's value.
+func (s *ListBridgesInput) SetFilterArn(v string) *ListBridgesInput {
+	s.FilterArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListBridgesInput) SetMaxResults(v int64) *ListBridgesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListBridgesInput) SetNextToken(v string) *ListBridgesInput {
+	s.NextToken = &v
+	return s
+}
+
+// The result of a successful ListBridges request. The response includes bridge
+// summaries and the NextToken to use in a subsequent ListBridges request.
+type ListBridgesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of bridge summaries.
+	Bridges []*ListedBridge `locationName:"bridges" type:"list"`
+
+	// The token that identifies which batch of results that you want to see. For
+	// example, you submit a ListBridges request with MaxResults set at 5. The service
+	// returns the first batch of results (up to 5) and a NextToken value. To see
+	// the next batch of results, you can submit the ListBridges request a second
+	// time and specify the NextToken value.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListBridgesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListBridgesOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridges sets the Bridges field's value.
+func (s *ListBridgesOutput) SetBridges(v []*ListedBridge) *ListBridgesOutput {
+	s.Bridges = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListBridgesOutput) SetNextToken(v string) *ListBridgesOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListEntitlementsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6683,6 +11771,209 @@ func (s *ListFlowsOutput) SetFlows(v []*ListedFlow) *ListFlowsOutput {
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListFlowsOutput) SetNextToken(v string) *ListFlowsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListGatewayInstancesInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	FilterArn *string `location:"querystring" locationName:"filterArn" type:"string"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewayInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewayInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListGatewayInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListGatewayInstancesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilterArn sets the FilterArn field's value.
+func (s *ListGatewayInstancesInput) SetFilterArn(v string) *ListGatewayInstancesInput {
+	s.FilterArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListGatewayInstancesInput) SetMaxResults(v int64) *ListGatewayInstancesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGatewayInstancesInput) SetNextToken(v string) *ListGatewayInstancesInput {
+	s.NextToken = &v
+	return s
+}
+
+// The result of a successful ListGatewayInstances request. The response includes
+// instance summaries and the NextToken to use in a subsequent ListInstances
+// request.
+type ListGatewayInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of instance summaries.
+	Instances []*ListedGatewayInstance `locationName:"instances" type:"list"`
+
+	// The token that identifies which batch of results that you want to see. For
+	// example, you submit a ListInstances request with MaxResults set at 5. The
+	// service returns the first batch of results (up to 5) and a NextToken value.
+	// To see the next batch of results, you can submit the ListInstances request
+	// a second time and specify the NextToken value.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewayInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewayInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetInstances sets the Instances field's value.
+func (s *ListGatewayInstancesOutput) SetInstances(v []*ListedGatewayInstance) *ListGatewayInstancesOutput {
+	s.Instances = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGatewayInstancesOutput) SetNextToken(v string) *ListGatewayInstancesOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListGatewaysInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewaysInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewaysInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListGatewaysInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListGatewaysInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListGatewaysInput) SetMaxResults(v int64) *ListGatewaysInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGatewaysInput) SetNextToken(v string) *ListGatewaysInput {
+	s.NextToken = &v
+	return s
+}
+
+// The result of a successful ListGateways request. The response includes gateway
+// summaries and the NextToken to use in a subsequent ListGateways request.
+type ListGatewaysOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of gateway summaries.
+	Gateways []*ListedGateway `locationName:"gateways" type:"list"`
+
+	// The token that identifies which batch of results that you want to see. For
+	// example, you submit a ListGateways request with MaxResults set at 5. The
+	// service returns the first batch of results (up to 5) and a NextToken value.
+	// To see the next batch of results, you can submit the ListGateways request
+	// a second time and specify the NextToken value.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewaysOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGatewaysOutput) GoString() string {
+	return s.String()
+}
+
+// SetGateways sets the Gateways field's value.
+func (s *ListGatewaysOutput) SetGateways(v []*ListedGateway) *ListGatewaysOutput {
+	s.Gateways = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGatewaysOutput) SetNextToken(v string) *ListGatewaysOutput {
 	s.NextToken = &v
 	return s
 }
@@ -6969,6 +12260,82 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 	return s
 }
 
+// Displays details of the selected bridge.
+type ListedBridge struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the bridge.
+	//
+	// BridgeArn is a required field
+	BridgeArn *string `locationName:"bridgeArn" type:"string" required:"true"`
+
+	// BridgeState is a required field
+	BridgeState *string `locationName:"bridgeState" type:"string" required:"true" enum:"BridgeState"`
+
+	// The type of the bridge.
+	//
+	// BridgeType is a required field
+	BridgeType *string `locationName:"bridgeType" type:"string" required:"true"`
+
+	// The name of the bridge.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The ARN of the gateway associated with the bridge.
+	//
+	// PlacementArn is a required field
+	PlacementArn *string `locationName:"placementArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListedBridge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListedBridge) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *ListedBridge) SetBridgeArn(v string) *ListedBridge {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetBridgeState sets the BridgeState field's value.
+func (s *ListedBridge) SetBridgeState(v string) *ListedBridge {
+	s.BridgeState = &v
+	return s
+}
+
+// SetBridgeType sets the BridgeType field's value.
+func (s *ListedBridge) SetBridgeType(v string) *ListedBridge {
+	s.BridgeType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ListedBridge) SetName(v string) *ListedBridge {
+	s.Name = &v
+	return s
+}
+
+// SetPlacementArn sets the PlacementArn field's value.
+func (s *ListedBridge) SetPlacementArn(v string) *ListedBridge {
+	s.PlacementArn = &v
+	return s
+}
+
 // An entitlement that has been granted to you from other AWS accounts.
 type ListedEntitlement struct {
 	_ struct{} `type:"structure"`
@@ -7122,6 +12489,126 @@ func (s *ListedFlow) SetSourceType(v string) *ListedFlow {
 // SetStatus sets the Status field's value.
 func (s *ListedFlow) SetStatus(v string) *ListedFlow {
 	s.Status = &v
+	return s
+}
+
+// Provides a summary of a gateway, including its name, ARN, and status.
+type ListedGateway struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the gateway.
+	//
+	// GatewayArn is a required field
+	GatewayArn *string `locationName:"gatewayArn" type:"string" required:"true"`
+
+	// GatewayState is a required field
+	GatewayState *string `locationName:"gatewayState" type:"string" required:"true" enum:"GatewayState"`
+
+	// The name of the gateway.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListedGateway) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListedGateway) GoString() string {
+	return s.String()
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *ListedGateway) SetGatewayArn(v string) *ListedGateway {
+	s.GatewayArn = &v
+	return s
+}
+
+// SetGatewayState sets the GatewayState field's value.
+func (s *ListedGateway) SetGatewayState(v string) *ListedGateway {
+	s.GatewayState = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ListedGateway) SetName(v string) *ListedGateway {
+	s.Name = &v
+	return s
+}
+
+// Provides a summary of an instance.
+type ListedGatewayInstance struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the gateway.
+	//
+	// GatewayArn is a required field
+	GatewayArn *string `locationName:"gatewayArn" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the instance.
+	//
+	// GatewayInstanceArn is a required field
+	GatewayInstanceArn *string `locationName:"gatewayInstanceArn" type:"string" required:"true"`
+
+	// The managed instance ID generated by the SSM install. This will begin with
+	// "mi-".
+	//
+	// InstanceId is a required field
+	InstanceId *string `locationName:"instanceId" type:"string" required:"true"`
+
+	// The status of the instance.
+	InstanceState *string `locationName:"instanceState" type:"string" enum:"InstanceState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListedGatewayInstance) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListedGatewayInstance) GoString() string {
+	return s.String()
+}
+
+// SetGatewayArn sets the GatewayArn field's value.
+func (s *ListedGatewayInstance) SetGatewayArn(v string) *ListedGatewayInstance {
+	s.GatewayArn = &v
+	return s
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *ListedGatewayInstance) SetGatewayInstanceArn(v string) *ListedGatewayInstance {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ListedGatewayInstance) SetInstanceId(v string) *ListedGatewayInstance {
+	s.InstanceId = &v
+	return s
+}
+
+// SetInstanceState sets the InstanceState field's value.
+func (s *ListedGatewayInstance) SetInstanceState(v string) *ListedGatewayInstance {
+	s.InstanceState = &v
 	return s
 }
 
@@ -7688,6 +13175,60 @@ func (s *MediaStreamSourceConfigurationRequest) SetMediaStreamName(v string) *Me
 	return s
 }
 
+type MessageDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The error code.
+	//
+	// Code is a required field
+	Code *string `locationName:"code" type:"string" required:"true"`
+
+	// The specific error message that MediaConnect returns to help you understand
+	// the reason that the request did not succeed.
+	//
+	// Message is a required field
+	Message *string `locationName:"message" type:"string" required:"true"`
+
+	// The name of the resource.
+	ResourceName *string `locationName:"resourceName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MessageDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MessageDetail) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *MessageDetail) SetCode(v string) *MessageDetail {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *MessageDetail) SetMessage(v string) *MessageDetail {
+	s.Message = &v
+	return s
+}
+
+// SetResourceName sets the ResourceName field's value.
+func (s *MessageDetail) SetResourceName(v string) *MessageDetail {
+	s.ResourceName = &v
+	return s
+}
+
 // Messages that provide the state of the flow.
 type Messages struct {
 	_ struct{} `type:"structure"`
@@ -7908,6 +13449,12 @@ func (s *Offering) SetResourceSpecification(v *ResourceSpecification) *Offering 
 type Output struct {
 	_ struct{} `type:"structure"`
 
+	// The ARN of the bridge that added this output.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The bridge output ports currently in use.
+	BridgePorts []*int64 `locationName:"bridgePorts" type:"list"`
+
 	// Percentage from 0-100 of the data transfer cost to be billed to the subscriber.
 	DataTransferSubscriberFeePercent *int64 `locationName:"dataTransferSubscriberFeePercent" type:"integer"`
 
@@ -7975,6 +13522,18 @@ func (s Output) String() string {
 // value will be replaced with "sensitive".
 func (s Output) GoString() string {
 	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *Output) SetBridgeArn(v string) *Output {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetBridgePorts sets the BridgePorts field's value.
+func (s *Output) SetBridgePorts(v []*int64) *Output {
+	s.BridgePorts = v
+	return s
 }
 
 // SetDataTransferSubscriberFeePercent sets the DataTransferSubscriberFeePercent field's value.
@@ -8172,6 +13731,208 @@ func (s PurchaseOfferingOutput) GoString() string {
 // SetReservation sets the Reservation field's value.
 func (s *PurchaseOfferingOutput) SetReservation(v *Reservation) *PurchaseOfferingOutput {
 	s.Reservation = v
+	return s
+}
+
+type RemoveBridgeOutputInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// OutputName is a required field
+	OutputName *string `location:"uri" locationName:"outputName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeOutputInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeOutputInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveBridgeOutputInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveBridgeOutputInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.OutputName == nil {
+		invalidParams.Add(request.NewErrParamRequired("OutputName"))
+	}
+	if s.OutputName != nil && len(*s.OutputName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("OutputName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *RemoveBridgeOutputInput) SetBridgeArn(v string) *RemoveBridgeOutputInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetOutputName sets the OutputName field's value.
+func (s *RemoveBridgeOutputInput) SetOutputName(v string) *RemoveBridgeOutputInput {
+	s.OutputName = &v
+	return s
+}
+
+// The result of a successful RemoveBridgeOutput request.
+type RemoveBridgeOutputOutput struct {
+	_ struct{} `type:"structure"`
+
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	OutputName *string `locationName:"outputName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeOutputOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeOutputOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *RemoveBridgeOutputOutput) SetBridgeArn(v string) *RemoveBridgeOutputOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetOutputName sets the OutputName field's value.
+func (s *RemoveBridgeOutputOutput) SetOutputName(v string) *RemoveBridgeOutputOutput {
+	s.OutputName = &v
+	return s
+}
+
+type RemoveBridgeSourceInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// SourceName is a required field
+	SourceName *string `location:"uri" locationName:"sourceName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeSourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeSourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveBridgeSourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveBridgeSourceInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.SourceName == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceName"))
+	}
+	if s.SourceName != nil && len(*s.SourceName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SourceName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *RemoveBridgeSourceInput) SetBridgeArn(v string) *RemoveBridgeSourceInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetSourceName sets the SourceName field's value.
+func (s *RemoveBridgeSourceInput) SetSourceName(v string) *RemoveBridgeSourceInput {
+	s.SourceName = &v
+	return s
+}
+
+// The result of a successful RemoveBridgeSource request.
+type RemoveBridgeSourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	SourceName *string `locationName:"sourceName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeSourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveBridgeSourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *RemoveBridgeSourceOutput) SetBridgeArn(v string) *RemoveBridgeSourceOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetSourceName sets the SourceName field's value.
+func (s *RemoveBridgeSourceOutput) SetSourceName(v string) *RemoveBridgeSourceOutput {
+	s.SourceName = &v
 	return s
 }
 
@@ -8996,6 +14757,62 @@ func (s *ServiceUnavailableException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The source configuration for cloud flows receiving a stream from a bridge.
+type SetGatewayBridgeSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the bridge feeding this flow.
+	//
+	// BridgeArn is a required field
+	BridgeArn *string `locationName:"bridgeArn" type:"string" required:"true"`
+
+	// The name of the VPC interface attachment to use for this bridge source.
+	VpcInterfaceAttachment *VpcInterfaceAttachment `locationName:"vpcInterfaceAttachment" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SetGatewayBridgeSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SetGatewayBridgeSourceRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SetGatewayBridgeSourceRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SetGatewayBridgeSourceRequest"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *SetGatewayBridgeSourceRequest) SetBridgeArn(v string) *SetGatewayBridgeSourceRequest {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetVpcInterfaceAttachment sets the VpcInterfaceAttachment field's value.
+func (s *SetGatewayBridgeSourceRequest) SetVpcInterfaceAttachment(v *VpcInterfaceAttachment) *SetGatewayBridgeSourceRequest {
+	s.VpcInterfaceAttachment = v
+	return s
+}
+
 // The settings for the source of the flow.
 type SetSourceRequest struct {
 	_ struct{} `type:"structure"`
@@ -9013,10 +14830,13 @@ type SetSourceRequest struct {
 	// of the originator's flow.
 	EntitlementArn *string `locationName:"entitlementArn" type:"string"`
 
+	// The source configuration for cloud flows receiving a stream from a bridge.
+	GatewayBridgeSource *SetGatewayBridgeSourceRequest `locationName:"gatewayBridgeSource" type:"structure"`
+
 	// The port that the flow will be listening on for incoming content.
 	IngestPort *int64 `locationName:"ingestPort" type:"integer"`
 
-	// The smoothing max bitrate for RIST, RTP, and RTP-FEC streams.
+	// The smoothing max bitrate (in bps) for RIST, RTP, and RTP-FEC streams.
 	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer"`
 
 	// The maximum latency in milliseconds. This parameter applies only to RIST-based,
@@ -9051,8 +14871,14 @@ type SetSourceRequest struct {
 	// the sender.
 	SenderIpAddress *string `locationName:"senderIpAddress" type:"string"`
 
+	// Source IP or domain name for SRT-caller protocol.
+	SourceListenerAddress *string `locationName:"sourceListenerAddress" type:"string"`
+
+	// Source port for SRT-caller protocol.
+	SourceListenerPort *int64 `locationName:"sourceListenerPort" type:"integer"`
+
 	// The stream ID that you want to use for this transport. This parameter applies
-	// only to Zixi-based streams.
+	// only to Zixi and SRT caller-based streams.
 	StreamId *string `locationName:"streamId" type:"string"`
 
 	// The name of the VPC interface to use for this source.
@@ -9090,6 +14916,11 @@ func (s *SetSourceRequest) Validate() error {
 			invalidParams.AddNested("Decryption", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.GatewayBridgeSource != nil {
+		if err := s.GatewayBridgeSource.Validate(); err != nil {
+			invalidParams.AddNested("GatewayBridgeSource", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.MediaStreamSourceConfigurations != nil {
 		for i, v := range s.MediaStreamSourceConfigurations {
 			if v == nil {
@@ -9122,6 +14953,12 @@ func (s *SetSourceRequest) SetDescription(v string) *SetSourceRequest {
 // SetEntitlementArn sets the EntitlementArn field's value.
 func (s *SetSourceRequest) SetEntitlementArn(v string) *SetSourceRequest {
 	s.EntitlementArn = &v
+	return s
+}
+
+// SetGatewayBridgeSource sets the GatewayBridgeSource field's value.
+func (s *SetSourceRequest) SetGatewayBridgeSource(v *SetGatewayBridgeSourceRequest) *SetSourceRequest {
+	s.GatewayBridgeSource = v
 	return s
 }
 
@@ -9185,6 +15022,18 @@ func (s *SetSourceRequest) SetSenderIpAddress(v string) *SetSourceRequest {
 	return s
 }
 
+// SetSourceListenerAddress sets the SourceListenerAddress field's value.
+func (s *SetSourceRequest) SetSourceListenerAddress(v string) *SetSourceRequest {
+	s.SourceListenerAddress = &v
+	return s
+}
+
+// SetSourceListenerPort sets the SourceListenerPort field's value.
+func (s *SetSourceRequest) SetSourceListenerPort(v int64) *SetSourceRequest {
+	s.SourceListenerPort = &v
+	return s
+}
+
 // SetStreamId sets the StreamId field's value.
 func (s *SetSourceRequest) SetStreamId(v string) *SetSourceRequest {
 	s.StreamId = &v
@@ -9221,6 +15070,9 @@ type Source struct {
 	// from another AWS account. The entitlement is set by the content originator
 	// and the ARN is generated as part of the originator's flow.
 	EntitlementArn *string `locationName:"entitlementArn" type:"string"`
+
+	// The source configuration for cloud flows receiving a stream from a bridge.
+	GatewayBridgeSource *GatewayBridgeSource `locationName:"gatewayBridgeSource" type:"structure"`
 
 	// The IP address that the flow will be listening on for incoming content.
 	IngestIp *string `locationName:"ingestIp" type:"string"`
@@ -9301,6 +15153,12 @@ func (s *Source) SetDescription(v string) *Source {
 // SetEntitlementArn sets the EntitlementArn field's value.
 func (s *Source) SetEntitlementArn(v string) *Source {
 	s.EntitlementArn = &v
+	return s
+}
+
+// SetGatewayBridgeSource sets the GatewayBridgeSource field's value.
+func (s *Source) SetGatewayBridgeSource(v *GatewayBridgeSource) *Source {
+	s.GatewayBridgeSource = v
 	return s
 }
 
@@ -9734,7 +15592,7 @@ type Transport struct {
 	// Routing (CIDR) block; for example, 10.0.0.0/16.
 	CidrAllowList []*string `locationName:"cidrAllowList" type:"list"`
 
-	// The smoothing max bitrate for RIST, RTP, and RTP-FEC streams.
+	// The smoothing max bitrate (in bps) for RIST, RTP, and RTP-FEC streams.
 	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer"`
 
 	// The maximum latency in milliseconds. This parameter applies only to RIST-based,
@@ -9770,8 +15628,14 @@ type Transport struct {
 	// The smoothing latency in milliseconds for RIST, RTP, and RTP-FEC streams.
 	SmoothingLatency *int64 `locationName:"smoothingLatency" type:"integer"`
 
+	// Source IP or domain name for SRT-caller protocol.
+	SourceListenerAddress *string `locationName:"sourceListenerAddress" type:"string"`
+
+	// Source port for SRT-caller protocol.
+	SourceListenerPort *int64 `locationName:"sourceListenerPort" type:"integer"`
+
 	// The stream ID that you want to use for this transport. This parameter applies
-	// only to Zixi-based streams.
+	// only to Zixi and SRT caller-based streams.
 	StreamId *string `locationName:"streamId" type:"string"`
 }
 
@@ -9850,6 +15714,18 @@ func (s *Transport) SetSenderIpAddress(v string) *Transport {
 // SetSmoothingLatency sets the SmoothingLatency field's value.
 func (s *Transport) SetSmoothingLatency(v int64) *Transport {
 	s.SmoothingLatency = &v
+	return s
+}
+
+// SetSourceListenerAddress sets the SourceListenerAddress field's value.
+func (s *Transport) SetSourceListenerAddress(v string) *Transport {
+	s.SourceListenerAddress = &v
+	return s
+}
+
+// SetSourceListenerPort sets the SourceListenerPort field's value.
+func (s *Transport) SetSourceListenerPort(v int64) *Transport {
+	s.SourceListenerPort = &v
 	return s
 }
 
@@ -9938,6 +15814,648 @@ func (s UntagResourceOutput) String() string {
 // value will be replaced with "sensitive".
 func (s UntagResourceOutput) GoString() string {
 	return s.String()
+}
+
+// Update the flow source of the bridge.
+type UpdateBridgeFlowSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the cloud flow to use as a source of this bridge.
+	FlowArn *string `locationName:"flowArn" type:"string"`
+
+	// The name of the VPC interface attachment to use for this source.
+	FlowVpcInterfaceAttachment *VpcInterfaceAttachment `locationName:"flowVpcInterfaceAttachment" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeFlowSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeFlowSourceRequest) GoString() string {
+	return s.String()
+}
+
+// SetFlowArn sets the FlowArn field's value.
+func (s *UpdateBridgeFlowSourceRequest) SetFlowArn(v string) *UpdateBridgeFlowSourceRequest {
+	s.FlowArn = &v
+	return s
+}
+
+// SetFlowVpcInterfaceAttachment sets the FlowVpcInterfaceAttachment field's value.
+func (s *UpdateBridgeFlowSourceRequest) SetFlowVpcInterfaceAttachment(v *VpcInterfaceAttachment) *UpdateBridgeFlowSourceRequest {
+	s.FlowVpcInterfaceAttachment = v
+	return s
+}
+
+// Update an existing bridge.
+type UpdateBridgeInput struct {
+	_ struct{} `type:"structure"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	EgressGatewayBridge *UpdateEgressGatewayBridgeRequest `locationName:"egressGatewayBridge" type:"structure"`
+
+	IngressGatewayBridge *UpdateIngressGatewayBridgeRequest `locationName:"ingressGatewayBridge" type:"structure"`
+
+	// The settings for source failover.
+	SourceFailoverConfig *UpdateFailoverConfig `locationName:"sourceFailoverConfig" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateBridgeInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateBridgeInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeInput) SetBridgeArn(v string) *UpdateBridgeInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetEgressGatewayBridge sets the EgressGatewayBridge field's value.
+func (s *UpdateBridgeInput) SetEgressGatewayBridge(v *UpdateEgressGatewayBridgeRequest) *UpdateBridgeInput {
+	s.EgressGatewayBridge = v
+	return s
+}
+
+// SetIngressGatewayBridge sets the IngressGatewayBridge field's value.
+func (s *UpdateBridgeInput) SetIngressGatewayBridge(v *UpdateIngressGatewayBridgeRequest) *UpdateBridgeInput {
+	s.IngressGatewayBridge = v
+	return s
+}
+
+// SetSourceFailoverConfig sets the SourceFailoverConfig field's value.
+func (s *UpdateBridgeInput) SetSourceFailoverConfig(v *UpdateFailoverConfig) *UpdateBridgeInput {
+	s.SourceFailoverConfig = v
+	return s
+}
+
+// Update an existing network output.
+type UpdateBridgeNetworkOutputRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The network output IP Address.
+	IpAddress *string `locationName:"ipAddress" type:"string"`
+
+	// The network output's gateway network name.
+	NetworkName *string `locationName:"networkName" type:"string"`
+
+	// The network output port.
+	Port *int64 `locationName:"port" type:"integer"`
+
+	// The network output protocol.
+	Protocol *string `locationName:"protocol" type:"string" enum:"Protocol"`
+
+	// The network output TTL.
+	Ttl *int64 `locationName:"ttl" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeNetworkOutputRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeNetworkOutputRequest) GoString() string {
+	return s.String()
+}
+
+// SetIpAddress sets the IpAddress field's value.
+func (s *UpdateBridgeNetworkOutputRequest) SetIpAddress(v string) *UpdateBridgeNetworkOutputRequest {
+	s.IpAddress = &v
+	return s
+}
+
+// SetNetworkName sets the NetworkName field's value.
+func (s *UpdateBridgeNetworkOutputRequest) SetNetworkName(v string) *UpdateBridgeNetworkOutputRequest {
+	s.NetworkName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *UpdateBridgeNetworkOutputRequest) SetPort(v int64) *UpdateBridgeNetworkOutputRequest {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *UpdateBridgeNetworkOutputRequest) SetProtocol(v string) *UpdateBridgeNetworkOutputRequest {
+	s.Protocol = &v
+	return s
+}
+
+// SetTtl sets the Ttl field's value.
+func (s *UpdateBridgeNetworkOutputRequest) SetTtl(v int64) *UpdateBridgeNetworkOutputRequest {
+	s.Ttl = &v
+	return s
+}
+
+// Update the network source of the bridge.
+type UpdateBridgeNetworkSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The network source multicast IP.
+	MulticastIp *string `locationName:"multicastIp" type:"string"`
+
+	// The network source's gateway network name.
+	NetworkName *string `locationName:"networkName" type:"string"`
+
+	// The network source port.
+	Port *int64 `locationName:"port" type:"integer"`
+
+	// The network source protocol.
+	Protocol *string `locationName:"protocol" type:"string" enum:"Protocol"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeNetworkSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeNetworkSourceRequest) GoString() string {
+	return s.String()
+}
+
+// SetMulticastIp sets the MulticastIp field's value.
+func (s *UpdateBridgeNetworkSourceRequest) SetMulticastIp(v string) *UpdateBridgeNetworkSourceRequest {
+	s.MulticastIp = &v
+	return s
+}
+
+// SetNetworkName sets the NetworkName field's value.
+func (s *UpdateBridgeNetworkSourceRequest) SetNetworkName(v string) *UpdateBridgeNetworkSourceRequest {
+	s.NetworkName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *UpdateBridgeNetworkSourceRequest) SetPort(v int64) *UpdateBridgeNetworkSourceRequest {
+	s.Port = &v
+	return s
+}
+
+// SetProtocol sets the Protocol field's value.
+func (s *UpdateBridgeNetworkSourceRequest) SetProtocol(v string) *UpdateBridgeNetworkSourceRequest {
+	s.Protocol = &v
+	return s
+}
+
+// The bridge has been successfully updated.
+type UpdateBridgeOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A Bridge is the connection between your datacenter's Instances and the AWS
+	// cloud. A bridge can be used to send video from the AWS cloud to your datacenter
+	// or from your datacenter to the AWS cloud.
+	Bridge *Bridge `locationName:"bridge" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridge sets the Bridge field's value.
+func (s *UpdateBridgeOutput) SetBridge(v *Bridge) *UpdateBridgeOutput {
+	s.Bridge = v
+	return s
+}
+
+// Update an existing bridge output.
+type UpdateBridgeOutputInput struct {
+	_ struct{} `type:"structure"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// Update an existing network output.
+	NetworkOutput *UpdateBridgeNetworkOutputRequest `locationName:"networkOutput" type:"structure"`
+
+	// OutputName is a required field
+	OutputName *string `location:"uri" locationName:"outputName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeOutputInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeOutputInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateBridgeOutputInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateBridgeOutputInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.OutputName == nil {
+		invalidParams.Add(request.NewErrParamRequired("OutputName"))
+	}
+	if s.OutputName != nil && len(*s.OutputName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("OutputName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeOutputInput) SetBridgeArn(v string) *UpdateBridgeOutputInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetNetworkOutput sets the NetworkOutput field's value.
+func (s *UpdateBridgeOutputInput) SetNetworkOutput(v *UpdateBridgeNetworkOutputRequest) *UpdateBridgeOutputInput {
+	s.NetworkOutput = v
+	return s
+}
+
+// SetOutputName sets the OutputName field's value.
+func (s *UpdateBridgeOutputInput) SetOutputName(v string) *UpdateBridgeOutputInput {
+	s.OutputName = &v
+	return s
+}
+
+// The result of a successful UpdateBridgeOutput request.
+type UpdateBridgeOutputOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the bridge.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The output that you updated.
+	Output *BridgeOutput_ `locationName:"output" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeOutputOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeOutputOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeOutputOutput) SetBridgeArn(v string) *UpdateBridgeOutputOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetOutput sets the Output field's value.
+func (s *UpdateBridgeOutputOutput) SetOutput(v *BridgeOutput_) *UpdateBridgeOutputOutput {
+	s.Output = v
+	return s
+}
+
+// Update the bridge source.
+type UpdateBridgeSourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// Update the flow source of the bridge.
+	FlowSource *UpdateBridgeFlowSourceRequest `locationName:"flowSource" type:"structure"`
+
+	// Update the network source of the bridge.
+	NetworkSource *UpdateBridgeNetworkSourceRequest `locationName:"networkSource" type:"structure"`
+
+	// SourceName is a required field
+	SourceName *string `location:"uri" locationName:"sourceName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeSourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeSourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateBridgeSourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateBridgeSourceInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.SourceName == nil {
+		invalidParams.Add(request.NewErrParamRequired("SourceName"))
+	}
+	if s.SourceName != nil && len(*s.SourceName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SourceName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeSourceInput) SetBridgeArn(v string) *UpdateBridgeSourceInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetFlowSource sets the FlowSource field's value.
+func (s *UpdateBridgeSourceInput) SetFlowSource(v *UpdateBridgeFlowSourceRequest) *UpdateBridgeSourceInput {
+	s.FlowSource = v
+	return s
+}
+
+// SetNetworkSource sets the NetworkSource field's value.
+func (s *UpdateBridgeSourceInput) SetNetworkSource(v *UpdateBridgeNetworkSourceRequest) *UpdateBridgeSourceInput {
+	s.NetworkSource = v
+	return s
+}
+
+// SetSourceName sets the SourceName field's value.
+func (s *UpdateBridgeSourceInput) SetSourceName(v string) *UpdateBridgeSourceInput {
+	s.SourceName = &v
+	return s
+}
+
+// The result of a successful UpdateBridgeSource request.
+type UpdateBridgeSourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the bridge.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The bridge's source.
+	Source *BridgeSource `locationName:"source" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeSourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeSourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeSourceOutput) SetBridgeArn(v string) *UpdateBridgeSourceOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *UpdateBridgeSourceOutput) SetSource(v *BridgeSource) *UpdateBridgeSourceOutput {
+	s.Source = v
+	return s
+}
+
+// Update the state of a bridge. ACTIVE or STANDBY.
+type UpdateBridgeStateInput struct {
+	_ struct{} `type:"structure"`
+
+	// BridgeArn is a required field
+	BridgeArn *string `location:"uri" locationName:"bridgeArn" type:"string" required:"true"`
+
+	// DesiredState is a required field
+	DesiredState *string `locationName:"desiredState" type:"string" required:"true" enum:"DesiredState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeStateInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeStateInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateBridgeStateInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateBridgeStateInput"}
+	if s.BridgeArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("BridgeArn"))
+	}
+	if s.BridgeArn != nil && len(*s.BridgeArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("BridgeArn", 1))
+	}
+	if s.DesiredState == nil {
+		invalidParams.Add(request.NewErrParamRequired("DesiredState"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeStateInput) SetBridgeArn(v string) *UpdateBridgeStateInput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetDesiredState sets the DesiredState field's value.
+func (s *UpdateBridgeStateInput) SetDesiredState(v string) *UpdateBridgeStateInput {
+	s.DesiredState = &v
+	return s
+}
+
+// The bridge state has been updated.
+type UpdateBridgeStateOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Number (ARN) of the bridge.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The state of the bridge. ACTIVE or STANDBY.
+	DesiredState *string `locationName:"desiredState" type:"string" enum:"DesiredState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeStateOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateBridgeStateOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateBridgeStateOutput) SetBridgeArn(v string) *UpdateBridgeStateOutput {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetDesiredState sets the DesiredState field's value.
+func (s *UpdateBridgeStateOutput) SetDesiredState(v string) *UpdateBridgeStateOutput {
+	s.DesiredState = &v
+	return s
+}
+
+type UpdateEgressGatewayBridgeRequest struct {
+	_ struct{} `type:"structure"`
+
+	// Update an existing egress-type bridge.
+	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEgressGatewayBridgeRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEgressGatewayBridgeRequest) GoString() string {
+	return s.String()
+}
+
+// SetMaxBitrate sets the MaxBitrate field's value.
+func (s *UpdateEgressGatewayBridgeRequest) SetMaxBitrate(v int64) *UpdateEgressGatewayBridgeRequest {
+	s.MaxBitrate = &v
+	return s
 }
 
 // Information about the encryption of the flow.
@@ -10445,7 +16963,7 @@ func (s *UpdateFlowMediaStreamInput) SetVideoFormat(v string) *UpdateFlowMediaSt
 	return s
 }
 
-// Update response
+// The result of a successful UpdateFlowMediaStream request.
 type UpdateFlowMediaStreamOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -10486,7 +17004,7 @@ func (s *UpdateFlowMediaStreamOutput) SetMediaStream(v *MediaStream) *UpdateFlow
 	return s
 }
 
-// Updates an existing flow.
+// The result of a successful UpdateFlow request. Updates an existing flow.
 type UpdateFlowOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -10541,7 +17059,8 @@ type UpdateFlowOutputInput struct {
 	// FlowArn is a required field
 	FlowArn *string `location:"uri" locationName:"flowArn" type:"string" required:"true"`
 
-	// The maximum latency in milliseconds for Zixi-based streams.
+	// The maximum latency in milliseconds. This parameter applies only to RIST-based,
+	// Zixi-based, and Fujitsu-based streams.
 	MaxLatency *int64 `locationName:"maxLatency" type:"integer"`
 
 	// The media streams that are associated with the output, and the parameters
@@ -10579,7 +17098,7 @@ type UpdateFlowOutputInput struct {
 	SmoothingLatency *int64 `locationName:"smoothingLatency" type:"integer"`
 
 	// The stream ID that you want to use for this transport. This parameter applies
-	// only to Zixi-based streams.
+	// only to Zixi and SRT caller-based streams.
 	StreamId *string `locationName:"streamId" type:"string"`
 
 	// The name of the VPC interface attachment to use for this output.
@@ -10800,10 +17319,13 @@ type UpdateFlowSourceInput struct {
 	// FlowArn is a required field
 	FlowArn *string `location:"uri" locationName:"flowArn" type:"string" required:"true"`
 
+	// The source configuration for cloud flows receiving a stream from a bridge.
+	GatewayBridgeSource *UpdateGatewayBridgeSourceRequest `locationName:"gatewayBridgeSource" type:"structure"`
+
 	// The port that the flow will be listening on for incoming content.
 	IngestPort *int64 `locationName:"ingestPort" type:"integer"`
 
-	// The smoothing max bitrate for RIST, RTP, and RTP-FEC streams.
+	// The smoothing max bitrate (in bps) for RIST, RTP, and RTP-FEC streams.
 	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer"`
 
 	// The maximum latency in milliseconds. This parameter applies only to RIST-based,
@@ -10827,6 +17349,8 @@ type UpdateFlowSourceInput struct {
 	// The protocol that is used by the source.
 	Protocol *string `locationName:"protocol" type:"string" enum:"Protocol"`
 
+	// The port that the flow uses to send outbound requests to initiate connection
+	// with the sender.
 	SenderControlPort *int64 `locationName:"senderControlPort" type:"integer"`
 
 	// The IP address that the flow communicates with to initiate connection with
@@ -10836,8 +17360,14 @@ type UpdateFlowSourceInput struct {
 	// SourceArn is a required field
 	SourceArn *string `location:"uri" locationName:"sourceArn" type:"string" required:"true"`
 
+	// Source IP or domain name for SRT-caller protocol.
+	SourceListenerAddress *string `locationName:"sourceListenerAddress" type:"string"`
+
+	// Source port for SRT-caller protocol.
+	SourceListenerPort *int64 `locationName:"sourceListenerPort" type:"integer"`
+
 	// The stream ID that you want to use for this transport. This parameter applies
-	// only to Zixi-based streams.
+	// only to Zixi and SRT caller-based streams.
 	StreamId *string `locationName:"streamId" type:"string"`
 
 	// The name of the VPC interface to use for this source.
@@ -10923,6 +17453,12 @@ func (s *UpdateFlowSourceInput) SetFlowArn(v string) *UpdateFlowSourceInput {
 	return s
 }
 
+// SetGatewayBridgeSource sets the GatewayBridgeSource field's value.
+func (s *UpdateFlowSourceInput) SetGatewayBridgeSource(v *UpdateGatewayBridgeSourceRequest) *UpdateFlowSourceInput {
+	s.GatewayBridgeSource = v
+	return s
+}
+
 // SetIngestPort sets the IngestPort field's value.
 func (s *UpdateFlowSourceInput) SetIngestPort(v int64) *UpdateFlowSourceInput {
 	s.IngestPort = &v
@@ -10983,6 +17519,18 @@ func (s *UpdateFlowSourceInput) SetSourceArn(v string) *UpdateFlowSourceInput {
 	return s
 }
 
+// SetSourceListenerAddress sets the SourceListenerAddress field's value.
+func (s *UpdateFlowSourceInput) SetSourceListenerAddress(v string) *UpdateFlowSourceInput {
+	s.SourceListenerAddress = &v
+	return s
+}
+
+// SetSourceListenerPort sets the SourceListenerPort field's value.
+func (s *UpdateFlowSourceInput) SetSourceListenerPort(v int64) *UpdateFlowSourceInput {
+	s.SourceListenerPort = &v
+	return s
+}
+
 // SetStreamId sets the StreamId field's value.
 func (s *UpdateFlowSourceInput) SetStreamId(v string) *UpdateFlowSourceInput {
 	s.StreamId = &v
@@ -11040,6 +17588,191 @@ func (s *UpdateFlowSourceOutput) SetFlowArn(v string) *UpdateFlowSourceOutput {
 // SetSource sets the Source field's value.
 func (s *UpdateFlowSourceOutput) SetSource(v *Source) *UpdateFlowSourceOutput {
 	s.Source = v
+	return s
+}
+
+// The source configuration for cloud flows receiving a stream from a bridge.
+type UpdateGatewayBridgeSourceRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the bridge feeding this flow.
+	BridgeArn *string `locationName:"bridgeArn" type:"string"`
+
+	// The name of the VPC interface attachment to use for this bridge source.
+	VpcInterfaceAttachment *VpcInterfaceAttachment `locationName:"vpcInterfaceAttachment" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateGatewayBridgeSourceRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateGatewayBridgeSourceRequest) GoString() string {
+	return s.String()
+}
+
+// SetBridgeArn sets the BridgeArn field's value.
+func (s *UpdateGatewayBridgeSourceRequest) SetBridgeArn(v string) *UpdateGatewayBridgeSourceRequest {
+	s.BridgeArn = &v
+	return s
+}
+
+// SetVpcInterfaceAttachment sets the VpcInterfaceAttachment field's value.
+func (s *UpdateGatewayBridgeSourceRequest) SetVpcInterfaceAttachment(v *VpcInterfaceAttachment) *UpdateGatewayBridgeSourceRequest {
+	s.VpcInterfaceAttachment = v
+	return s
+}
+
+// The state update that you want to make to an existing gateway instance.
+type UpdateGatewayInstanceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The availability of the instance to host new bridges. The bridgePlacement
+	// property can be LOCKED or AVAILABLE. If it is LOCKED, no new bridges can
+	// be deployed to this instance. If it is AVAILABLE, new bridges can be added
+	// to this instance.
+	BridgePlacement *string `locationName:"bridgePlacement" type:"string" enum:"BridgePlacement"`
+
+	// GatewayInstanceArn is a required field
+	GatewayInstanceArn *string `location:"uri" locationName:"gatewayInstanceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateGatewayInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateGatewayInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateGatewayInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateGatewayInstanceInput"}
+	if s.GatewayInstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("GatewayInstanceArn"))
+	}
+	if s.GatewayInstanceArn != nil && len(*s.GatewayInstanceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GatewayInstanceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBridgePlacement sets the BridgePlacement field's value.
+func (s *UpdateGatewayInstanceInput) SetBridgePlacement(v string) *UpdateGatewayInstanceInput {
+	s.BridgePlacement = &v
+	return s
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *UpdateGatewayInstanceInput) SetGatewayInstanceArn(v string) *UpdateGatewayInstanceInput {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+// The result of a successful UpdateGatewayInstance request.
+type UpdateGatewayInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The availability of the instance to host new bridges. The bridgePlacement
+	// property can be LOCKED or AVAILABLE. If it is LOCKED, no new bridges can
+	// be deployed to this instance. If it is AVAILABLE, new bridges can be added
+	// to this instance.
+	BridgePlacement *string `locationName:"bridgePlacement" type:"string" enum:"BridgePlacement"`
+
+	// The Amazon Resource Name (ARN) of the instance.
+	GatewayInstanceArn *string `locationName:"gatewayInstanceArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateGatewayInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateGatewayInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetBridgePlacement sets the BridgePlacement field's value.
+func (s *UpdateGatewayInstanceOutput) SetBridgePlacement(v string) *UpdateGatewayInstanceOutput {
+	s.BridgePlacement = &v
+	return s
+}
+
+// SetGatewayInstanceArn sets the GatewayInstanceArn field's value.
+func (s *UpdateGatewayInstanceOutput) SetGatewayInstanceArn(v string) *UpdateGatewayInstanceOutput {
+	s.GatewayInstanceArn = &v
+	return s
+}
+
+type UpdateIngressGatewayBridgeRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum expected bitrate (in bps).
+	MaxBitrate *int64 `locationName:"maxBitrate" type:"integer"`
+
+	// The maximum number of expected outputs.
+	MaxOutputs *int64 `locationName:"maxOutputs" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateIngressGatewayBridgeRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateIngressGatewayBridgeRequest) GoString() string {
+	return s.String()
+}
+
+// SetMaxBitrate sets the MaxBitrate field's value.
+func (s *UpdateIngressGatewayBridgeRequest) SetMaxBitrate(v int64) *UpdateIngressGatewayBridgeRequest {
+	s.MaxBitrate = &v
+	return s
+}
+
+// SetMaxOutputs sets the MaxOutputs field's value.
+func (s *UpdateIngressGatewayBridgeRequest) SetMaxOutputs(v int64) *UpdateIngressGatewayBridgeRequest {
+	s.MaxOutputs = &v
 	return s
 }
 
@@ -11184,11 +17917,11 @@ func (s *VpcInterface) SetSubnetId(v string) *VpcInterface {
 	return s
 }
 
-// The settings for attaching a VPC interface to an output.
+// The settings for attaching a VPC interface to an resource.
 type VpcInterfaceAttachment struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the VPC interface to use for this output.
+	// The name of the VPC interface to use for this resource.
 	VpcInterfaceName *string `locationName:"vpcInterfaceName" type:"string"`
 }
 
@@ -11337,6 +18070,78 @@ func Algorithm_Values() []string {
 }
 
 const (
+	// BridgePlacementAvailable is a BridgePlacement enum value
+	BridgePlacementAvailable = "AVAILABLE"
+
+	// BridgePlacementLocked is a BridgePlacement enum value
+	BridgePlacementLocked = "LOCKED"
+)
+
+// BridgePlacement_Values returns all elements of the BridgePlacement enum
+func BridgePlacement_Values() []string {
+	return []string{
+		BridgePlacementAvailable,
+		BridgePlacementLocked,
+	}
+}
+
+const (
+	// BridgeStateCreating is a BridgeState enum value
+	BridgeStateCreating = "CREATING"
+
+	// BridgeStateStandby is a BridgeState enum value
+	BridgeStateStandby = "STANDBY"
+
+	// BridgeStateStarting is a BridgeState enum value
+	BridgeStateStarting = "STARTING"
+
+	// BridgeStateDeploying is a BridgeState enum value
+	BridgeStateDeploying = "DEPLOYING"
+
+	// BridgeStateActive is a BridgeState enum value
+	BridgeStateActive = "ACTIVE"
+
+	// BridgeStateStopping is a BridgeState enum value
+	BridgeStateStopping = "STOPPING"
+
+	// BridgeStateDeleting is a BridgeState enum value
+	BridgeStateDeleting = "DELETING"
+
+	// BridgeStateDeleted is a BridgeState enum value
+	BridgeStateDeleted = "DELETED"
+
+	// BridgeStateStartFailed is a BridgeState enum value
+	BridgeStateStartFailed = "START_FAILED"
+
+	// BridgeStateStartPending is a BridgeState enum value
+	BridgeStateStartPending = "START_PENDING"
+
+	// BridgeStateStopFailed is a BridgeState enum value
+	BridgeStateStopFailed = "STOP_FAILED"
+
+	// BridgeStateUpdating is a BridgeState enum value
+	BridgeStateUpdating = "UPDATING"
+)
+
+// BridgeState_Values returns all elements of the BridgeState enum
+func BridgeState_Values() []string {
+	return []string{
+		BridgeStateCreating,
+		BridgeStateStandby,
+		BridgeStateStarting,
+		BridgeStateDeploying,
+		BridgeStateActive,
+		BridgeStateStopping,
+		BridgeStateDeleting,
+		BridgeStateDeleted,
+		BridgeStateStartFailed,
+		BridgeStateStartPending,
+		BridgeStateStopFailed,
+		BridgeStateUpdating,
+	}
+}
+
+const (
 	// ColorimetryBt601 is a Colorimetry enum value
 	ColorimetryBt601 = "BT601"
 
@@ -11369,6 +18174,42 @@ func Colorimetry_Values() []string {
 		ColorimetrySt20651,
 		ColorimetrySt20653,
 		ColorimetryXyz,
+	}
+}
+
+const (
+	// ConnectionStatusConnected is a ConnectionStatus enum value
+	ConnectionStatusConnected = "CONNECTED"
+
+	// ConnectionStatusDisconnected is a ConnectionStatus enum value
+	ConnectionStatusDisconnected = "DISCONNECTED"
+)
+
+// ConnectionStatus_Values returns all elements of the ConnectionStatus enum
+func ConnectionStatus_Values() []string {
+	return []string{
+		ConnectionStatusConnected,
+		ConnectionStatusDisconnected,
+	}
+}
+
+const (
+	// DesiredStateActive is a DesiredState enum value
+	DesiredStateActive = "ACTIVE"
+
+	// DesiredStateStandby is a DesiredState enum value
+	DesiredStateStandby = "STANDBY"
+
+	// DesiredStateDeleted is a DesiredState enum value
+	DesiredStateDeleted = "DELETED"
+)
+
+// DesiredState_Values returns all elements of the DesiredState enum
+func DesiredState_Values() []string {
+	return []string{
+		DesiredStateActive,
+		DesiredStateStandby,
+		DesiredStateDeleted,
 	}
 }
 
@@ -11453,6 +18294,70 @@ func FailoverMode_Values() []string {
 	return []string{
 		FailoverModeMerge,
 		FailoverModeFailover,
+	}
+}
+
+const (
+	// GatewayStateCreating is a GatewayState enum value
+	GatewayStateCreating = "CREATING"
+
+	// GatewayStateActive is a GatewayState enum value
+	GatewayStateActive = "ACTIVE"
+
+	// GatewayStateUpdating is a GatewayState enum value
+	GatewayStateUpdating = "UPDATING"
+
+	// GatewayStateError is a GatewayState enum value
+	GatewayStateError = "ERROR"
+
+	// GatewayStateDeleting is a GatewayState enum value
+	GatewayStateDeleting = "DELETING"
+
+	// GatewayStateDeleted is a GatewayState enum value
+	GatewayStateDeleted = "DELETED"
+)
+
+// GatewayState_Values returns all elements of the GatewayState enum
+func GatewayState_Values() []string {
+	return []string{
+		GatewayStateCreating,
+		GatewayStateActive,
+		GatewayStateUpdating,
+		GatewayStateError,
+		GatewayStateDeleting,
+		GatewayStateDeleted,
+	}
+}
+
+const (
+	// InstanceStateRegistering is a InstanceState enum value
+	InstanceStateRegistering = "REGISTERING"
+
+	// InstanceStateActive is a InstanceState enum value
+	InstanceStateActive = "ACTIVE"
+
+	// InstanceStateDeregistering is a InstanceState enum value
+	InstanceStateDeregistering = "DEREGISTERING"
+
+	// InstanceStateDeregistered is a InstanceState enum value
+	InstanceStateDeregistered = "DEREGISTERED"
+
+	// InstanceStateRegistrationError is a InstanceState enum value
+	InstanceStateRegistrationError = "REGISTRATION_ERROR"
+
+	// InstanceStateDeregistrationError is a InstanceState enum value
+	InstanceStateDeregistrationError = "DEREGISTRATION_ERROR"
+)
+
+// InstanceState_Values returns all elements of the InstanceState enum
+func InstanceState_Values() []string {
+	return []string{
+		InstanceStateRegistering,
+		InstanceStateActive,
+		InstanceStateDeregistering,
+		InstanceStateDeregistered,
+		InstanceStateRegistrationError,
+		InstanceStateDeregistrationError,
 	}
 }
 
@@ -11585,8 +18490,14 @@ const (
 	// ProtocolSrtListener is a Protocol enum value
 	ProtocolSrtListener = "srt-listener"
 
+	// ProtocolSrtCaller is a Protocol enum value
+	ProtocolSrtCaller = "srt-caller"
+
 	// ProtocolFujitsuQos is a Protocol enum value
 	ProtocolFujitsuQos = "fujitsu-qos"
+
+	// ProtocolUdp is a Protocol enum value
+	ProtocolUdp = "udp"
 )
 
 // Protocol_Values returns all elements of the Protocol enum
@@ -11600,7 +18511,9 @@ func Protocol_Values() []string {
 		ProtocolSt2110Jpegxs,
 		ProtocolCdi,
 		ProtocolSrtListener,
+		ProtocolSrtCaller,
 		ProtocolFujitsuQos,
+		ProtocolUdp,
 	}
 }
 

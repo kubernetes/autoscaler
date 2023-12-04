@@ -3,11 +3,11 @@
 // Package emrserverless provides the client and types for making API
 // requests to EMR Serverless.
 //
-// Amazon EMR Serverless is a new deployment option for Amazon EMR. EMR Serverless
-// provides a serverless runtime environment that simplifies running analytics
-// applications using the latest open source frameworks such as Apache Spark
-// and Apache Hive. With EMR Serverless, you don’t have to configure, optimize,
-// secure, or operate clusters to run applications with these frameworks.
+// Amazon EMR Serverless is a new deployment option for Amazon EMR. Amazon EMR
+// Serverless provides a serverless runtime environment that simplifies running
+// analytics applications using the latest open source frameworks such as Apache
+// Spark and Apache Hive. With Amazon EMR Serverless, you don’t have to configure,
+// optimize, secure, or operate clusters to run applications with these frameworks.
 //
 // The API reference to Amazon EMR Serverless is emr-serverless. The emr-serverless
 // prefix is used in the following scenarios:

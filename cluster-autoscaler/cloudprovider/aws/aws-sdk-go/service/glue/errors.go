@@ -20,6 +20,26 @@ const (
 	// A resource to be created or added already exists.
 	ErrCodeAlreadyExistsException = "AlreadyExistsException"
 
+	// ErrCodeColumnStatisticsTaskNotRunningException for service response error code
+	// "ColumnStatisticsTaskNotRunningException".
+	//
+	// An exception thrown when you try to stop a task run when there is no task
+	// running.
+	ErrCodeColumnStatisticsTaskNotRunningException = "ColumnStatisticsTaskNotRunningException"
+
+	// ErrCodeColumnStatisticsTaskRunningException for service response error code
+	// "ColumnStatisticsTaskRunningException".
+	//
+	// An exception thrown when you try to start another job while running a column
+	// stats generation job.
+	ErrCodeColumnStatisticsTaskRunningException = "ColumnStatisticsTaskRunningException"
+
+	// ErrCodeColumnStatisticsTaskStoppingException for service response error code
+	// "ColumnStatisticsTaskStoppingException".
+	//
+	// An exception thrown when you try to stop a task run.
+	ErrCodeColumnStatisticsTaskStoppingException = "ColumnStatisticsTaskStoppingException"
+
 	// ErrCodeConcurrentModificationException for service response error code
 	// "ConcurrentModificationException".
 	//
@@ -74,6 +94,22 @@ const (
 	// A specified entity does not exist
 	ErrCodeEntityNotFoundException = "EntityNotFoundException"
 
+	// ErrCodeFederatedResourceAlreadyExistsException for service response error code
+	// "FederatedResourceAlreadyExistsException".
+	//
+	// A federated resource already exists.
+	ErrCodeFederatedResourceAlreadyExistsException = "FederatedResourceAlreadyExistsException"
+
+	// ErrCodeFederationSourceException for service response error code
+	// "FederationSourceException".
+	//
+	// A federation source failed.
+	ErrCodeFederationSourceException = "FederationSourceException"
+
+	// ErrCodeFederationSourceRetryableException for service response error code
+	// "FederationSourceRetryableException".
+	ErrCodeFederationSourceRetryableException = "FederationSourceRetryableException"
+
 	// ErrCodeIdempotentParameterMismatchException for service response error code
 	// "IdempotentParameterMismatchException".
 	//
@@ -82,6 +118,8 @@ const (
 
 	// ErrCodeIllegalBlueprintStateException for service response error code
 	// "IllegalBlueprintStateException".
+	//
+	// The blueprint is in an invalid state to perform a requested operation.
 	ErrCodeIllegalBlueprintStateException = "IllegalBlueprintStateException"
 
 	// ErrCodeIllegalSessionStateException for service response error code
@@ -134,6 +172,8 @@ const (
 
 	// ErrCodePermissionTypeMismatchException for service response error code
 	// "PermissionTypeMismatchException".
+	//
+	// The operation timed out.
 	ErrCodePermissionTypeMismatchException = "PermissionTypeMismatchException"
 
 	// ErrCodeResourceNotReadyException for service response error code
@@ -180,33 +220,39 @@ const (
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
-	"AccessDeniedException":                newErrorAccessDeniedException,
-	"AlreadyExistsException":               newErrorAlreadyExistsException,
-	"ConcurrentModificationException":      newErrorConcurrentModificationException,
-	"ConcurrentRunsExceededException":      newErrorConcurrentRunsExceededException,
-	"ConditionCheckFailureException":       newErrorConditionCheckFailureException,
-	"ConflictException":                    newErrorConflictException,
-	"CrawlerNotRunningException":           newErrorCrawlerNotRunningException,
-	"CrawlerRunningException":              newErrorCrawlerRunningException,
-	"CrawlerStoppingException":             newErrorCrawlerStoppingException,
-	"GlueEncryptionException":              newErrorEncryptionException,
-	"EntityNotFoundException":              newErrorEntityNotFoundException,
-	"IdempotentParameterMismatchException": newErrorIdempotentParameterMismatchException,
-	"IllegalBlueprintStateException":       newErrorIllegalBlueprintStateException,
-	"IllegalSessionStateException":         newErrorIllegalSessionStateException,
-	"IllegalWorkflowStateException":        newErrorIllegalWorkflowStateException,
-	"InternalServiceException":             newErrorInternalServiceException,
-	"InvalidInputException":                newErrorInvalidInputException,
-	"InvalidStateException":                newErrorInvalidStateException,
-	"MLTransformNotReadyException":         newErrorMLTransformNotReadyException,
-	"NoScheduleException":                  newErrorNoScheduleException,
-	"OperationTimeoutException":            newErrorOperationTimeoutException,
-	"PermissionTypeMismatchException":      newErrorPermissionTypeMismatchException,
-	"ResourceNotReadyException":            newErrorResourceNotReadyException,
-	"ResourceNumberLimitExceededException": newErrorResourceNumberLimitExceededException,
-	"SchedulerNotRunningException":         newErrorSchedulerNotRunningException,
-	"SchedulerRunningException":            newErrorSchedulerRunningException,
-	"SchedulerTransitioningException":      newErrorSchedulerTransitioningException,
-	"ValidationException":                  newErrorValidationException,
-	"VersionMismatchException":             newErrorVersionMismatchException,
+	"AccessDeniedException":                   newErrorAccessDeniedException,
+	"AlreadyExistsException":                  newErrorAlreadyExistsException,
+	"ColumnStatisticsTaskNotRunningException": newErrorColumnStatisticsTaskNotRunningException,
+	"ColumnStatisticsTaskRunningException":    newErrorColumnStatisticsTaskRunningException,
+	"ColumnStatisticsTaskStoppingException":   newErrorColumnStatisticsTaskStoppingException,
+	"ConcurrentModificationException":         newErrorConcurrentModificationException,
+	"ConcurrentRunsExceededException":         newErrorConcurrentRunsExceededException,
+	"ConditionCheckFailureException":          newErrorConditionCheckFailureException,
+	"ConflictException":                       newErrorConflictException,
+	"CrawlerNotRunningException":              newErrorCrawlerNotRunningException,
+	"CrawlerRunningException":                 newErrorCrawlerRunningException,
+	"CrawlerStoppingException":                newErrorCrawlerStoppingException,
+	"GlueEncryptionException":                 newErrorEncryptionException,
+	"EntityNotFoundException":                 newErrorEntityNotFoundException,
+	"FederatedResourceAlreadyExistsException": newErrorFederatedResourceAlreadyExistsException,
+	"FederationSourceException":               newErrorFederationSourceException,
+	"FederationSourceRetryableException":      newErrorFederationSourceRetryableException,
+	"IdempotentParameterMismatchException":    newErrorIdempotentParameterMismatchException,
+	"IllegalBlueprintStateException":          newErrorIllegalBlueprintStateException,
+	"IllegalSessionStateException":            newErrorIllegalSessionStateException,
+	"IllegalWorkflowStateException":           newErrorIllegalWorkflowStateException,
+	"InternalServiceException":                newErrorInternalServiceException,
+	"InvalidInputException":                   newErrorInvalidInputException,
+	"InvalidStateException":                   newErrorInvalidStateException,
+	"MLTransformNotReadyException":            newErrorMLTransformNotReadyException,
+	"NoScheduleException":                     newErrorNoScheduleException,
+	"OperationTimeoutException":               newErrorOperationTimeoutException,
+	"PermissionTypeMismatchException":         newErrorPermissionTypeMismatchException,
+	"ResourceNotReadyException":               newErrorResourceNotReadyException,
+	"ResourceNumberLimitExceededException":    newErrorResourceNumberLimitExceededException,
+	"SchedulerNotRunningException":            newErrorSchedulerNotRunningException,
+	"SchedulerRunningException":               newErrorSchedulerRunningException,
+	"SchedulerTransitioningException":         newErrorSchedulerTransitioningException,
+	"ValidationException":                     newErrorValidationException,
+	"VersionMismatchException":                newErrorVersionMismatchException,
 }

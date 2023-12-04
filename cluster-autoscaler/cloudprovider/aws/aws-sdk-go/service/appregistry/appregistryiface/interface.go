@@ -104,6 +104,10 @@ type AppRegistryAPI interface {
 	GetAttributeGroupWithContext(aws.Context, *appregistry.GetAttributeGroupInput, ...request.Option) (*appregistry.GetAttributeGroupOutput, error)
 	GetAttributeGroupRequest(*appregistry.GetAttributeGroupInput) (*request.Request, *appregistry.GetAttributeGroupOutput)
 
+	GetConfiguration(*appregistry.GetConfigurationInput) (*appregistry.GetConfigurationOutput, error)
+	GetConfigurationWithContext(aws.Context, *appregistry.GetConfigurationInput, ...request.Option) (*appregistry.GetConfigurationOutput, error)
+	GetConfigurationRequest(*appregistry.GetConfigurationInput) (*request.Request, *appregistry.GetConfigurationOutput)
+
 	ListApplications(*appregistry.ListApplicationsInput) (*appregistry.ListApplicationsOutput, error)
 	ListApplicationsWithContext(aws.Context, *appregistry.ListApplicationsInput, ...request.Option) (*appregistry.ListApplicationsOutput, error)
 	ListApplicationsRequest(*appregistry.ListApplicationsInput) (*request.Request, *appregistry.ListApplicationsOutput)
@@ -132,9 +136,20 @@ type AppRegistryAPI interface {
 	ListAttributeGroupsPages(*appregistry.ListAttributeGroupsInput, func(*appregistry.ListAttributeGroupsOutput, bool) bool) error
 	ListAttributeGroupsPagesWithContext(aws.Context, *appregistry.ListAttributeGroupsInput, func(*appregistry.ListAttributeGroupsOutput, bool) bool, ...request.Option) error
 
+	ListAttributeGroupsForApplication(*appregistry.ListAttributeGroupsForApplicationInput) (*appregistry.ListAttributeGroupsForApplicationOutput, error)
+	ListAttributeGroupsForApplicationWithContext(aws.Context, *appregistry.ListAttributeGroupsForApplicationInput, ...request.Option) (*appregistry.ListAttributeGroupsForApplicationOutput, error)
+	ListAttributeGroupsForApplicationRequest(*appregistry.ListAttributeGroupsForApplicationInput) (*request.Request, *appregistry.ListAttributeGroupsForApplicationOutput)
+
+	ListAttributeGroupsForApplicationPages(*appregistry.ListAttributeGroupsForApplicationInput, func(*appregistry.ListAttributeGroupsForApplicationOutput, bool) bool) error
+	ListAttributeGroupsForApplicationPagesWithContext(aws.Context, *appregistry.ListAttributeGroupsForApplicationInput, func(*appregistry.ListAttributeGroupsForApplicationOutput, bool) bool, ...request.Option) error
+
 	ListTagsForResource(*appregistry.ListTagsForResourceInput) (*appregistry.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *appregistry.ListTagsForResourceInput, ...request.Option) (*appregistry.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*appregistry.ListTagsForResourceInput) (*request.Request, *appregistry.ListTagsForResourceOutput)
+
+	PutConfiguration(*appregistry.PutConfigurationInput) (*appregistry.PutConfigurationOutput, error)
+	PutConfigurationWithContext(aws.Context, *appregistry.PutConfigurationInput, ...request.Option) (*appregistry.PutConfigurationOutput, error)
+	PutConfigurationRequest(*appregistry.PutConfigurationInput) (*request.Request, *appregistry.PutConfigurationOutput)
 
 	SyncResource(*appregistry.SyncResourceInput) (*appregistry.SyncResourceOutput, error)
 	SyncResourceWithContext(aws.Context, *appregistry.SyncResourceInput, ...request.Option) (*appregistry.SyncResourceOutput, error)

@@ -22,8 +22,14 @@ func renderEventStreamAPI(w io.Writer, op *Operation) error {
 	op.API.AddSDKImport("private/protocol/eventstream")
 	op.API.AddSDKImport("private/protocol/eventstream/eventstreamapi")
 
+	// usages of these imports are conditional - generate a compile-only
+	// reference to avoid potential unused imports:
+	//  - awserr is only used for input streams or json protocols
+	//  - time is only used for input streams or if an event payload has a
+	//    timestamp field
 	w.Write([]byte(`
 var _ awserr.Error
+var _ time.Time
 `))
 
 	return eventStreamAPITmpl.Execute(w, op)

@@ -203,6 +203,11 @@ func (c *CloudFormation) WaitUntilStackDeleteCompleteWithContext(ctx aws.Context
 				Matcher: request.PathAnyWaiterMatch, Argument: "Stacks[].StackStatus",
 				Expected: "UPDATE_ROLLBACK_COMPLETE",
 			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "Stacks[].StackStatus",
+				Expected: "UPDATE_COMPLETE",
+			},
 		},
 		Logger: c.Config.Logger,
 		NewRequest: func(opts []request.Option) (*request.Request, error) {

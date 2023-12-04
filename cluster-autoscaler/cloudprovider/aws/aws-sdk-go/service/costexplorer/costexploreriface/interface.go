@@ -136,6 +136,10 @@ type CostExplorerAPI interface {
 	GetRightsizingRecommendationWithContext(aws.Context, *costexplorer.GetRightsizingRecommendationInput, ...request.Option) (*costexplorer.GetRightsizingRecommendationOutput, error)
 	GetRightsizingRecommendationRequest(*costexplorer.GetRightsizingRecommendationInput) (*request.Request, *costexplorer.GetRightsizingRecommendationOutput)
 
+	GetSavingsPlanPurchaseRecommendationDetails(*costexplorer.GetSavingsPlanPurchaseRecommendationDetailsInput) (*costexplorer.GetSavingsPlanPurchaseRecommendationDetailsOutput, error)
+	GetSavingsPlanPurchaseRecommendationDetailsWithContext(aws.Context, *costexplorer.GetSavingsPlanPurchaseRecommendationDetailsInput, ...request.Option) (*costexplorer.GetSavingsPlanPurchaseRecommendationDetailsOutput, error)
+	GetSavingsPlanPurchaseRecommendationDetailsRequest(*costexplorer.GetSavingsPlanPurchaseRecommendationDetailsInput) (*request.Request, *costexplorer.GetSavingsPlanPurchaseRecommendationDetailsOutput)
+
 	GetSavingsPlansCoverage(*costexplorer.GetSavingsPlansCoverageInput) (*costexplorer.GetSavingsPlansCoverageOutput, error)
 	GetSavingsPlansCoverageWithContext(aws.Context, *costexplorer.GetSavingsPlansCoverageInput, ...request.Option) (*costexplorer.GetSavingsPlansCoverageOutput, error)
 	GetSavingsPlansCoverageRequest(*costexplorer.GetSavingsPlansCoverageInput) (*request.Request, *costexplorer.GetSavingsPlansCoverageOutput)
@@ -166,12 +170,23 @@ type CostExplorerAPI interface {
 	GetUsageForecastWithContext(aws.Context, *costexplorer.GetUsageForecastInput, ...request.Option) (*costexplorer.GetUsageForecastOutput, error)
 	GetUsageForecastRequest(*costexplorer.GetUsageForecastInput) (*request.Request, *costexplorer.GetUsageForecastOutput)
 
+	ListCostAllocationTags(*costexplorer.ListCostAllocationTagsInput) (*costexplorer.ListCostAllocationTagsOutput, error)
+	ListCostAllocationTagsWithContext(aws.Context, *costexplorer.ListCostAllocationTagsInput, ...request.Option) (*costexplorer.ListCostAllocationTagsOutput, error)
+	ListCostAllocationTagsRequest(*costexplorer.ListCostAllocationTagsInput) (*request.Request, *costexplorer.ListCostAllocationTagsOutput)
+
+	ListCostAllocationTagsPages(*costexplorer.ListCostAllocationTagsInput, func(*costexplorer.ListCostAllocationTagsOutput, bool) bool) error
+	ListCostAllocationTagsPagesWithContext(aws.Context, *costexplorer.ListCostAllocationTagsInput, func(*costexplorer.ListCostAllocationTagsOutput, bool) bool, ...request.Option) error
+
 	ListCostCategoryDefinitions(*costexplorer.ListCostCategoryDefinitionsInput) (*costexplorer.ListCostCategoryDefinitionsOutput, error)
 	ListCostCategoryDefinitionsWithContext(aws.Context, *costexplorer.ListCostCategoryDefinitionsInput, ...request.Option) (*costexplorer.ListCostCategoryDefinitionsOutput, error)
 	ListCostCategoryDefinitionsRequest(*costexplorer.ListCostCategoryDefinitionsInput) (*request.Request, *costexplorer.ListCostCategoryDefinitionsOutput)
 
 	ListCostCategoryDefinitionsPages(*costexplorer.ListCostCategoryDefinitionsInput, func(*costexplorer.ListCostCategoryDefinitionsOutput, bool) bool) error
 	ListCostCategoryDefinitionsPagesWithContext(aws.Context, *costexplorer.ListCostCategoryDefinitionsInput, func(*costexplorer.ListCostCategoryDefinitionsOutput, bool) bool, ...request.Option) error
+
+	ListSavingsPlansPurchaseRecommendationGeneration(*costexplorer.ListSavingsPlansPurchaseRecommendationGenerationInput) (*costexplorer.ListSavingsPlansPurchaseRecommendationGenerationOutput, error)
+	ListSavingsPlansPurchaseRecommendationGenerationWithContext(aws.Context, *costexplorer.ListSavingsPlansPurchaseRecommendationGenerationInput, ...request.Option) (*costexplorer.ListSavingsPlansPurchaseRecommendationGenerationOutput, error)
+	ListSavingsPlansPurchaseRecommendationGenerationRequest(*costexplorer.ListSavingsPlansPurchaseRecommendationGenerationInput) (*request.Request, *costexplorer.ListSavingsPlansPurchaseRecommendationGenerationOutput)
 
 	ListTagsForResource(*costexplorer.ListTagsForResourceInput) (*costexplorer.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *costexplorer.ListTagsForResourceInput, ...request.Option) (*costexplorer.ListTagsForResourceOutput, error)
@@ -180,6 +195,10 @@ type CostExplorerAPI interface {
 	ProvideAnomalyFeedback(*costexplorer.ProvideAnomalyFeedbackInput) (*costexplorer.ProvideAnomalyFeedbackOutput, error)
 	ProvideAnomalyFeedbackWithContext(aws.Context, *costexplorer.ProvideAnomalyFeedbackInput, ...request.Option) (*costexplorer.ProvideAnomalyFeedbackOutput, error)
 	ProvideAnomalyFeedbackRequest(*costexplorer.ProvideAnomalyFeedbackInput) (*request.Request, *costexplorer.ProvideAnomalyFeedbackOutput)
+
+	StartSavingsPlansPurchaseRecommendationGeneration(*costexplorer.StartSavingsPlansPurchaseRecommendationGenerationInput) (*costexplorer.StartSavingsPlansPurchaseRecommendationGenerationOutput, error)
+	StartSavingsPlansPurchaseRecommendationGenerationWithContext(aws.Context, *costexplorer.StartSavingsPlansPurchaseRecommendationGenerationInput, ...request.Option) (*costexplorer.StartSavingsPlansPurchaseRecommendationGenerationOutput, error)
+	StartSavingsPlansPurchaseRecommendationGenerationRequest(*costexplorer.StartSavingsPlansPurchaseRecommendationGenerationInput) (*request.Request, *costexplorer.StartSavingsPlansPurchaseRecommendationGenerationOutput)
 
 	TagResource(*costexplorer.TagResourceInput) (*costexplorer.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *costexplorer.TagResourceInput, ...request.Option) (*costexplorer.TagResourceOutput, error)
@@ -196,6 +215,10 @@ type CostExplorerAPI interface {
 	UpdateAnomalySubscription(*costexplorer.UpdateAnomalySubscriptionInput) (*costexplorer.UpdateAnomalySubscriptionOutput, error)
 	UpdateAnomalySubscriptionWithContext(aws.Context, *costexplorer.UpdateAnomalySubscriptionInput, ...request.Option) (*costexplorer.UpdateAnomalySubscriptionOutput, error)
 	UpdateAnomalySubscriptionRequest(*costexplorer.UpdateAnomalySubscriptionInput) (*request.Request, *costexplorer.UpdateAnomalySubscriptionOutput)
+
+	UpdateCostAllocationTagsStatus(*costexplorer.UpdateCostAllocationTagsStatusInput) (*costexplorer.UpdateCostAllocationTagsStatusOutput, error)
+	UpdateCostAllocationTagsStatusWithContext(aws.Context, *costexplorer.UpdateCostAllocationTagsStatusInput, ...request.Option) (*costexplorer.UpdateCostAllocationTagsStatusOutput, error)
+	UpdateCostAllocationTagsStatusRequest(*costexplorer.UpdateCostAllocationTagsStatusInput) (*request.Request, *costexplorer.UpdateCostAllocationTagsStatusOutput)
 
 	UpdateCostCategoryDefinition(*costexplorer.UpdateCostCategoryDefinitionInput) (*costexplorer.UpdateCostCategoryDefinitionOutput, error)
 	UpdateCostCategoryDefinitionWithContext(aws.Context, *costexplorer.UpdateCostCategoryDefinitionInput, ...request.Option) (*costexplorer.UpdateCostCategoryDefinitionOutput, error)

@@ -3,13 +3,12 @@
 // Package migrationhubstrategyrecommendations provides the client and types for making API
 // requests to Migration Hub Strategy Recommendations.
 //
-//	<p>This API reference provides descriptions, syntax, and other details
-//	about each of the actions and data types for Migration Hub Strategy Recommendations
-//	(Strategy Recommendations). The topic for each action shows the API request
-//	parameters and the response. Alternatively, you can use one of the AWS
-//	SDKs to access an API that is tailored to the programming language or
-//	platform that you're using. For more information, see <a href="http://aws.amazon.com/tools/#SDKs">AWS
-//	SDKs</a>.</p>
+// This API reference provides descriptions, syntax, and other details about
+// each of the actions and data types for Migration Hub Strategy Recommendations
+// (Strategy Recommendations). The topic for each action shows the API request
+// parameters and the response. Alternatively, you can use one of the AWS SDKs
+// to access an API that is tailored to the programming language or platform
+// that you're using. For more information, see AWS SDKs (http://aws.amazon.com/tools/#SDKs).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/migrationhubstrategy-2020-02-19 for more information on this service.
 //

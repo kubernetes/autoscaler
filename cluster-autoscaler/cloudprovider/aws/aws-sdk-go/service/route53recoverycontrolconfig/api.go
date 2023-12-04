@@ -88,7 +88,7 @@ func (c *Route53RecoveryControlConfig) CreateClusterRequest(input *CreateCluster
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -193,7 +193,7 @@ func (c *Route53RecoveryControlConfig) CreateControlPanelRequest(input *CreateCo
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -301,7 +301,7 @@ func (c *Route53RecoveryControlConfig) CreateRoutingControlRequest(input *Create
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -382,7 +382,7 @@ func (c *Route53RecoveryControlConfig) CreateSafetyRuleRequest(input *CreateSafe
 //
 // Assertion rule: An assertion rule enforces that, when you change a routing
 // control state, that a certain criteria is met. For example, the criteria
-// might be that at least one routing control state is On after the transation
+// might be that at least one routing control state is On after the transaction
 // so that traffic continues to flow to at least one cell for the application.
 // This ensures that you avoid a fail-open scenario.
 //
@@ -501,7 +501,7 @@ func (c *Route53RecoveryControlConfig) DeleteClusterRequest(input *DeleteCluster
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -599,7 +599,7 @@ func (c *Route53RecoveryControlConfig) DeleteControlPanelRequest(input *DeleteCo
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -697,7 +697,7 @@ func (c *Route53RecoveryControlConfig) DeleteRoutingControlRequest(input *Delete
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -785,7 +785,7 @@ func (c *Route53RecoveryControlConfig) DeleteSafetyRuleRequest(input *DeleteSafe
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ValidationException
 //     400 response - Multiple causes. For example, you might have a malformed query
@@ -885,7 +885,7 @@ func (c *Route53RecoveryControlConfig) DescribeClusterRequest(input *DescribeClu
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -982,7 +982,7 @@ func (c *Route53RecoveryControlConfig) DescribeControlPanelRequest(input *Descri
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -1084,7 +1084,7 @@ func (c *Route53RecoveryControlConfig) DescribeRoutingControlRequest(input *Desc
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -1175,7 +1175,7 @@ func (c *Route53RecoveryControlConfig) DescribeSafetyRuleRequest(input *Describe
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/DescribeSafetyRule
 func (c *Route53RecoveryControlConfig) DescribeSafetyRule(input *DescribeSafetyRuleInput) (*DescribeSafetyRuleOutput, error) {
@@ -1194,6 +1194,89 @@ func (c *Route53RecoveryControlConfig) DescribeSafetyRule(input *DescribeSafetyR
 // for more information on using Contexts.
 func (c *Route53RecoveryControlConfig) DescribeSafetyRuleWithContext(ctx aws.Context, input *DescribeSafetyRuleInput, opts ...request.Option) (*DescribeSafetyRuleOutput, error) {
 	req, out := c.DescribeSafetyRuleRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetResourcePolicy = "GetResourcePolicy"
+
+// GetResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetResourcePolicy for more information on using the GetResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetResourcePolicyRequest method.
+//	req, resp := client.GetResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/GetResourcePolicy
+func (c *Route53RecoveryControlConfig) GetResourcePolicyRequest(input *GetResourcePolicyInput) (req *request.Request, output *GetResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetResourcePolicy,
+		HTTPMethod: "GET",
+		HTTPPath:   "/resourcePolicy/{ResourceArn}",
+	}
+
+	if input == nil {
+		input = &GetResourcePolicyInput{}
+	}
+
+	output = &GetResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetResourcePolicy API operation for AWS Route53 Recovery Control Config.
+//
+// Get information about the resource policy for a cluster.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Route53 Recovery Control Config's
+// API operation GetResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     404 response - MalformedQueryString. The query string contains a syntax error
+//     or resource not found.
+//
+//   - InternalServerException
+//     500 response - InternalServiceError. Temporary service error. Retry the request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-control-config-2020-11-02/GetResourcePolicy
+func (c *Route53RecoveryControlConfig) GetResourcePolicy(input *GetResourcePolicyInput) (*GetResourcePolicyOutput, error) {
+	req, out := c.GetResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetResourcePolicyWithContext is the same as GetResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Route53RecoveryControlConfig) GetResourcePolicyWithContext(ctx aws.Context, input *GetResourcePolicyInput, opts ...request.Option) (*GetResourcePolicyOutput, error) {
+	req, out := c.GetResourcePolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1262,7 +1345,7 @@ func (c *Route53RecoveryControlConfig) ListAssociatedRoute53HealthChecksRequest(
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ValidationException
 //     400 response - Multiple causes. For example, you might have a malformed query
@@ -1407,7 +1490,7 @@ func (c *Route53RecoveryControlConfig) ListClustersRequest(input *ListClustersIn
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -1558,7 +1641,7 @@ func (c *Route53RecoveryControlConfig) ListControlPanelsRequest(input *ListContr
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -1712,7 +1795,7 @@ func (c *Route53RecoveryControlConfig) ListRoutingControlsRequest(input *ListRou
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -1864,7 +1947,7 @@ func (c *Route53RecoveryControlConfig) ListSafetyRulesRequest(input *ListSafetyR
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -2009,7 +2092,7 @@ func (c *Route53RecoveryControlConfig) ListTagsForResourceRequest(input *ListTag
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ValidationException
 //     400 response - Multiple causes. For example, you might have a malformed query
@@ -2098,7 +2181,7 @@ func (c *Route53RecoveryControlConfig) TagResourceRequest(input *TagResourceInpu
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ValidationException
 //     400 response - Multiple causes. For example, you might have a malformed query
@@ -2187,7 +2270,7 @@ func (c *Route53RecoveryControlConfig) UntagResourceRequest(input *UntagResource
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ValidationException
 //     400 response - Multiple causes. For example, you might have a malformed query
@@ -2287,7 +2370,7 @@ func (c *Route53RecoveryControlConfig) UpdateControlPanelRequest(input *UpdateCo
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -2386,7 +2469,7 @@ func (c *Route53RecoveryControlConfig) UpdateRoutingControlRequest(input *Update
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ThrottlingException
 //     429 response - LimitExceededException or TooManyRequestsException.
@@ -2474,7 +2557,7 @@ func (c *Route53RecoveryControlConfig) UpdateSafetyRuleRequest(input *UpdateSafe
 //
 //   - ResourceNotFoundException
 //     404 response - MalformedQueryString. The query string contains a syntax error
-//     or resource not found..
+//     or resource not found.
 //
 //   - ValidationException
 //     400 response - Multiple causes. For example, you might have a malformed query
@@ -2573,7 +2656,7 @@ func (s *AccessDeniedException) RequestID() string {
 // An assertion rule enforces that, when you change a routing control state,
 // that the criteria that you set in the rule configuration is met. Otherwise,
 // the change to the routing control is not accepted. For example, the criteria
-// might be that at least one routing control state is On after the transation
+// might be that at least one routing control state is On after the transaction
 // so that traffic continues to flow to at least one cell for the application.
 // This ensures that you avoid a fail-open scenario.
 type AssertionRule struct {
@@ -2598,10 +2681,13 @@ type AssertionRule struct {
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
+	// The Amazon Web Services account ID of the assertion rule owner.
+	Owner *string `min:"12" type:"string"`
+
 	// The criteria that you set for specific assertion routing controls (AssertedControls)
 	// that designate how many routing control states must be ON as the result of
 	// a transaction. For example, if you have three assertion routing controls,
-	// you might specify atleast 2 for your rule configuration. This means that
+	// you might specify ATLEAST 2 for your rule configuration. This means that
 	// at least two assertion routing control states must be ON, so that at least
 	// two Amazon Web Services Regions have traffic flowing to them.
 	//
@@ -2660,6 +2746,12 @@ func (s *AssertionRule) SetControlPanelArn(v string) *AssertionRule {
 // SetName sets the Name field's value.
 func (s *AssertionRule) SetName(v string) *AssertionRule {
 	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *AssertionRule) SetOwner(v string) *AssertionRule {
+	s.Owner = &v
 	return s
 }
 
@@ -2792,6 +2884,9 @@ type Cluster struct {
 	// The name of the cluster.
 	Name *string `min:"1" type:"string"`
 
+	// The Amazon Web Services account ID of the cluster owner.
+	Owner *string `min:"12" type:"string"`
+
 	// Deployment status of a resource. Status can be one of the following: PENDING,
 	// DEPLOYED, PENDING_DELETION.
 	Status *string `type:"string" enum:"Status"`
@@ -2830,6 +2925,12 @@ func (s *Cluster) SetClusterEndpoints(v []*ClusterEndpoint) *Cluster {
 // SetName sets the Name field's value.
 func (s *Cluster) SetName(v string) *Cluster {
 	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *Cluster) SetOwner(v string) *Cluster {
+	s.Owner = &v
 	return s
 }
 
@@ -2971,6 +3072,9 @@ type ControlPanel struct {
 	// in the name.
 	Name *string `min:"1" type:"string"`
 
+	// The Amazon Web Services account ID of the control panel owner.
+	Owner *string `min:"12" type:"string"`
+
 	// The number of routing controls in the control panel.
 	RoutingControlCount *int64 `type:"integer"`
 
@@ -3018,6 +3122,12 @@ func (s *ControlPanel) SetDefaultControlPanel(v bool) *ControlPanel {
 // SetName sets the Name field's value.
 func (s *ControlPanel) SetName(v string) *ControlPanel {
 	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *ControlPanel) SetOwner(v string) *ControlPanel {
+	s.Owner = &v
 	return s
 }
 
@@ -4116,7 +4226,7 @@ func (s *DescribeSafetyRuleOutput) SetGatingRule(v *GatingRule) *DescribeSafetyR
 	return s
 }
 
-// A gating rule verifies that a gating routing control or set of gating rounting
+// A gating rule verifies that a gating routing control or set of gating routing
 // controls, evaluates as true, based on a rule configuration that you specify,
 // which allows a set of routing control state changes to complete.
 //
@@ -4148,7 +4258,10 @@ type GatingRule struct {
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
 
-	// The criteria that you set for gating routing controls that designates how
+	// The Amazon Web Services account ID of the gating rule owner.
+	Owner *string `min:"12" type:"string"`
+
+	// The criteria that you set for gating routing controls that designate how
 	// many of the routing control states must be ON to allow you to update target
 	// routing control states.
 	//
@@ -4171,7 +4284,7 @@ type GatingRule struct {
 	// evaluates to true for the gating routing control. As a simple example, if
 	// you have a single gating control, it acts as an overall "on/off" switch for
 	// a set of target routing controls. You can use this to manually override automated
-	// fail over, for example.
+	// failover, for example.
 	//
 	// TargetControls is a required field
 	TargetControls []*string `type:"list" required:"true"`
@@ -4217,6 +4330,12 @@ func (s *GatingRule) SetGatingControls(v []*string) *GatingRule {
 // SetName sets the Name field's value.
 func (s *GatingRule) SetName(v string) *GatingRule {
 	s.Name = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *GatingRule) SetOwner(v string) *GatingRule {
+	s.Owner = &v
 	return s
 }
 
@@ -4333,6 +4452,86 @@ func (s *GatingRuleUpdate) SetSafetyRuleArn(v string) *GatingRuleUpdate {
 // SetWaitPeriodMs sets the WaitPeriodMs field's value.
 func (s *GatingRuleUpdate) SetWaitPeriodMs(v int64) *GatingRuleUpdate {
 	s.WaitPeriodMs = &v
+	return s
+}
+
+type GetResourcePolicyInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ResourceArn is a required field
+	ResourceArn *string `location:"uri" locationName:"ResourceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetResourcePolicyInput"}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *GetResourcePolicyInput) SetResourceArn(v string) *GetResourcePolicyInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// Returns the current Amazon Resource Access Manager resource policy for a
+// cluster.
+type GetResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource policy.
+	Policy *string `min:"2" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *GetResourcePolicyOutput) SetPolicy(v string) *GetResourcePolicyOutput {
+	s.Policy = &v
 	return s
 }
 
@@ -5018,7 +5217,7 @@ type NewAssertionRule struct {
 	// The criteria that you set for specific assertion controls (routing controls)
 	// that designate how many control states must be ON as the result of a transaction.
 	// For example, if you have three assertion controls, you might specify ATLEAST
-	// 2for your rule configuration. This means that at least two assertion controls
+	// 2 for your rule configuration. This means that at least two assertion controls
 	// must be ON, so that at least two Amazon Web Services Regions have traffic
 	// flowing to them.
 	//
@@ -5138,7 +5337,7 @@ type NewGatingRule struct {
 	Name *string `min:"1" type:"string" required:"true"`
 
 	// The criteria that you set for specific gating controls (routing controls)
-	// that designates how many control states must be ON to allow you to change
+	// that designate how many control states must be ON to allow you to change
 	// (set or unset) the target control states.
 	//
 	// RuleConfig is a required field
@@ -5147,7 +5346,7 @@ type NewGatingRule struct {
 	// Routing controls that can only be set or unset if the specified RuleConfig
 	// evaluates to true for the specified GatingControls. For example, say you
 	// have three gating controls, one for each of three Amazon Web Services Regions.
-	// Now you specify AtLeast 2 as your RuleConfig. With these settings, you can
+	// Now you specify ATLEAST 2 as your RuleConfig. With these settings, you can
 	// only change (set or unset) the routing controls that you have specified as
 	// TargetControls if that rule evaluates to true.
 	//
@@ -5260,7 +5459,7 @@ func (s *NewGatingRule) SetWaitPeriodMs(v int64) *NewGatingRule {
 }
 
 // 404 response - MalformedQueryString. The query string contains a syntax error
-// or resource not found..
+// or resource not found.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5337,6 +5536,9 @@ type RoutingControl struct {
 	// The name of the routing control.
 	Name *string `min:"1" type:"string"`
 
+	// The Amazon Web Services account ID of the routing control owner.
+	Owner *string `min:"12" type:"string"`
+
 	// The Amazon Resource Name (ARN) of the routing control.
 	RoutingControlArn *string `min:"1" type:"string"`
 
@@ -5375,6 +5577,12 @@ func (s *RoutingControl) SetName(v string) *RoutingControl {
 	return s
 }
 
+// SetOwner sets the Owner field's value.
+func (s *RoutingControl) SetOwner(v string) *RoutingControl {
+	s.Owner = &v
+	return s
+}
+
 // SetRoutingControlArn sets the RoutingControlArn field's value.
 func (s *RoutingControl) SetRoutingControlArn(v string) *RoutingControl {
 	s.RoutingControlArn = &v
@@ -5394,12 +5602,12 @@ type Rule struct {
 	// An assertion rule enforces that, when a routing control state is changed,
 	// the criteria set by the rule configuration is met. Otherwise, the change
 	// to the routing control state is not accepted. For example, the criteria might
-	// be that at least one routing control state is On after the transation so
+	// be that at least one routing control state is On after the transaction so
 	// that traffic continues to flow to at least one cell for the application.
 	// This ensures that you avoid a fail-open scenario.
 	ASSERTION *AssertionRule `type:"structure"`
 
-	// A gating rule verifies that a gating routing control or set of gating rounting
+	// A gating rule verifies that a gating routing control or set of gating routing
 	// controls, evaluates as true, based on a rule configuration that you specify,
 	// which allows a set of routing control state changes to complete.
 	//

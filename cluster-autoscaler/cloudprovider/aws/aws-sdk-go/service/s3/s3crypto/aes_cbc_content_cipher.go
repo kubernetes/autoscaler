@@ -17,7 +17,7 @@ type cbcContentCipherBuilder struct {
 // AESCBCContentCipherBuilder returns a new encryption only AES/CBC mode structure using the provided padder. The provided cipher data generator
 // will be used to provide keys for content encryption.
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func AESCBCContentCipherBuilder(generator CipherDataGenerator, padder Padder) ContentCipherBuilder {
 	return cbcContentCipherBuilder{generator: generator, padder: padder}
 }
@@ -31,7 +31,7 @@ func AESCBCContentCipherBuilder(generator CipherDataGenerator, padder Padder) Co
 //		panic(err) // handle error
 //	}
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func RegisterAESCBCContentCipher(registry *CryptoRegistry, padder Padder) error {
 	if registry == nil {
 		return errNilCryptoRegistry

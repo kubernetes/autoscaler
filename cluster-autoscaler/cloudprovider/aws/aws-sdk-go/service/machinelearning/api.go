@@ -8450,8 +8450,12 @@ type RDSDatabaseCredentials struct {
 	// instance. The password should have sufficient permissions to execute the
 	// RDSSelectQuery query.
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RDSDatabaseCredentials's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"8" type:"string" required:"true"`
+	Password *string `min:"8" type:"string" required:"true" sensitive:"true"`
 
 	// The username to be used by Amazon ML to connect to database on an Amazon
 	// RDS instance. The username should have sufficient permissions to execute
@@ -8968,8 +8972,12 @@ type RedshiftDatabaseCredentials struct {
 	// a RedshiftSelectSqlQuery query. The password should be valid for an Amazon
 	// Redshift USER (https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_USER.html).
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RedshiftDatabaseCredentials's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"8" type:"string" required:"true"`
+	Password *string `min:"8" type:"string" required:"true" sensitive:"true"`
 
 	// A username to be used by Amazon Machine Learning (Amazon ML)to connect to
 	// a database on an Amazon Redshift cluster. The username should have sufficient

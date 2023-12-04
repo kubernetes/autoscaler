@@ -11633,8 +11633,8 @@ type ApiKey struct {
 	// The timestamp when the API Key was created.
 	CreatedDate *time.Time `locationName:"createdDate" type:"timestamp"`
 
-	// An AWS Marketplace customer identifier , when integrating with the AWS SaaS
-	// Marketplace.
+	// An Amazon Web Services Marketplace customer identifier, when integrating
+	// with the Amazon Web Services SaaS Marketplace.
 	CustomerId *string `locationName:"customerId" type:"string"`
 
 	// The description of the API Key.
@@ -12273,8 +12273,8 @@ func (s *ConflictException) RequestID() string {
 type CreateApiKeyInput struct {
 	_ struct{} `type:"structure"`
 
-	// An AWS Marketplace customer identifier , when integrating with the AWS SaaS
-	// Marketplace.
+	// An Amazon Web Services Marketplace customer identifier, when integrating
+	// with the Amazon Web Services SaaS Marketplace.
 	CustomerId *string `locationName:"customerId" type:"string"`
 
 	// The description of the ApiKey.
@@ -12645,8 +12645,8 @@ type CreateDeploymentInput struct {
 	// Enables a cache cluster for the Stage resource specified in the input.
 	CacheClusterEnabled *bool `locationName:"cacheClusterEnabled" type:"boolean"`
 
-	// Specifies the cache cluster size for the Stage resource specified in the
-	// input, if a cache cluster is enabled.
+	// The stage's cache capacity in GB. For more information about choosing a cache
+	// size, see Enabling API caching to enhance responsiveness (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html).
 	CacheClusterSize *string `locationName:"cacheClusterSize" type:"string" enum:"CacheClusterSize"`
 
 	// The input configuration for the canary deployment when the deployment is
@@ -12936,9 +12936,9 @@ func (s *CreateDocumentationVersionInput) SetStageName(v string) *CreateDocument
 type CreateDomainNameInput struct {
 	_ struct{} `type:"structure"`
 
-	// The reference to an AWS-managed certificate that will be used by edge-optimized
-	// endpoint for this domain name. AWS Certificate Manager is the only supported
-	// source.
+	// The reference to an Amazon Web Services-managed certificate that will be
+	// used by edge-optimized endpoint for this domain name. Certificate Manager
+	// is the only supported source.
 	CertificateArn *string `locationName:"certificateArn" type:"string"`
 
 	// [Deprecated] The body of the server certificate that will be used by edge-optimized
@@ -12982,9 +12982,9 @@ type CreateDomainNameInput struct {
 	// ACM imported or private CA certificate ARN as the regionalCertificateArn.
 	OwnershipVerificationCertificateArn *string `locationName:"ownershipVerificationCertificateArn" type:"string"`
 
-	// The reference to an AWS-managed certificate that will be used by regional
-	// endpoint for this domain name. AWS Certificate Manager is the only supported
-	// source.
+	// The reference to an Amazon Web Services-managed certificate that will be
+	// used by regional endpoint for this domain name. Certificate Manager is the
+	// only supported source.
 	RegionalCertificateArn *string `locationName:"regionalCertificateArn" type:"string"`
 
 	// The user-friendly name of the certificate that will be used by regional endpoint
@@ -13372,7 +13372,7 @@ type CreateRestApiInput struct {
 	_ struct{} `type:"structure"`
 
 	// The source of the API key for metering requests according to a usage plan.
-	// Valid values are: >HEADER to read the API key from the X-API-Key header of
+	// Valid values are: HEADER to read the API key from the X-API-Key header of
 	// a request. AUTHORIZER to read the API key from the UsageIdentifierKey from
 	// a custom authorizer.
 	ApiKeySource *string `locationName:"apiKeySource" type:"string" enum:"ApiKeySourceType"`
@@ -13526,7 +13526,8 @@ type CreateStageInput struct {
 	// Whether cache clustering is enabled for the stage.
 	CacheClusterEnabled *bool `locationName:"cacheClusterEnabled" type:"boolean"`
 
-	// The stage's cache cluster size.
+	// The stage's cache capacity in GB. For more information about choosing a cache
+	// size, see Enabling API caching to enhance responsiveness (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html).
 	CacheClusterSize *string `locationName:"cacheClusterSize" type:"string" enum:"CacheClusterSize"`
 
 	// The canary deployment settings of this stage.
@@ -13871,8 +13872,8 @@ type CreateVpcLinkInput struct {
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The ARN of the network load balancer of the VPC targeted by the VPC link.
-	// The network load balancer must be owned by the same AWS account of the API
-	// owner.
+	// The network load balancer must be owned by the same Amazon Web Services account
+	// of the API owner.
 	//
 	// TargetArns is a required field
 	TargetArns []*string `locationName:"targetArns" type:"list" required:"true"`
@@ -16148,9 +16149,9 @@ func (s *DocumentationVersion) SetVersion(v string) *DocumentationVersion {
 type DomainName struct {
 	_ struct{} `type:"structure"`
 
-	// The reference to an AWS-managed certificate that will be used by edge-optimized
-	// endpoint for this domain name. AWS Certificate Manager is the only supported
-	// source.
+	// The reference to an Amazon Web Services-managed certificate that will be
+	// used by edge-optimized endpoint for this domain name. Certificate Manager
+	// is the only supported source.
 	CertificateArn *string `locationName:"certificateArn" type:"string"`
 
 	// The name of the certificate that will be used by edge-optimized endpoint
@@ -16202,8 +16203,9 @@ type DomainName struct {
 	// ACM imported or private CA certificate ARN as the regionalCertificateArn.
 	OwnershipVerificationCertificateArn *string `locationName:"ownershipVerificationCertificateArn" type:"string"`
 
-	// The reference to an AWS-managed certificate that will be used for validating
-	// the regional domain name. AWS Certificate Manager is the only supported source.
+	// The reference to an Amazon Web Services-managed certificate that will be
+	// used for validating the regional domain name. Certificate Manager is the
+	// only supported source.
 	RegionalCertificateArn *string `locationName:"regionalCertificateArn" type:"string"`
 
 	// The name of the certificate that will be used for validating the regional
@@ -16703,8 +16705,8 @@ func (s *GetApiKeyInput) SetIncludeValue(v bool) *GetApiKeyInput {
 type GetApiKeysInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The identifier of a customer in AWS Marketplace or an external system, such
-	// as a developer portal.
+	// The identifier of a customer in Amazon Web Services Marketplace or an external
+	// system, such as a developer portal.
 	CustomerId *string `location:"querystring" locationName:"customerId" type:"string"`
 
 	// A boolean flag to specify whether (true) or not (false) the result contains
@@ -20780,9 +20782,9 @@ type ImportDocumentationPartsInput struct {
 	// false.
 	FailOnWarnings *bool `location:"querystring" locationName:"failonwarnings" type:"boolean"`
 
-	// A query parameter to indicate whether to overwrite (OVERWRITE) any existing
-	// DocumentationParts definition or to merge (MERGE) the new definition into
-	// the existing one. The default value is MERGE.
+	// A query parameter to indicate whether to overwrite (overwrite) any existing
+	// DocumentationParts definition or to merge (merge) the new definition into
+	// the existing one. The default value is merge.
 	Mode *string `location:"querystring" locationName:"mode" type:"string" enum:"PutMode"`
 
 	// The string identifier of the associated RestApi.
@@ -20921,11 +20923,6 @@ type ImportRestApiInput struct {
 	//
 	// To handle imported basepath, set parameters as basepath=ignore, basepath=prepend
 	// or basepath=split.
-	//
-	// For example, the AWS CLI command to exclude documentation from the imported
-	// API is:
-	//
-	// The AWS CLI command to set the regional endpoint on the imported API is:
 	Parameters map[string]*string `location:"querystring" locationName:"parameters" type:"map"`
 }
 
@@ -21015,10 +21012,14 @@ type Integration struct {
 	// three options are available. To specify an IAM Role for API Gateway to assume,
 	// use the role's Amazon Resource Name (ARN). To require that the caller's identity
 	// be passed through from the request, specify the string arn:aws:iam::\*:user/\*.
-	// To use resource-based permissions on supported AWS services, specify null.
+	// To use resource-based permissions on supported Amazon Web Services services,
+	// specify null.
 	Credentials *string `locationName:"credentials" type:"string"`
 
-	// Specifies the integration's HTTP method type.
+	// Specifies the integration's HTTP method type. For the Type property, if you
+	// specify MOCK, this property is optional. For Lambda integrations, you must
+	// set the integration method to POST. For all other types, you must specify
+	// this property.
 	HttpMethod *string `locationName:"httpMethod" type:"string"`
 
 	// Specifies the integration's responses.
@@ -21077,22 +21078,20 @@ type Integration struct {
 	// Specifies Uniform Resource Identifier (URI) of the integration endpoint.
 	//
 	// For HTTP or HTTP_PROXY integrations, the URI must be a fully formed, encoded
-	// HTTP(S) URL according to the RFC-3986 specification, for either standard
-	// integration, where connectionType is not VPC_LINK, or private integration,
-	// where connectionType is VPC_LINK. For a private HTTP integration, the URI
-	// is not used for routing. For AWS or AWS_PROXY integrations, the URI is of
-	// the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
+	// HTTP(S) URL according to the RFC-3986 specification for standard integrations.
+	// If connectionType is VPC_LINK specify the Network Load Balancer DNS name.
+	// For AWS or AWS_PROXY integrations, the URI is of the form arn:aws:apigateway:{region}:{subdomain.service|service}:path|action/{service_api}.
 	// Here, {Region} is the API Gateway region (e.g., us-east-1); {service} is
 	// the name of the integrated Amazon Web Services service (e.g., s3); and {subdomain}
 	// is a designated subdomain supported by certain Amazon Web Services service
 	// for fast host-name lookup. action can be used for an Amazon Web Services
 	// service action-based API, using an Action={name}&{p1}={v1}&p2={v2}... query
 	// string. The ensuing {service_api} refers to a supported action {name} plus
-	// any required input parameters. Alternatively, path can be used for an AWS
-	// service path-based API. The ensuing service_api refers to the path to an
-	// Amazon Web Services service resource, including the region of the integrated
-	// Amazon Web Services service, if applicable. For example, for integration
-	// with the S3 API of GetObject, the uri can be either arn:aws:apigateway:us-west-2:s3:action/GetObject&Bucket={bucket}&Key={key}
+	// any required input parameters. Alternatively, path can be used for an Amazon
+	// Web Services service path-based API. The ensuing service_api refers to the
+	// path to an Amazon Web Services service resource, including the region of
+	// the integrated Amazon Web Services service, if applicable. For example, for
+	// integration with the S3 API of GetObject, the uri can be either arn:aws:apigateway:us-west-2:s3:action/GetObject&Bucket={bucket}&Key={key}
 	// or arn:aws:apigateway:us-west-2:s3:path/{bucket}/{key}
 	Uri *string `locationName:"uri" type:"string"`
 }
@@ -21240,8 +21239,8 @@ type IntegrationResponse struct {
 	// response returns nothing and the error response returns some string, you
 	// could use the .+ regex to match error response. However, make sure that the
 	// error response does not contain any newline (\n) character in such cases.
-	// If the back end is an AWS Lambda function, the AWS Lambda function error
-	// header is matched. For all other HTTP and AWS back ends, the HTTP status
+	// If the back end is an Lambda function, the Lambda function error header is
+	// matched. For all other HTTP and Amazon Web Services back ends, the HTTP status
 	// code is matched.
 	SelectionPattern *string `locationName:"selectionPattern" type:"string"`
 
@@ -21588,57 +21587,40 @@ func (s *MethodResponse) SetStatusCode(v string) *MethodResponse {
 type MethodSetting struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies whether the cached responses are encrypted. The PATCH path for
-	// this setting is /{method_setting_key}/caching/dataEncrypted, and the value
-	// is a Boolean.
+	// Specifies whether the cached responses are encrypted.
 	CacheDataEncrypted *bool `locationName:"cacheDataEncrypted" type:"boolean"`
 
 	// Specifies the time to live (TTL), in seconds, for cached responses. The higher
-	// the TTL, the longer the response will be cached. The PATCH path for this
-	// setting is /{method_setting_key}/caching/ttlInSeconds, and the value is an
-	// integer.
+	// the TTL, the longer the response will be cached.
 	CacheTtlInSeconds *int64 `locationName:"cacheTtlInSeconds" type:"integer"`
 
 	// Specifies whether responses should be cached and returned for requests. A
-	// cache cluster must be enabled on the stage for responses to be cached. The
-	// PATCH path for this setting is /{method_setting_key}/caching/enabled, and
-	// the value is a Boolean.
+	// cache cluster must be enabled on the stage for responses to be cached.
 	CachingEnabled *bool `locationName:"cachingEnabled" type:"boolean"`
 
 	// Specifies whether data trace logging is enabled for this method, which affects
-	// the log entries pushed to Amazon CloudWatch Logs. The PATCH path for this
-	// setting is /{method_setting_key}/logging/dataTrace, and the value is a Boolean.
+	// the log entries pushed to Amazon CloudWatch Logs.
 	DataTraceEnabled *bool `locationName:"dataTraceEnabled" type:"boolean"`
 
 	// Specifies the logging level for this method, which affects the log entries
-	// pushed to Amazon CloudWatch Logs. The PATCH path for this setting is /{method_setting_key}/logging/loglevel,
-	// and the available levels are OFF, ERROR, and INFO. Choose ERROR to write
-	// only error-level entries to CloudWatch Logs, or choose INFO to include all
-	// ERROR events as well as extra informational events.
+	// pushed to Amazon CloudWatch Logs. Valid values are OFF, ERROR, and INFO.
+	// Choose ERROR to write only error-level entries to CloudWatch Logs, or choose
+	// INFO to include all ERROR events as well as extra informational events.
 	LoggingLevel *string `locationName:"loggingLevel" type:"string"`
 
 	// Specifies whether Amazon CloudWatch metrics are enabled for this method.
-	// The PATCH path for this setting is /{method_setting_key}/metrics/enabled,
-	// and the value is a Boolean.
 	MetricsEnabled *bool `locationName:"metricsEnabled" type:"boolean"`
 
 	// Specifies whether authorization is required for a cache invalidation request.
-	// The PATCH path for this setting is /{method_setting_key}/caching/requireAuthorizationForCacheControl,
-	// and the value is a Boolean.
 	RequireAuthorizationForCacheControl *bool `locationName:"requireAuthorizationForCacheControl" type:"boolean"`
 
-	// Specifies the throttling burst limit. The PATCH path for this setting is
-	// /{method_setting_key}/throttling/burstLimit, and the value is an integer.
+	// Specifies the throttling burst limit.
 	ThrottlingBurstLimit *int64 `locationName:"throttlingBurstLimit" type:"integer"`
 
-	// Specifies the throttling rate limit. The PATCH path for this setting is /{method_setting_key}/throttling/rateLimit,
-	// and the value is a double.
+	// Specifies the throttling rate limit.
 	ThrottlingRateLimit *float64 `locationName:"throttlingRateLimit" type:"double"`
 
-	// Specifies how to handle unauthorized requests for cache invalidation. The
-	// PATCH path for this setting is /{method_setting_key}/caching/unauthorizedCacheControlHeaderStrategy,
-	// and the available values are FAIL_WITH_403, SUCCEED_WITH_RESPONSE_HEADER,
-	// SUCCEED_WITHOUT_RESPONSE_HEADER.
+	// Specifies how to handle unauthorized requests for cache invalidation.
 	UnauthorizedCacheControlHeaderStrategy *string `locationName:"unauthorizedCacheControlHeaderStrategy" type:"string" enum:"UnauthorizedCacheControlHeaderStrategy"`
 }
 
@@ -23178,6 +23160,9 @@ type RestApi struct {
 	// of the caller and Method configuration.
 	Policy *string `locationName:"policy" type:"string"`
 
+	// The API's root resource ID.
+	RootResourceId *string `locationName:"rootResourceId" type:"string"`
+
 	// The collection of tags. Each tag element is associated with a given resource.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
@@ -23264,6 +23249,12 @@ func (s *RestApi) SetName(v string) *RestApi {
 // SetPolicy sets the Policy field's value.
 func (s *RestApi) SetPolicy(v string) *RestApi {
 	s.Policy = &v
+	return s
+}
+
+// SetRootResourceId sets the RootResourceId field's value.
+func (s *RestApi) SetRootResourceId(v string) *RestApi {
+	s.RootResourceId = &v
 	return s
 }
 
@@ -23491,7 +23482,8 @@ type Stage struct {
 	// Specifies whether a cache cluster is enabled for the stage.
 	CacheClusterEnabled *bool `locationName:"cacheClusterEnabled" type:"boolean"`
 
-	// The size of the cache cluster for the stage, if enabled.
+	// The stage's cache capacity in GB. For more information about choosing a cache
+	// size, see Enabling API caching to enhance responsiveness (https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-caching.html).
 	CacheClusterSize *string `locationName:"cacheClusterSize" type:"string" enum:"CacheClusterSize"`
 
 	// The status of the cache cluster for the stage, if enabled.
@@ -23935,7 +23927,7 @@ type TestInvokeAuthorizerOutput struct {
 	// authorizer succeeded.
 	ClientStatus *int64 `locationName:"clientStatus" type:"integer"`
 
-	// The execution latency of the test authorizer request.
+	// The execution latency, in ms, of the test authorizer request.
 	Latency *int64 `locationName:"latency" type:"long"`
 
 	// The API Gateway execution log for the test authorizer request.
@@ -24161,7 +24153,7 @@ type TestInvokeMethodOutput struct {
 	// The headers of the HTTP response.
 	Headers map[string]*string `locationName:"headers" type:"map"`
 
-	// The execution latency of the test invoke request.
+	// The execution latency, in ms, of the test invoke request.
 	Latency *int64 `locationName:"latency" type:"long"`
 
 	// The API Gateway execution log for the test invoke request.
@@ -24281,6 +24273,10 @@ type TlsConfig struct {
 	// If enabled, API Gateway still performs basic certificate validation, which
 	// includes checking the certificate's expiration date, hostname, and presence
 	// of a root certificate authority. Supported only for HTTP and HTTP_PROXY integrations.
+	//
+	// Enabling insecureSkipVerification isn't recommended, especially for integrations
+	// with public HTTPS endpoints. If you enable insecureSkipVerification, you
+	// increase the risk of man-in-the-middle attacks.
 	InsecureSkipVerification *bool `locationName:"insecureSkipVerification" type:"boolean"`
 }
 
@@ -25002,7 +24998,7 @@ type UpdateDocumentationVersionInput struct {
 	// (https://docs.aws.amazon.com/apigateway/latest/api/patch-operations.html).
 	PatchOperations []*PatchOperation `locationName:"patchOperations" type:"list"`
 
-	// The string identifier of the associated RestApi..
+	// The string identifier of the associated RestApi.
 	//
 	// RestApiId is a required field
 	RestApiId *string `location:"uri" locationName:"restapi_id" type:"string" required:"true"`
@@ -26342,8 +26338,8 @@ type UpdateVpcLinkOutput struct {
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The ARN of the network load balancer of the VPC targeted by the VPC link.
-	// The network load balancer must be owned by the same AWS account of the API
-	// owner.
+	// The network load balancer must be owned by the same Amazon Web Services account
+	// of the API owner.
 	TargetArns []*string `locationName:"targetArns" type:"list"`
 }
 
@@ -26499,8 +26495,8 @@ type UsagePlan struct {
 	// The name of a usage plan.
 	Name *string `locationName:"name" type:"string"`
 
-	// The AWS Markeplace product identifier to associate with the usage plan as
-	// a SaaS product on AWS Marketplace.
+	// The Amazon Web Services Marketplace product identifier to associate with
+	// the usage plan as a SaaS product on the Amazon Web Services Marketplace.
 	ProductCode *string `locationName:"productCode" type:"string"`
 
 	// The target maximum number of permitted requests per a given unit time interval.
@@ -26994,9 +26990,10 @@ func GatewayResponseType_Values() []string {
 }
 
 // The integration type. The valid value is HTTP for integrating an API method
-// with an HTTP backend; AWS with any AWS service endpoints; MOCK for testing
-// without actually invoking the backend; HTTP_PROXY for integrating with the
-// HTTP proxy integration; AWS_PROXY for integrating with the Lambda proxy integration.
+// with an HTTP backend; AWS with any Amazon Web Services service endpoints;
+// MOCK for testing without actually invoking the backend; HTTP_PROXY for integrating
+// with the HTTP proxy integration; AWS_PROXY for integrating with the Lambda
+// proxy integration.
 const (
 	// IntegrationTypeHttp is a IntegrationType enum value
 	IntegrationTypeHttp = "HTTP"

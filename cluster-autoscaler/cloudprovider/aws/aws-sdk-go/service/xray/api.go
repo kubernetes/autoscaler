@@ -411,6 +411,94 @@ func (c *XRay) DeleteGroupWithContext(ctx aws.Context, input *DeleteGroupInput, 
 	return out, req.Send()
 }
 
+const opDeleteResourcePolicy = "DeleteResourcePolicy"
+
+// DeleteResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteResourcePolicy for more information on using the DeleteResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteResourcePolicyRequest method.
+//	req, resp := client.DeleteResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/DeleteResourcePolicy
+func (c *XRay) DeleteResourcePolicyRequest(input *DeleteResourcePolicyInput) (req *request.Request, output *DeleteResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/DeleteResourcePolicy",
+	}
+
+	if input == nil {
+		input = &DeleteResourcePolicyInput{}
+	}
+
+	output = &DeleteResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteResourcePolicy API operation for AWS X-Ray.
+//
+// Deletes a resource policy from the target Amazon Web Services account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS X-Ray's
+// API operation DeleteResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - InvalidPolicyRevisionIdException
+//     A policy revision id was provided which does not match the latest policy
+//     revision. This exception is also if a policy revision id of 0 is provided
+//     via PutResourcePolicy and a policy with the same name already exists.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/DeleteResourcePolicy
+func (c *XRay) DeleteResourcePolicy(input *DeleteResourcePolicyInput) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteResourcePolicyWithContext is the same as DeleteResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *XRay) DeleteResourcePolicyWithContext(ctx aws.Context, input *DeleteResourcePolicyInput, opts ...request.Option) (*DeleteResourcePolicyOutput, error) {
+	req, out := c.DeleteResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteSamplingRule = "DeleteSamplingRule"
 
 // DeleteSamplingRuleRequest generates a "aws/request.Request" representing the
@@ -2182,6 +2270,145 @@ func (c *XRay) GetTraceSummariesPagesWithContext(ctx aws.Context, input *GetTrac
 	return p.Err()
 }
 
+const opListResourcePolicies = "ListResourcePolicies"
+
+// ListResourcePoliciesRequest generates a "aws/request.Request" representing the
+// client's request for the ListResourcePolicies operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListResourcePolicies for more information on using the ListResourcePolicies
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListResourcePoliciesRequest method.
+//	req, resp := client.ListResourcePoliciesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/ListResourcePolicies
+func (c *XRay) ListResourcePoliciesRequest(input *ListResourcePoliciesInput) (req *request.Request, output *ListResourcePoliciesOutput) {
+	op := &request.Operation{
+		Name:       opListResourcePolicies,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ListResourcePolicies",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListResourcePoliciesInput{}
+	}
+
+	output = &ListResourcePoliciesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListResourcePolicies API operation for AWS X-Ray.
+//
+// Returns the list of resource policies in the target Amazon Web Services account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS X-Ray's
+// API operation ListResourcePolicies for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidRequestException
+//     The request is missing required parameters or has invalid parameters.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/ListResourcePolicies
+func (c *XRay) ListResourcePolicies(input *ListResourcePoliciesInput) (*ListResourcePoliciesOutput, error) {
+	req, out := c.ListResourcePoliciesRequest(input)
+	return out, req.Send()
+}
+
+// ListResourcePoliciesWithContext is the same as ListResourcePolicies with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListResourcePolicies for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *XRay) ListResourcePoliciesWithContext(ctx aws.Context, input *ListResourcePoliciesInput, opts ...request.Option) (*ListResourcePoliciesOutput, error) {
+	req, out := c.ListResourcePoliciesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListResourcePoliciesPages iterates over the pages of a ListResourcePolicies operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListResourcePolicies method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListResourcePolicies operation.
+//	pageNum := 0
+//	err := client.ListResourcePoliciesPages(params,
+//	    func(page *xray.ListResourcePoliciesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *XRay) ListResourcePoliciesPages(input *ListResourcePoliciesInput, fn func(*ListResourcePoliciesOutput, bool) bool) error {
+	return c.ListResourcePoliciesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListResourcePoliciesPagesWithContext same as ListResourcePoliciesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *XRay) ListResourcePoliciesPagesWithContext(ctx aws.Context, input *ListResourcePoliciesInput, fn func(*ListResourcePoliciesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListResourcePoliciesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListResourcePoliciesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListResourcePoliciesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -2212,6 +2439,12 @@ func (c *XRay) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req 
 		Name:       opListTagsForResource,
 		HTTPMethod: "POST",
 		HTTPPath:   "/ListTagsForResource",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2267,6 +2500,57 @@ func (c *XRay) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsFo
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// ListTagsForResourcePages iterates over the pages of a ListTagsForResource operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListTagsForResource method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListTagsForResource operation.
+//	pageNum := 0
+//	err := client.ListTagsForResourcePages(params,
+//	    func(page *xray.ListTagsForResourceOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *XRay) ListTagsForResourcePages(input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool) error {
+	return c.ListTagsForResourcePagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListTagsForResourcePagesWithContext same as ListTagsForResourcePages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *XRay) ListTagsForResourcePagesWithContext(ctx aws.Context, input *ListTagsForResourceInput, fn func(*ListTagsForResourceOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListTagsForResourceInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListTagsForResourceRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListTagsForResourceOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opPutEncryptionConfig = "PutEncryptionConfig"
@@ -2346,6 +2630,108 @@ func (c *XRay) PutEncryptionConfig(input *PutEncryptionConfigInput) (*PutEncrypt
 // for more information on using Contexts.
 func (c *XRay) PutEncryptionConfigWithContext(ctx aws.Context, input *PutEncryptionConfigInput, opts ...request.Option) (*PutEncryptionConfigOutput, error) {
 	req, out := c.PutEncryptionConfigRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutResourcePolicy = "PutResourcePolicy"
+
+// PutResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutResourcePolicy for more information on using the PutResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutResourcePolicyRequest method.
+//	req, resp := client.PutResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutResourcePolicy
+func (c *XRay) PutResourcePolicyRequest(input *PutResourcePolicyInput) (req *request.Request, output *PutResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutResourcePolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/PutResourcePolicy",
+	}
+
+	if input == nil {
+		input = &PutResourcePolicyInput{}
+	}
+
+	output = &PutResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutResourcePolicy API operation for AWS X-Ray.
+//
+// Sets the resource policy to grant one or more Amazon Web Services services
+// and accounts permissions to access X-Ray. Each resource policy will be associated
+// with a specific Amazon Web Services account. Each Amazon Web Services account
+// can have a maximum of 5 resource policies, and each policy name must be unique
+// within that account. The maximum size of each resource policy is 5KB.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS X-Ray's
+// API operation PutResourcePolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - MalformedPolicyDocumentException
+//     Invalid policy document provided in request.
+//
+//   - LockoutPreventionException
+//     The provided resource policy would prevent the caller of this request from
+//     calling PutResourcePolicy in the future.
+//
+//   - InvalidPolicyRevisionIdException
+//     A policy revision id was provided which does not match the latest policy
+//     revision. This exception is also if a policy revision id of 0 is provided
+//     via PutResourcePolicy and a policy with the same name already exists.
+//
+//   - PolicySizeLimitExceededException
+//     Exceeded the maximum size for a resource policy.
+//
+//   - PolicyCountLimitExceededException
+//     Exceeded the maximum number of resource policies for a target Amazon Web
+//     Services account.
+//
+//   - ThrottledException
+//     The request exceeds the maximum number of requests per second.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/xray-2016-04-12/PutResourcePolicy
+func (c *XRay) PutResourcePolicy(input *PutResourcePolicyInput) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutResourcePolicyWithContext is the same as PutResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *XRay) PutResourcePolicyWithContext(ctx aws.Context, input *PutResourcePolicyInput, opts ...request.Option) (*PutResourcePolicyOutput, error) {
+	req, out := c.PutResourcePolicyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3257,7 +3643,7 @@ type CreateGroupInput struct {
 	//    * The InsightsEnabled boolean can be set to true to enable insights for
 	//    the new group or false to disable insights for the new group.
 	//
-	//    * The NotifcationsEnabled boolean can be set to true to enable insights
+	//    * The NotificationsEnabled boolean can be set to true to enable insights
 	//    notifications for the new group. Notifications may only be enabled on
 	//    a group with InsightsEnabled set to true.
 	InsightsConfiguration *InsightsConfiguration `type:"structure"`
@@ -3585,6 +3971,89 @@ func (s DeleteGroupOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the resource policy to delete.
+	//
+	// PolicyName is a required field
+	PolicyName *string `min:"1" type:"string" required:"true"`
+
+	// Specifies a specific policy revision to delete. Provide a PolicyRevisionId
+	// to ensure an atomic delete operation. If the provided revision id does not
+	// match the latest policy revision id, an InvalidPolicyRevisionIdException
+	// exception is returned.
+	PolicyRevisionId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteResourcePolicyInput"}
+	if s.PolicyName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyName"))
+	}
+	if s.PolicyName != nil && len(*s.PolicyName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PolicyName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *DeleteResourcePolicyInput) SetPolicyName(v string) *DeleteResourcePolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyRevisionId sets the PolicyRevisionId field's value.
+func (s *DeleteResourcePolicyInput) SetPolicyRevisionId(v string) *DeleteResourcePolicyInput {
+	s.PolicyRevisionId = &v
+	return s
+}
+
+type DeleteResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteSamplingRuleInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3658,20 +4127,31 @@ func (s *DeleteSamplingRuleOutput) SetSamplingRuleRecord(v *SamplingRuleRecord) 
 	return s
 }
 
-// Information about a connection between two services.
+// Information about a connection between two services. An edge can be a synchronous
+// connection, such as typical call between client and service, or an asynchronous
+// link, such as a Lambda function which retrieves an event from an SNS queue.
 type Edge struct {
 	_ struct{} `type:"structure"`
 
 	// Aliases for the edge.
 	Aliases []*Alias `type:"list"`
 
+	// Describes an asynchronous connection, with a value of link.
+	EdgeType *string `type:"string"`
+
 	// The end time of the last segment on the edge.
 	EndTime *time.Time `type:"timestamp"`
+
+	// A histogram that maps the spread of event age when received by consumers.
+	// Age is calculated each time an event is received. Only populated when EdgeType
+	// is link.
+	ReceivedEventAgeHistogram []*HistogramEntry `type:"list"`
 
 	// Identifier of the edge. Unique within a service map.
 	ReferenceId *int64 `type:"integer"`
 
-	// A histogram that maps the spread of client response times on an edge.
+	// A histogram that maps the spread of client response times on an edge. Only
+	// populated for synchronous edges.
 	ResponseTimeHistogram []*HistogramEntry `type:"list"`
 
 	// The start time of the first segment on the edge.
@@ -3705,9 +4185,21 @@ func (s *Edge) SetAliases(v []*Alias) *Edge {
 	return s
 }
 
+// SetEdgeType sets the EdgeType field's value.
+func (s *Edge) SetEdgeType(v string) *Edge {
+	s.EdgeType = &v
+	return s
+}
+
 // SetEndTime sets the EndTime field's value.
 func (s *Edge) SetEndTime(v time.Time) *Edge {
 	s.EndTime = &v
+	return s
+}
+
+// SetReceivedEventAgeHistogram sets the ReceivedEventAgeHistogram field's value.
+func (s *Edge) SetReceivedEventAgeHistogram(v []*HistogramEntry) *Edge {
+	s.ReceivedEventAgeHistogram = v
 	return s
 }
 
@@ -5803,8 +6295,8 @@ type GetTraceSummariesInput struct {
 	// StartTime is a required field
 	StartTime *time.Time `type:"timestamp" required:"true"`
 
-	// A parameter to indicate whether to query trace summaries by TraceId or Event
-	// time.
+	// A parameter to indicate whether to query trace summaries by TraceId, Event
+	// (trace update time), or Service (segment end time).
 	TimeRangeType *string `type:"string" enum:"TimeRangeType"`
 }
 
@@ -6741,6 +7233,72 @@ func (s *InstanceIdDetail) SetId(v string) *InstanceIdDetail {
 	return s
 }
 
+// A policy revision id was provided which does not match the latest policy
+// revision. This exception is also if a policy revision id of 0 is provided
+// via PutResourcePolicy and a policy with the same name already exists.
+type InvalidPolicyRevisionIdException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvalidPolicyRevisionIdException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvalidPolicyRevisionIdException) GoString() string {
+	return s.String()
+}
+
+func newErrorInvalidPolicyRevisionIdException(v protocol.ResponseMetadata) error {
+	return &InvalidPolicyRevisionIdException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *InvalidPolicyRevisionIdException) Code() string {
+	return "InvalidPolicyRevisionIdException"
+}
+
+// Message returns the exception's message.
+func (s *InvalidPolicyRevisionIdException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *InvalidPolicyRevisionIdException) OrigErr() error {
+	return nil
+}
+
+func (s *InvalidPolicyRevisionIdException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *InvalidPolicyRevisionIdException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *InvalidPolicyRevisionIdException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // The request is missing required parameters or has invalid parameters.
 type InvalidRequestException struct {
 	_            struct{}                  `type:"structure"`
@@ -6803,6 +7361,90 @@ func (s *InvalidRequestException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *InvalidRequestException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+type ListResourcePoliciesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Not currently supported.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListResourcePoliciesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListResourcePoliciesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListResourcePoliciesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListResourcePoliciesInput"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListResourcePoliciesInput) SetNextToken(v string) *ListResourcePoliciesInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListResourcePoliciesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Pagination token. Not currently supported.
+	NextToken *string `min:"1" type:"string"`
+
+	// The list of resource policies in the target Amazon Web Services account.
+	ResourcePolicies []*ResourcePolicy `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListResourcePoliciesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListResourcePoliciesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListResourcePoliciesOutput) SetNextToken(v string) *ListResourcePoliciesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourcePolicies sets the ResourcePolicies field's value.
+func (s *ListResourcePoliciesOutput) SetResourcePolicies(v []*ResourcePolicy) *ListResourcePoliciesOutput {
+	s.ResourcePolicies = v
+	return s
 }
 
 type ListTagsForResourceInput struct {
@@ -6907,6 +7549,264 @@ func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput
 	return s
 }
 
+// The provided resource policy would prevent the caller of this request from
+// calling PutResourcePolicy in the future.
+type LockoutPreventionException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockoutPreventionException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockoutPreventionException) GoString() string {
+	return s.String()
+}
+
+func newErrorLockoutPreventionException(v protocol.ResponseMetadata) error {
+	return &LockoutPreventionException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *LockoutPreventionException) Code() string {
+	return "LockoutPreventionException"
+}
+
+// Message returns the exception's message.
+func (s *LockoutPreventionException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *LockoutPreventionException) OrigErr() error {
+	return nil
+}
+
+func (s *LockoutPreventionException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *LockoutPreventionException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *LockoutPreventionException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Invalid policy document provided in request.
+type MalformedPolicyDocumentException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MalformedPolicyDocumentException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MalformedPolicyDocumentException) GoString() string {
+	return s.String()
+}
+
+func newErrorMalformedPolicyDocumentException(v protocol.ResponseMetadata) error {
+	return &MalformedPolicyDocumentException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *MalformedPolicyDocumentException) Code() string {
+	return "MalformedPolicyDocumentException"
+}
+
+// Message returns the exception's message.
+func (s *MalformedPolicyDocumentException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *MalformedPolicyDocumentException) OrigErr() error {
+	return nil
+}
+
+func (s *MalformedPolicyDocumentException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *MalformedPolicyDocumentException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *MalformedPolicyDocumentException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Exceeded the maximum number of resource policies for a target Amazon Web
+// Services account.
+type PolicyCountLimitExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PolicyCountLimitExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PolicyCountLimitExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorPolicyCountLimitExceededException(v protocol.ResponseMetadata) error {
+	return &PolicyCountLimitExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *PolicyCountLimitExceededException) Code() string {
+	return "PolicyCountLimitExceededException"
+}
+
+// Message returns the exception's message.
+func (s *PolicyCountLimitExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *PolicyCountLimitExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *PolicyCountLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *PolicyCountLimitExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *PolicyCountLimitExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Exceeded the maximum size for a resource policy.
+type PolicySizeLimitExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PolicySizeLimitExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PolicySizeLimitExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorPolicySizeLimitExceededException(v protocol.ResponseMetadata) error {
+	return &PolicySizeLimitExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *PolicySizeLimitExceededException) Code() string {
+	return "PolicySizeLimitExceededException"
+}
+
+// Message returns the exception's message.
+func (s *PolicySizeLimitExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *PolicySizeLimitExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *PolicySizeLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *PolicySizeLimitExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *PolicySizeLimitExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type PutEncryptionConfigInput struct {
 	_ struct{} `type:"structure"`
 
@@ -7005,6 +7905,137 @@ func (s PutEncryptionConfigOutput) GoString() string {
 // SetEncryptionConfig sets the EncryptionConfig field's value.
 func (s *PutEncryptionConfigOutput) SetEncryptionConfig(v *EncryptionConfig) *PutEncryptionConfigOutput {
 	s.EncryptionConfig = v
+	return s
+}
+
+type PutResourcePolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// A flag to indicate whether to bypass the resource policy lockout safety check.
+	//
+	// Setting this value to true increases the risk that the policy becomes unmanageable.
+	// Do not set this value to true indiscriminately.
+	//
+	// Use this parameter only when you include a policy in the request and you
+	// intend to prevent the principal that is making the request from making a
+	// subsequent PutResourcePolicy request.
+	//
+	// The default value is false.
+	BypassPolicyLockoutCheck *bool `type:"boolean"`
+
+	// The resource policy document, which can be up to 5kb in size.
+	//
+	// PolicyDocument is a required field
+	PolicyDocument *string `type:"string" required:"true"`
+
+	// The name of the resource policy. Must be unique within a specific Amazon
+	// Web Services account.
+	//
+	// PolicyName is a required field
+	PolicyName *string `min:"1" type:"string" required:"true"`
+
+	// Specifies a specific policy revision, to ensure an atomic create operation.
+	// By default the resource policy is created if it does not exist, or updated
+	// with an incremented revision id. The revision id is unique to each policy
+	// in the account.
+	//
+	// If the policy revision id does not match the latest revision id, the operation
+	// will fail with an InvalidPolicyRevisionIdException exception. You can also
+	// provide a PolicyRevisionId of 0. In this case, the operation will fail with
+	// an InvalidPolicyRevisionIdException exception if a resource policy with the
+	// same name already exists.
+	PolicyRevisionId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutResourcePolicyInput"}
+	if s.PolicyDocument == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyDocument"))
+	}
+	if s.PolicyName == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyName"))
+	}
+	if s.PolicyName != nil && len(*s.PolicyName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("PolicyName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBypassPolicyLockoutCheck sets the BypassPolicyLockoutCheck field's value.
+func (s *PutResourcePolicyInput) SetBypassPolicyLockoutCheck(v bool) *PutResourcePolicyInput {
+	s.BypassPolicyLockoutCheck = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *PutResourcePolicyInput) SetPolicyDocument(v string) *PutResourcePolicyInput {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *PutResourcePolicyInput) SetPolicyName(v string) *PutResourcePolicyInput {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyRevisionId sets the PolicyRevisionId field's value.
+func (s *PutResourcePolicyInput) SetPolicyRevisionId(v string) *PutResourcePolicyInput {
+	s.PolicyRevisionId = &v
+	return s
+}
+
+type PutResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The resource policy document, as provided in the PutResourcePolicyRequest.
+	ResourcePolicy *ResourcePolicy `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetResourcePolicy sets the ResourcePolicy field's value.
+func (s *PutResourcePolicyOutput) SetResourcePolicy(v *ResourcePolicy) *PutResourcePolicyOutput {
+	s.ResourcePolicy = v
 	return s
 }
 
@@ -7332,6 +8363,68 @@ func (s *ResourceNotFoundException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// A resource policy grants one or more Amazon Web Services services and accounts
+// permissions to access X-Ray. Each resource policy is associated with a specific
+// Amazon Web Services account.
+type ResourcePolicy struct {
+	_ struct{} `type:"structure"`
+
+	// When the policy was last updated, in Unix time seconds.
+	LastUpdatedTime *time.Time `type:"timestamp"`
+
+	// The resource policy document, which can be up to 5kb in size.
+	PolicyDocument *string `type:"string"`
+
+	// The name of the resource policy. Must be unique within a specific Amazon
+	// Web Services account.
+	PolicyName *string `min:"1" type:"string"`
+
+	// Returns the current policy revision id for this policy name.
+	PolicyRevisionId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourcePolicy) GoString() string {
+	return s.String()
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *ResourcePolicy) SetLastUpdatedTime(v time.Time) *ResourcePolicy {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetPolicyDocument sets the PolicyDocument field's value.
+func (s *ResourcePolicy) SetPolicyDocument(v string) *ResourcePolicy {
+	s.PolicyDocument = &v
+	return s
+}
+
+// SetPolicyName sets the PolicyName field's value.
+func (s *ResourcePolicy) SetPolicyName(v string) *ResourcePolicy {
+	s.PolicyName = &v
+	return s
+}
+
+// SetPolicyRevisionId sets the PolicyRevisionId field's value.
+func (s *ResourcePolicy) SetPolicyRevisionId(v string) *ResourcePolicy {
+	s.PolicyRevisionId = &v
+	return s
 }
 
 // The root cause information for a response time warning.
@@ -9143,9 +10236,9 @@ type Trace struct {
 	// and subsegments.
 	Id *string `min:"1" type:"string"`
 
-	// LimitExceeded is set to true when the trace has exceeded one of the defined
-	// quotas. For more information about quotas, see Amazon Web Services X-Ray
-	// endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/xray.html).
+	// LimitExceeded is set to true when the trace has exceeded the Trace document
+	// size limit. For more information about this limit and other X-Ray limits
+	// and quotas, see Amazon Web Services X-Ray endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/xray.html).
 	LimitExceeded *bool `type:"boolean"`
 
 	// Segment documents for the segments and subsegments that comprise the trace.
@@ -9260,6 +10353,9 @@ type TraceSummary struct {
 
 	// Service IDs from the trace's segment documents.
 	ServiceIds []*ServiceId `type:"list"`
+
+	// The start time of a trace, based on the earliest trace segment start time.
+	StartTime *time.Time `type:"timestamp"`
 
 	// Users from the trace's segment documents.
 	Users []*TraceUser `type:"list"`
@@ -9394,6 +10490,12 @@ func (s *TraceSummary) SetRevision(v int64) *TraceSummary {
 // SetServiceIds sets the ServiceIds field's value.
 func (s *TraceSummary) SetServiceIds(v []*ServiceId) *TraceSummary {
 	s.ServiceIds = v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *TraceSummary) SetStartTime(v time.Time) *TraceSummary {
+	s.StartTime = &v
 	return s
 }
 
@@ -9648,7 +10750,7 @@ type UpdateGroupInput struct {
 	//    * The InsightsEnabled boolean can be set to true to enable insights for
 	//    the group or false to disable insights for the group.
 	//
-	//    * The NotifcationsEnabled boolean can be set to true to enable insights
+	//    * The NotificationsEnabled boolean can be set to true to enable insights
 	//    notifications for the group. Notifications can only be enabled on a group
 	//    with InsightsEnabled set to true.
 	InsightsConfiguration *InsightsConfiguration `type:"structure"`
@@ -9950,6 +11052,9 @@ const (
 
 	// TimeRangeTypeEvent is a TimeRangeType enum value
 	TimeRangeTypeEvent = "Event"
+
+	// TimeRangeTypeService is a TimeRangeType enum value
+	TimeRangeTypeService = "Service"
 )
 
 // TimeRangeType_Values returns all elements of the TimeRangeType enum
@@ -9957,5 +11062,6 @@ func TimeRangeType_Values() []string {
 	return []string{
 		TimeRangeTypeTraceId,
 		TimeRangeTypeEvent,
+		TimeRangeTypeService,
 	}
 }

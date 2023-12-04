@@ -3,10 +3,10 @@
 // Package comprehend provides the client and types for making API
 // requests to Amazon Comprehend.
 //
-// Amazon Comprehend is an AWS service for gaining insight into the content
-// of documents. Use these actions to determine the topics contained in your
-// documents, the topics they discuss, the predominant sentiment expressed in
-// them, the predominant language used, and more.
+// Amazon Comprehend is an Amazon Web Services service for gaining insight into
+// the content of documents. Use these actions to determine the topics contained
+// in your documents, the topics they discuss, the predominant sentiment expressed
+// in them, the predominant language used, and more.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/comprehend-2017-11-27 for more information on this service.
 //

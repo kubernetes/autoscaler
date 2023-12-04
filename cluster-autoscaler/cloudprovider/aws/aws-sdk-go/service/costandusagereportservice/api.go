@@ -55,7 +55,8 @@ func (c *CostandUsageReportService) DeleteReportDefinitionRequest(input *DeleteR
 
 // DeleteReportDefinition API operation for AWS Cost and Usage Report Service.
 //
-// Deletes the specified report.
+// Deletes the specified report. Any tags associated with the report are also
+// deleted.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -71,7 +72,8 @@ func (c *CostandUsageReportService) DeleteReportDefinitionRequest(input *DeleteR
 //     again later.
 //
 //   - ValidationException
-//     The input fails to satisfy the constraints specified by an AWS service.
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/DeleteReportDefinition
 func (c *CostandUsageReportService) DeleteReportDefinition(input *DeleteReportDefinitionInput) (*DeleteReportDefinitionOutput, error) {
@@ -144,7 +146,7 @@ func (c *CostandUsageReportService) DescribeReportDefinitionsRequest(input *Desc
 
 // DescribeReportDefinitions API operation for AWS Cost and Usage Report Service.
 //
-// Lists the AWS Cost and Usage reports available to this account.
+// Lists the Amazon Web Services Cost and Usage Report available to this account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -231,6 +233,93 @@ func (c *CostandUsageReportService) DescribeReportDefinitionsPagesWithContext(ct
 	return p.Err()
 }
 
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTagsForResource for more information on using the ListTagsForResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/ListTagsForResource
+func (c *CostandUsageReportService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	output = &ListTagsForResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTagsForResource API operation for AWS Cost and Usage Report Service.
+//
+// Lists the tags associated with the specified report definition.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Cost and Usage Report Service's
+// API operation ListTagsForResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified report (ReportName) in the request doesn't exist.
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/ListTagsForResource
+func (c *CostandUsageReportService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	return out, req.Send()
+}
+
+// ListTagsForResourceWithContext is the same as ListTagsForResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTagsForResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CostandUsageReportService) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opModifyReportDefinition = "ModifyReportDefinition"
 
 // ModifyReportDefinitionRequest generates a "aws/request.Request" representing the
@@ -275,7 +364,7 @@ func (c *CostandUsageReportService) ModifyReportDefinitionRequest(input *ModifyR
 
 // ModifyReportDefinition API operation for AWS Cost and Usage Report Service.
 //
-// Allows you to programatically update your report preferences.
+// Allows you to programmatically update your report preferences.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -291,7 +380,8 @@ func (c *CostandUsageReportService) ModifyReportDefinitionRequest(input *ModifyR
 //     again later.
 //
 //   - ValidationException
-//     The input fails to satisfy the constraints specified by an AWS service.
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/ModifyReportDefinition
 func (c *CostandUsageReportService) ModifyReportDefinition(input *ModifyReportDefinitionInput) (*ModifyReportDefinitionOutput, error) {
@@ -383,7 +473,11 @@ func (c *CostandUsageReportService) PutReportDefinitionRequest(input *PutReportD
 //     again later.
 //
 //   - ValidationException
-//     The input fails to satisfy the constraints specified by an AWS service.
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+//   - ResourceNotFoundException
+//     The specified report (ReportName) in the request doesn't exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/PutReportDefinition
 func (c *CostandUsageReportService) PutReportDefinition(input *PutReportDefinitionInput) (*PutReportDefinitionOutput, error) {
@@ -407,13 +501,191 @@ func (c *CostandUsageReportService) PutReportDefinitionWithContext(ctx aws.Conte
 	return out, req.Send()
 }
 
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TagResource for more information on using the TagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/TagResource
+func (c *CostandUsageReportService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	output = &TagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// TagResource API operation for AWS Cost and Usage Report Service.
+//
+// Associates a set of tags with a report definition.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Cost and Usage Report Service's
+// API operation TagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified report (ReportName) in the request doesn't exist.
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/TagResource
+func (c *CostandUsageReportService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	return out, req.Send()
+}
+
+// TagResourceWithContext is the same as TagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CostandUsageReportService) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UntagResource for more information on using the UntagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/UntagResource
+func (c *CostandUsageReportService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	output = &UntagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UntagResource API operation for AWS Cost and Usage Report Service.
+//
+// Disassociates a set of tags from a report definition.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Cost and Usage Report Service's
+// API operation UntagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified report (ReportName) in the request doesn't exist.
+//
+//   - InternalErrorException
+//     An error on the server occurred during the processing of your request. Try
+//     again later.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an Amazon Web Services
+//     service.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/cur-2017-01-06/UntagResource
+func (c *CostandUsageReportService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	return out, req.Send()
+}
+
+// UntagResourceWithContext is the same as UntagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UntagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CostandUsageReportService) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // Deletes the specified report.
 type DeleteReportDefinitionInput struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the report that you want to delete. The name must be unique,
 	// is case sensitive, and can't include spaces.
-	ReportName *string `type:"string"`
+	//
+	// ReportName is a required field
+	ReportName *string `type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -432,6 +704,19 @@ func (s DeleteReportDefinitionInput) String() string {
 // value will be replaced with "sensitive".
 func (s DeleteReportDefinitionInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteReportDefinitionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteReportDefinitionInput"}
+	if s.ReportName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetReportName sets the ReportName field's value.
@@ -472,11 +757,11 @@ func (s *DeleteReportDefinitionOutput) SetResponseMessage(v string) *DeleteRepor
 	return s
 }
 
-// Requests a list of AWS Cost and Usage reports owned by the account.
+// Requests a Amazon Web Services Cost and Usage Report list owned by the account.
 type DescribeReportDefinitionsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The maximum number of results that AWS returns for the operation.
+	// The maximum number of results that Amazon Web Services returns for the operation.
 	MaxResults *int64 `min:"5" type:"integer"`
 
 	// A generic string.
@@ -533,7 +818,7 @@ type DescribeReportDefinitionsOutput struct {
 	// A generic string.
 	NextToken *string `type:"string"`
 
-	// A list of AWS Cost and Usage reports owned by the account.
+	// An Amazon Web Services Cost and Usage Report list owned by the account.
 	ReportDefinitions []*ReportDefinition `type:"list"`
 }
 
@@ -699,12 +984,89 @@ func (s *InternalErrorException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ListTagsForResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The report name of the report definition that tags are to be returned for.
+	//
+	// ReportName is a required field
+	ReportName *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.ReportName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReportName sets the ReportName field's value.
+func (s *ListTagsForResourceInput) SetReportName(v string) *ListTagsForResourceInput {
+	s.ReportName = &v
+	return s
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The tags assigned to the report definition resource.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
 type ModifyReportDefinitionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The definition of AWS Cost and Usage Report. You can specify the report name,
-	// time unit, report format, compression format, S3 bucket, additional artifacts,
-	// and schema elements in the definition.
+	// The definition of Amazon Web Services Cost and Usage Report. You can specify
+	// the report name, time unit, report format, compression format, S3 bucket,
+	// additional artifacts, and schema elements in the definition.
 	//
 	// ReportDefinition is a required field
 	ReportDefinition *ReportDefinition `type:"structure" required:"true"`
@@ -798,6 +1160,9 @@ type PutReportDefinitionInput struct {
 	//
 	// ReportDefinition is a required field
 	ReportDefinition *ReportDefinition `type:"structure" required:"true"`
+
+	// The tags to be assigned to the report definition resource.
+	Tags []*Tag `type:"list"`
 }
 
 // String returns the string representation.
@@ -829,6 +1194,16 @@ func (s *PutReportDefinitionInput) Validate() error {
 			invalidParams.AddNested("ReportDefinition", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -839,6 +1214,12 @@ func (s *PutReportDefinitionInput) Validate() error {
 // SetReportDefinition sets the ReportDefinition field's value.
 func (s *PutReportDefinitionInput) SetReportDefinition(v *ReportDefinition) *PutReportDefinitionInput {
 	s.ReportDefinition = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *PutReportDefinitionInput) SetTags(v []*Tag) *PutReportDefinitionInput {
+	s.Tags = v
 	return s
 }
 
@@ -866,9 +1247,9 @@ func (s PutReportDefinitionOutput) GoString() string {
 	return s.String()
 }
 
-// The definition of AWS Cost and Usage Report. You can specify the report name,
-// time unit, report format, compression format, S3 bucket, additional artifacts,
-// and schema elements in the definition.
+// The definition of Amazon Web Services Cost and Usage Report. You can specify
+// the report name, time unit, report format, compression format, S3 bucket,
+// additional artifacts, and schema elements in the definition.
 type ReportDefinition struct {
 	_ struct{} `type:"structure"`
 
@@ -882,16 +1263,18 @@ type ReportDefinition struct {
 	// AdditionalSchemaElements is a required field
 	AdditionalSchemaElements []*string `type:"list" required:"true" enum:"SchemaElement"`
 
-	// The Amazon resource name of the billing view. You can get this value by using
-	// the billing view service public APIs.
+	// The Amazon resource name of the billing view. The BillingViewArn is needed
+	// to create Amazon Web Services Cost and Usage Report for each billing group
+	// maintained in the Amazon Web Services Billing Conductor service. The BillingViewArn
+	// for a billing group can be constructed as: arn:aws:billing::payer-account-id:billingview/billing-group-primary-account-id
 	BillingViewArn *string `type:"string"`
 
-	// The compression format that AWS uses for the report.
+	// The compression format that Amazon Web Services uses for the report.
 	//
 	// Compression is a required field
 	Compression *string `type:"string" required:"true" enum:"CompressionFormat"`
 
-	// The format that AWS saves the report in.
+	// The format that Amazon Web Services saves the report in.
 	//
 	// Format is a required field
 	Format *string `type:"string" required:"true" enum:"ReportFormat"`
@@ -907,22 +1290,26 @@ type ReportDefinition struct {
 	// ReportName is a required field
 	ReportName *string `type:"string" required:"true"`
 
+	// The status of the report.
+	ReportStatus *ReportStatus `type:"structure"`
+
 	// Whether you want Amazon Web Services to overwrite the previous version of
 	// each report or to deliver the report in addition to the previous versions.
 	ReportVersioning *string `type:"string" enum:"ReportVersioning"`
 
-	// The S3 bucket where AWS delivers the report.
+	// The S3 bucket where Amazon Web Services delivers the report.
 	//
 	// S3Bucket is a required field
 	S3Bucket *string `type:"string" required:"true"`
 
-	// The prefix that AWS adds to the report name when AWS delivers the report.
-	// Your prefix can't include spaces.
+	// The prefix that Amazon Web Services adds to the report name when Amazon Web
+	// Services delivers the report. Your prefix can't include spaces.
 	//
 	// S3Prefix is a required field
 	S3Prefix *string `type:"string" required:"true"`
 
-	// The region of the S3 bucket that AWS delivers the report into.
+	// The region of the S3 bucket that Amazon Web Services delivers the report
+	// into.
 	//
 	// S3Region is a required field
 	S3Region *string `type:"string" required:"true" enum:"AWSRegion"`
@@ -978,6 +1365,11 @@ func (s *ReportDefinition) Validate() error {
 	if s.TimeUnit == nil {
 		invalidParams.Add(request.NewErrParamRequired("TimeUnit"))
 	}
+	if s.ReportStatus != nil {
+		if err := s.ReportStatus.Validate(); err != nil {
+			invalidParams.AddNested("ReportStatus", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1024,6 +1416,12 @@ func (s *ReportDefinition) SetRefreshClosedReports(v bool) *ReportDefinition {
 // SetReportName sets the ReportName field's value.
 func (s *ReportDefinition) SetReportName(v string) *ReportDefinition {
 	s.ReportName = &v
+	return s
+}
+
+// SetReportStatus sets the ReportStatus field's value.
+func (s *ReportDefinition) SetReportStatus(v *ReportStatus) *ReportDefinition {
+	s.ReportStatus = v
 	return s
 }
 
@@ -1123,7 +1521,373 @@ func (s *ReportLimitReachedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The input fails to satisfy the constraints specified by an AWS service.
+// A two element dictionary with a lastDelivery and lastStatus key whose values
+// describe the date and status of the last delivered report for a particular
+// report definition.
+type ReportStatus struct {
+	_ struct{} `type:"structure"`
+
+	// A timestamp that gives the date of a report delivery.
+	LastDelivery *string `locationName:"lastDelivery" min:"16" type:"string"`
+
+	// An enum that gives the status of a report delivery.
+	LastStatus *string `locationName:"lastStatus" type:"string" enum:"LastStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReportStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReportStatus) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReportStatus) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReportStatus"}
+	if s.LastDelivery != nil && len(*s.LastDelivery) < 16 {
+		invalidParams.Add(request.NewErrParamMinLen("LastDelivery", 16))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLastDelivery sets the LastDelivery field's value.
+func (s *ReportStatus) SetLastDelivery(v string) *ReportStatus {
+	s.LastDelivery = &v
+	return s
+}
+
+// SetLastStatus sets the LastStatus field's value.
+func (s *ReportStatus) SetLastStatus(v string) *ReportStatus {
+	s.LastStatus = &v
+	return s
+}
+
+// The specified report (ReportName) in the request doesn't exist.
+type ResourceNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	// A message to show the detail of the exception.
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourceNotFoundException(v protocol.ResponseMetadata) error {
+	return &ResourceNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourceNotFoundException) Code() string {
+	return "ResourceNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *ResourceNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourceNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourceNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourceNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourceNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Describes a tag. A tag is a key-value pair. You can add up to 50 tags to
+// a report definition.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// The key of the tag. Tag keys are case sensitive. Each report definition can
+	// only have up to one tag with the same key. If you try to add an existing
+	// tag with the same key, the existing tag value will be updated to the new
+	// value.
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// The value of the tag. Tag values are case-sensitive. This can be an empty
+	// string.
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
+type TagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The report name of the report definition that tags are to be associated with.
+	//
+	// ReportName is a required field
+	ReportName *string `type:"string" required:"true"`
+
+	// The tags to be assigned to the report definition resource.
+	//
+	// Tags is a required field
+	Tags []*Tag `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.ReportName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportName"))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReportName sets the ReportName field's value.
+func (s *TagResourceInput) SetReportName(v string) *TagResourceInput {
+	s.ReportName = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) GoString() string {
+	return s.String()
+}
+
+type UntagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The report name of the report definition that tags are to be disassociated
+	// from.
+	//
+	// ReportName is a required field
+	ReportName *string `type:"string" required:"true"`
+
+	// The tags to be disassociated from the report definition resource.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.ReportName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReportName"))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReportName sets the ReportName field's value.
+func (s *UntagResourceInput) SetReportName(v string) *UntagResourceInput {
+	s.ReportName = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
+}
+
+// The input fails to satisfy the constraints specified by an Amazon Web Services
+// service.
 type ValidationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -1188,7 +1952,8 @@ func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The region of the S3 bucket that AWS delivers the report into.
+// The region of the S3 bucket that Amazon Web Services delivers the report
+// into.
 const (
 	// AWSRegionAfSouth1 is a AWSRegion enum value
 	AWSRegionAfSouth1 = "af-south-1"
@@ -1199,11 +1964,17 @@ const (
 	// AWSRegionApSouth1 is a AWSRegion enum value
 	AWSRegionApSouth1 = "ap-south-1"
 
+	// AWSRegionApSouth2 is a AWSRegion enum value
+	AWSRegionApSouth2 = "ap-south-2"
+
 	// AWSRegionApSoutheast1 is a AWSRegion enum value
 	AWSRegionApSoutheast1 = "ap-southeast-1"
 
 	// AWSRegionApSoutheast2 is a AWSRegion enum value
 	AWSRegionApSoutheast2 = "ap-southeast-2"
+
+	// AWSRegionApSoutheast3 is a AWSRegion enum value
+	AWSRegionApSoutheast3 = "ap-southeast-3"
 
 	// AWSRegionApNortheast1 is a AWSRegion enum value
 	AWSRegionApNortheast1 = "ap-northeast-1"
@@ -1220,6 +1991,9 @@ const (
 	// AWSRegionEuCentral1 is a AWSRegion enum value
 	AWSRegionEuCentral1 = "eu-central-1"
 
+	// AWSRegionEuCentral2 is a AWSRegion enum value
+	AWSRegionEuCentral2 = "eu-central-2"
+
 	// AWSRegionEuWest1 is a AWSRegion enum value
 	AWSRegionEuWest1 = "eu-west-1"
 
@@ -1234,6 +2008,12 @@ const (
 
 	// AWSRegionEuSouth1 is a AWSRegion enum value
 	AWSRegionEuSouth1 = "eu-south-1"
+
+	// AWSRegionEuSouth2 is a AWSRegion enum value
+	AWSRegionEuSouth2 = "eu-south-2"
+
+	// AWSRegionMeCentral1 is a AWSRegion enum value
+	AWSRegionMeCentral1 = "me-central-1"
 
 	// AWSRegionMeSouth1 is a AWSRegion enum value
 	AWSRegionMeSouth1 = "me-south-1"
@@ -1266,18 +2046,23 @@ func AWSRegion_Values() []string {
 		AWSRegionAfSouth1,
 		AWSRegionApEast1,
 		AWSRegionApSouth1,
+		AWSRegionApSouth2,
 		AWSRegionApSoutheast1,
 		AWSRegionApSoutheast2,
+		AWSRegionApSoutheast3,
 		AWSRegionApNortheast1,
 		AWSRegionApNortheast2,
 		AWSRegionApNortheast3,
 		AWSRegionCaCentral1,
 		AWSRegionEuCentral1,
+		AWSRegionEuCentral2,
 		AWSRegionEuWest1,
 		AWSRegionEuWest2,
 		AWSRegionEuWest3,
 		AWSRegionEuNorth1,
 		AWSRegionEuSouth1,
+		AWSRegionEuSouth2,
+		AWSRegionMeCentral1,
 		AWSRegionMeSouth1,
 		AWSRegionSaEast1,
 		AWSRegionUsEast1,
@@ -1289,7 +2074,8 @@ func AWSRegion_Values() []string {
 	}
 }
 
-// The types of manifest that you want AWS to create for this report.
+// The types of manifest that you want Amazon Web Services to create for this
+// report.
 const (
 	// AdditionalArtifactRedshift is a AdditionalArtifact enum value
 	AdditionalArtifactRedshift = "REDSHIFT"
@@ -1310,7 +2096,7 @@ func AdditionalArtifact_Values() []string {
 	}
 }
 
-// The compression format that AWS uses for the report.
+// The compression format that Amazon Web Services uses for the report.
 const (
 	// CompressionFormatZip is a CompressionFormat enum value
 	CompressionFormatZip = "ZIP"
@@ -1331,7 +2117,27 @@ func CompressionFormat_Values() []string {
 	}
 }
 
-// The format that AWS saves the report in.
+const (
+	// LastStatusSuccess is a LastStatus enum value
+	LastStatusSuccess = "SUCCESS"
+
+	// LastStatusErrorPermissions is a LastStatus enum value
+	LastStatusErrorPermissions = "ERROR_PERMISSIONS"
+
+	// LastStatusErrorNoBucket is a LastStatus enum value
+	LastStatusErrorNoBucket = "ERROR_NO_BUCKET"
+)
+
+// LastStatus_Values returns all elements of the LastStatus enum
+func LastStatus_Values() []string {
+	return []string{
+		LastStatusSuccess,
+		LastStatusErrorPermissions,
+		LastStatusErrorNoBucket,
+	}
+}
+
+// The format that Amazon Web Services saves the report in.
 const (
 	// ReportFormatTextOrcsv is a ReportFormat enum value
 	ReportFormatTextOrcsv = "textORcsv"
@@ -1364,16 +2170,24 @@ func ReportVersioning_Values() []string {
 	}
 }
 
-// Whether or not AWS includes resource IDs in the report.
+// Whether or not Amazon Web Services includes resource IDs in the report.
 const (
 	// SchemaElementResources is a SchemaElement enum value
 	SchemaElementResources = "RESOURCES"
+
+	// SchemaElementSplitCostAllocationData is a SchemaElement enum value
+	SchemaElementSplitCostAllocationData = "SPLIT_COST_ALLOCATION_DATA"
+
+	// SchemaElementManualDiscountCompatibility is a SchemaElement enum value
+	SchemaElementManualDiscountCompatibility = "MANUAL_DISCOUNT_COMPATIBILITY"
 )
 
 // SchemaElement_Values returns all elements of the SchemaElement enum
 func SchemaElement_Values() []string {
 	return []string{
 		SchemaElementResources,
+		SchemaElementSplitCostAllocationData,
+		SchemaElementManualDiscountCompatibility,
 	}
 }
 

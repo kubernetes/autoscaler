@@ -62,6 +62,13 @@ func (c *MigrationHubRefactorSpaces) CreateApplicationRequest(input *CreateAppli
 // Refactor Spaces provisions an Amazon API Gateway, API Gateway VPC link, and
 // Network Load Balancer for the application proxy inside your account.
 //
+// In environments created with a CreateEnvironment:NetworkFabricType (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType)
+// of NONE you need to configure VPC to VPC connectivity (https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/amazon-vpc-to-amazon-vpc-connectivity-options.html)
+// between your service VPC and the application proxy VPC to route traffic through
+// the application proxy to a service with a private URL endpoint. For more
+// information, see Create an application (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/userguide/getting-started-create-application.html)
+// in the Refactor Spaces User Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -162,8 +169,15 @@ func (c *MigrationHubRefactorSpaces) CreateEnvironmentRequest(input *CreateEnvir
 // services, and routes created within the environment. They are referred to
 // as the environment owner. The environment owner has cross-account visibility
 // and control of Refactor Spaces resources that are added to the environment
-// by other accounts that the environment is shared with. When creating an environment,
-// Refactor Spaces provisions a transit gateway in your account.
+// by other accounts that the environment is shared with.
+//
+// When creating an environment with a CreateEnvironment:NetworkFabricType (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType)
+// of TRANSIT_GATEWAY, Refactor Spaces provisions a transit gateway to enable
+// services in VPCs to communicate directly across accounts. If CreateEnvironment:NetworkFabricType
+// (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType)
+// is NONE, Refactor Spaces does not create a transit gateway and you must use
+// your network infrastructure to route traffic to services with private URL
+// endpoints.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -266,44 +280,65 @@ func (c *MigrationHubRefactorSpaces) CreateRouteRequest(input *CreateRouteInput)
 // If an application does not have any routes, then the first route must be
 // created as a DEFAULT RouteType.
 //
+// When created, the default route defaults to an active state so state is not
+// a required input. However, like all other state values the state of the default
+// route can be updated after creation, but only when all other routes are also
+// inactive. Conversely, no route can be active without the default route also
+// being active.
+//
 // When you create a route, Refactor Spaces configures the Amazon API Gateway
 // to send traffic to the target service as follows:
 //
-//   - If the service has a URL endpoint, and the endpoint resolves to a private
-//     IP address, Refactor Spaces routes traffic using the API Gateway VPC link.
+//   - URL Endpoints If the service has a URL endpoint, and the endpoint resolves
+//     to a private IP address, Refactor Spaces routes traffic using the API
+//     Gateway VPC link. If a service endpoint resolves to a public IP address,
+//     Refactor Spaces routes traffic over the public internet. Services can
+//     have HTTP or HTTPS URL endpoints. For HTTPS URLs, publicly-signed certificates
+//     are supported. Private Certificate Authorities (CAs) are permitted only
+//     if the CA's domain is also publicly resolvable. Refactor Spaces automatically
+//     resolves the public Domain Name System (DNS) names that are set in CreateService:UrlEndpoint
+//     when you create a service. The DNS names resolve when the DNS time-to-live
+//     (TTL) expires, or every 60 seconds for TTLs less than 60 seconds. This
+//     periodic DNS resolution ensures that the route configuration remains up-to-date.
+//     One-time health check A one-time health check is performed on the service
+//     when either the route is updated from inactive to active, or when it is
+//     created with an active state. If the health check fails, the route transitions
+//     the route state to FAILED, an error code of SERVICE_ENDPOINT_HEALTH_CHECK_FAILURE
+//     is provided, and no traffic is sent to the service. For private URLs,
+//     a target group is created on the Network Load Balancer and the load balancer
+//     target group runs default target health checks. By default, the health
+//     check is run against the service endpoint URL. Optionally, the health
+//     check can be performed against a different protocol, port, and/or path
+//     using the CreateService:UrlEndpoint (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateService.html#migrationhubrefactorspaces-CreateService-request-UrlEndpoint)
+//     parameter. All other health check settings for the load balancer use the
+//     default values described in the Health checks for your target groups (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html)
+//     in the Elastic Load Balancing guide. The health check is considered successful
+//     if at least one target within the target group transitions to a healthy
+//     state.
 //
-//   - If the service has a URL endpoint, and the endpoint resolves to a public
-//     IP address, Refactor Spaces routes traffic over the public internet.
+//   - Lambda function endpoints If the service has an Lambda function endpoint,
+//     then Refactor Spaces configures the Lambda function's resource policy
+//     to allow the application's API Gateway to invoke the function. The Lambda
+//     function state is checked. If the function is not active, the function
+//     configuration is updated so that Lambda resources are provisioned. If
+//     the Lambda state is Failed, then the route creation fails. For more information,
+//     see the GetFunctionConfiguration's State response parameter (https://docs.aws.amazon.com/lambda/latest/dg/API_GetFunctionConfiguration.html#SSS-GetFunctionConfiguration-response-State)
+//     in the Lambda Developer Guide. A check is performed to determine that
+//     a Lambda function with the specified ARN exists. If it does not exist,
+//     the health check fails. For public URLs, a connection is opened to the
+//     public endpoint. If the URL is not reachable, the health check fails.
 //
-//   - If the service has an Lambda function endpoint, then Refactor Spaces
-//     configures the Lambda function's resource policy to allow the application's
-//     API Gateway to invoke the function.
+// # Environments without a network bridge
 //
-// A one-time health check is performed on the service when the route is created.
-// If the health check fails, the route transitions to FAILED, and no traffic
-// is sent to the service.
-//
-// For Lambda functions, the Lambda function state is checked. If the function
-// is not active, the function configuration is updated so that Lambda resources
-// are provisioned. If the Lambda state is Failed, then the route creation fails.
-// For more information, see the GetFunctionConfiguration's State response parameter
-// (https://docs.aws.amazon.com/lambda/latest/dg/API_GetFunctionConfiguration.html#SSS-GetFunctionConfiguration-response-State)
-// in the Lambda Developer Guide.
-//
-// For public URLs, a connection is opened to the public endpoint. If the URL
-// is not reachable, the health check fails. For private URLs, a target group
-// is created and the target group health check is run.
-//
-// The HealthCheckProtocol, HealthCheckPort, and HealthCheckPath are the same
-// protocol, port, and path specified in the URL or health URL, if used. All
-// other settings use the default values, as described in Health checks for
-// your target groups (https://docs.aws.amazon.com/elasticloadbalancing/latest/application/target-group-health-checks.html).
-// The health check is considered successful if at least one target within the
-// target group transitions to a healthy state.
-//
-// Services can have HTTP or HTTPS URL endpoints. For HTTPS URLs, publicly-signed
-// certificates are supported. Private Certificate Authorities (CAs) are permitted
-// only if the CA's domain is publicly resolvable.
+// When you create environments without a network bridge (CreateEnvironment:NetworkFabricType
+// (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/APIReference/API_CreateEnvironment.html#migrationhubrefactorspaces-CreateEnvironment-request-NetworkFabricType)
+// is NONE) and you use your own networking infrastructure, you need to configure
+// VPC to VPC connectivity (https://docs.aws.amazon.com/whitepapers/latest/aws-vpc-connectivity-options/amazon-vpc-to-amazon-vpc-connectivity-options.html)
+// between your network and the application proxy VPC. Route creation from the
+// application proxy to service endpoints will fail if your network is not configured
+// to connect to the application proxy VPC. For more information, see Create
+// a route (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/userguide/getting-started-create-role.html)
+// in the Refactor Spaces User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2518,6 +2553,97 @@ func (c *MigrationHubRefactorSpaces) UntagResourceWithContext(ctx aws.Context, i
 	return out, req.Send()
 }
 
+const opUpdateRoute = "UpdateRoute"
+
+// UpdateRouteRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateRoute operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateRoute for more information on using the UpdateRoute
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateRouteRequest method.
+//	req, resp := client.UpdateRouteRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/migration-hub-refactor-spaces-2021-10-26/UpdateRoute
+func (c *MigrationHubRefactorSpaces) UpdateRouteRequest(input *UpdateRouteInput) (req *request.Request, output *UpdateRouteOutput) {
+	op := &request.Operation{
+		Name:       opUpdateRoute,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/environments/{EnvironmentIdentifier}/applications/{ApplicationIdentifier}/routes/{RouteIdentifier}",
+	}
+
+	if input == nil {
+		input = &UpdateRouteInput{}
+	}
+
+	output = &UpdateRouteOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateRoute API operation for AWS Migration Hub Refactor Spaces.
+//
+// Updates an Amazon Web Services Migration Hub Refactor Spaces route.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Migration Hub Refactor Spaces's
+// API operation UpdateRoute for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The request references a resource that does not exist.
+//
+//   - InternalServerException
+//     An unexpected error occurred while processing the request.
+//
+//   - ValidationException
+//     The input does not satisfy the constraints specified by an Amazon Web Service.
+//
+//   - ThrottlingException
+//     Request was denied because the request was throttled.
+//
+//   - AccessDeniedException
+//     The user does not have sufficient access to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/migration-hub-refactor-spaces-2021-10-26/UpdateRoute
+func (c *MigrationHubRefactorSpaces) UpdateRoute(input *UpdateRouteInput) (*UpdateRouteOutput, error) {
+	req, out := c.UpdateRouteRequest(input)
+	return out, req.Send()
+}
+
+// UpdateRouteWithContext is the same as UpdateRoute with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateRoute for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MigrationHubRefactorSpaces) UpdateRouteWithContext(ctx aws.Context, input *UpdateRouteInput, opts ...request.Option) (*UpdateRouteOutput, error) {
+	req, out := c.UpdateRouteRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // The user does not have sufficient access to perform this action.
 type AccessDeniedException struct {
 	_            struct{}                  `type:"structure"`
@@ -2679,8 +2805,12 @@ type ApiGatewayProxyInput_ struct {
 	//
 	// If the value is set to PRIVATE in the request, this creates a private API
 	// endpoint that is isolated from the public internet. The private endpoint
-	// can only be accessed by using Amazon Virtual Private Cloud (Amazon VPC) endpoints
-	// for Amazon API Gateway that have been granted access.
+	// can only be accessed by using Amazon Virtual Private Cloud (Amazon VPC) interface
+	// endpoints for the Amazon API Gateway that has been granted access. For more
+	// information about creating a private connection with Refactor Spaces and
+	// interface endpoint (Amazon Web Services PrivateLink) availability, see Access
+	// Refactor Spaces using an interface endpoint (Amazon Web Services PrivateLink)
+	// (https://docs.aws.amazon.com/migrationhub-refactor-spaces/latest/userguide/vpc-interface-endpoints.html).
 	EndpointType *string `type:"string" enum:"ApiGatewayEndpointType"`
 
 	// The name of the API Gateway stage. The name defaults to prod.
@@ -3565,6 +3695,9 @@ type CreateRouteInput struct {
 	// of the request.
 	ClientToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
+	// Configuration for the default route type.
+	DefaultRoute *DefaultRouteInput_ `type:"structure"`
+
 	// The ID of the environment in which the route is created.
 	//
 	// EnvironmentIdentifier is a required field
@@ -3665,6 +3798,12 @@ func (s *CreateRouteInput) SetClientToken(v string) *CreateRouteInput {
 	return s
 }
 
+// SetDefaultRoute sets the DefaultRoute field's value.
+func (s *CreateRouteInput) SetDefaultRoute(v *DefaultRouteInput_) *CreateRouteInput {
+	s.DefaultRoute = v
+	return s
+}
+
 // SetEnvironmentIdentifier sets the EnvironmentIdentifier field's value.
 func (s *CreateRouteInput) SetEnvironmentIdentifier(v string) *CreateRouteInput {
 	s.EnvironmentIdentifier = &v
@@ -3728,7 +3867,8 @@ type CreateRouteOutput struct {
 	// route is forwarded to this service.
 	ServiceId *string `min:"14" type:"string"`
 
-	// The current state of the route.
+	// The current state of the route. Activation state only allows ACTIVE or INACTIVE
+	// as user inputs. FAILED is a route state that is system generated.
 	State *string `type:"string" enum:"RouteState"`
 
 	// The tags assigned to the created route. A tag is a label that you assign
@@ -3739,7 +3879,7 @@ type CreateRouteOutput struct {
 	// String and GoString methods.
 	Tags map[string]*string `type:"map" sensitive:"true"`
 
-	// onfiguration for the URI path route type.
+	// Configuration for the URI path route type.
 	UriPathRoute *UriPathRouteInput_ `type:"structure"`
 }
 
@@ -3875,7 +4015,10 @@ type CreateServiceInput struct {
 	// String and GoString methods.
 	Tags map[string]*string `type:"map" sensitive:"true"`
 
-	// The configuration for the URL endpoint type.
+	// The configuration for the URL endpoint type. When creating a route to a service,
+	// Refactor Spaces automatically resolves the address in the UrlEndpointInput
+	// object URL when the Domain Name System (DNS) time-to-live (TTL) expires,
+	// or every 60 seconds for TTLs less than 60 seconds.
 	UrlEndpoint *UrlEndpointInput_ `type:"structure"`
 
 	// The ID of the VPC.
@@ -4178,6 +4321,39 @@ func (s *CreateServiceOutput) SetUrlEndpoint(v *UrlEndpointInput_) *CreateServic
 // SetVpcId sets the VpcId field's value.
 func (s *CreateServiceOutput) SetVpcId(v string) *CreateServiceOutput {
 	s.VpcId = &v
+	return s
+}
+
+// The configuration for the default route type.
+type DefaultRouteInput_ struct {
+	_ struct{} `type:"structure"`
+
+	// If set to ACTIVE, traffic is forwarded to this route’s service after the
+	// route is created.
+	ActivationState *string `type:"string" enum:"RouteActivationState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DefaultRouteInput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DefaultRouteInput_) GoString() string {
+	return s.String()
+}
+
+// SetActivationState sets the ActivationState field's value.
+func (s *DefaultRouteInput_) SetActivationState(v string) *DefaultRouteInput_ {
+	s.ActivationState = &v
 	return s
 }
 
@@ -4882,7 +5058,7 @@ type EnvironmentSummary struct {
 	// String and GoString methods.
 	Tags map[string]*string `type:"map" sensitive:"true"`
 
-	// The ID of the transit gateway set up by the environment.
+	// The ID of the Transit Gateway set up by the environment.
 	TransitGatewayId *string `min:"21" type:"string"`
 }
 
@@ -5450,7 +5626,7 @@ type GetEnvironmentOutput struct {
 	// String and GoString methods.
 	Tags map[string]*string `type:"map" sensitive:"true"`
 
-	// The ID of the transit gateway set up by the environment.
+	// The ID of the Transit Gateway set up by the environment, if applicable.
 	TransitGatewayId *string `min:"21" type:"string"`
 }
 
@@ -5710,6 +5886,9 @@ func (s *GetRouteInput) SetRouteIdentifier(v string) *GetRouteInput {
 type GetRouteOutput struct {
 	_ struct{} `type:"structure"`
 
+	// If set to true, this option appends the source path to the service URL endpoint.
+	AppendSourcePath *bool `type:"boolean"`
+
 	// The ID of the application that the route belongs to.
 	ApplicationId *string `min:"14" type:"string"`
 
@@ -5762,8 +5941,10 @@ type GetRouteOutput struct {
 	// The unique identifier of the service.
 	ServiceId *string `min:"14" type:"string"`
 
-	// The path to use to match traffic. Paths must start with / and are relative
-	// to the base of the application.
+	// This is the path that Refactor Spaces uses to match traffic. Paths must start
+	// with / and are relative to the base of the application. To use path parameters
+	// in the source path, add a variable in curly braces. For example, the resource
+	// path {user} represents a path parameter called 'user'.
 	SourcePath *string `min:"1" type:"string"`
 
 	// The current state of the route.
@@ -5794,6 +5975,12 @@ func (s GetRouteOutput) String() string {
 // value will be replaced with "sensitive".
 func (s GetRouteOutput) GoString() string {
 	return s.String()
+}
+
+// SetAppendSourcePath sets the AppendSourcePath field's value.
+func (s *GetRouteOutput) SetAppendSourcePath(v bool) *GetRouteOutput {
+	s.AppendSourcePath = &v
+	return s
 }
 
 // SetApplicationId sets the ApplicationId field's value.
@@ -6332,7 +6519,7 @@ func (s *LambdaEndpointConfig) SetArn(v string) *LambdaEndpointConfig {
 type LambdaEndpointInput_ struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the Lambda endpoint.
+	// The Amazon Resource Name (ARN) of the Lambda function or alias.
 	//
 	// Arn is a required field
 	Arn *string `min:"1" type:"string" required:"true"`
@@ -7248,6 +7435,9 @@ func (s *ResourceNotFoundException) RequestID() string {
 type RouteSummary struct {
 	_ struct{} `type:"structure"`
 
+	// If set to true, this option appends the source path to the service URL endpoint.
+	AppendSourcePath *bool `type:"boolean"`
+
 	// The unique identifier of the application.
 	ApplicationId *string `min:"14" type:"string"`
 
@@ -7294,8 +7484,10 @@ type RouteSummary struct {
 	// The unique identifier of the service.
 	ServiceId *string `min:"14" type:"string"`
 
-	// The path to use to match traffic. Paths must start with / and are relative
-	// to the base of the application.
+	// This is the path that Refactor Spaces uses to match traffic. Paths must start
+	// with / and are relative to the base of the application. To use path parameters
+	// in the source path, add a variable in curly braces. For example, the resource
+	// path {user} represents a path parameter called 'user'.
 	SourcePath *string `min:"1" type:"string"`
 
 	// The current state of the route.
@@ -7325,6 +7517,12 @@ func (s RouteSummary) String() string {
 // value will be replaced with "sensitive".
 func (s RouteSummary) GoString() string {
 	return s.String()
+}
+
+// SetAppendSourcePath sets the AppendSourcePath field's value.
+func (s *RouteSummary) SetAppendSourcePath(v bool) *RouteSummary {
+	s.AppendSourcePath = &v
+	return s
 }
 
 // SetApplicationId sets the ApplicationId field's value.
@@ -7696,7 +7894,7 @@ func (s *ServiceSummary) SetVpcId(v string) *ServiceSummary {
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the resource
+	// The Amazon Resource Name (ARN) of the resource.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"ResourceArn" type:"string" required:"true"`
@@ -7946,15 +8144,195 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateRouteInput struct {
+	_ struct{} `type:"structure"`
+
+	// If set to ACTIVE, traffic is forwarded to this route’s service after the
+	// route is updated.
+	//
+	// ActivationState is a required field
+	ActivationState *string `type:"string" required:"true" enum:"RouteActivationState"`
+
+	// The ID of the application within which the route is being updated.
+	//
+	// ApplicationIdentifier is a required field
+	ApplicationIdentifier *string `location:"uri" locationName:"ApplicationIdentifier" min:"14" type:"string" required:"true"`
+
+	// The ID of the environment in which the route is being updated.
+	//
+	// EnvironmentIdentifier is a required field
+	EnvironmentIdentifier *string `location:"uri" locationName:"EnvironmentIdentifier" min:"14" type:"string" required:"true"`
+
+	// The unique identifier of the route to update.
+	//
+	// RouteIdentifier is a required field
+	RouteIdentifier *string `location:"uri" locationName:"RouteIdentifier" min:"14" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRouteInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRouteInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateRouteInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateRouteInput"}
+	if s.ActivationState == nil {
+		invalidParams.Add(request.NewErrParamRequired("ActivationState"))
+	}
+	if s.ApplicationIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationIdentifier"))
+	}
+	if s.ApplicationIdentifier != nil && len(*s.ApplicationIdentifier) < 14 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationIdentifier", 14))
+	}
+	if s.EnvironmentIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("EnvironmentIdentifier"))
+	}
+	if s.EnvironmentIdentifier != nil && len(*s.EnvironmentIdentifier) < 14 {
+		invalidParams.Add(request.NewErrParamMinLen("EnvironmentIdentifier", 14))
+	}
+	if s.RouteIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteIdentifier"))
+	}
+	if s.RouteIdentifier != nil && len(*s.RouteIdentifier) < 14 {
+		invalidParams.Add(request.NewErrParamMinLen("RouteIdentifier", 14))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetActivationState sets the ActivationState field's value.
+func (s *UpdateRouteInput) SetActivationState(v string) *UpdateRouteInput {
+	s.ActivationState = &v
+	return s
+}
+
+// SetApplicationIdentifier sets the ApplicationIdentifier field's value.
+func (s *UpdateRouteInput) SetApplicationIdentifier(v string) *UpdateRouteInput {
+	s.ApplicationIdentifier = &v
+	return s
+}
+
+// SetEnvironmentIdentifier sets the EnvironmentIdentifier field's value.
+func (s *UpdateRouteInput) SetEnvironmentIdentifier(v string) *UpdateRouteInput {
+	s.EnvironmentIdentifier = &v
+	return s
+}
+
+// SetRouteIdentifier sets the RouteIdentifier field's value.
+func (s *UpdateRouteInput) SetRouteIdentifier(v string) *UpdateRouteInput {
+	s.RouteIdentifier = &v
+	return s
+}
+
+type UpdateRouteOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the application in which the route is being updated.
+	ApplicationId *string `min:"14" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the route. The format for this ARN is arn:aws:refactor-spaces:region:account-id:resource-type/resource-id
+	// . For more information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// in the Amazon Web Services General Reference.
+	Arn *string `min:"20" type:"string"`
+
+	// A timestamp that indicates when the route was last updated.
+	LastUpdatedTime *time.Time `type:"timestamp"`
+
+	// The unique identifier of the route.
+	RouteId *string `min:"14" type:"string"`
+
+	// The ID of service in which the route was created. Traffic that matches this
+	// route is forwarded to this service.
+	ServiceId *string `min:"14" type:"string"`
+
+	// The current state of the route.
+	State *string `type:"string" enum:"RouteState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRouteOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateRouteOutput) GoString() string {
+	return s.String()
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *UpdateRouteOutput) SetApplicationId(v string) *UpdateRouteOutput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *UpdateRouteOutput) SetArn(v string) *UpdateRouteOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *UpdateRouteOutput) SetLastUpdatedTime(v time.Time) *UpdateRouteOutput {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetRouteId sets the RouteId field's value.
+func (s *UpdateRouteOutput) SetRouteId(v string) *UpdateRouteOutput {
+	s.RouteId = &v
+	return s
+}
+
+// SetServiceId sets the ServiceId field's value.
+func (s *UpdateRouteOutput) SetServiceId(v string) *UpdateRouteOutput {
+	s.ServiceId = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *UpdateRouteOutput) SetState(v string) *UpdateRouteOutput {
+	s.State = &v
+	return s
+}
+
 // The configuration for the URI path route type.
 type UriPathRouteInput_ struct {
 	_ struct{} `type:"structure"`
 
-	// Indicates whether traffic is forwarded to this route’s service after the
+	// If set to ACTIVE, traffic is forwarded to this route’s service after the
 	// route is created.
 	//
 	// ActivationState is a required field
 	ActivationState *string `type:"string" required:"true" enum:"RouteActivationState"`
+
+	// If set to true, this option appends the source path to the service URL endpoint.
+	AppendSourcePath *bool `type:"boolean"`
 
 	// Indicates whether to match all subpaths of the given source path. If this
 	// value is false, requests must match the source path exactly before they are
@@ -7966,8 +8344,10 @@ type UriPathRouteInput_ struct {
 	// service.
 	Methods []*string `type:"list" enum:"HttpMethod"`
 
-	// The path to use to match traffic. Paths must start with / and are relative
-	// to the base of the application.
+	// This is the path that Refactor Spaces uses to match traffic. Paths must start
+	// with / and are relative to the base of the application. To use path parameters
+	// in the source path, add a variable in curly braces. For example, the resource
+	// path {user} represents a path parameter called 'user'.
 	//
 	// SourcePath is a required field
 	SourcePath *string `min:"1" type:"string" required:"true"`
@@ -8013,6 +8393,12 @@ func (s *UriPathRouteInput_) Validate() error {
 // SetActivationState sets the ActivationState field's value.
 func (s *UriPathRouteInput_) SetActivationState(v string) *UriPathRouteInput_ {
 	s.ActivationState = &v
+	return s
+}
+
+// SetAppendSourcePath sets the AppendSourcePath field's value.
+func (s *UriPathRouteInput_) SetAppendSourcePath(v bool) *UriPathRouteInput_ {
+	s.AppendSourcePath = &v
 	return s
 }
 
@@ -8501,12 +8887,16 @@ func HttpMethod_Values() []string {
 const (
 	// NetworkFabricTypeTransitGateway is a NetworkFabricType enum value
 	NetworkFabricTypeTransitGateway = "TRANSIT_GATEWAY"
+
+	// NetworkFabricTypeNone is a NetworkFabricType enum value
+	NetworkFabricTypeNone = "NONE"
 )
 
 // NetworkFabricType_Values returns all elements of the NetworkFabricType enum
 func NetworkFabricType_Values() []string {
 	return []string{
 		NetworkFabricTypeTransitGateway,
+		NetworkFabricTypeNone,
 	}
 }
 
@@ -8525,12 +8915,16 @@ func ProxyType_Values() []string {
 const (
 	// RouteActivationStateActive is a RouteActivationState enum value
 	RouteActivationStateActive = "ACTIVE"
+
+	// RouteActivationStateInactive is a RouteActivationState enum value
+	RouteActivationStateInactive = "INACTIVE"
 )
 
 // RouteActivationState_Values returns all elements of the RouteActivationState enum
 func RouteActivationState_Values() []string {
 	return []string{
 		RouteActivationStateActive,
+		RouteActivationStateInactive,
 	}
 }
 

@@ -112,6 +112,10 @@ type WorkDocsAPI interface {
 	DeleteDocumentWithContext(aws.Context, *workdocs.DeleteDocumentInput, ...request.Option) (*workdocs.DeleteDocumentOutput, error)
 	DeleteDocumentRequest(*workdocs.DeleteDocumentInput) (*request.Request, *workdocs.DeleteDocumentOutput)
 
+	DeleteDocumentVersion(*workdocs.DeleteDocumentVersionInput) (*workdocs.DeleteDocumentVersionOutput, error)
+	DeleteDocumentVersionWithContext(aws.Context, *workdocs.DeleteDocumentVersionInput, ...request.Option) (*workdocs.DeleteDocumentVersionOutput, error)
+	DeleteDocumentVersionRequest(*workdocs.DeleteDocumentVersionInput) (*request.Request, *workdocs.DeleteDocumentVersionOutput)
+
 	DeleteFolder(*workdocs.DeleteFolderInput) (*workdocs.DeleteFolderOutput, error)
 	DeleteFolderWithContext(aws.Context, *workdocs.DeleteFolderInput, ...request.Option) (*workdocs.DeleteFolderOutput, error)
 	DeleteFolderRequest(*workdocs.DeleteFolderInput) (*request.Request, *workdocs.DeleteFolderOutput)
@@ -136,9 +140,15 @@ type WorkDocsAPI interface {
 	DescribeActivitiesWithContext(aws.Context, *workdocs.DescribeActivitiesInput, ...request.Option) (*workdocs.DescribeActivitiesOutput, error)
 	DescribeActivitiesRequest(*workdocs.DescribeActivitiesInput) (*request.Request, *workdocs.DescribeActivitiesOutput)
 
+	DescribeActivitiesPages(*workdocs.DescribeActivitiesInput, func(*workdocs.DescribeActivitiesOutput, bool) bool) error
+	DescribeActivitiesPagesWithContext(aws.Context, *workdocs.DescribeActivitiesInput, func(*workdocs.DescribeActivitiesOutput, bool) bool, ...request.Option) error
+
 	DescribeComments(*workdocs.DescribeCommentsInput) (*workdocs.DescribeCommentsOutput, error)
 	DescribeCommentsWithContext(aws.Context, *workdocs.DescribeCommentsInput, ...request.Option) (*workdocs.DescribeCommentsOutput, error)
 	DescribeCommentsRequest(*workdocs.DescribeCommentsInput) (*request.Request, *workdocs.DescribeCommentsOutput)
+
+	DescribeCommentsPages(*workdocs.DescribeCommentsInput, func(*workdocs.DescribeCommentsOutput, bool) bool) error
+	DescribeCommentsPagesWithContext(aws.Context, *workdocs.DescribeCommentsInput, func(*workdocs.DescribeCommentsOutput, bool) bool, ...request.Option) error
 
 	DescribeDocumentVersions(*workdocs.DescribeDocumentVersionsInput) (*workdocs.DescribeDocumentVersionsOutput, error)
 	DescribeDocumentVersionsWithContext(aws.Context, *workdocs.DescribeDocumentVersionsInput, ...request.Option) (*workdocs.DescribeDocumentVersionsOutput, error)
@@ -158,17 +168,29 @@ type WorkDocsAPI interface {
 	DescribeGroupsWithContext(aws.Context, *workdocs.DescribeGroupsInput, ...request.Option) (*workdocs.DescribeGroupsOutput, error)
 	DescribeGroupsRequest(*workdocs.DescribeGroupsInput) (*request.Request, *workdocs.DescribeGroupsOutput)
 
+	DescribeGroupsPages(*workdocs.DescribeGroupsInput, func(*workdocs.DescribeGroupsOutput, bool) bool) error
+	DescribeGroupsPagesWithContext(aws.Context, *workdocs.DescribeGroupsInput, func(*workdocs.DescribeGroupsOutput, bool) bool, ...request.Option) error
+
 	DescribeNotificationSubscriptions(*workdocs.DescribeNotificationSubscriptionsInput) (*workdocs.DescribeNotificationSubscriptionsOutput, error)
 	DescribeNotificationSubscriptionsWithContext(aws.Context, *workdocs.DescribeNotificationSubscriptionsInput, ...request.Option) (*workdocs.DescribeNotificationSubscriptionsOutput, error)
 	DescribeNotificationSubscriptionsRequest(*workdocs.DescribeNotificationSubscriptionsInput) (*request.Request, *workdocs.DescribeNotificationSubscriptionsOutput)
+
+	DescribeNotificationSubscriptionsPages(*workdocs.DescribeNotificationSubscriptionsInput, func(*workdocs.DescribeNotificationSubscriptionsOutput, bool) bool) error
+	DescribeNotificationSubscriptionsPagesWithContext(aws.Context, *workdocs.DescribeNotificationSubscriptionsInput, func(*workdocs.DescribeNotificationSubscriptionsOutput, bool) bool, ...request.Option) error
 
 	DescribeResourcePermissions(*workdocs.DescribeResourcePermissionsInput) (*workdocs.DescribeResourcePermissionsOutput, error)
 	DescribeResourcePermissionsWithContext(aws.Context, *workdocs.DescribeResourcePermissionsInput, ...request.Option) (*workdocs.DescribeResourcePermissionsOutput, error)
 	DescribeResourcePermissionsRequest(*workdocs.DescribeResourcePermissionsInput) (*request.Request, *workdocs.DescribeResourcePermissionsOutput)
 
+	DescribeResourcePermissionsPages(*workdocs.DescribeResourcePermissionsInput, func(*workdocs.DescribeResourcePermissionsOutput, bool) bool) error
+	DescribeResourcePermissionsPagesWithContext(aws.Context, *workdocs.DescribeResourcePermissionsInput, func(*workdocs.DescribeResourcePermissionsOutput, bool) bool, ...request.Option) error
+
 	DescribeRootFolders(*workdocs.DescribeRootFoldersInput) (*workdocs.DescribeRootFoldersOutput, error)
 	DescribeRootFoldersWithContext(aws.Context, *workdocs.DescribeRootFoldersInput, ...request.Option) (*workdocs.DescribeRootFoldersOutput, error)
 	DescribeRootFoldersRequest(*workdocs.DescribeRootFoldersInput) (*request.Request, *workdocs.DescribeRootFoldersOutput)
+
+	DescribeRootFoldersPages(*workdocs.DescribeRootFoldersInput, func(*workdocs.DescribeRootFoldersOutput, bool) bool) error
+	DescribeRootFoldersPagesWithContext(aws.Context, *workdocs.DescribeRootFoldersInput, func(*workdocs.DescribeRootFoldersOutput, bool) bool, ...request.Option) error
 
 	DescribeUsers(*workdocs.DescribeUsersInput) (*workdocs.DescribeUsersOutput, error)
 	DescribeUsersWithContext(aws.Context, *workdocs.DescribeUsersInput, ...request.Option) (*workdocs.DescribeUsersOutput, error)
@@ -216,6 +238,17 @@ type WorkDocsAPI interface {
 	RemoveResourcePermission(*workdocs.RemoveResourcePermissionInput) (*workdocs.RemoveResourcePermissionOutput, error)
 	RemoveResourcePermissionWithContext(aws.Context, *workdocs.RemoveResourcePermissionInput, ...request.Option) (*workdocs.RemoveResourcePermissionOutput, error)
 	RemoveResourcePermissionRequest(*workdocs.RemoveResourcePermissionInput) (*request.Request, *workdocs.RemoveResourcePermissionOutput)
+
+	RestoreDocumentVersions(*workdocs.RestoreDocumentVersionsInput) (*workdocs.RestoreDocumentVersionsOutput, error)
+	RestoreDocumentVersionsWithContext(aws.Context, *workdocs.RestoreDocumentVersionsInput, ...request.Option) (*workdocs.RestoreDocumentVersionsOutput, error)
+	RestoreDocumentVersionsRequest(*workdocs.RestoreDocumentVersionsInput) (*request.Request, *workdocs.RestoreDocumentVersionsOutput)
+
+	SearchResources(*workdocs.SearchResourcesInput) (*workdocs.SearchResourcesOutput, error)
+	SearchResourcesWithContext(aws.Context, *workdocs.SearchResourcesInput, ...request.Option) (*workdocs.SearchResourcesOutput, error)
+	SearchResourcesRequest(*workdocs.SearchResourcesInput) (*request.Request, *workdocs.SearchResourcesOutput)
+
+	SearchResourcesPages(*workdocs.SearchResourcesInput, func(*workdocs.SearchResourcesOutput, bool) bool) error
+	SearchResourcesPagesWithContext(aws.Context, *workdocs.SearchResourcesInput, func(*workdocs.SearchResourcesOutput, bool) bool, ...request.Option) error
 
 	UpdateDocument(*workdocs.UpdateDocumentInput) (*workdocs.UpdateDocumentOutput, error)
 	UpdateDocumentWithContext(aws.Context, *workdocs.UpdateDocumentInput, ...request.Option) (*workdocs.UpdateDocumentOutput, error)

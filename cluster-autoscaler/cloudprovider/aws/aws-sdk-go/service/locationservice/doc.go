@@ -3,8 +3,8 @@
 // Package locationservice provides the client and types for making API
 // requests to Amazon Location Service.
 //
-// Suite of geospatial services including Maps, Places, Routes, Tracking, and
-// Geofencing
+// "Suite of geospatial services including Maps, Places, Routes, Tracking, and
+// Geofencing"
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/location-2020-11-19 for more information on this service.
 //

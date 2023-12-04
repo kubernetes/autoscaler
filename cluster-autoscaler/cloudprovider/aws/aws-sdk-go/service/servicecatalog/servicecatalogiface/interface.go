@@ -392,6 +392,18 @@ type ServiceCatalogAPI interface {
 	ListTagOptionsPages(*servicecatalog.ListTagOptionsInput, func(*servicecatalog.ListTagOptionsOutput, bool) bool) error
 	ListTagOptionsPagesWithContext(aws.Context, *servicecatalog.ListTagOptionsInput, func(*servicecatalog.ListTagOptionsOutput, bool) bool, ...request.Option) error
 
+	NotifyProvisionProductEngineWorkflowResult(*servicecatalog.NotifyProvisionProductEngineWorkflowResultInput) (*servicecatalog.NotifyProvisionProductEngineWorkflowResultOutput, error)
+	NotifyProvisionProductEngineWorkflowResultWithContext(aws.Context, *servicecatalog.NotifyProvisionProductEngineWorkflowResultInput, ...request.Option) (*servicecatalog.NotifyProvisionProductEngineWorkflowResultOutput, error)
+	NotifyProvisionProductEngineWorkflowResultRequest(*servicecatalog.NotifyProvisionProductEngineWorkflowResultInput) (*request.Request, *servicecatalog.NotifyProvisionProductEngineWorkflowResultOutput)
+
+	NotifyTerminateProvisionedProductEngineWorkflowResult(*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultInput) (*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyTerminateProvisionedProductEngineWorkflowResultWithContext(aws.Context, *servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultInput, ...request.Option) (*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyTerminateProvisionedProductEngineWorkflowResultRequest(*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultInput) (*request.Request, *servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultOutput)
+
+	NotifyUpdateProvisionedProductEngineWorkflowResult(*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultInput) (*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyUpdateProvisionedProductEngineWorkflowResultWithContext(aws.Context, *servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultInput, ...request.Option) (*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyUpdateProvisionedProductEngineWorkflowResultRequest(*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultInput) (*request.Request, *servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultOutput)
+
 	ProvisionProduct(*servicecatalog.ProvisionProductInput) (*servicecatalog.ProvisionProductOutput, error)
 	ProvisionProductWithContext(aws.Context, *servicecatalog.ProvisionProductInput, ...request.Option) (*servicecatalog.ProvisionProductOutput, error)
 	ProvisionProductRequest(*servicecatalog.ProvisionProductInput) (*request.Request, *servicecatalog.ProvisionProductOutput)

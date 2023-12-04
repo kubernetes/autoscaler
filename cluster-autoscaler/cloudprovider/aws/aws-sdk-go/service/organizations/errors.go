@@ -66,7 +66,7 @@ const (
 	//
 	// You can't invite an existing account to your organization until you verify
 	// that you own the email address associated with the management account. For
-	// more information, see Email Address Verification (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_create.html#about-email-verification)
+	// more information, see Email address verification (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_create.html#about-email-verification)
 	// in the Organizations User Guide.
 	ErrCodeAccountOwnerNotVerifiedException = "AccountOwnerNotVerifiedException"
 
@@ -126,9 +126,13 @@ const (
 	//    * ACCOUNT_CREATION_RATE_LIMIT_EXCEEDED: You attempted to exceed the number
 	//    of accounts that you can create in one day.
 	//
+	//    * ACCOUNT_CREATION_NOT_COMPLETE: Your account setup isn't complete or
+	//    your account isn't fully active. You must complete the account setup before
+	//    you create an organization.
+	//
 	//    * ACCOUNT_NUMBER_LIMIT_EXCEEDED: You attempted to exceed the limit on
 	//    the number of accounts in an organization. If you need more accounts,
-	//    contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/)
+	//    contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/)
 	//    to request an increase in your limit. Or the number of invitations that
 	//    you tried to send would cause you to exceed the limit of accounts in your
 	//    organization. Send fewer invitations or contact Amazon Web Services Support
@@ -136,7 +140,10 @@ const (
 	//    still count toward your limit. If you get this exception when running
 	//    a command immediately after creating the organization, wait one hour and
 	//    try again. After an hour, if the command continues to fail with this error,
-	//    contact Amazon Web Services Support (https://docs.aws.amazon.com/support/home#/).
+	//    contact Amazon Web Services Support (https://console.aws.amazon.com/support/home#/).
+	//
+	//    * CANNOT_REGISTER_SUSPENDED_ACCOUNT_AS_DELEGATED_ADMINISTRATOR: You cannot
+	//    register a suspended account as a delegated administrator.
 	//
 	//    * CANNOT_REGISTER_MASTER_AS_DELEGATED_ADMINISTRATOR: You attempted to
 	//    register the management account of the organization as a delegated administrator
@@ -203,9 +210,8 @@ const (
 	//
 	//    * MASTER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To create an organization
 	//    with this management account, you first must associate a valid payment
-	//    instrument, such as a credit card, with the account. Follow the steps
-	//    at To leave an organization when all required account information has
-	//    not yet been provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+	//    instrument, such as a credit card, with the account. For more information,
+	//    see Considerations before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 	//    in the Organizations User Guide.
 	//
 	//    * MAX_DELEGATED_ADMINISTRATORS_FOR_SERVICE_LIMIT_EXCEEDED: You attempted
@@ -221,9 +227,8 @@ const (
 	//
 	//    * MEMBER_ACCOUNT_PAYMENT_INSTRUMENT_REQUIRED: To complete this operation
 	//    with this member account, you first must associate a valid payment instrument,
-	//    such as a credit card, with the account. Follow the steps at To leave
-	//    an organization when all required account information has not yet been
-	//    provided (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_accounts_remove.html#leave-without-all-info)
+	//    such as a credit card, with the account. For more information, see Considerations
+	//    before removing an account from an organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_account-before-remove.html)
 	//    in the Organizations User Guide.
 	//
 	//    * MIN_POLICY_TYPE_ATTACHMENT_LIMIT_EXCEEDED: You attempted to detach a
@@ -348,7 +353,7 @@ const (
 	//    accounts still count toward your limit. If you get this exception immediately
 	//    after creating the organization, wait one hour and try again. If after
 	//    an hour it continues to fail with this error, contact Amazon Web Services
-	//    Support (https://docs.aws.amazon.com/support/home#/).
+	//    Support (https://console.aws.amazon.com/support/home#/).
 	//
 	//    * ALREADY_IN_AN_ORGANIZATION: The handshake request is invalid because
 	//    the invited account is already a member of an organization.
@@ -482,7 +487,7 @@ const (
 	//
 	// The provided policy document doesn't meet the requirements of the specified
 	// policy type. For example, the syntax might be incorrect. For details about
-	// service control policy syntax, see Service Control Policy Syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_scp-syntax.html)
+	// service control policy syntax, see SCP syntax (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_scps_syntax.html)
 	// in the Organizations User Guide.
 	ErrCodeMalformedPolicyDocumentException = "MalformedPolicyDocumentException"
 
@@ -498,8 +503,7 @@ const (
 	// "OrganizationNotEmptyException".
 	//
 	// The organization isn't empty. To delete an organization, you must first remove
-	// all accounts except the management account, delete all OUs, and delete all
-	// policies.
+	// all accounts except the management account.
 	ErrCodeOrganizationNotEmptyException = "OrganizationNotEmptyException"
 
 	// ErrCodeOrganizationalUnitNotEmptyException for service response error code
@@ -559,7 +563,7 @@ const (
 	// You can't use the specified policy type with the feature set currently enabled
 	// for this organization. For example, you can enable SCPs only after you enable
 	// all features in the organization. For more information, see Managing Organizations
-	// Policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
+	// policies (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies.html#enable_policies_on_root)in
 	// the Organizations User Guide.
 	ErrCodePolicyTypeNotAvailableForOrganizationException = "PolicyTypeNotAvailableForOrganizationException"
 
@@ -568,10 +572,16 @@ const (
 	//
 	// The specified policy type isn't currently enabled in this root. You can't
 	// attach policies of the specified type to entities in a root until you enable
-	// that type in the root. For more information, see Enabling All Features in
-	// Your Organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
+	// that type in the root. For more information, see Enabling all features in
+	// your organization (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_org_support-all-features.html)
 	// in the Organizations User Guide.
 	ErrCodePolicyTypeNotEnabledException = "PolicyTypeNotEnabledException"
+
+	// ErrCodeResourcePolicyNotFoundException for service response error code
+	// "ResourcePolicyNotFoundException".
+	//
+	// We can't find a resource policy request with the parameter that you specified.
+	ErrCodeResourcePolicyNotFoundException = "ResourcePolicyNotFoundException"
 
 	// ErrCodeRootNotFoundException for service response error code
 	// "RootNotFoundException".
@@ -605,8 +615,8 @@ const (
 	// helps protect against denial-of-service attacks. Try again later.
 	//
 	// For information about quotas that affect Organizations, see Quotas for Organizations
-	// (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)in
-	// the Organizations User Guide.
+	// (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_reference_limits.html)
+	// in the Organizations User Guide.
 	ErrCodeTooManyRequestsException = "TooManyRequestsException"
 
 	// ErrCodeUnsupportedAPIEndpointException for service response error code
@@ -657,6 +667,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"PolicyTypeAlreadyEnabledException":              newErrorPolicyTypeAlreadyEnabledException,
 	"PolicyTypeNotAvailableForOrganizationException": newErrorPolicyTypeNotAvailableForOrganizationException,
 	"PolicyTypeNotEnabledException":                  newErrorPolicyTypeNotEnabledException,
+	"ResourcePolicyNotFoundException":                newErrorResourcePolicyNotFoundException,
 	"RootNotFoundException":                          newErrorRootNotFoundException,
 	"ServiceException":                               newErrorServiceException,
 	"SourceParentNotFoundException":                  newErrorSourceParentNotFoundException,

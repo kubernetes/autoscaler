@@ -238,9 +238,17 @@ type ECRAPI interface {
 	UntagResourceWithContext(aws.Context, *ecr.UntagResourceInput, ...request.Option) (*ecr.UntagResourceOutput, error)
 	UntagResourceRequest(*ecr.UntagResourceInput) (*request.Request, *ecr.UntagResourceOutput)
 
+	UpdatePullThroughCacheRule(*ecr.UpdatePullThroughCacheRuleInput) (*ecr.UpdatePullThroughCacheRuleOutput, error)
+	UpdatePullThroughCacheRuleWithContext(aws.Context, *ecr.UpdatePullThroughCacheRuleInput, ...request.Option) (*ecr.UpdatePullThroughCacheRuleOutput, error)
+	UpdatePullThroughCacheRuleRequest(*ecr.UpdatePullThroughCacheRuleInput) (*request.Request, *ecr.UpdatePullThroughCacheRuleOutput)
+
 	UploadLayerPart(*ecr.UploadLayerPartInput) (*ecr.UploadLayerPartOutput, error)
 	UploadLayerPartWithContext(aws.Context, *ecr.UploadLayerPartInput, ...request.Option) (*ecr.UploadLayerPartOutput, error)
 	UploadLayerPartRequest(*ecr.UploadLayerPartInput) (*request.Request, *ecr.UploadLayerPartOutput)
+
+	ValidatePullThroughCacheRule(*ecr.ValidatePullThroughCacheRuleInput) (*ecr.ValidatePullThroughCacheRuleOutput, error)
+	ValidatePullThroughCacheRuleWithContext(aws.Context, *ecr.ValidatePullThroughCacheRuleInput, ...request.Option) (*ecr.ValidatePullThroughCacheRuleOutput, error)
+	ValidatePullThroughCacheRuleRequest(*ecr.ValidatePullThroughCacheRuleInput) (*request.Request, *ecr.ValidatePullThroughCacheRuleOutput)
 
 	WaitUntilImageScanComplete(*ecr.DescribeImageScanFindingsInput) error
 	WaitUntilImageScanCompleteWithContext(aws.Context, *ecr.DescribeImageScanFindingsInput, ...request.WaiterOption) error

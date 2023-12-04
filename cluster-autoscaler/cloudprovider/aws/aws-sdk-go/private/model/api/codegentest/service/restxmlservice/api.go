@@ -101,6 +101,7 @@ func (c *RESTXMLService) EmptyStreamWithContext(ctx aws.Context, input *EmptyStr
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // EmptyStreamEventStream provides the event stream handling for the EmptyStream.
 //
@@ -326,6 +327,7 @@ func (c *RESTXMLService) GetEventStreamWithContext(ctx aws.Context, input *GetEv
 }
 
 var _ awserr.Error
+var _ time.Time
 
 // GetEventStreamEventStream provides the event stream handling for the GetEventStream.
 //

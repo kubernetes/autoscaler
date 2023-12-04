@@ -64,6 +64,10 @@ type AmplifyUIBuilderAPI interface {
 	CreateComponentWithContext(aws.Context, *amplifyuibuilder.CreateComponentInput, ...request.Option) (*amplifyuibuilder.CreateComponentOutput, error)
 	CreateComponentRequest(*amplifyuibuilder.CreateComponentInput) (*request.Request, *amplifyuibuilder.CreateComponentOutput)
 
+	CreateForm(*amplifyuibuilder.CreateFormInput) (*amplifyuibuilder.CreateFormOutput, error)
+	CreateFormWithContext(aws.Context, *amplifyuibuilder.CreateFormInput, ...request.Option) (*amplifyuibuilder.CreateFormOutput, error)
+	CreateFormRequest(*amplifyuibuilder.CreateFormInput) (*request.Request, *amplifyuibuilder.CreateFormOutput)
+
 	CreateTheme(*amplifyuibuilder.CreateThemeInput) (*amplifyuibuilder.CreateThemeOutput, error)
 	CreateThemeWithContext(aws.Context, *amplifyuibuilder.CreateThemeInput, ...request.Option) (*amplifyuibuilder.CreateThemeOutput, error)
 	CreateThemeRequest(*amplifyuibuilder.CreateThemeInput) (*request.Request, *amplifyuibuilder.CreateThemeOutput)
@@ -71,6 +75,10 @@ type AmplifyUIBuilderAPI interface {
 	DeleteComponent(*amplifyuibuilder.DeleteComponentInput) (*amplifyuibuilder.DeleteComponentOutput, error)
 	DeleteComponentWithContext(aws.Context, *amplifyuibuilder.DeleteComponentInput, ...request.Option) (*amplifyuibuilder.DeleteComponentOutput, error)
 	DeleteComponentRequest(*amplifyuibuilder.DeleteComponentInput) (*request.Request, *amplifyuibuilder.DeleteComponentOutput)
+
+	DeleteForm(*amplifyuibuilder.DeleteFormInput) (*amplifyuibuilder.DeleteFormOutput, error)
+	DeleteFormWithContext(aws.Context, *amplifyuibuilder.DeleteFormInput, ...request.Option) (*amplifyuibuilder.DeleteFormOutput, error)
+	DeleteFormRequest(*amplifyuibuilder.DeleteFormInput) (*request.Request, *amplifyuibuilder.DeleteFormOutput)
 
 	DeleteTheme(*amplifyuibuilder.DeleteThemeInput) (*amplifyuibuilder.DeleteThemeOutput, error)
 	DeleteThemeWithContext(aws.Context, *amplifyuibuilder.DeleteThemeInput, ...request.Option) (*amplifyuibuilder.DeleteThemeOutput, error)
@@ -87,6 +95,13 @@ type AmplifyUIBuilderAPI interface {
 	ExportComponentsPages(*amplifyuibuilder.ExportComponentsInput, func(*amplifyuibuilder.ExportComponentsOutput, bool) bool) error
 	ExportComponentsPagesWithContext(aws.Context, *amplifyuibuilder.ExportComponentsInput, func(*amplifyuibuilder.ExportComponentsOutput, bool) bool, ...request.Option) error
 
+	ExportForms(*amplifyuibuilder.ExportFormsInput) (*amplifyuibuilder.ExportFormsOutput, error)
+	ExportFormsWithContext(aws.Context, *amplifyuibuilder.ExportFormsInput, ...request.Option) (*amplifyuibuilder.ExportFormsOutput, error)
+	ExportFormsRequest(*amplifyuibuilder.ExportFormsInput) (*request.Request, *amplifyuibuilder.ExportFormsOutput)
+
+	ExportFormsPages(*amplifyuibuilder.ExportFormsInput, func(*amplifyuibuilder.ExportFormsOutput, bool) bool) error
+	ExportFormsPagesWithContext(aws.Context, *amplifyuibuilder.ExportFormsInput, func(*amplifyuibuilder.ExportFormsOutput, bool) bool, ...request.Option) error
+
 	ExportThemes(*amplifyuibuilder.ExportThemesInput) (*amplifyuibuilder.ExportThemesOutput, error)
 	ExportThemesWithContext(aws.Context, *amplifyuibuilder.ExportThemesInput, ...request.Option) (*amplifyuibuilder.ExportThemesOutput, error)
 	ExportThemesRequest(*amplifyuibuilder.ExportThemesInput) (*request.Request, *amplifyuibuilder.ExportThemesOutput)
@@ -94,13 +109,32 @@ type AmplifyUIBuilderAPI interface {
 	ExportThemesPages(*amplifyuibuilder.ExportThemesInput, func(*amplifyuibuilder.ExportThemesOutput, bool) bool) error
 	ExportThemesPagesWithContext(aws.Context, *amplifyuibuilder.ExportThemesInput, func(*amplifyuibuilder.ExportThemesOutput, bool) bool, ...request.Option) error
 
+	GetCodegenJob(*amplifyuibuilder.GetCodegenJobInput) (*amplifyuibuilder.GetCodegenJobOutput, error)
+	GetCodegenJobWithContext(aws.Context, *amplifyuibuilder.GetCodegenJobInput, ...request.Option) (*amplifyuibuilder.GetCodegenJobOutput, error)
+	GetCodegenJobRequest(*amplifyuibuilder.GetCodegenJobInput) (*request.Request, *amplifyuibuilder.GetCodegenJobOutput)
+
 	GetComponent(*amplifyuibuilder.GetComponentInput) (*amplifyuibuilder.GetComponentOutput, error)
 	GetComponentWithContext(aws.Context, *amplifyuibuilder.GetComponentInput, ...request.Option) (*amplifyuibuilder.GetComponentOutput, error)
 	GetComponentRequest(*amplifyuibuilder.GetComponentInput) (*request.Request, *amplifyuibuilder.GetComponentOutput)
 
+	GetForm(*amplifyuibuilder.GetFormInput) (*amplifyuibuilder.GetFormOutput, error)
+	GetFormWithContext(aws.Context, *amplifyuibuilder.GetFormInput, ...request.Option) (*amplifyuibuilder.GetFormOutput, error)
+	GetFormRequest(*amplifyuibuilder.GetFormInput) (*request.Request, *amplifyuibuilder.GetFormOutput)
+
+	GetMetadata(*amplifyuibuilder.GetMetadataInput) (*amplifyuibuilder.GetMetadataOutput, error)
+	GetMetadataWithContext(aws.Context, *amplifyuibuilder.GetMetadataInput, ...request.Option) (*amplifyuibuilder.GetMetadataOutput, error)
+	GetMetadataRequest(*amplifyuibuilder.GetMetadataInput) (*request.Request, *amplifyuibuilder.GetMetadataOutput)
+
 	GetTheme(*amplifyuibuilder.GetThemeInput) (*amplifyuibuilder.GetThemeOutput, error)
 	GetThemeWithContext(aws.Context, *amplifyuibuilder.GetThemeInput, ...request.Option) (*amplifyuibuilder.GetThemeOutput, error)
 	GetThemeRequest(*amplifyuibuilder.GetThemeInput) (*request.Request, *amplifyuibuilder.GetThemeOutput)
+
+	ListCodegenJobs(*amplifyuibuilder.ListCodegenJobsInput) (*amplifyuibuilder.ListCodegenJobsOutput, error)
+	ListCodegenJobsWithContext(aws.Context, *amplifyuibuilder.ListCodegenJobsInput, ...request.Option) (*amplifyuibuilder.ListCodegenJobsOutput, error)
+	ListCodegenJobsRequest(*amplifyuibuilder.ListCodegenJobsInput) (*request.Request, *amplifyuibuilder.ListCodegenJobsOutput)
+
+	ListCodegenJobsPages(*amplifyuibuilder.ListCodegenJobsInput, func(*amplifyuibuilder.ListCodegenJobsOutput, bool) bool) error
+	ListCodegenJobsPagesWithContext(aws.Context, *amplifyuibuilder.ListCodegenJobsInput, func(*amplifyuibuilder.ListCodegenJobsOutput, bool) bool, ...request.Option) error
 
 	ListComponents(*amplifyuibuilder.ListComponentsInput) (*amplifyuibuilder.ListComponentsOutput, error)
 	ListComponentsWithContext(aws.Context, *amplifyuibuilder.ListComponentsInput, ...request.Option) (*amplifyuibuilder.ListComponentsOutput, error)
@@ -109,6 +143,13 @@ type AmplifyUIBuilderAPI interface {
 	ListComponentsPages(*amplifyuibuilder.ListComponentsInput, func(*amplifyuibuilder.ListComponentsOutput, bool) bool) error
 	ListComponentsPagesWithContext(aws.Context, *amplifyuibuilder.ListComponentsInput, func(*amplifyuibuilder.ListComponentsOutput, bool) bool, ...request.Option) error
 
+	ListForms(*amplifyuibuilder.ListFormsInput) (*amplifyuibuilder.ListFormsOutput, error)
+	ListFormsWithContext(aws.Context, *amplifyuibuilder.ListFormsInput, ...request.Option) (*amplifyuibuilder.ListFormsOutput, error)
+	ListFormsRequest(*amplifyuibuilder.ListFormsInput) (*request.Request, *amplifyuibuilder.ListFormsOutput)
+
+	ListFormsPages(*amplifyuibuilder.ListFormsInput, func(*amplifyuibuilder.ListFormsOutput, bool) bool) error
+	ListFormsPagesWithContext(aws.Context, *amplifyuibuilder.ListFormsInput, func(*amplifyuibuilder.ListFormsOutput, bool) bool, ...request.Option) error
+
 	ListThemes(*amplifyuibuilder.ListThemesInput) (*amplifyuibuilder.ListThemesOutput, error)
 	ListThemesWithContext(aws.Context, *amplifyuibuilder.ListThemesInput, ...request.Option) (*amplifyuibuilder.ListThemesOutput, error)
 	ListThemesRequest(*amplifyuibuilder.ListThemesInput) (*request.Request, *amplifyuibuilder.ListThemesOutput)
@@ -116,13 +157,25 @@ type AmplifyUIBuilderAPI interface {
 	ListThemesPages(*amplifyuibuilder.ListThemesInput, func(*amplifyuibuilder.ListThemesOutput, bool) bool) error
 	ListThemesPagesWithContext(aws.Context, *amplifyuibuilder.ListThemesInput, func(*amplifyuibuilder.ListThemesOutput, bool) bool, ...request.Option) error
 
+	PutMetadataFlag(*amplifyuibuilder.PutMetadataFlagInput) (*amplifyuibuilder.PutMetadataFlagOutput, error)
+	PutMetadataFlagWithContext(aws.Context, *amplifyuibuilder.PutMetadataFlagInput, ...request.Option) (*amplifyuibuilder.PutMetadataFlagOutput, error)
+	PutMetadataFlagRequest(*amplifyuibuilder.PutMetadataFlagInput) (*request.Request, *amplifyuibuilder.PutMetadataFlagOutput)
+
 	RefreshToken(*amplifyuibuilder.RefreshTokenInput) (*amplifyuibuilder.RefreshTokenOutput, error)
 	RefreshTokenWithContext(aws.Context, *amplifyuibuilder.RefreshTokenInput, ...request.Option) (*amplifyuibuilder.RefreshTokenOutput, error)
 	RefreshTokenRequest(*amplifyuibuilder.RefreshTokenInput) (*request.Request, *amplifyuibuilder.RefreshTokenOutput)
 
+	StartCodegenJob(*amplifyuibuilder.StartCodegenJobInput) (*amplifyuibuilder.StartCodegenJobOutput, error)
+	StartCodegenJobWithContext(aws.Context, *amplifyuibuilder.StartCodegenJobInput, ...request.Option) (*amplifyuibuilder.StartCodegenJobOutput, error)
+	StartCodegenJobRequest(*amplifyuibuilder.StartCodegenJobInput) (*request.Request, *amplifyuibuilder.StartCodegenJobOutput)
+
 	UpdateComponent(*amplifyuibuilder.UpdateComponentInput) (*amplifyuibuilder.UpdateComponentOutput, error)
 	UpdateComponentWithContext(aws.Context, *amplifyuibuilder.UpdateComponentInput, ...request.Option) (*amplifyuibuilder.UpdateComponentOutput, error)
 	UpdateComponentRequest(*amplifyuibuilder.UpdateComponentInput) (*request.Request, *amplifyuibuilder.UpdateComponentOutput)
+
+	UpdateForm(*amplifyuibuilder.UpdateFormInput) (*amplifyuibuilder.UpdateFormOutput, error)
+	UpdateFormWithContext(aws.Context, *amplifyuibuilder.UpdateFormInput, ...request.Option) (*amplifyuibuilder.UpdateFormOutput, error)
+	UpdateFormRequest(*amplifyuibuilder.UpdateFormInput) (*request.Request, *amplifyuibuilder.UpdateFormOutput)
 
 	UpdateTheme(*amplifyuibuilder.UpdateThemeInput) (*amplifyuibuilder.UpdateThemeOutput, error)
 	UpdateThemeWithContext(aws.Context, *amplifyuibuilder.UpdateThemeInput, ...request.Option) (*amplifyuibuilder.UpdateThemeOutput, error)

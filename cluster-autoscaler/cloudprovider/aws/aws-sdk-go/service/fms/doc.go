@@ -9,8 +9,7 @@
 // see the Firewall Manager Developer Guide (https://docs.aws.amazon.com/waf/latest/developerguide/fms-chapter.html).
 //
 // Some API actions require explicit resource permissions. For information,
-// see the developer guide topic Firewall Manager required permissions for API
-// actions (https://docs.aws.amazon.com/waf/latest/developerguide/fms-api-permissions-ref.html).
+// see the developer guide topic Service roles for Firewall Manager (https://docs.aws.amazon.com/waf/latest/developerguide/fms-security_iam_service-with-iam.html#fms-security_iam_service-with-iam-roles-service).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/fms-2018-01-01 for more information on this service.
 //

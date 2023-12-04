@@ -9,6 +9,148 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 )
 
+// WaitUntilDBClusterAvailable uses the Amazon RDS API operation
+// DescribeDBClusters to wait for a condition to be met before returning.
+// If the condition is not met within the max attempt window, an error will
+// be returned.
+func (c *RDS) WaitUntilDBClusterAvailable(input *DescribeDBClustersInput) error {
+	return c.WaitUntilDBClusterAvailableWithContext(aws.BackgroundContext(), input)
+}
+
+// WaitUntilDBClusterAvailableWithContext is an extended version of WaitUntilDBClusterAvailable.
+// With the support for passing in a context and options to configure the
+// Waiter and the underlying request options.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RDS) WaitUntilDBClusterAvailableWithContext(ctx aws.Context, input *DescribeDBClustersInput, opts ...request.WaiterOption) error {
+	w := request.Waiter{
+		Name:        "WaitUntilDBClusterAvailable",
+		MaxAttempts: 60,
+		Delay:       request.ConstantWaiterDelay(30 * time.Second),
+		Acceptors: []request.WaiterAcceptor{
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "available",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "deleted",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "deleting",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "failed",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "incompatible-restore",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "incompatible-parameters",
+			},
+		},
+		Logger: c.Config.Logger,
+		NewRequest: func(opts []request.Option) (*request.Request, error) {
+			var inCpy *DescribeDBClustersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeDBClustersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+	w.ApplyOptions(opts...)
+
+	return w.WaitWithContext(ctx)
+}
+
+// WaitUntilDBClusterDeleted uses the Amazon RDS API operation
+// DescribeDBClusters to wait for a condition to be met before returning.
+// If the condition is not met within the max attempt window, an error will
+// be returned.
+func (c *RDS) WaitUntilDBClusterDeleted(input *DescribeDBClustersInput) error {
+	return c.WaitUntilDBClusterDeletedWithContext(aws.BackgroundContext(), input)
+}
+
+// WaitUntilDBClusterDeletedWithContext is an extended version of WaitUntilDBClusterDeleted.
+// With the support for passing in a context and options to configure the
+// Waiter and the underlying request options.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RDS) WaitUntilDBClusterDeletedWithContext(ctx aws.Context, input *DescribeDBClustersInput, opts ...request.WaiterOption) error {
+	w := request.Waiter{
+		Name:        "WaitUntilDBClusterDeleted",
+		MaxAttempts: 60,
+		Delay:       request.ConstantWaiterDelay(30 * time.Second),
+		Acceptors: []request.WaiterAcceptor{
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathWaiterMatch, Argument: "length(DBClusters) == `0`",
+				Expected: true,
+			},
+			{
+				State:    request.SuccessWaiterState,
+				Matcher:  request.ErrorWaiterMatch,
+				Expected: "DBClusterNotFoundFault",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "creating",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "modifying",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "rebooting",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "DBClusters[].Status",
+				Expected: "resetting-master-credentials",
+			},
+		},
+		Logger: c.Config.Logger,
+		NewRequest: func(opts []request.Option) (*request.Request, error) {
+			var inCpy *DescribeDBClustersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeDBClustersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+	w.ApplyOptions(opts...)
+
+	return w.WaitWithContext(ctx)
+}
+
 // WaitUntilDBClusterSnapshotAvailable uses the Amazon RDS API operation
 // DescribeDBClusterSnapshots to wait for a condition to be met before returning.
 // If the condition is not met within the max attempt window, an error will
@@ -425,6 +567,118 @@ func (c *RDS) WaitUntilDBSnapshotDeletedWithContext(ctx aws.Context, input *Desc
 				inCpy = &tmp
 			}
 			req, _ := c.DescribeDBSnapshotsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+	w.ApplyOptions(opts...)
+
+	return w.WaitWithContext(ctx)
+}
+
+// WaitUntilTenantDatabaseAvailable uses the Amazon RDS API operation
+// DescribeTenantDatabases to wait for a condition to be met before returning.
+// If the condition is not met within the max attempt window, an error will
+// be returned.
+func (c *RDS) WaitUntilTenantDatabaseAvailable(input *DescribeTenantDatabasesInput) error {
+	return c.WaitUntilTenantDatabaseAvailableWithContext(aws.BackgroundContext(), input)
+}
+
+// WaitUntilTenantDatabaseAvailableWithContext is an extended version of WaitUntilTenantDatabaseAvailable.
+// With the support for passing in a context and options to configure the
+// Waiter and the underlying request options.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RDS) WaitUntilTenantDatabaseAvailableWithContext(ctx aws.Context, input *DescribeTenantDatabasesInput, opts ...request.WaiterOption) error {
+	w := request.Waiter{
+		Name:        "WaitUntilTenantDatabaseAvailable",
+		MaxAttempts: 60,
+		Delay:       request.ConstantWaiterDelay(30 * time.Second),
+		Acceptors: []request.WaiterAcceptor{
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathAllWaiterMatch, Argument: "TenantDatabases[].Status",
+				Expected: "available",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "TenantDatabases[].Status",
+				Expected: "deleted",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "TenantDatabases[].Status",
+				Expected: "incompatible-parameters",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathAnyWaiterMatch, Argument: "TenantDatabases[].Status",
+				Expected: "incompatible-restore",
+			},
+		},
+		Logger: c.Config.Logger,
+		NewRequest: func(opts []request.Option) (*request.Request, error) {
+			var inCpy *DescribeTenantDatabasesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTenantDatabasesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+	w.ApplyOptions(opts...)
+
+	return w.WaitWithContext(ctx)
+}
+
+// WaitUntilTenantDatabaseDeleted uses the Amazon RDS API operation
+// DescribeTenantDatabases to wait for a condition to be met before returning.
+// If the condition is not met within the max attempt window, an error will
+// be returned.
+func (c *RDS) WaitUntilTenantDatabaseDeleted(input *DescribeTenantDatabasesInput) error {
+	return c.WaitUntilTenantDatabaseDeletedWithContext(aws.BackgroundContext(), input)
+}
+
+// WaitUntilTenantDatabaseDeletedWithContext is an extended version of WaitUntilTenantDatabaseDeleted.
+// With the support for passing in a context and options to configure the
+// Waiter and the underlying request options.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RDS) WaitUntilTenantDatabaseDeletedWithContext(ctx aws.Context, input *DescribeTenantDatabasesInput, opts ...request.WaiterOption) error {
+	w := request.Waiter{
+		Name:        "WaitUntilTenantDatabaseDeleted",
+		MaxAttempts: 60,
+		Delay:       request.ConstantWaiterDelay(30 * time.Second),
+		Acceptors: []request.WaiterAcceptor{
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathWaiterMatch, Argument: "length(TenantDatabases) == `0`",
+				Expected: true,
+			},
+			{
+				State:    request.SuccessWaiterState,
+				Matcher:  request.ErrorWaiterMatch,
+				Expected: "DBInstanceNotFoundFault",
+			},
+		},
+		Logger: c.Config.Logger,
+		NewRequest: func(opts []request.Option) (*request.Request, error) {
+			var inCpy *DescribeTenantDatabasesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeTenantDatabasesRequest(inCpy)
 			req.SetContext(ctx)
 			req.ApplyOptions(opts...)
 			return req, nil

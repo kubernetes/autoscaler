@@ -76,6 +76,10 @@ type EMRServerlessAPI interface {
 	GetApplicationWithContext(aws.Context, *emrserverless.GetApplicationInput, ...request.Option) (*emrserverless.GetApplicationOutput, error)
 	GetApplicationRequest(*emrserverless.GetApplicationInput) (*request.Request, *emrserverless.GetApplicationOutput)
 
+	GetDashboardForJobRun(*emrserverless.GetDashboardForJobRunInput) (*emrserverless.GetDashboardForJobRunOutput, error)
+	GetDashboardForJobRunWithContext(aws.Context, *emrserverless.GetDashboardForJobRunInput, ...request.Option) (*emrserverless.GetDashboardForJobRunOutput, error)
+	GetDashboardForJobRunRequest(*emrserverless.GetDashboardForJobRunInput) (*request.Request, *emrserverless.GetDashboardForJobRunOutput)
+
 	GetJobRun(*emrserverless.GetJobRunInput) (*emrserverless.GetJobRunOutput, error)
 	GetJobRunWithContext(aws.Context, *emrserverless.GetJobRunInput, ...request.Option) (*emrserverless.GetJobRunOutput, error)
 	GetJobRunRequest(*emrserverless.GetJobRunInput) (*request.Request, *emrserverless.GetJobRunOutput)

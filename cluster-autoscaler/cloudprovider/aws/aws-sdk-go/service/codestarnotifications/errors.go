@@ -47,7 +47,7 @@ const (
 	// "ResourceAlreadyExistsException".
 	//
 	// A resource with the same name or ID already exists. Notification rule names
-	// must be unique in your AWS account.
+	// must be unique in your Amazon Web Services account.
 	ErrCodeResourceAlreadyExistsException = "ResourceAlreadyExistsException"
 
 	// ErrCodeResourceNotFoundException for service response error code

@@ -187,3 +187,29 @@ use_fips_endpoint=False
 [profile UseFIPSEndpointInvalid]
 region = "us-west-2"
 use_fips_endpoint=invalid
+
+[profile sso-session-success]
+region = us-east-1
+sso_session = sso-session-success-dev
+sso_account_id = 123456789012
+sso_role_name = testRole
+
+[sso-session sso-session-success-dev]
+sso_region = us-east-1
+sso_start_url = https://d-123456789a.awsapps.com/start
+sso_registration_scopes = sso:account:access
+
+[profile sso-session-not-exist]
+region = us-east-1
+sso_session = sso-session-lost
+sso_account_id = 123456789012
+sso_role_name = testRole
+
+[profile ec2-metadata-v1-disabled-false]
+ec2_metadata_v1_disabled=False
+
+[profile ec2-metadata-v1-disabled-true]
+ec2_metadata_v1_disabled=True
+
+[profile ec2-metadata-v1-disabled-invalid]
+ec2_metadata_v1_disabled=invalid

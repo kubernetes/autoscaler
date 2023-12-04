@@ -80,6 +80,12 @@ const (
 	// sign your request using Signature Version 4.
 	ErrCodeInvalidSecurityException = "InvalidSecurity"
 
+	// ErrCodeInvalidStateException for service response error code
+	// "InvalidState".
+	//
+	// Indicates that the specified state is not a valid state for an event source.
+	ErrCodeInvalidStateException = "InvalidState"
+
 	// ErrCodeKMSAccessDeniedException for service response error code
 	// "KMSAccessDenied".
 	//
@@ -90,7 +96,7 @@ const (
 	// ErrCodeKMSDisabledException for service response error code
 	// "KMSDisabled".
 	//
-	// The request was rejected because the specified customer master key (CMK)
+	// The request was rejected because the specified Amazon Web Services KMS key
 	// isn't enabled.
 	ErrCodeKMSDisabledException = "KMSDisabled"
 
@@ -98,8 +104,8 @@ const (
 	// "KMSInvalidState".
 	//
 	// The request was rejected because the state of the specified resource isn't
-	// valid for this request. For more information, see How Key State Affects Use
-	// of a Customer Master Key (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
+	// valid for this request. For more information, see Key states of Amazon Web
+	// Services KMS keys (https://docs.aws.amazon.com/kms/latest/developerguide/key-state.html)
 	// in the Key Management Service Developer Guide.
 	ErrCodeKMSInvalidStateException = "KMSInvalidState"
 
@@ -143,6 +149,13 @@ const (
 	//
 	// Exception error indicating platform application disabled.
 	ErrCodePlatformApplicationDisabledException = "PlatformApplicationDisabled"
+
+	// ErrCodeReplayLimitExceededException for service response error code
+	// "ReplayLimitExceeded".
+	//
+	// Indicates that the request parameter has exceeded the maximum number of concurrent
+	// message replays.
+	ErrCodeReplayLimitExceededException = "ReplayLimitExceeded"
 
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFound".

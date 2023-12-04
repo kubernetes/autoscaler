@@ -12,7 +12,7 @@
 // frameworks. Because of fundamental differences between the frameworks, some
 // API actions or data types may only apply in the context of one framework
 // and not the other. For example, actions related to Hyperledger Fabric network
-// members such as CreateMember and DeleteMember do not apply to Ethereum.
+// members such as CreateMember and DeleteMember don't apply to Ethereum.
 //
 // The description for each action indicates the framework or frameworks to
 // which it applies. Data types and properties that apply only in the context

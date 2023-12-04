@@ -72,6 +72,10 @@ type FSxAPI interface {
 	CopyBackupWithContext(aws.Context, *fsx.CopyBackupInput, ...request.Option) (*fsx.CopyBackupOutput, error)
 	CopyBackupRequest(*fsx.CopyBackupInput) (*request.Request, *fsx.CopyBackupOutput)
 
+	CopySnapshotAndUpdateVolume(*fsx.CopySnapshotAndUpdateVolumeInput) (*fsx.CopySnapshotAndUpdateVolumeOutput, error)
+	CopySnapshotAndUpdateVolumeWithContext(aws.Context, *fsx.CopySnapshotAndUpdateVolumeInput, ...request.Option) (*fsx.CopySnapshotAndUpdateVolumeOutput, error)
+	CopySnapshotAndUpdateVolumeRequest(*fsx.CopySnapshotAndUpdateVolumeInput) (*request.Request, *fsx.CopySnapshotAndUpdateVolumeOutput)
+
 	CreateBackup(*fsx.CreateBackupInput) (*fsx.CreateBackupOutput, error)
 	CreateBackupWithContext(aws.Context, *fsx.CreateBackupInput, ...request.Option) (*fsx.CreateBackupOutput, error)
 	CreateBackupRequest(*fsx.CreateBackupInput) (*request.Request, *fsx.CreateBackupOutput)
@@ -83,6 +87,10 @@ type FSxAPI interface {
 	CreateDataRepositoryTask(*fsx.CreateDataRepositoryTaskInput) (*fsx.CreateDataRepositoryTaskOutput, error)
 	CreateDataRepositoryTaskWithContext(aws.Context, *fsx.CreateDataRepositoryTaskInput, ...request.Option) (*fsx.CreateDataRepositoryTaskOutput, error)
 	CreateDataRepositoryTaskRequest(*fsx.CreateDataRepositoryTaskInput) (*request.Request, *fsx.CreateDataRepositoryTaskOutput)
+
+	CreateFileCache(*fsx.CreateFileCacheInput) (*fsx.CreateFileCacheOutput, error)
+	CreateFileCacheWithContext(aws.Context, *fsx.CreateFileCacheInput, ...request.Option) (*fsx.CreateFileCacheOutput, error)
+	CreateFileCacheRequest(*fsx.CreateFileCacheInput) (*request.Request, *fsx.CreateFileCacheOutput)
 
 	CreateFileSystem(*fsx.CreateFileSystemInput) (*fsx.CreateFileSystemOutput, error)
 	CreateFileSystemWithContext(aws.Context, *fsx.CreateFileSystemInput, ...request.Option) (*fsx.CreateFileSystemOutput, error)
@@ -115,6 +123,10 @@ type FSxAPI interface {
 	DeleteDataRepositoryAssociation(*fsx.DeleteDataRepositoryAssociationInput) (*fsx.DeleteDataRepositoryAssociationOutput, error)
 	DeleteDataRepositoryAssociationWithContext(aws.Context, *fsx.DeleteDataRepositoryAssociationInput, ...request.Option) (*fsx.DeleteDataRepositoryAssociationOutput, error)
 	DeleteDataRepositoryAssociationRequest(*fsx.DeleteDataRepositoryAssociationInput) (*request.Request, *fsx.DeleteDataRepositoryAssociationOutput)
+
+	DeleteFileCache(*fsx.DeleteFileCacheInput) (*fsx.DeleteFileCacheOutput, error)
+	DeleteFileCacheWithContext(aws.Context, *fsx.DeleteFileCacheInput, ...request.Option) (*fsx.DeleteFileCacheOutput, error)
+	DeleteFileCacheRequest(*fsx.DeleteFileCacheInput) (*request.Request, *fsx.DeleteFileCacheOutput)
 
 	DeleteFileSystem(*fsx.DeleteFileSystemInput) (*fsx.DeleteFileSystemOutput, error)
 	DeleteFileSystemWithContext(aws.Context, *fsx.DeleteFileSystemInput, ...request.Option) (*fsx.DeleteFileSystemOutput, error)
@@ -153,6 +165,13 @@ type FSxAPI interface {
 	DescribeDataRepositoryTasksPages(*fsx.DescribeDataRepositoryTasksInput, func(*fsx.DescribeDataRepositoryTasksOutput, bool) bool) error
 	DescribeDataRepositoryTasksPagesWithContext(aws.Context, *fsx.DescribeDataRepositoryTasksInput, func(*fsx.DescribeDataRepositoryTasksOutput, bool) bool, ...request.Option) error
 
+	DescribeFileCaches(*fsx.DescribeFileCachesInput) (*fsx.DescribeFileCachesOutput, error)
+	DescribeFileCachesWithContext(aws.Context, *fsx.DescribeFileCachesInput, ...request.Option) (*fsx.DescribeFileCachesOutput, error)
+	DescribeFileCachesRequest(*fsx.DescribeFileCachesInput) (*request.Request, *fsx.DescribeFileCachesOutput)
+
+	DescribeFileCachesPages(*fsx.DescribeFileCachesInput, func(*fsx.DescribeFileCachesOutput, bool) bool) error
+	DescribeFileCachesPagesWithContext(aws.Context, *fsx.DescribeFileCachesInput, func(*fsx.DescribeFileCachesOutput, bool) bool, ...request.Option) error
+
 	DescribeFileSystemAliases(*fsx.DescribeFileSystemAliasesInput) (*fsx.DescribeFileSystemAliasesOutput, error)
 	DescribeFileSystemAliasesWithContext(aws.Context, *fsx.DescribeFileSystemAliasesInput, ...request.Option) (*fsx.DescribeFileSystemAliasesOutput, error)
 	DescribeFileSystemAliasesRequest(*fsx.DescribeFileSystemAliasesInput) (*request.Request, *fsx.DescribeFileSystemAliasesOutput)
@@ -166,6 +185,10 @@ type FSxAPI interface {
 
 	DescribeFileSystemsPages(*fsx.DescribeFileSystemsInput, func(*fsx.DescribeFileSystemsOutput, bool) bool) error
 	DescribeFileSystemsPagesWithContext(aws.Context, *fsx.DescribeFileSystemsInput, func(*fsx.DescribeFileSystemsOutput, bool) bool, ...request.Option) error
+
+	DescribeSharedVpcConfiguration(*fsx.DescribeSharedVpcConfigurationInput) (*fsx.DescribeSharedVpcConfigurationOutput, error)
+	DescribeSharedVpcConfigurationWithContext(aws.Context, *fsx.DescribeSharedVpcConfigurationInput, ...request.Option) (*fsx.DescribeSharedVpcConfigurationOutput, error)
+	DescribeSharedVpcConfigurationRequest(*fsx.DescribeSharedVpcConfigurationInput) (*request.Request, *fsx.DescribeSharedVpcConfigurationOutput)
 
 	DescribeSnapshots(*fsx.DescribeSnapshotsInput) (*fsx.DescribeSnapshotsOutput, error)
 	DescribeSnapshotsWithContext(aws.Context, *fsx.DescribeSnapshotsInput, ...request.Option) (*fsx.DescribeSnapshotsOutput, error)
@@ -207,6 +230,10 @@ type FSxAPI interface {
 	RestoreVolumeFromSnapshotWithContext(aws.Context, *fsx.RestoreVolumeFromSnapshotInput, ...request.Option) (*fsx.RestoreVolumeFromSnapshotOutput, error)
 	RestoreVolumeFromSnapshotRequest(*fsx.RestoreVolumeFromSnapshotInput) (*request.Request, *fsx.RestoreVolumeFromSnapshotOutput)
 
+	StartMisconfiguredStateRecovery(*fsx.StartMisconfiguredStateRecoveryInput) (*fsx.StartMisconfiguredStateRecoveryOutput, error)
+	StartMisconfiguredStateRecoveryWithContext(aws.Context, *fsx.StartMisconfiguredStateRecoveryInput, ...request.Option) (*fsx.StartMisconfiguredStateRecoveryOutput, error)
+	StartMisconfiguredStateRecoveryRequest(*fsx.StartMisconfiguredStateRecoveryInput) (*request.Request, *fsx.StartMisconfiguredStateRecoveryOutput)
+
 	TagResource(*fsx.TagResourceInput) (*fsx.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *fsx.TagResourceInput, ...request.Option) (*fsx.TagResourceOutput, error)
 	TagResourceRequest(*fsx.TagResourceInput) (*request.Request, *fsx.TagResourceOutput)
@@ -219,9 +246,17 @@ type FSxAPI interface {
 	UpdateDataRepositoryAssociationWithContext(aws.Context, *fsx.UpdateDataRepositoryAssociationInput, ...request.Option) (*fsx.UpdateDataRepositoryAssociationOutput, error)
 	UpdateDataRepositoryAssociationRequest(*fsx.UpdateDataRepositoryAssociationInput) (*request.Request, *fsx.UpdateDataRepositoryAssociationOutput)
 
+	UpdateFileCache(*fsx.UpdateFileCacheInput) (*fsx.UpdateFileCacheOutput, error)
+	UpdateFileCacheWithContext(aws.Context, *fsx.UpdateFileCacheInput, ...request.Option) (*fsx.UpdateFileCacheOutput, error)
+	UpdateFileCacheRequest(*fsx.UpdateFileCacheInput) (*request.Request, *fsx.UpdateFileCacheOutput)
+
 	UpdateFileSystem(*fsx.UpdateFileSystemInput) (*fsx.UpdateFileSystemOutput, error)
 	UpdateFileSystemWithContext(aws.Context, *fsx.UpdateFileSystemInput, ...request.Option) (*fsx.UpdateFileSystemOutput, error)
 	UpdateFileSystemRequest(*fsx.UpdateFileSystemInput) (*request.Request, *fsx.UpdateFileSystemOutput)
+
+	UpdateSharedVpcConfiguration(*fsx.UpdateSharedVpcConfigurationInput) (*fsx.UpdateSharedVpcConfigurationOutput, error)
+	UpdateSharedVpcConfigurationWithContext(aws.Context, *fsx.UpdateSharedVpcConfigurationInput, ...request.Option) (*fsx.UpdateSharedVpcConfigurationOutput, error)
+	UpdateSharedVpcConfigurationRequest(*fsx.UpdateSharedVpcConfigurationInput) (*request.Request, *fsx.UpdateSharedVpcConfigurationOutput)
 
 	UpdateSnapshot(*fsx.UpdateSnapshotInput) (*fsx.UpdateSnapshotOutput, error)
 	UpdateSnapshotWithContext(aws.Context, *fsx.UpdateSnapshotInput, ...request.Option) (*fsx.UpdateSnapshotOutput, error)

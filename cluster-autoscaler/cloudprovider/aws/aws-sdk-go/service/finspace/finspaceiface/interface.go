@@ -64,17 +64,113 @@ type FinspaceAPI interface {
 	CreateEnvironmentWithContext(aws.Context, *finspace.CreateEnvironmentInput, ...request.Option) (*finspace.CreateEnvironmentOutput, error)
 	CreateEnvironmentRequest(*finspace.CreateEnvironmentInput) (*request.Request, *finspace.CreateEnvironmentOutput)
 
+	CreateKxChangeset(*finspace.CreateKxChangesetInput) (*finspace.CreateKxChangesetOutput, error)
+	CreateKxChangesetWithContext(aws.Context, *finspace.CreateKxChangesetInput, ...request.Option) (*finspace.CreateKxChangesetOutput, error)
+	CreateKxChangesetRequest(*finspace.CreateKxChangesetInput) (*request.Request, *finspace.CreateKxChangesetOutput)
+
+	CreateKxCluster(*finspace.CreateKxClusterInput) (*finspace.CreateKxClusterOutput, error)
+	CreateKxClusterWithContext(aws.Context, *finspace.CreateKxClusterInput, ...request.Option) (*finspace.CreateKxClusterOutput, error)
+	CreateKxClusterRequest(*finspace.CreateKxClusterInput) (*request.Request, *finspace.CreateKxClusterOutput)
+
+	CreateKxDatabase(*finspace.CreateKxDatabaseInput) (*finspace.CreateKxDatabaseOutput, error)
+	CreateKxDatabaseWithContext(aws.Context, *finspace.CreateKxDatabaseInput, ...request.Option) (*finspace.CreateKxDatabaseOutput, error)
+	CreateKxDatabaseRequest(*finspace.CreateKxDatabaseInput) (*request.Request, *finspace.CreateKxDatabaseOutput)
+
+	CreateKxEnvironment(*finspace.CreateKxEnvironmentInput) (*finspace.CreateKxEnvironmentOutput, error)
+	CreateKxEnvironmentWithContext(aws.Context, *finspace.CreateKxEnvironmentInput, ...request.Option) (*finspace.CreateKxEnvironmentOutput, error)
+	CreateKxEnvironmentRequest(*finspace.CreateKxEnvironmentInput) (*request.Request, *finspace.CreateKxEnvironmentOutput)
+
+	CreateKxUser(*finspace.CreateKxUserInput) (*finspace.CreateKxUserOutput, error)
+	CreateKxUserWithContext(aws.Context, *finspace.CreateKxUserInput, ...request.Option) (*finspace.CreateKxUserOutput, error)
+	CreateKxUserRequest(*finspace.CreateKxUserInput) (*request.Request, *finspace.CreateKxUserOutput)
+
 	DeleteEnvironment(*finspace.DeleteEnvironmentInput) (*finspace.DeleteEnvironmentOutput, error)
 	DeleteEnvironmentWithContext(aws.Context, *finspace.DeleteEnvironmentInput, ...request.Option) (*finspace.DeleteEnvironmentOutput, error)
 	DeleteEnvironmentRequest(*finspace.DeleteEnvironmentInput) (*request.Request, *finspace.DeleteEnvironmentOutput)
+
+	DeleteKxCluster(*finspace.DeleteKxClusterInput) (*finspace.DeleteKxClusterOutput, error)
+	DeleteKxClusterWithContext(aws.Context, *finspace.DeleteKxClusterInput, ...request.Option) (*finspace.DeleteKxClusterOutput, error)
+	DeleteKxClusterRequest(*finspace.DeleteKxClusterInput) (*request.Request, *finspace.DeleteKxClusterOutput)
+
+	DeleteKxDatabase(*finspace.DeleteKxDatabaseInput) (*finspace.DeleteKxDatabaseOutput, error)
+	DeleteKxDatabaseWithContext(aws.Context, *finspace.DeleteKxDatabaseInput, ...request.Option) (*finspace.DeleteKxDatabaseOutput, error)
+	DeleteKxDatabaseRequest(*finspace.DeleteKxDatabaseInput) (*request.Request, *finspace.DeleteKxDatabaseOutput)
+
+	DeleteKxEnvironment(*finspace.DeleteKxEnvironmentInput) (*finspace.DeleteKxEnvironmentOutput, error)
+	DeleteKxEnvironmentWithContext(aws.Context, *finspace.DeleteKxEnvironmentInput, ...request.Option) (*finspace.DeleteKxEnvironmentOutput, error)
+	DeleteKxEnvironmentRequest(*finspace.DeleteKxEnvironmentInput) (*request.Request, *finspace.DeleteKxEnvironmentOutput)
+
+	DeleteKxUser(*finspace.DeleteKxUserInput) (*finspace.DeleteKxUserOutput, error)
+	DeleteKxUserWithContext(aws.Context, *finspace.DeleteKxUserInput, ...request.Option) (*finspace.DeleteKxUserOutput, error)
+	DeleteKxUserRequest(*finspace.DeleteKxUserInput) (*request.Request, *finspace.DeleteKxUserOutput)
 
 	GetEnvironment(*finspace.GetEnvironmentInput) (*finspace.GetEnvironmentOutput, error)
 	GetEnvironmentWithContext(aws.Context, *finspace.GetEnvironmentInput, ...request.Option) (*finspace.GetEnvironmentOutput, error)
 	GetEnvironmentRequest(*finspace.GetEnvironmentInput) (*request.Request, *finspace.GetEnvironmentOutput)
 
+	GetKxChangeset(*finspace.GetKxChangesetInput) (*finspace.GetKxChangesetOutput, error)
+	GetKxChangesetWithContext(aws.Context, *finspace.GetKxChangesetInput, ...request.Option) (*finspace.GetKxChangesetOutput, error)
+	GetKxChangesetRequest(*finspace.GetKxChangesetInput) (*request.Request, *finspace.GetKxChangesetOutput)
+
+	GetKxCluster(*finspace.GetKxClusterInput) (*finspace.GetKxClusterOutput, error)
+	GetKxClusterWithContext(aws.Context, *finspace.GetKxClusterInput, ...request.Option) (*finspace.GetKxClusterOutput, error)
+	GetKxClusterRequest(*finspace.GetKxClusterInput) (*request.Request, *finspace.GetKxClusterOutput)
+
+	GetKxConnectionString(*finspace.GetKxConnectionStringInput) (*finspace.GetKxConnectionStringOutput, error)
+	GetKxConnectionStringWithContext(aws.Context, *finspace.GetKxConnectionStringInput, ...request.Option) (*finspace.GetKxConnectionStringOutput, error)
+	GetKxConnectionStringRequest(*finspace.GetKxConnectionStringInput) (*request.Request, *finspace.GetKxConnectionStringOutput)
+
+	GetKxDatabase(*finspace.GetKxDatabaseInput) (*finspace.GetKxDatabaseOutput, error)
+	GetKxDatabaseWithContext(aws.Context, *finspace.GetKxDatabaseInput, ...request.Option) (*finspace.GetKxDatabaseOutput, error)
+	GetKxDatabaseRequest(*finspace.GetKxDatabaseInput) (*request.Request, *finspace.GetKxDatabaseOutput)
+
+	GetKxEnvironment(*finspace.GetKxEnvironmentInput) (*finspace.GetKxEnvironmentOutput, error)
+	GetKxEnvironmentWithContext(aws.Context, *finspace.GetKxEnvironmentInput, ...request.Option) (*finspace.GetKxEnvironmentOutput, error)
+	GetKxEnvironmentRequest(*finspace.GetKxEnvironmentInput) (*request.Request, *finspace.GetKxEnvironmentOutput)
+
+	GetKxUser(*finspace.GetKxUserInput) (*finspace.GetKxUserOutput, error)
+	GetKxUserWithContext(aws.Context, *finspace.GetKxUserInput, ...request.Option) (*finspace.GetKxUserOutput, error)
+	GetKxUserRequest(*finspace.GetKxUserInput) (*request.Request, *finspace.GetKxUserOutput)
+
 	ListEnvironments(*finspace.ListEnvironmentsInput) (*finspace.ListEnvironmentsOutput, error)
 	ListEnvironmentsWithContext(aws.Context, *finspace.ListEnvironmentsInput, ...request.Option) (*finspace.ListEnvironmentsOutput, error)
 	ListEnvironmentsRequest(*finspace.ListEnvironmentsInput) (*request.Request, *finspace.ListEnvironmentsOutput)
+
+	ListKxChangesets(*finspace.ListKxChangesetsInput) (*finspace.ListKxChangesetsOutput, error)
+	ListKxChangesetsWithContext(aws.Context, *finspace.ListKxChangesetsInput, ...request.Option) (*finspace.ListKxChangesetsOutput, error)
+	ListKxChangesetsRequest(*finspace.ListKxChangesetsInput) (*request.Request, *finspace.ListKxChangesetsOutput)
+
+	ListKxChangesetsPages(*finspace.ListKxChangesetsInput, func(*finspace.ListKxChangesetsOutput, bool) bool) error
+	ListKxChangesetsPagesWithContext(aws.Context, *finspace.ListKxChangesetsInput, func(*finspace.ListKxChangesetsOutput, bool) bool, ...request.Option) error
+
+	ListKxClusterNodes(*finspace.ListKxClusterNodesInput) (*finspace.ListKxClusterNodesOutput, error)
+	ListKxClusterNodesWithContext(aws.Context, *finspace.ListKxClusterNodesInput, ...request.Option) (*finspace.ListKxClusterNodesOutput, error)
+	ListKxClusterNodesRequest(*finspace.ListKxClusterNodesInput) (*request.Request, *finspace.ListKxClusterNodesOutput)
+
+	ListKxClusterNodesPages(*finspace.ListKxClusterNodesInput, func(*finspace.ListKxClusterNodesOutput, bool) bool) error
+	ListKxClusterNodesPagesWithContext(aws.Context, *finspace.ListKxClusterNodesInput, func(*finspace.ListKxClusterNodesOutput, bool) bool, ...request.Option) error
+
+	ListKxClusters(*finspace.ListKxClustersInput) (*finspace.ListKxClustersOutput, error)
+	ListKxClustersWithContext(aws.Context, *finspace.ListKxClustersInput, ...request.Option) (*finspace.ListKxClustersOutput, error)
+	ListKxClustersRequest(*finspace.ListKxClustersInput) (*request.Request, *finspace.ListKxClustersOutput)
+
+	ListKxDatabases(*finspace.ListKxDatabasesInput) (*finspace.ListKxDatabasesOutput, error)
+	ListKxDatabasesWithContext(aws.Context, *finspace.ListKxDatabasesInput, ...request.Option) (*finspace.ListKxDatabasesOutput, error)
+	ListKxDatabasesRequest(*finspace.ListKxDatabasesInput) (*request.Request, *finspace.ListKxDatabasesOutput)
+
+	ListKxDatabasesPages(*finspace.ListKxDatabasesInput, func(*finspace.ListKxDatabasesOutput, bool) bool) error
+	ListKxDatabasesPagesWithContext(aws.Context, *finspace.ListKxDatabasesInput, func(*finspace.ListKxDatabasesOutput, bool) bool, ...request.Option) error
+
+	ListKxEnvironments(*finspace.ListKxEnvironmentsInput) (*finspace.ListKxEnvironmentsOutput, error)
+	ListKxEnvironmentsWithContext(aws.Context, *finspace.ListKxEnvironmentsInput, ...request.Option) (*finspace.ListKxEnvironmentsOutput, error)
+	ListKxEnvironmentsRequest(*finspace.ListKxEnvironmentsInput) (*request.Request, *finspace.ListKxEnvironmentsOutput)
+
+	ListKxEnvironmentsPages(*finspace.ListKxEnvironmentsInput, func(*finspace.ListKxEnvironmentsOutput, bool) bool) error
+	ListKxEnvironmentsPagesWithContext(aws.Context, *finspace.ListKxEnvironmentsInput, func(*finspace.ListKxEnvironmentsOutput, bool) bool, ...request.Option) error
+
+	ListKxUsers(*finspace.ListKxUsersInput) (*finspace.ListKxUsersOutput, error)
+	ListKxUsersWithContext(aws.Context, *finspace.ListKxUsersInput, ...request.Option) (*finspace.ListKxUsersOutput, error)
+	ListKxUsersRequest(*finspace.ListKxUsersInput) (*request.Request, *finspace.ListKxUsersOutput)
 
 	ListTagsForResource(*finspace.ListTagsForResourceInput) (*finspace.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *finspace.ListTagsForResourceInput, ...request.Option) (*finspace.ListTagsForResourceOutput, error)
@@ -91,6 +187,30 @@ type FinspaceAPI interface {
 	UpdateEnvironment(*finspace.UpdateEnvironmentInput) (*finspace.UpdateEnvironmentOutput, error)
 	UpdateEnvironmentWithContext(aws.Context, *finspace.UpdateEnvironmentInput, ...request.Option) (*finspace.UpdateEnvironmentOutput, error)
 	UpdateEnvironmentRequest(*finspace.UpdateEnvironmentInput) (*request.Request, *finspace.UpdateEnvironmentOutput)
+
+	UpdateKxClusterCodeConfiguration(*finspace.UpdateKxClusterCodeConfigurationInput) (*finspace.UpdateKxClusterCodeConfigurationOutput, error)
+	UpdateKxClusterCodeConfigurationWithContext(aws.Context, *finspace.UpdateKxClusterCodeConfigurationInput, ...request.Option) (*finspace.UpdateKxClusterCodeConfigurationOutput, error)
+	UpdateKxClusterCodeConfigurationRequest(*finspace.UpdateKxClusterCodeConfigurationInput) (*request.Request, *finspace.UpdateKxClusterCodeConfigurationOutput)
+
+	UpdateKxClusterDatabases(*finspace.UpdateKxClusterDatabasesInput) (*finspace.UpdateKxClusterDatabasesOutput, error)
+	UpdateKxClusterDatabasesWithContext(aws.Context, *finspace.UpdateKxClusterDatabasesInput, ...request.Option) (*finspace.UpdateKxClusterDatabasesOutput, error)
+	UpdateKxClusterDatabasesRequest(*finspace.UpdateKxClusterDatabasesInput) (*request.Request, *finspace.UpdateKxClusterDatabasesOutput)
+
+	UpdateKxDatabase(*finspace.UpdateKxDatabaseInput) (*finspace.UpdateKxDatabaseOutput, error)
+	UpdateKxDatabaseWithContext(aws.Context, *finspace.UpdateKxDatabaseInput, ...request.Option) (*finspace.UpdateKxDatabaseOutput, error)
+	UpdateKxDatabaseRequest(*finspace.UpdateKxDatabaseInput) (*request.Request, *finspace.UpdateKxDatabaseOutput)
+
+	UpdateKxEnvironment(*finspace.UpdateKxEnvironmentInput) (*finspace.UpdateKxEnvironmentOutput, error)
+	UpdateKxEnvironmentWithContext(aws.Context, *finspace.UpdateKxEnvironmentInput, ...request.Option) (*finspace.UpdateKxEnvironmentOutput, error)
+	UpdateKxEnvironmentRequest(*finspace.UpdateKxEnvironmentInput) (*request.Request, *finspace.UpdateKxEnvironmentOutput)
+
+	UpdateKxEnvironmentNetwork(*finspace.UpdateKxEnvironmentNetworkInput) (*finspace.UpdateKxEnvironmentNetworkOutput, error)
+	UpdateKxEnvironmentNetworkWithContext(aws.Context, *finspace.UpdateKxEnvironmentNetworkInput, ...request.Option) (*finspace.UpdateKxEnvironmentNetworkOutput, error)
+	UpdateKxEnvironmentNetworkRequest(*finspace.UpdateKxEnvironmentNetworkInput) (*request.Request, *finspace.UpdateKxEnvironmentNetworkOutput)
+
+	UpdateKxUser(*finspace.UpdateKxUserInput) (*finspace.UpdateKxUserOutput, error)
+	UpdateKxUserWithContext(aws.Context, *finspace.UpdateKxUserInput, ...request.Option) (*finspace.UpdateKxUserOutput, error)
+	UpdateKxUserRequest(*finspace.UpdateKxUserInput) (*request.Request, *finspace.UpdateKxUserOutput)
 }
 
 var _ FinspaceAPI = (*finspace.Finspace)(nil)

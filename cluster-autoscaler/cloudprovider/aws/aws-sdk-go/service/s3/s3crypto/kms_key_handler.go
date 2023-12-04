@@ -33,7 +33,7 @@ type kmsKeyHandler struct {
 //	matdesc := s3crypto.MaterialDescription{}
 //	handler := s3crypto.NewKMSKeyGenerator(kms.New(sess), cmkID)
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func NewKMSKeyGenerator(kmsClient kmsiface.KMSAPI, cmkID string) CipherDataGenerator {
 	return NewKMSKeyGeneratorWithMatDesc(kmsClient, cmkID, MaterialDescription{})
 }
@@ -67,7 +67,7 @@ func newKMSKeyHandler(client kmsiface.KMSAPI, cmkID string, matdesc MaterialDesc
 //	matdesc := s3crypto.MaterialDescription{}
 //	handler := s3crypto.NewKMSKeyGeneratorWithMatDesc(kms.New(sess), cmkID, matdesc)
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func NewKMSKeyGeneratorWithMatDesc(kmsClient kmsiface.KMSAPI, cmkID string, matdesc MaterialDescription) CipherDataGenerator {
 	return newKMSKeyHandler(kmsClient, cmkID, matdesc)
 }
@@ -84,7 +84,7 @@ func NewKMSKeyGeneratorWithMatDesc(kmsClient kmsiface.KMSAPI, cmkID string, matd
 //		svc.WrapRegistry[s3crypto.KMSWrap] = decryptHandler
 //	}))
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func NewKMSWrapEntry(kmsClient kmsiface.KMSAPI) WrapEntry {
 	kp := newKMSWrapEntry(kmsClient)
 	return kp.decryptHandler
@@ -101,7 +101,7 @@ func NewKMSWrapEntry(kmsClient kmsiface.KMSAPI) WrapEntry {
 //		panic(err) // handle error
 //	}
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func RegisterKMSWrapWithCMK(registry *CryptoRegistry, client kmsiface.KMSAPI, cmkID string) error {
 	if registry == nil {
 		return errNilCryptoRegistry
@@ -120,7 +120,7 @@ func RegisterKMSWrapWithCMK(registry *CryptoRegistry, client kmsiface.KMSAPI, cm
 //		panic(err) // handle error
 //	}
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func RegisterKMSWrapWithAnyCMK(registry *CryptoRegistry, client kmsiface.KMSAPI) error {
 	if registry == nil {
 		return errNilCryptoRegistry

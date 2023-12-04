@@ -739,6 +739,14 @@ func (c *Neptune) CreateDBClusterRequest(input *CreateDBClusterInput) (req *requ
 //     Subnets in the DB subnet group should cover at least two Availability Zones
 //     unless there is only one Availability Zone.
 //
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateDBCluster
 func (c *Neptune) CreateDBCluster(input *CreateDBClusterInput) (*CreateDBClusterOutput, error) {
 	req, out := c.CreateDBClusterRequest(input)
@@ -1507,6 +1515,104 @@ func (c *Neptune) CreateEventSubscriptionWithContext(ctx aws.Context, input *Cre
 	return out, req.Send()
 }
 
+const opCreateGlobalCluster = "CreateGlobalCluster"
+
+// CreateGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the CreateGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateGlobalCluster for more information on using the CreateGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateGlobalClusterRequest method.
+//	req, resp := client.CreateGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateGlobalCluster
+func (c *Neptune) CreateGlobalClusterRequest(input *CreateGlobalClusterInput) (req *request.Request, output *CreateGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opCreateGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateGlobalClusterInput{}
+	}
+
+	output = &CreateGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateGlobalCluster API operation for Amazon Neptune.
+//
+// Creates a Neptune global database spread across multiple Amazon Regions.
+// The global database contains a single primary cluster with read-write capability,
+// and read-only secondary clusters that receive data from the primary cluster
+// through high-speed replication performed by the Neptune storage subsystem.
+//
+// You can create a global database that is initially empty, and then add a
+// primary cluster and secondary clusters to it, or you can specify an existing
+// Neptune cluster during the create operation to become the primary cluster
+// of the global database.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation CreateGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterAlreadyExistsFault "GlobalClusterAlreadyExistsFault"
+//     The GlobalClusterIdentifier already exists. Choose a new global database
+//     identifier (unique name) to create a new global database cluster.
+//
+//   - ErrCodeGlobalClusterQuotaExceededFault "GlobalClusterQuotaExceededFault"
+//     The number of global database clusters for this account is already at the
+//     maximum allowed.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/CreateGlobalCluster
+func (c *Neptune) CreateGlobalCluster(input *CreateGlobalClusterInput) (*CreateGlobalClusterOutput, error) {
+	req, out := c.CreateGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// CreateGlobalClusterWithContext is the same as CreateGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) CreateGlobalClusterWithContext(ctx aws.Context, input *CreateGlobalClusterInput, opts ...request.Option) (*CreateGlobalClusterOutput, error) {
+	req, out := c.CreateGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteDBCluster = "DeleteDBCluster"
 
 // DeleteDBClusterRequest generates a "aws/request.Request" representing the
@@ -2218,6 +2324,91 @@ func (c *Neptune) DeleteEventSubscription(input *DeleteEventSubscriptionInput) (
 // for more information on using Contexts.
 func (c *Neptune) DeleteEventSubscriptionWithContext(ctx aws.Context, input *DeleteEventSubscriptionInput, opts ...request.Option) (*DeleteEventSubscriptionOutput, error) {
 	req, out := c.DeleteEventSubscriptionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteGlobalCluster = "DeleteGlobalCluster"
+
+// DeleteGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteGlobalCluster for more information on using the DeleteGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteGlobalClusterRequest method.
+//	req, resp := client.DeleteGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteGlobalCluster
+func (c *Neptune) DeleteGlobalClusterRequest(input *DeleteGlobalClusterInput) (req *request.Request, output *DeleteGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opDeleteGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteGlobalClusterInput{}
+	}
+
+	output = &DeleteGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteGlobalCluster API operation for Amazon Neptune.
+//
+// Deletes a global database. The primary and all secondary clusters must already
+// be detached or deleted first.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation DeleteGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DeleteGlobalCluster
+func (c *Neptune) DeleteGlobalCluster(input *DeleteGlobalClusterInput) (*DeleteGlobalClusterOutput, error) {
+	req, out := c.DeleteGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// DeleteGlobalClusterWithContext is the same as DeleteGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) DeleteGlobalClusterWithContext(ctx aws.Context, input *DeleteGlobalClusterInput, opts ...request.Option) (*DeleteGlobalClusterOutput, error) {
+	req, out := c.DeleteGlobalClusterRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -4228,6 +4419,143 @@ func (c *Neptune) DescribeEventsPagesWithContext(ctx aws.Context, input *Describ
 	return p.Err()
 }
 
+const opDescribeGlobalClusters = "DescribeGlobalClusters"
+
+// DescribeGlobalClustersRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeGlobalClusters operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeGlobalClusters for more information on using the DescribeGlobalClusters
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeGlobalClustersRequest method.
+//	req, resp := client.DescribeGlobalClustersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeGlobalClusters
+func (c *Neptune) DescribeGlobalClustersRequest(input *DescribeGlobalClustersInput) (req *request.Request, output *DescribeGlobalClustersOutput) {
+	op := &request.Operation{
+		Name:       opDescribeGlobalClusters,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"Marker"},
+			OutputTokens:    []string{"Marker"},
+			LimitToken:      "MaxRecords",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeGlobalClustersInput{}
+	}
+
+	output = &DescribeGlobalClustersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeGlobalClusters API operation for Amazon Neptune.
+//
+// Returns information about Neptune global database clusters. This API supports
+// pagination.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation DescribeGlobalClusters for usage and error information.
+//
+// Returned Error Codes:
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/DescribeGlobalClusters
+func (c *Neptune) DescribeGlobalClusters(input *DescribeGlobalClustersInput) (*DescribeGlobalClustersOutput, error) {
+	req, out := c.DescribeGlobalClustersRequest(input)
+	return out, req.Send()
+}
+
+// DescribeGlobalClustersWithContext is the same as DescribeGlobalClusters with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeGlobalClusters for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) DescribeGlobalClustersWithContext(ctx aws.Context, input *DescribeGlobalClustersInput, opts ...request.Option) (*DescribeGlobalClustersOutput, error) {
+	req, out := c.DescribeGlobalClustersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeGlobalClustersPages iterates over the pages of a DescribeGlobalClusters operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeGlobalClusters method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeGlobalClusters operation.
+//	pageNum := 0
+//	err := client.DescribeGlobalClustersPages(params,
+//	    func(page *neptune.DescribeGlobalClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Neptune) DescribeGlobalClustersPages(input *DescribeGlobalClustersInput, fn func(*DescribeGlobalClustersOutput, bool) bool) error {
+	return c.DescribeGlobalClustersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeGlobalClustersPagesWithContext same as DescribeGlobalClustersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) DescribeGlobalClustersPagesWithContext(ctx aws.Context, input *DescribeGlobalClustersInput, fn func(*DescribeGlobalClustersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeGlobalClustersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeGlobalClustersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeGlobalClustersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeOrderableDBInstanceOptions = "DescribeOrderableDBInstanceOptions"
 
 // DescribeOrderableDBInstanceOptionsRequest generates a "aws/request.Request" representing the
@@ -4668,6 +4996,108 @@ func (c *Neptune) FailoverDBCluster(input *FailoverDBClusterInput) (*FailoverDBC
 // for more information on using Contexts.
 func (c *Neptune) FailoverDBClusterWithContext(ctx aws.Context, input *FailoverDBClusterInput, opts ...request.Option) (*FailoverDBClusterOutput, error) {
 	req, out := c.FailoverDBClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opFailoverGlobalCluster = "FailoverGlobalCluster"
+
+// FailoverGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the FailoverGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See FailoverGlobalCluster for more information on using the FailoverGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the FailoverGlobalClusterRequest method.
+//	req, resp := client.FailoverGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/FailoverGlobalCluster
+func (c *Neptune) FailoverGlobalClusterRequest(input *FailoverGlobalClusterInput) (req *request.Request, output *FailoverGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opFailoverGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &FailoverGlobalClusterInput{}
+	}
+
+	output = &FailoverGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// FailoverGlobalCluster API operation for Amazon Neptune.
+//
+// Initiates the failover process for a Neptune global database.
+//
+// A failover for a Neptune global database promotes one of secondary read-only
+// DB clusters to be the primary DB cluster and demotes the primary DB cluster
+// to being a secondary (read-only) DB cluster. In other words, the role of
+// the current primary DB cluster and the selected target secondary DB cluster
+// are switched. The selected secondary DB cluster assumes full read/write capabilities
+// for the Neptune global database.
+//
+// This action applies only to Neptune global databases. This action is only
+// intended for use on healthy Neptune global databases with healthy Neptune
+// DB clusters and no region-wide outages, to test disaster recovery scenarios
+// or to reconfigure the global database topology.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation FailoverGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+//   - ErrCodeInvalidDBClusterStateFault "InvalidDBClusterStateFault"
+//     The DB cluster is not in a valid state.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/FailoverGlobalCluster
+func (c *Neptune) FailoverGlobalCluster(input *FailoverGlobalClusterInput) (*FailoverGlobalClusterOutput, error) {
+	req, out := c.FailoverGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// FailoverGlobalClusterWithContext is the same as FailoverGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See FailoverGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) FailoverGlobalClusterWithContext(ctx aws.Context, input *FailoverGlobalClusterInput, opts ...request.Option) (*FailoverGlobalClusterOutput, error) {
+	req, out := c.FailoverGlobalClusterRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5597,6 +6027,92 @@ func (c *Neptune) ModifyEventSubscriptionWithContext(ctx aws.Context, input *Mod
 	return out, req.Send()
 }
 
+const opModifyGlobalCluster = "ModifyGlobalCluster"
+
+// ModifyGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the ModifyGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ModifyGlobalCluster for more information on using the ModifyGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ModifyGlobalClusterRequest method.
+//	req, resp := client.ModifyGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyGlobalCluster
+func (c *Neptune) ModifyGlobalClusterRequest(input *ModifyGlobalClusterInput) (req *request.Request, output *ModifyGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opModifyGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ModifyGlobalClusterInput{}
+	}
+
+	output = &ModifyGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ModifyGlobalCluster API operation for Amazon Neptune.
+//
+// Modify a setting for an Amazon Neptune global cluster. You can change one
+// or more database configuration parameters by specifying these parameters
+// and their new values in the request.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation ModifyGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/ModifyGlobalCluster
+func (c *Neptune) ModifyGlobalCluster(input *ModifyGlobalClusterInput) (*ModifyGlobalClusterOutput, error) {
+	req, out := c.ModifyGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// ModifyGlobalClusterWithContext is the same as ModifyGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ModifyGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) ModifyGlobalClusterWithContext(ctx aws.Context, input *ModifyGlobalClusterInput, opts ...request.Option) (*ModifyGlobalClusterOutput, error) {
+	req, out := c.ModifyGlobalClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPromoteReadReplicaDBCluster = "PromoteReadReplicaDBCluster"
 
 // PromoteReadReplicaDBClusterRequest generates a "aws/request.Request" representing the
@@ -5763,6 +6279,95 @@ func (c *Neptune) RebootDBInstance(input *RebootDBInstanceInput) (*RebootDBInsta
 // for more information on using Contexts.
 func (c *Neptune) RebootDBInstanceWithContext(ctx aws.Context, input *RebootDBInstanceInput, opts ...request.Option) (*RebootDBInstanceOutput, error) {
 	req, out := c.RebootDBInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRemoveFromGlobalCluster = "RemoveFromGlobalCluster"
+
+// RemoveFromGlobalClusterRequest generates a "aws/request.Request" representing the
+// client's request for the RemoveFromGlobalCluster operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RemoveFromGlobalCluster for more information on using the RemoveFromGlobalCluster
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RemoveFromGlobalClusterRequest method.
+//	req, resp := client.RemoveFromGlobalClusterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveFromGlobalCluster
+func (c *Neptune) RemoveFromGlobalClusterRequest(input *RemoveFromGlobalClusterInput) (req *request.Request, output *RemoveFromGlobalClusterOutput) {
+	op := &request.Operation{
+		Name:       opRemoveFromGlobalCluster,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &RemoveFromGlobalClusterInput{}
+	}
+
+	output = &RemoveFromGlobalClusterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// RemoveFromGlobalCluster API operation for Amazon Neptune.
+//
+// Detaches a Neptune DB cluster from a Neptune global database. A secondary
+// cluster becomes a normal standalone cluster with read-write capability instead
+// of being read-only, and no longer receives data from a the primary cluster.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Neptune's
+// API operation RemoveFromGlobalCluster for usage and error information.
+//
+// Returned Error Codes:
+//
+//   - ErrCodeGlobalClusterNotFoundFault "GlobalClusterNotFoundFault"
+//     The GlobalClusterIdentifier doesn't refer to an existing global database
+//     cluster.
+//
+//   - ErrCodeInvalidGlobalClusterStateFault "InvalidGlobalClusterStateFault"
+//     The global cluster is in an invalid state and can't perform the requested
+//     operation.
+//
+//   - ErrCodeDBClusterNotFoundFault "DBClusterNotFoundFault"
+//     DBClusterIdentifier does not refer to an existing DB cluster.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/neptune-2014-10-31/RemoveFromGlobalCluster
+func (c *Neptune) RemoveFromGlobalCluster(input *RemoveFromGlobalClusterInput) (*RemoveFromGlobalClusterOutput, error) {
+	req, out := c.RemoveFromGlobalClusterRequest(input)
+	return out, req.Send()
+}
+
+// RemoveFromGlobalClusterWithContext is the same as RemoveFromGlobalCluster with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RemoveFromGlobalCluster for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Neptune) RemoveFromGlobalClusterWithContext(ctx aws.Context, input *RemoveFromGlobalClusterInput, opts ...request.Option) (*RemoveFromGlobalClusterOutput, error) {
+	req, out := c.RemoveFromGlobalClusterRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -6681,8 +7286,7 @@ type AddRoleToDBClusterInput struct {
 	DBClusterIdentifier *string `type:"string" required:"true"`
 
 	// The name of the feature for the Neptune DB cluster that the IAM role is to
-	// be associated with. For the list of supported feature names, see DBEngineVersion
-	// (neptune/latest/userguide/api-other-apis.html#DBEngineVersion).
+	// be associated with. For the list of supported feature names, see DBEngineVersion.
 	FeatureName *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role to associate with the Neptune
@@ -7191,6 +7795,98 @@ func (s *CloudwatchLogsExportConfiguration) SetDisableLogTypes(v []*string) *Clo
 // SetEnableLogTypes sets the EnableLogTypes field's value.
 func (s *CloudwatchLogsExportConfiguration) SetEnableLogTypes(v []*string) *CloudwatchLogsExportConfiguration {
 	s.EnableLogTypes = v
+	return s
+}
+
+// This data type is used as a response element in the ModifyDBCluster operation
+// and contains changes that will be applied during the next maintenance window.
+type ClusterPendingModifiedValues struct {
+	_ struct{} `type:"structure"`
+
+	// The allocated storage size in gibibytes (GiB) for database engines. For Neptune,
+	// AllocatedStorage always returns 1, because Neptune DB cluster storage size
+	// isn't fixed, but instead automatically adjusts as needed.
+	AllocatedStorage *int64 `type:"integer"`
+
+	// The number of days for which automatic DB snapshots are retained.
+	BackupRetentionPeriod *int64 `type:"integer"`
+
+	// The DBClusterIdentifier value for the DB cluster.
+	DBClusterIdentifier *string `type:"string"`
+
+	// The database engine version.
+	EngineVersion *string `type:"string"`
+
+	// A value that indicates whether mapping of Amazon Web Services Identity and
+	// Access Management (IAM) accounts to database accounts is enabled.
+	IAMDatabaseAuthenticationEnabled *bool `type:"boolean"`
+
+	// The Provisioned IOPS (I/O operations per second) value. This setting is only
+	// for non-Aurora Multi-AZ DB clusters.
+	Iops *int64 `type:"integer"`
+
+	// This PendingCloudwatchLogsExports structure specifies pending changes to
+	// which CloudWatch logs are enabled and which are disabled.
+	PendingCloudwatchLogsExports *PendingCloudwatchLogsExports `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterPendingModifiedValues) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterPendingModifiedValues) GoString() string {
+	return s.String()
+}
+
+// SetAllocatedStorage sets the AllocatedStorage field's value.
+func (s *ClusterPendingModifiedValues) SetAllocatedStorage(v int64) *ClusterPendingModifiedValues {
+	s.AllocatedStorage = &v
+	return s
+}
+
+// SetBackupRetentionPeriod sets the BackupRetentionPeriod field's value.
+func (s *ClusterPendingModifiedValues) SetBackupRetentionPeriod(v int64) *ClusterPendingModifiedValues {
+	s.BackupRetentionPeriod = &v
+	return s
+}
+
+// SetDBClusterIdentifier sets the DBClusterIdentifier field's value.
+func (s *ClusterPendingModifiedValues) SetDBClusterIdentifier(v string) *ClusterPendingModifiedValues {
+	s.DBClusterIdentifier = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *ClusterPendingModifiedValues) SetEngineVersion(v string) *ClusterPendingModifiedValues {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetIAMDatabaseAuthenticationEnabled sets the IAMDatabaseAuthenticationEnabled field's value.
+func (s *ClusterPendingModifiedValues) SetIAMDatabaseAuthenticationEnabled(v bool) *ClusterPendingModifiedValues {
+	s.IAMDatabaseAuthenticationEnabled = &v
+	return s
+}
+
+// SetIops sets the Iops field's value.
+func (s *ClusterPendingModifiedValues) SetIops(v int64) *ClusterPendingModifiedValues {
+	s.Iops = &v
+	return s
+}
+
+// SetPendingCloudwatchLogsExports sets the PendingCloudwatchLogsExports field's value.
+func (s *ClusterPendingModifiedValues) SetPendingCloudwatchLogsExports(v *PendingCloudwatchLogsExports) *ClusterPendingModifiedValues {
+	s.PendingCloudwatchLogsExports = v
 	return s
 }
 
@@ -7992,6 +8688,10 @@ type CreateDBClusterInput struct {
 	// Example: 1.0.2.1
 	EngineVersion *string `type:"string"`
 
+	// The ID of the Neptune global database to which this new DB cluster should
+	// be added.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
 	// The Amazon KMS key identifier for an encrypted DB cluster.
 	//
 	// The KMS key identifier is the Amazon Resource Name (ARN) for the KMS encryption
@@ -8039,8 +8739,8 @@ type CreateDBClusterInput struct {
 	// backups are enabled using the BackupRetentionPeriod parameter.
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
-	// of time for each Amazon Region. To see the time blocks available, see Adjusting
-	// the Preferred Maintenance Window (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+	// of time for each Amazon Region. To see the time blocks available, see Neptune
+	// Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
 	// in the Amazon Neptune User Guide.
 	//
 	// Constraints:
@@ -8061,8 +8761,7 @@ type CreateDBClusterInput struct {
 	//
 	// The default is a 30-minute window selected at random from an 8-hour block
 	// of time for each Amazon Region, occurring on a random day of the week. To
-	// see the time blocks available, see Adjusting the Preferred Maintenance Window
-	// (https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/AdjustingTheMaintenanceWindow.html)
+	// see the time blocks available, see Neptune Maintenance Window (https://docs.aws.amazon.com/neptune/latest/userguide/manage-console-maintaining.html#manage-console-maintaining-window)
 	// in the Amazon Neptune User Guide.
 	//
 	// Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun.
@@ -8073,6 +8772,12 @@ type CreateDBClusterInput struct {
 	// The Amazon Resource Name (ARN) of the source DB instance or DB cluster if
 	// this DB cluster is created as a Read Replica.
 	ReplicationSourceIdentifier *string `type:"string"`
+
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
 
 	// SourceRegion is the source region where the resource exists. This is not
 	// sent over the wire and is only used for presigning. This value should always
@@ -8115,6 +8820,9 @@ func (s *CreateDBClusterInput) Validate() error {
 	}
 	if s.Engine == nil {
 		invalidParams.Add(request.NewErrParamRequired("Engine"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -8207,6 +8915,12 @@ func (s *CreateDBClusterInput) SetEngineVersion(v string) *CreateDBClusterInput 
 	return s
 }
 
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *CreateDBClusterInput) SetGlobalClusterIdentifier(v string) *CreateDBClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
 // SetKmsKeyId sets the KmsKeyId field's value.
 func (s *CreateDBClusterInput) SetKmsKeyId(v string) *CreateDBClusterInput {
 	s.KmsKeyId = &v
@@ -8261,6 +8975,12 @@ func (s *CreateDBClusterInput) SetReplicationSourceIdentifier(v string) *CreateD
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *CreateDBClusterInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *CreateDBClusterInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetSourceRegion sets the SourceRegion field's value.
 func (s *CreateDBClusterInput) SetSourceRegion(v string) *CreateDBClusterInput {
 	s.SourceRegion = &v
@@ -8290,7 +9010,7 @@ type CreateDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -8615,7 +9335,9 @@ type CreateDBInstanceInput struct {
 	// For information on creating a DB cluster, see CreateDBCluster.
 	//
 	// Type: String
-	DBClusterIdentifier *string `type:"string"`
+	//
+	// DBClusterIdentifier is a required field
+	DBClusterIdentifier *string `type:"string" required:"true"`
 
 	// The compute and memory capacity of the DB instance, for example, db.m4.large.
 	// Not all DB instance classes are available in all Amazon Regions.
@@ -8822,7 +9544,11 @@ type CreateDBInstanceInput struct {
 
 	// The password for the given ARN from the key store in order to access the
 	// device.
-	TdeCredentialPassword *string `type:"string"`
+	//
+	// TdeCredentialPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateDBInstanceInput's
+	// String and GoString methods.
+	TdeCredentialPassword *string `type:"string" sensitive:"true"`
 
 	// The time zone of the DB instance.
 	Timezone *string `type:"string"`
@@ -8857,6 +9583,9 @@ func (s CreateDBInstanceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateDBInstanceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateDBInstanceInput"}
+	if s.DBClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("DBClusterIdentifier"))
+	}
 	if s.DBInstanceClass == nil {
 		invalidParams.Add(request.NewErrParamRequired("DBInstanceClass"))
 	}
@@ -9584,9 +10313,144 @@ func (s *CreateEventSubscriptionOutput) SetEventSubscription(v *EventSubscriptio
 	return s
 }
 
+type CreateGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The deletion protection setting for the new global database. The global database
+	// can't be deleted when deletion protection is enabled.
+	DeletionProtection *bool `type:"boolean"`
+
+	// The name of the database engine to be used in the global database.
+	//
+	// Valid values: neptune
+	Engine *string `type:"string"`
+
+	// The Neptune engine version to be used by the global database.
+	//
+	// Valid values: 1.2.0.0 or above.
+	EngineVersion *string `type:"string"`
+
+	// The cluster identifier of the new global database cluster.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+
+	// (Optional) The Amazon Resource Name (ARN) of an existing Neptune DB cluster
+	// to use as the primary cluster of the new global database.
+	SourceDBClusterIdentifier *string `type:"string"`
+
+	// The storage encryption setting for the new global database cluster.
+	StorageEncrypted *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeletionProtection sets the DeletionProtection field's value.
+func (s *CreateGlobalClusterInput) SetDeletionProtection(v bool) *CreateGlobalClusterInput {
+	s.DeletionProtection = &v
+	return s
+}
+
+// SetEngine sets the Engine field's value.
+func (s *CreateGlobalClusterInput) SetEngine(v string) *CreateGlobalClusterInput {
+	s.Engine = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *CreateGlobalClusterInput) SetEngineVersion(v string) *CreateGlobalClusterInput {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *CreateGlobalClusterInput) SetGlobalClusterIdentifier(v string) *CreateGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetSourceDBClusterIdentifier sets the SourceDBClusterIdentifier field's value.
+func (s *CreateGlobalClusterInput) SetSourceDBClusterIdentifier(v string) *CreateGlobalClusterInput {
+	s.SourceDBClusterIdentifier = &v
+	return s
+}
+
+// SetStorageEncrypted sets the StorageEncrypted field's value.
+func (s *CreateGlobalClusterInput) SetStorageEncrypted(v bool) *CreateGlobalClusterInput {
+	s.StorageEncrypted = &v
+	return s
+}
+
+type CreateGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *CreateGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *CreateGlobalClusterOutput {
+	s.GlobalCluster = v
+	return s
+}
+
 // Contains the details of an Amazon Neptune DB cluster.
 //
-// This data type is used as a response element in the DescribeDBClusters action.
+// This data type is used as a response element in the DescribeDBClusters.
 type DBCluster struct {
 	_ struct{} `type:"structure"`
 
@@ -9678,6 +10542,10 @@ type DBCluster struct {
 	// Indicates the database engine version.
 	EngineVersion *string `type:"string"`
 
+	// Contains a user-supplied global database cluster identifier. This identifier
+	// is the unique key that identifies a global database.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
 	// Specifies the ID that Amazon Route 53 assigns when you create a hosted zone.
 	HostedZoneId *string `type:"string"`
 
@@ -9698,6 +10566,10 @@ type DBCluster struct {
 
 	// Specifies whether the DB cluster has instances in multiple Availability Zones.
 	MultiAZ *bool `type:"boolean"`
+
+	// This data type is used as a response element in the ModifyDBCluster operation
+	// and contains changes that will be applied during the next maintenance window.
+	PendingModifiedValues *ClusterPendingModifiedValues `type:"structure"`
 
 	// Specifies the progress of the operation as a percentage.
 	PercentProgress *string `type:"string"`
@@ -9732,6 +10604,12 @@ type DBCluster struct {
 
 	// Not supported by Neptune.
 	ReplicationSourceIdentifier *string `type:"string"`
+
+	// Shows the scaling configuration for a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfigurationInfo `type:"structure"`
 
 	// Specifies the current state of this DB cluster.
 	Status *string `type:"string"`
@@ -9905,6 +10783,12 @@ func (s *DBCluster) SetEngineVersion(v string) *DBCluster {
 	return s
 }
 
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *DBCluster) SetGlobalClusterIdentifier(v string) *DBCluster {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
 // SetHostedZoneId sets the HostedZoneId field's value.
 func (s *DBCluster) SetHostedZoneId(v string) *DBCluster {
 	s.HostedZoneId = &v
@@ -9938,6 +10822,12 @@ func (s *DBCluster) SetMasterUsername(v string) *DBCluster {
 // SetMultiAZ sets the MultiAZ field's value.
 func (s *DBCluster) SetMultiAZ(v bool) *DBCluster {
 	s.MultiAZ = &v
+	return s
+}
+
+// SetPendingModifiedValues sets the PendingModifiedValues field's value.
+func (s *DBCluster) SetPendingModifiedValues(v *ClusterPendingModifiedValues) *DBCluster {
+	s.PendingModifiedValues = v
 	return s
 }
 
@@ -9980,6 +10870,12 @@ func (s *DBCluster) SetReaderEndpoint(v string) *DBCluster {
 // SetReplicationSourceIdentifier sets the ReplicationSourceIdentifier field's value.
 func (s *DBCluster) SetReplicationSourceIdentifier(v string) *DBCluster {
 	s.ReplicationSourceIdentifier = &v
+	return s
+}
+
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *DBCluster) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfigurationInfo) *DBCluster {
+	s.ServerlessV2ScalingConfiguration = v
 	return s
 }
 
@@ -10308,8 +11204,7 @@ type DBClusterRole struct {
 	_ struct{} `type:"structure"`
 
 	// The name of the feature associated with the Amazon Identity and Access Management
-	// (IAM) role. For the list of supported feature names, see DescribeDBEngineVersions
-	// (https://docs.aws.amazon.com/neptune/latest/userguide/api-other-apis.html#DescribeDBEngineVersions).
+	// (IAM) role. For the list of supported feature names, see DescribeDBEngineVersions.
 	FeatureName *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role that is associated with the
@@ -10729,6 +11624,10 @@ type DBEngineVersion struct {
 	// of the CreateDBInstance action.
 	SupportedTimezones []*Timezone `locationNameList:"Timezone" type:"list"`
 
+	// A value that indicates whether you can use Aurora global databases with a
+	// specific DB engine version.
+	SupportsGlobalDatabases *bool `type:"boolean"`
+
 	// A value that indicates whether the engine version supports exporting the
 	// log types specified by ExportableLogTypes to CloudWatch Logs.
 	SupportsLogExportsToCloudwatchLogs *bool `type:"boolean"`
@@ -10810,6 +11709,12 @@ func (s *DBEngineVersion) SetSupportedCharacterSets(v []*CharacterSet) *DBEngine
 // SetSupportedTimezones sets the SupportedTimezones field's value.
 func (s *DBEngineVersion) SetSupportedTimezones(v []*Timezone) *DBEngineVersion {
 	s.SupportedTimezones = v
+	return s
+}
+
+// SetSupportsGlobalDatabases sets the SupportsGlobalDatabases field's value.
+func (s *DBEngineVersion) SetSupportsGlobalDatabases(v bool) *DBEngineVersion {
+	s.SupportsGlobalDatabases = &v
 	return s
 }
 
@@ -11933,7 +12838,7 @@ type DeleteDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -12477,6 +13382,90 @@ func (s DeleteEventSubscriptionOutput) GoString() string {
 // SetEventSubscription sets the EventSubscription field's value.
 func (s *DeleteEventSubscriptionOutput) SetEventSubscription(v *EventSubscription) *DeleteEventSubscriptionOutput {
 	s.EventSubscription = v
+	return s
+}
+
+type DeleteGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The cluster identifier of the global database cluster being deleted.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *DeleteGlobalClusterInput) SetGlobalClusterIdentifier(v string) *DeleteGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+type DeleteGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *DeleteGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *DeleteGlobalClusterOutput {
+	s.GlobalCluster = v
 	return s
 }
 
@@ -14756,6 +15745,122 @@ func (s *DescribeEventsOutput) SetMarker(v string) *DescribeEventsOutput {
 	return s
 }
 
+type DescribeGlobalClustersInput struct {
+	_ struct{} `type:"structure"`
+
+	// The user-supplied DB cluster identifier. If this parameter is specified,
+	// only information about the specified DB cluster is returned. This parameter
+	// is not case-sensitive.
+	//
+	// Constraints: If supplied, must match an existing DB cluster identifier.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
+	// (Optional) A pagination token returned by a previous call to DescribeGlobalClusters.
+	// If this parameter is specified, the response will only include records beyond
+	// the marker, up to the number specified by MaxRecords.
+	Marker *string `type:"string"`
+
+	// The maximum number of records to include in the response. If more records
+	// exist than the specified MaxRecords value, a pagination marker token is included
+	// in the response that you can use to retrieve the remaining results.
+	//
+	// Default: 100
+	//
+	// Constraints: Minimum 20, maximum 100.
+	MaxRecords *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeGlobalClustersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeGlobalClustersInput"}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *DescribeGlobalClustersInput) SetGlobalClusterIdentifier(v string) *DescribeGlobalClustersInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeGlobalClustersInput) SetMarker(v string) *DescribeGlobalClustersInput {
+	s.Marker = &v
+	return s
+}
+
+// SetMaxRecords sets the MaxRecords field's value.
+func (s *DescribeGlobalClustersInput) SetMaxRecords(v int64) *DescribeGlobalClustersInput {
+	s.MaxRecords = &v
+	return s
+}
+
+type DescribeGlobalClustersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of global clusters and instances returned by this request.
+	GlobalClusters []*GlobalCluster `locationNameList:"GlobalClusterMember" type:"list"`
+
+	// A pagination token. If this parameter is returned in the response, more records
+	// are available, which can be retrieved by one or more additional calls to
+	// DescribeGlobalClusters.
+	Marker *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeGlobalClustersOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalClusters sets the GlobalClusters field's value.
+func (s *DescribeGlobalClustersOutput) SetGlobalClusters(v []*GlobalCluster) *DescribeGlobalClustersOutput {
+	s.GlobalClusters = v
+	return s
+}
+
+// SetMarker sets the Marker field's value.
+func (s *DescribeGlobalClustersOutput) SetMarker(v string) *DescribeGlobalClustersOutput {
+	s.Marker = &v
+	return s
+}
+
 type DescribeOrderableDBInstanceOptionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -15652,7 +16757,7 @@ type FailoverDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -15677,6 +16782,110 @@ func (s FailoverDBClusterOutput) GoString() string {
 // SetDBCluster sets the DBCluster field's value.
 func (s *FailoverDBClusterOutput) SetDBCluster(v *DBCluster) *FailoverDBClusterOutput {
 	s.DBCluster = v
+	return s
+}
+
+type FailoverGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// Identifier of the Neptune global database that should be failed over. The
+	// identifier is the unique key assigned by the user when the Neptune global
+	// database was created. In other words, it's the name of the global database
+	// that you want to fail over.
+	//
+	// Constraints: Must match the identifier of an existing Neptune global database.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the secondary Neptune DB cluster that you
+	// want to promote to primary for the global database.
+	//
+	// TargetDbClusterIdentifier is a required field
+	TargetDbClusterIdentifier *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *FailoverGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "FailoverGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+	if s.TargetDbClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetDbClusterIdentifier"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *FailoverGlobalClusterInput) SetGlobalClusterIdentifier(v string) *FailoverGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetTargetDbClusterIdentifier sets the TargetDbClusterIdentifier field's value.
+func (s *FailoverGlobalClusterInput) SetTargetDbClusterIdentifier(v string) *FailoverGlobalClusterInput {
+	s.TargetDbClusterIdentifier = &v
+	return s
+}
+
+type FailoverGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailoverGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *FailoverGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *FailoverGlobalClusterOutput {
+	s.GlobalCluster = v
 	return s
 }
 
@@ -15738,6 +16947,171 @@ func (s *Filter) SetName(v string) *Filter {
 // SetValues sets the Values field's value.
 func (s *Filter) SetValues(v []*string) *Filter {
 	s.Values = v
+	return s
+}
+
+// Contains the details of an Amazon Neptune global database.
+//
+// This data type is used as a response element for the CreateGlobalCluster,
+// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+// and RemoveFromGlobalCluster actions.
+type GlobalCluster struct {
+	_ struct{} `type:"structure"`
+
+	// The deletion protection setting for the global database.
+	DeletionProtection *bool `type:"boolean"`
+
+	// The Neptune database engine used by the global database ("neptune").
+	Engine *string `type:"string"`
+
+	// The Neptune engine version used by the global database.
+	EngineVersion *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) for the global database.
+	GlobalClusterArn *string `type:"string"`
+
+	// Contains a user-supplied global database cluster identifier. This identifier
+	// is the unique key that identifies a global database.
+	GlobalClusterIdentifier *string `min:"1" type:"string"`
+
+	// A list of cluster ARNs and instance ARNs for all the DB clusters that are
+	// part of the global database.
+	GlobalClusterMembers []*GlobalClusterMember `locationNameList:"GlobalClusterMember" type:"list"`
+
+	// An immutable identifier for the global database that is unique within in
+	// all regions. This identifier is found in CloudTrail log entries whenever
+	// the KMS key for the DB cluster is accessed.
+	GlobalClusterResourceId *string `type:"string"`
+
+	// Specifies the current state of this global database.
+	Status *string `type:"string"`
+
+	// The storage encryption setting for the global database.
+	StorageEncrypted *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalCluster) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalCluster) GoString() string {
+	return s.String()
+}
+
+// SetDeletionProtection sets the DeletionProtection field's value.
+func (s *GlobalCluster) SetDeletionProtection(v bool) *GlobalCluster {
+	s.DeletionProtection = &v
+	return s
+}
+
+// SetEngine sets the Engine field's value.
+func (s *GlobalCluster) SetEngine(v string) *GlobalCluster {
+	s.Engine = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *GlobalCluster) SetEngineVersion(v string) *GlobalCluster {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetGlobalClusterArn sets the GlobalClusterArn field's value.
+func (s *GlobalCluster) SetGlobalClusterArn(v string) *GlobalCluster {
+	s.GlobalClusterArn = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *GlobalCluster) SetGlobalClusterIdentifier(v string) *GlobalCluster {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetGlobalClusterMembers sets the GlobalClusterMembers field's value.
+func (s *GlobalCluster) SetGlobalClusterMembers(v []*GlobalClusterMember) *GlobalCluster {
+	s.GlobalClusterMembers = v
+	return s
+}
+
+// SetGlobalClusterResourceId sets the GlobalClusterResourceId field's value.
+func (s *GlobalCluster) SetGlobalClusterResourceId(v string) *GlobalCluster {
+	s.GlobalClusterResourceId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GlobalCluster) SetStatus(v string) *GlobalCluster {
+	s.Status = &v
+	return s
+}
+
+// SetStorageEncrypted sets the StorageEncrypted field's value.
+func (s *GlobalCluster) SetStorageEncrypted(v bool) *GlobalCluster {
+	s.StorageEncrypted = &v
+	return s
+}
+
+// A data structure with information about any primary and secondary clusters
+// associated with an Neptune global database.
+type GlobalClusterMember struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) for each Neptune cluster.
+	DBClusterArn *string `type:"string"`
+
+	// Specifies whether the Neptune cluster is the primary cluster (that is, has
+	// read-write capability) for the Neptune global database with which it is associated.
+	IsWriter *bool `type:"boolean"`
+
+	// The Amazon Resource Name (ARN) for each read-only secondary cluster associated
+	// with the Neptune global database.
+	Readers []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalClusterMember) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlobalClusterMember) GoString() string {
+	return s.String()
+}
+
+// SetDBClusterArn sets the DBClusterArn field's value.
+func (s *GlobalClusterMember) SetDBClusterArn(v string) *GlobalClusterMember {
+	s.DBClusterArn = &v
+	return s
+}
+
+// SetIsWriter sets the IsWriter field's value.
+func (s *GlobalClusterMember) SetIsWriter(v bool) *GlobalClusterMember {
+	s.IsWriter = &v
+	return s
+}
+
+// SetReaders sets the Readers field's value.
+func (s *GlobalClusterMember) SetReaders(v []*string) *GlobalClusterMember {
+	s.Readers = v
 	return s
 }
 
@@ -15916,7 +17290,7 @@ func (s *ModifyDBClusterEndpointInput) SetStaticMembers(v []*string) *ModifyDBCl
 }
 
 // This data type represents the information you need to connect to an Amazon
-// Aurora DB cluster. This data type is used as a response element in the following
+// Neptune DB cluster. This data type is used as a response element in the following
 // actions:
 //
 //   - CreateDBClusterEndpoint
@@ -16140,7 +17514,7 @@ type ModifyDBClusterInput struct {
 	//
 	// For a list of valid engine versions, see Engine Releases for Amazon Neptune
 	// (https://docs.aws.amazon.com/neptune/latest/userguide/engine-releases.html),
-	// or call DescribeDBEngineVersions (https://docs.aws.amazon.com/neptune/latest/userguide/api-other-apis.html#DescribeDBEngineVersions).
+	// or call DescribeDBEngineVersions.
 	EngineVersion *string `type:"string"`
 
 	// Not supported by Neptune.
@@ -16199,6 +17573,12 @@ type ModifyDBClusterInput struct {
 	//
 	// Constraints: Minimum 30-minute window.
 	PreferredMaintenanceWindow *string `type:"string"`
+
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
 
 	// A list of VPC security groups that the DB cluster will belong to.
 	VpcSecurityGroupIds []*string `locationNameList:"VpcSecurityGroupId" type:"list"`
@@ -16337,6 +17717,12 @@ func (s *ModifyDBClusterInput) SetPreferredMaintenanceWindow(v string) *ModifyDB
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *ModifyDBClusterInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *ModifyDBClusterInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetVpcSecurityGroupIds sets the VpcSecurityGroupIds field's value.
 func (s *ModifyDBClusterInput) SetVpcSecurityGroupIds(v []*string) *ModifyDBClusterInput {
 	s.VpcSecurityGroupIds = v
@@ -16348,7 +17734,7 @@ type ModifyDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -16826,7 +18212,11 @@ type ModifyDBInstanceInput struct {
 
 	// The password for the given ARN from the key store in order to access the
 	// device.
-	TdeCredentialPassword *string `type:"string"`
+	//
+	// TdeCredentialPassword is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ModifyDBInstanceInput's
+	// String and GoString methods.
+	TdeCredentialPassword *string `type:"string" sensitive:"true"`
 
 	// A list of EC2 VPC security groups to authorize on this DB instance. This
 	// change is asynchronously applied as soon as possible.
@@ -17430,6 +18820,157 @@ func (s *ModifyEventSubscriptionOutput) SetEventSubscription(v *EventSubscriptio
 	return s
 }
 
+type ModifyGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// A value that indicates whether major version upgrades are allowed.
+	//
+	// Constraints: You must allow major version upgrades if you specify a value
+	// for the EngineVersion parameter that is a different major version than the
+	// DB cluster's current version.
+	//
+	// If you upgrade the major version of a global database, the cluster and DB
+	// instance parameter groups are set to the default parameter groups for the
+	// new version, so you will need to apply any custom parameter groups after
+	// completing the upgrade.
+	AllowMajorVersionUpgrade *bool `type:"boolean"`
+
+	// Indicates whether the global database has deletion protection enabled. The
+	// global database cannot be deleted when deletion protection is enabled.
+	DeletionProtection *bool `type:"boolean"`
+
+	// The version number of the database engine to which you want to upgrade. Changing
+	// this parameter will result in an outage. The change is applied during the
+	// next maintenance window unless ApplyImmediately is enabled.
+	//
+	// To list all of the available Neptune engine versions, use the following command:
+	EngineVersion *string `type:"string"`
+
+	// The DB cluster identifier for the global cluster being modified. This parameter
+	// is not case-sensitive.
+	//
+	// Constraints: Must match the identifier of an existing global database cluster.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+
+	// A new cluster identifier to assign to the global database. This value is
+	// stored as a lowercase string.
+	//
+	// Constraints:
+	//
+	//    * Must contain from 1 to 63 letters, numbers, or hyphens.
+	//
+	//    * The first character must be a letter.
+	//
+	//    * Can't end with a hyphen or contain two consecutive hyphens
+	//
+	// Example: my-cluster2
+	NewGlobalClusterIdentifier *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ModifyGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ModifyGlobalClusterInput"}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+	if s.NewGlobalClusterIdentifier != nil && len(*s.NewGlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NewGlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllowMajorVersionUpgrade sets the AllowMajorVersionUpgrade field's value.
+func (s *ModifyGlobalClusterInput) SetAllowMajorVersionUpgrade(v bool) *ModifyGlobalClusterInput {
+	s.AllowMajorVersionUpgrade = &v
+	return s
+}
+
+// SetDeletionProtection sets the DeletionProtection field's value.
+func (s *ModifyGlobalClusterInput) SetDeletionProtection(v bool) *ModifyGlobalClusterInput {
+	s.DeletionProtection = &v
+	return s
+}
+
+// SetEngineVersion sets the EngineVersion field's value.
+func (s *ModifyGlobalClusterInput) SetEngineVersion(v string) *ModifyGlobalClusterInput {
+	s.EngineVersion = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *ModifyGlobalClusterInput) SetGlobalClusterIdentifier(v string) *ModifyGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+// SetNewGlobalClusterIdentifier sets the NewGlobalClusterIdentifier field's value.
+func (s *ModifyGlobalClusterInput) SetNewGlobalClusterIdentifier(v string) *ModifyGlobalClusterInput {
+	s.NewGlobalClusterIdentifier = &v
+	return s
+}
+
+type ModifyGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ModifyGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *ModifyGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *ModifyGlobalClusterOutput {
+	s.GlobalCluster = v
+	return s
+}
+
 // Not supported by Neptune.
 type OptionGroupMembership struct {
 	_ struct{} `type:"structure"`
@@ -17523,6 +19064,10 @@ type OrderableDBInstanceOption struct {
 	// Indicates whether a DB instance supports Enhanced Monitoring at intervals
 	// from 1 to 60 seconds.
 	SupportsEnhancedMonitoring *bool `type:"boolean"`
+
+	// A value that indicates whether you can use Neptune global databases with
+	// a specific combination of other DB engine attributes.
+	SupportsGlobalDatabases *bool `type:"boolean"`
 
 	// Indicates whether a DB instance supports IAM database authentication.
 	SupportsIAMDatabaseAuthentication *bool `type:"boolean"`
@@ -17645,6 +19190,12 @@ func (s *OrderableDBInstanceOption) SetStorageType(v string) *OrderableDBInstanc
 // SetSupportsEnhancedMonitoring sets the SupportsEnhancedMonitoring field's value.
 func (s *OrderableDBInstanceOption) SetSupportsEnhancedMonitoring(v bool) *OrderableDBInstanceOption {
 	s.SupportsEnhancedMonitoring = &v
+	return s
+}
+
+// SetSupportsGlobalDatabases sets the SupportsGlobalDatabases field's value.
+func (s *OrderableDBInstanceOption) SetSupportsGlobalDatabases(v bool) *OrderableDBInstanceOption {
+	s.SupportsGlobalDatabases = &v
 	return s
 }
 
@@ -18129,7 +19680,7 @@ type PromoteReadReplicaDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -18305,6 +19856,106 @@ func (s *RebootDBInstanceOutput) SetDBInstance(v *DBInstance) *RebootDBInstanceO
 	return s
 }
 
+type RemoveFromGlobalClusterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) identifying the cluster to be detached from
+	// the Neptune global database cluster.
+	//
+	// DbClusterIdentifier is a required field
+	DbClusterIdentifier *string `type:"string" required:"true"`
+
+	// The identifier of the Neptune global database from which to detach the specified
+	// Neptune DB cluster.
+	//
+	// GlobalClusterIdentifier is a required field
+	GlobalClusterIdentifier *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RemoveFromGlobalClusterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RemoveFromGlobalClusterInput"}
+	if s.DbClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("DbClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GlobalClusterIdentifier"))
+	}
+	if s.GlobalClusterIdentifier != nil && len(*s.GlobalClusterIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GlobalClusterIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDbClusterIdentifier sets the DbClusterIdentifier field's value.
+func (s *RemoveFromGlobalClusterInput) SetDbClusterIdentifier(v string) *RemoveFromGlobalClusterInput {
+	s.DbClusterIdentifier = &v
+	return s
+}
+
+// SetGlobalClusterIdentifier sets the GlobalClusterIdentifier field's value.
+func (s *RemoveFromGlobalClusterInput) SetGlobalClusterIdentifier(v string) *RemoveFromGlobalClusterInput {
+	s.GlobalClusterIdentifier = &v
+	return s
+}
+
+type RemoveFromGlobalClusterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the details of an Amazon Neptune global database.
+	//
+	// This data type is used as a response element for the CreateGlobalCluster,
+	// DescribeGlobalClusters, ModifyGlobalCluster, DeleteGlobalCluster, FailoverGlobalCluster,
+	// and RemoveFromGlobalCluster actions.
+	GlobalCluster *GlobalCluster `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RemoveFromGlobalClusterOutput) GoString() string {
+	return s.String()
+}
+
+// SetGlobalCluster sets the GlobalCluster field's value.
+func (s *RemoveFromGlobalClusterOutput) SetGlobalCluster(v *GlobalCluster) *RemoveFromGlobalClusterOutput {
+	s.GlobalCluster = v
+	return s
+}
+
 type RemoveRoleFromDBClusterInput struct {
 	_ struct{} `type:"structure"`
 
@@ -18314,8 +19965,7 @@ type RemoveRoleFromDBClusterInput struct {
 	DBClusterIdentifier *string `type:"string" required:"true"`
 
 	// The name of the feature for the DB cluster that the IAM role is to be disassociated
-	// from. For the list of supported feature names, see DescribeDBEngineVersions
-	// (https://docs.aws.amazon.com/neptune/latest/userguide/api-other-apis.html#DescribeDBEngineVersions).
+	// from. For the list of supported feature names, see DescribeDBEngineVersions.
 	FeatureName *string `type:"string"`
 
 	// The Amazon Resource Name (ARN) of the IAM role to disassociate from the DB
@@ -18935,6 +20585,12 @@ type RestoreDBClusterFromSnapshotInput struct {
 	// Default: The same port as the original DB cluster.
 	Port *int64 `type:"integer"`
 
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
+
 	// The identifier for the DB snapshot or DB cluster snapshot to restore from.
 	//
 	// You can use either the name or the Amazon Resource Name (ARN) to specify
@@ -19076,6 +20732,12 @@ func (s *RestoreDBClusterFromSnapshotInput) SetPort(v int64) *RestoreDBClusterFr
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *RestoreDBClusterFromSnapshotInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *RestoreDBClusterFromSnapshotInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetSnapshotIdentifier sets the SnapshotIdentifier field's value.
 func (s *RestoreDBClusterFromSnapshotInput) SetSnapshotIdentifier(v string) *RestoreDBClusterFromSnapshotInput {
 	s.SnapshotIdentifier = &v
@@ -19099,7 +20761,7 @@ type RestoreDBClusterFromSnapshotOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19238,6 +20900,12 @@ type RestoreDBClusterToPointInTimeInput struct {
 	// as a full copy of the source DB cluster.
 	RestoreType *string `type:"string"`
 
+	// Contains the scaling configuration of a Neptune Serverless DB cluster.
+	//
+	// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+	// in the Amazon Neptune User Guide.
+	ServerlessV2ScalingConfiguration *ServerlessV2ScalingConfiguration `type:"structure"`
+
 	// The identifier of the source DB cluster from which to restore.
 	//
 	// Constraints:
@@ -19362,6 +21030,12 @@ func (s *RestoreDBClusterToPointInTimeInput) SetRestoreType(v string) *RestoreDB
 	return s
 }
 
+// SetServerlessV2ScalingConfiguration sets the ServerlessV2ScalingConfiguration field's value.
+func (s *RestoreDBClusterToPointInTimeInput) SetServerlessV2ScalingConfiguration(v *ServerlessV2ScalingConfiguration) *RestoreDBClusterToPointInTimeInput {
+	s.ServerlessV2ScalingConfiguration = v
+	return s
+}
+
 // SetSourceDBClusterIdentifier sets the SourceDBClusterIdentifier field's value.
 func (s *RestoreDBClusterToPointInTimeInput) SetSourceDBClusterIdentifier(v string) *RestoreDBClusterToPointInTimeInput {
 	s.SourceDBClusterIdentifier = &v
@@ -19391,7 +21065,7 @@ type RestoreDBClusterToPointInTimeOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19416,6 +21090,102 @@ func (s RestoreDBClusterToPointInTimeOutput) GoString() string {
 // SetDBCluster sets the DBCluster field's value.
 func (s *RestoreDBClusterToPointInTimeOutput) SetDBCluster(v *DBCluster) *RestoreDBClusterToPointInTimeOutput {
 	s.DBCluster = v
+	return s
+}
+
+// Contains the scaling configuration of a Neptune Serverless DB cluster.
+//
+// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+// in the Amazon Neptune User Guide.
+type ServerlessV2ScalingConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 40, 40.5, 41, and so on.
+	MaxCapacity *float64 `type:"double"`
+
+	// The minimum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 8, 8.5, 9, and so on.
+	MinCapacity *float64 `type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetMaxCapacity sets the MaxCapacity field's value.
+func (s *ServerlessV2ScalingConfiguration) SetMaxCapacity(v float64) *ServerlessV2ScalingConfiguration {
+	s.MaxCapacity = &v
+	return s
+}
+
+// SetMinCapacity sets the MinCapacity field's value.
+func (s *ServerlessV2ScalingConfiguration) SetMinCapacity(v float64) *ServerlessV2ScalingConfiguration {
+	s.MinCapacity = &v
+	return s
+}
+
+// Shows the scaling configuration for a Neptune Serverless DB cluster.
+//
+// For more information, see Using Amazon Neptune Serverless (https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless-using.html)
+// in the Amazon Neptune User Guide.
+type ServerlessV2ScalingConfigurationInfo struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 40, 40.5, 41, and so on.
+	MaxCapacity *float64 `type:"double"`
+
+	// The minimum number of Neptune capacity units (NCUs) for a DB instance in
+	// a Neptune Serverless cluster. You can specify NCU values in half-step increments,
+	// such as 8, 8.5, 9, and so on.
+	MinCapacity *float64 `type:"double"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfigurationInfo) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServerlessV2ScalingConfigurationInfo) GoString() string {
+	return s.String()
+}
+
+// SetMaxCapacity sets the MaxCapacity field's value.
+func (s *ServerlessV2ScalingConfigurationInfo) SetMaxCapacity(v float64) *ServerlessV2ScalingConfigurationInfo {
+	s.MaxCapacity = &v
+	return s
+}
+
+// SetMinCapacity sets the MinCapacity field's value.
+func (s *ServerlessV2ScalingConfigurationInfo) SetMinCapacity(v float64) *ServerlessV2ScalingConfigurationInfo {
+	s.MinCapacity = &v
 	return s
 }
 
@@ -19471,7 +21241,7 @@ type StartDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19551,7 +21321,7 @@ type StopDBClusterOutput struct {
 
 	// Contains the details of an Amazon Neptune DB cluster.
 	//
-	// This data type is used as a response element in the DescribeDBClusters action.
+	// This data type is used as a response element in the DescribeDBClusters.
 	DBCluster *DBCluster `type:"structure"`
 }
 
@@ -19731,6 +21501,10 @@ type UpgradeTarget struct {
 
 	// A value that indicates whether a database engine is upgraded to a major version.
 	IsMajorVersionUpgrade *bool `type:"boolean"`
+
+	// A value that indicates whether you can use Neptune global databases with
+	// the target engine version.
+	SupportsGlobalDatabases *bool `type:"boolean"`
 }
 
 // String returns the string representation.
@@ -19778,6 +21552,12 @@ func (s *UpgradeTarget) SetEngineVersion(v string) *UpgradeTarget {
 // SetIsMajorVersionUpgrade sets the IsMajorVersionUpgrade field's value.
 func (s *UpgradeTarget) SetIsMajorVersionUpgrade(v bool) *UpgradeTarget {
 	s.IsMajorVersionUpgrade = &v
+	return s
+}
+
+// SetSupportsGlobalDatabases sets the SupportsGlobalDatabases field's value.
+func (s *UpgradeTarget) SetSupportsGlobalDatabases(v bool) *UpgradeTarget {
+	s.SupportsGlobalDatabases = &v
 	return s
 }
 

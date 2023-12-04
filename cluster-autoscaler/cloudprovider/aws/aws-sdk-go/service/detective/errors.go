@@ -8,6 +8,13 @@ import (
 
 const (
 
+	// ErrCodeAccessDeniedException for service response error code
+	// "AccessDeniedException".
+	//
+	// The request issuer does not have permission to access this resource or perform
+	// this operation.
+	ErrCodeAccessDeniedException = "AccessDeniedException"
+
 	// ErrCodeConflictException for service response error code
 	// "ConflictException".
 	//
@@ -57,6 +64,7 @@ const (
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
+	"AccessDeniedException":         newErrorAccessDeniedException,
 	"ConflictException":             newErrorConflictException,
 	"InternalServerException":       newErrorInternalServerException,
 	"ResourceNotFoundException":     newErrorResourceNotFoundException,

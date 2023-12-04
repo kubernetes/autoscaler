@@ -1048,8 +1048,8 @@ func (s DeleteLexiconOutput) GoString() string {
 type DescribeVoicesInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// Specifies the engine (standard or neural) used by Amazon Polly when processing
-	// input text for speech synthesis.
+	// Specifies the engine (standard, neural or long-form) used by Amazon Polly
+	// when processing input text for speech synthesis.
 	Engine *string `location:"querystring" locationName:"Engine" type:"string" enum:"Engine"`
 
 	// Boolean value indicating whether to return any bilingual voices that use
@@ -2869,9 +2869,9 @@ func (s *SsmlMarksNotSupportedForTextTypeException) RequestID() string {
 type StartSpeechSynthesisTaskInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the engine (standard or neural) for Amazon Polly to use when processing
-	// input text for speech synthesis. Using a voice that is not supported for
-	// the engine selected will result in an error.
+	// Specifies the engine (standard, neural or long-form) for Amazon Polly to
+	// use when processing input text for speech synthesis. Using a voice that is
+	// not supported for the engine selected will result in an error.
 	Engine *string `type:"string" enum:"Engine"`
 
 	// Optional language code for the Speech Synthesis request. This is only necessary
@@ -2908,7 +2908,7 @@ type StartSpeechSynthesisTaskInput struct {
 	//
 	// The valid values for mp3 and ogg_vorbis are "8000", "16000", "22050", and
 	// "24000". The default value for standard voices is "22050". The default value
-	// for neural voices is "24000".
+	// for neural voices is "24000". The default value for long-form voices is "24000".
 	//
 	// Valid values for pcm are "8000" and "16000" The default value is "16000".
 	SampleRate *string `type:"string"`
@@ -3087,9 +3087,9 @@ type SynthesisTask struct {
 	// Timestamp for the time the synthesis task was started.
 	CreationTime *time.Time `type:"timestamp"`
 
-	// Specifies the engine (standard or neural) for Amazon Polly to use when processing
-	// input text for speech synthesis. Using a voice that is not supported for
-	// the engine selected will result in an error.
+	// Specifies the engine (standard, neural or long-form) for Amazon Polly to
+	// use when processing input text for speech synthesis. Using a voice that is
+	// not supported for the engine selected will result in an error.
 	Engine *string `type:"string" enum:"Engine"`
 
 	// Optional language code for a synthesis task. This is only necessary if using
@@ -3122,7 +3122,7 @@ type SynthesisTask struct {
 	//
 	// The valid values for mp3 and ogg_vorbis are "8000", "16000", "22050", and
 	// "24000". The default value for standard voices is "22050". The default value
-	// for neural voices is "24000".
+	// for neural voices is "24000". The default value for long-form voices is "24000".
 	//
 	// Valid values for pcm are "8000" and "16000" The default value is "16000".
 	SampleRate *string `type:"string"`
@@ -3327,10 +3327,10 @@ func (s *SynthesisTaskNotFoundException) RequestID() string {
 type SynthesizeSpeechInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the engine (standard or neural) for Amazon Polly to use when processing
-	// input text for speech synthesis. For information on Amazon Polly voices and
-	// which voices are available in standard-only, NTTS-only, and both standard
-	// and NTTS formats, see Available Voices (https://docs.aws.amazon.com/polly/latest/dg/voicelist.html).
+	// Specifies the engine (standard, neural or long-form) for Amazon Polly to
+	// use when processing input text for speech synthesis. For information on Amazon
+	// Polly voices and which voices are available for each engine, see Available
+	// Voices (https://docs.aws.amazon.com/polly/latest/dg/voicelist.html).
 	//
 	// NTTS-only voices
 	//
@@ -3338,9 +3338,15 @@ type SynthesizeSpeechInput struct {
 	// and must be set to neural. If the engine is not specified, or is set to standard,
 	// this will result in an error.
 	//
+	// long-form-only voices
+	//
+	// When using long-form-only voices such as Danielle (en-US), this parameter
+	// is required and must be set to long-form. If the engine is not specified,
+	// or is set to standard or neural, this will result in an error.
+	//
 	// Type: String
 	//
-	// Valid Values: standard | neural
+	// Valid Values: standard | neural | long-form
 	//
 	// Required: Yes
 	//
@@ -3381,7 +3387,7 @@ type SynthesizeSpeechInput struct {
 	//
 	// The valid values for mp3 and ogg_vorbis are "8000", "16000", "22050", and
 	// "24000". The default value for standard voices is "22050". The default value
-	// for neural voices is "24000".
+	// for neural voices is "24000". The default value for long-form voices is "24000".
 	//
 	// Valid values for pcm are "8000" and "16000" The default value is "16000".
 	SampleRate *string `type:"string"`
@@ -3787,8 +3793,8 @@ type Voice struct {
 	// readable voice name that you might display in your application.
 	Name *string `type:"string"`
 
-	// Specifies which engines (standard or neural) that are supported by a given
-	// voice.
+	// Specifies which engines (standard, neural or long-form) are supported by
+	// a given voice.
 	SupportedEngines []*string `type:"list" enum:"Engine"`
 }
 
@@ -3858,6 +3864,9 @@ const (
 
 	// EngineNeural is a Engine enum value
 	EngineNeural = "neural"
+
+	// EngineLongForm is a Engine enum value
+	EngineLongForm = "long-form"
 )
 
 // Engine_Values returns all elements of the Engine enum
@@ -3865,6 +3874,7 @@ func Engine_Values() []string {
 	return []string{
 		EngineStandard,
 		EngineNeural,
+		EngineLongForm,
 	}
 }
 
@@ -3983,6 +3993,24 @@ const (
 
 	// LanguageCodeDeAt is a LanguageCode enum value
 	LanguageCodeDeAt = "de-AT"
+
+	// LanguageCodeYueCn is a LanguageCode enum value
+	LanguageCodeYueCn = "yue-CN"
+
+	// LanguageCodeArAe is a LanguageCode enum value
+	LanguageCodeArAe = "ar-AE"
+
+	// LanguageCodeFiFi is a LanguageCode enum value
+	LanguageCodeFiFi = "fi-FI"
+
+	// LanguageCodeEnIe is a LanguageCode enum value
+	LanguageCodeEnIe = "en-IE"
+
+	// LanguageCodeNlBe is a LanguageCode enum value
+	LanguageCodeNlBe = "nl-BE"
+
+	// LanguageCodeFrBe is a LanguageCode enum value
+	LanguageCodeFrBe = "fr-BE"
 )
 
 // LanguageCode_Values returns all elements of the LanguageCode enum
@@ -4021,6 +4049,12 @@ func LanguageCode_Values() []string {
 		LanguageCodeEnZa,
 		LanguageCodeCaEs,
 		LanguageCodeDeAt,
+		LanguageCodeYueCn,
+		LanguageCodeArAe,
+		LanguageCodeFiFi,
+		LanguageCodeEnIe,
+		LanguageCodeNlBe,
+		LanguageCodeFrBe,
 	}
 }
 
@@ -4313,6 +4347,90 @@ const (
 
 	// VoiceIdHannah is a VoiceId enum value
 	VoiceIdHannah = "Hannah"
+
+	// VoiceIdArthur is a VoiceId enum value
+	VoiceIdArthur = "Arthur"
+
+	// VoiceIdDaniel is a VoiceId enum value
+	VoiceIdDaniel = "Daniel"
+
+	// VoiceIdLiam is a VoiceId enum value
+	VoiceIdLiam = "Liam"
+
+	// VoiceIdPedro is a VoiceId enum value
+	VoiceIdPedro = "Pedro"
+
+	// VoiceIdKajal is a VoiceId enum value
+	VoiceIdKajal = "Kajal"
+
+	// VoiceIdHiujin is a VoiceId enum value
+	VoiceIdHiujin = "Hiujin"
+
+	// VoiceIdLaura is a VoiceId enum value
+	VoiceIdLaura = "Laura"
+
+	// VoiceIdElin is a VoiceId enum value
+	VoiceIdElin = "Elin"
+
+	// VoiceIdIda is a VoiceId enum value
+	VoiceIdIda = "Ida"
+
+	// VoiceIdSuvi is a VoiceId enum value
+	VoiceIdSuvi = "Suvi"
+
+	// VoiceIdOla is a VoiceId enum value
+	VoiceIdOla = "Ola"
+
+	// VoiceIdHala is a VoiceId enum value
+	VoiceIdHala = "Hala"
+
+	// VoiceIdAndres is a VoiceId enum value
+	VoiceIdAndres = "Andres"
+
+	// VoiceIdSergio is a VoiceId enum value
+	VoiceIdSergio = "Sergio"
+
+	// VoiceIdRemi is a VoiceId enum value
+	VoiceIdRemi = "Remi"
+
+	// VoiceIdAdriano is a VoiceId enum value
+	VoiceIdAdriano = "Adriano"
+
+	// VoiceIdThiago is a VoiceId enum value
+	VoiceIdThiago = "Thiago"
+
+	// VoiceIdRuth is a VoiceId enum value
+	VoiceIdRuth = "Ruth"
+
+	// VoiceIdStephen is a VoiceId enum value
+	VoiceIdStephen = "Stephen"
+
+	// VoiceIdKazuha is a VoiceId enum value
+	VoiceIdKazuha = "Kazuha"
+
+	// VoiceIdTomoko is a VoiceId enum value
+	VoiceIdTomoko = "Tomoko"
+
+	// VoiceIdNiamh is a VoiceId enum value
+	VoiceIdNiamh = "Niamh"
+
+	// VoiceIdSofie is a VoiceId enum value
+	VoiceIdSofie = "Sofie"
+
+	// VoiceIdLisa is a VoiceId enum value
+	VoiceIdLisa = "Lisa"
+
+	// VoiceIdIsabelle is a VoiceId enum value
+	VoiceIdIsabelle = "Isabelle"
+
+	// VoiceIdZayd is a VoiceId enum value
+	VoiceIdZayd = "Zayd"
+
+	// VoiceIdDanielle is a VoiceId enum value
+	VoiceIdDanielle = "Danielle"
+
+	// VoiceIdGregory is a VoiceId enum value
+	VoiceIdGregory = "Gregory"
 )
 
 // VoiceId_Values returns all elements of the VoiceId enum
@@ -4385,5 +4503,33 @@ func VoiceId_Values() []string {
 		VoiceIdAyanda,
 		VoiceIdArlet,
 		VoiceIdHannah,
+		VoiceIdArthur,
+		VoiceIdDaniel,
+		VoiceIdLiam,
+		VoiceIdPedro,
+		VoiceIdKajal,
+		VoiceIdHiujin,
+		VoiceIdLaura,
+		VoiceIdElin,
+		VoiceIdIda,
+		VoiceIdSuvi,
+		VoiceIdOla,
+		VoiceIdHala,
+		VoiceIdAndres,
+		VoiceIdSergio,
+		VoiceIdRemi,
+		VoiceIdAdriano,
+		VoiceIdThiago,
+		VoiceIdRuth,
+		VoiceIdStephen,
+		VoiceIdKazuha,
+		VoiceIdTomoko,
+		VoiceIdNiamh,
+		VoiceIdSofie,
+		VoiceIdLisa,
+		VoiceIdIsabelle,
+		VoiceIdZayd,
+		VoiceIdDanielle,
+		VoiceIdGregory,
 	}
 }
