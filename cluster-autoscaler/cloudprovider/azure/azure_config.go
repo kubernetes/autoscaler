@@ -111,11 +111,6 @@ type Config struct {
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
 
-	//Configs only for AKS
-	ClusterName string `json:"clusterName" yaml:"clusterName"`
-	//Config only for AKS
-	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
-
 	// VMSS metadata cache TTL in seconds, only applies for vmss type
 	VmssCacheTTL int64 `json:"vmssCacheTTL" yaml:"vmssCacheTTL"`
 
@@ -174,8 +169,6 @@ func BuildAzureConfig(configReader io.Reader) (*Config, error) {
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
-		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
-		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
 
 		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
 		if err != nil {
@@ -474,8 +467,6 @@ func (cfg *Config) TrimSpace() {
 	cfg.AADClientCertPath = strings.TrimSpace(cfg.AADClientCertPath)
 	cfg.AADClientCertPassword = strings.TrimSpace(cfg.AADClientCertPassword)
 	cfg.Deployment = strings.TrimSpace(cfg.Deployment)
-	cfg.ClusterName = strings.TrimSpace(cfg.ClusterName)
-	cfg.NodeResourceGroup = strings.TrimSpace(cfg.NodeResourceGroup)
 }
 
 func (cfg *Config) validate() error {
@@ -490,13 +481,6 @@ func (cfg *Config) validate() error {
 
 		if len(cfg.DeploymentParameters) == 0 {
 			return fmt.Errorf("deploymentParameters not set")
-		}
-	}
-
-	if cfg.VMType == vmTypeAKS {
-		// Cluster name is a mandatory param to proceed.
-		if cfg.ClusterName == "" {
-			return fmt.Errorf("cluster name not set for type %+v", cfg.VMType)
 		}
 	}
 

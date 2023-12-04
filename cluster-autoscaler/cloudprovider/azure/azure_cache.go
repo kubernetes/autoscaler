@@ -39,7 +39,7 @@ var (
 // azureCache is used for caching cluster resources state.
 //
 // It is needed to:
-// - keep track of node groups (AKS, VM and VMSS types) in the cluster,
+// - keep track of node groups (VM and VMSS types) in the cluster,
 // - keep track of instances and which node group they belong to,
 // - limit repetitive Azure API calls.
 type azureCache struct {
@@ -174,7 +174,7 @@ func (m *azureCache) fetchAzureResources() error {
 		} else {
 			return err
 		}
-	case vmTypeStandard, vmTypeAKS:
+	case vmTypeStandard:
 		// List all VMs in the RG.
 		vmResult, err := m.fetchVirtualMachines()
 		if err == nil {
