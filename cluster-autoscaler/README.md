@@ -87,12 +87,11 @@ target ETA and the actual releases.
 
 | Date       | Maintainer Preparing Release | Backup Maintainer |
 |------------|------------------------------|-------------------|
-| 2023-03-15 | MaciekPytel                  | gjtempleton       |
-| 2023-05-17 | gjtempleton                  | BigDarkClown      |
-| 2023-07-19 | BigDarkClown                 | towca             |
-| 2023-09-13 | towca                        | x13n              |
-| 2023-11-15 | x13n                         | MaciekPytel       |
 | 2024-01-17 | MaciekPytel                  | gjtempleton       |
+| 2024-03-13 | gjtempleton                  | BigDarkClown      |
+| 2024-05-?? | BigDarkClown                 | towca             |
+| 2024-07-?? | towca                        | x13n              |
+| 2024-09-?? | x13n                         | MaciekPytel       |
 
 Additional patch releases may happen outside of the schedule in case of critical
 bugs or vulnerabilities.
