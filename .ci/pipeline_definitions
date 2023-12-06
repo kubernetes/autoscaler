@@ -83,6 +83,7 @@ vertical-pod-autoscaler:
               - '^cluster-autoscaler/.*'
     traits:
       version:
+        version_interface: 'callback'
         inject_effective_version: true
         read_callback: .ci/read-vpa-version.sh
         write_callback: .ci/write-vpa-version.sh
