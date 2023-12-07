@@ -1,5 +1,4 @@
 autoscaler:
-  template: 'default'
   base_definition:
     repo:
       source_labels:
@@ -31,7 +30,6 @@ autoscaler:
                 source: ~ # default
               steps:
                 build: ~
-            registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/cluster-autoscaler'
             dockerfile: './cluster-autoscaler/Dockerfile'
     steps:
@@ -64,7 +62,6 @@ autoscaler:
         component_descriptor:
           snapshot_ctx_repository: gardener-public
 vertical-pod-autoscaler:
-  template: 'default'
   base_definition:
     repo:
       trigger_paths:
@@ -99,7 +96,6 @@ vertical-pod-autoscaler:
                 source: ~ # default
               steps:
                 build: ~
-            registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-recommender'
             dockerfile: 'Dockerfile.recommender'
             dir: 'vertical-pod-autoscaler'
@@ -109,7 +105,6 @@ vertical-pod-autoscaler:
                 source: ~ # default
               steps:
                 build: ~
-            registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-updater'
             dockerfile: 'Dockerfile.updater'
             dir: 'vertical-pod-autoscaler'
@@ -119,7 +114,6 @@ vertical-pod-autoscaler:
                 source: ~ # default
               steps:
                 build: ~
-            registry: 'gcr-readwrite'
             image: 'eu.gcr.io/gardener-project/gardener/autoscaler/vertical-pod-autoscaler/vpa-admission-controller'
             dockerfile: 'Dockerfile.admissioncontroller'
             dir: 'vertical-pod-autoscaler'
