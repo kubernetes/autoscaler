@@ -23,9 +23,7 @@ const (
 	// ErrCodeInvalidAccessException for service response error code
 	// "InvalidAccessException".
 	//
-	// There is an issue with the account used to make the request. Either Security
-	// Hub is not enabled for the account, or the account does not have permission
-	// to perform this action.
+	// The account doesn't have permission to perform this action.
 	ErrCodeInvalidAccessException = "InvalidAccessException"
 
 	// ErrCodeInvalidInputException for service response error code
@@ -49,6 +47,14 @@ const (
 	// The resource specified in the request conflicts with an existing resource.
 	ErrCodeResourceConflictException = "ResourceConflictException"
 
+	// ErrCodeResourceInUseException for service response error code
+	// "ResourceInUseException".
+	//
+	// The request was rejected because it conflicts with the resource's availability.
+	// For example, you tried to update a security control that's currently in the
+	// UPDATING state.
+	ErrCodeResourceInUseException = "ResourceInUseException"
+
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
@@ -63,5 +69,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvalidInputException":     newErrorInvalidInputException,
 	"LimitExceededException":    newErrorLimitExceededException,
 	"ResourceConflictException": newErrorResourceConflictException,
+	"ResourceInUseException":    newErrorResourceInUseException,
 	"ResourceNotFoundException": newErrorResourceNotFoundException,
 }

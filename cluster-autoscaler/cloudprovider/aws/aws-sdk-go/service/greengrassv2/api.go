@@ -1184,8 +1184,7 @@ func (c *GreengrassV2) GetComponentRequest(input *GetComponentInput) (req *reque
 
 // GetComponent API operation for AWS IoT Greengrass V2.
 //
-// Gets the recipe for a version of a component. Core devices can call this
-// operation to identify the artifacts and requirements to install a component.
+// Gets the recipe for a version of a component.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1485,6 +1484,9 @@ func (c *GreengrassV2) GetCoreDeviceRequest(input *GetCoreDeviceInput) (req *req
 //
 //   - At a regular interval that you can configure (https://docs.aws.amazon.com/greengrass/v2/developerguide/greengrass-nucleus-component.html#greengrass-nucleus-component-configuration-fss),
 //     which defaults to 24 hours
+//
+//   - For IoT Greengrass Core v2.7.0, the core device sends status updates
+//     upon local deployment and cloud deployment
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2238,6 +2240,9 @@ func (c *GreengrassV2) ListCoreDevicesRequest(input *ListCoreDevicesInput) (req 
 //   - At a regular interval that you can configure (https://docs.aws.amazon.com/greengrass/v2/developerguide/greengrass-nucleus-component.html#greengrass-nucleus-component-configuration-fss),
 //     which defaults to 24 hours
 //
+//   - For IoT Greengrass Core v2.7.0, the core device sends status updates
+//     upon local deployment and cloud deployment
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -2685,8 +2690,9 @@ func (c *GreengrassV2) ListInstalledComponentsRequest(input *ListInstalledCompon
 // ListInstalledComponents API operation for AWS IoT Greengrass V2.
 //
 // Retrieves a paginated list of the components that a Greengrass core device
-// runs. This list doesn't include components that are deployed from local deployments
-// or components that are deployed as dependencies of other components.
+// runs. By default, this list doesn't include components that are deployed
+// as dependencies of other components. To include dependencies in the response,
+// set the topologyFilter parameter to ALL.
 //
 // IoT Greengrass relies on individual devices to send status updates to the
 // Amazon Web Services Cloud. If the IoT Greengrass Core software isn't running
@@ -2705,6 +2711,9 @@ func (c *GreengrassV2) ListInstalledComponentsRequest(input *ListInstalledCompon
 //
 //   - At a regular interval that you can configure (https://docs.aws.amazon.com/greengrass/v2/developerguide/greengrass-nucleus-component.html#greengrass-nucleus-component-configuration-fss),
 //     which defaults to 24 hours
+//
+//   - For IoT Greengrass Core v2.7.0, the core device sends status updates
+//     upon local deployment and cloud deployment
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4356,7 +4365,7 @@ type ComponentPlatform struct {
 	_ struct{} `type:"structure"`
 
 	// A dictionary of attributes for the platform. The IoT Greengrass Core software
-	// defines the os and platform by default. You can specify additional platform
+	// defines the os and architecture by default. You can specify additional platform
 	// attributes for a core device when you deploy the Greengrass nucleus component.
 	// For more information, see the Greengrass nucleus component (https://docs.aws.amazon.com/greengrass/v2/developerguide/greengrass-nucleus-component.html)
 	// in the IoT Greengrass V2 Developer Guide.
@@ -4950,13 +4959,18 @@ type CreateDeploymentInput struct {
 	// configuration.
 	IotJobConfiguration *DeploymentIoTJobConfiguration `locationName:"iotJobConfiguration" type:"structure"`
 
+	// The parent deployment's target ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// within a subdeployment.
+	ParentTargetArn *string `locationName:"parentTargetArn" type:"string"`
+
 	// A list of key-value pairs that contain metadata for the resource. For more
 	// information, see Tag your resources (https://docs.aws.amazon.com/greengrass/v2/developerguide/tag-resources.html)
 	// in the IoT Greengrass V2 Developer Guide.
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
 	// The ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the target IoT thing or thing group.
+	// of the target IoT thing or thing group. When creating a subdeployment, the
+	// targetARN can only be a thing group.
 	//
 	// TargetArn is a required field
 	TargetArn *string `locationName:"targetArn" type:"string" required:"true"`
@@ -5044,6 +5058,12 @@ func (s *CreateDeploymentInput) SetDeploymentPolicies(v *DeploymentPolicies) *Cr
 // SetIotJobConfiguration sets the IotJobConfiguration field's value.
 func (s *CreateDeploymentInput) SetIotJobConfiguration(v *DeploymentIoTJobConfiguration) *CreateDeploymentInput {
 	s.IotJobConfiguration = v
+	return s
+}
+
+// SetParentTargetArn sets the ParentTargetArn field's value.
+func (s *CreateDeploymentInput) SetParentTargetArn(v string) *CreateDeploymentInput {
+	s.ParentTargetArn = &v
 	return s
 }
 
@@ -5342,11 +5362,16 @@ type Deployment struct {
 	// Whether or not the deployment is the latest revision for its target.
 	IsLatestForTarget *bool `locationName:"isLatestForTarget" type:"boolean"`
 
+	// The parent deployment's target ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// within a subdeployment.
+	ParentTargetArn *string `locationName:"parentTargetArn" type:"string"`
+
 	// The revision number of the deployment.
 	RevisionId *string `locationName:"revisionId" min:"1" type:"string"`
 
 	// The ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the target IoT thing or thing group.
+	// of the target IoT thing or thing group. When creating a subdeployment, the
+	// targetARN can only be a thing group.
 	TargetArn *string `locationName:"targetArn" type:"string"`
 }
 
@@ -5395,6 +5420,12 @@ func (s *Deployment) SetDeploymentStatus(v string) *Deployment {
 // SetIsLatestForTarget sets the IsLatestForTarget field's value.
 func (s *Deployment) SetIsLatestForTarget(v bool) *Deployment {
 	s.IsLatestForTarget = &v
+	return s
+}
+
+// SetParentTargetArn sets the ParentTargetArn field's value.
+func (s *Deployment) SetParentTargetArn(v string) *Deployment {
+	s.ParentTargetArn = &v
 	return s
 }
 
@@ -5970,6 +6001,24 @@ type EffectiveDeployment struct {
 
 	// The status of the deployment job on the Greengrass core device.
 	//
+	//    * IN_PROGRESS – The deployment job is running.
+	//
+	//    * QUEUED – The deployment job is in the job queue and waiting to run.
+	//
+	//    * FAILED – The deployment failed. For more information, see the statusDetails
+	//    field.
+	//
+	//    * COMPLETED – The deployment to an IoT thing was completed successfully.
+	//
+	//    * TIMED_OUT – The deployment didn't complete in the allotted time.
+	//
+	//    * CANCELED – The deployment was canceled by the user.
+	//
+	//    * REJECTED – The deployment was rejected. For more information, see
+	//    the statusDetails field.
+	//
+	//    * SUCCEEDED – The deployment to an IoT thing group was completed successfully.
+	//
 	// CoreDeviceExecutionStatus is a required field
 	CoreDeviceExecutionStatus *string `locationName:"coreDeviceExecutionStatus" type:"string" required:"true" enum:"EffectiveDeploymentExecutionStatus"`
 
@@ -6006,6 +6055,10 @@ type EffectiveDeployment struct {
 
 	// The reason code for the update, if the job was updated.
 	Reason *string `locationName:"reason" type:"string"`
+
+	// The status details that explain why a deployment has an error. This response
+	// will be null if the deployment is in a success state.
+	StatusDetails *EffectiveDeploymentStatusDetails `locationName:"statusDetails" type:"structure"`
 
 	// The ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the target IoT thing or thing group.
@@ -6086,9 +6139,66 @@ func (s *EffectiveDeployment) SetReason(v string) *EffectiveDeployment {
 	return s
 }
 
+// SetStatusDetails sets the StatusDetails field's value.
+func (s *EffectiveDeployment) SetStatusDetails(v *EffectiveDeploymentStatusDetails) *EffectiveDeployment {
+	s.StatusDetails = v
+	return s
+}
+
 // SetTargetArn sets the TargetArn field's value.
 func (s *EffectiveDeployment) SetTargetArn(v string) *EffectiveDeployment {
 	s.TargetArn = &v
+	return s
+}
+
+// Contains all error-related information for the deployment record. The status
+// details will be null if the deployment is in a success state.
+//
+// Greengrass nucleus v2.8.0 or later is required to get an accurate errorStack
+// and errorTypes response. This field will not be returned for earlier Greengrass
+// nucleus versions.
+type EffectiveDeploymentStatusDetails struct {
+	_ struct{} `type:"structure"`
+
+	// Contains an ordered list of short error codes that range from the most generic
+	// error to the most specific one. The error codes describe the reason for failure
+	// whenever the coreDeviceExecutionStatus is in a failed state. The response
+	// will be an empty list if there is no error.
+	ErrorStack []*string `locationName:"errorStack" type:"list"`
+
+	// Contains tags which describe the error. You can use the error types to classify
+	// errors to assist with remediating the failure. The response will be an empty
+	// list if there is no error.
+	ErrorTypes []*string `locationName:"errorTypes" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EffectiveDeploymentStatusDetails) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EffectiveDeploymentStatusDetails) GoString() string {
+	return s.String()
+}
+
+// SetErrorStack sets the ErrorStack field's value.
+func (s *EffectiveDeploymentStatusDetails) SetErrorStack(v []*string) *EffectiveDeploymentStatusDetails {
+	s.ErrorStack = v
+	return s
+}
+
+// SetErrorTypes sets the ErrorTypes field's value.
+func (s *EffectiveDeploymentStatusDetails) SetErrorTypes(v []*string) *EffectiveDeploymentStatusDetails {
+	s.ErrorTypes = v
 	return s
 }
 
@@ -6638,6 +6748,10 @@ type GetDeploymentOutput struct {
 	// Whether or not the deployment is the latest revision for its target.
 	IsLatestForTarget *bool `locationName:"isLatestForTarget" type:"boolean"`
 
+	// The parent deployment's target ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// within a subdeployment.
+	ParentTargetArn *string `locationName:"parentTargetArn" type:"string"`
+
 	// The revision number of the deployment.
 	RevisionId *string `locationName:"revisionId" min:"1" type:"string"`
 
@@ -6726,6 +6840,12 @@ func (s *GetDeploymentOutput) SetIotJobId(v string) *GetDeploymentOutput {
 // SetIsLatestForTarget sets the IsLatestForTarget field's value.
 func (s *GetDeploymentOutput) SetIsLatestForTarget(v bool) *GetDeploymentOutput {
 	s.IsLatestForTarget = &v
+	return s
+}
+
+// SetParentTargetArn sets the ParentTargetArn field's value.
+func (s *GetDeploymentOutput) SetParentTargetArn(v string) *GetDeploymentOutput {
+	s.ParentTargetArn = &v
 	return s
 }
 
@@ -6824,11 +6944,42 @@ type InstalledComponent struct {
 	// Whether or not the component is a root component.
 	IsRoot *bool `locationName:"isRoot" type:"boolean"`
 
+	// The most recent deployment source that brought the component to the Greengrass
+	// core device. For a thing group deployment or thing deployment, the source
+	// will be the The ID of the deployment. and for local deployments it will be
+	// LOCAL.
+	//
+	// Any deployment will attempt to reinstall currently broken components on the
+	// device, which will update the last installation source.
+	LastInstallationSource *string `locationName:"lastInstallationSource" min:"1" type:"string"`
+
+	// The last time the Greengrass core device sent a message containing a component's
+	// state to the Amazon Web Services Cloud.
+	//
+	// A component does not need to see a state change for this field to update.
+	LastReportedTimestamp *time.Time `locationName:"lastReportedTimestamp" type:"timestamp"`
+
+	// The status of how current the data is.
+	//
+	// This response is based off of component state changes. The status reflects
+	// component disruptions and deployments. If a component only sees a configuration
+	// update during a deployment, it might not undergo a state change and this
+	// status would not be updated.
+	LastStatusChangeTimestamp *time.Time `locationName:"lastStatusChangeTimestamp" type:"timestamp"`
+
 	// The lifecycle state of the component.
 	LifecycleState *string `locationName:"lifecycleState" type:"string" enum:"InstalledComponentLifecycleState"`
 
-	// The details about the lifecycle state of the component.
+	// A detailed response about the lifecycle state of the component that explains
+	// the reason why a component has an error or is broken.
 	LifecycleStateDetails *string `locationName:"lifecycleStateDetails" min:"1" type:"string"`
+
+	// The status codes that indicate the reason for failure whenever the lifecycleState
+	// has an error or is in a broken state.
+	//
+	// Greengrass nucleus v2.8.0 or later is required to get an accurate lifecycleStatusCodes
+	// response. This response can be inaccurate in earlier Greengrass nucleus versions.
+	LifecycleStatusCodes []*string `locationName:"lifecycleStatusCodes" type:"list"`
 }
 
 // String returns the string representation.
@@ -6867,6 +7018,24 @@ func (s *InstalledComponent) SetIsRoot(v bool) *InstalledComponent {
 	return s
 }
 
+// SetLastInstallationSource sets the LastInstallationSource field's value.
+func (s *InstalledComponent) SetLastInstallationSource(v string) *InstalledComponent {
+	s.LastInstallationSource = &v
+	return s
+}
+
+// SetLastReportedTimestamp sets the LastReportedTimestamp field's value.
+func (s *InstalledComponent) SetLastReportedTimestamp(v time.Time) *InstalledComponent {
+	s.LastReportedTimestamp = &v
+	return s
+}
+
+// SetLastStatusChangeTimestamp sets the LastStatusChangeTimestamp field's value.
+func (s *InstalledComponent) SetLastStatusChangeTimestamp(v time.Time) *InstalledComponent {
+	s.LastStatusChangeTimestamp = &v
+	return s
+}
+
 // SetLifecycleState sets the LifecycleState field's value.
 func (s *InstalledComponent) SetLifecycleState(v string) *InstalledComponent {
 	s.LifecycleState = &v
@@ -6876,6 +7045,12 @@ func (s *InstalledComponent) SetLifecycleState(v string) *InstalledComponent {
 // SetLifecycleStateDetails sets the LifecycleStateDetails field's value.
 func (s *InstalledComponent) SetLifecycleStateDetails(v string) *InstalledComponent {
 	s.LifecycleStateDetails = &v
+	return s
+}
+
+// SetLifecycleStatusCodes sets the LifecycleStatusCodes field's value.
+func (s *InstalledComponent) SetLifecycleStatusCodes(v []*string) *InstalledComponent {
+	s.LifecycleStatusCodes = v
 	return s
 }
 
@@ -7797,7 +7972,7 @@ type LambdaFunctionRecipeSource struct {
 	// to import. You can't use version aliases like $LATEST.
 	//
 	// LambdaArn is a required field
-	LambdaArn *string `locationName:"lambdaArn" type:"string" required:"true"`
+	LambdaArn *string `locationName:"lambdaArn" min:"1" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -7829,6 +8004,9 @@ func (s *LambdaFunctionRecipeSource) Validate() error {
 	}
 	if s.LambdaArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("LambdaArn"))
+	}
+	if s.LambdaArn != nil && len(*s.LambdaArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LambdaArn", 1))
 	}
 	if s.ComponentDependencies != nil {
 		for i, v := range s.ComponentDependencies {
@@ -8514,6 +8692,10 @@ type ListDeploymentsInput struct {
 	// The token to be used for the next set of paginated results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
 
+	// The parent deployment's target ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// within a subdeployment.
+	ParentTargetArn *string `location:"querystring" locationName:"parentTargetArn" type:"string"`
+
 	// The ARN (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the target IoT thing or thing group.
 	TargetArn *string `location:"querystring" locationName:"targetArn" type:"string"`
@@ -8565,6 +8747,12 @@ func (s *ListDeploymentsInput) SetMaxResults(v int64) *ListDeploymentsInput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListDeploymentsInput) SetNextToken(v string) *ListDeploymentsInput {
 	s.NextToken = &v
+	return s
+}
+
+// SetParentTargetArn sets the ParentTargetArn field's value.
+func (s *ListDeploymentsInput) SetParentTargetArn(v string) *ListDeploymentsInput {
+	s.ParentTargetArn = &v
 	return s
 }
 
@@ -8739,6 +8927,18 @@ type ListInstalledComponentsInput struct {
 
 	// The token to be used for the next set of paginated results.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+
+	// The filter for the list of components. Choose from the following options:
+	//
+	//    * ALL – The list includes all components installed on the core device.
+	//
+	//    * ROOT – The list includes only root components, which are components
+	//    that you specify in a deployment. When you choose this option, the list
+	//    doesn't include components that the core device installs as dependencies
+	//    of other components.
+	//
+	// Default: ROOT
+	TopologyFilter *string `location:"querystring" locationName:"topologyFilter" type:"string" enum:"InstalledComponentTopologyFilter"`
 }
 
 // String returns the string representation.
@@ -8796,10 +8996,23 @@ func (s *ListInstalledComponentsInput) SetNextToken(v string) *ListInstalledComp
 	return s
 }
 
+// SetTopologyFilter sets the TopologyFilter field's value.
+func (s *ListInstalledComponentsInput) SetTopologyFilter(v string) *ListInstalledComponentsInput {
+	s.TopologyFilter = &v
+	return s
+}
+
 type ListInstalledComponentsOutput struct {
 	_ struct{} `type:"structure"`
 
 	// A list that summarizes each component on the core device.
+	//
+	// Greengrass nucleus v2.7.0 or later is required to get an accurate lastStatusChangeTimestamp
+	// response. This response can be inaccurate in earlier Greengrass nucleus versions.
+	//
+	// Greengrass nucleus v2.8.0 or later is required to get an accurate lastInstallationSource
+	// and lastReportedTimestamp response. This response can be inaccurate or null
+	// in earlier Greengrass nucleus versions.
 	InstalledComponents []*InstalledComponent `locationName:"installedComponents" type:"list"`
 
 	// The token for the next set of results, or null if there are no additional
@@ -10031,6 +10244,9 @@ const (
 
 	// EffectiveDeploymentExecutionStatusRejected is a EffectiveDeploymentExecutionStatus enum value
 	EffectiveDeploymentExecutionStatusRejected = "REJECTED"
+
+	// EffectiveDeploymentExecutionStatusSucceeded is a EffectiveDeploymentExecutionStatus enum value
+	EffectiveDeploymentExecutionStatusSucceeded = "SUCCEEDED"
 )
 
 // EffectiveDeploymentExecutionStatus_Values returns all elements of the EffectiveDeploymentExecutionStatus enum
@@ -10043,6 +10259,7 @@ func EffectiveDeploymentExecutionStatus_Values() []string {
 		EffectiveDeploymentExecutionStatusTimedOut,
 		EffectiveDeploymentExecutionStatusCanceled,
 		EffectiveDeploymentExecutionStatusRejected,
+		EffectiveDeploymentExecutionStatusSucceeded,
 	}
 }
 
@@ -10083,6 +10300,22 @@ func InstalledComponentLifecycleState_Values() []string {
 		InstalledComponentLifecycleStateErrored,
 		InstalledComponentLifecycleStateBroken,
 		InstalledComponentLifecycleStateFinished,
+	}
+}
+
+const (
+	// InstalledComponentTopologyFilterAll is a InstalledComponentTopologyFilter enum value
+	InstalledComponentTopologyFilterAll = "ALL"
+
+	// InstalledComponentTopologyFilterRoot is a InstalledComponentTopologyFilter enum value
+	InstalledComponentTopologyFilterRoot = "ROOT"
+)
+
+// InstalledComponentTopologyFilter_Values returns all elements of the InstalledComponentTopologyFilter enum
+func InstalledComponentTopologyFilter_Values() []string {
+	return []string{
+		InstalledComponentTopologyFilterAll,
+		InstalledComponentTopologyFilterRoot,
 	}
 }
 

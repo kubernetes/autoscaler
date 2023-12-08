@@ -1852,7 +1852,7 @@ k8s.io/kube-openapi/pkg/validation/strfmt/bson
 ## explicit; go 1.21.3
 k8s.io/kube-scheduler/config/v1
 k8s.io/kube-scheduler/extender/v1
-# k8s.io/kubectl v0.0.0 => k8s.io/kubectl v0.29.0-alpha.3
+# k8s.io/kubectl v0.28.0 => k8s.io/kubectl v0.29.0-alpha.3
 ## explicit; go 1.21.3
 k8s.io/kubectl/pkg/scale
 # k8s.io/kubelet v0.29.0-alpha.3 => k8s.io/kubelet v0.29.0-alpha.3

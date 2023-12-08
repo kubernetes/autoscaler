@@ -38,8 +38,8 @@ const (
 	// ErrCodeServiceUnavailableException for service response error code
 	// "ServiceUnavailableException".
 	//
-	// The Comprehend Medical; service is temporarily unavailable. Please wait and
-	// then retry your request.
+	// The Amazon Comprehend Medical service is temporarily unavailable. Please
+	// wait and then retry your request.
 	ErrCodeServiceUnavailableException = "ServiceUnavailableException"
 
 	// ErrCodeTextSizeLimitExceededException for service response error code

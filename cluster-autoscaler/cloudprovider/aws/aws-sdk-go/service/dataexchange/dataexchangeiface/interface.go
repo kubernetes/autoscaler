@@ -163,6 +163,10 @@ type DataExchangeAPI interface {
 	SendApiAssetWithContext(aws.Context, *dataexchange.SendApiAssetInput, ...request.Option) (*dataexchange.SendApiAssetOutput, error)
 	SendApiAssetRequest(*dataexchange.SendApiAssetInput) (*request.Request, *dataexchange.SendApiAssetOutput)
 
+	SendDataSetNotification(*dataexchange.SendDataSetNotificationInput) (*dataexchange.SendDataSetNotificationOutput, error)
+	SendDataSetNotificationWithContext(aws.Context, *dataexchange.SendDataSetNotificationInput, ...request.Option) (*dataexchange.SendDataSetNotificationOutput, error)
+	SendDataSetNotificationRequest(*dataexchange.SendDataSetNotificationInput) (*request.Request, *dataexchange.SendDataSetNotificationOutput)
+
 	StartJob(*dataexchange.StartJobInput) (*dataexchange.StartJobOutput, error)
 	StartJobWithContext(aws.Context, *dataexchange.StartJobInput, ...request.Option) (*dataexchange.StartJobOutput, error)
 	StartJobRequest(*dataexchange.StartJobInput) (*request.Request, *dataexchange.StartJobOutput)

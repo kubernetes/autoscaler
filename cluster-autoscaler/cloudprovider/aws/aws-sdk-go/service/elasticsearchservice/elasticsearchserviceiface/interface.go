@@ -72,6 +72,10 @@ type ElasticsearchServiceAPI interface {
 	AssociatePackageWithContext(aws.Context, *elasticsearchservice.AssociatePackageInput, ...request.Option) (*elasticsearchservice.AssociatePackageOutput, error)
 	AssociatePackageRequest(*elasticsearchservice.AssociatePackageInput) (*request.Request, *elasticsearchservice.AssociatePackageOutput)
 
+	AuthorizeVpcEndpointAccess(*elasticsearchservice.AuthorizeVpcEndpointAccessInput) (*elasticsearchservice.AuthorizeVpcEndpointAccessOutput, error)
+	AuthorizeVpcEndpointAccessWithContext(aws.Context, *elasticsearchservice.AuthorizeVpcEndpointAccessInput, ...request.Option) (*elasticsearchservice.AuthorizeVpcEndpointAccessOutput, error)
+	AuthorizeVpcEndpointAccessRequest(*elasticsearchservice.AuthorizeVpcEndpointAccessInput) (*request.Request, *elasticsearchservice.AuthorizeVpcEndpointAccessOutput)
+
 	CancelElasticsearchServiceSoftwareUpdate(*elasticsearchservice.CancelElasticsearchServiceSoftwareUpdateInput) (*elasticsearchservice.CancelElasticsearchServiceSoftwareUpdateOutput, error)
 	CancelElasticsearchServiceSoftwareUpdateWithContext(aws.Context, *elasticsearchservice.CancelElasticsearchServiceSoftwareUpdateInput, ...request.Option) (*elasticsearchservice.CancelElasticsearchServiceSoftwareUpdateOutput, error)
 	CancelElasticsearchServiceSoftwareUpdateRequest(*elasticsearchservice.CancelElasticsearchServiceSoftwareUpdateInput) (*request.Request, *elasticsearchservice.CancelElasticsearchServiceSoftwareUpdateOutput)
@@ -87,6 +91,10 @@ type ElasticsearchServiceAPI interface {
 	CreatePackage(*elasticsearchservice.CreatePackageInput) (*elasticsearchservice.CreatePackageOutput, error)
 	CreatePackageWithContext(aws.Context, *elasticsearchservice.CreatePackageInput, ...request.Option) (*elasticsearchservice.CreatePackageOutput, error)
 	CreatePackageRequest(*elasticsearchservice.CreatePackageInput) (*request.Request, *elasticsearchservice.CreatePackageOutput)
+
+	CreateVpcEndpoint(*elasticsearchservice.CreateVpcEndpointInput) (*elasticsearchservice.CreateVpcEndpointOutput, error)
+	CreateVpcEndpointWithContext(aws.Context, *elasticsearchservice.CreateVpcEndpointInput, ...request.Option) (*elasticsearchservice.CreateVpcEndpointOutput, error)
+	CreateVpcEndpointRequest(*elasticsearchservice.CreateVpcEndpointInput) (*request.Request, *elasticsearchservice.CreateVpcEndpointOutput)
 
 	DeleteElasticsearchDomain(*elasticsearchservice.DeleteElasticsearchDomainInput) (*elasticsearchservice.DeleteElasticsearchDomainOutput, error)
 	DeleteElasticsearchDomainWithContext(aws.Context, *elasticsearchservice.DeleteElasticsearchDomainInput, ...request.Option) (*elasticsearchservice.DeleteElasticsearchDomainOutput, error)
@@ -107,6 +115,10 @@ type ElasticsearchServiceAPI interface {
 	DeletePackage(*elasticsearchservice.DeletePackageInput) (*elasticsearchservice.DeletePackageOutput, error)
 	DeletePackageWithContext(aws.Context, *elasticsearchservice.DeletePackageInput, ...request.Option) (*elasticsearchservice.DeletePackageOutput, error)
 	DeletePackageRequest(*elasticsearchservice.DeletePackageInput) (*request.Request, *elasticsearchservice.DeletePackageOutput)
+
+	DeleteVpcEndpoint(*elasticsearchservice.DeleteVpcEndpointInput) (*elasticsearchservice.DeleteVpcEndpointOutput, error)
+	DeleteVpcEndpointWithContext(aws.Context, *elasticsearchservice.DeleteVpcEndpointInput, ...request.Option) (*elasticsearchservice.DeleteVpcEndpointOutput, error)
+	DeleteVpcEndpointRequest(*elasticsearchservice.DeleteVpcEndpointInput) (*request.Request, *elasticsearchservice.DeleteVpcEndpointOutput)
 
 	DescribeDomainAutoTunes(*elasticsearchservice.DescribeDomainAutoTunesInput) (*elasticsearchservice.DescribeDomainAutoTunesOutput, error)
 	DescribeDomainAutoTunesWithContext(aws.Context, *elasticsearchservice.DescribeDomainAutoTunesInput, ...request.Option) (*elasticsearchservice.DescribeDomainAutoTunesOutput, error)
@@ -170,6 +182,10 @@ type ElasticsearchServiceAPI interface {
 	DescribeReservedElasticsearchInstancesPages(*elasticsearchservice.DescribeReservedElasticsearchInstancesInput, func(*elasticsearchservice.DescribeReservedElasticsearchInstancesOutput, bool) bool) error
 	DescribeReservedElasticsearchInstancesPagesWithContext(aws.Context, *elasticsearchservice.DescribeReservedElasticsearchInstancesInput, func(*elasticsearchservice.DescribeReservedElasticsearchInstancesOutput, bool) bool, ...request.Option) error
 
+	DescribeVpcEndpoints(*elasticsearchservice.DescribeVpcEndpointsInput) (*elasticsearchservice.DescribeVpcEndpointsOutput, error)
+	DescribeVpcEndpointsWithContext(aws.Context, *elasticsearchservice.DescribeVpcEndpointsInput, ...request.Option) (*elasticsearchservice.DescribeVpcEndpointsOutput, error)
+	DescribeVpcEndpointsRequest(*elasticsearchservice.DescribeVpcEndpointsInput) (*request.Request, *elasticsearchservice.DescribeVpcEndpointsOutput)
+
 	DissociatePackage(*elasticsearchservice.DissociatePackageInput) (*elasticsearchservice.DissociatePackageOutput, error)
 	DissociatePackageWithContext(aws.Context, *elasticsearchservice.DissociatePackageInput, ...request.Option) (*elasticsearchservice.DissociatePackageOutput, error)
 	DissociatePackageRequest(*elasticsearchservice.DissociatePackageInput) (*request.Request, *elasticsearchservice.DissociatePackageOutput)
@@ -232,6 +248,18 @@ type ElasticsearchServiceAPI interface {
 	ListTagsWithContext(aws.Context, *elasticsearchservice.ListTagsInput, ...request.Option) (*elasticsearchservice.ListTagsOutput, error)
 	ListTagsRequest(*elasticsearchservice.ListTagsInput) (*request.Request, *elasticsearchservice.ListTagsOutput)
 
+	ListVpcEndpointAccess(*elasticsearchservice.ListVpcEndpointAccessInput) (*elasticsearchservice.ListVpcEndpointAccessOutput, error)
+	ListVpcEndpointAccessWithContext(aws.Context, *elasticsearchservice.ListVpcEndpointAccessInput, ...request.Option) (*elasticsearchservice.ListVpcEndpointAccessOutput, error)
+	ListVpcEndpointAccessRequest(*elasticsearchservice.ListVpcEndpointAccessInput) (*request.Request, *elasticsearchservice.ListVpcEndpointAccessOutput)
+
+	ListVpcEndpoints(*elasticsearchservice.ListVpcEndpointsInput) (*elasticsearchservice.ListVpcEndpointsOutput, error)
+	ListVpcEndpointsWithContext(aws.Context, *elasticsearchservice.ListVpcEndpointsInput, ...request.Option) (*elasticsearchservice.ListVpcEndpointsOutput, error)
+	ListVpcEndpointsRequest(*elasticsearchservice.ListVpcEndpointsInput) (*request.Request, *elasticsearchservice.ListVpcEndpointsOutput)
+
+	ListVpcEndpointsForDomain(*elasticsearchservice.ListVpcEndpointsForDomainInput) (*elasticsearchservice.ListVpcEndpointsForDomainOutput, error)
+	ListVpcEndpointsForDomainWithContext(aws.Context, *elasticsearchservice.ListVpcEndpointsForDomainInput, ...request.Option) (*elasticsearchservice.ListVpcEndpointsForDomainOutput, error)
+	ListVpcEndpointsForDomainRequest(*elasticsearchservice.ListVpcEndpointsForDomainInput) (*request.Request, *elasticsearchservice.ListVpcEndpointsForDomainOutput)
+
 	PurchaseReservedElasticsearchInstanceOffering(*elasticsearchservice.PurchaseReservedElasticsearchInstanceOfferingInput) (*elasticsearchservice.PurchaseReservedElasticsearchInstanceOfferingOutput, error)
 	PurchaseReservedElasticsearchInstanceOfferingWithContext(aws.Context, *elasticsearchservice.PurchaseReservedElasticsearchInstanceOfferingInput, ...request.Option) (*elasticsearchservice.PurchaseReservedElasticsearchInstanceOfferingOutput, error)
 	PurchaseReservedElasticsearchInstanceOfferingRequest(*elasticsearchservice.PurchaseReservedElasticsearchInstanceOfferingInput) (*request.Request, *elasticsearchservice.PurchaseReservedElasticsearchInstanceOfferingOutput)
@@ -244,6 +272,10 @@ type ElasticsearchServiceAPI interface {
 	RemoveTagsWithContext(aws.Context, *elasticsearchservice.RemoveTagsInput, ...request.Option) (*elasticsearchservice.RemoveTagsOutput, error)
 	RemoveTagsRequest(*elasticsearchservice.RemoveTagsInput) (*request.Request, *elasticsearchservice.RemoveTagsOutput)
 
+	RevokeVpcEndpointAccess(*elasticsearchservice.RevokeVpcEndpointAccessInput) (*elasticsearchservice.RevokeVpcEndpointAccessOutput, error)
+	RevokeVpcEndpointAccessWithContext(aws.Context, *elasticsearchservice.RevokeVpcEndpointAccessInput, ...request.Option) (*elasticsearchservice.RevokeVpcEndpointAccessOutput, error)
+	RevokeVpcEndpointAccessRequest(*elasticsearchservice.RevokeVpcEndpointAccessInput) (*request.Request, *elasticsearchservice.RevokeVpcEndpointAccessOutput)
+
 	StartElasticsearchServiceSoftwareUpdate(*elasticsearchservice.StartElasticsearchServiceSoftwareUpdateInput) (*elasticsearchservice.StartElasticsearchServiceSoftwareUpdateOutput, error)
 	StartElasticsearchServiceSoftwareUpdateWithContext(aws.Context, *elasticsearchservice.StartElasticsearchServiceSoftwareUpdateInput, ...request.Option) (*elasticsearchservice.StartElasticsearchServiceSoftwareUpdateOutput, error)
 	StartElasticsearchServiceSoftwareUpdateRequest(*elasticsearchservice.StartElasticsearchServiceSoftwareUpdateInput) (*request.Request, *elasticsearchservice.StartElasticsearchServiceSoftwareUpdateOutput)
@@ -255,6 +287,10 @@ type ElasticsearchServiceAPI interface {
 	UpdatePackage(*elasticsearchservice.UpdatePackageInput) (*elasticsearchservice.UpdatePackageOutput, error)
 	UpdatePackageWithContext(aws.Context, *elasticsearchservice.UpdatePackageInput, ...request.Option) (*elasticsearchservice.UpdatePackageOutput, error)
 	UpdatePackageRequest(*elasticsearchservice.UpdatePackageInput) (*request.Request, *elasticsearchservice.UpdatePackageOutput)
+
+	UpdateVpcEndpoint(*elasticsearchservice.UpdateVpcEndpointInput) (*elasticsearchservice.UpdateVpcEndpointOutput, error)
+	UpdateVpcEndpointWithContext(aws.Context, *elasticsearchservice.UpdateVpcEndpointInput, ...request.Option) (*elasticsearchservice.UpdateVpcEndpointOutput, error)
+	UpdateVpcEndpointRequest(*elasticsearchservice.UpdateVpcEndpointInput) (*request.Request, *elasticsearchservice.UpdateVpcEndpointOutput)
 
 	UpgradeElasticsearchDomain(*elasticsearchservice.UpgradeElasticsearchDomainInput) (*elasticsearchservice.UpgradeElasticsearchDomainOutput, error)
 	UpgradeElasticsearchDomainWithContext(aws.Context, *elasticsearchservice.UpgradeElasticsearchDomainInput, ...request.Option) (*elasticsearchservice.UpgradeElasticsearchDomainOutput, error)

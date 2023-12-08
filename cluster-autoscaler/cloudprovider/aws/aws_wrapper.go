@@ -85,7 +85,7 @@ func (m *awsWrapper) getManagedNodegroupInfo(nodegroupName string, clusterName s
 	}
 
 	if r.Nodegroup.CapacityType != nil && len(*r.Nodegroup.CapacityType) > 0 {
-		labels["capacityType"] = *r.Nodegroup.CapacityType
+		labels["eks.amazonaws.com/capacityType"] = *r.Nodegroup.CapacityType
 	}
 
 	if r.Nodegroup.Version != nil && len(*r.Nodegroup.Version) > 0 {

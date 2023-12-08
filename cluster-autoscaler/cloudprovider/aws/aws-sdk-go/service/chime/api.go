@@ -139,7 +139,12 @@ const opAssociatePhoneNumbersWithVoiceConnector = "AssociatePhoneNumbersWithVoic
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/AssociatePhoneNumbersWithVoiceConnector
+//
+// Deprecated: Replaced by AssociatePhoneNumbersWithVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorRequest(input *AssociatePhoneNumbersWithVoiceConnectorInput) (req *request.Request, output *AssociatePhoneNumbersWithVoiceConnectorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, AssociatePhoneNumbersWithVoiceConnector, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opAssociatePhoneNumbersWithVoiceConnector,
 		HTTPMethod: "POST",
@@ -158,6 +163,14 @@ func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorRequest(input *AssociateP
 // AssociatePhoneNumbersWithVoiceConnector API operation for Amazon Chime.
 //
 // Associates phone numbers with the specified Amazon Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, AssociatePhoneNumbersWithVoiceConnector (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_AssociatePhoneNumbersWithVoiceConnector.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -193,6 +206,8 @@ func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorRequest(input *AssociateP
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/AssociatePhoneNumbersWithVoiceConnector
+//
+// Deprecated: Replaced by AssociatePhoneNumbersWithVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) AssociatePhoneNumbersWithVoiceConnector(input *AssociatePhoneNumbersWithVoiceConnectorInput) (*AssociatePhoneNumbersWithVoiceConnectorOutput, error) {
 	req, out := c.AssociatePhoneNumbersWithVoiceConnectorRequest(input)
 	return out, req.Send()
@@ -207,6 +222,8 @@ func (c *Chime) AssociatePhoneNumbersWithVoiceConnector(input *AssociatePhoneNum
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by AssociatePhoneNumbersWithVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorWithContext(ctx aws.Context, input *AssociatePhoneNumbersWithVoiceConnectorInput, opts ...request.Option) (*AssociatePhoneNumbersWithVoiceConnectorOutput, error) {
 	req, out := c.AssociatePhoneNumbersWithVoiceConnectorRequest(input)
 	req.SetContext(ctx)
@@ -239,7 +256,12 @@ const opAssociatePhoneNumbersWithVoiceConnectorGroup = "AssociatePhoneNumbersWit
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/AssociatePhoneNumbersWithVoiceConnectorGroup
+//
+// Deprecated: Replaced by AssociatePhoneNumbersWithVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorGroupRequest(input *AssociatePhoneNumbersWithVoiceConnectorGroupInput) (req *request.Request, output *AssociatePhoneNumbersWithVoiceConnectorGroupOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, AssociatePhoneNumbersWithVoiceConnectorGroup, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opAssociatePhoneNumbersWithVoiceConnectorGroup,
 		HTTPMethod: "POST",
@@ -259,6 +281,14 @@ func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorGroupRequest(input *Assoc
 //
 // Associates phone numbers with the specified Amazon Chime Voice Connector
 // group.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, AssociatePhoneNumbersWithVoiceConnectorGroup (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_AssociatePhoneNumbersWithVoiceConnectorGroup.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -294,6 +324,8 @@ func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorGroupRequest(input *Assoc
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/AssociatePhoneNumbersWithVoiceConnectorGroup
+//
+// Deprecated: Replaced by AssociatePhoneNumbersWithVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorGroup(input *AssociatePhoneNumbersWithVoiceConnectorGroupInput) (*AssociatePhoneNumbersWithVoiceConnectorGroupOutput, error) {
 	req, out := c.AssociatePhoneNumbersWithVoiceConnectorGroupRequest(input)
 	return out, req.Send()
@@ -308,6 +340,8 @@ func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorGroup(input *AssociatePho
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by AssociatePhoneNumbersWithVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) AssociatePhoneNumbersWithVoiceConnectorGroupWithContext(ctx aws.Context, input *AssociatePhoneNumbersWithVoiceConnectorGroupInput, opts ...request.Option) (*AssociatePhoneNumbersWithVoiceConnectorGroupOutput, error) {
 	req, out := c.AssociatePhoneNumbersWithVoiceConnectorGroupRequest(input)
 	req.SetContext(ctx)
@@ -439,7 +473,12 @@ const opBatchCreateAttendee = "BatchCreateAttendee"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/BatchCreateAttendee
+//
+// Deprecated: Replaced by BatchCreateAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) BatchCreateAttendeeRequest(input *BatchCreateAttendeeInput) (req *request.Request, output *BatchCreateAttendeeOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, BatchCreateAttendee, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opBatchCreateAttendee,
 		HTTPMethod: "POST",
@@ -457,10 +496,19 @@ func (c *Chime) BatchCreateAttendeeRequest(input *BatchCreateAttendeeInput) (req
 
 // BatchCreateAttendee API operation for Amazon Chime.
 //
-// Creates up to 100 new attendees for an active Amazon Chime SDK meeting. For
-// more information about the Amazon Chime SDK, see Using the Amazon Chime SDK
-// (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html) in the Amazon
-// Chime Developer Guide.
+// Creates up to 100 new attendees for an active Amazon Chime SDK meeting.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, BatchCreateAttendee (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_BatchCreateAttendee.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// For more information about the Amazon Chime SDK, see Using the Amazon Chime
+// SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html) in
+// the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -496,6 +544,8 @@ func (c *Chime) BatchCreateAttendeeRequest(input *BatchCreateAttendeeInput) (req
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/BatchCreateAttendee
+//
+// Deprecated: Replaced by BatchCreateAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) BatchCreateAttendee(input *BatchCreateAttendeeInput) (*BatchCreateAttendeeOutput, error) {
 	req, out := c.BatchCreateAttendeeRequest(input)
 	return out, req.Send()
@@ -510,6 +560,8 @@ func (c *Chime) BatchCreateAttendee(input *BatchCreateAttendeeInput) (*BatchCrea
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by BatchCreateAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) BatchCreateAttendeeWithContext(ctx aws.Context, input *BatchCreateAttendeeInput, opts ...request.Option) (*BatchCreateAttendeeOutput, error) {
 	req, out := c.BatchCreateAttendeeRequest(input)
 	req.SetContext(ctx)
@@ -542,7 +594,12 @@ const opBatchCreateChannelMembership = "BatchCreateChannelMembership"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/BatchCreateChannelMembership
+//
+// Deprecated: Replaced by BatchCreateChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) BatchCreateChannelMembershipRequest(input *BatchCreateChannelMembershipInput) (req *request.Request, output *BatchCreateChannelMembershipOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, BatchCreateChannelMembership, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opBatchCreateChannelMembership,
 		HTTPMethod: "POST",
@@ -563,6 +620,14 @@ func (c *Chime) BatchCreateChannelMembershipRequest(input *BatchCreateChannelMem
 // BatchCreateChannelMembership API operation for Amazon Chime.
 //
 // Adds a specified number of users to a channel.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, BatchCreateChannelMembership (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_BatchCreateChannelMembership.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -592,6 +657,8 @@ func (c *Chime) BatchCreateChannelMembershipRequest(input *BatchCreateChannelMem
 //     The client exceeded its request rate limit.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/BatchCreateChannelMembership
+//
+// Deprecated: Replaced by BatchCreateChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) BatchCreateChannelMembership(input *BatchCreateChannelMembershipInput) (*BatchCreateChannelMembershipOutput, error) {
 	req, out := c.BatchCreateChannelMembershipRequest(input)
 	return out, req.Send()
@@ -606,6 +673,8 @@ func (c *Chime) BatchCreateChannelMembership(input *BatchCreateChannelMembership
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by BatchCreateChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) BatchCreateChannelMembershipWithContext(ctx aws.Context, input *BatchCreateChannelMembershipInput, opts ...request.Option) (*BatchCreateChannelMembershipOutput, error) {
 	req, out := c.BatchCreateChannelMembershipRequest(input)
 	req.SetContext(ctx)
@@ -1359,7 +1428,12 @@ const opCreateAppInstance = "CreateAppInstance"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAppInstance
+//
+// Deprecated: Replaced by CreateAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceRequest(input *CreateAppInstanceInput) (req *request.Request, output *CreateAppInstanceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateAppInstance, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateAppInstance,
 		HTTPMethod: "POST",
@@ -1382,6 +1456,14 @@ func (c *Chime) CreateAppInstanceRequest(input *CreateAppInstanceInput) (req *re
 // Creates an Amazon Chime SDK messaging AppInstance under an AWS account. Only
 // SDK messaging customers use this API. CreateAppInstance supports idempotency
 // behavior as described in the AWS API Standard.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateAppInstance (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_CreateAppInstance.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1418,6 +1500,8 @@ func (c *Chime) CreateAppInstanceRequest(input *CreateAppInstanceInput) (req *re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAppInstance
+//
+// Deprecated: Replaced by CreateAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstance(input *CreateAppInstanceInput) (*CreateAppInstanceOutput, error) {
 	req, out := c.CreateAppInstanceRequest(input)
 	return out, req.Send()
@@ -1432,6 +1516,8 @@ func (c *Chime) CreateAppInstance(input *CreateAppInstanceInput) (*CreateAppInst
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceWithContext(ctx aws.Context, input *CreateAppInstanceInput, opts ...request.Option) (*CreateAppInstanceOutput, error) {
 	req, out := c.CreateAppInstanceRequest(input)
 	req.SetContext(ctx)
@@ -1464,7 +1550,12 @@ const opCreateAppInstanceAdmin = "CreateAppInstanceAdmin"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAppInstanceAdmin
+//
+// Deprecated: Replaced by CreateAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceAdminRequest(input *CreateAppInstanceAdminInput) (req *request.Request, output *CreateAppInstanceAdminOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateAppInstanceAdmin, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateAppInstanceAdmin,
 		HTTPMethod: "POST",
@@ -1486,6 +1577,14 @@ func (c *Chime) CreateAppInstanceAdminRequest(input *CreateAppInstanceAdminInput
 //
 // Promotes an AppInstanceUser to an AppInstanceAdmin. The promoted user can
 // perform the following actions.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateAppInstanceAdmin (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_CreateAppInstanceAdmin.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 //   - ChannelModerator actions across all channels in the AppInstance.
 //
@@ -1528,6 +1627,8 @@ func (c *Chime) CreateAppInstanceAdminRequest(input *CreateAppInstanceAdminInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAppInstanceAdmin
+//
+// Deprecated: Replaced by CreateAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceAdmin(input *CreateAppInstanceAdminInput) (*CreateAppInstanceAdminOutput, error) {
 	req, out := c.CreateAppInstanceAdminRequest(input)
 	return out, req.Send()
@@ -1542,6 +1643,8 @@ func (c *Chime) CreateAppInstanceAdmin(input *CreateAppInstanceAdminInput) (*Cre
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceAdminWithContext(ctx aws.Context, input *CreateAppInstanceAdminInput, opts ...request.Option) (*CreateAppInstanceAdminOutput, error) {
 	req, out := c.CreateAppInstanceAdminRequest(input)
 	req.SetContext(ctx)
@@ -1574,7 +1677,12 @@ const opCreateAppInstanceUser = "CreateAppInstanceUser"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAppInstanceUser
+//
+// Deprecated: Replaced by CreateAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceUserRequest(input *CreateAppInstanceUserInput) (req *request.Request, output *CreateAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateAppInstanceUser,
 		HTTPMethod: "POST",
@@ -1596,6 +1704,14 @@ func (c *Chime) CreateAppInstanceUserRequest(input *CreateAppInstanceUserInput) 
 //
 // Creates a user under an Amazon Chime AppInstance. The request consists of
 // a unique appInstanceUserId and Name for that user.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_CreateAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1632,6 +1748,8 @@ func (c *Chime) CreateAppInstanceUserRequest(input *CreateAppInstanceUserInput) 
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAppInstanceUser
+//
+// Deprecated: Replaced by CreateAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceUser(input *CreateAppInstanceUserInput) (*CreateAppInstanceUserOutput, error) {
 	req, out := c.CreateAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -1646,6 +1764,8 @@ func (c *Chime) CreateAppInstanceUser(input *CreateAppInstanceUserInput) (*Creat
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) CreateAppInstanceUserWithContext(ctx aws.Context, input *CreateAppInstanceUserInput, opts ...request.Option) (*CreateAppInstanceUserOutput, error) {
 	req, out := c.CreateAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -1678,7 +1798,12 @@ const opCreateAttendee = "CreateAttendee"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAttendee
+//
+// Deprecated: Replaced by CreateAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateAttendeeRequest(input *CreateAttendeeInput) (req *request.Request, output *CreateAttendeeOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateAttendee, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateAttendee,
 		HTTPMethod: "POST",
@@ -1697,8 +1822,16 @@ func (c *Chime) CreateAttendeeRequest(input *CreateAttendeeInput) (req *request.
 // CreateAttendee API operation for Amazon Chime.
 //
 // Creates a new attendee for an active Amazon Chime SDK meeting. For more information
-// about the Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide.
+// about the Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateAttendee (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_CreateAttendee.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1734,6 +1867,8 @@ func (c *Chime) CreateAttendeeRequest(input *CreateAttendeeInput) (req *request.
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateAttendee
+//
+// Deprecated: Replaced by CreateAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateAttendee(input *CreateAttendeeInput) (*CreateAttendeeOutput, error) {
 	req, out := c.CreateAttendeeRequest(input)
 	return out, req.Send()
@@ -1748,6 +1883,8 @@ func (c *Chime) CreateAttendee(input *CreateAttendeeInput) (*CreateAttendeeOutpu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateAttendeeWithContext(ctx aws.Context, input *CreateAttendeeInput, opts ...request.Option) (*CreateAttendeeOutput, error) {
 	req, out := c.CreateAttendeeRequest(input)
 	req.SetContext(ctx)
@@ -1880,7 +2017,12 @@ const opCreateChannel = "CreateChannel"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannel
+//
+// Deprecated: Replaced by CreateChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelRequest(input *CreateChannelInput) (req *request.Request, output *CreateChannelOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateChannel, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateChannel,
 		HTTPMethod: "POST",
@@ -1906,6 +2048,14 @@ func (c *Chime) CreateChannelRequest(input *CreateChannelInput) (req *request.Re
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateChannel (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_CreateChannel.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1942,6 +2092,8 @@ func (c *Chime) CreateChannelRequest(input *CreateChannelInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannel
+//
+// Deprecated: Replaced by CreateChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannel(input *CreateChannelInput) (*CreateChannelOutput, error) {
 	req, out := c.CreateChannelRequest(input)
 	return out, req.Send()
@@ -1956,6 +2108,8 @@ func (c *Chime) CreateChannel(input *CreateChannelInput) (*CreateChannelOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelWithContext(ctx aws.Context, input *CreateChannelInput, opts ...request.Option) (*CreateChannelOutput, error) {
 	req, out := c.CreateChannelRequest(input)
 	req.SetContext(ctx)
@@ -1988,7 +2142,12 @@ const opCreateChannelBan = "CreateChannelBan"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannelBan
+//
+// Deprecated: Replaced by CreateChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelBanRequest(input *CreateChannelBanInput) (req *request.Request, output *CreateChannelBanOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateChannelBan, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateChannelBan,
 		HTTPMethod: "POST",
@@ -2017,6 +2176,14 @@ func (c *Chime) CreateChannelBanRequest(input *CreateChannelBanInput) (req *requ
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateChannelBan (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_CreateChannelBan.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2053,6 +2220,8 @@ func (c *Chime) CreateChannelBanRequest(input *CreateChannelBanInput) (req *requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannelBan
+//
+// Deprecated: Replaced by CreateChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelBan(input *CreateChannelBanInput) (*CreateChannelBanOutput, error) {
 	req, out := c.CreateChannelBanRequest(input)
 	return out, req.Send()
@@ -2067,6 +2236,8 @@ func (c *Chime) CreateChannelBan(input *CreateChannelBanInput) (*CreateChannelBa
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelBanWithContext(ctx aws.Context, input *CreateChannelBanInput, opts ...request.Option) (*CreateChannelBanOutput, error) {
 	req, out := c.CreateChannelBanRequest(input)
 	req.SetContext(ctx)
@@ -2099,7 +2270,12 @@ const opCreateChannelMembership = "CreateChannelMembership"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannelMembership
+//
+// Deprecated: Replaced by CreateChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelMembershipRequest(input *CreateChannelMembershipInput) (req *request.Request, output *CreateChannelMembershipOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateChannelMembership, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateChannelMembership,
 		HTTPMethod: "POST",
@@ -2142,6 +2318,14 @@ func (c *Chime) CreateChannelMembershipRequest(input *CreateChannelMembershipInp
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateChannelMembership (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_CreateChannelMembership.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -2177,6 +2361,8 @@ func (c *Chime) CreateChannelMembershipRequest(input *CreateChannelMembershipInp
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannelMembership
+//
+// Deprecated: Replaced by CreateChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelMembership(input *CreateChannelMembershipInput) (*CreateChannelMembershipOutput, error) {
 	req, out := c.CreateChannelMembershipRequest(input)
 	return out, req.Send()
@@ -2191,6 +2377,8 @@ func (c *Chime) CreateChannelMembership(input *CreateChannelMembershipInput) (*C
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelMembershipWithContext(ctx aws.Context, input *CreateChannelMembershipInput, opts ...request.Option) (*CreateChannelMembershipOutput, error) {
 	req, out := c.CreateChannelMembershipRequest(input)
 	req.SetContext(ctx)
@@ -2223,7 +2411,12 @@ const opCreateChannelModerator = "CreateChannelModerator"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannelModerator
+//
+// Deprecated: Replaced by CreateChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelModeratorRequest(input *CreateChannelModeratorInput) (req *request.Request, output *CreateChannelModeratorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateChannelModerator, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateChannelModerator,
 		HTTPMethod: "POST",
@@ -2257,6 +2450,14 @@ func (c *Chime) CreateChannelModeratorRequest(input *CreateChannelModeratorInput
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateChannelModerator (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_CreateChannelModerator.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2293,6 +2494,8 @@ func (c *Chime) CreateChannelModeratorRequest(input *CreateChannelModeratorInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateChannelModerator
+//
+// Deprecated: Replaced by CreateChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelModerator(input *CreateChannelModeratorInput) (*CreateChannelModeratorOutput, error) {
 	req, out := c.CreateChannelModeratorRequest(input)
 	return out, req.Send()
@@ -2307,6 +2510,8 @@ func (c *Chime) CreateChannelModerator(input *CreateChannelModeratorInput) (*Cre
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) CreateChannelModeratorWithContext(ctx aws.Context, input *CreateChannelModeratorInput, opts ...request.Option) (*CreateChannelModeratorOutput, error) {
 	req, out := c.CreateChannelModeratorRequest(input)
 	req.SetContext(ctx)
@@ -2339,7 +2544,12 @@ const opCreateMediaCapturePipeline = "CreateMediaCapturePipeline"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateMediaCapturePipeline
+//
+// Deprecated: Replaced by CreateMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) CreateMediaCapturePipelineRequest(input *CreateMediaCapturePipelineInput) (req *request.Request, output *CreateMediaCapturePipelineOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateMediaCapturePipeline, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateMediaCapturePipeline,
 		HTTPMethod: "POST",
@@ -2358,6 +2568,14 @@ func (c *Chime) CreateMediaCapturePipelineRequest(input *CreateMediaCapturePipel
 // CreateMediaCapturePipeline API operation for Amazon Chime.
 //
 // Creates a media capture pipeline.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateMediaCapturePipeline (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_media-pipelines-chime_CreateMediaCapturePipeline),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2390,6 +2608,8 @@ func (c *Chime) CreateMediaCapturePipelineRequest(input *CreateMediaCapturePipel
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateMediaCapturePipeline
+//
+// Deprecated: Replaced by CreateMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) CreateMediaCapturePipeline(input *CreateMediaCapturePipelineInput) (*CreateMediaCapturePipelineOutput, error) {
 	req, out := c.CreateMediaCapturePipelineRequest(input)
 	return out, req.Send()
@@ -2404,6 +2624,8 @@ func (c *Chime) CreateMediaCapturePipeline(input *CreateMediaCapturePipelineInpu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) CreateMediaCapturePipelineWithContext(ctx aws.Context, input *CreateMediaCapturePipelineInput, opts ...request.Option) (*CreateMediaCapturePipelineOutput, error) {
 	req, out := c.CreateMediaCapturePipelineRequest(input)
 	req.SetContext(ctx)
@@ -2436,7 +2658,12 @@ const opCreateMeeting = "CreateMeeting"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateMeeting
+//
+// Deprecated: Replaced by CreateMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateMeetingRequest(input *CreateMeetingInput) (req *request.Request, output *CreateMeetingOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateMeeting, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateMeeting,
 		HTTPMethod: "POST",
@@ -2456,10 +2683,18 @@ func (c *Chime) CreateMeetingRequest(input *CreateMeetingInput) (req *request.Re
 //
 // Creates a new Amazon Chime SDK meeting in the specified media Region with
 // no initial attendees. For more information about specifying media Regions,
-// see Amazon Chime SDK Media Regions (https://docs.aws.amazon.com/chime/latest/dg/chime-sdk-meetings-regions.html)
-// in the Amazon Chime Developer Guide . For more information about the Amazon
-// Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide .
+// see Amazon Chime SDK Media Regions (https://docs.aws.amazon.com/chime-sdk/latest/dg/chime-sdk-meetings-regions.html)
+// in the Amazon Chime SDK Developer Guide . For more information about the
+// Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateMeeting (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_CreateMeeting.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2492,6 +2727,8 @@ func (c *Chime) CreateMeetingRequest(input *CreateMeetingInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateMeeting
+//
+// Deprecated: Replaced by CreateMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateMeeting(input *CreateMeetingInput) (*CreateMeetingOutput, error) {
 	req, out := c.CreateMeetingRequest(input)
 	return out, req.Send()
@@ -2506,6 +2743,8 @@ func (c *Chime) CreateMeeting(input *CreateMeetingInput) (*CreateMeetingOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateMeetingWithContext(ctx aws.Context, input *CreateMeetingInput, opts ...request.Option) (*CreateMeetingOutput, error) {
 	req, out := c.CreateMeetingRequest(input)
 	req.SetContext(ctx)
@@ -2564,6 +2803,8 @@ func (c *Chime) CreateMeetingDialOutRequest(input *CreateMeetingDialOutInput) (r
 // To play welcome audio or implement an interactive voice response (IVR), use
 // the CreateSipMediaApplicationCall action with the corresponding SIP media
 // application ID.
+//
+// This API is is not available in a dedicated namespace.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2645,7 +2886,12 @@ const opCreateMeetingWithAttendees = "CreateMeetingWithAttendees"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateMeetingWithAttendees
+//
+// Deprecated: Replaced by CreateMeetingWithAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateMeetingWithAttendeesRequest(input *CreateMeetingWithAttendeesInput) (req *request.Request, output *CreateMeetingWithAttendeesOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateMeetingWithAttendees, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateMeetingWithAttendees,
 		HTTPMethod: "POST",
@@ -2665,10 +2911,18 @@ func (c *Chime) CreateMeetingWithAttendeesRequest(input *CreateMeetingWithAttend
 //
 // Creates a new Amazon Chime SDK meeting in the specified media Region, with
 // attendees. For more information about specifying media Regions, see Amazon
-// Chime SDK Media Regions (https://docs.aws.amazon.com/chime/latest/dg/chime-sdk-meetings-regions.html)
-// in the Amazon Chime Developer Guide . For more information about the Amazon
-// Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide .
+// Chime SDK Media Regions (https://docs.aws.amazon.com/chime-sdk/latest/dg/chime-sdk-meetings-regions.html)
+// in the Amazon Chime SDK Developer Guide . For more information about the
+// Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide .
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateMeetingWithAttendees (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_CreateMeetingWithAttendees.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2701,6 +2955,8 @@ func (c *Chime) CreateMeetingWithAttendeesRequest(input *CreateMeetingWithAttend
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateMeetingWithAttendees
+//
+// Deprecated: Replaced by CreateMeetingWithAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateMeetingWithAttendees(input *CreateMeetingWithAttendeesInput) (*CreateMeetingWithAttendeesOutput, error) {
 	req, out := c.CreateMeetingWithAttendeesRequest(input)
 	return out, req.Send()
@@ -2715,6 +2971,8 @@ func (c *Chime) CreateMeetingWithAttendees(input *CreateMeetingWithAttendeesInpu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateMeetingWithAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) CreateMeetingWithAttendeesWithContext(ctx aws.Context, input *CreateMeetingWithAttendeesInput, opts ...request.Option) (*CreateMeetingWithAttendeesOutput, error) {
 	req, out := c.CreateMeetingWithAttendeesRequest(input)
 	req.SetContext(ctx)
@@ -2850,7 +3108,12 @@ const opCreateProxySession = "CreateProxySession"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateProxySession
+//
+// Deprecated: Replaced by CreateProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateProxySessionRequest(input *CreateProxySessionInput) (req *request.Request, output *CreateProxySessionOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateProxySession, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateProxySession,
 		HTTPMethod: "POST",
@@ -2870,6 +3133,14 @@ func (c *Chime) CreateProxySessionRequest(input *CreateProxySessionInput) (req *
 //
 // Creates a proxy session on the specified Amazon Chime Voice Connector for
 // the specified participant phone numbers.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateProxySession (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_CreateProxySession.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2902,6 +3173,8 @@ func (c *Chime) CreateProxySessionRequest(input *CreateProxySessionInput) (req *
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateProxySession
+//
+// Deprecated: Replaced by CreateProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateProxySession(input *CreateProxySessionInput) (*CreateProxySessionOutput, error) {
 	req, out := c.CreateProxySessionRequest(input)
 	return out, req.Send()
@@ -2916,6 +3189,8 @@ func (c *Chime) CreateProxySession(input *CreateProxySessionInput) (*CreateProxy
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateProxySessionWithContext(ctx aws.Context, input *CreateProxySessionInput, opts ...request.Option) (*CreateProxySessionOutput, error) {
 	req, out := c.CreateProxySessionRequest(input)
 	req.SetContext(ctx)
@@ -3154,7 +3429,12 @@ const opCreateSipMediaApplication = "CreateSipMediaApplication"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateSipMediaApplication
+//
+// Deprecated: Replaced by CreateSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipMediaApplicationRequest(input *CreateSipMediaApplicationInput) (req *request.Request, output *CreateSipMediaApplicationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateSipMediaApplication, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateSipMediaApplication,
 		HTTPMethod: "POST",
@@ -3173,6 +3453,14 @@ func (c *Chime) CreateSipMediaApplicationRequest(input *CreateSipMediaApplicatio
 // CreateSipMediaApplication API operation for Amazon Chime.
 //
 // Creates a SIP media application.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateSipMediaApplication (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_CreateSipMediaApplication.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3212,6 +3500,8 @@ func (c *Chime) CreateSipMediaApplicationRequest(input *CreateSipMediaApplicatio
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateSipMediaApplication
+//
+// Deprecated: Replaced by CreateSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipMediaApplication(input *CreateSipMediaApplicationInput) (*CreateSipMediaApplicationOutput, error) {
 	req, out := c.CreateSipMediaApplicationRequest(input)
 	return out, req.Send()
@@ -3226,6 +3516,8 @@ func (c *Chime) CreateSipMediaApplication(input *CreateSipMediaApplicationInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipMediaApplicationWithContext(ctx aws.Context, input *CreateSipMediaApplicationInput, opts ...request.Option) (*CreateSipMediaApplicationOutput, error) {
 	req, out := c.CreateSipMediaApplicationRequest(input)
 	req.SetContext(ctx)
@@ -3258,7 +3550,12 @@ const opCreateSipMediaApplicationCall = "CreateSipMediaApplicationCall"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateSipMediaApplicationCall
+//
+// Deprecated: Replaced by CreateSipMediaApplicationCall in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipMediaApplicationCallRequest(input *CreateSipMediaApplicationCallInput) (req *request.Request, output *CreateSipMediaApplicationCallOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateSipMediaApplicationCall, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateSipMediaApplicationCall,
 		HTTPMethod: "POST",
@@ -3278,6 +3575,14 @@ func (c *Chime) CreateSipMediaApplicationCallRequest(input *CreateSipMediaApplic
 //
 // Creates an outbound call to a phone number from the phone number specified
 // in the request, and it invokes the endpoint of the specified sipMediaApplicationId.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateSipMediaApplicationCall (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_CreateSipMediaApplicationCall.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3313,6 +3618,8 @@ func (c *Chime) CreateSipMediaApplicationCallRequest(input *CreateSipMediaApplic
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateSipMediaApplicationCall
+//
+// Deprecated: Replaced by CreateSipMediaApplicationCall in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipMediaApplicationCall(input *CreateSipMediaApplicationCallInput) (*CreateSipMediaApplicationCallOutput, error) {
 	req, out := c.CreateSipMediaApplicationCallRequest(input)
 	return out, req.Send()
@@ -3327,6 +3634,8 @@ func (c *Chime) CreateSipMediaApplicationCall(input *CreateSipMediaApplicationCa
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateSipMediaApplicationCall in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipMediaApplicationCallWithContext(ctx aws.Context, input *CreateSipMediaApplicationCallInput, opts ...request.Option) (*CreateSipMediaApplicationCallOutput, error) {
 	req, out := c.CreateSipMediaApplicationCallRequest(input)
 	req.SetContext(ctx)
@@ -3359,7 +3668,12 @@ const opCreateSipRule = "CreateSipRule"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateSipRule
+//
+// Deprecated: Replaced by CreateSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipRuleRequest(input *CreateSipRuleInput) (req *request.Request, output *CreateSipRuleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateSipRule, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateSipRule,
 		HTTPMethod: "POST",
@@ -3379,6 +3693,14 @@ func (c *Chime) CreateSipRuleRequest(input *CreateSipRuleInput) (req *request.Re
 //
 // Creates a SIP rule which can be used to run a SIP media application as a
 // target for a specific trigger type.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateSipRule (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_CreateSipRule.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3418,6 +3740,8 @@ func (c *Chime) CreateSipRuleRequest(input *CreateSipRuleInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateSipRule
+//
+// Deprecated: Replaced by CreateSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipRule(input *CreateSipRuleInput) (*CreateSipRuleOutput, error) {
 	req, out := c.CreateSipRuleRequest(input)
 	return out, req.Send()
@@ -3432,6 +3756,8 @@ func (c *Chime) CreateSipRule(input *CreateSipRuleInput) (*CreateSipRuleOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateSipRuleWithContext(ctx aws.Context, input *CreateSipRuleInput, opts ...request.Option) (*CreateSipRuleOutput, error) {
 	req, out := c.CreateSipRuleRequest(input)
 	req.SetContext(ctx)
@@ -3565,7 +3891,12 @@ const opCreateVoiceConnector = "CreateVoiceConnector"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateVoiceConnector
+//
+// Deprecated: Replaced by CreateVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateVoiceConnectorRequest(input *CreateVoiceConnectorInput) (req *request.Request, output *CreateVoiceConnectorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateVoiceConnector, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateVoiceConnector,
 		HTTPMethod: "POST",
@@ -3591,6 +3922,14 @@ func (c *Chime) CreateVoiceConnectorRequest(input *CreateVoiceConnectorInput) (r
 // Chime Voice Connector to use TLS transport for SIP signaling and Secure RTP
 // (SRTP) for media. Inbound calls use TLS transport, and unencrypted outbound
 // calls are blocked.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateVoiceConnector (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_CreateVoiceConnector.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3626,6 +3965,8 @@ func (c *Chime) CreateVoiceConnectorRequest(input *CreateVoiceConnectorInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateVoiceConnector
+//
+// Deprecated: Replaced by CreateVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateVoiceConnector(input *CreateVoiceConnectorInput) (*CreateVoiceConnectorOutput, error) {
 	req, out := c.CreateVoiceConnectorRequest(input)
 	return out, req.Send()
@@ -3640,6 +3981,8 @@ func (c *Chime) CreateVoiceConnector(input *CreateVoiceConnectorInput) (*CreateV
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateVoiceConnectorWithContext(ctx aws.Context, input *CreateVoiceConnectorInput, opts ...request.Option) (*CreateVoiceConnectorOutput, error) {
 	req, out := c.CreateVoiceConnectorRequest(input)
 	req.SetContext(ctx)
@@ -3672,7 +4015,12 @@ const opCreateVoiceConnectorGroup = "CreateVoiceConnectorGroup"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateVoiceConnectorGroup
+//
+// Deprecated: Replaced by CreateVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateVoiceConnectorGroupRequest(input *CreateVoiceConnectorGroupInput) (req *request.Request, output *CreateVoiceConnectorGroupOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, CreateVoiceConnectorGroup, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opCreateVoiceConnectorGroup,
 		HTTPMethod: "POST",
@@ -3697,6 +4045,14 @@ func (c *Chime) CreateVoiceConnectorGroupRequest(input *CreateVoiceConnectorGrou
 // You can include Amazon Chime Voice Connectors from different AWS Regions
 // in your group. This creates a fault tolerant mechanism for fallback in case
 // of availability events.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, CreateVoiceConnectorGroup (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_CreateVoiceConnectorGroup.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3732,6 +4088,8 @@ func (c *Chime) CreateVoiceConnectorGroupRequest(input *CreateVoiceConnectorGrou
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/CreateVoiceConnectorGroup
+//
+// Deprecated: Replaced by CreateVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateVoiceConnectorGroup(input *CreateVoiceConnectorGroupInput) (*CreateVoiceConnectorGroupOutput, error) {
 	req, out := c.CreateVoiceConnectorGroupRequest(input)
 	return out, req.Send()
@@ -3746,6 +4104,8 @@ func (c *Chime) CreateVoiceConnectorGroup(input *CreateVoiceConnectorGroupInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by CreateVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) CreateVoiceConnectorGroupWithContext(ctx aws.Context, input *CreateVoiceConnectorGroupInput, opts ...request.Option) (*CreateVoiceConnectorGroupOutput, error) {
 	req, out := c.CreateVoiceConnectorGroupRequest(input)
 	req.SetContext(ctx)
@@ -3891,7 +4251,12 @@ const opDeleteAppInstance = "DeleteAppInstance"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstance
+//
+// Deprecated: Replaced by DeleteAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceRequest(input *DeleteAppInstanceInput) (req *request.Request, output *DeleteAppInstanceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteAppInstance, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteAppInstance,
 		HTTPMethod: "DELETE",
@@ -3913,6 +4278,14 @@ func (c *Chime) DeleteAppInstanceRequest(input *DeleteAppInstanceInput) (req *re
 // DeleteAppInstance API operation for Amazon Chime.
 //
 // Deletes an AppInstance and all associated data asynchronously.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteAppInstance (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DeleteAppInstance.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3942,6 +4315,8 @@ func (c *Chime) DeleteAppInstanceRequest(input *DeleteAppInstanceInput) (req *re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstance
+//
+// Deprecated: Replaced by DeleteAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstance(input *DeleteAppInstanceInput) (*DeleteAppInstanceOutput, error) {
 	req, out := c.DeleteAppInstanceRequest(input)
 	return out, req.Send()
@@ -3956,6 +4331,8 @@ func (c *Chime) DeleteAppInstance(input *DeleteAppInstanceInput) (*DeleteAppInst
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceWithContext(ctx aws.Context, input *DeleteAppInstanceInput, opts ...request.Option) (*DeleteAppInstanceOutput, error) {
 	req, out := c.DeleteAppInstanceRequest(input)
 	req.SetContext(ctx)
@@ -3988,7 +4365,12 @@ const opDeleteAppInstanceAdmin = "DeleteAppInstanceAdmin"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstanceAdmin
+//
+// Deprecated: Replaced by DeleteAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceAdminRequest(input *DeleteAppInstanceAdminInput) (req *request.Request, output *DeleteAppInstanceAdminOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteAppInstanceAdmin, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteAppInstanceAdmin,
 		HTTPMethod: "DELETE",
@@ -4011,6 +4393,14 @@ func (c *Chime) DeleteAppInstanceAdminRequest(input *DeleteAppInstanceAdminInput
 //
 // Demotes an AppInstanceAdmin to an AppInstanceUser. This action does not delete
 // the user.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteAppInstanceAdmin (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DeleteAppInstanceAdmin.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4044,6 +4434,8 @@ func (c *Chime) DeleteAppInstanceAdminRequest(input *DeleteAppInstanceAdminInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstanceAdmin
+//
+// Deprecated: Replaced by DeleteAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceAdmin(input *DeleteAppInstanceAdminInput) (*DeleteAppInstanceAdminOutput, error) {
 	req, out := c.DeleteAppInstanceAdminRequest(input)
 	return out, req.Send()
@@ -4058,6 +4450,8 @@ func (c *Chime) DeleteAppInstanceAdmin(input *DeleteAppInstanceAdminInput) (*Del
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceAdminWithContext(ctx aws.Context, input *DeleteAppInstanceAdminInput, opts ...request.Option) (*DeleteAppInstanceAdminOutput, error) {
 	req, out := c.DeleteAppInstanceAdminRequest(input)
 	req.SetContext(ctx)
@@ -4090,7 +4484,12 @@ const opDeleteAppInstanceStreamingConfigurations = "DeleteAppInstanceStreamingCo
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstanceStreamingConfigurations
+//
+// Deprecated: Replaced by DeleteAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteAppInstanceStreamingConfigurationsRequest(input *DeleteAppInstanceStreamingConfigurationsInput) (req *request.Request, output *DeleteAppInstanceStreamingConfigurationsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteAppInstanceStreamingConfigurations, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteAppInstanceStreamingConfigurations,
 		HTTPMethod: "DELETE",
@@ -4110,6 +4509,14 @@ func (c *Chime) DeleteAppInstanceStreamingConfigurationsRequest(input *DeleteApp
 // DeleteAppInstanceStreamingConfigurations API operation for Amazon Chime.
 //
 // Deletes the streaming configurations of an AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteAppInstanceStreamingConfigurations (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DeleteAppInstanceStreamingConfigurations.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4142,6 +4549,8 @@ func (c *Chime) DeleteAppInstanceStreamingConfigurationsRequest(input *DeleteApp
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstanceStreamingConfigurations
+//
+// Deprecated: Replaced by DeleteAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteAppInstanceStreamingConfigurations(input *DeleteAppInstanceStreamingConfigurationsInput) (*DeleteAppInstanceStreamingConfigurationsOutput, error) {
 	req, out := c.DeleteAppInstanceStreamingConfigurationsRequest(input)
 	return out, req.Send()
@@ -4156,6 +4565,8 @@ func (c *Chime) DeleteAppInstanceStreamingConfigurations(input *DeleteAppInstanc
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteAppInstanceStreamingConfigurationsWithContext(ctx aws.Context, input *DeleteAppInstanceStreamingConfigurationsInput, opts ...request.Option) (*DeleteAppInstanceStreamingConfigurationsOutput, error) {
 	req, out := c.DeleteAppInstanceStreamingConfigurationsRequest(input)
 	req.SetContext(ctx)
@@ -4188,7 +4599,12 @@ const opDeleteAppInstanceUser = "DeleteAppInstanceUser"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstanceUser
+//
+// Deprecated: Replaced by DeleteAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceUserRequest(input *DeleteAppInstanceUserInput) (req *request.Request, output *DeleteAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteAppInstanceUser,
 		HTTPMethod: "DELETE",
@@ -4210,6 +4626,14 @@ func (c *Chime) DeleteAppInstanceUserRequest(input *DeleteAppInstanceUserInput) 
 // DeleteAppInstanceUser API operation for Amazon Chime.
 //
 // Deletes an AppInstanceUser.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DeleteAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4239,6 +4663,8 @@ func (c *Chime) DeleteAppInstanceUserRequest(input *DeleteAppInstanceUserInput) 
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAppInstanceUser
+//
+// Deprecated: Replaced by DeleteAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceUser(input *DeleteAppInstanceUserInput) (*DeleteAppInstanceUserOutput, error) {
 	req, out := c.DeleteAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -4253,6 +4679,8 @@ func (c *Chime) DeleteAppInstanceUser(input *DeleteAppInstanceUserInput) (*Delet
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DeleteAppInstanceUserWithContext(ctx aws.Context, input *DeleteAppInstanceUserInput, opts ...request.Option) (*DeleteAppInstanceUserOutput, error) {
 	req, out := c.DeleteAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -4285,7 +4713,12 @@ const opDeleteAttendee = "DeleteAttendee"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAttendee
+//
+// Deprecated: Replaced by DeleteAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) DeleteAttendeeRequest(input *DeleteAttendeeInput) (req *request.Request, output *DeleteAttendeeOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteAttendee, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteAttendee,
 		HTTPMethod: "DELETE",
@@ -4307,8 +4740,16 @@ func (c *Chime) DeleteAttendeeRequest(input *DeleteAttendeeInput) (req *request.
 // Deletes an attendee from the specified Amazon Chime SDK meeting and deletes
 // their JoinToken. Attendees are automatically deleted when a Amazon Chime
 // SDK meeting is deleted. For more information about the Amazon Chime SDK,
-// see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide.
+// see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteAttendee (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_DeleteAttendee.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4341,6 +4782,8 @@ func (c *Chime) DeleteAttendeeRequest(input *DeleteAttendeeInput) (req *request.
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteAttendee
+//
+// Deprecated: Replaced by DeleteAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) DeleteAttendee(input *DeleteAttendeeInput) (*DeleteAttendeeOutput, error) {
 	req, out := c.DeleteAttendeeRequest(input)
 	return out, req.Send()
@@ -4355,6 +4798,8 @@ func (c *Chime) DeleteAttendee(input *DeleteAttendeeInput) (*DeleteAttendeeOutpu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) DeleteAttendeeWithContext(ctx aws.Context, input *DeleteAttendeeInput, opts ...request.Option) (*DeleteAttendeeOutput, error) {
 	req, out := c.DeleteAttendeeRequest(input)
 	req.SetContext(ctx)
@@ -4387,7 +4832,12 @@ const opDeleteChannel = "DeleteChannel"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannel
+//
+// Deprecated: Replaced by DeleteChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Request, output *DeleteChannelOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteChannel, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteChannel,
 		HTTPMethod: "DELETE",
@@ -4413,6 +4863,14 @@ func (c *Chime) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Re
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteChannel (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DeleteChannel.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4442,6 +4900,8 @@ func (c *Chime) DeleteChannelRequest(input *DeleteChannelInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannel
+//
+// Deprecated: Replaced by DeleteChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannel(input *DeleteChannelInput) (*DeleteChannelOutput, error) {
 	req, out := c.DeleteChannelRequest(input)
 	return out, req.Send()
@@ -4456,6 +4916,8 @@ func (c *Chime) DeleteChannel(input *DeleteChannelInput) (*DeleteChannelOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelWithContext(ctx aws.Context, input *DeleteChannelInput, opts ...request.Option) (*DeleteChannelOutput, error) {
 	req, out := c.DeleteChannelRequest(input)
 	req.SetContext(ctx)
@@ -4488,7 +4950,12 @@ const opDeleteChannelBan = "DeleteChannelBan"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelBan
+//
+// Deprecated: Replaced by DeleteChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelBanRequest(input *DeleteChannelBanInput) (req *request.Request, output *DeleteChannelBanOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteChannelBan, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteChannelBan,
 		HTTPMethod: "DELETE",
@@ -4513,6 +4980,14 @@ func (c *Chime) DeleteChannelBanRequest(input *DeleteChannelBanInput) (req *requ
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteChannelBan (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DeleteChannelBan.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4542,6 +5017,8 @@ func (c *Chime) DeleteChannelBanRequest(input *DeleteChannelBanInput) (req *requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelBan
+//
+// Deprecated: Replaced by DeleteChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelBan(input *DeleteChannelBanInput) (*DeleteChannelBanOutput, error) {
 	req, out := c.DeleteChannelBanRequest(input)
 	return out, req.Send()
@@ -4556,6 +5033,8 @@ func (c *Chime) DeleteChannelBan(input *DeleteChannelBanInput) (*DeleteChannelBa
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelBanWithContext(ctx aws.Context, input *DeleteChannelBanInput, opts ...request.Option) (*DeleteChannelBanOutput, error) {
 	req, out := c.DeleteChannelBanRequest(input)
 	req.SetContext(ctx)
@@ -4588,7 +5067,12 @@ const opDeleteChannelMembership = "DeleteChannelMembership"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelMembership
+//
+// Deprecated: Replaced by DeleteChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelMembershipRequest(input *DeleteChannelMembershipInput) (req *request.Request, output *DeleteChannelMembershipOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteChannelMembership, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteChannelMembership,
 		HTTPMethod: "DELETE",
@@ -4613,6 +5097,14 @@ func (c *Chime) DeleteChannelMembershipRequest(input *DeleteChannelMembershipInp
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteChannelMembership (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DeleteChannelMembership.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4646,6 +5138,8 @@ func (c *Chime) DeleteChannelMembershipRequest(input *DeleteChannelMembershipInp
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelMembership
+//
+// Deprecated: Replaced by DeleteChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelMembership(input *DeleteChannelMembershipInput) (*DeleteChannelMembershipOutput, error) {
 	req, out := c.DeleteChannelMembershipRequest(input)
 	return out, req.Send()
@@ -4660,6 +5154,8 @@ func (c *Chime) DeleteChannelMembership(input *DeleteChannelMembershipInput) (*D
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelMembershipWithContext(ctx aws.Context, input *DeleteChannelMembershipInput, opts ...request.Option) (*DeleteChannelMembershipOutput, error) {
 	req, out := c.DeleteChannelMembershipRequest(input)
 	req.SetContext(ctx)
@@ -4692,7 +5188,12 @@ const opDeleteChannelMessage = "DeleteChannelMessage"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelMessage
+//
+// Deprecated: Replaced by DeleteChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelMessageRequest(input *DeleteChannelMessageInput) (req *request.Request, output *DeleteChannelMessageOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteChannelMessage, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteChannelMessage,
 		HTTPMethod: "DELETE",
@@ -4719,6 +5220,14 @@ func (c *Chime) DeleteChannelMessageRequest(input *DeleteChannelMessageInput) (r
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteChannelMessage (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DeleteChannelMessage.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4748,6 +5257,8 @@ func (c *Chime) DeleteChannelMessageRequest(input *DeleteChannelMessageInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelMessage
+//
+// Deprecated: Replaced by DeleteChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelMessage(input *DeleteChannelMessageInput) (*DeleteChannelMessageOutput, error) {
 	req, out := c.DeleteChannelMessageRequest(input)
 	return out, req.Send()
@@ -4762,6 +5273,8 @@ func (c *Chime) DeleteChannelMessage(input *DeleteChannelMessageInput) (*DeleteC
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelMessageWithContext(ctx aws.Context, input *DeleteChannelMessageInput, opts ...request.Option) (*DeleteChannelMessageOutput, error) {
 	req, out := c.DeleteChannelMessageRequest(input)
 	req.SetContext(ctx)
@@ -4794,7 +5307,12 @@ const opDeleteChannelModerator = "DeleteChannelModerator"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelModerator
+//
+// Deprecated: Replaced by DeleteChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelModeratorRequest(input *DeleteChannelModeratorInput) (req *request.Request, output *DeleteChannelModeratorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteChannelModerator, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteChannelModerator,
 		HTTPMethod: "DELETE",
@@ -4819,6 +5337,14 @@ func (c *Chime) DeleteChannelModeratorRequest(input *DeleteChannelModeratorInput
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteChannelModerator (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DeleteChannelModerator.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4848,6 +5374,8 @@ func (c *Chime) DeleteChannelModeratorRequest(input *DeleteChannelModeratorInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteChannelModerator
+//
+// Deprecated: Replaced by DeleteChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelModerator(input *DeleteChannelModeratorInput) (*DeleteChannelModeratorOutput, error) {
 	req, out := c.DeleteChannelModeratorRequest(input)
 	return out, req.Send()
@@ -4862,6 +5390,8 @@ func (c *Chime) DeleteChannelModerator(input *DeleteChannelModeratorInput) (*Del
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DeleteChannelModeratorWithContext(ctx aws.Context, input *DeleteChannelModeratorInput, opts ...request.Option) (*DeleteChannelModeratorOutput, error) {
 	req, out := c.DeleteChannelModeratorRequest(input)
 	req.SetContext(ctx)
@@ -4989,7 +5519,12 @@ const opDeleteMediaCapturePipeline = "DeleteMediaCapturePipeline"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteMediaCapturePipeline
+//
+// Deprecated: Replaced by DeleteMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) DeleteMediaCapturePipelineRequest(input *DeleteMediaCapturePipelineInput) (req *request.Request, output *DeleteMediaCapturePipelineOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteMediaCapturePipeline, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteMediaCapturePipeline,
 		HTTPMethod: "DELETE",
@@ -5009,6 +5544,14 @@ func (c *Chime) DeleteMediaCapturePipelineRequest(input *DeleteMediaCapturePipel
 // DeleteMediaCapturePipeline API operation for Amazon Chime.
 //
 // Deletes the media capture pipeline.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteMediaCapturePipeline (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_media-pipelines-chime_DeleteMediaCapturePipeline.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5041,6 +5584,8 @@ func (c *Chime) DeleteMediaCapturePipelineRequest(input *DeleteMediaCapturePipel
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteMediaCapturePipeline
+//
+// Deprecated: Replaced by DeleteMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) DeleteMediaCapturePipeline(input *DeleteMediaCapturePipelineInput) (*DeleteMediaCapturePipelineOutput, error) {
 	req, out := c.DeleteMediaCapturePipelineRequest(input)
 	return out, req.Send()
@@ -5055,6 +5600,8 @@ func (c *Chime) DeleteMediaCapturePipeline(input *DeleteMediaCapturePipelineInpu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) DeleteMediaCapturePipelineWithContext(ctx aws.Context, input *DeleteMediaCapturePipelineInput, opts ...request.Option) (*DeleteMediaCapturePipelineOutput, error) {
 	req, out := c.DeleteMediaCapturePipelineRequest(input)
 	req.SetContext(ctx)
@@ -5087,7 +5634,12 @@ const opDeleteMeeting = "DeleteMeeting"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteMeeting
+//
+// Deprecated: Replaced by DeleteMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) DeleteMeetingRequest(input *DeleteMeetingInput) (req *request.Request, output *DeleteMeetingOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteMeeting, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteMeeting,
 		HTTPMethod: "DELETE",
@@ -5109,8 +5661,16 @@ func (c *Chime) DeleteMeetingRequest(input *DeleteMeetingInput) (req *request.Re
 // Deletes the specified Amazon Chime SDK meeting. The operation deletes all
 // attendees, disconnects all clients, and prevents new clients from joining
 // the meeting. For more information about the Amazon Chime SDK, see Using the
-// Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide.
+// Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteMeeting (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_DeleteMeeting.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5143,6 +5703,8 @@ func (c *Chime) DeleteMeetingRequest(input *DeleteMeetingInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteMeeting
+//
+// Deprecated: Replaced by DeleteMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) DeleteMeeting(input *DeleteMeetingInput) (*DeleteMeetingOutput, error) {
 	req, out := c.DeleteMeetingRequest(input)
 	return out, req.Send()
@@ -5157,6 +5719,8 @@ func (c *Chime) DeleteMeeting(input *DeleteMeetingInput) (*DeleteMeetingOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) DeleteMeetingWithContext(ctx aws.Context, input *DeleteMeetingInput, opts ...request.Option) (*DeleteMeetingOutput, error) {
 	req, out := c.DeleteMeetingRequest(input)
 	req.SetContext(ctx)
@@ -5292,7 +5856,12 @@ const opDeleteProxySession = "DeleteProxySession"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteProxySession
+//
+// Deprecated: Replaced by DeleteProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteProxySessionRequest(input *DeleteProxySessionInput) (req *request.Request, output *DeleteProxySessionOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteProxySession, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteProxySession,
 		HTTPMethod: "DELETE",
@@ -5313,6 +5882,14 @@ func (c *Chime) DeleteProxySessionRequest(input *DeleteProxySessionInput) (req *
 //
 // Deletes the specified proxy session from the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteProxySession (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteProxySession.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5345,6 +5922,8 @@ func (c *Chime) DeleteProxySessionRequest(input *DeleteProxySessionInput) (req *
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteProxySession
+//
+// Deprecated: Replaced by DeleteProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteProxySession(input *DeleteProxySessionInput) (*DeleteProxySessionOutput, error) {
 	req, out := c.DeleteProxySessionRequest(input)
 	return out, req.Send()
@@ -5359,6 +5938,8 @@ func (c *Chime) DeleteProxySession(input *DeleteProxySessionInput) (*DeleteProxy
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteProxySessionWithContext(ctx aws.Context, input *DeleteProxySessionInput, opts ...request.Option) (*DeleteProxySessionOutput, error) {
 	req, out := c.DeleteProxySessionRequest(input)
 	req.SetContext(ctx)
@@ -5587,7 +6168,12 @@ const opDeleteSipMediaApplication = "DeleteSipMediaApplication"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteSipMediaApplication
+//
+// Deprecated: Replaced by DeleteSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteSipMediaApplicationRequest(input *DeleteSipMediaApplicationInput) (req *request.Request, output *DeleteSipMediaApplicationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteSipMediaApplication, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteSipMediaApplication,
 		HTTPMethod: "DELETE",
@@ -5607,6 +6193,14 @@ func (c *Chime) DeleteSipMediaApplicationRequest(input *DeleteSipMediaApplicatio
 // DeleteSipMediaApplication API operation for Amazon Chime.
 //
 // Deletes a SIP media application.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteSipMediaApplication (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteSipMediaApplication.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5643,6 +6237,8 @@ func (c *Chime) DeleteSipMediaApplicationRequest(input *DeleteSipMediaApplicatio
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteSipMediaApplication
+//
+// Deprecated: Replaced by DeleteSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteSipMediaApplication(input *DeleteSipMediaApplicationInput) (*DeleteSipMediaApplicationOutput, error) {
 	req, out := c.DeleteSipMediaApplicationRequest(input)
 	return out, req.Send()
@@ -5657,6 +6253,8 @@ func (c *Chime) DeleteSipMediaApplication(input *DeleteSipMediaApplicationInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteSipMediaApplicationWithContext(ctx aws.Context, input *DeleteSipMediaApplicationInput, opts ...request.Option) (*DeleteSipMediaApplicationOutput, error) {
 	req, out := c.DeleteSipMediaApplicationRequest(input)
 	req.SetContext(ctx)
@@ -5689,7 +6287,12 @@ const opDeleteSipRule = "DeleteSipRule"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteSipRule
+//
+// Deprecated: Replaced by DeleteSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteSipRuleRequest(input *DeleteSipRuleInput) (req *request.Request, output *DeleteSipRuleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteSipRule, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteSipRule,
 		HTTPMethod: "DELETE",
@@ -5709,6 +6312,14 @@ func (c *Chime) DeleteSipRuleRequest(input *DeleteSipRuleInput) (req *request.Re
 // DeleteSipRule API operation for Amazon Chime.
 //
 // Deletes a SIP rule. You must disable a SIP rule before you can delete it.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteSipRule (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteSipRule.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5745,6 +6356,8 @@ func (c *Chime) DeleteSipRuleRequest(input *DeleteSipRuleInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteSipRule
+//
+// Deprecated: Replaced by DeleteSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteSipRule(input *DeleteSipRuleInput) (*DeleteSipRuleOutput, error) {
 	req, out := c.DeleteSipRuleRequest(input)
 	return out, req.Send()
@@ -5759,6 +6372,8 @@ func (c *Chime) DeleteSipRule(input *DeleteSipRuleInput) (*DeleteSipRuleOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteSipRuleWithContext(ctx aws.Context, input *DeleteSipRuleInput, opts ...request.Option) (*DeleteSipRuleOutput, error) {
 	req, out := c.DeleteSipRuleRequest(input)
 	req.SetContext(ctx)
@@ -5791,7 +6406,12 @@ const opDeleteVoiceConnector = "DeleteVoiceConnector"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnector
+//
+// Deprecated: Replaced by DeleteVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorRequest(input *DeleteVoiceConnectorInput) (req *request.Request, output *DeleteVoiceConnectorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnector, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnector,
 		HTTPMethod: "DELETE",
@@ -5813,6 +6433,14 @@ func (c *Chime) DeleteVoiceConnectorRequest(input *DeleteVoiceConnectorInput) (r
 // Deletes the specified Amazon Chime Voice Connector. Any phone numbers associated
 // with the Amazon Chime Voice Connector must be disassociated from it before
 // it can be deleted.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnector (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnector.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5849,6 +6477,8 @@ func (c *Chime) DeleteVoiceConnectorRequest(input *DeleteVoiceConnectorInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnector
+//
+// Deprecated: Replaced by DeleteVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnector(input *DeleteVoiceConnectorInput) (*DeleteVoiceConnectorOutput, error) {
 	req, out := c.DeleteVoiceConnectorRequest(input)
 	return out, req.Send()
@@ -5863,6 +6493,8 @@ func (c *Chime) DeleteVoiceConnector(input *DeleteVoiceConnectorInput) (*DeleteV
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorWithContext(ctx aws.Context, input *DeleteVoiceConnectorInput, opts ...request.Option) (*DeleteVoiceConnectorOutput, error) {
 	req, out := c.DeleteVoiceConnectorRequest(input)
 	req.SetContext(ctx)
@@ -5895,7 +6527,12 @@ const opDeleteVoiceConnectorEmergencyCallingConfiguration = "DeleteVoiceConnecto
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorEmergencyCallingConfiguration
+//
+// Deprecated: Replaced by DeleteVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorEmergencyCallingConfigurationRequest(input *DeleteVoiceConnectorEmergencyCallingConfigurationInput) (req *request.Request, output *DeleteVoiceConnectorEmergencyCallingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorEmergencyCallingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorEmergencyCallingConfiguration,
 		HTTPMethod: "DELETE",
@@ -5916,6 +6553,15 @@ func (c *Chime) DeleteVoiceConnectorEmergencyCallingConfigurationRequest(input *
 //
 // Deletes the emergency calling configuration details from the specified Amazon
 // Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnectorEmergencyCallingConfiguration
+// (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorEmergencyCallingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -5948,6 +6594,8 @@ func (c *Chime) DeleteVoiceConnectorEmergencyCallingConfigurationRequest(input *
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorEmergencyCallingConfiguration
+//
+// Deprecated: Replaced by DeleteVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorEmergencyCallingConfiguration(input *DeleteVoiceConnectorEmergencyCallingConfigurationInput) (*DeleteVoiceConnectorEmergencyCallingConfigurationOutput, error) {
 	req, out := c.DeleteVoiceConnectorEmergencyCallingConfigurationRequest(input)
 	return out, req.Send()
@@ -5962,6 +6610,8 @@ func (c *Chime) DeleteVoiceConnectorEmergencyCallingConfiguration(input *DeleteV
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorEmergencyCallingConfigurationWithContext(ctx aws.Context, input *DeleteVoiceConnectorEmergencyCallingConfigurationInput, opts ...request.Option) (*DeleteVoiceConnectorEmergencyCallingConfigurationOutput, error) {
 	req, out := c.DeleteVoiceConnectorEmergencyCallingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -5994,7 +6644,12 @@ const opDeleteVoiceConnectorGroup = "DeleteVoiceConnectorGroup"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorGroup
+//
+// Deprecated: Replaced by DeleteVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorGroupRequest(input *DeleteVoiceConnectorGroupInput) (req *request.Request, output *DeleteVoiceConnectorGroupOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorGroup, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorGroup,
 		HTTPMethod: "DELETE",
@@ -6016,6 +6671,14 @@ func (c *Chime) DeleteVoiceConnectorGroupRequest(input *DeleteVoiceConnectorGrou
 // Deletes the specified Amazon Chime Voice Connector group. Any VoiceConnectorItems
 // and phone numbers associated with the group must be removed before it can
 // be deleted.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnectorGroup (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorGroup.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6052,6 +6715,8 @@ func (c *Chime) DeleteVoiceConnectorGroupRequest(input *DeleteVoiceConnectorGrou
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorGroup
+//
+// Deprecated: Replaced by DeleteVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorGroup(input *DeleteVoiceConnectorGroupInput) (*DeleteVoiceConnectorGroupOutput, error) {
 	req, out := c.DeleteVoiceConnectorGroupRequest(input)
 	return out, req.Send()
@@ -6066,6 +6731,8 @@ func (c *Chime) DeleteVoiceConnectorGroup(input *DeleteVoiceConnectorGroupInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorGroupWithContext(ctx aws.Context, input *DeleteVoiceConnectorGroupInput, opts ...request.Option) (*DeleteVoiceConnectorGroupOutput, error) {
 	req, out := c.DeleteVoiceConnectorGroupRequest(input)
 	req.SetContext(ctx)
@@ -6098,7 +6765,12 @@ const opDeleteVoiceConnectorOrigination = "DeleteVoiceConnectorOrigination"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorOrigination
+//
+// Deprecated: Replaced by DeleteVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorOriginationRequest(input *DeleteVoiceConnectorOriginationInput) (req *request.Request, output *DeleteVoiceConnectorOriginationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorOrigination, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorOrigination,
 		HTTPMethod: "DELETE",
@@ -6121,6 +6793,14 @@ func (c *Chime) DeleteVoiceConnectorOriginationRequest(input *DeleteVoiceConnect
 //
 // If emergency calling is configured for the Amazon Chime Voice Connector,
 // it must be deleted prior to deleting the origination settings.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnectorOrigination (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorOrigination.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6153,6 +6833,8 @@ func (c *Chime) DeleteVoiceConnectorOriginationRequest(input *DeleteVoiceConnect
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorOrigination
+//
+// Deprecated: Replaced by DeleteVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorOrigination(input *DeleteVoiceConnectorOriginationInput) (*DeleteVoiceConnectorOriginationOutput, error) {
 	req, out := c.DeleteVoiceConnectorOriginationRequest(input)
 	return out, req.Send()
@@ -6167,6 +6849,8 @@ func (c *Chime) DeleteVoiceConnectorOrigination(input *DeleteVoiceConnectorOrigi
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorOriginationWithContext(ctx aws.Context, input *DeleteVoiceConnectorOriginationInput, opts ...request.Option) (*DeleteVoiceConnectorOriginationOutput, error) {
 	req, out := c.DeleteVoiceConnectorOriginationRequest(input)
 	req.SetContext(ctx)
@@ -6199,7 +6883,12 @@ const opDeleteVoiceConnectorProxy = "DeleteVoiceConnectorProxy"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorProxy
+//
+// Deprecated: Replaced by DeleteVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorProxyRequest(input *DeleteVoiceConnectorProxyInput) (req *request.Request, output *DeleteVoiceConnectorProxyOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorProxy, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorProxy,
 		HTTPMethod: "DELETE",
@@ -6219,6 +6908,14 @@ func (c *Chime) DeleteVoiceConnectorProxyRequest(input *DeleteVoiceConnectorProx
 // DeleteVoiceConnectorProxy API operation for Amazon Chime.
 //
 // Deletes the proxy configuration from the specified Amazon Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceProxy (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorProxy.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6251,6 +6948,8 @@ func (c *Chime) DeleteVoiceConnectorProxyRequest(input *DeleteVoiceConnectorProx
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorProxy
+//
+// Deprecated: Replaced by DeleteVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorProxy(input *DeleteVoiceConnectorProxyInput) (*DeleteVoiceConnectorProxyOutput, error) {
 	req, out := c.DeleteVoiceConnectorProxyRequest(input)
 	return out, req.Send()
@@ -6265,6 +6964,8 @@ func (c *Chime) DeleteVoiceConnectorProxy(input *DeleteVoiceConnectorProxyInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorProxyWithContext(ctx aws.Context, input *DeleteVoiceConnectorProxyInput, opts ...request.Option) (*DeleteVoiceConnectorProxyOutput, error) {
 	req, out := c.DeleteVoiceConnectorProxyRequest(input)
 	req.SetContext(ctx)
@@ -6297,7 +6998,12 @@ const opDeleteVoiceConnectorStreamingConfiguration = "DeleteVoiceConnectorStream
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorStreamingConfiguration
+//
+// Deprecated: Replaced by DeleteVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorStreamingConfigurationRequest(input *DeleteVoiceConnectorStreamingConfigurationInput) (req *request.Request, output *DeleteVoiceConnectorStreamingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorStreamingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorStreamingConfiguration,
 		HTTPMethod: "DELETE",
@@ -6318,6 +7024,14 @@ func (c *Chime) DeleteVoiceConnectorStreamingConfigurationRequest(input *DeleteV
 //
 // Deletes the streaming configuration for the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnectorStreamingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorStreamingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6350,6 +7064,8 @@ func (c *Chime) DeleteVoiceConnectorStreamingConfigurationRequest(input *DeleteV
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorStreamingConfiguration
+//
+// Deprecated: Replaced by DeleteVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorStreamingConfiguration(input *DeleteVoiceConnectorStreamingConfigurationInput) (*DeleteVoiceConnectorStreamingConfigurationOutput, error) {
 	req, out := c.DeleteVoiceConnectorStreamingConfigurationRequest(input)
 	return out, req.Send()
@@ -6364,6 +7080,8 @@ func (c *Chime) DeleteVoiceConnectorStreamingConfiguration(input *DeleteVoiceCon
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorStreamingConfigurationWithContext(ctx aws.Context, input *DeleteVoiceConnectorStreamingConfigurationInput, opts ...request.Option) (*DeleteVoiceConnectorStreamingConfigurationOutput, error) {
 	req, out := c.DeleteVoiceConnectorStreamingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -6396,7 +7114,12 @@ const opDeleteVoiceConnectorTermination = "DeleteVoiceConnectorTermination"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorTermination
+//
+// Deprecated: Replaced by DeleteVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorTerminationRequest(input *DeleteVoiceConnectorTerminationInput) (req *request.Request, output *DeleteVoiceConnectorTerminationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorTermination, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorTermination,
 		HTTPMethod: "DELETE",
@@ -6419,6 +7142,14 @@ func (c *Chime) DeleteVoiceConnectorTerminationRequest(input *DeleteVoiceConnect
 //
 // If emergency calling is configured for the Amazon Chime Voice Connector,
 // it must be deleted prior to deleting the termination settings.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnectorTermination (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorTermination.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6451,6 +7182,8 @@ func (c *Chime) DeleteVoiceConnectorTerminationRequest(input *DeleteVoiceConnect
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorTermination
+//
+// Deprecated: Replaced by DeleteVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorTermination(input *DeleteVoiceConnectorTerminationInput) (*DeleteVoiceConnectorTerminationOutput, error) {
 	req, out := c.DeleteVoiceConnectorTerminationRequest(input)
 	return out, req.Send()
@@ -6465,6 +7198,8 @@ func (c *Chime) DeleteVoiceConnectorTermination(input *DeleteVoiceConnectorTermi
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorTerminationWithContext(ctx aws.Context, input *DeleteVoiceConnectorTerminationInput, opts ...request.Option) (*DeleteVoiceConnectorTerminationOutput, error) {
 	req, out := c.DeleteVoiceConnectorTerminationRequest(input)
 	req.SetContext(ctx)
@@ -6497,7 +7232,12 @@ const opDeleteVoiceConnectorTerminationCredentials = "DeleteVoiceConnectorTermin
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorTerminationCredentials
+//
+// Deprecated: Replaced by DeleteVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorTerminationCredentialsRequest(input *DeleteVoiceConnectorTerminationCredentialsInput) (req *request.Request, output *DeleteVoiceConnectorTerminationCredentialsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DeleteVoiceConnectorTerminationCredentials, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDeleteVoiceConnectorTerminationCredentials,
 		HTTPMethod: "POST",
@@ -6518,6 +7258,14 @@ func (c *Chime) DeleteVoiceConnectorTerminationCredentialsRequest(input *DeleteV
 //
 // Deletes the specified SIP credentials used by your equipment to authenticate
 // during call termination.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DeleteVoiceConnectorTerminationCredentials (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DeleteVoiceConnectorTerminationCredentials.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6550,6 +7298,8 @@ func (c *Chime) DeleteVoiceConnectorTerminationCredentialsRequest(input *DeleteV
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DeleteVoiceConnectorTerminationCredentials
+//
+// Deprecated: Replaced by DeleteVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorTerminationCredentials(input *DeleteVoiceConnectorTerminationCredentialsInput) (*DeleteVoiceConnectorTerminationCredentialsOutput, error) {
 	req, out := c.DeleteVoiceConnectorTerminationCredentialsRequest(input)
 	return out, req.Send()
@@ -6564,6 +7314,8 @@ func (c *Chime) DeleteVoiceConnectorTerminationCredentials(input *DeleteVoiceCon
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DeleteVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DeleteVoiceConnectorTerminationCredentialsWithContext(ctx aws.Context, input *DeleteVoiceConnectorTerminationCredentialsInput, opts ...request.Option) (*DeleteVoiceConnectorTerminationCredentialsOutput, error) {
 	req, out := c.DeleteVoiceConnectorTerminationCredentialsRequest(input)
 	req.SetContext(ctx)
@@ -6596,7 +7348,12 @@ const opDescribeAppInstance = "DescribeAppInstance"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeAppInstance
+//
+// Deprecated: Replaced by DescribeAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceRequest(input *DescribeAppInstanceInput) (req *request.Request, output *DescribeAppInstanceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeAppInstance, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeAppInstance,
 		HTTPMethod: "GET",
@@ -6617,6 +7374,14 @@ func (c *Chime) DescribeAppInstanceRequest(input *DescribeAppInstanceInput) (req
 // DescribeAppInstance API operation for Amazon Chime.
 //
 // Returns the full details of an AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeAppInstance (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DescribeAppInstance.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6646,6 +7411,8 @@ func (c *Chime) DescribeAppInstanceRequest(input *DescribeAppInstanceInput) (req
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeAppInstance
+//
+// Deprecated: Replaced by DescribeAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstance(input *DescribeAppInstanceInput) (*DescribeAppInstanceOutput, error) {
 	req, out := c.DescribeAppInstanceRequest(input)
 	return out, req.Send()
@@ -6660,6 +7427,8 @@ func (c *Chime) DescribeAppInstance(input *DescribeAppInstanceInput) (*DescribeA
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceWithContext(ctx aws.Context, input *DescribeAppInstanceInput, opts ...request.Option) (*DescribeAppInstanceOutput, error) {
 	req, out := c.DescribeAppInstanceRequest(input)
 	req.SetContext(ctx)
@@ -6692,7 +7461,12 @@ const opDescribeAppInstanceAdmin = "DescribeAppInstanceAdmin"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeAppInstanceAdmin
+//
+// Deprecated: Replaced by DescribeAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceAdminRequest(input *DescribeAppInstanceAdminInput) (req *request.Request, output *DescribeAppInstanceAdminOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeAppInstanceAdmin, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeAppInstanceAdmin,
 		HTTPMethod: "GET",
@@ -6713,6 +7487,14 @@ func (c *Chime) DescribeAppInstanceAdminRequest(input *DescribeAppInstanceAdminI
 // DescribeAppInstanceAdmin API operation for Amazon Chime.
 //
 // Returns the full details of an AppInstanceAdmin.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeAppInstanceAdmin (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DescribeAppInstanceAdmin.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6742,6 +7524,8 @@ func (c *Chime) DescribeAppInstanceAdminRequest(input *DescribeAppInstanceAdminI
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeAppInstanceAdmin
+//
+// Deprecated: Replaced by DescribeAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceAdmin(input *DescribeAppInstanceAdminInput) (*DescribeAppInstanceAdminOutput, error) {
 	req, out := c.DescribeAppInstanceAdminRequest(input)
 	return out, req.Send()
@@ -6756,6 +7540,8 @@ func (c *Chime) DescribeAppInstanceAdmin(input *DescribeAppInstanceAdminInput) (
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeAppInstanceAdmin in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceAdminWithContext(ctx aws.Context, input *DescribeAppInstanceAdminInput, opts ...request.Option) (*DescribeAppInstanceAdminOutput, error) {
 	req, out := c.DescribeAppInstanceAdminRequest(input)
 	req.SetContext(ctx)
@@ -6788,7 +7574,12 @@ const opDescribeAppInstanceUser = "DescribeAppInstanceUser"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeAppInstanceUser
+//
+// Deprecated: Replaced by DescribeAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceUserRequest(input *DescribeAppInstanceUserInput) (req *request.Request, output *DescribeAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeAppInstanceUser,
 		HTTPMethod: "GET",
@@ -6809,6 +7600,14 @@ func (c *Chime) DescribeAppInstanceUserRequest(input *DescribeAppInstanceUserInp
 // DescribeAppInstanceUser API operation for Amazon Chime.
 //
 // Returns the full details of an AppInstanceUser.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_DescribeAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6838,6 +7637,8 @@ func (c *Chime) DescribeAppInstanceUserRequest(input *DescribeAppInstanceUserInp
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeAppInstanceUser
+//
+// Deprecated: Replaced by DescribeAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceUser(input *DescribeAppInstanceUserInput) (*DescribeAppInstanceUserOutput, error) {
 	req, out := c.DescribeAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -6852,6 +7653,8 @@ func (c *Chime) DescribeAppInstanceUser(input *DescribeAppInstanceUserInput) (*D
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) DescribeAppInstanceUserWithContext(ctx aws.Context, input *DescribeAppInstanceUserInput, opts ...request.Option) (*DescribeAppInstanceUserOutput, error) {
 	req, out := c.DescribeAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -6884,7 +7687,12 @@ const opDescribeChannel = "DescribeChannel"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannel
+//
+// Deprecated: Replaced by DescribeChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelRequest(input *DescribeChannelInput) (req *request.Request, output *DescribeChannelOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeChannel, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeChannel,
 		HTTPMethod: "GET",
@@ -6908,6 +7716,14 @@ func (c *Chime) DescribeChannelRequest(input *DescribeChannelInput) (req *reques
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeChannel (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DescribeChannel.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -6937,6 +7753,8 @@ func (c *Chime) DescribeChannelRequest(input *DescribeChannelInput) (req *reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannel
+//
+// Deprecated: Replaced by DescribeChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannel(input *DescribeChannelInput) (*DescribeChannelOutput, error) {
 	req, out := c.DescribeChannelRequest(input)
 	return out, req.Send()
@@ -6951,6 +7769,8 @@ func (c *Chime) DescribeChannel(input *DescribeChannelInput) (*DescribeChannelOu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelWithContext(ctx aws.Context, input *DescribeChannelInput, opts ...request.Option) (*DescribeChannelOutput, error) {
 	req, out := c.DescribeChannelRequest(input)
 	req.SetContext(ctx)
@@ -6983,7 +7803,12 @@ const opDescribeChannelBan = "DescribeChannelBan"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelBan
+//
+// Deprecated: Replaced by DescribeChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelBanRequest(input *DescribeChannelBanInput) (req *request.Request, output *DescribeChannelBanOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeChannelBan, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeChannelBan,
 		HTTPMethod: "GET",
@@ -7007,6 +7832,14 @@ func (c *Chime) DescribeChannelBanRequest(input *DescribeChannelBanInput) (req *
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeChannelBan (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DescribeChannelBan.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7039,6 +7872,8 @@ func (c *Chime) DescribeChannelBanRequest(input *DescribeChannelBanInput) (req *
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelBan
+//
+// Deprecated: Replaced by DescribeChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelBan(input *DescribeChannelBanInput) (*DescribeChannelBanOutput, error) {
 	req, out := c.DescribeChannelBanRequest(input)
 	return out, req.Send()
@@ -7053,6 +7888,8 @@ func (c *Chime) DescribeChannelBan(input *DescribeChannelBanInput) (*DescribeCha
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeChannelBan in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelBanWithContext(ctx aws.Context, input *DescribeChannelBanInput, opts ...request.Option) (*DescribeChannelBanOutput, error) {
 	req, out := c.DescribeChannelBanRequest(input)
 	req.SetContext(ctx)
@@ -7085,7 +7922,12 @@ const opDescribeChannelMembership = "DescribeChannelMembership"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelMembership
+//
+// Deprecated: Replaced by DescribeChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelMembershipRequest(input *DescribeChannelMembershipInput) (req *request.Request, output *DescribeChannelMembershipOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeChannelMembership, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeChannelMembership,
 		HTTPMethod: "GET",
@@ -7109,6 +7951,14 @@ func (c *Chime) DescribeChannelMembershipRequest(input *DescribeChannelMembershi
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeChannelMembership (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DescribeChannelMembership.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7141,6 +7991,8 @@ func (c *Chime) DescribeChannelMembershipRequest(input *DescribeChannelMembershi
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelMembership
+//
+// Deprecated: Replaced by DescribeChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelMembership(input *DescribeChannelMembershipInput) (*DescribeChannelMembershipOutput, error) {
 	req, out := c.DescribeChannelMembershipRequest(input)
 	return out, req.Send()
@@ -7155,6 +8007,8 @@ func (c *Chime) DescribeChannelMembership(input *DescribeChannelMembershipInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeChannelMembership in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelMembershipWithContext(ctx aws.Context, input *DescribeChannelMembershipInput, opts ...request.Option) (*DescribeChannelMembershipOutput, error) {
 	req, out := c.DescribeChannelMembershipRequest(input)
 	req.SetContext(ctx)
@@ -7187,7 +8041,12 @@ const opDescribeChannelMembershipForAppInstanceUser = "DescribeChannelMembership
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelMembershipForAppInstanceUser
+//
+// Deprecated: Replaced by DescribeChannelMembershipForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelMembershipForAppInstanceUserRequest(input *DescribeChannelMembershipForAppInstanceUserInput) (req *request.Request, output *DescribeChannelMembershipForAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeChannelMembershipForAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeChannelMembershipForAppInstanceUser,
 		HTTPMethod: "GET",
@@ -7212,6 +8071,14 @@ func (c *Chime) DescribeChannelMembershipForAppInstanceUserRequest(input *Descri
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeChannelMembershipForAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DescribeChannelMembershipForAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7241,6 +8108,8 @@ func (c *Chime) DescribeChannelMembershipForAppInstanceUserRequest(input *Descri
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelMembershipForAppInstanceUser
+//
+// Deprecated: Replaced by DescribeChannelMembershipForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelMembershipForAppInstanceUser(input *DescribeChannelMembershipForAppInstanceUserInput) (*DescribeChannelMembershipForAppInstanceUserOutput, error) {
 	req, out := c.DescribeChannelMembershipForAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -7255,6 +8124,8 @@ func (c *Chime) DescribeChannelMembershipForAppInstanceUser(input *DescribeChann
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeChannelMembershipForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelMembershipForAppInstanceUserWithContext(ctx aws.Context, input *DescribeChannelMembershipForAppInstanceUserInput, opts ...request.Option) (*DescribeChannelMembershipForAppInstanceUserOutput, error) {
 	req, out := c.DescribeChannelMembershipForAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -7287,7 +8158,12 @@ const opDescribeChannelModeratedByAppInstanceUser = "DescribeChannelModeratedByA
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelModeratedByAppInstanceUser
+//
+// Deprecated: Replaced by DescribeChannelModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelModeratedByAppInstanceUserRequest(input *DescribeChannelModeratedByAppInstanceUserInput) (req *request.Request, output *DescribeChannelModeratedByAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeChannelModeratedByAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeChannelModeratedByAppInstanceUser,
 		HTTPMethod: "GET",
@@ -7311,6 +8187,14 @@ func (c *Chime) DescribeChannelModeratedByAppInstanceUserRequest(input *Describe
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeChannelModeratedByAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DescribeChannelModeratedByAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7340,6 +8224,8 @@ func (c *Chime) DescribeChannelModeratedByAppInstanceUserRequest(input *Describe
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelModeratedByAppInstanceUser
+//
+// Deprecated: Replaced by DescribeChannelModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelModeratedByAppInstanceUser(input *DescribeChannelModeratedByAppInstanceUserInput) (*DescribeChannelModeratedByAppInstanceUserOutput, error) {
 	req, out := c.DescribeChannelModeratedByAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -7354,6 +8240,8 @@ func (c *Chime) DescribeChannelModeratedByAppInstanceUser(input *DescribeChannel
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeChannelModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelModeratedByAppInstanceUserWithContext(ctx aws.Context, input *DescribeChannelModeratedByAppInstanceUserInput, opts ...request.Option) (*DescribeChannelModeratedByAppInstanceUserOutput, error) {
 	req, out := c.DescribeChannelModeratedByAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -7386,7 +8274,12 @@ const opDescribeChannelModerator = "DescribeChannelModerator"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelModerator
+//
+// Deprecated: Replaced by DescribeChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelModeratorRequest(input *DescribeChannelModeratorInput) (req *request.Request, output *DescribeChannelModeratorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DescribeChannelModerator, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDescribeChannelModerator,
 		HTTPMethod: "GET",
@@ -7410,6 +8303,14 @@ func (c *Chime) DescribeChannelModeratorRequest(input *DescribeChannelModeratorI
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DescribeChannelModerator (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_DescribeChannelModerator.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7442,6 +8343,8 @@ func (c *Chime) DescribeChannelModeratorRequest(input *DescribeChannelModeratorI
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DescribeChannelModerator
+//
+// Deprecated: Replaced by DescribeChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelModerator(input *DescribeChannelModeratorInput) (*DescribeChannelModeratorOutput, error) {
 	req, out := c.DescribeChannelModeratorRequest(input)
 	return out, req.Send()
@@ -7456,6 +8359,8 @@ func (c *Chime) DescribeChannelModerator(input *DescribeChannelModeratorInput) (
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DescribeChannelModerator in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) DescribeChannelModeratorWithContext(ctx aws.Context, input *DescribeChannelModeratorInput, opts ...request.Option) (*DescribeChannelModeratorOutput, error) {
 	req, out := c.DescribeChannelModeratorRequest(input)
 	req.SetContext(ctx)
@@ -7587,7 +8492,12 @@ const opDisassociatePhoneNumbersFromVoiceConnector = "DisassociatePhoneNumbersFr
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DisassociatePhoneNumbersFromVoiceConnector
+//
+// Deprecated: Replaced by DisassociatePhoneNumbersFromVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorRequest(input *DisassociatePhoneNumbersFromVoiceConnectorInput) (req *request.Request, output *DisassociatePhoneNumbersFromVoiceConnectorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DisassociatePhoneNumbersFromVoiceConnector, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDisassociatePhoneNumbersFromVoiceConnector,
 		HTTPMethod: "POST",
@@ -7607,6 +8517,14 @@ func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorRequest(input *Disasso
 //
 // Disassociates the specified phone numbers from the specified Amazon Chime
 // Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DisassociatePhoneNumbersFromVoiceConnector (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DisassociatePhoneNumbersFromVoiceConnector.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7639,6 +8557,8 @@ func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorRequest(input *Disasso
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DisassociatePhoneNumbersFromVoiceConnector
+//
+// Deprecated: Replaced by DisassociatePhoneNumbersFromVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DisassociatePhoneNumbersFromVoiceConnector(input *DisassociatePhoneNumbersFromVoiceConnectorInput) (*DisassociatePhoneNumbersFromVoiceConnectorOutput, error) {
 	req, out := c.DisassociatePhoneNumbersFromVoiceConnectorRequest(input)
 	return out, req.Send()
@@ -7653,6 +8573,8 @@ func (c *Chime) DisassociatePhoneNumbersFromVoiceConnector(input *DisassociatePh
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DisassociatePhoneNumbersFromVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorWithContext(ctx aws.Context, input *DisassociatePhoneNumbersFromVoiceConnectorInput, opts ...request.Option) (*DisassociatePhoneNumbersFromVoiceConnectorOutput, error) {
 	req, out := c.DisassociatePhoneNumbersFromVoiceConnectorRequest(input)
 	req.SetContext(ctx)
@@ -7685,7 +8607,12 @@ const opDisassociatePhoneNumbersFromVoiceConnectorGroup = "DisassociatePhoneNumb
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DisassociatePhoneNumbersFromVoiceConnectorGroup
+//
+// Deprecated: Replaced by DisassociatePhoneNumbersFromVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorGroupRequest(input *DisassociatePhoneNumbersFromVoiceConnectorGroupInput) (req *request.Request, output *DisassociatePhoneNumbersFromVoiceConnectorGroupOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, DisassociatePhoneNumbersFromVoiceConnectorGroup, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opDisassociatePhoneNumbersFromVoiceConnectorGroup,
 		HTTPMethod: "POST",
@@ -7705,6 +8632,15 @@ func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorGroupRequest(input *Di
 //
 // Disassociates the specified phone numbers from the specified Amazon Chime
 // Voice Connector group.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, DisassociatePhoneNumbersFromVoiceConnectorGroup
+// (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_DisassociatePhoneNumbersFromVoiceConnectorGroup.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -7737,6 +8673,8 @@ func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorGroupRequest(input *Di
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/DisassociatePhoneNumbersFromVoiceConnectorGroup
+//
+// Deprecated: Replaced by DisassociatePhoneNumbersFromVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorGroup(input *DisassociatePhoneNumbersFromVoiceConnectorGroupInput) (*DisassociatePhoneNumbersFromVoiceConnectorGroupOutput, error) {
 	req, out := c.DisassociatePhoneNumbersFromVoiceConnectorGroupRequest(input)
 	return out, req.Send()
@@ -7751,6 +8689,8 @@ func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorGroup(input *Disassoci
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by DisassociatePhoneNumbersFromVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) DisassociatePhoneNumbersFromVoiceConnectorGroupWithContext(ctx aws.Context, input *DisassociatePhoneNumbersFromVoiceConnectorGroupInput, opts ...request.Option) (*DisassociatePhoneNumbersFromVoiceConnectorGroupOutput, error) {
 	req, out := c.DisassociatePhoneNumbersFromVoiceConnectorGroupRequest(input)
 	req.SetContext(ctx)
@@ -8080,7 +9020,12 @@ const opGetAppInstanceRetentionSettings = "GetAppInstanceRetentionSettings"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetAppInstanceRetentionSettings
+//
+// Deprecated: Replaced by GetAppInstanceRetentionSettings in the Amazon Chime SDK Identity Namespace
 func (c *Chime) GetAppInstanceRetentionSettingsRequest(input *GetAppInstanceRetentionSettingsInput) (req *request.Request, output *GetAppInstanceRetentionSettingsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetAppInstanceRetentionSettings, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetAppInstanceRetentionSettings,
 		HTTPMethod: "GET",
@@ -8101,6 +9046,14 @@ func (c *Chime) GetAppInstanceRetentionSettingsRequest(input *GetAppInstanceRete
 // GetAppInstanceRetentionSettings API operation for Amazon Chime.
 //
 // Gets the retention settings for an AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetMessagingRetentionSettings (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_GetAppInstanceRetentionSettings.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8133,6 +9086,8 @@ func (c *Chime) GetAppInstanceRetentionSettingsRequest(input *GetAppInstanceRete
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetAppInstanceRetentionSettings
+//
+// Deprecated: Replaced by GetAppInstanceRetentionSettings in the Amazon Chime SDK Identity Namespace
 func (c *Chime) GetAppInstanceRetentionSettings(input *GetAppInstanceRetentionSettingsInput) (*GetAppInstanceRetentionSettingsOutput, error) {
 	req, out := c.GetAppInstanceRetentionSettingsRequest(input)
 	return out, req.Send()
@@ -8147,6 +9102,8 @@ func (c *Chime) GetAppInstanceRetentionSettings(input *GetAppInstanceRetentionSe
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetAppInstanceRetentionSettings in the Amazon Chime SDK Identity Namespace
 func (c *Chime) GetAppInstanceRetentionSettingsWithContext(ctx aws.Context, input *GetAppInstanceRetentionSettingsInput, opts ...request.Option) (*GetAppInstanceRetentionSettingsOutput, error) {
 	req, out := c.GetAppInstanceRetentionSettingsRequest(input)
 	req.SetContext(ctx)
@@ -8179,7 +9136,12 @@ const opGetAppInstanceStreamingConfigurations = "GetAppInstanceStreamingConfigur
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetAppInstanceStreamingConfigurations
+//
+// Deprecated: Replaced by GetAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetAppInstanceStreamingConfigurationsRequest(input *GetAppInstanceStreamingConfigurationsInput) (req *request.Request, output *GetAppInstanceStreamingConfigurationsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetAppInstanceStreamingConfigurations, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetAppInstanceStreamingConfigurations,
 		HTTPMethod: "GET",
@@ -8198,6 +9160,14 @@ func (c *Chime) GetAppInstanceStreamingConfigurationsRequest(input *GetAppInstan
 // GetAppInstanceStreamingConfigurations API operation for Amazon Chime.
 //
 // Gets the streaming settings for an AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetMessagingStreamingConfigurations (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_GetMessagingStreamingConfigurations.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8230,6 +9200,8 @@ func (c *Chime) GetAppInstanceStreamingConfigurationsRequest(input *GetAppInstan
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetAppInstanceStreamingConfigurations
+//
+// Deprecated: Replaced by GetAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetAppInstanceStreamingConfigurations(input *GetAppInstanceStreamingConfigurationsInput) (*GetAppInstanceStreamingConfigurationsOutput, error) {
 	req, out := c.GetAppInstanceStreamingConfigurationsRequest(input)
 	return out, req.Send()
@@ -8244,6 +9216,8 @@ func (c *Chime) GetAppInstanceStreamingConfigurations(input *GetAppInstanceStrea
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetAppInstanceStreamingConfigurationsWithContext(ctx aws.Context, input *GetAppInstanceStreamingConfigurationsInput, opts ...request.Option) (*GetAppInstanceStreamingConfigurationsOutput, error) {
 	req, out := c.GetAppInstanceStreamingConfigurationsRequest(input)
 	req.SetContext(ctx)
@@ -8276,7 +9250,12 @@ const opGetAttendee = "GetAttendee"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetAttendee
+//
+// Deprecated: Replaced by GetAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) GetAttendeeRequest(input *GetAttendeeInput) (req *request.Request, output *GetAttendeeOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetAttendee, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetAttendee,
 		HTTPMethod: "GET",
@@ -8296,8 +9275,16 @@ func (c *Chime) GetAttendeeRequest(input *GetAttendeeInput) (req *request.Reques
 //
 // Gets the Amazon Chime SDK attendee details for a specified meeting ID and
 // attendee ID. For more information about the Amazon Chime SDK, see Using the
-// Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide .
+// Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetAttendee (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_GetAttendee.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8330,6 +9317,8 @@ func (c *Chime) GetAttendeeRequest(input *GetAttendeeInput) (req *request.Reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetAttendee
+//
+// Deprecated: Replaced by GetAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) GetAttendee(input *GetAttendeeInput) (*GetAttendeeOutput, error) {
 	req, out := c.GetAttendeeRequest(input)
 	return out, req.Send()
@@ -8344,6 +9333,8 @@ func (c *Chime) GetAttendee(input *GetAttendeeInput) (*GetAttendeeOutput, error)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetAttendee in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) GetAttendeeWithContext(ctx aws.Context, input *GetAttendeeInput, opts ...request.Option) (*GetAttendeeOutput, error) {
 	req, out := c.GetAttendeeRequest(input)
 	req.SetContext(ctx)
@@ -8474,7 +9465,12 @@ const opGetChannelMessage = "GetChannelMessage"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetChannelMessage
+//
+// Deprecated: Replaced by GetChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetChannelMessageRequest(input *GetChannelMessageInput) (req *request.Request, output *GetChannelMessageOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetChannelMessage, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetChannelMessage,
 		HTTPMethod: "GET",
@@ -8498,6 +9494,14 @@ func (c *Chime) GetChannelMessageRequest(input *GetChannelMessageInput) (req *re
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetChannelMessage (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_GetChannelMessage.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8530,6 +9534,8 @@ func (c *Chime) GetChannelMessageRequest(input *GetChannelMessageInput) (req *re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetChannelMessage
+//
+// Deprecated: Replaced by GetChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetChannelMessage(input *GetChannelMessageInput) (*GetChannelMessageOutput, error) {
 	req, out := c.GetChannelMessageRequest(input)
 	return out, req.Send()
@@ -8544,6 +9550,8 @@ func (c *Chime) GetChannelMessage(input *GetChannelMessageInput) (*GetChannelMes
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetChannelMessageWithContext(ctx aws.Context, input *GetChannelMessageInput, opts ...request.Option) (*GetChannelMessageOutput, error) {
 	req, out := c.GetChannelMessageRequest(input)
 	req.SetContext(ctx)
@@ -8769,7 +9777,12 @@ const opGetMediaCapturePipeline = "GetMediaCapturePipeline"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetMediaCapturePipeline
+//
+// Deprecated: Replaced by GetMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) GetMediaCapturePipelineRequest(input *GetMediaCapturePipelineInput) (req *request.Request, output *GetMediaCapturePipelineOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetMediaCapturePipeline, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetMediaCapturePipeline,
 		HTTPMethod: "GET",
@@ -8788,6 +9801,14 @@ func (c *Chime) GetMediaCapturePipelineRequest(input *GetMediaCapturePipelineInp
 // GetMediaCapturePipeline API operation for Amazon Chime.
 //
 // Gets an existing media capture pipeline.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetMediaCapturePipeline (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_media-pipelines-chime_GetMediaCapturePipeline.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8820,6 +9841,8 @@ func (c *Chime) GetMediaCapturePipelineRequest(input *GetMediaCapturePipelineInp
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetMediaCapturePipeline
+//
+// Deprecated: Replaced by GetMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) GetMediaCapturePipeline(input *GetMediaCapturePipelineInput) (*GetMediaCapturePipelineOutput, error) {
 	req, out := c.GetMediaCapturePipelineRequest(input)
 	return out, req.Send()
@@ -8834,6 +9857,8 @@ func (c *Chime) GetMediaCapturePipeline(input *GetMediaCapturePipelineInput) (*G
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetMediaCapturePipeline in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) GetMediaCapturePipelineWithContext(ctx aws.Context, input *GetMediaCapturePipelineInput, opts ...request.Option) (*GetMediaCapturePipelineOutput, error) {
 	req, out := c.GetMediaCapturePipelineRequest(input)
 	req.SetContext(ctx)
@@ -8866,7 +9891,12 @@ const opGetMeeting = "GetMeeting"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetMeeting
+//
+// Deprecated: Replaced by GetMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) GetMeetingRequest(input *GetMeetingInput) (req *request.Request, output *GetMeetingOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetMeeting, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetMeeting,
 		HTTPMethod: "GET",
@@ -8884,10 +9914,18 @@ func (c *Chime) GetMeetingRequest(input *GetMeetingInput) (req *request.Request,
 
 // GetMeeting API operation for Amazon Chime.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetMeeting (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_GetMeeting.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Gets the Amazon Chime SDK meeting details for the specified meeting ID. For
 // more information about the Amazon Chime SDK, see Using the Amazon Chime SDK
-// (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html) in the Amazon
-// Chime Developer Guide .
+// (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html) in the
+// Amazon Chime SDK Developer Guide .
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8920,6 +9958,8 @@ func (c *Chime) GetMeetingRequest(input *GetMeetingInput) (req *request.Request,
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetMeeting
+//
+// Deprecated: Replaced by GetMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) GetMeeting(input *GetMeetingInput) (*GetMeetingOutput, error) {
 	req, out := c.GetMeetingRequest(input)
 	return out, req.Send()
@@ -8934,6 +9974,8 @@ func (c *Chime) GetMeeting(input *GetMeetingInput) (*GetMeetingOutput, error) {
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetMeeting in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) GetMeetingWithContext(ctx aws.Context, input *GetMeetingInput, opts ...request.Option) (*GetMeetingOutput, error) {
 	req, out := c.GetMeetingRequest(input)
 	req.SetContext(ctx)
@@ -8966,7 +10008,12 @@ const opGetMessagingSessionEndpoint = "GetMessagingSessionEndpoint"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetMessagingSessionEndpoint
+//
+// Deprecated: Replaced by GetMessagingSessionEndpoint in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetMessagingSessionEndpointRequest(input *GetMessagingSessionEndpointInput) (req *request.Request, output *GetMessagingSessionEndpointOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetMessagingSessionEndpoint, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetMessagingSessionEndpoint,
 		HTTPMethod: "GET",
@@ -8987,6 +10034,14 @@ func (c *Chime) GetMessagingSessionEndpointRequest(input *GetMessagingSessionEnd
 // GetMessagingSessionEndpoint API operation for Amazon Chime.
 //
 // The details of the endpoint for the messaging session.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetMessagingSessionEndpoint (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_GetMessagingSessionEndpoint.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9013,6 +10068,8 @@ func (c *Chime) GetMessagingSessionEndpointRequest(input *GetMessagingSessionEnd
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetMessagingSessionEndpoint
+//
+// Deprecated: Replaced by GetMessagingSessionEndpoint in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetMessagingSessionEndpoint(input *GetMessagingSessionEndpointInput) (*GetMessagingSessionEndpointOutput, error) {
 	req, out := c.GetMessagingSessionEndpointRequest(input)
 	return out, req.Send()
@@ -9027,6 +10084,8 @@ func (c *Chime) GetMessagingSessionEndpoint(input *GetMessagingSessionEndpointIn
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetMessagingSessionEndpoint in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) GetMessagingSessionEndpointWithContext(ctx aws.Context, input *GetMessagingSessionEndpointInput, opts ...request.Option) (*GetMessagingSessionEndpointOutput, error) {
 	req, out := c.GetMessagingSessionEndpointRequest(input)
 	req.SetContext(ctx)
@@ -9351,7 +10410,12 @@ const opGetProxySession = "GetProxySession"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetProxySession
+//
+// Deprecated: Replaced by GetProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetProxySessionRequest(input *GetProxySessionInput) (req *request.Request, output *GetProxySessionOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetProxySession, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetProxySession,
 		HTTPMethod: "GET",
@@ -9371,6 +10435,14 @@ func (c *Chime) GetProxySessionRequest(input *GetProxySessionInput) (req *reques
 //
 // Gets the specified proxy session details for the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetProxySession (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetProxySession.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9403,6 +10475,8 @@ func (c *Chime) GetProxySessionRequest(input *GetProxySessionInput) (req *reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetProxySession
+//
+// Deprecated: Replaced by GetProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetProxySession(input *GetProxySessionInput) (*GetProxySessionOutput, error) {
 	req, out := c.GetProxySessionRequest(input)
 	return out, req.Send()
@@ -9417,6 +10491,8 @@ func (c *Chime) GetProxySession(input *GetProxySessionInput) (*GetProxySessionOu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetProxySessionWithContext(ctx aws.Context, input *GetProxySessionInput, opts ...request.Option) (*GetProxySessionOutput, error) {
 	req, out := c.GetProxySessionRequest(input)
 	req.SetContext(ctx)
@@ -9647,7 +10723,12 @@ const opGetSipMediaApplication = "GetSipMediaApplication"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetSipMediaApplication
+//
+// Deprecated: Replaced by GetSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipMediaApplicationRequest(input *GetSipMediaApplicationInput) (req *request.Request, output *GetSipMediaApplicationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetSipMediaApplication, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetSipMediaApplication,
 		HTTPMethod: "GET",
@@ -9667,6 +10748,14 @@ func (c *Chime) GetSipMediaApplicationRequest(input *GetSipMediaApplicationInput
 //
 // Retrieves the information for a SIP media application, including name, AWS
 // Region, and endpoints.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetSipMediaApplication (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetSipMediaApplication.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9699,6 +10788,8 @@ func (c *Chime) GetSipMediaApplicationRequest(input *GetSipMediaApplicationInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetSipMediaApplication
+//
+// Deprecated: Replaced by GetSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipMediaApplication(input *GetSipMediaApplicationInput) (*GetSipMediaApplicationOutput, error) {
 	req, out := c.GetSipMediaApplicationRequest(input)
 	return out, req.Send()
@@ -9713,6 +10804,8 @@ func (c *Chime) GetSipMediaApplication(input *GetSipMediaApplicationInput) (*Get
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipMediaApplicationWithContext(ctx aws.Context, input *GetSipMediaApplicationInput, opts ...request.Option) (*GetSipMediaApplicationOutput, error) {
 	req, out := c.GetSipMediaApplicationRequest(input)
 	req.SetContext(ctx)
@@ -9745,7 +10838,12 @@ const opGetSipMediaApplicationLoggingConfiguration = "GetSipMediaApplicationLogg
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetSipMediaApplicationLoggingConfiguration
+//
+// Deprecated: Replaced by GetSipMediaApplicationLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipMediaApplicationLoggingConfigurationRequest(input *GetSipMediaApplicationLoggingConfigurationInput) (req *request.Request, output *GetSipMediaApplicationLoggingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetSipMediaApplicationLoggingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetSipMediaApplicationLoggingConfiguration,
 		HTTPMethod: "GET",
@@ -9764,6 +10862,14 @@ func (c *Chime) GetSipMediaApplicationLoggingConfigurationRequest(input *GetSipM
 // GetSipMediaApplicationLoggingConfiguration API operation for Amazon Chime.
 //
 // Returns the logging configuration for the specified SIP media application.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetSipMediaApplicationLoggingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetSipMediaApplicationLoggingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9796,6 +10902,8 @@ func (c *Chime) GetSipMediaApplicationLoggingConfigurationRequest(input *GetSipM
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetSipMediaApplicationLoggingConfiguration
+//
+// Deprecated: Replaced by GetSipMediaApplicationLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipMediaApplicationLoggingConfiguration(input *GetSipMediaApplicationLoggingConfigurationInput) (*GetSipMediaApplicationLoggingConfigurationOutput, error) {
 	req, out := c.GetSipMediaApplicationLoggingConfigurationRequest(input)
 	return out, req.Send()
@@ -9810,6 +10918,8 @@ func (c *Chime) GetSipMediaApplicationLoggingConfiguration(input *GetSipMediaApp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetSipMediaApplicationLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipMediaApplicationLoggingConfigurationWithContext(ctx aws.Context, input *GetSipMediaApplicationLoggingConfigurationInput, opts ...request.Option) (*GetSipMediaApplicationLoggingConfigurationOutput, error) {
 	req, out := c.GetSipMediaApplicationLoggingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -9842,7 +10952,12 @@ const opGetSipRule = "GetSipRule"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetSipRule
+//
+// Deprecated: Replaced by GetSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipRuleRequest(input *GetSipRuleInput) (req *request.Request, output *GetSipRuleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetSipRule, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetSipRule,
 		HTTPMethod: "GET",
@@ -9862,6 +10977,14 @@ func (c *Chime) GetSipRuleRequest(input *GetSipRuleInput) (req *request.Request,
 //
 // Retrieves the details of a SIP rule, such as the rule ID, name, triggers,
 // and target endpoints.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetSipRule (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetSipRule.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -9894,6 +11017,8 @@ func (c *Chime) GetSipRuleRequest(input *GetSipRuleInput) (req *request.Request,
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetSipRule
+//
+// Deprecated: Replaced by GetSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipRule(input *GetSipRuleInput) (*GetSipRuleOutput, error) {
 	req, out := c.GetSipRuleRequest(input)
 	return out, req.Send()
@@ -9908,6 +11033,8 @@ func (c *Chime) GetSipRule(input *GetSipRuleInput) (*GetSipRuleOutput, error) {
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetSipRuleWithContext(ctx aws.Context, input *GetSipRuleInput, opts ...request.Option) (*GetSipRuleOutput, error) {
 	req, out := c.GetSipRuleRequest(input)
 	req.SetContext(ctx)
@@ -10139,7 +11266,12 @@ const opGetVoiceConnector = "GetVoiceConnector"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnector
+//
+// Deprecated: Replaced by GetVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorRequest(input *GetVoiceConnectorInput) (req *request.Request, output *GetVoiceConnectorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnector, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnector,
 		HTTPMethod: "GET",
@@ -10159,6 +11291,14 @@ func (c *Chime) GetVoiceConnectorRequest(input *GetVoiceConnectorInput) (req *re
 //
 // Retrieves details for the specified Amazon Chime Voice Connector, such as
 // timestamps,name, outbound host, and encryption requirements.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnector (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnector.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10191,6 +11331,8 @@ func (c *Chime) GetVoiceConnectorRequest(input *GetVoiceConnectorInput) (req *re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnector
+//
+// Deprecated: Replaced by GetVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnector(input *GetVoiceConnectorInput) (*GetVoiceConnectorOutput, error) {
 	req, out := c.GetVoiceConnectorRequest(input)
 	return out, req.Send()
@@ -10205,6 +11347,8 @@ func (c *Chime) GetVoiceConnector(input *GetVoiceConnectorInput) (*GetVoiceConne
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorWithContext(ctx aws.Context, input *GetVoiceConnectorInput, opts ...request.Option) (*GetVoiceConnectorOutput, error) {
 	req, out := c.GetVoiceConnectorRequest(input)
 	req.SetContext(ctx)
@@ -10237,7 +11381,12 @@ const opGetVoiceConnectorEmergencyCallingConfiguration = "GetVoiceConnectorEmerg
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorEmergencyCallingConfiguration
+//
+// Deprecated: Replaced by GetVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorEmergencyCallingConfigurationRequest(input *GetVoiceConnectorEmergencyCallingConfigurationInput) (req *request.Request, output *GetVoiceConnectorEmergencyCallingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorEmergencyCallingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorEmergencyCallingConfiguration,
 		HTTPMethod: "GET",
@@ -10257,6 +11406,15 @@ func (c *Chime) GetVoiceConnectorEmergencyCallingConfigurationRequest(input *Get
 //
 // Gets the emergency calling configuration details for the specified Amazon
 // Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorEmergencyCallingConfiguration
+// (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorEmergencyCallingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10289,6 +11447,8 @@ func (c *Chime) GetVoiceConnectorEmergencyCallingConfigurationRequest(input *Get
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorEmergencyCallingConfiguration
+//
+// Deprecated: Replaced by GetVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorEmergencyCallingConfiguration(input *GetVoiceConnectorEmergencyCallingConfigurationInput) (*GetVoiceConnectorEmergencyCallingConfigurationOutput, error) {
 	req, out := c.GetVoiceConnectorEmergencyCallingConfigurationRequest(input)
 	return out, req.Send()
@@ -10303,6 +11463,8 @@ func (c *Chime) GetVoiceConnectorEmergencyCallingConfiguration(input *GetVoiceCo
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorEmergencyCallingConfigurationWithContext(ctx aws.Context, input *GetVoiceConnectorEmergencyCallingConfigurationInput, opts ...request.Option) (*GetVoiceConnectorEmergencyCallingConfigurationOutput, error) {
 	req, out := c.GetVoiceConnectorEmergencyCallingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -10335,7 +11497,12 @@ const opGetVoiceConnectorGroup = "GetVoiceConnectorGroup"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorGroup
+//
+// Deprecated: Replaced by GetVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorGroupRequest(input *GetVoiceConnectorGroupInput) (req *request.Request, output *GetVoiceConnectorGroupOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorGroup, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorGroup,
 		HTTPMethod: "GET",
@@ -10355,6 +11522,14 @@ func (c *Chime) GetVoiceConnectorGroupRequest(input *GetVoiceConnectorGroupInput
 //
 // Retrieves details for the specified Amazon Chime Voice Connector group, such
 // as timestamps,name, and associated VoiceConnectorItems.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorGroup (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorGroup.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10387,6 +11562,8 @@ func (c *Chime) GetVoiceConnectorGroupRequest(input *GetVoiceConnectorGroupInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorGroup
+//
+// Deprecated: Replaced by GetVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorGroup(input *GetVoiceConnectorGroupInput) (*GetVoiceConnectorGroupOutput, error) {
 	req, out := c.GetVoiceConnectorGroupRequest(input)
 	return out, req.Send()
@@ -10401,6 +11578,8 @@ func (c *Chime) GetVoiceConnectorGroup(input *GetVoiceConnectorGroupInput) (*Get
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorGroupWithContext(ctx aws.Context, input *GetVoiceConnectorGroupInput, opts ...request.Option) (*GetVoiceConnectorGroupOutput, error) {
 	req, out := c.GetVoiceConnectorGroupRequest(input)
 	req.SetContext(ctx)
@@ -10433,7 +11612,12 @@ const opGetVoiceConnectorLoggingConfiguration = "GetVoiceConnectorLoggingConfigu
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorLoggingConfiguration
+//
+// Deprecated: Replaced by GetVoiceConnectorLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorLoggingConfigurationRequest(input *GetVoiceConnectorLoggingConfigurationInput) (req *request.Request, output *GetVoiceConnectorLoggingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorLoggingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorLoggingConfiguration,
 		HTTPMethod: "GET",
@@ -10454,6 +11638,14 @@ func (c *Chime) GetVoiceConnectorLoggingConfigurationRequest(input *GetVoiceConn
 // Retrieves the logging configuration details for the specified Amazon Chime
 // Voice Connector. Shows whether SIP message logs are enabled for sending to
 // Amazon CloudWatch Logs.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorLoggingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorLoggingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10486,6 +11678,8 @@ func (c *Chime) GetVoiceConnectorLoggingConfigurationRequest(input *GetVoiceConn
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorLoggingConfiguration
+//
+// Deprecated: Replaced by GetVoiceConnectorLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorLoggingConfiguration(input *GetVoiceConnectorLoggingConfigurationInput) (*GetVoiceConnectorLoggingConfigurationOutput, error) {
 	req, out := c.GetVoiceConnectorLoggingConfigurationRequest(input)
 	return out, req.Send()
@@ -10500,6 +11694,8 @@ func (c *Chime) GetVoiceConnectorLoggingConfiguration(input *GetVoiceConnectorLo
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorLoggingConfigurationWithContext(ctx aws.Context, input *GetVoiceConnectorLoggingConfigurationInput, opts ...request.Option) (*GetVoiceConnectorLoggingConfigurationOutput, error) {
 	req, out := c.GetVoiceConnectorLoggingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -10532,7 +11728,12 @@ const opGetVoiceConnectorOrigination = "GetVoiceConnectorOrigination"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorOrigination
+//
+// Deprecated: Replaced by GetVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorOriginationRequest(input *GetVoiceConnectorOriginationInput) (req *request.Request, output *GetVoiceConnectorOriginationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorOrigination, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorOrigination,
 		HTTPMethod: "GET",
@@ -10552,6 +11753,14 @@ func (c *Chime) GetVoiceConnectorOriginationRequest(input *GetVoiceConnectorOrig
 //
 // Retrieves origination setting details for the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorOrigination (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorOrigination.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10584,6 +11793,8 @@ func (c *Chime) GetVoiceConnectorOriginationRequest(input *GetVoiceConnectorOrig
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorOrigination
+//
+// Deprecated: Replaced by GetVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorOrigination(input *GetVoiceConnectorOriginationInput) (*GetVoiceConnectorOriginationOutput, error) {
 	req, out := c.GetVoiceConnectorOriginationRequest(input)
 	return out, req.Send()
@@ -10598,6 +11809,8 @@ func (c *Chime) GetVoiceConnectorOrigination(input *GetVoiceConnectorOrigination
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorOriginationWithContext(ctx aws.Context, input *GetVoiceConnectorOriginationInput, opts ...request.Option) (*GetVoiceConnectorOriginationOutput, error) {
 	req, out := c.GetVoiceConnectorOriginationRequest(input)
 	req.SetContext(ctx)
@@ -10630,7 +11843,12 @@ const opGetVoiceConnectorProxy = "GetVoiceConnectorProxy"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorProxy
+//
+// Deprecated: Replaced by GetVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorProxyRequest(input *GetVoiceConnectorProxyInput) (req *request.Request, output *GetVoiceConnectorProxyOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorProxy, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorProxy,
 		HTTPMethod: "GET",
@@ -10650,6 +11868,14 @@ func (c *Chime) GetVoiceConnectorProxyRequest(input *GetVoiceConnectorProxyInput
 //
 // Gets the proxy configuration details for the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorProxy (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorProxy.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10682,6 +11908,8 @@ func (c *Chime) GetVoiceConnectorProxyRequest(input *GetVoiceConnectorProxyInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorProxy
+//
+// Deprecated: Replaced by GetVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorProxy(input *GetVoiceConnectorProxyInput) (*GetVoiceConnectorProxyOutput, error) {
 	req, out := c.GetVoiceConnectorProxyRequest(input)
 	return out, req.Send()
@@ -10696,6 +11924,8 @@ func (c *Chime) GetVoiceConnectorProxy(input *GetVoiceConnectorProxyInput) (*Get
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorProxyWithContext(ctx aws.Context, input *GetVoiceConnectorProxyInput, opts ...request.Option) (*GetVoiceConnectorProxyOutput, error) {
 	req, out := c.GetVoiceConnectorProxyRequest(input)
 	req.SetContext(ctx)
@@ -10728,7 +11958,12 @@ const opGetVoiceConnectorStreamingConfiguration = "GetVoiceConnectorStreamingCon
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorStreamingConfiguration
+//
+// Deprecated: Replaced by GetVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorStreamingConfigurationRequest(input *GetVoiceConnectorStreamingConfigurationInput) (req *request.Request, output *GetVoiceConnectorStreamingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorStreamingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorStreamingConfiguration,
 		HTTPMethod: "GET",
@@ -10750,6 +11985,14 @@ func (c *Chime) GetVoiceConnectorStreamingConfigurationRequest(input *GetVoiceCo
 // Voice Connector. Shows whether media streaming is enabled for sending to
 // Amazon Kinesis. It also shows the retention period, in hours, for the Amazon
 // Kinesis data.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorStreamingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorStreamingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10782,6 +12025,8 @@ func (c *Chime) GetVoiceConnectorStreamingConfigurationRequest(input *GetVoiceCo
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorStreamingConfiguration
+//
+// Deprecated: Replaced by GetVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorStreamingConfiguration(input *GetVoiceConnectorStreamingConfigurationInput) (*GetVoiceConnectorStreamingConfigurationOutput, error) {
 	req, out := c.GetVoiceConnectorStreamingConfigurationRequest(input)
 	return out, req.Send()
@@ -10796,6 +12041,8 @@ func (c *Chime) GetVoiceConnectorStreamingConfiguration(input *GetVoiceConnector
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorStreamingConfigurationWithContext(ctx aws.Context, input *GetVoiceConnectorStreamingConfigurationInput, opts ...request.Option) (*GetVoiceConnectorStreamingConfigurationOutput, error) {
 	req, out := c.GetVoiceConnectorStreamingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -10828,7 +12075,12 @@ const opGetVoiceConnectorTermination = "GetVoiceConnectorTermination"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorTermination
+//
+// Deprecated: Replaced by GetVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorTerminationRequest(input *GetVoiceConnectorTerminationInput) (req *request.Request, output *GetVoiceConnectorTerminationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorTermination, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorTermination,
 		HTTPMethod: "GET",
@@ -10848,6 +12100,14 @@ func (c *Chime) GetVoiceConnectorTerminationRequest(input *GetVoiceConnectorTerm
 //
 // Retrieves termination setting details for the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorTermination (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorTermination.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -10880,6 +12140,8 @@ func (c *Chime) GetVoiceConnectorTerminationRequest(input *GetVoiceConnectorTerm
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorTermination
+//
+// Deprecated: Replaced by GetVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorTermination(input *GetVoiceConnectorTerminationInput) (*GetVoiceConnectorTerminationOutput, error) {
 	req, out := c.GetVoiceConnectorTerminationRequest(input)
 	return out, req.Send()
@@ -10894,6 +12156,8 @@ func (c *Chime) GetVoiceConnectorTermination(input *GetVoiceConnectorTermination
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorTerminationWithContext(ctx aws.Context, input *GetVoiceConnectorTerminationInput, opts ...request.Option) (*GetVoiceConnectorTerminationOutput, error) {
 	req, out := c.GetVoiceConnectorTerminationRequest(input)
 	req.SetContext(ctx)
@@ -10926,7 +12190,12 @@ const opGetVoiceConnectorTerminationHealth = "GetVoiceConnectorTerminationHealth
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorTerminationHealth
+//
+// Deprecated: Replaced by GetVoiceConnectorTerminationHealth in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorTerminationHealthRequest(input *GetVoiceConnectorTerminationHealthInput) (req *request.Request, output *GetVoiceConnectorTerminationHealthOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, GetVoiceConnectorTerminationHealth, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opGetVoiceConnectorTerminationHealth,
 		HTTPMethod: "GET",
@@ -10943,6 +12212,14 @@ func (c *Chime) GetVoiceConnectorTerminationHealthRequest(input *GetVoiceConnect
 }
 
 // GetVoiceConnectorTerminationHealth API operation for Amazon Chime.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, GetVoiceConnectorTerminationHealth (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_GetVoiceConnectorTerminationHealth.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Retrieves information about the last time a SIP OPTIONS ping was received
 // from your SIP infrastructure for the specified Amazon Chime Voice Connector.
@@ -10978,6 +12255,8 @@ func (c *Chime) GetVoiceConnectorTerminationHealthRequest(input *GetVoiceConnect
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/GetVoiceConnectorTerminationHealth
+//
+// Deprecated: Replaced by GetVoiceConnectorTerminationHealth in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorTerminationHealth(input *GetVoiceConnectorTerminationHealthInput) (*GetVoiceConnectorTerminationHealthOutput, error) {
 	req, out := c.GetVoiceConnectorTerminationHealthRequest(input)
 	return out, req.Send()
@@ -10992,6 +12271,8 @@ func (c *Chime) GetVoiceConnectorTerminationHealth(input *GetVoiceConnectorTermi
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by GetVoiceConnectorTerminationHealth in the Amazon Chime SDK Voice Namespace
 func (c *Chime) GetVoiceConnectorTerminationHealthWithContext(ctx aws.Context, input *GetVoiceConnectorTerminationHealthInput, opts ...request.Option) (*GetVoiceConnectorTerminationHealthOutput, error) {
 	req, out := c.GetVoiceConnectorTerminationHealthRequest(input)
 	req.SetContext(ctx)
@@ -11280,7 +12561,12 @@ const opListAppInstanceAdmins = "ListAppInstanceAdmins"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAppInstanceAdmins
+//
+// Deprecated: Replaced by ListAppInstanceAdmins in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceAdminsRequest(input *ListAppInstanceAdminsInput) (req *request.Request, output *ListAppInstanceAdminsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListAppInstanceAdmins, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListAppInstanceAdmins,
 		HTTPMethod: "GET",
@@ -11307,6 +12593,14 @@ func (c *Chime) ListAppInstanceAdminsRequest(input *ListAppInstanceAdminsInput) 
 // ListAppInstanceAdmins API operation for Amazon Chime.
 //
 // Returns a list of the administrators in the AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListAppInstanceAdmins (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_ListAppInstanceAdmins.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11336,6 +12630,8 @@ func (c *Chime) ListAppInstanceAdminsRequest(input *ListAppInstanceAdminsInput) 
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAppInstanceAdmins
+//
+// Deprecated: Replaced by ListAppInstanceAdmins in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceAdmins(input *ListAppInstanceAdminsInput) (*ListAppInstanceAdminsOutput, error) {
 	req, out := c.ListAppInstanceAdminsRequest(input)
 	return out, req.Send()
@@ -11350,6 +12646,8 @@ func (c *Chime) ListAppInstanceAdmins(input *ListAppInstanceAdminsInput) (*ListA
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAppInstanceAdmins in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceAdminsWithContext(ctx aws.Context, input *ListAppInstanceAdminsInput, opts ...request.Option) (*ListAppInstanceAdminsOutput, error) {
 	req, out := c.ListAppInstanceAdminsRequest(input)
 	req.SetContext(ctx)
@@ -11373,6 +12671,8 @@ func (c *Chime) ListAppInstanceAdminsWithContext(ctx aws.Context, input *ListApp
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListAppInstanceAdmins in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceAdminsPages(input *ListAppInstanceAdminsInput, fn func(*ListAppInstanceAdminsOutput, bool) bool) error {
 	return c.ListAppInstanceAdminsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11384,6 +12684,8 @@ func (c *Chime) ListAppInstanceAdminsPages(input *ListAppInstanceAdminsInput, fn
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAppInstanceAdmins in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceAdminsPagesWithContext(ctx aws.Context, input *ListAppInstanceAdminsInput, fn func(*ListAppInstanceAdminsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -11433,7 +12735,12 @@ const opListAppInstanceUsers = "ListAppInstanceUsers"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAppInstanceUsers
+//
+// Deprecated: Replaced by ListAppInstanceUsers in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceUsersRequest(input *ListAppInstanceUsersInput) (req *request.Request, output *ListAppInstanceUsersOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListAppInstanceUsers, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListAppInstanceUsers,
 		HTTPMethod: "GET",
@@ -11460,6 +12767,14 @@ func (c *Chime) ListAppInstanceUsersRequest(input *ListAppInstanceUsersInput) (r
 // ListAppInstanceUsers API operation for Amazon Chime.
 //
 // List all AppInstanceUsers created under a single AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListAppInstanceUsers (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_ListAppInstanceUsers.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11489,6 +12804,8 @@ func (c *Chime) ListAppInstanceUsersRequest(input *ListAppInstanceUsersInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAppInstanceUsers
+//
+// Deprecated: Replaced by ListAppInstanceUsers in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceUsers(input *ListAppInstanceUsersInput) (*ListAppInstanceUsersOutput, error) {
 	req, out := c.ListAppInstanceUsersRequest(input)
 	return out, req.Send()
@@ -11503,6 +12820,8 @@ func (c *Chime) ListAppInstanceUsers(input *ListAppInstanceUsersInput) (*ListApp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAppInstanceUsers in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceUsersWithContext(ctx aws.Context, input *ListAppInstanceUsersInput, opts ...request.Option) (*ListAppInstanceUsersOutput, error) {
 	req, out := c.ListAppInstanceUsersRequest(input)
 	req.SetContext(ctx)
@@ -11526,6 +12845,8 @@ func (c *Chime) ListAppInstanceUsersWithContext(ctx aws.Context, input *ListAppI
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListAppInstanceUsers in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceUsersPages(input *ListAppInstanceUsersInput, fn func(*ListAppInstanceUsersOutput, bool) bool) error {
 	return c.ListAppInstanceUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11537,6 +12858,8 @@ func (c *Chime) ListAppInstanceUsersPages(input *ListAppInstanceUsersInput, fn f
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAppInstanceUsers in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstanceUsersPagesWithContext(ctx aws.Context, input *ListAppInstanceUsersInput, fn func(*ListAppInstanceUsersOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -11586,7 +12909,12 @@ const opListAppInstances = "ListAppInstances"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAppInstances
+//
+// Deprecated: Replaced by ListAppInstances in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstancesRequest(input *ListAppInstancesInput) (req *request.Request, output *ListAppInstancesOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListAppInstances, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListAppInstances,
 		HTTPMethod: "GET",
@@ -11613,6 +12941,14 @@ func (c *Chime) ListAppInstancesRequest(input *ListAppInstancesInput) (req *requ
 // ListAppInstances API operation for Amazon Chime.
 //
 // Lists all Amazon Chime AppInstances created under a single AWS account.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListAppInstances (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_ListAppInstances.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11642,6 +12978,8 @@ func (c *Chime) ListAppInstancesRequest(input *ListAppInstancesInput) (req *requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAppInstances
+//
+// Deprecated: Replaced by ListAppInstances in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstances(input *ListAppInstancesInput) (*ListAppInstancesOutput, error) {
 	req, out := c.ListAppInstancesRequest(input)
 	return out, req.Send()
@@ -11656,6 +12994,8 @@ func (c *Chime) ListAppInstances(input *ListAppInstancesInput) (*ListAppInstance
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAppInstances in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstancesWithContext(ctx aws.Context, input *ListAppInstancesInput, opts ...request.Option) (*ListAppInstancesOutput, error) {
 	req, out := c.ListAppInstancesRequest(input)
 	req.SetContext(ctx)
@@ -11679,6 +13019,8 @@ func (c *Chime) ListAppInstancesWithContext(ctx aws.Context, input *ListAppInsta
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListAppInstances in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstancesPages(input *ListAppInstancesInput, fn func(*ListAppInstancesOutput, bool) bool) error {
 	return c.ListAppInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11690,6 +13032,8 @@ func (c *Chime) ListAppInstancesPages(input *ListAppInstancesInput, fn func(*Lis
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAppInstances in the Amazon Chime SDK Identity Namespace
 func (c *Chime) ListAppInstancesPagesWithContext(ctx aws.Context, input *ListAppInstancesInput, fn func(*ListAppInstancesOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -11739,7 +13083,12 @@ const opListAttendeeTags = "ListAttendeeTags"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAttendeeTags
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListAttendeeTagsRequest(input *ListAttendeeTagsInput) (req *request.Request, output *ListAttendeeTagsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListAttendeeTags, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListAttendeeTags,
 		HTTPMethod: "GET",
@@ -11758,6 +13107,9 @@ func (c *Chime) ListAttendeeTagsRequest(input *ListAttendeeTagsInput) (req *requ
 // ListAttendeeTags API operation for Amazon Chime.
 //
 // Lists the tags applied to an Amazon Chime SDK attendee resource.
+//
+// ListAttendeeTags is not supported in the Amazon Chime SDK Meetings Namespace.
+// Update your application to remove calls to this API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11790,6 +13142,8 @@ func (c *Chime) ListAttendeeTagsRequest(input *ListAttendeeTagsInput) (req *requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAttendeeTags
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListAttendeeTags(input *ListAttendeeTagsInput) (*ListAttendeeTagsOutput, error) {
 	req, out := c.ListAttendeeTagsRequest(input)
 	return out, req.Send()
@@ -11804,6 +13158,8 @@ func (c *Chime) ListAttendeeTags(input *ListAttendeeTagsInput) (*ListAttendeeTag
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListAttendeeTagsWithContext(ctx aws.Context, input *ListAttendeeTagsInput, opts ...request.Option) (*ListAttendeeTagsOutput, error) {
 	req, out := c.ListAttendeeTagsRequest(input)
 	req.SetContext(ctx)
@@ -11836,7 +13192,12 @@ const opListAttendees = "ListAttendees"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAttendees
+//
+// Deprecated: Replaced by ListAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) ListAttendeesRequest(input *ListAttendeesInput) (req *request.Request, output *ListAttendeesOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListAttendees, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListAttendees,
 		HTTPMethod: "GET",
@@ -11861,8 +13222,16 @@ func (c *Chime) ListAttendeesRequest(input *ListAttendeesInput) (req *request.Re
 // ListAttendees API operation for Amazon Chime.
 //
 // Lists the attendees for the specified Amazon Chime SDK meeting. For more
-// information about the Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide.
+// information about the Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListAttendees (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_ListAttendees.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11895,6 +13264,8 @@ func (c *Chime) ListAttendeesRequest(input *ListAttendeesInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListAttendees
+//
+// Deprecated: Replaced by ListAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) ListAttendees(input *ListAttendeesInput) (*ListAttendeesOutput, error) {
 	req, out := c.ListAttendeesRequest(input)
 	return out, req.Send()
@@ -11909,6 +13280,8 @@ func (c *Chime) ListAttendees(input *ListAttendeesInput) (*ListAttendeesOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) ListAttendeesWithContext(ctx aws.Context, input *ListAttendeesInput, opts ...request.Option) (*ListAttendeesOutput, error) {
 	req, out := c.ListAttendeesRequest(input)
 	req.SetContext(ctx)
@@ -11932,6 +13305,8 @@ func (c *Chime) ListAttendeesWithContext(ctx aws.Context, input *ListAttendeesIn
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) ListAttendeesPages(input *ListAttendeesInput, fn func(*ListAttendeesOutput, bool) bool) error {
 	return c.ListAttendeesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -11943,6 +13318,8 @@ func (c *Chime) ListAttendeesPages(input *ListAttendeesInput, fn func(*ListAtten
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListAttendees in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) ListAttendeesPagesWithContext(ctx aws.Context, input *ListAttendeesInput, fn func(*ListAttendeesOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -12147,7 +13524,12 @@ const opListChannelBans = "ListChannelBans"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelBans
+//
+// Deprecated: Replaced by ListChannelBans in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelBansRequest(input *ListChannelBansInput) (req *request.Request, output *ListChannelBansOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannelBans, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannelBans,
 		HTTPMethod: "GET",
@@ -12178,6 +13560,14 @@ func (c *Chime) ListChannelBansRequest(input *ListChannelBansInput) (req *reques
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannelBans (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannelBans.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -12206,6 +13596,8 @@ func (c *Chime) ListChannelBansRequest(input *ListChannelBansInput) (req *reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelBans
+//
+// Deprecated: Replaced by ListChannelBans in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelBans(input *ListChannelBansInput) (*ListChannelBansOutput, error) {
 	req, out := c.ListChannelBansRequest(input)
 	return out, req.Send()
@@ -12220,6 +13612,8 @@ func (c *Chime) ListChannelBans(input *ListChannelBansInput) (*ListChannelBansOu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelBans in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelBansWithContext(ctx aws.Context, input *ListChannelBansInput, opts ...request.Option) (*ListChannelBansOutput, error) {
 	req, out := c.ListChannelBansRequest(input)
 	req.SetContext(ctx)
@@ -12243,6 +13637,8 @@ func (c *Chime) ListChannelBansWithContext(ctx aws.Context, input *ListChannelBa
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannelBans in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelBansPages(input *ListChannelBansInput, fn func(*ListChannelBansOutput, bool) bool) error {
 	return c.ListChannelBansPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12254,6 +13650,8 @@ func (c *Chime) ListChannelBansPages(input *ListChannelBansInput, fn func(*ListC
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelBans in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelBansPagesWithContext(ctx aws.Context, input *ListChannelBansInput, fn func(*ListChannelBansOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -12303,7 +13701,12 @@ const opListChannelMemberships = "ListChannelMemberships"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelMemberships
+//
+// Deprecated: Replaced by ListChannelMemberships in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsRequest(input *ListChannelMembershipsInput) (req *request.Request, output *ListChannelMembershipsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannelMemberships, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannelMemberships,
 		HTTPMethod: "GET",
@@ -12334,6 +13737,14 @@ func (c *Chime) ListChannelMembershipsRequest(input *ListChannelMembershipsInput
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannelMemberships (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannelMemberships.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -12362,6 +13773,8 @@ func (c *Chime) ListChannelMembershipsRequest(input *ListChannelMembershipsInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelMemberships
+//
+// Deprecated: Replaced by ListChannelMemberships in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMemberships(input *ListChannelMembershipsInput) (*ListChannelMembershipsOutput, error) {
 	req, out := c.ListChannelMembershipsRequest(input)
 	return out, req.Send()
@@ -12376,6 +13789,8 @@ func (c *Chime) ListChannelMemberships(input *ListChannelMembershipsInput) (*Lis
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelMemberships in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsWithContext(ctx aws.Context, input *ListChannelMembershipsInput, opts ...request.Option) (*ListChannelMembershipsOutput, error) {
 	req, out := c.ListChannelMembershipsRequest(input)
 	req.SetContext(ctx)
@@ -12399,6 +13814,8 @@ func (c *Chime) ListChannelMembershipsWithContext(ctx aws.Context, input *ListCh
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannelMemberships in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsPages(input *ListChannelMembershipsInput, fn func(*ListChannelMembershipsOutput, bool) bool) error {
 	return c.ListChannelMembershipsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12410,6 +13827,8 @@ func (c *Chime) ListChannelMembershipsPages(input *ListChannelMembershipsInput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelMemberships in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsPagesWithContext(ctx aws.Context, input *ListChannelMembershipsInput, fn func(*ListChannelMembershipsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -12459,7 +13878,12 @@ const opListChannelMembershipsForAppInstanceUser = "ListChannelMembershipsForApp
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelMembershipsForAppInstanceUser
+//
+// Deprecated: Replaced by ListChannelMembershipsForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsForAppInstanceUserRequest(input *ListChannelMembershipsForAppInstanceUserInput) (req *request.Request, output *ListChannelMembershipsForAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannelMembershipsForAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannelMembershipsForAppInstanceUser,
 		HTTPMethod: "GET",
@@ -12491,6 +13915,14 @@ func (c *Chime) ListChannelMembershipsForAppInstanceUserRequest(input *ListChann
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannelMembershipsForAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannelMembershipsForAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -12519,6 +13951,8 @@ func (c *Chime) ListChannelMembershipsForAppInstanceUserRequest(input *ListChann
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelMembershipsForAppInstanceUser
+//
+// Deprecated: Replaced by ListChannelMembershipsForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsForAppInstanceUser(input *ListChannelMembershipsForAppInstanceUserInput) (*ListChannelMembershipsForAppInstanceUserOutput, error) {
 	req, out := c.ListChannelMembershipsForAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -12533,6 +13967,8 @@ func (c *Chime) ListChannelMembershipsForAppInstanceUser(input *ListChannelMembe
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelMembershipsForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsForAppInstanceUserWithContext(ctx aws.Context, input *ListChannelMembershipsForAppInstanceUserInput, opts ...request.Option) (*ListChannelMembershipsForAppInstanceUserOutput, error) {
 	req, out := c.ListChannelMembershipsForAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -12556,6 +13992,8 @@ func (c *Chime) ListChannelMembershipsForAppInstanceUserWithContext(ctx aws.Cont
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannelMembershipsForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsForAppInstanceUserPages(input *ListChannelMembershipsForAppInstanceUserInput, fn func(*ListChannelMembershipsForAppInstanceUserOutput, bool) bool) error {
 	return c.ListChannelMembershipsForAppInstanceUserPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12567,6 +14005,8 @@ func (c *Chime) ListChannelMembershipsForAppInstanceUserPages(input *ListChannel
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelMembershipsForAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMembershipsForAppInstanceUserPagesWithContext(ctx aws.Context, input *ListChannelMembershipsForAppInstanceUserInput, fn func(*ListChannelMembershipsForAppInstanceUserOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -12616,7 +14056,12 @@ const opListChannelMessages = "ListChannelMessages"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelMessages
+//
+// Deprecated: Replaced by ListChannelMessages in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMessagesRequest(input *ListChannelMessagesInput) (req *request.Request, output *ListChannelMessagesOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannelMessages, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannelMessages,
 		HTTPMethod: "GET",
@@ -12652,6 +14097,14 @@ func (c *Chime) ListChannelMessagesRequest(input *ListChannelMessagesInput) (req
 // Also, the x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannelMessages (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannelMessages.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -12680,6 +14133,8 @@ func (c *Chime) ListChannelMessagesRequest(input *ListChannelMessagesInput) (req
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelMessages
+//
+// Deprecated: Replaced by ListChannelMessages in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMessages(input *ListChannelMessagesInput) (*ListChannelMessagesOutput, error) {
 	req, out := c.ListChannelMessagesRequest(input)
 	return out, req.Send()
@@ -12694,6 +14149,8 @@ func (c *Chime) ListChannelMessages(input *ListChannelMessagesInput) (*ListChann
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelMessages in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMessagesWithContext(ctx aws.Context, input *ListChannelMessagesInput, opts ...request.Option) (*ListChannelMessagesOutput, error) {
 	req, out := c.ListChannelMessagesRequest(input)
 	req.SetContext(ctx)
@@ -12717,6 +14174,8 @@ func (c *Chime) ListChannelMessagesWithContext(ctx aws.Context, input *ListChann
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannelMessages in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMessagesPages(input *ListChannelMessagesInput, fn func(*ListChannelMessagesOutput, bool) bool) error {
 	return c.ListChannelMessagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12728,6 +14187,8 @@ func (c *Chime) ListChannelMessagesPages(input *ListChannelMessagesInput, fn fun
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelMessages in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelMessagesPagesWithContext(ctx aws.Context, input *ListChannelMessagesInput, fn func(*ListChannelMessagesOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -12777,7 +14238,12 @@ const opListChannelModerators = "ListChannelModerators"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelModerators
+//
+// Deprecated: Replaced by ListChannelModerators in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelModeratorsRequest(input *ListChannelModeratorsInput) (req *request.Request, output *ListChannelModeratorsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannelModerators, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannelModerators,
 		HTTPMethod: "GET",
@@ -12808,6 +14274,14 @@ func (c *Chime) ListChannelModeratorsRequest(input *ListChannelModeratorsInput) 
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannelModerators (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannelModerators.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -12836,6 +14310,8 @@ func (c *Chime) ListChannelModeratorsRequest(input *ListChannelModeratorsInput) 
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelModerators
+//
+// Deprecated: Replaced by ListChannelModerators in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelModerators(input *ListChannelModeratorsInput) (*ListChannelModeratorsOutput, error) {
 	req, out := c.ListChannelModeratorsRequest(input)
 	return out, req.Send()
@@ -12850,6 +14326,8 @@ func (c *Chime) ListChannelModerators(input *ListChannelModeratorsInput) (*ListC
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelModerators in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelModeratorsWithContext(ctx aws.Context, input *ListChannelModeratorsInput, opts ...request.Option) (*ListChannelModeratorsOutput, error) {
 	req, out := c.ListChannelModeratorsRequest(input)
 	req.SetContext(ctx)
@@ -12873,6 +14351,8 @@ func (c *Chime) ListChannelModeratorsWithContext(ctx aws.Context, input *ListCha
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannelModerators in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelModeratorsPages(input *ListChannelModeratorsInput, fn func(*ListChannelModeratorsOutput, bool) bool) error {
 	return c.ListChannelModeratorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -12884,6 +14364,8 @@ func (c *Chime) ListChannelModeratorsPages(input *ListChannelModeratorsInput, fn
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelModerators in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelModeratorsPagesWithContext(ctx aws.Context, input *ListChannelModeratorsInput, fn func(*ListChannelModeratorsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -12933,7 +14415,12 @@ const opListChannels = "ListChannels"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannels
+//
+// Deprecated: Replaced by ListChannels in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsRequest(input *ListChannelsInput) (req *request.Request, output *ListChannelsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannels, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannels,
 		HTTPMethod: "GET",
@@ -12972,6 +14459,14 @@ func (c *Chime) ListChannelsRequest(input *ListChannelsInput) (req *request.Requ
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannels (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannels.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -13000,6 +14495,8 @@ func (c *Chime) ListChannelsRequest(input *ListChannelsInput) (req *request.Requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannels
+//
+// Deprecated: Replaced by ListChannels in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannels(input *ListChannelsInput) (*ListChannelsOutput, error) {
 	req, out := c.ListChannelsRequest(input)
 	return out, req.Send()
@@ -13014,6 +14511,8 @@ func (c *Chime) ListChannels(input *ListChannelsInput) (*ListChannelsOutput, err
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannels in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsWithContext(ctx aws.Context, input *ListChannelsInput, opts ...request.Option) (*ListChannelsOutput, error) {
 	req, out := c.ListChannelsRequest(input)
 	req.SetContext(ctx)
@@ -13037,6 +14536,8 @@ func (c *Chime) ListChannelsWithContext(ctx aws.Context, input *ListChannelsInpu
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannels in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool) error {
 	return c.ListChannelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13048,6 +14549,8 @@ func (c *Chime) ListChannelsPages(input *ListChannelsInput, fn func(*ListChannel
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannels in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsPagesWithContext(ctx aws.Context, input *ListChannelsInput, fn func(*ListChannelsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -13097,7 +14600,12 @@ const opListChannelsModeratedByAppInstanceUser = "ListChannelsModeratedByAppInst
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelsModeratedByAppInstanceUser
+//
+// Deprecated: Replaced by ListChannelsModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsModeratedByAppInstanceUserRequest(input *ListChannelsModeratedByAppInstanceUserInput) (req *request.Request, output *ListChannelsModeratedByAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListChannelsModeratedByAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListChannelsModeratedByAppInstanceUser,
 		HTTPMethod: "GET",
@@ -13128,6 +14636,14 @@ func (c *Chime) ListChannelsModeratedByAppInstanceUserRequest(input *ListChannel
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
 //
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListChannelsModeratedByAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListChannelsModeratedByAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -13156,6 +14672,8 @@ func (c *Chime) ListChannelsModeratedByAppInstanceUserRequest(input *ListChannel
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListChannelsModeratedByAppInstanceUser
+//
+// Deprecated: Replaced by ListChannelsModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsModeratedByAppInstanceUser(input *ListChannelsModeratedByAppInstanceUserInput) (*ListChannelsModeratedByAppInstanceUserOutput, error) {
 	req, out := c.ListChannelsModeratedByAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -13170,6 +14688,8 @@ func (c *Chime) ListChannelsModeratedByAppInstanceUser(input *ListChannelsModera
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelsModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsModeratedByAppInstanceUserWithContext(ctx aws.Context, input *ListChannelsModeratedByAppInstanceUserInput, opts ...request.Option) (*ListChannelsModeratedByAppInstanceUserOutput, error) {
 	req, out := c.ListChannelsModeratedByAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -13193,6 +14713,8 @@ func (c *Chime) ListChannelsModeratedByAppInstanceUserWithContext(ctx aws.Contex
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListChannelsModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsModeratedByAppInstanceUserPages(input *ListChannelsModeratedByAppInstanceUserInput, fn func(*ListChannelsModeratedByAppInstanceUserOutput, bool) bool) error {
 	return c.ListChannelsModeratedByAppInstanceUserPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13204,6 +14726,8 @@ func (c *Chime) ListChannelsModeratedByAppInstanceUserPages(input *ListChannelsM
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListChannelsModeratedByAppInstanceUser in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) ListChannelsModeratedByAppInstanceUserPagesWithContext(ctx aws.Context, input *ListChannelsModeratedByAppInstanceUserInput, fn func(*ListChannelsModeratedByAppInstanceUserOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -13253,7 +14777,12 @@ const opListMediaCapturePipelines = "ListMediaCapturePipelines"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListMediaCapturePipelines
+//
+// Deprecated: Replaced by ListMediaCapturePipelines in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) ListMediaCapturePipelinesRequest(input *ListMediaCapturePipelinesInput) (req *request.Request, output *ListMediaCapturePipelinesOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListMediaCapturePipelines, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListMediaCapturePipelines,
 		HTTPMethod: "GET",
@@ -13278,6 +14807,14 @@ func (c *Chime) ListMediaCapturePipelinesRequest(input *ListMediaCapturePipeline
 // ListMediaCapturePipelines API operation for Amazon Chime.
 //
 // Returns a list of media capture pipelines.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListMediaCapturePipelines (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_media-pipelines-chime_ListMediaCapturePipelines.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13307,6 +14844,8 @@ func (c *Chime) ListMediaCapturePipelinesRequest(input *ListMediaCapturePipeline
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListMediaCapturePipelines
+//
+// Deprecated: Replaced by ListMediaCapturePipelines in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) ListMediaCapturePipelines(input *ListMediaCapturePipelinesInput) (*ListMediaCapturePipelinesOutput, error) {
 	req, out := c.ListMediaCapturePipelinesRequest(input)
 	return out, req.Send()
@@ -13321,6 +14860,8 @@ func (c *Chime) ListMediaCapturePipelines(input *ListMediaCapturePipelinesInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListMediaCapturePipelines in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) ListMediaCapturePipelinesWithContext(ctx aws.Context, input *ListMediaCapturePipelinesInput, opts ...request.Option) (*ListMediaCapturePipelinesOutput, error) {
 	req, out := c.ListMediaCapturePipelinesRequest(input)
 	req.SetContext(ctx)
@@ -13344,6 +14885,8 @@ func (c *Chime) ListMediaCapturePipelinesWithContext(ctx aws.Context, input *Lis
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListMediaCapturePipelines in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) ListMediaCapturePipelinesPages(input *ListMediaCapturePipelinesInput, fn func(*ListMediaCapturePipelinesOutput, bool) bool) error {
 	return c.ListMediaCapturePipelinesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13355,6 +14898,8 @@ func (c *Chime) ListMediaCapturePipelinesPages(input *ListMediaCapturePipelinesI
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListMediaCapturePipelines in the Amazon Chime SDK Media Pipelines Namespace
 func (c *Chime) ListMediaCapturePipelinesPagesWithContext(ctx aws.Context, input *ListMediaCapturePipelinesInput, fn func(*ListMediaCapturePipelinesOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -13404,7 +14949,12 @@ const opListMeetingTags = "ListMeetingTags"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListMeetingTags
+//
+// Deprecated: Use ListTagsForResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) ListMeetingTagsRequest(input *ListMeetingTagsInput) (req *request.Request, output *ListMeetingTagsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListMeetingTags, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListMeetingTags,
 		HTTPMethod: "GET",
@@ -13423,6 +14973,14 @@ func (c *Chime) ListMeetingTagsRequest(input *ListMeetingTagsInput) (req *reques
 // ListMeetingTags API operation for Amazon Chime.
 //
 // Lists the tags applied to an Amazon Chime SDK meeting resource.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListTagsForResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_ListTagsForResource.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13455,6 +15013,8 @@ func (c *Chime) ListMeetingTagsRequest(input *ListMeetingTagsInput) (req *reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListMeetingTags
+//
+// Deprecated: Use ListTagsForResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) ListMeetingTags(input *ListMeetingTagsInput) (*ListMeetingTagsOutput, error) {
 	req, out := c.ListMeetingTagsRequest(input)
 	return out, req.Send()
@@ -13469,6 +15029,8 @@ func (c *Chime) ListMeetingTags(input *ListMeetingTagsInput) (*ListMeetingTagsOu
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Use ListTagsForResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) ListMeetingTagsWithContext(ctx aws.Context, input *ListMeetingTagsInput, opts ...request.Option) (*ListMeetingTagsOutput, error) {
 	req, out := c.ListMeetingTagsRequest(input)
 	req.SetContext(ctx)
@@ -13501,7 +15063,12 @@ const opListMeetings = "ListMeetings"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListMeetings
+//
+// Deprecated: ListMeetings is not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListMeetingsRequest(input *ListMeetingsInput) (req *request.Request, output *ListMeetingsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListMeetings, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListMeetings,
 		HTTPMethod: "GET",
@@ -13525,9 +15092,14 @@ func (c *Chime) ListMeetingsRequest(input *ListMeetingsInput) (req *request.Requ
 
 // ListMeetings API operation for Amazon Chime.
 //
-// Lists up to 100 active Amazon Chime SDK meetings. For more information about
-// the Amazon Chime SDK, see Using the Amazon Chime SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html)
-// in the Amazon Chime Developer Guide.
+// Lists up to 100 active Amazon Chime SDK meetings.
+//
+// ListMeetings is not supported in the Amazon Chime SDK Meetings Namespace.
+// Update your application to remove calls to this API.
+//
+// For more information about the Amazon Chime SDK, see Using the Amazon Chime
+// SDK (https://docs.aws.amazon.com/chime-sdk/latest/dg/meetings-sdk.html) in
+// the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13557,6 +15129,8 @@ func (c *Chime) ListMeetingsRequest(input *ListMeetingsInput) (req *request.Requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListMeetings
+//
+// Deprecated: ListMeetings is not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListMeetings(input *ListMeetingsInput) (*ListMeetingsOutput, error) {
 	req, out := c.ListMeetingsRequest(input)
 	return out, req.Send()
@@ -13571,6 +15145,8 @@ func (c *Chime) ListMeetings(input *ListMeetingsInput) (*ListMeetingsOutput, err
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: ListMeetings is not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListMeetingsWithContext(ctx aws.Context, input *ListMeetingsInput, opts ...request.Option) (*ListMeetingsOutput, error) {
 	req, out := c.ListMeetingsRequest(input)
 	req.SetContext(ctx)
@@ -13594,6 +15170,8 @@ func (c *Chime) ListMeetingsWithContext(ctx aws.Context, input *ListMeetingsInpu
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: ListMeetings is not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListMeetingsPages(input *ListMeetingsInput, fn func(*ListMeetingsOutput, bool) bool) error {
 	return c.ListMeetingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -13605,6 +15183,8 @@ func (c *Chime) ListMeetingsPages(input *ListMeetingsInput, fn func(*ListMeeting
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: ListMeetings is not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) ListMeetingsPagesWithContext(ctx aws.Context, input *ListMeetingsInput, fn func(*ListMeetingsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -13960,7 +15540,12 @@ const opListProxySessions = "ListProxySessions"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListProxySessions
+//
+// Deprecated: Replaced by ListProxySessions in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListProxySessionsRequest(input *ListProxySessionsInput) (req *request.Request, output *ListProxySessionsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListProxySessions, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListProxySessions,
 		HTTPMethod: "GET",
@@ -13985,6 +15570,14 @@ func (c *Chime) ListProxySessionsRequest(input *ListProxySessionsInput) (req *re
 // ListProxySessions API operation for Amazon Chime.
 //
 // Lists the proxy sessions for the specified Amazon Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListProxySessions (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ListProxySessions.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14017,6 +15610,8 @@ func (c *Chime) ListProxySessionsRequest(input *ListProxySessionsInput) (req *re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListProxySessions
+//
+// Deprecated: Replaced by ListProxySessions in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListProxySessions(input *ListProxySessionsInput) (*ListProxySessionsOutput, error) {
 	req, out := c.ListProxySessionsRequest(input)
 	return out, req.Send()
@@ -14031,6 +15626,8 @@ func (c *Chime) ListProxySessions(input *ListProxySessionsInput) (*ListProxySess
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListProxySessions in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListProxySessionsWithContext(ctx aws.Context, input *ListProxySessionsInput, opts ...request.Option) (*ListProxySessionsOutput, error) {
 	req, out := c.ListProxySessionsRequest(input)
 	req.SetContext(ctx)
@@ -14054,6 +15651,8 @@ func (c *Chime) ListProxySessionsWithContext(ctx aws.Context, input *ListProxySe
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListProxySessions in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListProxySessionsPages(input *ListProxySessionsInput, fn func(*ListProxySessionsOutput, bool) bool) error {
 	return c.ListProxySessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -14065,6 +15664,8 @@ func (c *Chime) ListProxySessionsPages(input *ListProxySessionsInput, fn func(*L
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListProxySessions in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListProxySessionsPagesWithContext(ctx aws.Context, input *ListProxySessionsInput, fn func(*ListProxySessionsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -14425,7 +16026,12 @@ const opListSipMediaApplications = "ListSipMediaApplications"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListSipMediaApplications
+//
+// Deprecated: Replaced by ListSipMediaApplications in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipMediaApplicationsRequest(input *ListSipMediaApplicationsInput) (req *request.Request, output *ListSipMediaApplicationsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListSipMediaApplications, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListSipMediaApplications,
 		HTTPMethod: "GET",
@@ -14450,6 +16056,14 @@ func (c *Chime) ListSipMediaApplicationsRequest(input *ListSipMediaApplicationsI
 // ListSipMediaApplications API operation for Amazon Chime.
 //
 // Lists the SIP media applications under the administrator's AWS account.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListSipMediaApplications (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ListSipMediaApplications.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14479,6 +16093,8 @@ func (c *Chime) ListSipMediaApplicationsRequest(input *ListSipMediaApplicationsI
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListSipMediaApplications
+//
+// Deprecated: Replaced by ListSipMediaApplications in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipMediaApplications(input *ListSipMediaApplicationsInput) (*ListSipMediaApplicationsOutput, error) {
 	req, out := c.ListSipMediaApplicationsRequest(input)
 	return out, req.Send()
@@ -14493,6 +16109,8 @@ func (c *Chime) ListSipMediaApplications(input *ListSipMediaApplicationsInput) (
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListSipMediaApplications in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipMediaApplicationsWithContext(ctx aws.Context, input *ListSipMediaApplicationsInput, opts ...request.Option) (*ListSipMediaApplicationsOutput, error) {
 	req, out := c.ListSipMediaApplicationsRequest(input)
 	req.SetContext(ctx)
@@ -14516,6 +16134,8 @@ func (c *Chime) ListSipMediaApplicationsWithContext(ctx aws.Context, input *List
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListSipMediaApplications in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipMediaApplicationsPages(input *ListSipMediaApplicationsInput, fn func(*ListSipMediaApplicationsOutput, bool) bool) error {
 	return c.ListSipMediaApplicationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -14527,6 +16147,8 @@ func (c *Chime) ListSipMediaApplicationsPages(input *ListSipMediaApplicationsInp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListSipMediaApplications in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipMediaApplicationsPagesWithContext(ctx aws.Context, input *ListSipMediaApplicationsInput, fn func(*ListSipMediaApplicationsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -14576,7 +16198,12 @@ const opListSipRules = "ListSipRules"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListSipRules
+//
+// Deprecated: Replaced by ListSipRules in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipRulesRequest(input *ListSipRulesInput) (req *request.Request, output *ListSipRulesOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListSipRules, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListSipRules,
 		HTTPMethod: "GET",
@@ -14601,6 +16228,14 @@ func (c *Chime) ListSipRulesRequest(input *ListSipRulesInput) (req *request.Requ
 // ListSipRules API operation for Amazon Chime.
 //
 // Lists the SIP rules under the administrator's AWS account.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListSipRules (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ListSipRules.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14630,6 +16265,8 @@ func (c *Chime) ListSipRulesRequest(input *ListSipRulesInput) (req *request.Requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListSipRules
+//
+// Deprecated: Replaced by ListSipRules in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipRules(input *ListSipRulesInput) (*ListSipRulesOutput, error) {
 	req, out := c.ListSipRulesRequest(input)
 	return out, req.Send()
@@ -14644,6 +16281,8 @@ func (c *Chime) ListSipRules(input *ListSipRulesInput) (*ListSipRulesOutput, err
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListSipRules in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipRulesWithContext(ctx aws.Context, input *ListSipRulesInput, opts ...request.Option) (*ListSipRulesOutput, error) {
 	req, out := c.ListSipRulesRequest(input)
 	req.SetContext(ctx)
@@ -14667,6 +16306,8 @@ func (c *Chime) ListSipRulesWithContext(ctx aws.Context, input *ListSipRulesInpu
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListSipRules in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipRulesPages(input *ListSipRulesInput, fn func(*ListSipRulesOutput, bool) bool) error {
 	return c.ListSipRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -14678,6 +16319,8 @@ func (c *Chime) ListSipRulesPages(input *ListSipRulesInput, fn func(*ListSipRule
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListSipRules in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListSipRulesPagesWithContext(ctx aws.Context, input *ListSipRulesInput, fn func(*ListSipRulesOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -14824,7 +16467,12 @@ const opListTagsForResource = "ListTagsForResource"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListTagsForResource
+//
+// Deprecated: Replaced by ListTagsForResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListTagsForResource, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListTagsForResource,
 		HTTPMethod: "GET",
@@ -14842,7 +16490,18 @@ func (c *Chime) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 
 // ListTagsForResource API operation for Amazon Chime.
 //
-// Lists the tags applied to an Amazon Chime SDK meeting resource.
+// Lists the tags applied to an Amazon Chime SDK meeting and messaging resources.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the applicable latest version in the Amazon Chime SDK.
+//
+//   - For meetings: ListTagsForResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_ListTagsForResource.html).
+//
+//   - For messaging: ListTagsForResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_ListTagsForResource.html).
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -14872,6 +16531,8 @@ func (c *Chime) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListTagsForResource
+//
+// Deprecated: Replaced by ListTagsForResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	return out, req.Send()
@@ -14886,6 +16547,8 @@ func (c *Chime) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsF
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListTagsForResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
 	req, out := c.ListTagsForResourceRequest(input)
 	req.SetContext(ctx)
@@ -15074,7 +16737,12 @@ const opListVoiceConnectorGroups = "ListVoiceConnectorGroups"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListVoiceConnectorGroups
+//
+// Deprecated: Replaced by ListVoiceConnectorGroups in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorGroupsRequest(input *ListVoiceConnectorGroupsInput) (req *request.Request, output *ListVoiceConnectorGroupsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListVoiceConnectorGroups, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListVoiceConnectorGroups,
 		HTTPMethod: "GET",
@@ -15100,6 +16768,14 @@ func (c *Chime) ListVoiceConnectorGroupsRequest(input *ListVoiceConnectorGroupsI
 //
 // Lists the Amazon Chime Voice Connector groups for the administrator's AWS
 // account.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListVoiceConnectorGroups (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ListVoiceConnectorGroups.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15129,6 +16805,8 @@ func (c *Chime) ListVoiceConnectorGroupsRequest(input *ListVoiceConnectorGroupsI
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListVoiceConnectorGroups
+//
+// Deprecated: Replaced by ListVoiceConnectorGroups in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorGroups(input *ListVoiceConnectorGroupsInput) (*ListVoiceConnectorGroupsOutput, error) {
 	req, out := c.ListVoiceConnectorGroupsRequest(input)
 	return out, req.Send()
@@ -15143,6 +16821,8 @@ func (c *Chime) ListVoiceConnectorGroups(input *ListVoiceConnectorGroupsInput) (
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListVoiceConnectorGroups in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorGroupsWithContext(ctx aws.Context, input *ListVoiceConnectorGroupsInput, opts ...request.Option) (*ListVoiceConnectorGroupsOutput, error) {
 	req, out := c.ListVoiceConnectorGroupsRequest(input)
 	req.SetContext(ctx)
@@ -15166,6 +16846,8 @@ func (c *Chime) ListVoiceConnectorGroupsWithContext(ctx aws.Context, input *List
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListVoiceConnectorGroups in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorGroupsPages(input *ListVoiceConnectorGroupsInput, fn func(*ListVoiceConnectorGroupsOutput, bool) bool) error {
 	return c.ListVoiceConnectorGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -15177,6 +16859,8 @@ func (c *Chime) ListVoiceConnectorGroupsPages(input *ListVoiceConnectorGroupsInp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListVoiceConnectorGroups in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorGroupsPagesWithContext(ctx aws.Context, input *ListVoiceConnectorGroupsInput, fn func(*ListVoiceConnectorGroupsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -15226,7 +16910,12 @@ const opListVoiceConnectorTerminationCredentials = "ListVoiceConnectorTerminatio
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListVoiceConnectorTerminationCredentials
+//
+// Deprecated: Replaced by ListVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorTerminationCredentialsRequest(input *ListVoiceConnectorTerminationCredentialsInput) (req *request.Request, output *ListVoiceConnectorTerminationCredentialsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListVoiceConnectorTerminationCredentials, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListVoiceConnectorTerminationCredentials,
 		HTTPMethod: "GET",
@@ -15245,6 +16934,14 @@ func (c *Chime) ListVoiceConnectorTerminationCredentialsRequest(input *ListVoice
 // ListVoiceConnectorTerminationCredentials API operation for Amazon Chime.
 //
 // Lists the SIP credentials for the specified Amazon Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListVoiceConnectorTerminationCredentials (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ListVoiceConnectorTerminationCredentials.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15277,6 +16974,8 @@ func (c *Chime) ListVoiceConnectorTerminationCredentialsRequest(input *ListVoice
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListVoiceConnectorTerminationCredentials
+//
+// Deprecated: Replaced by ListVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorTerminationCredentials(input *ListVoiceConnectorTerminationCredentialsInput) (*ListVoiceConnectorTerminationCredentialsOutput, error) {
 	req, out := c.ListVoiceConnectorTerminationCredentialsRequest(input)
 	return out, req.Send()
@@ -15291,6 +16990,8 @@ func (c *Chime) ListVoiceConnectorTerminationCredentials(input *ListVoiceConnect
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorTerminationCredentialsWithContext(ctx aws.Context, input *ListVoiceConnectorTerminationCredentialsInput, opts ...request.Option) (*ListVoiceConnectorTerminationCredentialsOutput, error) {
 	req, out := c.ListVoiceConnectorTerminationCredentialsRequest(input)
 	req.SetContext(ctx)
@@ -15323,7 +17024,12 @@ const opListVoiceConnectors = "ListVoiceConnectors"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListVoiceConnectors
+//
+// Deprecated: Replaced by ListVoiceConnectors in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorsRequest(input *ListVoiceConnectorsInput) (req *request.Request, output *ListVoiceConnectorsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ListVoiceConnectors, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opListVoiceConnectors,
 		HTTPMethod: "GET",
@@ -15348,6 +17054,14 @@ func (c *Chime) ListVoiceConnectorsRequest(input *ListVoiceConnectorsInput) (req
 // ListVoiceConnectors API operation for Amazon Chime.
 //
 // Lists the Amazon Chime Voice Connectors for the administrator's AWS account.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ListVoiceConnectors (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ListVoiceConnectors.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15377,6 +17091,8 @@ func (c *Chime) ListVoiceConnectorsRequest(input *ListVoiceConnectorsInput) (req
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ListVoiceConnectors
+//
+// Deprecated: Replaced by ListVoiceConnectors in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectors(input *ListVoiceConnectorsInput) (*ListVoiceConnectorsOutput, error) {
 	req, out := c.ListVoiceConnectorsRequest(input)
 	return out, req.Send()
@@ -15391,6 +17107,8 @@ func (c *Chime) ListVoiceConnectors(input *ListVoiceConnectorsInput) (*ListVoice
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListVoiceConnectors in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorsWithContext(ctx aws.Context, input *ListVoiceConnectorsInput, opts ...request.Option) (*ListVoiceConnectorsOutput, error) {
 	req, out := c.ListVoiceConnectorsRequest(input)
 	req.SetContext(ctx)
@@ -15414,6 +17132,8 @@ func (c *Chime) ListVoiceConnectorsWithContext(ctx aws.Context, input *ListVoice
 //	        fmt.Println(page)
 //	        return pageNum <= 3
 //	    })
+//
+// Deprecated: Replaced by ListVoiceConnectors in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorsPages(input *ListVoiceConnectorsInput, fn func(*ListVoiceConnectorsOutput, bool) bool) error {
 	return c.ListVoiceConnectorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -15425,6 +17145,8 @@ func (c *Chime) ListVoiceConnectorsPages(input *ListVoiceConnectorsInput, fn fun
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by ListVoiceConnectors in the Amazon Chime SDK Voice Namespace
 func (c *Chime) ListVoiceConnectorsPagesWithContext(ctx aws.Context, input *ListVoiceConnectorsInput, fn func(*ListVoiceConnectorsOutput, bool) bool, opts ...request.Option) error {
 	p := request.Pagination{
 		NewRequest: func() (*request.Request, error) {
@@ -15573,7 +17295,12 @@ const opPutAppInstanceRetentionSettings = "PutAppInstanceRetentionSettings"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutAppInstanceRetentionSettings
+//
+// Deprecated: Replaced by PutAppInstanceRetentionSettings in the Amazon Chime SDK Identity Namespace
 func (c *Chime) PutAppInstanceRetentionSettingsRequest(input *PutAppInstanceRetentionSettingsInput) (req *request.Request, output *PutAppInstanceRetentionSettingsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutAppInstanceRetentionSettings, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutAppInstanceRetentionSettings,
 		HTTPMethod: "PUT",
@@ -15594,6 +17321,14 @@ func (c *Chime) PutAppInstanceRetentionSettingsRequest(input *PutAppInstanceRete
 // PutAppInstanceRetentionSettings API operation for Amazon Chime.
 //
 // Sets the amount of time in days that a given AppInstance retains data.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutAppInstanceRetentionSettings (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_PutAppInstanceRetentionSettings.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15630,6 +17365,8 @@ func (c *Chime) PutAppInstanceRetentionSettingsRequest(input *PutAppInstanceRete
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutAppInstanceRetentionSettings
+//
+// Deprecated: Replaced by PutAppInstanceRetentionSettings in the Amazon Chime SDK Identity Namespace
 func (c *Chime) PutAppInstanceRetentionSettings(input *PutAppInstanceRetentionSettingsInput) (*PutAppInstanceRetentionSettingsOutput, error) {
 	req, out := c.PutAppInstanceRetentionSettingsRequest(input)
 	return out, req.Send()
@@ -15644,6 +17381,8 @@ func (c *Chime) PutAppInstanceRetentionSettings(input *PutAppInstanceRetentionSe
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutAppInstanceRetentionSettings in the Amazon Chime SDK Identity Namespace
 func (c *Chime) PutAppInstanceRetentionSettingsWithContext(ctx aws.Context, input *PutAppInstanceRetentionSettingsInput, opts ...request.Option) (*PutAppInstanceRetentionSettingsOutput, error) {
 	req, out := c.PutAppInstanceRetentionSettingsRequest(input)
 	req.SetContext(ctx)
@@ -15676,7 +17415,12 @@ const opPutAppInstanceStreamingConfigurations = "PutAppInstanceStreamingConfigur
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutAppInstanceStreamingConfigurations
+//
+// Deprecated: Replaced by PutAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) PutAppInstanceStreamingConfigurationsRequest(input *PutAppInstanceStreamingConfigurationsInput) (req *request.Request, output *PutAppInstanceStreamingConfigurationsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutAppInstanceStreamingConfigurations, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutAppInstanceStreamingConfigurations,
 		HTTPMethod: "PUT",
@@ -15695,6 +17439,14 @@ func (c *Chime) PutAppInstanceStreamingConfigurationsRequest(input *PutAppInstan
 // PutAppInstanceStreamingConfigurations API operation for Amazon Chime.
 //
 // The data streaming configurations of an AppInstance.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutMessagingStreamingConfigurations (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_PutMessagingStreamingConfigurations.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -15727,6 +17479,8 @@ func (c *Chime) PutAppInstanceStreamingConfigurationsRequest(input *PutAppInstan
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutAppInstanceStreamingConfigurations
+//
+// Deprecated: Replaced by PutAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) PutAppInstanceStreamingConfigurations(input *PutAppInstanceStreamingConfigurationsInput) (*PutAppInstanceStreamingConfigurationsOutput, error) {
 	req, out := c.PutAppInstanceStreamingConfigurationsRequest(input)
 	return out, req.Send()
@@ -15741,6 +17495,8 @@ func (c *Chime) PutAppInstanceStreamingConfigurations(input *PutAppInstanceStrea
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutAppInstanceStreamingConfigurations in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) PutAppInstanceStreamingConfigurationsWithContext(ctx aws.Context, input *PutAppInstanceStreamingConfigurationsInput, opts ...request.Option) (*PutAppInstanceStreamingConfigurationsOutput, error) {
 	req, out := c.PutAppInstanceStreamingConfigurationsRequest(input)
 	req.SetContext(ctx)
@@ -15983,7 +17739,12 @@ const opPutSipMediaApplicationLoggingConfiguration = "PutSipMediaApplicationLogg
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutSipMediaApplicationLoggingConfiguration
+//
+// Deprecated: Replaced by PutSipMediaApplicationLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutSipMediaApplicationLoggingConfigurationRequest(input *PutSipMediaApplicationLoggingConfigurationInput) (req *request.Request, output *PutSipMediaApplicationLoggingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutSipMediaApplicationLoggingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutSipMediaApplicationLoggingConfiguration,
 		HTTPMethod: "PUT",
@@ -16002,6 +17763,14 @@ func (c *Chime) PutSipMediaApplicationLoggingConfigurationRequest(input *PutSipM
 // PutSipMediaApplicationLoggingConfiguration API operation for Amazon Chime.
 //
 // Updates the logging configuration for the specified SIP media application.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutSipMediaApplicationLoggingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutSipMediaApplicationLoggingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16034,6 +17803,8 @@ func (c *Chime) PutSipMediaApplicationLoggingConfigurationRequest(input *PutSipM
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutSipMediaApplicationLoggingConfiguration
+//
+// Deprecated: Replaced by PutSipMediaApplicationLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutSipMediaApplicationLoggingConfiguration(input *PutSipMediaApplicationLoggingConfigurationInput) (*PutSipMediaApplicationLoggingConfigurationOutput, error) {
 	req, out := c.PutSipMediaApplicationLoggingConfigurationRequest(input)
 	return out, req.Send()
@@ -16048,6 +17819,8 @@ func (c *Chime) PutSipMediaApplicationLoggingConfiguration(input *PutSipMediaApp
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutSipMediaApplicationLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutSipMediaApplicationLoggingConfigurationWithContext(ctx aws.Context, input *PutSipMediaApplicationLoggingConfigurationInput, opts ...request.Option) (*PutSipMediaApplicationLoggingConfigurationOutput, error) {
 	req, out := c.PutSipMediaApplicationLoggingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -16080,7 +17853,12 @@ const opPutVoiceConnectorEmergencyCallingConfiguration = "PutVoiceConnectorEmerg
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorEmergencyCallingConfiguration
+//
+// Deprecated: Replaced by PutVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorEmergencyCallingConfigurationRequest(input *PutVoiceConnectorEmergencyCallingConfigurationInput) (req *request.Request, output *PutVoiceConnectorEmergencyCallingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorEmergencyCallingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorEmergencyCallingConfiguration,
 		HTTPMethod: "PUT",
@@ -16102,6 +17880,15 @@ func (c *Chime) PutVoiceConnectorEmergencyCallingConfigurationRequest(input *Put
 // Voice Connector, such as emergency phone numbers and calling countries. Origination
 // and termination settings must be enabled for the Amazon Chime Voice Connector
 // before emergency calling can be configured.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorEmergencyCallingConfiguration
+// (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorEmergencyCallingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16134,6 +17921,8 @@ func (c *Chime) PutVoiceConnectorEmergencyCallingConfigurationRequest(input *Put
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorEmergencyCallingConfiguration
+//
+// Deprecated: Replaced by PutVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorEmergencyCallingConfiguration(input *PutVoiceConnectorEmergencyCallingConfigurationInput) (*PutVoiceConnectorEmergencyCallingConfigurationOutput, error) {
 	req, out := c.PutVoiceConnectorEmergencyCallingConfigurationRequest(input)
 	return out, req.Send()
@@ -16148,6 +17937,8 @@ func (c *Chime) PutVoiceConnectorEmergencyCallingConfiguration(input *PutVoiceCo
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorEmergencyCallingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorEmergencyCallingConfigurationWithContext(ctx aws.Context, input *PutVoiceConnectorEmergencyCallingConfigurationInput, opts ...request.Option) (*PutVoiceConnectorEmergencyCallingConfigurationOutput, error) {
 	req, out := c.PutVoiceConnectorEmergencyCallingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -16180,7 +17971,12 @@ const opPutVoiceConnectorLoggingConfiguration = "PutVoiceConnectorLoggingConfigu
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorLoggingConfiguration
+//
+// Deprecated: Replaced by PutVoiceConnectorLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorLoggingConfigurationRequest(input *PutVoiceConnectorLoggingConfigurationInput) (req *request.Request, output *PutVoiceConnectorLoggingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorLoggingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorLoggingConfiguration,
 		HTTPMethod: "PUT",
@@ -16201,6 +17997,14 @@ func (c *Chime) PutVoiceConnectorLoggingConfigurationRequest(input *PutVoiceConn
 // Adds a logging configuration for the specified Amazon Chime Voice Connector.
 // The logging configuration specifies whether SIP message logs are enabled
 // for sending to Amazon CloudWatch Logs.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorLoggingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorLoggingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16233,6 +18037,8 @@ func (c *Chime) PutVoiceConnectorLoggingConfigurationRequest(input *PutVoiceConn
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorLoggingConfiguration
+//
+// Deprecated: Replaced by PutVoiceConnectorLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorLoggingConfiguration(input *PutVoiceConnectorLoggingConfigurationInput) (*PutVoiceConnectorLoggingConfigurationOutput, error) {
 	req, out := c.PutVoiceConnectorLoggingConfigurationRequest(input)
 	return out, req.Send()
@@ -16247,6 +18053,8 @@ func (c *Chime) PutVoiceConnectorLoggingConfiguration(input *PutVoiceConnectorLo
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorLoggingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorLoggingConfigurationWithContext(ctx aws.Context, input *PutVoiceConnectorLoggingConfigurationInput, opts ...request.Option) (*PutVoiceConnectorLoggingConfigurationOutput, error) {
 	req, out := c.PutVoiceConnectorLoggingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -16279,7 +18087,12 @@ const opPutVoiceConnectorOrigination = "PutVoiceConnectorOrigination"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorOrigination
+//
+// Deprecated: Replaced by PutVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorOriginationRequest(input *PutVoiceConnectorOriginationInput) (req *request.Request, output *PutVoiceConnectorOriginationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorOrigination, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorOrigination,
 		HTTPMethod: "PUT",
@@ -16301,6 +18114,14 @@ func (c *Chime) PutVoiceConnectorOriginationRequest(input *PutVoiceConnectorOrig
 //
 // If emergency calling is configured for the Amazon Chime Voice Connector,
 // it must be deleted prior to turning off origination settings.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorOrigination (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorOrigination.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16333,6 +18154,8 @@ func (c *Chime) PutVoiceConnectorOriginationRequest(input *PutVoiceConnectorOrig
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorOrigination
+//
+// Deprecated: Replaced by PutVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorOrigination(input *PutVoiceConnectorOriginationInput) (*PutVoiceConnectorOriginationOutput, error) {
 	req, out := c.PutVoiceConnectorOriginationRequest(input)
 	return out, req.Send()
@@ -16347,6 +18170,8 @@ func (c *Chime) PutVoiceConnectorOrigination(input *PutVoiceConnectorOrigination
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorOrigination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorOriginationWithContext(ctx aws.Context, input *PutVoiceConnectorOriginationInput, opts ...request.Option) (*PutVoiceConnectorOriginationOutput, error) {
 	req, out := c.PutVoiceConnectorOriginationRequest(input)
 	req.SetContext(ctx)
@@ -16379,7 +18204,12 @@ const opPutVoiceConnectorProxy = "PutVoiceConnectorProxy"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorProxy
+//
+// Deprecated: Replaced by PutVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorProxyRequest(input *PutVoiceConnectorProxyInput) (req *request.Request, output *PutVoiceConnectorProxyOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorProxy, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorProxy,
 		HTTPMethod: "PUT",
@@ -16399,6 +18229,14 @@ func (c *Chime) PutVoiceConnectorProxyRequest(input *PutVoiceConnectorProxyInput
 //
 // Puts the specified proxy configuration to the specified Amazon Chime Voice
 // Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorProxy (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorProxy.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16434,6 +18272,8 @@ func (c *Chime) PutVoiceConnectorProxyRequest(input *PutVoiceConnectorProxyInput
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorProxy
+//
+// Deprecated: Replaced by PutVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorProxy(input *PutVoiceConnectorProxyInput) (*PutVoiceConnectorProxyOutput, error) {
 	req, out := c.PutVoiceConnectorProxyRequest(input)
 	return out, req.Send()
@@ -16448,6 +18288,8 @@ func (c *Chime) PutVoiceConnectorProxy(input *PutVoiceConnectorProxyInput) (*Put
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorProxy in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorProxyWithContext(ctx aws.Context, input *PutVoiceConnectorProxyInput, opts ...request.Option) (*PutVoiceConnectorProxyOutput, error) {
 	req, out := c.PutVoiceConnectorProxyRequest(input)
 	req.SetContext(ctx)
@@ -16480,7 +18322,12 @@ const opPutVoiceConnectorStreamingConfiguration = "PutVoiceConnectorStreamingCon
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorStreamingConfiguration
+//
+// Deprecated: Replaced by PutVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorStreamingConfigurationRequest(input *PutVoiceConnectorStreamingConfigurationInput) (req *request.Request, output *PutVoiceConnectorStreamingConfigurationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorStreamingConfiguration, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorStreamingConfiguration,
 		HTTPMethod: "PUT",
@@ -16500,8 +18347,16 @@ func (c *Chime) PutVoiceConnectorStreamingConfigurationRequest(input *PutVoiceCo
 //
 // Adds a streaming configuration for the specified Amazon Chime Voice Connector.
 // The streaming configuration specifies whether media streaming is enabled
-// for sending to Indonesians. It also sets the retention period, in hours,
-// for the Amazon Kinesis data.
+// for sending to Kinesis. It also sets the retention period, in hours, for
+// the Amazon Kinesis data.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorStreamingConfiguration (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorStreamingConfiguration.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16534,6 +18389,8 @@ func (c *Chime) PutVoiceConnectorStreamingConfigurationRequest(input *PutVoiceCo
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorStreamingConfiguration
+//
+// Deprecated: Replaced by PutVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorStreamingConfiguration(input *PutVoiceConnectorStreamingConfigurationInput) (*PutVoiceConnectorStreamingConfigurationOutput, error) {
 	req, out := c.PutVoiceConnectorStreamingConfigurationRequest(input)
 	return out, req.Send()
@@ -16548,6 +18405,8 @@ func (c *Chime) PutVoiceConnectorStreamingConfiguration(input *PutVoiceConnector
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorStreamingConfiguration in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorStreamingConfigurationWithContext(ctx aws.Context, input *PutVoiceConnectorStreamingConfigurationInput, opts ...request.Option) (*PutVoiceConnectorStreamingConfigurationOutput, error) {
 	req, out := c.PutVoiceConnectorStreamingConfigurationRequest(input)
 	req.SetContext(ctx)
@@ -16580,7 +18439,12 @@ const opPutVoiceConnectorTermination = "PutVoiceConnectorTermination"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorTermination
+//
+// Deprecated: Replaced by PutVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorTerminationRequest(input *PutVoiceConnectorTerminationInput) (req *request.Request, output *PutVoiceConnectorTerminationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorTermination, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorTermination,
 		HTTPMethod: "PUT",
@@ -16602,6 +18466,14 @@ func (c *Chime) PutVoiceConnectorTerminationRequest(input *PutVoiceConnectorTerm
 //
 // If emergency calling is configured for the Amazon Chime Voice Connector,
 // it must be deleted prior to turning off termination settings.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorTermination (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorTermination.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16637,6 +18509,8 @@ func (c *Chime) PutVoiceConnectorTerminationRequest(input *PutVoiceConnectorTerm
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorTermination
+//
+// Deprecated: Replaced by PutVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorTermination(input *PutVoiceConnectorTerminationInput) (*PutVoiceConnectorTerminationOutput, error) {
 	req, out := c.PutVoiceConnectorTerminationRequest(input)
 	return out, req.Send()
@@ -16651,6 +18525,8 @@ func (c *Chime) PutVoiceConnectorTermination(input *PutVoiceConnectorTermination
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorTermination in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorTerminationWithContext(ctx aws.Context, input *PutVoiceConnectorTerminationInput, opts ...request.Option) (*PutVoiceConnectorTerminationOutput, error) {
 	req, out := c.PutVoiceConnectorTerminationRequest(input)
 	req.SetContext(ctx)
@@ -16683,7 +18559,12 @@ const opPutVoiceConnectorTerminationCredentials = "PutVoiceConnectorTerminationC
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorTerminationCredentials
+//
+// Deprecated: Replaced by PutVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorTerminationCredentialsRequest(input *PutVoiceConnectorTerminationCredentialsInput) (req *request.Request, output *PutVoiceConnectorTerminationCredentialsOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, PutVoiceConnectorTerminationCredentials, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opPutVoiceConnectorTerminationCredentials,
 		HTTPMethod: "POST",
@@ -16703,6 +18584,14 @@ func (c *Chime) PutVoiceConnectorTerminationCredentialsRequest(input *PutVoiceCo
 // PutVoiceConnectorTerminationCredentials API operation for Amazon Chime.
 //
 // Adds termination SIP credentials for the specified Amazon Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, PutVoiceConnectorTerminationCredentials (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_PutVoiceConnectorTerminationCredentials.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16735,6 +18624,8 @@ func (c *Chime) PutVoiceConnectorTerminationCredentialsRequest(input *PutVoiceCo
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/PutVoiceConnectorTerminationCredentials
+//
+// Deprecated: Replaced by PutVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorTerminationCredentials(input *PutVoiceConnectorTerminationCredentialsInput) (*PutVoiceConnectorTerminationCredentialsOutput, error) {
 	req, out := c.PutVoiceConnectorTerminationCredentialsRequest(input)
 	return out, req.Send()
@@ -16749,6 +18640,8 @@ func (c *Chime) PutVoiceConnectorTerminationCredentials(input *PutVoiceConnector
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by PutVoiceConnectorTerminationCredentials in the Amazon Chime SDK Voice Namespace
 func (c *Chime) PutVoiceConnectorTerminationCredentialsWithContext(ctx aws.Context, input *PutVoiceConnectorTerminationCredentialsInput, opts ...request.Option) (*PutVoiceConnectorTerminationCredentialsOutput, error) {
 	req, out := c.PutVoiceConnectorTerminationCredentialsRequest(input)
 	req.SetContext(ctx)
@@ -16781,7 +18674,12 @@ const opRedactChannelMessage = "RedactChannelMessage"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/RedactChannelMessage
+//
+// Deprecated: Replaced by RedactChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) RedactChannelMessageRequest(input *RedactChannelMessageInput) (req *request.Request, output *RedactChannelMessageOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, RedactChannelMessage, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opRedactChannelMessage,
 		HTTPMethod: "POST",
@@ -16806,6 +18704,14 @@ func (c *Chime) RedactChannelMessageRequest(input *RedactChannelMessageInput) (r
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, RedactChannelMessage (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_RedactChannelMessage.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -16835,6 +18741,8 @@ func (c *Chime) RedactChannelMessageRequest(input *RedactChannelMessageInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/RedactChannelMessage
+//
+// Deprecated: Replaced by RedactChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) RedactChannelMessage(input *RedactChannelMessageInput) (*RedactChannelMessageOutput, error) {
 	req, out := c.RedactChannelMessageRequest(input)
 	return out, req.Send()
@@ -16849,6 +18757,8 @@ func (c *Chime) RedactChannelMessage(input *RedactChannelMessageInput) (*RedactC
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by RedactChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) RedactChannelMessageWithContext(ctx aws.Context, input *RedactChannelMessageInput, opts ...request.Option) (*RedactChannelMessageOutput, error) {
 	req, out := c.RedactChannelMessageRequest(input)
 	req.SetContext(ctx)
@@ -17529,7 +19439,12 @@ const opSendChannelMessage = "SendChannelMessage"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/SendChannelMessage
+//
+// Deprecated: Replaced by SendChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) SendChannelMessageRequest(input *SendChannelMessageInput) (req *request.Request, output *SendChannelMessageOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, SendChannelMessage, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opSendChannelMessage,
 		HTTPMethod: "POST",
@@ -17556,6 +19471,14 @@ func (c *Chime) SendChannelMessageRequest(input *SendChannelMessageInput) (req *
 //
 // Also, STANDARD messages can contain 4KB of data and the 1KB of metadata.
 // CONTROL messages can contain 30 bytes of data and no metadata.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, SendChannelMessage (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_SendChannelMessage.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -17589,6 +19512,8 @@ func (c *Chime) SendChannelMessageRequest(input *SendChannelMessageInput) (req *
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/SendChannelMessage
+//
+// Deprecated: Replaced by SendChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) SendChannelMessage(input *SendChannelMessageInput) (*SendChannelMessageOutput, error) {
 	req, out := c.SendChannelMessageRequest(input)
 	return out, req.Send()
@@ -17603,6 +19528,8 @@ func (c *Chime) SendChannelMessage(input *SendChannelMessageInput) (*SendChannel
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by SendChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) SendChannelMessageWithContext(ctx aws.Context, input *SendChannelMessageInput, opts ...request.Option) (*SendChannelMessageOutput, error) {
 	req, out := c.SendChannelMessageRequest(input)
 	req.SetContext(ctx)
@@ -17635,7 +19562,12 @@ const opStartMeetingTranscription = "StartMeetingTranscription"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/StartMeetingTranscription
+//
+// Deprecated: Replaced by StartMeetingTranscription in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) StartMeetingTranscriptionRequest(input *StartMeetingTranscriptionInput) (req *request.Request, output *StartMeetingTranscriptionOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, StartMeetingTranscription, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opStartMeetingTranscription,
 		HTTPMethod: "POST",
@@ -17654,7 +19586,28 @@ func (c *Chime) StartMeetingTranscriptionRequest(input *StartMeetingTranscriptio
 
 // StartMeetingTranscription API operation for Amazon Chime.
 //
-// Starts transcription for the specified meetingId.
+// Starts transcription for the specified meetingId. For more information, refer
+// to Using Amazon Chime SDK live transcription (https://docs.aws.amazon.com/chime-sdk/latest/dg/meeting-transcription.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// If you specify an invalid configuration, a TranscriptFailed event will be
+// sent with the contents of the BadRequestException generated by Amazon Transcribe.
+// For more information on each parameter and which combinations are valid,
+// refer to the StartStreamTranscription (https://docs.aws.amazon.com/transcribe/latest/APIReference/API_streaming_StartStreamTranscription.html)
+// API in the Amazon Transcribe Developer Guide.
+//
+// Amazon Chime SDK live transcription is powered by Amazon Transcribe. Use
+// of Amazon Transcribe is subject to the AWS Service Terms (https://aws.amazon.com/service-terms/),
+// including the terms specific to the AWS Machine Learning and Artificial Intelligence
+// Services.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, StartMeetingTranscription (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_StartMeetingTranscription.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -17694,6 +19647,8 @@ func (c *Chime) StartMeetingTranscriptionRequest(input *StartMeetingTranscriptio
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/StartMeetingTranscription
+//
+// Deprecated: Replaced by StartMeetingTranscription in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) StartMeetingTranscription(input *StartMeetingTranscriptionInput) (*StartMeetingTranscriptionOutput, error) {
 	req, out := c.StartMeetingTranscriptionRequest(input)
 	return out, req.Send()
@@ -17708,6 +19663,8 @@ func (c *Chime) StartMeetingTranscription(input *StartMeetingTranscriptionInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by StartMeetingTranscription in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) StartMeetingTranscriptionWithContext(ctx aws.Context, input *StartMeetingTranscriptionInput, opts ...request.Option) (*StartMeetingTranscriptionOutput, error) {
 	req, out := c.StartMeetingTranscriptionRequest(input)
 	req.SetContext(ctx)
@@ -17740,7 +19697,12 @@ const opStopMeetingTranscription = "StopMeetingTranscription"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/StopMeetingTranscription
+//
+// Deprecated: Replaced by StopMeetingTranscription in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) StopMeetingTranscriptionRequest(input *StopMeetingTranscriptionInput) (req *request.Request, output *StopMeetingTranscriptionOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, StopMeetingTranscription, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opStopMeetingTranscription,
 		HTTPMethod: "POST",
@@ -17760,6 +19722,14 @@ func (c *Chime) StopMeetingTranscriptionRequest(input *StopMeetingTranscriptionI
 // StopMeetingTranscription API operation for Amazon Chime.
 //
 // Stops transcription for the specified meetingId.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, StopMeetingTranscription (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_StopMeetingTranscription.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -17796,6 +19766,8 @@ func (c *Chime) StopMeetingTranscriptionRequest(input *StopMeetingTranscriptionI
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/StopMeetingTranscription
+//
+// Deprecated: Replaced by StopMeetingTranscription in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) StopMeetingTranscription(input *StopMeetingTranscriptionInput) (*StopMeetingTranscriptionOutput, error) {
 	req, out := c.StopMeetingTranscriptionRequest(input)
 	return out, req.Send()
@@ -17810,6 +19782,8 @@ func (c *Chime) StopMeetingTranscription(input *StopMeetingTranscriptionInput) (
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by StopMeetingTranscription in the Amazon Chime SDK Meetings Namespace
 func (c *Chime) StopMeetingTranscriptionWithContext(ctx aws.Context, input *StopMeetingTranscriptionInput, opts ...request.Option) (*StopMeetingTranscriptionOutput, error) {
 	req, out := c.StopMeetingTranscriptionRequest(input)
 	req.SetContext(ctx)
@@ -17842,7 +19816,12 @@ const opTagAttendee = "TagAttendee"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/TagAttendee
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) TagAttendeeRequest(input *TagAttendeeInput) (req *request.Request, output *TagAttendeeOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, TagAttendee, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opTagAttendee,
 		HTTPMethod: "POST",
@@ -17861,7 +19840,10 @@ func (c *Chime) TagAttendeeRequest(input *TagAttendeeInput) (req *request.Reques
 
 // TagAttendee API operation for Amazon Chime.
 //
-// Applies the specified tags to the specified Amazon Chime SDK attendee.
+// Applies the specified tags to the specified Amazon Chime attendee.
+//
+// TagAttendee is not supported in the Amazon Chime SDK Meetings Namespace.
+// Update your application to remove calls to this API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -17897,6 +19879,8 @@ func (c *Chime) TagAttendeeRequest(input *TagAttendeeInput) (req *request.Reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/TagAttendee
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) TagAttendee(input *TagAttendeeInput) (*TagAttendeeOutput, error) {
 	req, out := c.TagAttendeeRequest(input)
 	return out, req.Send()
@@ -17911,6 +19895,8 @@ func (c *Chime) TagAttendee(input *TagAttendeeInput) (*TagAttendeeOutput, error)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) TagAttendeeWithContext(ctx aws.Context, input *TagAttendeeInput, opts ...request.Option) (*TagAttendeeOutput, error) {
 	req, out := c.TagAttendeeRequest(input)
 	req.SetContext(ctx)
@@ -17943,7 +19929,12 @@ const opTagMeeting = "TagMeeting"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/TagMeeting
+//
+// Deprecated: Use TagResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) TagMeetingRequest(input *TagMeetingInput) (req *request.Request, output *TagMeetingOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, TagMeeting, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opTagMeeting,
 		HTTPMethod: "POST",
@@ -17963,6 +19954,14 @@ func (c *Chime) TagMeetingRequest(input *TagMeetingInput) (req *request.Request,
 // TagMeeting API operation for Amazon Chime.
 //
 // Applies the specified tags to the specified Amazon Chime SDK meeting.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, TagResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_TagResource.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -17998,6 +19997,8 @@ func (c *Chime) TagMeetingRequest(input *TagMeetingInput) (req *request.Request,
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/TagMeeting
+//
+// Deprecated: Use TagResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) TagMeeting(input *TagMeetingInput) (*TagMeetingOutput, error) {
 	req, out := c.TagMeetingRequest(input)
 	return out, req.Send()
@@ -18012,6 +20013,8 @@ func (c *Chime) TagMeeting(input *TagMeetingInput) (*TagMeetingOutput, error) {
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Use TagResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) TagMeetingWithContext(ctx aws.Context, input *TagMeetingInput, opts ...request.Option) (*TagMeetingOutput, error) {
 	req, out := c.TagMeetingRequest(input)
 	req.SetContext(ctx)
@@ -18044,7 +20047,12 @@ const opTagResource = "TagResource"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/TagResource
+//
+// Deprecated: Replaced by TagResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, TagResource, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opTagResource,
 		HTTPMethod: "POST",
@@ -18064,6 +20072,14 @@ func (c *Chime) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 // TagResource API operation for Amazon Chime.
 //
 // Applies the specified tags to the specified Amazon Chime SDK meeting resource.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, TagResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_TagResource.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18093,6 +20109,8 @@ func (c *Chime) TagResourceRequest(input *TagResourceInput) (req *request.Reques
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/TagResource
+//
+// Deprecated: Replaced by TagResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	return out, req.Send()
@@ -18107,6 +20125,8 @@ func (c *Chime) TagResource(input *TagResourceInput) (*TagResourceOutput, error)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by TagResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	req.SetContext(ctx)
@@ -18139,7 +20159,12 @@ const opUntagAttendee = "UntagAttendee"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UntagAttendee
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) UntagAttendeeRequest(input *UntagAttendeeInput) (req *request.Request, output *UntagAttendeeOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UntagAttendee, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUntagAttendee,
 		HTTPMethod: "POST",
@@ -18159,6 +20184,9 @@ func (c *Chime) UntagAttendeeRequest(input *UntagAttendeeInput) (req *request.Re
 // UntagAttendee API operation for Amazon Chime.
 //
 // Untags the specified tags from the specified Amazon Chime SDK attendee.
+//
+// UntagAttendee is not supported in the Amazon Chime SDK Meetings Namespace.
+// Update your application to remove calls to this API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18191,6 +20219,8 @@ func (c *Chime) UntagAttendeeRequest(input *UntagAttendeeInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UntagAttendee
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) UntagAttendee(input *UntagAttendeeInput) (*UntagAttendeeOutput, error) {
 	req, out := c.UntagAttendeeRequest(input)
 	return out, req.Send()
@@ -18205,6 +20235,8 @@ func (c *Chime) UntagAttendee(input *UntagAttendeeInput) (*UntagAttendeeOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Attendee Tags are not supported in the Amazon Chime SDK Meetings Namespace. Update your application to remove calls to this API.
 func (c *Chime) UntagAttendeeWithContext(ctx aws.Context, input *UntagAttendeeInput, opts ...request.Option) (*UntagAttendeeOutput, error) {
 	req, out := c.UntagAttendeeRequest(input)
 	req.SetContext(ctx)
@@ -18237,7 +20269,12 @@ const opUntagMeeting = "UntagMeeting"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UntagMeeting
+//
+// Deprecated: Use UntagResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) UntagMeetingRequest(input *UntagMeetingInput) (req *request.Request, output *UntagMeetingOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UntagMeeting, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUntagMeeting,
 		HTTPMethod: "POST",
@@ -18257,6 +20294,14 @@ func (c *Chime) UntagMeetingRequest(input *UntagMeetingInput) (req *request.Requ
 // UntagMeeting API operation for Amazon Chime.
 //
 // Untags the specified tags from the specified Amazon Chime SDK meeting.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UntagResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_UntagResource.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18289,6 +20334,8 @@ func (c *Chime) UntagMeetingRequest(input *UntagMeetingInput) (req *request.Requ
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UntagMeeting
+//
+// Deprecated: Use UntagResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) UntagMeeting(input *UntagMeetingInput) (*UntagMeetingOutput, error) {
 	req, out := c.UntagMeetingRequest(input)
 	return out, req.Send()
@@ -18303,6 +20350,8 @@ func (c *Chime) UntagMeeting(input *UntagMeetingInput) (*UntagMeetingOutput, err
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Use UntagResource in the Amazon Chime SDK Meetings Namespace.
 func (c *Chime) UntagMeetingWithContext(ctx aws.Context, input *UntagMeetingInput, opts ...request.Option) (*UntagMeetingOutput, error) {
 	req, out := c.UntagMeetingRequest(input)
 	req.SetContext(ctx)
@@ -18335,7 +20384,12 @@ const opUntagResource = "UntagResource"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UntagResource
+//
+// Deprecated: Replaced by UntagResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UntagResource, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUntagResource,
 		HTTPMethod: "POST",
@@ -18355,6 +20409,16 @@ func (c *Chime) UntagResourceRequest(input *UntagResourceInput) (req *request.Re
 // UntagResource API operation for Amazon Chime.
 //
 // Untags the specified tags from the specified Amazon Chime SDK meeting resource.
+//
+// Applies the specified tags to the specified Amazon Chime SDK meeting resource.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UntagResource (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_UntagResource.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18384,6 +20448,8 @@ func (c *Chime) UntagResourceRequest(input *UntagResourceInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UntagResource
+//
+// Deprecated: Replaced by UntagResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	return out, req.Send()
@@ -18398,6 +20464,8 @@ func (c *Chime) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UntagResource in the Amazon Chime SDK Voice, Amazon Chime SDK Meetings, Amazon Chime SDK Identity, Amazon Chime SDK Messaging, and Amazon Chime SDK Media Pipelines Namespaces
 func (c *Chime) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	req.SetContext(ctx)
@@ -18633,7 +20701,12 @@ const opUpdateAppInstance = "UpdateAppInstance"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateAppInstance
+//
+// Deprecated: Replaced by UpdateAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) UpdateAppInstanceRequest(input *UpdateAppInstanceInput) (req *request.Request, output *UpdateAppInstanceOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateAppInstance, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateAppInstance,
 		HTTPMethod: "PUT",
@@ -18654,6 +20727,14 @@ func (c *Chime) UpdateAppInstanceRequest(input *UpdateAppInstanceInput) (req *re
 // UpdateAppInstance API operation for Amazon Chime.
 //
 // Updates AppInstance metadata.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateAppInstance (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_UpdateAppInstance.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18687,6 +20768,8 @@ func (c *Chime) UpdateAppInstanceRequest(input *UpdateAppInstanceInput) (req *re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateAppInstance
+//
+// Deprecated: Replaced by UpdateAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) UpdateAppInstance(input *UpdateAppInstanceInput) (*UpdateAppInstanceOutput, error) {
 	req, out := c.UpdateAppInstanceRequest(input)
 	return out, req.Send()
@@ -18701,6 +20784,8 @@ func (c *Chime) UpdateAppInstance(input *UpdateAppInstanceInput) (*UpdateAppInst
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateAppInstance in the Amazon Chime SDK Identity Namespace
 func (c *Chime) UpdateAppInstanceWithContext(ctx aws.Context, input *UpdateAppInstanceInput, opts ...request.Option) (*UpdateAppInstanceOutput, error) {
 	req, out := c.UpdateAppInstanceRequest(input)
 	req.SetContext(ctx)
@@ -18733,7 +20818,12 @@ const opUpdateAppInstanceUser = "UpdateAppInstanceUser"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateAppInstanceUser
+//
+// Deprecated: Replaced by UpdateAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) UpdateAppInstanceUserRequest(input *UpdateAppInstanceUserInput) (req *request.Request, output *UpdateAppInstanceUserOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateAppInstanceUser, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateAppInstanceUser,
 		HTTPMethod: "PUT",
@@ -18754,6 +20844,14 @@ func (c *Chime) UpdateAppInstanceUserRequest(input *UpdateAppInstanceUserInput) 
 // UpdateAppInstanceUser API operation for Amazon Chime.
 //
 // Updates the details of an AppInstanceUser. You can update names and metadata.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateAppInstanceUser (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_identity-chime_UpdateAppInstanceUser.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18787,6 +20885,8 @@ func (c *Chime) UpdateAppInstanceUserRequest(input *UpdateAppInstanceUserInput) 
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateAppInstanceUser
+//
+// Deprecated: Replaced by UpdateAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) UpdateAppInstanceUser(input *UpdateAppInstanceUserInput) (*UpdateAppInstanceUserOutput, error) {
 	req, out := c.UpdateAppInstanceUserRequest(input)
 	return out, req.Send()
@@ -18801,6 +20901,8 @@ func (c *Chime) UpdateAppInstanceUser(input *UpdateAppInstanceUserInput) (*Updat
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateAppInstanceUser in the Amazon Chime SDK Identity Namespace
 func (c *Chime) UpdateAppInstanceUserWithContext(ctx aws.Context, input *UpdateAppInstanceUserInput, opts ...request.Option) (*UpdateAppInstanceUserOutput, error) {
 	req, out := c.UpdateAppInstanceUserRequest(input)
 	req.SetContext(ctx)
@@ -18931,7 +21033,12 @@ const opUpdateChannel = "UpdateChannel"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateChannel
+//
+// Deprecated: Replaced by UpdateChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Request, output *UpdateChannelOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateChannel, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateChannel,
 		HTTPMethod: "PUT",
@@ -18957,6 +21064,14 @@ func (c *Chime) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Re
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateChannel (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_UpdateChannel.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -18990,6 +21105,8 @@ func (c *Chime) UpdateChannelRequest(input *UpdateChannelInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateChannel
+//
+// Deprecated: Replaced by UpdateChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannel(input *UpdateChannelInput) (*UpdateChannelOutput, error) {
 	req, out := c.UpdateChannelRequest(input)
 	return out, req.Send()
@@ -19004,6 +21121,8 @@ func (c *Chime) UpdateChannel(input *UpdateChannelInput) (*UpdateChannelOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateChannel in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelWithContext(ctx aws.Context, input *UpdateChannelInput, opts ...request.Option) (*UpdateChannelOutput, error) {
 	req, out := c.UpdateChannelRequest(input)
 	req.SetContext(ctx)
@@ -19036,7 +21155,12 @@ const opUpdateChannelMessage = "UpdateChannelMessage"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateChannelMessage
+//
+// Deprecated: Replaced by UpdateChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelMessageRequest(input *UpdateChannelMessageInput) (req *request.Request, output *UpdateChannelMessageOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateChannelMessage, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateChannelMessage,
 		HTTPMethod: "PUT",
@@ -19060,6 +21184,14 @@ func (c *Chime) UpdateChannelMessageRequest(input *UpdateChannelMessageInput) (r
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateChannelMessage (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_UpdateChannelMessage.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -19093,6 +21225,8 @@ func (c *Chime) UpdateChannelMessageRequest(input *UpdateChannelMessageInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateChannelMessage
+//
+// Deprecated: Replaced by UpdateChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelMessage(input *UpdateChannelMessageInput) (*UpdateChannelMessageOutput, error) {
 	req, out := c.UpdateChannelMessageRequest(input)
 	return out, req.Send()
@@ -19107,6 +21241,8 @@ func (c *Chime) UpdateChannelMessage(input *UpdateChannelMessageInput) (*UpdateC
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateChannelMessage in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelMessageWithContext(ctx aws.Context, input *UpdateChannelMessageInput, opts ...request.Option) (*UpdateChannelMessageOutput, error) {
 	req, out := c.UpdateChannelMessageRequest(input)
 	req.SetContext(ctx)
@@ -19139,7 +21275,12 @@ const opUpdateChannelReadMarker = "UpdateChannelReadMarker"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateChannelReadMarker
+//
+// Deprecated: Replaced by UpdateChannelReadMarker in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelReadMarkerRequest(input *UpdateChannelReadMarkerInput) (req *request.Request, output *UpdateChannelReadMarkerOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateChannelReadMarker, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateChannelReadMarker,
 		HTTPMethod: "PUT",
@@ -19163,6 +21304,14 @@ func (c *Chime) UpdateChannelReadMarkerRequest(input *UpdateChannelReadMarkerInp
 //
 // The x-amz-chime-bearer request header is mandatory. Use the AppInstanceUserArn
 // of the user that makes the API call as the value in the header.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateChannelReadMarker (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_messaging-chime_UpdateChannelReadMarker.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -19196,6 +21345,8 @@ func (c *Chime) UpdateChannelReadMarkerRequest(input *UpdateChannelReadMarkerInp
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateChannelReadMarker
+//
+// Deprecated: Replaced by UpdateChannelReadMarker in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelReadMarker(input *UpdateChannelReadMarkerInput) (*UpdateChannelReadMarkerOutput, error) {
 	req, out := c.UpdateChannelReadMarkerRequest(input)
 	return out, req.Send()
@@ -19210,6 +21361,8 @@ func (c *Chime) UpdateChannelReadMarker(input *UpdateChannelReadMarkerInput) (*U
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateChannelReadMarker in the Amazon Chime SDK Messaging Namespace
 func (c *Chime) UpdateChannelReadMarkerWithContext(ctx aws.Context, input *UpdateChannelReadMarkerInput, opts ...request.Option) (*UpdateChannelReadMarkerOutput, error) {
 	req, out := c.UpdateChannelReadMarkerRequest(input)
 	req.SetContext(ctx)
@@ -19548,7 +21701,12 @@ const opUpdateProxySession = "UpdateProxySession"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateProxySession
+//
+// Deprecated: Replaced by UpdateProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateProxySessionRequest(input *UpdateProxySessionInput) (req *request.Request, output *UpdateProxySessionOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateProxySession, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateProxySession,
 		HTTPMethod: "POST",
@@ -19567,6 +21725,14 @@ func (c *Chime) UpdateProxySessionRequest(input *UpdateProxySessionInput) (req *
 // UpdateProxySession API operation for Amazon Chime.
 //
 // Updates the specified proxy session details, such as voice or SMS capabilities.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateProxySession (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_UpdateProxySession.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -19599,6 +21765,8 @@ func (c *Chime) UpdateProxySessionRequest(input *UpdateProxySessionInput) (req *
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateProxySession
+//
+// Deprecated: Replaced by UpdateProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateProxySession(input *UpdateProxySessionInput) (*UpdateProxySessionOutput, error) {
 	req, out := c.UpdateProxySessionRequest(input)
 	return out, req.Send()
@@ -19613,6 +21781,8 @@ func (c *Chime) UpdateProxySession(input *UpdateProxySessionInput) (*UpdateProxy
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateProxySession in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateProxySessionWithContext(ctx aws.Context, input *UpdateProxySessionInput, opts ...request.Option) (*UpdateProxySessionOutput, error) {
 	req, out := c.UpdateProxySessionRequest(input)
 	req.SetContext(ctx)
@@ -19843,7 +22013,12 @@ const opUpdateSipMediaApplication = "UpdateSipMediaApplication"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateSipMediaApplication
+//
+// Deprecated: Replaced by UpdateSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipMediaApplicationRequest(input *UpdateSipMediaApplicationInput) (req *request.Request, output *UpdateSipMediaApplicationOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateSipMediaApplication, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateSipMediaApplication,
 		HTTPMethod: "PUT",
@@ -19862,6 +22037,14 @@ func (c *Chime) UpdateSipMediaApplicationRequest(input *UpdateSipMediaApplicatio
 // UpdateSipMediaApplication API operation for Amazon Chime.
 //
 // Updates the details of the specified SIP media application.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateSipMediaApplication (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_UpdateSipMediaApplication.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -19898,6 +22081,8 @@ func (c *Chime) UpdateSipMediaApplicationRequest(input *UpdateSipMediaApplicatio
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateSipMediaApplication
+//
+// Deprecated: Replaced by UpdateSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipMediaApplication(input *UpdateSipMediaApplicationInput) (*UpdateSipMediaApplicationOutput, error) {
 	req, out := c.UpdateSipMediaApplicationRequest(input)
 	return out, req.Send()
@@ -19912,6 +22097,8 @@ func (c *Chime) UpdateSipMediaApplication(input *UpdateSipMediaApplicationInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateSipMediaApplication in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipMediaApplicationWithContext(ctx aws.Context, input *UpdateSipMediaApplicationInput, opts ...request.Option) (*UpdateSipMediaApplicationOutput, error) {
 	req, out := c.UpdateSipMediaApplicationRequest(input)
 	req.SetContext(ctx)
@@ -19944,7 +22131,12 @@ const opUpdateSipMediaApplicationCall = "UpdateSipMediaApplicationCall"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateSipMediaApplicationCall
+//
+// Deprecated: Replaced by UpdateSipMediaApplicationCall in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipMediaApplicationCallRequest(input *UpdateSipMediaApplicationCallInput) (req *request.Request, output *UpdateSipMediaApplicationCallOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateSipMediaApplicationCall, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateSipMediaApplicationCall,
 		HTTPMethod: "POST",
@@ -19965,6 +22157,14 @@ func (c *Chime) UpdateSipMediaApplicationCallRequest(input *UpdateSipMediaApplic
 // Invokes the AWS Lambda function associated with the SIP media application
 // and transaction ID in an update request. The Lambda function can then return
 // a new set of actions.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateSipMediaApplicationCall (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_UpdateSipMediaApplicationCall.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20000,6 +22200,8 @@ func (c *Chime) UpdateSipMediaApplicationCallRequest(input *UpdateSipMediaApplic
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateSipMediaApplicationCall
+//
+// Deprecated: Replaced by UpdateSipMediaApplicationCall in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipMediaApplicationCall(input *UpdateSipMediaApplicationCallInput) (*UpdateSipMediaApplicationCallOutput, error) {
 	req, out := c.UpdateSipMediaApplicationCallRequest(input)
 	return out, req.Send()
@@ -20014,6 +22216,8 @@ func (c *Chime) UpdateSipMediaApplicationCall(input *UpdateSipMediaApplicationCa
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateSipMediaApplicationCall in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipMediaApplicationCallWithContext(ctx aws.Context, input *UpdateSipMediaApplicationCallInput, opts ...request.Option) (*UpdateSipMediaApplicationCallOutput, error) {
 	req, out := c.UpdateSipMediaApplicationCallRequest(input)
 	req.SetContext(ctx)
@@ -20046,7 +22250,12 @@ const opUpdateSipRule = "UpdateSipRule"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateSipRule
+//
+// Deprecated: Replaced by UpdateSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipRuleRequest(input *UpdateSipRuleInput) (req *request.Request, output *UpdateSipRuleOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateSipRule, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateSipRule,
 		HTTPMethod: "PUT",
@@ -20065,6 +22274,14 @@ func (c *Chime) UpdateSipRuleRequest(input *UpdateSipRuleInput) (req *request.Re
 // UpdateSipRule API operation for Amazon Chime.
 //
 // Updates the details of the specified SIP rule.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateSipRule (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_UpdateSipRule.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20104,6 +22321,8 @@ func (c *Chime) UpdateSipRuleRequest(input *UpdateSipRuleInput) (req *request.Re
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateSipRule
+//
+// Deprecated: Replaced by UpdateSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipRule(input *UpdateSipRuleInput) (*UpdateSipRuleOutput, error) {
 	req, out := c.UpdateSipRuleRequest(input)
 	return out, req.Send()
@@ -20118,6 +22337,8 @@ func (c *Chime) UpdateSipRule(input *UpdateSipRuleInput) (*UpdateSipRuleOutput, 
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateSipRule in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateSipRuleWithContext(ctx aws.Context, input *UpdateSipRuleInput, opts ...request.Option) (*UpdateSipRuleOutput, error) {
 	req, out := c.UpdateSipRuleRequest(input)
 	req.SetContext(ctx)
@@ -20346,7 +22567,12 @@ const opUpdateVoiceConnector = "UpdateVoiceConnector"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateVoiceConnector
+//
+// Deprecated: Replaced by UpdateVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateVoiceConnectorRequest(input *UpdateVoiceConnectorInput) (req *request.Request, output *UpdateVoiceConnectorOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateVoiceConnector, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateVoiceConnector,
 		HTTPMethod: "PUT",
@@ -20365,6 +22591,14 @@ func (c *Chime) UpdateVoiceConnectorRequest(input *UpdateVoiceConnectorInput) (r
 // UpdateVoiceConnector API operation for Amazon Chime.
 //
 // Updates details for the specified Amazon Chime Voice Connector.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateVoiceConnector (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_UpdateVoiceConnector.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20397,6 +22631,8 @@ func (c *Chime) UpdateVoiceConnectorRequest(input *UpdateVoiceConnectorInput) (r
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateVoiceConnector
+//
+// Deprecated: Replaced by UpdateVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateVoiceConnector(input *UpdateVoiceConnectorInput) (*UpdateVoiceConnectorOutput, error) {
 	req, out := c.UpdateVoiceConnectorRequest(input)
 	return out, req.Send()
@@ -20411,6 +22647,8 @@ func (c *Chime) UpdateVoiceConnector(input *UpdateVoiceConnectorInput) (*UpdateV
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateVoiceConnector in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateVoiceConnectorWithContext(ctx aws.Context, input *UpdateVoiceConnectorInput, opts ...request.Option) (*UpdateVoiceConnectorOutput, error) {
 	req, out := c.UpdateVoiceConnectorRequest(input)
 	req.SetContext(ctx)
@@ -20443,7 +22681,12 @@ const opUpdateVoiceConnectorGroup = "UpdateVoiceConnectorGroup"
 //	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateVoiceConnectorGroup
+//
+// Deprecated: Replaced by UpdateVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateVoiceConnectorGroupRequest(input *UpdateVoiceConnectorGroupInput) (req *request.Request, output *UpdateVoiceConnectorGroupOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, UpdateVoiceConnectorGroup, has been deprecated")
+	}
 	op := &request.Operation{
 		Name:       opUpdateVoiceConnectorGroup,
 		HTTPMethod: "PUT",
@@ -20463,6 +22706,14 @@ func (c *Chime) UpdateVoiceConnectorGroupRequest(input *UpdateVoiceConnectorGrou
 //
 // Updates details of the specified Amazon Chime Voice Connector group, such
 // as the name and Amazon Chime Voice Connector priority ranking.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, UpdateVoiceConnectorGroup (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_UpdateVoiceConnectorGroup.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -20499,6 +22750,8 @@ func (c *Chime) UpdateVoiceConnectorGroupRequest(input *UpdateVoiceConnectorGrou
 //     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/UpdateVoiceConnectorGroup
+//
+// Deprecated: Replaced by UpdateVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateVoiceConnectorGroup(input *UpdateVoiceConnectorGroupInput) (*UpdateVoiceConnectorGroupOutput, error) {
 	req, out := c.UpdateVoiceConnectorGroupRequest(input)
 	return out, req.Send()
@@ -20513,8 +22766,128 @@ func (c *Chime) UpdateVoiceConnectorGroup(input *UpdateVoiceConnectorGroupInput)
 // the context is nil a panic will occur. In the future the SDK may create
 // sub-contexts for http.Requests. See https://golang.org/pkg/context/
 // for more information on using Contexts.
+//
+// Deprecated: Replaced by UpdateVoiceConnectorGroup in the Amazon Chime SDK Voice Namespace
 func (c *Chime) UpdateVoiceConnectorGroupWithContext(ctx aws.Context, input *UpdateVoiceConnectorGroupInput, opts ...request.Option) (*UpdateVoiceConnectorGroupOutput, error) {
 	req, out := c.UpdateVoiceConnectorGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opValidateE911Address = "ValidateE911Address"
+
+// ValidateE911AddressRequest generates a "aws/request.Request" representing the
+// client's request for the ValidateE911Address operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ValidateE911Address for more information on using the ValidateE911Address
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ValidateE911AddressRequest method.
+//	req, resp := client.ValidateE911AddressRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ValidateE911Address
+//
+// Deprecated: Replaced by ValidateE911Address in the Amazon Chime SDK Voice Namespace
+func (c *Chime) ValidateE911AddressRequest(input *ValidateE911AddressInput) (req *request.Request, output *ValidateE911AddressOutput) {
+	if c.Client.Config.Logger != nil {
+		c.Client.Config.Logger.Log("This operation, ValidateE911Address, has been deprecated")
+	}
+	op := &request.Operation{
+		Name:       opValidateE911Address,
+		HTTPMethod: "POST",
+		HTTPPath:   "/emergency-calling/address",
+	}
+
+	if input == nil {
+		input = &ValidateE911AddressInput{}
+	}
+
+	output = &ValidateE911AddressOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ValidateE911Address API operation for Amazon Chime.
+//
+// Validates an address to be used for 911 calls made with Amazon Chime Voice
+// Connectors. You can use validated addresses in a Presence Information Data
+// Format Location Object file that you include in SIP requests. That helps
+// ensure that addresses are routed to the appropriate Public Safety Answering
+// Point.
+//
+// This API is is no longer supported and will not be updated. We recommend
+// using the latest version, ValidateE911Address (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_voice-chime_ValidateE911Address.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest version requires migrating to a dedicated namespace. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime's
+// API operation ValidateE911Address for usage and error information.
+//
+// Returned Error Types:
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-2018-05-01/ValidateE911Address
+//
+// Deprecated: Replaced by ValidateE911Address in the Amazon Chime SDK Voice Namespace
+func (c *Chime) ValidateE911Address(input *ValidateE911AddressInput) (*ValidateE911AddressOutput, error) {
+	req, out := c.ValidateE911AddressRequest(input)
+	return out, req.Send()
+}
+
+// ValidateE911AddressWithContext is the same as ValidateE911Address with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ValidateE911Address for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+//
+// Deprecated: Replaced by ValidateE911Address in the Amazon Chime SDK Voice Namespace
+func (c *Chime) ValidateE911AddressWithContext(ctx aws.Context, input *ValidateE911AddressInput, opts ...request.Option) (*ValidateE911AddressOutput, error) {
+	req, out := c.ValidateE911AddressRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -20743,6 +23116,160 @@ func (s *AccountSettings) SetDisableRemoteControl(v bool) *AccountSettings {
 // SetEnableDialOut sets the EnableDialOut field's value.
 func (s *AccountSettings) SetEnableDialOut(v bool) *AccountSettings {
 	s.EnableDialOut = &v
+	return s
+}
+
+// A validated address.
+type Address struct {
+	_ struct{} `type:"structure"`
+
+	// The city of an address.
+	//
+	// City is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	City *string `locationName:"city" type:"string" sensitive:"true"`
+
+	// The country of an address.
+	//
+	// Country is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	Country *string `locationName:"country" type:"string" sensitive:"true"`
+
+	// An address suffix location, such as the S. Unit A in Central Park S. Unit
+	// A.
+	//
+	// PostDirectional is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	PostDirectional *string `locationName:"postDirectional" type:"string" sensitive:"true"`
+
+	// The postal code of an address.
+	//
+	// PostalCode is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	PostalCode *string `locationName:"postalCode" type:"string" sensitive:"true"`
+
+	// The Zip + 4 or postal code + 4 of an address.
+	//
+	// PostalCodePlus4 is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	PostalCodePlus4 *string `locationName:"postalCodePlus4" type:"string" sensitive:"true"`
+
+	// An address prefix location, such as the N in N. Third St..
+	//
+	// PreDirectional is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	PreDirectional *string `locationName:"preDirectional" type:"string" sensitive:"true"`
+
+	// The state of an address.
+	//
+	// State is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	State *string `locationName:"state" type:"string" sensitive:"true"`
+
+	// The address street, such as 8th Avenue.
+	//
+	// StreetName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	StreetName *string `locationName:"streetName" type:"string" sensitive:"true"`
+
+	// The numeric portion of an address.
+	//
+	// StreetNumber is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	StreetNumber *string `locationName:"streetNumber" type:"string" sensitive:"true"`
+
+	// The address suffix, such as the N in 8th Avenue N.
+	//
+	// StreetSuffix is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Address's
+	// String and GoString methods.
+	StreetSuffix *string `locationName:"streetSuffix" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Address) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Address) GoString() string {
+	return s.String()
+}
+
+// SetCity sets the City field's value.
+func (s *Address) SetCity(v string) *Address {
+	s.City = &v
+	return s
+}
+
+// SetCountry sets the Country field's value.
+func (s *Address) SetCountry(v string) *Address {
+	s.Country = &v
+	return s
+}
+
+// SetPostDirectional sets the PostDirectional field's value.
+func (s *Address) SetPostDirectional(v string) *Address {
+	s.PostDirectional = &v
+	return s
+}
+
+// SetPostalCode sets the PostalCode field's value.
+func (s *Address) SetPostalCode(v string) *Address {
+	s.PostalCode = &v
+	return s
+}
+
+// SetPostalCodePlus4 sets the PostalCodePlus4 field's value.
+func (s *Address) SetPostalCodePlus4(v string) *Address {
+	s.PostalCodePlus4 = &v
+	return s
+}
+
+// SetPreDirectional sets the PreDirectional field's value.
+func (s *Address) SetPreDirectional(v string) *Address {
+	s.PreDirectional = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Address) SetState(v string) *Address {
+	s.State = &v
+	return s
+}
+
+// SetStreetName sets the StreetName field's value.
+func (s *Address) SetStreetName(v string) *Address {
+	s.StreetName = &v
+	return s
+}
+
+// SetStreetNumber sets the StreetNumber field's value.
+func (s *Address) SetStreetNumber(v string) *Address {
+	s.StreetNumber = &v
+	return s
+}
+
+// SetStreetSuffix sets the StreetSuffix field's value.
+func (s *Address) SetStreetSuffix(v string) *Address {
+	s.StreetSuffix = &v
 	return s
 }
 
@@ -23062,6 +25589,120 @@ func (s *BusinessCallingSettings) SetCdrBucket(v string) *BusinessCallingSetting
 	return s
 }
 
+// A suggested address.
+type CandidateAddress struct {
+	_ struct{} `type:"structure"`
+
+	// The city of a candidate address.
+	//
+	// City is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	City *string `locationName:"city" type:"string" sensitive:"true"`
+
+	// The country of a candidate address.
+	//
+	// Country is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	Country *string `locationName:"country" type:"string" sensitive:"true"`
+
+	// The postal code of a candidate address.
+	//
+	// PostalCode is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	PostalCode *string `locationName:"postalCode" type:"string" sensitive:"true"`
+
+	// The Zip + 4 or postal code + 4 of a candidate address.
+	//
+	// PostalCodePlus4 is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	PostalCodePlus4 *string `locationName:"postalCodePlus4" type:"string" sensitive:"true"`
+
+	// The state of a candidate address.
+	//
+	// State is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	State *string `locationName:"state" type:"string" sensitive:"true"`
+
+	// The street information of a candidate address
+	//
+	// StreetInfo is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	StreetInfo *string `locationName:"streetInfo" type:"string" sensitive:"true"`
+
+	// The numeric portion of a candidate address.
+	//
+	// StreetNumber is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CandidateAddress's
+	// String and GoString methods.
+	StreetNumber *string `locationName:"streetNumber" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CandidateAddress) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CandidateAddress) GoString() string {
+	return s.String()
+}
+
+// SetCity sets the City field's value.
+func (s *CandidateAddress) SetCity(v string) *CandidateAddress {
+	s.City = &v
+	return s
+}
+
+// SetCountry sets the Country field's value.
+func (s *CandidateAddress) SetCountry(v string) *CandidateAddress {
+	s.Country = &v
+	return s
+}
+
+// SetPostalCode sets the PostalCode field's value.
+func (s *CandidateAddress) SetPostalCode(v string) *CandidateAddress {
+	s.PostalCode = &v
+	return s
+}
+
+// SetPostalCodePlus4 sets the PostalCodePlus4 field's value.
+func (s *CandidateAddress) SetPostalCodePlus4(v string) *CandidateAddress {
+	s.PostalCodePlus4 = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *CandidateAddress) SetState(v string) *CandidateAddress {
+	s.State = &v
+	return s
+}
+
+// SetStreetInfo sets the StreetInfo field's value.
+func (s *CandidateAddress) SetStreetInfo(v string) *CandidateAddress {
+	s.StreetInfo = &v
+	return s
+}
+
+// SetStreetNumber sets the StreetNumber field's value.
+func (s *CandidateAddress) SetStreetNumber(v string) *CandidateAddress {
+	s.StreetNumber = &v
+	return s
+}
+
 // The details of a channel.
 type Channel struct {
 	_ struct{} `type:"structure"`
@@ -23918,7 +26559,7 @@ type ChimeSdkMeetingConfiguration struct {
 	// The configuration for the artifacts in an Amazon Chime SDK meeting.
 	ArtifactsConfiguration *ArtifactsConfiguration `type:"structure"`
 
-	// The source configuration for a specified media capture pipline.
+	// The source configuration for a specified media capture pipeline.
 	SourceConfiguration *SourceConfiguration `type:"structure"`
 }
 
@@ -25566,7 +28207,8 @@ type CreateMediaCapturePipelineInput struct {
 	// be ChimeSdkMeeting.
 	ChimeSdkMeetingConfiguration *ChimeSdkMeetingConfiguration `type:"structure"`
 
-	// The token assigned to the client making the pipeline request.
+	// The unique identifier for the client request. The token makes the API request
+	// idempotent. Use a different token for different media pipeline requests.
 	//
 	// ClientRequestToken is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateMediaCapturePipelineInput's
@@ -31137,8 +33779,10 @@ func (s *EmergencyCallingConfiguration) SetDNIS(v []*DNISEmergencyCallingConfigu
 type EngineTranscribeMedicalSettings struct {
 	_ struct{} `type:"structure"`
 
-	// Set this field to PHI to identify personal health information in the transcription
-	// output.
+	// Labels all personally identifiable information (PII) identified in your transcript.
+	// If you don't include PiiEntityTypes, all PII is identified.
+	//
+	// You can’t set ContentIdentificationType and ContentRedactionType.
 	ContentIdentificationType *string `type:"string" enum:"TranscribeMedicalContentIdentificationType"`
 
 	// The language code specified for the Amazon Transcribe Medical engine.
@@ -31237,59 +33881,166 @@ func (s *EngineTranscribeMedicalSettings) SetVocabularyName(v string) *EngineTra
 	return s
 }
 
-// Settings specific to the Amazon Transcribe engine.
+// Settings specific for Amazon Transcribe as the live transcription engine.
+//
+// If you specify an invalid combination of parameters, a TranscriptFailed event
+// will be sent with the contents of the BadRequestException generated by Amazon
+// Transcribe. For more information on each parameter and which combinations
+// are valid, refer to the StartStreamTranscription (https://docs.aws.amazon.com/transcribe/latest/APIReference/API_streaming_StartStreamTranscription.html)
+// API in the Amazon Transcribe Developer Guide.
 type EngineTranscribeSettings struct {
 	_ struct{} `type:"structure"`
 
-	// Set this field to PII to identify personally identifiable information in
-	// the transcription output.
+	// Labels all personally identifiable information (PII) identified in your transcript.
+	// If you don't include PiiEntityTypes, all PII is identified.
+	//
+	// You can’t set ContentIdentificationType and ContentRedactionType.
 	ContentIdentificationType *string `type:"string" enum:"TranscribeContentIdentificationType"`
 
-	// Set this field to PII to redact personally identifiable information in the
-	// transcription output. Content redaction is performed only upon complete transcription
-	// of the audio segments.
+	// Content redaction is performed at the segment level. If you don't include
+	// PiiEntityTypes, all PII is redacted.
+	//
+	// You can’t set ContentIdentificationType and ContentRedactionType.
 	ContentRedactionType *string `type:"string" enum:"TranscribeContentRedactionType"`
 
-	// Generates partial transcription results that are less likely to change as
-	// meeting attendees speak. It does so by only allowing the last few words from
-	// the partial results to change.
+	// Enables partial result stabilization for your transcription. Partial result
+	// stabilization can reduce latency in your output, but may impact accuracy.
 	EnablePartialResultsStabilization *bool `type:"boolean"`
 
-	// The language code specified for the Amazon Transcribe engine.
+	// Enables automatic language identification for your transcription.
 	//
-	// LanguageCode is a required field
-	LanguageCode *string `type:"string" required:"true" enum:"TranscribeLanguageCode"`
+	// If you include IdentifyLanguage, you can optionally use LanguageOptions to
+	// include a list of language codes that you think may be present in your audio
+	// stream. Including language options can improve transcription accuracy.
+	//
+	// You can also use PreferredLanguage to include a preferred language. Doing
+	// so can help Amazon Transcribe identify the language faster.
+	//
+	// You must include either LanguageCode or IdentifyLanguage.
+	//
+	// Language identification can't be combined with custom language models or
+	// redaction.
+	IdentifyLanguage *bool `type:"boolean"`
 
-	// The name of the language model used during transcription.
+	// Specify the language code that represents the language spoken.
+	//
+	// If you're unsure of the language spoken in your audio, consider using IdentifyLanguage
+	// to enable automatic language identification.
+	LanguageCode *string `type:"string" enum:"TranscribeLanguageCode"`
+
+	// Specify the name of the custom language model that you want to use when processing
+	// your transcription. Note that language model names are case sensitive.
+	//
+	// The language of the specified language model must match the language code.
+	// If the languages don't match, the custom language model isn't applied. There
+	// are no errors or warnings associated with a language mismatch.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the custom language model
+	// must be available in Amazon Transcribe in each Region.
 	LanguageModelName *string `min:"1" type:"string"`
 
-	// The stabity level of a partial results transcription. Determines how stable
-	// you want the transcription results to be. A higher level means the transcription
-	// results are less likely to change.
+	// Specify two or more language codes that represent the languages you think
+	// may be present in your media; including more than five is not recommended.
+	// If you're unsure what languages are present, do not include this parameter.
+	//
+	// Including language options can improve the accuracy of language identification.
+	//
+	// If you include LanguageOptions, you must also include IdentifyLanguage.
+	//
+	// You can only include one language dialect per language. For example, you
+	// cannot include en-US and en-AU.
+	LanguageOptions *string `min:"1" type:"string"`
+
+	// Specify the level of stability to use when you enable partial results stabilization
+	// (EnablePartialResultsStabilization).
+	//
+	// Low stability provides the highest accuracy. High stability transcribes faster,
+	// but with slightly lower accuracy.
 	PartialResultsStability *string `type:"string" enum:"TranscribePartialResultsStability"`
 
-	// Lists the PII entity types you want to identify or redact. To specify entity
-	// types, you must enable ContentIdentificationType or ContentRedactionType.
+	// Specify which types of personally identifiable information (PII) you want
+	// to redact in your transcript. You can include as many types as you'd like,
+	// or you can select ALL.
 	//
-	// PIIEntityTypes must be comma-separated. The available values are: BANK_ACCOUNT_NUMBER,
-	// BANK_ROUTING, CREDIT_DEBIT_NUMBER, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY,
-	// PIN, EMAIL, ADDRESS, NAME, PHONE, SSN, and ALL.
+	// Values must be comma-separated and can include: ADDRESS, BANK_ACCOUNT_NUMBER,
+	// BANK_ROUTING, CREDIT_DEBIT_CVV, CREDIT_DEBIT_EXPIRY CREDIT_DEBIT_NUMBER,
+	// EMAIL,NAME, PHONE, PIN, SSN, or ALL.
 	//
-	// PiiEntityTypes is an optional parameter with a default value of ALL.
+	// Note that if you include PiiEntityTypes, you must also include ContentIdentificationType
+	// or ContentRedactionType.
+	//
+	// If you include ContentRedactionType or ContentIdentificationType, but do
+	// not include PiiEntityTypes, all PII is redacted or identified.
 	PiiEntityTypes *string `min:"1" type:"string"`
 
-	// The AWS Region passed to Amazon Transcribe. If you don't specify a Region,
-	// Amazon Chime uses the meeting's Region.
+	// Specify a preferred language from the subset of languages codes you specified
+	// in LanguageOptions.
+	//
+	// You can only use this parameter if you include IdentifyLanguage and LanguageOptions.
+	PreferredLanguage *string `type:"string" enum:"TranscribeLanguageCode"`
+
+	// The AWS Region in which to use Amazon Transcribe.
+	//
+	// If you don't specify a Region, then the MediaRegion parameter of the CreateMeeting.html
+	// (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/API_meeting-chime_CreateMeeting.html)
+	// API will be used. However, if Amazon Transcribe is not available in the MediaRegion,
+	// then a TranscriptFailed event is sent.
+	//
+	// Use auto to use Amazon Transcribe in a Region near the meeting’s MediaRegion.
+	// For more information, refer to Choosing a transcription Region (https://docs.aws.amazon.com/chime-sdk/latest/dg/transcription-options.html#choose-region)
+	// in the Amazon Chime SDK Developer Guide.
 	Region *string `type:"string" enum:"TranscribeRegion"`
 
-	// The filtering method passed to Amazon Transcribe.
+	// Specify how you want your vocabulary filter applied to your transcript.
+	//
+	// To replace words with ***, choose mask.
+	//
+	// To delete words, choose remove.
+	//
+	// To flag words without changing them, choose tag.
 	VocabularyFilterMethod *string `type:"string" enum:"TranscribeVocabularyFilterMethod"`
 
-	// The name of the vocabulary filter passed to Amazon Transcribe.
+	// Specify the name of the custom vocabulary filter that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the vocabulary filter must
+	// be available in Amazon Transcribe in each Region.
+	//
+	// If you include IdentifyLanguage and want to use one or more vocabulary filters
+	// with your transcription, use the VocabularyFilterNames parameter instead.
 	VocabularyFilterName *string `type:"string"`
 
-	// The name of the vocabulary passed to Amazon Transcribe.
+	// Specify the names of the custom vocabulary filters that you want to use when
+	// processing your transcription. Note that vocabulary filter names are case
+	// sensitive.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the vocabulary filter must
+	// be available in Amazon Transcribe in each Region.
+	//
+	// If you're not including IdentifyLanguage and want to use a custom vocabulary
+	// filter with your transcription, use the VocabularyFilterName parameter instead.
+	VocabularyFilterNames *string `min:"1" type:"string"`
+
+	// Specify the name of the custom vocabulary that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
+	//
+	// If you use Amazon Transcribe multiple Regions, the vocabulary must be available
+	// in Amazon Transcribe in each Region.
+	//
+	// If you include IdentifyLanguage and want to use one or more custom vocabularies
+	// with your transcription, use the VocabularyNames parameter instead.
 	VocabularyName *string `type:"string"`
+
+	// Specify the names of the custom vocabularies that you want to use when processing
+	// your transcription. Note that vocabulary names are case sensitive.
+	//
+	// If you use Amazon Transcribe in multiple Regions, the vocabulary must be
+	// available in Amazon Transcribe in each Region.
+	//
+	// If you don't include IdentifyLanguage and want to use a custom vocabulary
+	// with your transcription, use the VocabularyName parameter instead.
+	VocabularyNames *string `min:"1" type:"string"`
 }
 
 // String returns the string representation.
@@ -31313,14 +34064,20 @@ func (s EngineTranscribeSettings) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *EngineTranscribeSettings) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "EngineTranscribeSettings"}
-	if s.LanguageCode == nil {
-		invalidParams.Add(request.NewErrParamRequired("LanguageCode"))
-	}
 	if s.LanguageModelName != nil && len(*s.LanguageModelName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("LanguageModelName", 1))
 	}
+	if s.LanguageOptions != nil && len(*s.LanguageOptions) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LanguageOptions", 1))
+	}
 	if s.PiiEntityTypes != nil && len(*s.PiiEntityTypes) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("PiiEntityTypes", 1))
+	}
+	if s.VocabularyFilterNames != nil && len(*s.VocabularyFilterNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VocabularyFilterNames", 1))
+	}
+	if s.VocabularyNames != nil && len(*s.VocabularyNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VocabularyNames", 1))
 	}
 
 	if invalidParams.Len() > 0 {
@@ -31347,6 +34104,12 @@ func (s *EngineTranscribeSettings) SetEnablePartialResultsStabilization(v bool) 
 	return s
 }
 
+// SetIdentifyLanguage sets the IdentifyLanguage field's value.
+func (s *EngineTranscribeSettings) SetIdentifyLanguage(v bool) *EngineTranscribeSettings {
+	s.IdentifyLanguage = &v
+	return s
+}
+
 // SetLanguageCode sets the LanguageCode field's value.
 func (s *EngineTranscribeSettings) SetLanguageCode(v string) *EngineTranscribeSettings {
 	s.LanguageCode = &v
@@ -31359,6 +34122,12 @@ func (s *EngineTranscribeSettings) SetLanguageModelName(v string) *EngineTranscr
 	return s
 }
 
+// SetLanguageOptions sets the LanguageOptions field's value.
+func (s *EngineTranscribeSettings) SetLanguageOptions(v string) *EngineTranscribeSettings {
+	s.LanguageOptions = &v
+	return s
+}
+
 // SetPartialResultsStability sets the PartialResultsStability field's value.
 func (s *EngineTranscribeSettings) SetPartialResultsStability(v string) *EngineTranscribeSettings {
 	s.PartialResultsStability = &v
@@ -31368,6 +34137,12 @@ func (s *EngineTranscribeSettings) SetPartialResultsStability(v string) *EngineT
 // SetPiiEntityTypes sets the PiiEntityTypes field's value.
 func (s *EngineTranscribeSettings) SetPiiEntityTypes(v string) *EngineTranscribeSettings {
 	s.PiiEntityTypes = &v
+	return s
+}
+
+// SetPreferredLanguage sets the PreferredLanguage field's value.
+func (s *EngineTranscribeSettings) SetPreferredLanguage(v string) *EngineTranscribeSettings {
+	s.PreferredLanguage = &v
 	return s
 }
 
@@ -31389,9 +34164,21 @@ func (s *EngineTranscribeSettings) SetVocabularyFilterName(v string) *EngineTran
 	return s
 }
 
+// SetVocabularyFilterNames sets the VocabularyFilterNames field's value.
+func (s *EngineTranscribeSettings) SetVocabularyFilterNames(v string) *EngineTranscribeSettings {
+	s.VocabularyFilterNames = &v
+	return s
+}
+
 // SetVocabularyName sets the VocabularyName field's value.
 func (s *EngineTranscribeSettings) SetVocabularyName(v string) *EngineTranscribeSettings {
 	s.VocabularyName = &v
+	return s
+}
+
+// SetVocabularyNames sets the VocabularyNames field's value.
+func (s *EngineTranscribeSettings) SetVocabularyNames(v string) *EngineTranscribeSettings {
+	s.VocabularyNames = &v
 	return s
 }
 
@@ -35481,7 +38268,7 @@ func (s *ListChannelMembershipsForAppInstanceUserInput) SetNextToken(v string) *
 type ListChannelMembershipsForAppInstanceUserOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The token passed by previous API calls until all requested users are returned.
+	// The information for the requested channel memberships.
 	ChannelMemberships []*ChannelMembershipForAppInstanceUserSummary `type:"list"`
 
 	// The token passed by previous API calls until all requested users are returned.
@@ -37866,10 +40653,10 @@ type LoggingConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// Boolean that enables logging of detailed media metrics for Voice Connectors
-	// to CloudWatch logs.
+	// to Amazon CloudWatch logs.
 	EnableMediaMetricLogs *bool `type:"boolean"`
 
-	// Boolean that enables SIP message logs to CloudWatch logs.
+	// Boolean that enables SIP message logs to Amazon CloudWatch logs.
 	EnableSIPLogs *bool `type:"boolean"`
 }
 
@@ -38121,18 +40908,30 @@ type MediaPlacement struct {
 	EventIngestionUrl *string `type:"string"`
 
 	// The screen data URL.
+	//
+	// This parameter is is no longer supported and no longer used by the Amazon
+	// Chime SDK.
 	ScreenDataUrl *string `type:"string"`
 
 	// The screen sharing URL.
+	//
+	// This parameter is is no longer supported and no longer used by the Amazon
+	// Chime SDK..
 	ScreenSharingUrl *string `type:"string"`
 
 	// The screen viewing URL.
+	//
+	// This parameter is is no longer supported and no longer used by the Amazon
+	// Chime SDK.
 	ScreenViewingUrl *string `type:"string"`
 
 	// The signaling URL.
 	SignalingUrl *string `type:"string"`
 
 	// The turn control URL.
+	//
+	// This parameter is is no longer supported and no longer used by the Amazon
+	// Chime SDK.
 	TurnControlUrl *string `type:"string"`
 }
 
@@ -39821,8 +42620,8 @@ func (s *PutEventsConfigurationInput) SetOutboundEventsHTTPSEndpoint(v string) *
 type PutEventsConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The configuration that allows a bot to receive outgoing events. Can be either
-	// an HTTPS endpoint or a Lambda function ARN.
+	// The configuration that allows a bot to receive outgoing events. Can be an
+	// HTTPS endpoint or an AWS Lambda function ARN.
 	EventsConfiguration *EventsConfiguration `type:"structure"`
 }
 
@@ -40020,7 +42819,7 @@ func (s *PutSipMediaApplicationLoggingConfigurationInput) SetSipMediaApplication
 type PutSipMediaApplicationLoggingConfigurationOutput struct {
 	_ struct{} `type:"structure"`
 
-	// Logging configuration of the SIP media application.
+	// The logging configuration of the SIP media application.
 	SipMediaApplicationLoggingConfiguration *SipMediaApplicationLoggingConfiguration `type:"structure"`
 }
 
@@ -41150,7 +43949,7 @@ type RegenerateSecurityTokenOutput struct {
 	_ struct{} `type:"structure"`
 
 	// A resource that allows Enterprise account administrators to configure an
-	// interface to receive events from Amazon Chime.
+	// interface that receives events from Amazon Chime.
 	Bot *Bot `type:"structure"`
 }
 
@@ -42349,8 +45148,8 @@ func (s *SipMediaApplicationCall) SetTransactionId(v string) *SipMediaApplicatio
 type SipMediaApplicationEndpoint struct {
 	_ struct{} `type:"structure"`
 
-	// Valid Amazon Resource Name (ARN) of the Lambda function. The function must
-	// be created in the same AWS Region as the SIP media application.
+	// Valid Amazon Resource Name (ARN) of the Lambda function, version, or alias.
+	// The function must be created in the same AWS Region as the SIP media application.
 	//
 	// LambdaArn is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by SipMediaApplicationEndpoint's
@@ -46761,6 +49560,220 @@ func (s *UserSettings) SetTelephony(v *TelephonySettings) *UserSettings {
 	return s
 }
 
+type ValidateE911AddressInput struct {
+	_ struct{} `type:"structure"`
+
+	// The AWS account ID.
+	//
+	// AwsAccountId is a required field
+	AwsAccountId *string `type:"string" required:"true"`
+
+	// The address city, such as Portland.
+	//
+	// City is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ValidateE911AddressInput's
+	// String and GoString methods.
+	//
+	// City is a required field
+	City *string `type:"string" required:"true" sensitive:"true"`
+
+	// The address country, such as US.
+	//
+	// Country is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ValidateE911AddressInput's
+	// String and GoString methods.
+	//
+	// Country is a required field
+	Country *string `type:"string" required:"true" sensitive:"true"`
+
+	// The address postal code, such as 04352.
+	//
+	// PostalCode is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ValidateE911AddressInput's
+	// String and GoString methods.
+	//
+	// PostalCode is a required field
+	PostalCode *string `type:"string" required:"true" sensitive:"true"`
+
+	// The address state, such as ME.
+	//
+	// State is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ValidateE911AddressInput's
+	// String and GoString methods.
+	//
+	// State is a required field
+	State *string `type:"string" required:"true" sensitive:"true"`
+
+	// The address street information, such as 8th Avenue.
+	//
+	// StreetInfo is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ValidateE911AddressInput's
+	// String and GoString methods.
+	//
+	// StreetInfo is a required field
+	StreetInfo *string `type:"string" required:"true" sensitive:"true"`
+
+	// The address street number, such as 200 or 2121.
+	//
+	// StreetNumber is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ValidateE911AddressInput's
+	// String and GoString methods.
+	//
+	// StreetNumber is a required field
+	StreetNumber *string `type:"string" required:"true" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidateE911AddressInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidateE911AddressInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ValidateE911AddressInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ValidateE911AddressInput"}
+	if s.AwsAccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AwsAccountId"))
+	}
+	if s.City == nil {
+		invalidParams.Add(request.NewErrParamRequired("City"))
+	}
+	if s.Country == nil {
+		invalidParams.Add(request.NewErrParamRequired("Country"))
+	}
+	if s.PostalCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("PostalCode"))
+	}
+	if s.State == nil {
+		invalidParams.Add(request.NewErrParamRequired("State"))
+	}
+	if s.StreetInfo == nil {
+		invalidParams.Add(request.NewErrParamRequired("StreetInfo"))
+	}
+	if s.StreetNumber == nil {
+		invalidParams.Add(request.NewErrParamRequired("StreetNumber"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAwsAccountId sets the AwsAccountId field's value.
+func (s *ValidateE911AddressInput) SetAwsAccountId(v string) *ValidateE911AddressInput {
+	s.AwsAccountId = &v
+	return s
+}
+
+// SetCity sets the City field's value.
+func (s *ValidateE911AddressInput) SetCity(v string) *ValidateE911AddressInput {
+	s.City = &v
+	return s
+}
+
+// SetCountry sets the Country field's value.
+func (s *ValidateE911AddressInput) SetCountry(v string) *ValidateE911AddressInput {
+	s.Country = &v
+	return s
+}
+
+// SetPostalCode sets the PostalCode field's value.
+func (s *ValidateE911AddressInput) SetPostalCode(v string) *ValidateE911AddressInput {
+	s.PostalCode = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *ValidateE911AddressInput) SetState(v string) *ValidateE911AddressInput {
+	s.State = &v
+	return s
+}
+
+// SetStreetInfo sets the StreetInfo field's value.
+func (s *ValidateE911AddressInput) SetStreetInfo(v string) *ValidateE911AddressInput {
+	s.StreetInfo = &v
+	return s
+}
+
+// SetStreetNumber sets the StreetNumber field's value.
+func (s *ValidateE911AddressInput) SetStreetNumber(v string) *ValidateE911AddressInput {
+	s.StreetNumber = &v
+	return s
+}
+
+type ValidateE911AddressOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The validated address.
+	Address *Address `type:"structure"`
+
+	// The ID that represents the address.
+	AddressExternalId *string `type:"string"`
+
+	// The list of address suggestions.
+	CandidateAddressList []*CandidateAddress `type:"list"`
+
+	// Number indicating the result of address validation. 0 means the address was
+	// perfect as is and successfully validated. 1 means the address was corrected.
+	// 2 means the address sent was not close enough and was not validated.
+	ValidationResult *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidateE911AddressOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidateE911AddressOutput) GoString() string {
+	return s.String()
+}
+
+// SetAddress sets the Address field's value.
+func (s *ValidateE911AddressOutput) SetAddress(v *Address) *ValidateE911AddressOutput {
+	s.Address = v
+	return s
+}
+
+// SetAddressExternalId sets the AddressExternalId field's value.
+func (s *ValidateE911AddressOutput) SetAddressExternalId(v string) *ValidateE911AddressOutput {
+	s.AddressExternalId = &v
+	return s
+}
+
+// SetCandidateAddressList sets the CandidateAddressList field's value.
+func (s *ValidateE911AddressOutput) SetCandidateAddressList(v []*CandidateAddress) *ValidateE911AddressOutput {
+	s.CandidateAddressList = v
+	return s
+}
+
+// SetValidationResult sets the ValidationResult field's value.
+func (s *ValidateE911AddressOutput) SetValidationResult(v int64) *ValidateE911AddressOutput {
+	s.ValidationResult = &v
+	return s
+}
+
 // The video artifact configuration object.
 type VideoArtifactsConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -47895,6 +50908,12 @@ const (
 
 	// TranscribeLanguageCodeZhCn is a TranscribeLanguageCode enum value
 	TranscribeLanguageCodeZhCn = "zh-CN"
+
+	// TranscribeLanguageCodeThTh is a TranscribeLanguageCode enum value
+	TranscribeLanguageCodeThTh = "th-TH"
+
+	// TranscribeLanguageCodeHiIn is a TranscribeLanguageCode enum value
+	TranscribeLanguageCodeHiIn = "hi-IN"
 )
 
 // TranscribeLanguageCode_Values returns all elements of the TranscribeLanguageCode enum
@@ -47912,6 +50931,8 @@ func TranscribeLanguageCode_Values() []string {
 		TranscribeLanguageCodeJaJp,
 		TranscribeLanguageCodeKoKr,
 		TranscribeLanguageCodeZhCn,
+		TranscribeLanguageCodeThTh,
+		TranscribeLanguageCodeHiIn,
 	}
 }
 

@@ -296,6 +296,99 @@ func (c *Signer) DescribeSigningJobWithContext(ctx aws.Context, input *DescribeS
 	return out, req.Send()
 }
 
+const opGetRevocationStatus = "GetRevocationStatus"
+
+// GetRevocationStatusRequest generates a "aws/request.Request" representing the
+// client's request for the GetRevocationStatus operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetRevocationStatus for more information on using the GetRevocationStatus
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetRevocationStatusRequest method.
+//	req, resp := client.GetRevocationStatusRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/GetRevocationStatus
+func (c *Signer) GetRevocationStatusRequest(input *GetRevocationStatusInput) (req *request.Request, output *GetRevocationStatusOutput) {
+	op := &request.Operation{
+		Name:       opGetRevocationStatus,
+		HTTPMethod: "GET",
+		HTTPPath:   "/revocations",
+	}
+
+	if input == nil {
+		input = &GetRevocationStatusInput{}
+	}
+
+	output = &GetRevocationStatusOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("verification.", nil))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// GetRevocationStatus API operation for AWS Signer.
+//
+// Retrieves the revocation status of one or more of the signing profile, signing
+// job, and signing certificate.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Signer's
+// API operation GetRevocationStatus for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     You signing certificate could not be validated.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
+//
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/GetRevocationStatus
+func (c *Signer) GetRevocationStatus(input *GetRevocationStatusInput) (*GetRevocationStatusOutput, error) {
+	req, out := c.GetRevocationStatusRequest(input)
+	return out, req.Send()
+}
+
+// GetRevocationStatusWithContext is the same as GetRevocationStatus with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetRevocationStatus for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Signer) GetRevocationStatusWithContext(ctx aws.Context, input *GetRevocationStatusInput, opts ...request.Option) (*GetRevocationStatusOutput, error) {
+	req, out := c.GetRevocationStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetSigningPlatform = "GetSigningPlatform"
 
 // GetSigningPlatformRequest generates a "aws/request.Request" representing the
@@ -620,11 +713,11 @@ func (c *Signer) ListSigningJobsRequest(input *ListSigningJobsInput) (req *reque
 //
 // Lists all your signing jobs. You can use the maxResults parameter to limit
 // the number of signing jobs that are returned in the response. If additional
-// jobs remain to be listed, code signing returns a nextToken value. Use this
+// jobs remain to be listed, AWS Signer returns a nextToken value. Use this
 // value in subsequent calls to ListSigningJobs to fetch the remaining values.
 // You can continue calling ListSigningJobs with your maxResults parameter and
-// with new values that code signing returns in the nextToken parameter until
-// all of your signing jobs have been returned.
+// with new values that Signer returns in the nextToken parameter until all
+// of your signing jobs have been returned.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -771,12 +864,12 @@ func (c *Signer) ListSigningPlatformsRequest(input *ListSigningPlatformsInput) (
 
 // ListSigningPlatforms API operation for AWS Signer.
 //
-// Lists all signing platforms available in code signing that match the request
-// parameters. If additional jobs remain to be listed, code signing returns
-// a nextToken value. Use this value in subsequent calls to ListSigningJobs
-// to fetch the remaining values. You can continue calling ListSigningJobs with
-// your maxResults parameter and with new values that code signing returns in
-// the nextToken parameter until all of your signing jobs have been returned.
+// Lists all signing platforms available in AWS Signer that match the request
+// parameters. If additional jobs remain to be listed, Signer returns a nextToken
+// value. Use this value in subsequent calls to ListSigningJobs to fetch the
+// remaining values. You can continue calling ListSigningJobs with your maxResults
+// parameter and with new values that Signer returns in the nextToken parameter
+// until all of your signing jobs have been returned.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -925,11 +1018,11 @@ func (c *Signer) ListSigningProfilesRequest(input *ListSigningProfilesInput) (re
 //
 // Lists all available signing profiles in your AWS account. Returns only profiles
 // with an ACTIVE status unless the includeCanceled request field is set to
-// true. If additional jobs remain to be listed, code signing returns a nextToken
+// true. If additional jobs remain to be listed, AWS Signer returns a nextToken
 // value. Use this value in subsequent calls to ListSigningJobs to fetch the
 // remaining values. You can continue calling ListSigningJobs with your maxResults
-// parameter and with new values that code signing returns in the nextToken
-// parameter until all of your signing jobs have been returned.
+// parameter and with new values that Signer returns in the nextToken parameter
+// until all of your signing jobs have been returned.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1158,10 +1251,8 @@ func (c *Signer) PutSigningProfileRequest(input *PutSigningProfileInput) (req *r
 
 // PutSigningProfile API operation for AWS Signer.
 //
-// Creates a signing profile. A signing profile is a code signing template that
-// can be used to carry out a pre-defined signing job. For more information,
-// see http://docs.aws.amazon.com/signer/latest/developerguide/gs-profile.html
-// (http://docs.aws.amazon.com/signer/latest/developerguide/gs-profile.html)
+// Creates a signing profile. A signing profile is a code-signing template that
+// can be used to carry out a pre-defined signing job.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1498,6 +1589,99 @@ func (c *Signer) RevokeSigningProfileWithContext(ctx aws.Context, input *RevokeS
 	return out, req.Send()
 }
 
+const opSignPayload = "SignPayload"
+
+// SignPayloadRequest generates a "aws/request.Request" representing the
+// client's request for the SignPayload operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SignPayload for more information on using the SignPayload
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SignPayloadRequest method.
+//	req, resp := client.SignPayloadRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/SignPayload
+func (c *Signer) SignPayloadRequest(input *SignPayloadInput) (req *request.Request, output *SignPayloadOutput) {
+	op := &request.Operation{
+		Name:       opSignPayload,
+		HTTPMethod: "POST",
+		HTTPPath:   "/signing-jobs/with-payload",
+	}
+
+	if input == nil {
+		input = &SignPayloadInput{}
+	}
+
+	output = &SignPayloadOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// SignPayload API operation for AWS Signer.
+//
+// Signs a binary payload and returns a signature envelope.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Signer's
+// API operation SignPayload for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     You signing certificate could not be validated.
+//
+//   - ResourceNotFoundException
+//     A specified resource could not be found.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - TooManyRequestsException
+//     The allowed number of job-signing requests has been exceeded.
+//
+//     This error supersedes the error ThrottlingException.
+//
+//   - InternalServiceErrorException
+//     An internal error occurred.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/signer-2017-08-25/SignPayload
+func (c *Signer) SignPayload(input *SignPayloadInput) (*SignPayloadOutput, error) {
+	req, out := c.SignPayloadRequest(input)
+	return out, req.Send()
+}
+
+// SignPayloadWithContext is the same as SignPayload with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SignPayload for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Signer) SignPayloadWithContext(ctx aws.Context, input *SignPayloadInput, opts ...request.Option) (*SignPayloadOutput, error) {
+	req, out := c.SignPayloadRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opStartSigningJob = "StartSigningJob"
 
 // StartSigningJobRequest generates a "aws/request.Request" representing the
@@ -1546,25 +1730,25 @@ func (c *Signer) StartSigningJobRequest(input *StartSigningJobInput) (req *reque
 // performed. Note the following requirements:
 //
 //   - You must create an Amazon S3 source bucket. For more information, see
-//     Create a Bucket (http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html)
+//     Creating a Bucket (http://docs.aws.amazon.com/AmazonS3/latest/gsg/CreatingABucket.html)
 //     in the Amazon S3 Getting Started Guide.
 //
 //   - Your S3 source bucket must be version enabled.
 //
-//   - You must create an S3 destination bucket. Code signing uses your S3
-//     destination bucket to write your signed code.
+//   - You must create an S3 destination bucket. AWS Signer uses your S3 destination
+//     bucket to write your signed code.
 //
 //   - You specify the name of the source and destination buckets when calling
 //     the StartSigningJob operation.
 //
 //   - You must also specify a request token that identifies your request to
-//     code signing.
+//     Signer.
 //
 // You can call the DescribeSigningJob and the ListSigningJobs actions after
 // you call StartSigningJob.
 //
-// For a Java example that shows how to use this action, see http://docs.aws.amazon.com/acm/latest/userguide/
-// (http://docs.aws.amazon.com/acm/latest/userguide/)
+// For a Java example that shows how to use this action, see StartSigningJob
+// (https://docs.aws.amazon.com/signer/latest/developerguide/api-startsigningjob.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2315,7 +2499,7 @@ type DescribeSigningJobOutput struct {
 	// Thr expiration timestamp for the signature generated by the signing job.
 	SignatureExpiresAt *time.Time `locationName:"signatureExpiresAt" type:"timestamp"`
 
-	// Name of the S3 bucket where the signed code image is saved by code signing.
+	// Name of the S3 bucket where the signed code image is saved by AWS Signer.
 	SignedObject *SignedObject `locationName:"signedObject" type:"structure"`
 
 	// The Amazon Resource Name (ARN) of your code signing certificate.
@@ -2500,17 +2684,17 @@ func (s *Destination) SetS3(v *S3Destination) *Destination {
 	return s
 }
 
-// The encryption algorithm options that are available to a code signing job.
+// The encryption algorithm options that are available to a code-signing job.
 type EncryptionAlgorithmOptions struct {
 	_ struct{} `type:"structure"`
 
-	// The set of accepted encryption algorithms that are allowed in a code signing
+	// The set of accepted encryption algorithms that are allowed in a code-signing
 	// job.
 	//
 	// AllowedValues is a required field
 	AllowedValues []*string `locationName:"allowedValues" type:"list" required:"true" enum:"EncryptionAlgorithm"`
 
-	// The default encryption algorithm that is used by a code signing job.
+	// The default encryption algorithm that is used by a code-signing job.
 	//
 	// DefaultValue is a required field
 	DefaultValue *string `locationName:"defaultValue" type:"string" required:"true" enum:"EncryptionAlgorithm"`
@@ -2543,6 +2727,164 @@ func (s *EncryptionAlgorithmOptions) SetAllowedValues(v []*string) *EncryptionAl
 // SetDefaultValue sets the DefaultValue field's value.
 func (s *EncryptionAlgorithmOptions) SetDefaultValue(v string) *EncryptionAlgorithmOptions {
 	s.DefaultValue = &v
+	return s
+}
+
+type GetRevocationStatusInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// A list of composite signed hashes that identify certificates.
+	//
+	// A certificate identifier consists of a subject certificate TBS hash (signed
+	// by the parent CA) combined with a parent CA TBS hash (signed by the parent
+	// CA’s CA). Root certificates are defined as their own CA.
+	//
+	// The following example shows how to calculate a hash for this parameter using
+	// OpenSSL commands:
+	//
+	// openssl asn1parse -in childCert.pem -strparse 4 -out childCert.tbs
+	//
+	// openssl sha384 < childCert.tbs -binary > childCertTbsHash
+	//
+	// openssl asn1parse -in parentCert.pem -strparse 4 -out parentCert.tbs
+	//
+	// openssl sha384 < parentCert.tbs -binary > parentCertTbsHash xxd -p childCertTbsHash
+	// > certificateHash.hex xxd -p parentCertTbsHash >> certificateHash.hex
+	//
+	// cat certificateHash.hex | tr -d '\n'
+	//
+	// CertificateHashes is a required field
+	CertificateHashes []*string `location:"querystring" locationName:"certificateHashes" type:"list" required:"true"`
+
+	// The ARN of a signing job.
+	//
+	// JobArn is a required field
+	JobArn *string `location:"querystring" locationName:"jobArn" min:"20" type:"string" required:"true"`
+
+	// The ID of a signing platform.
+	//
+	// PlatformId is a required field
+	PlatformId *string `location:"querystring" locationName:"platformId" type:"string" required:"true"`
+
+	// The version of a signing profile.
+	//
+	// ProfileVersionArn is a required field
+	ProfileVersionArn *string `location:"querystring" locationName:"profileVersionArn" min:"20" type:"string" required:"true"`
+
+	// The timestamp of the signature that validates the profile or job.
+	//
+	// SignatureTimestamp is a required field
+	SignatureTimestamp *time.Time `location:"querystring" locationName:"signatureTimestamp" type:"timestamp" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRevocationStatusInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRevocationStatusInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetRevocationStatusInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetRevocationStatusInput"}
+	if s.CertificateHashes == nil {
+		invalidParams.Add(request.NewErrParamRequired("CertificateHashes"))
+	}
+	if s.JobArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobArn"))
+	}
+	if s.JobArn != nil && len(*s.JobArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("JobArn", 20))
+	}
+	if s.PlatformId == nil {
+		invalidParams.Add(request.NewErrParamRequired("PlatformId"))
+	}
+	if s.ProfileVersionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ProfileVersionArn"))
+	}
+	if s.ProfileVersionArn != nil && len(*s.ProfileVersionArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ProfileVersionArn", 20))
+	}
+	if s.SignatureTimestamp == nil {
+		invalidParams.Add(request.NewErrParamRequired("SignatureTimestamp"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCertificateHashes sets the CertificateHashes field's value.
+func (s *GetRevocationStatusInput) SetCertificateHashes(v []*string) *GetRevocationStatusInput {
+	s.CertificateHashes = v
+	return s
+}
+
+// SetJobArn sets the JobArn field's value.
+func (s *GetRevocationStatusInput) SetJobArn(v string) *GetRevocationStatusInput {
+	s.JobArn = &v
+	return s
+}
+
+// SetPlatformId sets the PlatformId field's value.
+func (s *GetRevocationStatusInput) SetPlatformId(v string) *GetRevocationStatusInput {
+	s.PlatformId = &v
+	return s
+}
+
+// SetProfileVersionArn sets the ProfileVersionArn field's value.
+func (s *GetRevocationStatusInput) SetProfileVersionArn(v string) *GetRevocationStatusInput {
+	s.ProfileVersionArn = &v
+	return s
+}
+
+// SetSignatureTimestamp sets the SignatureTimestamp field's value.
+func (s *GetRevocationStatusInput) SetSignatureTimestamp(v time.Time) *GetRevocationStatusInput {
+	s.SignatureTimestamp = &v
+	return s
+}
+
+type GetRevocationStatusOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of revoked entities (including zero or more of the signing profile
+	// ARN, signing job ARN, and certificate hashes) supplied as input to the API.
+	RevokedEntities []*string `locationName:"revokedEntities" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRevocationStatusOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetRevocationStatusOutput) GoString() string {
+	return s.String()
+}
+
+// SetRevokedEntities sets the RevokedEntities field's value.
+func (s *GetRevocationStatusOutput) SetRevokedEntities(v []*string) *GetRevocationStatusOutput {
+	s.RevokedEntities = v
 	return s
 }
 
@@ -2911,16 +3253,16 @@ func (s *GetSigningProfileOutput) SetTags(v map[string]*string) *GetSigningProfi
 	return s
 }
 
-// The hash algorithms that are available to a code signing job.
+// The hash algorithms that are available to a code-signing job.
 type HashAlgorithmOptions struct {
 	_ struct{} `type:"structure"`
 
-	// The set of accepted hash algorithms allowed in a code signing job.
+	// The set of accepted hash algorithms allowed in a code-signing job.
 	//
 	// AllowedValues is a required field
 	AllowedValues []*string `locationName:"allowedValues" type:"list" required:"true" enum:"HashAlgorithm"`
 
-	// The default hash algorithm that is used in a code signing job.
+	// The default hash algorithm that is used in a code-signing job.
 	//
 	// DefaultValue is a required field
 	DefaultValue *string `locationName:"defaultValue" type:"string" required:"true" enum:"HashAlgorithm"`
@@ -4329,7 +4671,7 @@ func (s RevokeSigningProfileOutput) GoString() string {
 	return s.String()
 }
 
-// The name and prefix of the S3 bucket where code signing saves your signed
+// The name and prefix of the Amazon S3 bucket where AWS Signer saves your signed
 // objects.
 type S3Destination struct {
 	_ struct{} `type:"structure"`
@@ -4337,8 +4679,8 @@ type S3Destination struct {
 	// Name of the S3 bucket.
 	BucketName *string `locationName:"bucketName" type:"string"`
 
-	// An Amazon S3 prefix that you can use to limit responses to those that begin
-	// with the specified prefix.
+	// An S3 prefix that you can use to limit responses to those that begin with
+	// the specified prefix.
 	Prefix *string `locationName:"prefix" type:"string"`
 }
 
@@ -4372,7 +4714,7 @@ func (s *S3Destination) SetPrefix(v string) *S3Destination {
 	return s
 }
 
-// The S3 bucket name and key where code signing saved your signed code image.
+// The Amazon S3 bucket name and key where Signer saved your signed code image.
 type S3SignedObject struct {
 	_ struct{} `type:"structure"`
 
@@ -4413,7 +4755,7 @@ func (s *S3SignedObject) SetKey(v string) *S3SignedObject {
 	return s
 }
 
-// Information about the S3 bucket where you saved your unsigned code.
+// Information about the Amazon S3 bucket where you saved your unsigned code.
 type S3Source struct {
 	_ struct{} `type:"structure"`
 
@@ -4554,6 +4896,158 @@ func (s *ServiceLimitExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type SignPayloadInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the object digest (hash) to sign.
+	// Payload is automatically base64 encoded/decoded by the SDK.
+	//
+	// Payload is a required field
+	Payload []byte `locationName:"payload" min:"1" type:"blob" required:"true"`
+
+	// Payload content type. The single valid type is application/vnd.cncf.notary.payload.v1+json.
+	//
+	// PayloadFormat is a required field
+	PayloadFormat *string `locationName:"payloadFormat" type:"string" required:"true"`
+
+	// The name of the signing profile.
+	//
+	// ProfileName is a required field
+	ProfileName *string `locationName:"profileName" min:"2" type:"string" required:"true"`
+
+	// The AWS account ID of the profile owner.
+	ProfileOwner *string `locationName:"profileOwner" min:"12" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignPayloadInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignPayloadInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SignPayloadInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SignPayloadInput"}
+	if s.Payload == nil {
+		invalidParams.Add(request.NewErrParamRequired("Payload"))
+	}
+	if s.Payload != nil && len(s.Payload) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Payload", 1))
+	}
+	if s.PayloadFormat == nil {
+		invalidParams.Add(request.NewErrParamRequired("PayloadFormat"))
+	}
+	if s.ProfileName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ProfileName"))
+	}
+	if s.ProfileName != nil && len(*s.ProfileName) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("ProfileName", 2))
+	}
+	if s.ProfileOwner != nil && len(*s.ProfileOwner) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("ProfileOwner", 12))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPayload sets the Payload field's value.
+func (s *SignPayloadInput) SetPayload(v []byte) *SignPayloadInput {
+	s.Payload = v
+	return s
+}
+
+// SetPayloadFormat sets the PayloadFormat field's value.
+func (s *SignPayloadInput) SetPayloadFormat(v string) *SignPayloadInput {
+	s.PayloadFormat = &v
+	return s
+}
+
+// SetProfileName sets the ProfileName field's value.
+func (s *SignPayloadInput) SetProfileName(v string) *SignPayloadInput {
+	s.ProfileName = &v
+	return s
+}
+
+// SetProfileOwner sets the ProfileOwner field's value.
+func (s *SignPayloadInput) SetProfileOwner(v string) *SignPayloadInput {
+	s.ProfileOwner = &v
+	return s
+}
+
+type SignPayloadOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier of the signing job.
+	JobId *string `locationName:"jobId" type:"string"`
+
+	// The AWS account ID of the job owner.
+	JobOwner *string `locationName:"jobOwner" min:"12" type:"string"`
+
+	// Information including the signing profile ARN and the signing job ID.
+	Metadata map[string]*string `locationName:"metadata" type:"map"`
+
+	// A cryptographic signature.
+	// Signature is automatically base64 encoded/decoded by the SDK.
+	Signature []byte `locationName:"signature" type:"blob"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignPayloadOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignPayloadOutput) GoString() string {
+	return s.String()
+}
+
+// SetJobId sets the JobId field's value.
+func (s *SignPayloadOutput) SetJobId(v string) *SignPayloadOutput {
+	s.JobId = &v
+	return s
+}
+
+// SetJobOwner sets the JobOwner field's value.
+func (s *SignPayloadOutput) SetJobOwner(v string) *SignPayloadOutput {
+	s.JobOwner = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *SignPayloadOutput) SetMetadata(v map[string]*string) *SignPayloadOutput {
+	s.Metadata = v
+	return s
+}
+
+// SetSignature sets the Signature field's value.
+func (s *SignPayloadOutput) SetSignature(v []byte) *SignPayloadOutput {
+	s.Signature = v
+	return s
+}
+
 // The validity period for a signing job.
 type SignatureValidityPeriod struct {
 	_ struct{} `type:"structure"`
@@ -4628,16 +5122,16 @@ func (s *SignedObject) SetS3(v *S3SignedObject) *SignedObject {
 	return s
 }
 
-// The configuration of a code signing operation.
+// The configuration of a signing operation.
 type SigningConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// The encryption algorithm options that are available for a code signing job.
+	// The encryption algorithm options that are available for a code-signing job.
 	//
 	// EncryptionAlgorithmOptions is a required field
 	EncryptionAlgorithmOptions *EncryptionAlgorithmOptions `locationName:"encryptionAlgorithmOptions" type:"structure" required:"true"`
 
-	// The hash algorithm options that are available for a code signing job.
+	// The hash algorithm options that are available for a code-signing job.
 	//
 	// HashAlgorithmOptions is a required field
 	HashAlgorithmOptions *HashAlgorithmOptions `locationName:"hashAlgorithmOptions" type:"structure" required:"true"`
@@ -4679,11 +5173,11 @@ type SigningConfigurationOverrides struct {
 	_ struct{} `type:"structure"`
 
 	// A specified override of the default encryption algorithm that is used in
-	// a code signing job.
+	// a code-signing job.
 	EncryptionAlgorithm *string `locationName:"encryptionAlgorithm" type:"string" enum:"EncryptionAlgorithm"`
 
-	// A specified override of the default hash algorithm that is used in a code
-	// signing job.
+	// A specified override of the default hash algorithm that is used in a code-signing
+	// job.
 	HashAlgorithm *string `locationName:"hashAlgorithm" type:"string" enum:"HashAlgorithm"`
 }
 
@@ -4717,16 +5211,16 @@ func (s *SigningConfigurationOverrides) SetHashAlgorithm(v string) *SigningConfi
 	return s
 }
 
-// The image format of a code signing platform or profile.
+// The image format of a AWS Signer platform or profile.
 type SigningImageFormat struct {
 	_ struct{} `type:"structure"`
 
-	// The default format of a code signing image.
+	// The default format of a signing image.
 	//
 	// DefaultFormat is a required field
 	DefaultFormat *string `locationName:"defaultFormat" type:"string" required:"true" enum:"ImageFormat"`
 
-	// The supported formats of a code signing image.
+	// The supported formats of a signing image.
 	//
 	// SupportedFormats is a required field
 	SupportedFormats []*string `locationName:"supportedFormats" type:"list" required:"true" enum:"ImageFormat"`
@@ -5012,36 +5506,36 @@ func (s *SigningMaterial) SetCertificateArn(v string) *SigningMaterial {
 }
 
 // Contains information about the signing configurations and parameters that
-// are used to perform a code signing job.
+// are used to perform a code-signing job.
 type SigningPlatform struct {
 	_ struct{} `type:"structure"`
 
-	// The category of a code signing platform.
+	// The category of a signing platform.
 	Category *string `locationName:"category" type:"string" enum:"Category"`
 
-	// The display name of a code signing platform.
+	// The display name of a signing platform.
 	DisplayName *string `locationName:"displayName" type:"string"`
 
-	// The maximum size (in MB) of code that can be signed by a code signing platform.
+	// The maximum size (in MB) of code that can be signed by a signing platform.
 	MaxSizeInMB *int64 `locationName:"maxSizeInMB" type:"integer"`
 
-	// Any partner entities linked to a code signing platform.
+	// Any partner entities linked to a signing platform.
 	Partner *string `locationName:"partner" type:"string"`
 
-	// The ID of a code signing; platform.
+	// The ID of a signing platform.
 	PlatformId *string `locationName:"platformId" type:"string"`
 
 	// Indicates whether revocation is supported for the platform.
 	RevocationSupported *bool `locationName:"revocationSupported" type:"boolean"`
 
-	// The configuration of a code signing platform. This includes the designated
-	// hash algorithm and encryption algorithm of a signing platform.
+	// The configuration of a signing platform. This includes the designated hash
+	// algorithm and encryption algorithm of a signing platform.
 	SigningConfiguration *SigningConfiguration `locationName:"signingConfiguration" type:"structure"`
 
-	// The image format of a code signing platform or profile.
+	// The image format of a AWS Signer platform or profile.
 	SigningImageFormat *SigningImageFormat `locationName:"signingImageFormat" type:"structure"`
 
-	// The types of targets that can be signed by a code signing platform.
+	// The types of targets that can be signed by a signing platform.
 	Target *string `locationName:"target" type:"string"`
 }
 
@@ -5117,7 +5611,7 @@ func (s *SigningPlatform) SetTarget(v string) *SigningPlatform {
 	return s
 }
 
-// Any overrides that are applied to the signing configuration of a code signing
+// Any overrides that are applied to the signing configuration of a signing
 // platform.
 type SigningPlatformOverrides struct {
 	_ struct{} `type:"structure"`
@@ -5164,7 +5658,7 @@ func (s *SigningPlatformOverrides) SetSigningImageFormat(v string) *SigningPlatf
 	return s
 }
 
-// Contains information about the ACM certificates and code signing configuration
+// Contains information about the ACM certificates and signing configuration
 // parameters that can be used by a given code signing user.
 type SigningProfile struct {
 	_ struct{} `type:"structure"`
@@ -5193,10 +5687,10 @@ type SigningProfile struct {
 	// The ACM certificate that is available for use by a signing profile.
 	SigningMaterial *SigningMaterial `locationName:"signingMaterial" type:"structure"`
 
-	// The parameters that are available for use by a code signing user.
+	// The parameters that are available for use by a Signer user.
 	SigningParameters map[string]*string `locationName:"signingParameters" type:"map"`
 
-	// The status of a code signing profile.
+	// The status of a signing profile.
 	Status *string `locationName:"status" type:"string" enum:"SigningProfileStatus"`
 
 	// A list of tags associated with the signing profile.

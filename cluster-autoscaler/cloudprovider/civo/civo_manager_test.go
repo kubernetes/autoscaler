@@ -107,6 +107,13 @@ func TestCivoManager_Refresh(t *testing.T) {
 			nil,
 		).Once()
 
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Times(10)
+
 		manager.client = client
 		err = manager.Refresh()
 		assert.NoError(t, err)
@@ -165,6 +172,13 @@ func TestCivoManager_RefreshWithNodeSpec(t *testing.T) {
 			},
 			nil,
 		).Once()
+
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Times(10)
 
 		manager.client = client
 		err = manager.Refresh()
@@ -226,6 +240,13 @@ func TestCivoManager_RefreshWithNodeSpecPool(t *testing.T) {
 			},
 			nil,
 		).Once()
+
+		client.On("FindInstanceSizes", "small").Return(
+			&civocloud.InstanceSize{
+				Name:     "small",
+				CPUCores: 1,
+			}, nil,
+		).Times(10)
 
 		manager.client = client
 		err = manager.Refresh()

@@ -64,6 +64,10 @@ type Route53DomainsAPI interface {
 	AcceptDomainTransferFromAnotherAwsAccountWithContext(aws.Context, *route53domains.AcceptDomainTransferFromAnotherAwsAccountInput, ...request.Option) (*route53domains.AcceptDomainTransferFromAnotherAwsAccountOutput, error)
 	AcceptDomainTransferFromAnotherAwsAccountRequest(*route53domains.AcceptDomainTransferFromAnotherAwsAccountInput) (*request.Request, *route53domains.AcceptDomainTransferFromAnotherAwsAccountOutput)
 
+	AssociateDelegationSignerToDomain(*route53domains.AssociateDelegationSignerToDomainInput) (*route53domains.AssociateDelegationSignerToDomainOutput, error)
+	AssociateDelegationSignerToDomainWithContext(aws.Context, *route53domains.AssociateDelegationSignerToDomainInput, ...request.Option) (*route53domains.AssociateDelegationSignerToDomainOutput, error)
+	AssociateDelegationSignerToDomainRequest(*route53domains.AssociateDelegationSignerToDomainInput) (*request.Request, *route53domains.AssociateDelegationSignerToDomainOutput)
+
 	CancelDomainTransferToAnotherAwsAccount(*route53domains.CancelDomainTransferToAnotherAwsAccountInput) (*route53domains.CancelDomainTransferToAnotherAwsAccountOutput, error)
 	CancelDomainTransferToAnotherAwsAccountWithContext(aws.Context, *route53domains.CancelDomainTransferToAnotherAwsAccountInput, ...request.Option) (*route53domains.CancelDomainTransferToAnotherAwsAccountOutput, error)
 	CancelDomainTransferToAnotherAwsAccountRequest(*route53domains.CancelDomainTransferToAnotherAwsAccountInput) (*request.Request, *route53domains.CancelDomainTransferToAnotherAwsAccountOutput)
@@ -91,6 +95,10 @@ type Route53DomainsAPI interface {
 	DisableDomainTransferLock(*route53domains.DisableDomainTransferLockInput) (*route53domains.DisableDomainTransferLockOutput, error)
 	DisableDomainTransferLockWithContext(aws.Context, *route53domains.DisableDomainTransferLockInput, ...request.Option) (*route53domains.DisableDomainTransferLockOutput, error)
 	DisableDomainTransferLockRequest(*route53domains.DisableDomainTransferLockInput) (*request.Request, *route53domains.DisableDomainTransferLockOutput)
+
+	DisassociateDelegationSignerFromDomain(*route53domains.DisassociateDelegationSignerFromDomainInput) (*route53domains.DisassociateDelegationSignerFromDomainOutput, error)
+	DisassociateDelegationSignerFromDomainWithContext(aws.Context, *route53domains.DisassociateDelegationSignerFromDomainInput, ...request.Option) (*route53domains.DisassociateDelegationSignerFromDomainOutput, error)
+	DisassociateDelegationSignerFromDomainRequest(*route53domains.DisassociateDelegationSignerFromDomainInput) (*request.Request, *route53domains.DisassociateDelegationSignerFromDomainOutput)
 
 	EnableDomainAutoRenew(*route53domains.EnableDomainAutoRenewInput) (*route53domains.EnableDomainAutoRenewOutput, error)
 	EnableDomainAutoRenewWithContext(aws.Context, *route53domains.EnableDomainAutoRenewInput, ...request.Option) (*route53domains.EnableDomainAutoRenewOutput, error)
@@ -141,6 +149,10 @@ type Route53DomainsAPI interface {
 	ListTagsForDomainWithContext(aws.Context, *route53domains.ListTagsForDomainInput, ...request.Option) (*route53domains.ListTagsForDomainOutput, error)
 	ListTagsForDomainRequest(*route53domains.ListTagsForDomainInput) (*request.Request, *route53domains.ListTagsForDomainOutput)
 
+	PushDomain(*route53domains.PushDomainInput) (*route53domains.PushDomainOutput, error)
+	PushDomainWithContext(aws.Context, *route53domains.PushDomainInput, ...request.Option) (*route53domains.PushDomainOutput, error)
+	PushDomainRequest(*route53domains.PushDomainInput) (*request.Request, *route53domains.PushDomainOutput)
+
 	RegisterDomain(*route53domains.RegisterDomainInput) (*route53domains.RegisterDomainOutput, error)
 	RegisterDomainWithContext(aws.Context, *route53domains.RegisterDomainInput, ...request.Option) (*route53domains.RegisterDomainOutput, error)
 	RegisterDomainRequest(*route53domains.RegisterDomainInput) (*request.Request, *route53domains.RegisterDomainOutput)
@@ -156,6 +168,10 @@ type Route53DomainsAPI interface {
 	ResendContactReachabilityEmail(*route53domains.ResendContactReachabilityEmailInput) (*route53domains.ResendContactReachabilityEmailOutput, error)
 	ResendContactReachabilityEmailWithContext(aws.Context, *route53domains.ResendContactReachabilityEmailInput, ...request.Option) (*route53domains.ResendContactReachabilityEmailOutput, error)
 	ResendContactReachabilityEmailRequest(*route53domains.ResendContactReachabilityEmailInput) (*request.Request, *route53domains.ResendContactReachabilityEmailOutput)
+
+	ResendOperationAuthorization(*route53domains.ResendOperationAuthorizationInput) (*route53domains.ResendOperationAuthorizationOutput, error)
+	ResendOperationAuthorizationWithContext(aws.Context, *route53domains.ResendOperationAuthorizationInput, ...request.Option) (*route53domains.ResendOperationAuthorizationOutput, error)
+	ResendOperationAuthorizationRequest(*route53domains.ResendOperationAuthorizationInput) (*request.Request, *route53domains.ResendOperationAuthorizationOutput)
 
 	RetrieveDomainAuthCode(*route53domains.RetrieveDomainAuthCodeInput) (*route53domains.RetrieveDomainAuthCodeOutput, error)
 	RetrieveDomainAuthCodeWithContext(aws.Context, *route53domains.RetrieveDomainAuthCodeInput, ...request.Option) (*route53domains.RetrieveDomainAuthCodeOutput, error)

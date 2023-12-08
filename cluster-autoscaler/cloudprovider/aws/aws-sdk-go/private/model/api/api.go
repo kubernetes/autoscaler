@@ -74,6 +74,9 @@ type API struct {
 	HasAccountIdWithARN bool `json:"-"`
 
 	WithGeneratedTypedErrors bool
+
+	// Set to true to strictly enforce usage of the serviceId for the package naming
+	StrictServiceId bool
 }
 
 // A Metadata is the metadata about an API's definition.
@@ -93,7 +96,10 @@ type Metadata struct {
 	ServiceID           string
 
 	NoResolveEndpoint bool
+	AWSQueryCompatible *awsQueryCompatible
 }
+
+type awsQueryCompatible struct {}
 
 // ProtocolSettings define how the SDK should handle requests in the context
 // of of a protocol.
@@ -127,20 +133,28 @@ func (a *API) StructName() string {
 		return a.name
 	}
 
-	name := a.Metadata.ServiceAbbreviation
-	if len(name) == 0 {
-		name = a.Metadata.ServiceFullName
+	var name string
+	if a.StrictServiceId {
+		name = a.Metadata.ServiceID
+		if len(name) == 0 {
+			panic("expect serviceId to be set, but was not")
+		}
+		if legacyName, ok := legacyStructNames[strings.ToLower(name)]; ok {
+			// The legacy names come from service abbreviations or service full names,
+			// so we will want to apply the old procedure to them.
+			name = makeLikeServiceId(legacyName)
+		}
+	} else {
+		name = a.Metadata.ServiceAbbreviation
+		if len(name) == 0 {
+			name = a.Metadata.ServiceFullName
+		}
+		// If we aren't using the strictly modeled service id, then
+		// strip out prefix names not reflected in service client symbol names.
+		name = makeLikeServiceId(name)
 	}
 
 	name = strings.TrimSpace(name)
-
-	// Strip out prefix names not reflected in service client symbol names.
-	for _, prefix := range stripServiceNamePrefixes {
-		if strings.HasPrefix(name, prefix) {
-			name = name[len(prefix):]
-			break
-		}
-	}
 
 	// Replace all Non-letter/number values with space
 	runes := []rune(name)
@@ -628,7 +642,11 @@ func newClient(cfg aws.Config, handlers request.Handlers, partitionID, endpoint,
 	{{- if and $.WithGeneratedTypedErrors (gt (len $.ShapeListErrors) 0) }}
 		{{- $_ := $.AddSDKImport "private/protocol" }}
 		svc.Handlers.UnmarshalError.PushBackNamed(
+			{{-  if .Metadata.AWSQueryCompatible }}
+			protocol.NewUnmarshalErrorHandler({{ .ProtocolPackage }}.NewUnmarshalTypedErrorWithOptions(exceptionFromCode, {{ .ProtocolPackage }}.WithQueryCompatibility(queryExceptionFromCode))).NamedHandler(),
+			{{- else }}
 			protocol.NewUnmarshalErrorHandler({{ .ProtocolPackage }}.NewUnmarshalTypedError(exceptionFromCode)).NamedHandler(),
+			{{- end}}
 		)
 	{{- else }}
 		svc.Handlers.UnmarshalError.PushBackNamed({{ .ProtocolPackage }}.UnmarshalErrorHandler)
@@ -922,6 +940,13 @@ const (
 			"{{ $s.ErrorName }}": newError{{ $s.ShapeName }},
 		{{- end }}
 	}
+	{{- if .Metadata.AWSQueryCompatible }}
+	var queryExceptionFromCode = map[string]func(protocol.ResponseMetadata, string)error {
+		{{- range $_, $s := $.ShapeListErrors }}
+			"{{ $s.ErrorName }}": newQueryCompatibleError{{ $s.ShapeName }},
+		{{- end }}
+	}
+	{{- end }}
 {{- end }}
 `))
 
@@ -1064,4 +1089,14 @@ func getDeprecatedMessage(msg string, name string) string {
 	}
 
 	return msg
+}
+
+func makeLikeServiceId(name string) string {
+	for _, prefix := range stripServiceNamePrefixes {
+		if strings.HasPrefix(name, prefix) {
+			name = name[len(prefix):]
+			break
+		}
+	}
+	return name
 }

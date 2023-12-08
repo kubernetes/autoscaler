@@ -11,11 +11,12 @@ const (
 	// ErrCodeAccessDeniedException for service response error code
 	// "AccessDeniedException".
 	//
-	// You don't have permissions to perform the requested operation. The user or
-	// role that is making the request must have at least one IAM permissions policy
-	// attached that grants the required permissions. For more information, see
-	// Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-	// in the IAM User Guide.
+	// You don't have permissions to perform the requested operation. The IAM principal
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+	// making the request must have at least one IAM permissions policy attached
+	// that grants the required permissions. For more information, see Access management
+	// (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html) in the IAM
+	// User Guide.
 	ErrCodeAccessDeniedException = "AccessDeniedException"
 
 	// ErrCodeBadRequestException for service response error code
@@ -29,8 +30,9 @@ const (
 	// "ClientException".
 	//
 	// These errors are usually caused by a client action. Actions can include using
-	// an action or resource on behalf of a user that doesn't have permissions to
-	// use the action or resource or specifying an identifier that is not valid.
+	// an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+	// that doesn't have permissions to use the action or resource or specifying
+	// an identifier that is not valid.
 	ErrCodeClientException = "ClientException"
 
 	// ErrCodeInvalidParameterException for service response error code

@@ -92,6 +92,10 @@ type ServiceDiscoveryAPI interface {
 	DiscoverInstancesWithContext(aws.Context, *servicediscovery.DiscoverInstancesInput, ...request.Option) (*servicediscovery.DiscoverInstancesOutput, error)
 	DiscoverInstancesRequest(*servicediscovery.DiscoverInstancesInput) (*request.Request, *servicediscovery.DiscoverInstancesOutput)
 
+	DiscoverInstancesRevision(*servicediscovery.DiscoverInstancesRevisionInput) (*servicediscovery.DiscoverInstancesRevisionOutput, error)
+	DiscoverInstancesRevisionWithContext(aws.Context, *servicediscovery.DiscoverInstancesRevisionInput, ...request.Option) (*servicediscovery.DiscoverInstancesRevisionOutput, error)
+	DiscoverInstancesRevisionRequest(*servicediscovery.DiscoverInstancesRevisionInput) (*request.Request, *servicediscovery.DiscoverInstancesRevisionOutput)
+
 	GetInstance(*servicediscovery.GetInstanceInput) (*servicediscovery.GetInstanceOutput, error)
 	GetInstanceWithContext(aws.Context, *servicediscovery.GetInstanceInput, ...request.Option) (*servicediscovery.GetInstanceOutput, error)
 	GetInstanceRequest(*servicediscovery.GetInstanceInput) (*request.Request, *servicediscovery.GetInstanceOutput)

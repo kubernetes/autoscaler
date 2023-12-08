@@ -9,6 +9,108 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 )
 
+// WaitUntilComponentDeleted uses the AWS Proton API operation
+// GetComponent to wait for a condition to be met before returning.
+// If the condition is not met within the max attempt window, an error will
+// be returned.
+func (c *Proton) WaitUntilComponentDeleted(input *GetComponentInput) error {
+	return c.WaitUntilComponentDeletedWithContext(aws.BackgroundContext(), input)
+}
+
+// WaitUntilComponentDeletedWithContext is an extended version of WaitUntilComponentDeleted.
+// With the support for passing in a context and options to configure the
+// Waiter and the underlying request options.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Proton) WaitUntilComponentDeletedWithContext(ctx aws.Context, input *GetComponentInput, opts ...request.WaiterOption) error {
+	w := request.Waiter{
+		Name:        "WaitUntilComponentDeleted",
+		MaxAttempts: 999,
+		Delay:       request.ConstantWaiterDelay(5 * time.Second),
+		Acceptors: []request.WaiterAcceptor{
+			{
+				State:    request.SuccessWaiterState,
+				Matcher:  request.ErrorWaiterMatch,
+				Expected: "ResourceNotFoundException",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathWaiterMatch, Argument: "component.deploymentStatus",
+				Expected: "DELETE_FAILED",
+			},
+		},
+		Logger: c.Config.Logger,
+		NewRequest: func(opts []request.Option) (*request.Request, error) {
+			var inCpy *GetComponentInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetComponentRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+	w.ApplyOptions(opts...)
+
+	return w.WaitWithContext(ctx)
+}
+
+// WaitUntilComponentDeployed uses the AWS Proton API operation
+// GetComponent to wait for a condition to be met before returning.
+// If the condition is not met within the max attempt window, an error will
+// be returned.
+func (c *Proton) WaitUntilComponentDeployed(input *GetComponentInput) error {
+	return c.WaitUntilComponentDeployedWithContext(aws.BackgroundContext(), input)
+}
+
+// WaitUntilComponentDeployedWithContext is an extended version of WaitUntilComponentDeployed.
+// With the support for passing in a context and options to configure the
+// Waiter and the underlying request options.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Proton) WaitUntilComponentDeployedWithContext(ctx aws.Context, input *GetComponentInput, opts ...request.WaiterOption) error {
+	w := request.Waiter{
+		Name:        "WaitUntilComponentDeployed",
+		MaxAttempts: 999,
+		Delay:       request.ConstantWaiterDelay(5 * time.Second),
+		Acceptors: []request.WaiterAcceptor{
+			{
+				State:   request.SuccessWaiterState,
+				Matcher: request.PathWaiterMatch, Argument: "component.deploymentStatus",
+				Expected: "SUCCEEDED",
+			},
+			{
+				State:   request.FailureWaiterState,
+				Matcher: request.PathWaiterMatch, Argument: "component.deploymentStatus",
+				Expected: "FAILED",
+			},
+		},
+		Logger: c.Config.Logger,
+		NewRequest: func(opts []request.Option) (*request.Request, error) {
+			var inCpy *GetComponentInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.GetComponentRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+	w.ApplyOptions(opts...)
+
+	return w.WaitWithContext(ctx)
+}
+
 // WaitUntilEnvironmentDeployed uses the AWS Proton API operation
 // GetEnvironment to wait for a condition to be met before returning.
 // If the condition is not met within the max attempt window, an error will

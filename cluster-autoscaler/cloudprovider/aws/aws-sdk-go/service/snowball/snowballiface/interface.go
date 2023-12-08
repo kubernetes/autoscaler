@@ -131,13 +131,22 @@ type SnowballAPI interface {
 	ListClusterJobsWithContext(aws.Context, *snowball.ListClusterJobsInput, ...request.Option) (*snowball.ListClusterJobsOutput, error)
 	ListClusterJobsRequest(*snowball.ListClusterJobsInput) (*request.Request, *snowball.ListClusterJobsOutput)
 
+	ListClusterJobsPages(*snowball.ListClusterJobsInput, func(*snowball.ListClusterJobsOutput, bool) bool) error
+	ListClusterJobsPagesWithContext(aws.Context, *snowball.ListClusterJobsInput, func(*snowball.ListClusterJobsOutput, bool) bool, ...request.Option) error
+
 	ListClusters(*snowball.ListClustersInput) (*snowball.ListClustersOutput, error)
 	ListClustersWithContext(aws.Context, *snowball.ListClustersInput, ...request.Option) (*snowball.ListClustersOutput, error)
 	ListClustersRequest(*snowball.ListClustersInput) (*request.Request, *snowball.ListClustersOutput)
 
+	ListClustersPages(*snowball.ListClustersInput, func(*snowball.ListClustersOutput, bool) bool) error
+	ListClustersPagesWithContext(aws.Context, *snowball.ListClustersInput, func(*snowball.ListClustersOutput, bool) bool, ...request.Option) error
+
 	ListCompatibleImages(*snowball.ListCompatibleImagesInput) (*snowball.ListCompatibleImagesOutput, error)
 	ListCompatibleImagesWithContext(aws.Context, *snowball.ListCompatibleImagesInput, ...request.Option) (*snowball.ListCompatibleImagesOutput, error)
 	ListCompatibleImagesRequest(*snowball.ListCompatibleImagesInput) (*request.Request, *snowball.ListCompatibleImagesOutput)
+
+	ListCompatibleImagesPages(*snowball.ListCompatibleImagesInput, func(*snowball.ListCompatibleImagesOutput, bool) bool) error
+	ListCompatibleImagesPagesWithContext(aws.Context, *snowball.ListCompatibleImagesInput, func(*snowball.ListCompatibleImagesOutput, bool) bool, ...request.Option) error
 
 	ListJobs(*snowball.ListJobsInput) (*snowball.ListJobsOutput, error)
 	ListJobsWithContext(aws.Context, *snowball.ListJobsInput, ...request.Option) (*snowball.ListJobsOutput, error)
@@ -149,6 +158,20 @@ type SnowballAPI interface {
 	ListLongTermPricing(*snowball.ListLongTermPricingInput) (*snowball.ListLongTermPricingOutput, error)
 	ListLongTermPricingWithContext(aws.Context, *snowball.ListLongTermPricingInput, ...request.Option) (*snowball.ListLongTermPricingOutput, error)
 	ListLongTermPricingRequest(*snowball.ListLongTermPricingInput) (*request.Request, *snowball.ListLongTermPricingOutput)
+
+	ListLongTermPricingPages(*snowball.ListLongTermPricingInput, func(*snowball.ListLongTermPricingOutput, bool) bool) error
+	ListLongTermPricingPagesWithContext(aws.Context, *snowball.ListLongTermPricingInput, func(*snowball.ListLongTermPricingOutput, bool) bool, ...request.Option) error
+
+	ListPickupLocations(*snowball.ListPickupLocationsInput) (*snowball.ListPickupLocationsOutput, error)
+	ListPickupLocationsWithContext(aws.Context, *snowball.ListPickupLocationsInput, ...request.Option) (*snowball.ListPickupLocationsOutput, error)
+	ListPickupLocationsRequest(*snowball.ListPickupLocationsInput) (*request.Request, *snowball.ListPickupLocationsOutput)
+
+	ListPickupLocationsPages(*snowball.ListPickupLocationsInput, func(*snowball.ListPickupLocationsOutput, bool) bool) error
+	ListPickupLocationsPagesWithContext(aws.Context, *snowball.ListPickupLocationsInput, func(*snowball.ListPickupLocationsOutput, bool) bool, ...request.Option) error
+
+	ListServiceVersions(*snowball.ListServiceVersionsInput) (*snowball.ListServiceVersionsOutput, error)
+	ListServiceVersionsWithContext(aws.Context, *snowball.ListServiceVersionsInput, ...request.Option) (*snowball.ListServiceVersionsOutput, error)
+	ListServiceVersionsRequest(*snowball.ListServiceVersionsInput) (*request.Request, *snowball.ListServiceVersionsOutput)
 
 	UpdateCluster(*snowball.UpdateClusterInput) (*snowball.UpdateClusterOutput, error)
 	UpdateClusterWithContext(aws.Context, *snowball.UpdateClusterInput, ...request.Option) (*snowball.UpdateClusterOutput, error)

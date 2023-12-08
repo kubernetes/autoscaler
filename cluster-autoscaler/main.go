@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -61,9 +60,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/autoscaler/cluster-autoscaler/version"
 	"k8s.io/client-go/informers"
-	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -103,8 +100,8 @@ var (
 	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile          = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	kubeAPIContentType      = flag.String("kube-api-content-type", "application/vnd.kubernetes.protobuf", "Content type of requests sent to apiserver.")
-	kubeClientBurst         = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client.")
-	kubeClientQPS           = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client.")
+	_                       = flag.Int("kube-client-burst", rest.DefaultBurst, "Burst value for kubernetes client. (Deprecated, relay on APF for rate limiting)")
+	_                       = flag.Float64("kube-client-qps", float64(rest.DefaultQPS), "QPS value for kubernetes client. (Deprecated, relay on APF for rate limiting)")
 	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	namespace               = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	enforceNodeGroupMinSize = flag.Bool("enforce-node-group-min-size", false, "Should CA scale up the node group to the configured min size if needed.")
@@ -206,9 +203,9 @@ var (
 	awsUseStaticInstanceList  = flag.Bool("aws-use-static-instance-list", false, "Should CA fetch instance types in runtime or use a static list. AWS only")
 
 	// GCE specific flags
-	concurrentGceRefreshes             = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
-	gceMigInstancesMinRefreshWaitTime  = flag.Duration("gce-mig-instances-min-refresh-wait-time", 5*time.Second, "The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.")
-	gceExpanderEphemeralStorageSupport = flag.Bool("gce-expander-ephemeral-storage-support", false, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider")
+	concurrentGceRefreshes            = flag.Int("gce-concurrent-refreshes", 1, "Maximum number of concurrent refreshes per cloud object type.")
+	gceMigInstancesMinRefreshWaitTime = flag.Duration("gce-mig-instances-min-refresh-wait-time", 5*time.Second, "The minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.")
+	_                                 = flag.Bool("gce-expander-ephemeral-storage-support", true, "Whether scale-up takes ephemeral storage resources into account for GCE cloud provider (Deprecated, to be removed in 1.30+)")
 
 	enableProfiling                    = flag.Bool("profiling", false, "Is debug/pprof endpoint enabled")
 	clusterAPICloudConfigAuthoritative = flag.Bool("clusterapi-cloud-config-authoritative", false, "Treat the cloud-config flag authoritatively (do not fallback to using kubeconfig flag). ClusterAPI only")
@@ -243,6 +240,7 @@ var (
 	maxAllocatableDifferenceRatio           = flag.Float64("max-allocatable-difference-ratio", config.DefaultMaxAllocatableDifferenceRatio, "Maximum difference in allocatable resources between two similar node groups to be considered for balancing. Value is a ratio of the smaller node group's allocatable resource.")
 	forceDaemonSets                         = flag.Bool("force-ds", false, "Blocks scale-up of node groups too small for all suitable Daemon Sets pods.")
 	dynamicNodeDeleteDelayAfterTaintEnabled = flag.Bool("dynamic-node-delete-delay-after-taint-enabled", false, "Enables dynamic adjustment of NodeDeleteDelayAfterTaint based of the latency between CA and api-server")
+	bypassedSchedulers                      = pflag.StringSlice("bypassed-scheduler-names", []string{}, fmt.Sprintf("Names of schedulers to bypass. If set to non-empty value, CA will not wait for pods to reach a certain age before triggering a scale-up."))
 )
 
 func isFlagPassed(name string) bool {
@@ -353,15 +351,16 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		StatusTaints:                     *statusTaintsFlag,
 		BalancingExtraIgnoredLabels:      *balancingIgnoreLabelsFlag,
 		BalancingLabels:                  *balancingLabelsFlag,
-		KubeConfigPath:                   *kubeConfigFile,
-		KubeClientBurst:                  *kubeClientBurst,
-		KubeClientQPS:                    *kubeClientQPS,
-		NodeDeletionDelayTimeout:         *nodeDeletionDelayTimeout,
-		AWSUseStaticInstanceList:         *awsUseStaticInstanceList,
+		KubeClientOpts: config.KubeClientOptions{
+			Master:         *kubernetes,
+			KubeConfigPath: *kubeConfigFile,
+			APIContentType: *kubeAPIContentType,
+		},
+		NodeDeletionDelayTimeout: *nodeDeletionDelayTimeout,
+		AWSUseStaticInstanceList: *awsUseStaticInstanceList,
 		GCEOptions: config.GCEOptions{
-			ConcurrentRefreshes:             *concurrentGceRefreshes,
-			MigInstancesMinRefreshWaitTime:  *gceMigInstancesMinRefreshWaitTime,
-			ExpanderEphemeralStorageSupport: *gceExpanderEphemeralStorageSupport,
+			ConcurrentRefreshes:            *concurrentGceRefreshes,
+			MigInstancesMinRefreshWaitTime: *gceMigInstancesMinRefreshWaitTime,
 		},
 		ClusterAPICloudConfigAuthoritative: *clusterAPICloudConfigAuthoritative,
 		CordonNodeBeforeTerminate:          *cordonNodeBeforeTerminate,
@@ -390,36 +389,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 			MaxFreeDifferenceRatio:           *maxFreeDifferenceRatio,
 		},
 		DynamicNodeDeleteDelayAfterTaintEnabled: *dynamicNodeDeleteDelayAfterTaintEnabled,
+		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
 	}
-}
-
-func getKubeConfig() *rest.Config {
-	if *kubeConfigFile != "" {
-		klog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
-		// use the current context in kubeconfig
-		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
-		if err != nil {
-			klog.Fatalf("Failed to build config: %v", err)
-		}
-		return config
-	}
-	url, err := url.Parse(*kubernetes)
-	if err != nil {
-		klog.Fatalf("Failed to parse Kubernetes url: %v", err)
-	}
-
-	kubeConfig, err := config.GetKubeClientConfig(url)
-	if err != nil {
-		klog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
-	}
-
-	kubeConfig.ContentType = *kubeAPIContentType
-
-	return kubeConfig
-}
-
-func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
-	return kube_client.NewForConfigOrDie(kubeConfig)
 }
 
 func registerSignalHandlers(autoscaler core.Autoscaler) {
@@ -441,10 +412,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 
-	kubeClientConfig := getKubeConfig()
-	kubeClientConfig.Burst = autoscalingOptions.KubeClientBurst
-	kubeClientConfig.QPS = float32(autoscalingOptions.KubeClientQPS)
-	kubeClient := createKubeClient(kubeClientConfig)
+	kubeClient := kube_util.CreateKubeClient(autoscalingOptions.KubeClientOpts)
 
 	// Informer transform to trim ManagedFields for memory efficiency.
 	trim := func(obj interface{}) (interface{}, error) {
@@ -454,8 +422,6 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		return obj, nil
 	}
 	informerFactory := informers.NewSharedInformerFactoryWithOptions(kubeClient, 0, informers.WithTransform(trim))
-
-	eventsKubeClient := createKubeClient(getKubeConfig())
 
 	predicateChecker, err := predicatechecker.NewSchedulerBasedPredicateChecker(informerFactory, autoscalingOptions.SchedulerConfig)
 	if err != nil {
@@ -469,7 +435,6 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 		ClusterSnapshot:      clustersnapshot.NewDeltaClusterSnapshot(),
 		KubeClient:           kubeClient,
 		InformerFactory:      informerFactory,
-		EventsKubeClient:     eventsKubeClient,
 		DebuggingSnapshotter: debuggingSnapshotter,
 		PredicateChecker:     predicateChecker,
 		DeleteOptions:        deleteOptions,
@@ -518,7 +483,7 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 	metrics.UpdateMemoryLimitsBytes(autoscalingOptions.MinMemoryTotal, autoscalingOptions.MaxMemoryTotal)
 
 	// Create autoscaler.
-	autoscaler, err := core.NewAutoscaler(opts)
+	autoscaler, err := core.NewAutoscaler(opts, informerFactory)
 	if err != nil {
 		return nil, err
 	}
@@ -626,7 +591,7 @@ func main() {
 			klog.Fatalf("Unable to get hostname: %v", err)
 		}
 
-		kubeClient := createKubeClient(getKubeConfig())
+		kubeClient := kube_util.CreateKubeClient(createAutoscalingOptions().KubeClientOpts)
 
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(ctx.TODO(), metav1.ListOptions{})

@@ -110,6 +110,94 @@ func (c *PrometheusService) CreateAlertManagerDefinitionWithContext(ctx aws.Cont
 	return out, req.Send()
 }
 
+const opCreateLoggingConfiguration = "CreateLoggingConfiguration"
+
+// CreateLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateLoggingConfiguration for more information on using the CreateLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateLoggingConfigurationRequest method.
+//	req, resp := client.CreateLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateLoggingConfiguration
+func (c *PrometheusService) CreateLoggingConfigurationRequest(input *CreateLoggingConfigurationInput) (req *request.Request, output *CreateLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opCreateLoggingConfiguration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/workspaces/{workspaceId}/logging",
+	}
+
+	if input == nil {
+		input = &CreateLoggingConfigurationInput{}
+	}
+
+	output = &CreateLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateLoggingConfiguration API operation for Amazon Prometheus Service.
+//
+// Create logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation CreateLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateLoggingConfiguration
+func (c *PrometheusService) CreateLoggingConfiguration(input *CreateLoggingConfigurationInput) (*CreateLoggingConfigurationOutput, error) {
+	req, out := c.CreateLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// CreateLoggingConfigurationWithContext is the same as CreateLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) CreateLoggingConfigurationWithContext(ctx aws.Context, input *CreateLoggingConfigurationInput, opts ...request.Option) (*CreateLoggingConfigurationOutput, error) {
+	req, out := c.CreateLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateRuleGroupsNamespace = "CreateRuleGroupsNamespace"
 
 // CreateRuleGroupsNamespaceRequest generates a "aws/request.Request" representing the
@@ -202,6 +290,103 @@ func (c *PrometheusService) CreateRuleGroupsNamespace(input *CreateRuleGroupsNam
 // for more information on using Contexts.
 func (c *PrometheusService) CreateRuleGroupsNamespaceWithContext(ctx aws.Context, input *CreateRuleGroupsNamespaceInput, opts ...request.Option) (*CreateRuleGroupsNamespaceOutput, error) {
 	req, out := c.CreateRuleGroupsNamespaceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateScraper = "CreateScraper"
+
+// CreateScraperRequest generates a "aws/request.Request" representing the
+// client's request for the CreateScraper operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateScraper for more information on using the CreateScraper
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateScraperRequest method.
+//	req, resp := client.CreateScraperRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateScraper
+func (c *PrometheusService) CreateScraperRequest(input *CreateScraperInput) (req *request.Request, output *CreateScraperOutput) {
+	op := &request.Operation{
+		Name:       opCreateScraper,
+		HTTPMethod: "POST",
+		HTTPPath:   "/scrapers",
+	}
+
+	if input == nil {
+		input = &CreateScraperInput{}
+	}
+
+	output = &CreateScraperOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateScraper API operation for Amazon Prometheus Service.
+//
+// Create a scraper.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation CreateScraper for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Request was denied due to request throttling.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+//   - ServiceQuotaExceededException
+//     Request would cause a service quota to be exceeded.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/CreateScraper
+func (c *PrometheusService) CreateScraper(input *CreateScraperInput) (*CreateScraperOutput, error) {
+	req, out := c.CreateScraperRequest(input)
+	return out, req.Send()
+}
+
+// CreateScraperWithContext is the same as CreateScraper with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateScraper for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) CreateScraperWithContext(ctx aws.Context, input *CreateScraperInput, opts ...request.Option) (*CreateScraperOutput, error) {
+	req, out := c.CreateScraperRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -396,6 +581,98 @@ func (c *PrometheusService) DeleteAlertManagerDefinitionWithContext(ctx aws.Cont
 	return out, req.Send()
 }
 
+const opDeleteLoggingConfiguration = "DeleteLoggingConfiguration"
+
+// DeleteLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteLoggingConfiguration for more information on using the DeleteLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteLoggingConfigurationRequest method.
+//	req, resp := client.DeleteLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteLoggingConfiguration
+func (c *PrometheusService) DeleteLoggingConfigurationRequest(input *DeleteLoggingConfigurationInput) (req *request.Request, output *DeleteLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteLoggingConfiguration,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/workspaces/{workspaceId}/logging",
+	}
+
+	if input == nil {
+		input = &DeleteLoggingConfigurationInput{}
+	}
+
+	output = &DeleteLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteLoggingConfiguration API operation for Amazon Prometheus Service.
+//
+// Delete logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation DeleteLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteLoggingConfiguration
+func (c *PrometheusService) DeleteLoggingConfiguration(input *DeleteLoggingConfigurationInput) (*DeleteLoggingConfigurationOutput, error) {
+	req, out := c.DeleteLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteLoggingConfigurationWithContext is the same as DeleteLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) DeleteLoggingConfigurationWithContext(ctx aws.Context, input *DeleteLoggingConfigurationInput, opts ...request.Option) (*DeleteLoggingConfigurationOutput, error) {
+	req, out := c.DeleteLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteRuleGroupsNamespace = "DeleteRuleGroupsNamespace"
 
 // DeleteRuleGroupsNamespaceRequest generates a "aws/request.Request" representing the
@@ -486,6 +763,100 @@ func (c *PrometheusService) DeleteRuleGroupsNamespace(input *DeleteRuleGroupsNam
 // for more information on using Contexts.
 func (c *PrometheusService) DeleteRuleGroupsNamespaceWithContext(ctx aws.Context, input *DeleteRuleGroupsNamespaceInput, opts ...request.Option) (*DeleteRuleGroupsNamespaceOutput, error) {
 	req, out := c.DeleteRuleGroupsNamespaceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteScraper = "DeleteScraper"
+
+// DeleteScraperRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteScraper operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteScraper for more information on using the DeleteScraper
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteScraperRequest method.
+//	req, resp := client.DeleteScraperRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteScraper
+func (c *PrometheusService) DeleteScraperRequest(input *DeleteScraperInput) (req *request.Request, output *DeleteScraperOutput) {
+	op := &request.Operation{
+		Name:       opDeleteScraper,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/scrapers/{scraperId}",
+	}
+
+	if input == nil {
+		input = &DeleteScraperInput{}
+	}
+
+	output = &DeleteScraperOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteScraper API operation for Amazon Prometheus Service.
+//
+// Deletes a scraper.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation DeleteScraper for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Request was denied due to request throttling.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DeleteScraper
+func (c *PrometheusService) DeleteScraper(input *DeleteScraperInput) (*DeleteScraperOutput, error) {
+	req, out := c.DeleteScraperRequest(input)
+	return out, req.Send()
+}
+
+// DeleteScraperWithContext is the same as DeleteScraper with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteScraper for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) DeleteScraperWithContext(ctx aws.Context, input *DeleteScraperInput, opts ...request.Option) (*DeleteScraperOutput, error) {
+	req, out := c.DeleteScraperRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -677,6 +1048,94 @@ func (c *PrometheusService) DescribeAlertManagerDefinitionWithContext(ctx aws.Co
 	return out, req.Send()
 }
 
+const opDescribeLoggingConfiguration = "DescribeLoggingConfiguration"
+
+// DescribeLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeLoggingConfiguration for more information on using the DescribeLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeLoggingConfigurationRequest method.
+//	req, resp := client.DescribeLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeLoggingConfiguration
+func (c *PrometheusService) DescribeLoggingConfigurationRequest(input *DescribeLoggingConfigurationInput) (req *request.Request, output *DescribeLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opDescribeLoggingConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/workspaces/{workspaceId}/logging",
+	}
+
+	if input == nil {
+		input = &DescribeLoggingConfigurationInput{}
+	}
+
+	output = &DescribeLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeLoggingConfiguration API operation for Amazon Prometheus Service.
+//
+// Describes logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation DescribeLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeLoggingConfiguration
+func (c *PrometheusService) DescribeLoggingConfiguration(input *DescribeLoggingConfigurationInput) (*DescribeLoggingConfigurationOutput, error) {
+	req, out := c.DescribeLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// DescribeLoggingConfigurationWithContext is the same as DescribeLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) DescribeLoggingConfigurationWithContext(ctx aws.Context, input *DescribeLoggingConfigurationInput, opts ...request.Option) (*DescribeLoggingConfigurationOutput, error) {
+	req, out := c.DescribeLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeRuleGroupsNamespace = "DescribeRuleGroupsNamespace"
 
 // DescribeRuleGroupsNamespaceRequest generates a "aws/request.Request" representing the
@@ -768,6 +1227,97 @@ func (c *PrometheusService) DescribeRuleGroupsNamespaceWithContext(ctx aws.Conte
 	return out, req.Send()
 }
 
+const opDescribeScraper = "DescribeScraper"
+
+// DescribeScraperRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeScraper operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeScraper for more information on using the DescribeScraper
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeScraperRequest method.
+//	req, resp := client.DescribeScraperRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeScraper
+func (c *PrometheusService) DescribeScraperRequest(input *DescribeScraperInput) (req *request.Request, output *DescribeScraperOutput) {
+	op := &request.Operation{
+		Name:       opDescribeScraper,
+		HTTPMethod: "GET",
+		HTTPPath:   "/scrapers/{scraperId}",
+	}
+
+	if input == nil {
+		input = &DescribeScraperInput{}
+	}
+
+	output = &DescribeScraperOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeScraper API operation for Amazon Prometheus Service.
+//
+// Describe an existing scraper.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation DescribeScraper for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/DescribeScraper
+func (c *PrometheusService) DescribeScraper(input *DescribeScraperInput) (*DescribeScraperOutput, error) {
+	req, out := c.DescribeScraperRequest(input)
+	return out, req.Send()
+}
+
+// DescribeScraperWithContext is the same as DescribeScraper with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeScraper for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) DescribeScraperWithContext(ctx aws.Context, input *DescribeScraperInput, opts ...request.Option) (*DescribeScraperOutput, error) {
+	req, out := c.DescribeScraperRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeWorkspace = "DescribeWorkspace"
 
 // DescribeWorkspaceRequest generates a "aws/request.Request" representing the
@@ -854,6 +1404,91 @@ func (c *PrometheusService) DescribeWorkspace(input *DescribeWorkspaceInput) (*D
 // for more information on using Contexts.
 func (c *PrometheusService) DescribeWorkspaceWithContext(ctx aws.Context, input *DescribeWorkspaceInput, opts ...request.Option) (*DescribeWorkspaceOutput, error) {
 	req, out := c.DescribeWorkspaceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetDefaultScraperConfiguration = "GetDefaultScraperConfiguration"
+
+// GetDefaultScraperConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the GetDefaultScraperConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetDefaultScraperConfiguration for more information on using the GetDefaultScraperConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetDefaultScraperConfigurationRequest method.
+//	req, resp := client.GetDefaultScraperConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/GetDefaultScraperConfiguration
+func (c *PrometheusService) GetDefaultScraperConfigurationRequest(input *GetDefaultScraperConfigurationInput) (req *request.Request, output *GetDefaultScraperConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opGetDefaultScraperConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/scraperconfiguration",
+	}
+
+	if input == nil {
+		input = &GetDefaultScraperConfigurationInput{}
+	}
+
+	output = &GetDefaultScraperConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDefaultScraperConfiguration API operation for Amazon Prometheus Service.
+//
+// Gets a default configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation GetDefaultScraperConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Request was denied due to request throttling.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/GetDefaultScraperConfiguration
+func (c *PrometheusService) GetDefaultScraperConfiguration(input *GetDefaultScraperConfigurationInput) (*GetDefaultScraperConfigurationOutput, error) {
+	req, out := c.GetDefaultScraperConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// GetDefaultScraperConfigurationWithContext is the same as GetDefaultScraperConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetDefaultScraperConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) GetDefaultScraperConfigurationWithContext(ctx aws.Context, input *GetDefaultScraperConfigurationInput, opts ...request.Option) (*GetDefaultScraperConfigurationOutput, error) {
+	req, out := c.GetDefaultScraperConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1000,6 +1635,152 @@ func (c *PrometheusService) ListRuleGroupsNamespacesPagesWithContext(ctx aws.Con
 
 	for p.Next() {
 		if !fn(p.Page().(*ListRuleGroupsNamespacesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListScrapers = "ListScrapers"
+
+// ListScrapersRequest generates a "aws/request.Request" representing the
+// client's request for the ListScrapers operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListScrapers for more information on using the ListScrapers
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListScrapersRequest method.
+//	req, resp := client.ListScrapersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListScrapers
+func (c *PrometheusService) ListScrapersRequest(input *ListScrapersInput) (req *request.Request, output *ListScrapersOutput) {
+	op := &request.Operation{
+		Name:       opListScrapers,
+		HTTPMethod: "GET",
+		HTTPPath:   "/scrapers",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListScrapersInput{}
+	}
+
+	output = &ListScrapersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListScrapers API operation for Amazon Prometheus Service.
+//
+// Lists all scrapers in a customer account, including scrapers being created
+// or deleted. You may provide filters to return a more specific list of results.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation ListScrapers for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     Request was denied due to request throttling.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/ListScrapers
+func (c *PrometheusService) ListScrapers(input *ListScrapersInput) (*ListScrapersOutput, error) {
+	req, out := c.ListScrapersRequest(input)
+	return out, req.Send()
+}
+
+// ListScrapersWithContext is the same as ListScrapers with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListScrapers for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) ListScrapersWithContext(ctx aws.Context, input *ListScrapersInput, opts ...request.Option) (*ListScrapersOutput, error) {
+	req, out := c.ListScrapersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListScrapersPages iterates over the pages of a ListScrapers operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListScrapers method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListScrapers operation.
+//	pageNum := 0
+//	err := client.ListScrapersPages(params,
+//	    func(page *prometheusservice.ListScrapersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *PrometheusService) ListScrapersPages(input *ListScrapersInput, fn func(*ListScrapersOutput, bool) bool) error {
+	return c.ListScrapersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListScrapersPagesWithContext same as ListScrapersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) ListScrapersPagesWithContext(ctx aws.Context, input *ListScrapersInput, fn func(*ListScrapersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListScrapersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListScrapersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListScrapersOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -1621,6 +2402,97 @@ func (c *PrometheusService) UntagResourceWithContext(ctx aws.Context, input *Unt
 	return out, req.Send()
 }
 
+const opUpdateLoggingConfiguration = "UpdateLoggingConfiguration"
+
+// UpdateLoggingConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateLoggingConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateLoggingConfiguration for more information on using the UpdateLoggingConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateLoggingConfigurationRequest method.
+//	req, resp := client.UpdateLoggingConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/UpdateLoggingConfiguration
+func (c *PrometheusService) UpdateLoggingConfigurationRequest(input *UpdateLoggingConfigurationInput) (req *request.Request, output *UpdateLoggingConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateLoggingConfiguration,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/workspaces/{workspaceId}/logging",
+	}
+
+	if input == nil {
+		input = &UpdateLoggingConfigurationInput{}
+	}
+
+	output = &UpdateLoggingConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateLoggingConfiguration API operation for Amazon Prometheus Service.
+//
+// Update logging configuration.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Prometheus Service's
+// API operation UpdateLoggingConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by an AWS service.
+//
+//   - ResourceNotFoundException
+//     Request references a resource which does not exist.
+//
+//   - AccessDeniedException
+//     User does not have sufficient access to perform this action.
+//
+//   - InternalServerException
+//     Unexpected error during processing of request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/amp-2020-08-01/UpdateLoggingConfiguration
+func (c *PrometheusService) UpdateLoggingConfiguration(input *UpdateLoggingConfigurationInput) (*UpdateLoggingConfigurationOutput, error) {
+	req, out := c.UpdateLoggingConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateLoggingConfigurationWithContext is the same as UpdateLoggingConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateLoggingConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *PrometheusService) UpdateLoggingConfigurationWithContext(ctx aws.Context, input *UpdateLoggingConfigurationInput, opts ...request.Option) (*UpdateLoggingConfigurationOutput, error) {
+	req, out := c.UpdateLoggingConfigurationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateWorkspaceAlias = "UpdateWorkspaceAlias"
 
 // UpdateWorkspaceAliasRequest generates a "aws/request.Request" representing the
@@ -1895,6 +2767,53 @@ func (s *AlertManagerDefinitionStatus) SetStatusReason(v string) *AlertManagerDe
 	return s
 }
 
+// A representation of an AMP destination.
+type AmpConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of an AMP workspace.
+	//
+	// WorkspaceArn is a required field
+	WorkspaceArn *string `locationName:"workspaceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmpConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmpConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AmpConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AmpConfiguration"}
+	if s.WorkspaceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetWorkspaceArn sets the WorkspaceArn field's value.
+func (s *AmpConfiguration) SetWorkspaceArn(v string) *AmpConfiguration {
+	s.WorkspaceArn = &v
+	return s
+}
+
 // Updating or deleting a resource can cause an inconsistent state.
 type ConflictException struct {
 	_            struct{}                  `type:"structure"`
@@ -2082,6 +3001,117 @@ func (s *CreateAlertManagerDefinitionOutput) SetStatus(v *AlertManagerDefinition
 	return s
 }
 
+// Represents the input of a CreateLoggingConfiguration operation.
+type CreateLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Optional, unique, case-sensitive, user-provided identifier to ensure the
+	// idempotency of the request.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The ARN of the CW log group to which the vended log data will be published.
+	//
+	// LogGroupArn is a required field
+	LogGroupArn *string `locationName:"logGroupArn" type:"string" required:"true"`
+
+	// The ID of the workspace to vend logs to.
+	//
+	// WorkspaceId is a required field
+	WorkspaceId *string `location:"uri" locationName:"workspaceId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateLoggingConfigurationInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.LogGroupArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LogGroupArn"))
+	}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
+	if s.WorkspaceId != nil && len(*s.WorkspaceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WorkspaceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateLoggingConfigurationInput) SetClientToken(v string) *CreateLoggingConfigurationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetLogGroupArn sets the LogGroupArn field's value.
+func (s *CreateLoggingConfigurationInput) SetLogGroupArn(v string) *CreateLoggingConfigurationInput {
+	s.LogGroupArn = &v
+	return s
+}
+
+// SetWorkspaceId sets the WorkspaceId field's value.
+func (s *CreateLoggingConfigurationInput) SetWorkspaceId(v string) *CreateLoggingConfigurationInput {
+	s.WorkspaceId = &v
+	return s
+}
+
+// Represents the output of a CreateLoggingConfiguration operation.
+type CreateLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The status of the logging configuration.
+	//
+	// Status is a required field
+	Status *LoggingConfigurationStatus `locationName:"status" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *CreateLoggingConfigurationOutput) SetStatus(v *LoggingConfigurationStatus) *CreateLoggingConfigurationOutput {
+	s.Status = v
+	return s
+}
+
 // Represents the input of a CreateRuleGroupsNamespace operation.
 type CreateRuleGroupsNamespaceInput struct {
 	_ struct{} `type:"structure"`
@@ -2247,6 +3277,191 @@ func (s *CreateRuleGroupsNamespaceOutput) SetStatus(v *RuleGroupsNamespaceStatus
 
 // SetTags sets the Tags field's value.
 func (s *CreateRuleGroupsNamespaceOutput) SetTags(v map[string]*string) *CreateRuleGroupsNamespaceOutput {
+	s.Tags = v
+	return s
+}
+
+// Represents the input of a CreateScraper operation.
+type CreateScraperInput struct {
+	_ struct{} `type:"structure"`
+
+	// An optional user-assigned alias for this scraper. This alias is for user
+	// reference and does not need to be unique.
+	Alias *string `locationName:"alias" min:"1" type:"string"`
+
+	// Optional, unique, case-sensitive, user-provided identifier to ensure the
+	// idempotency of the request.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The destination that the scraper will be producing metrics to.
+	//
+	// Destination is a required field
+	Destination *Destination `locationName:"destination" type:"structure" required:"true"`
+
+	// The configuration used to create the scraper.
+	//
+	// ScrapeConfiguration is a required field
+	ScrapeConfiguration *ScrapeConfiguration `locationName:"scrapeConfiguration" type:"structure" required:"true"`
+
+	// The source that the scraper will be discovering and collecting metrics from.
+	//
+	// Source is a required field
+	Source *Source `locationName:"source" type:"structure" required:"true"`
+
+	// Optional, user-provided tags for this scraper.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateScraperInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateScraperInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateScraperInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateScraperInput"}
+	if s.Alias != nil && len(*s.Alias) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Alias", 1))
+	}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.ScrapeConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScrapeConfiguration"))
+	}
+	if s.Source == nil {
+		invalidParams.Add(request.NewErrParamRequired("Source"))
+	}
+	if s.Destination != nil {
+		if err := s.Destination.Validate(); err != nil {
+			invalidParams.AddNested("Destination", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Source != nil {
+		if err := s.Source.Validate(); err != nil {
+			invalidParams.AddNested("Source", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAlias sets the Alias field's value.
+func (s *CreateScraperInput) SetAlias(v string) *CreateScraperInput {
+	s.Alias = &v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateScraperInput) SetClientToken(v string) *CreateScraperInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *CreateScraperInput) SetDestination(v *Destination) *CreateScraperInput {
+	s.Destination = v
+	return s
+}
+
+// SetScrapeConfiguration sets the ScrapeConfiguration field's value.
+func (s *CreateScraperInput) SetScrapeConfiguration(v *ScrapeConfiguration) *CreateScraperInput {
+	s.ScrapeConfiguration = v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *CreateScraperInput) SetSource(v *Source) *CreateScraperInput {
+	s.Source = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateScraperInput) SetTags(v map[string]*string) *CreateScraperInput {
+	s.Tags = v
+	return s
+}
+
+// Represents the output of a CreateScraper operation.
+type CreateScraperOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the scraper that was just created.
+	//
+	// Arn is a required field
+	Arn *string `locationName:"arn" type:"string" required:"true"`
+
+	// The generated ID of the scraper that was just created.
+	//
+	// ScraperId is a required field
+	ScraperId *string `locationName:"scraperId" min:"1" type:"string" required:"true"`
+
+	// The status of the scraper that was just created (usually CREATING).
+	//
+	// Status is a required field
+	Status *ScraperStatus `locationName:"status" type:"structure" required:"true"`
+
+	// The tags of this scraper.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateScraperOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateScraperOutput) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *CreateScraperOutput) SetArn(v string) *CreateScraperOutput {
+	s.Arn = &v
+	return s
+}
+
+// SetScraperId sets the ScraperId field's value.
+func (s *CreateScraperOutput) SetScraperId(v string) *CreateScraperOutput {
+	s.ScraperId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CreateScraperOutput) SetStatus(v *ScraperStatus) *CreateScraperOutput {
+	s.Status = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateScraperOutput) SetTags(v map[string]*string) *CreateScraperOutput {
 	s.Tags = v
 	return s
 }
@@ -2469,6 +3684,91 @@ func (s DeleteAlertManagerDefinitionOutput) GoString() string {
 	return s.String()
 }
 
+// Represents the input of a DeleteLoggingConfiguration operation.
+type DeleteLoggingConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Optional, unique, case-sensitive, user-provided identifier to ensure the
+	// idempotency of the request.
+	ClientToken *string `location:"querystring" locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The ID of the workspace to vend logs to.
+	//
+	// WorkspaceId is a required field
+	WorkspaceId *string `location:"uri" locationName:"workspaceId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteLoggingConfigurationInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
+	if s.WorkspaceId != nil && len(*s.WorkspaceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WorkspaceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeleteLoggingConfigurationInput) SetClientToken(v string) *DeleteLoggingConfigurationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetWorkspaceId sets the WorkspaceId field's value.
+func (s *DeleteLoggingConfigurationInput) SetWorkspaceId(v string) *DeleteLoggingConfigurationInput {
+	s.WorkspaceId = &v
+	return s
+}
+
+type DeleteLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
 // Represents the input of a DeleteRuleGroupsNamespace operation.
 type DeleteRuleGroupsNamespaceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
@@ -2569,6 +3869,114 @@ func (s DeleteRuleGroupsNamespaceOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DeleteRuleGroupsNamespaceOutput) GoString() string {
 	return s.String()
+}
+
+// Represents the input of a DeleteScraper operation.
+type DeleteScraperInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Optional, unique, case-sensitive, user-provided identifier to ensure the
+	// idempotency of the request.
+	ClientToken *string `location:"querystring" locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The ID of the scraper to delete.
+	//
+	// ScraperId is a required field
+	ScraperId *string `location:"uri" locationName:"scraperId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteScraperInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteScraperInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteScraperInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteScraperInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.ScraperId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScraperId"))
+	}
+	if s.ScraperId != nil && len(*s.ScraperId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ScraperId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeleteScraperInput) SetClientToken(v string) *DeleteScraperInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetScraperId sets the ScraperId field's value.
+func (s *DeleteScraperInput) SetScraperId(v string) *DeleteScraperInput {
+	s.ScraperId = &v
+	return s
+}
+
+// Represents the output of a DeleteScraper operation.
+type DeleteScraperOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the scraper that was deleted.
+	//
+	// ScraperId is a required field
+	ScraperId *string `locationName:"scraperId" min:"1" type:"string" required:"true"`
+
+	// The status of the scraper that is being deleted.
+	//
+	// Status is a required field
+	Status *ScraperStatus `locationName:"status" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteScraperOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteScraperOutput) GoString() string {
+	return s.String()
+}
+
+// SetScraperId sets the ScraperId field's value.
+func (s *DeleteScraperOutput) SetScraperId(v string) *DeleteScraperOutput {
+	s.ScraperId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DeleteScraperOutput) SetStatus(v *ScraperStatus) *DeleteScraperOutput {
+	s.Status = v
+	return s
 }
 
 // Represents the input of a DeleteWorkspace operation.
@@ -2740,6 +4148,91 @@ func (s *DescribeAlertManagerDefinitionOutput) SetAlertManagerDefinition(v *Aler
 	return s
 }
 
+// Represents the input of a DescribeLoggingConfiguration operation.
+type DescribeLoggingConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the workspace to vend logs to.
+	//
+	// WorkspaceId is a required field
+	WorkspaceId *string `location:"uri" locationName:"workspaceId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeLoggingConfigurationInput"}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
+	if s.WorkspaceId != nil && len(*s.WorkspaceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WorkspaceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetWorkspaceId sets the WorkspaceId field's value.
+func (s *DescribeLoggingConfigurationInput) SetWorkspaceId(v string) *DescribeLoggingConfigurationInput {
+	s.WorkspaceId = &v
+	return s
+}
+
+// Represents the output of a DescribeLoggingConfiguration operation.
+type DescribeLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Metadata object containing information about the logging configuration of
+	// a workspace.
+	//
+	// LoggingConfiguration is a required field
+	LoggingConfiguration *LoggingConfigurationMetadata `locationName:"loggingConfiguration" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetLoggingConfiguration sets the LoggingConfiguration field's value.
+func (s *DescribeLoggingConfigurationOutput) SetLoggingConfiguration(v *LoggingConfigurationMetadata) *DescribeLoggingConfigurationOutput {
+	s.LoggingConfiguration = v
+	return s
+}
+
 // Represents the input of a DescribeRuleGroupsNamespace operation.
 type DescribeRuleGroupsNamespaceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
@@ -2841,6 +4334,90 @@ func (s *DescribeRuleGroupsNamespaceOutput) SetRuleGroupsNamespace(v *RuleGroups
 	return s
 }
 
+// Represents the input of a DescribeScraper operation.
+type DescribeScraperInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The IDs of the scraper to describe.
+	//
+	// ScraperId is a required field
+	ScraperId *string `location:"uri" locationName:"scraperId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeScraperInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeScraperInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeScraperInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeScraperInput"}
+	if s.ScraperId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ScraperId"))
+	}
+	if s.ScraperId != nil && len(*s.ScraperId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ScraperId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetScraperId sets the ScraperId field's value.
+func (s *DescribeScraperInput) SetScraperId(v string) *DescribeScraperInput {
+	s.ScraperId = &v
+	return s
+}
+
+// Represents the output of a DescribeScraper operation.
+type DescribeScraperOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The properties of the selected scrapers.
+	//
+	// Scraper is a required field
+	Scraper *ScraperDescription `locationName:"scraper" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeScraperOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeScraperOutput) GoString() string {
+	return s.String()
+}
+
+// SetScraper sets the Scraper field's value.
+func (s *DescribeScraperOutput) SetScraper(v *ScraperDescription) *DescribeScraperOutput {
+	s.Scraper = v
+	return s
+}
+
 // Represents the input of a DescribeWorkspace operation.
 type DescribeWorkspaceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
@@ -2922,6 +4499,187 @@ func (s DescribeWorkspaceOutput) GoString() string {
 // SetWorkspace sets the Workspace field's value.
 func (s *DescribeWorkspaceOutput) SetWorkspace(v *WorkspaceDescription) *DescribeWorkspaceOutput {
 	s.Workspace = v
+	return s
+}
+
+// A representation of a destination that a scraper can produce metrics to.
+type Destination struct {
+	_ struct{} `type:"structure"`
+
+	// A representation of an AMP destination.
+	AmpConfiguration *AmpConfiguration `locationName:"ampConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Destination) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Destination) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Destination) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Destination"}
+	if s.AmpConfiguration != nil {
+		if err := s.AmpConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("AmpConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAmpConfiguration sets the AmpConfiguration field's value.
+func (s *Destination) SetAmpConfiguration(v *AmpConfiguration) *Destination {
+	s.AmpConfiguration = v
+	return s
+}
+
+// A representation of an EKS source.
+type EksConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of an EKS cluster.
+	//
+	// ClusterArn is a required field
+	ClusterArn *string `locationName:"clusterArn" type:"string" required:"true"`
+
+	// A list of security group IDs specified for VPC configuration.
+	SecurityGroupIds []*string `locationName:"securityGroupIds" min:"1" type:"list"`
+
+	// A list of subnet IDs specified for VPC configuration.
+	//
+	// SubnetIds is a required field
+	SubnetIds []*string `locationName:"subnetIds" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EksConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EksConfiguration"}
+	if s.ClusterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterArn"))
+	}
+	if s.SecurityGroupIds != nil && len(s.SecurityGroupIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SecurityGroupIds", 1))
+	}
+	if s.SubnetIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetIds"))
+	}
+	if s.SubnetIds != nil && len(s.SubnetIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SubnetIds", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterArn sets the ClusterArn field's value.
+func (s *EksConfiguration) SetClusterArn(v string) *EksConfiguration {
+	s.ClusterArn = &v
+	return s
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *EksConfiguration) SetSecurityGroupIds(v []*string) *EksConfiguration {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *EksConfiguration) SetSubnetIds(v []*string) *EksConfiguration {
+	s.SubnetIds = v
+	return s
+}
+
+// Represents the input of a GetDefaultScraperConfiguration operation.
+type GetDefaultScraperConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDefaultScraperConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDefaultScraperConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Represents the output of a GetDefaultScraperConfiguration operation.
+type GetDefaultScraperConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The default configuration.
+	// Configuration is automatically base64 encoded/decoded by the SDK.
+	//
+	// Configuration is a required field
+	Configuration []byte `locationName:"configuration" type:"blob" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDefaultScraperConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDefaultScraperConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *GetDefaultScraperConfigurationOutput) SetConfiguration(v []byte) *GetDefaultScraperConfigurationOutput {
+	s.Configuration = v
 	return s
 }
 
@@ -3121,6 +4879,117 @@ func (s *ListRuleGroupsNamespacesOutput) SetRuleGroupsNamespaces(v []*RuleGroups
 	return s
 }
 
+// Represents the input of a ListScrapers operation.
+type ListScrapersInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// A list of scraper filters.
+	Filters map[string][]*string `location:"querystring" locationName:"filters" min:"1" type:"map"`
+
+	// Maximum results to return in response (default=100, maximum=1000).
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// Pagination token to request the next page in a paginated list. This token
+	// is obtained from the output of the previous ListScrapers request.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListScrapersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListScrapersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListScrapersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListScrapersInput"}
+	if s.Filters != nil && len(s.Filters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Filters", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *ListScrapersInput) SetFilters(v map[string][]*string) *ListScrapersInput {
+	s.Filters = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListScrapersInput) SetMaxResults(v int64) *ListScrapersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListScrapersInput) SetNextToken(v string) *ListScrapersInput {
+	s.NextToken = &v
+	return s
+}
+
+// Represents the output of a ListScrapers operation.
+type ListScrapersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Pagination token to use when requesting the next page in this list.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The list of scrapers, filtered down if a set of filters was provided in the
+	// request.
+	//
+	// Scrapers is a required field
+	Scrapers []*ScraperSummary `locationName:"scrapers" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListScrapersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListScrapersOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListScrapersOutput) SetNextToken(v string) *ListScrapersOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetScrapers sets the Scrapers field's value.
+func (s *ListScrapersOutput) SetScrapers(v []*ScraperSummary) *ListScrapersOutput {
+	s.Scrapers = v
+	return s
+}
+
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -3309,6 +5178,127 @@ func (s *ListWorkspacesOutput) SetNextToken(v string) *ListWorkspacesOutput {
 // SetWorkspaces sets the Workspaces field's value.
 func (s *ListWorkspacesOutput) SetWorkspaces(v []*WorkspaceSummary) *ListWorkspacesOutput {
 	s.Workspaces = v
+	return s
+}
+
+// Represents the properties of a logging configuration metadata.
+type LoggingConfigurationMetadata struct {
+	_ struct{} `type:"structure"`
+
+	// The time when the logging configuration was created.
+	//
+	// CreatedAt is a required field
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp" required:"true"`
+
+	// The ARN of the CW log group to which the vended log data will be published.
+	//
+	// LogGroupArn is a required field
+	LogGroupArn *string `locationName:"logGroupArn" type:"string" required:"true"`
+
+	// The time when the logging configuration was modified.
+	//
+	// ModifiedAt is a required field
+	ModifiedAt *time.Time `locationName:"modifiedAt" type:"timestamp" required:"true"`
+
+	// The status of the logging configuration.
+	//
+	// Status is a required field
+	Status *LoggingConfigurationStatus `locationName:"status" type:"structure" required:"true"`
+
+	// The workspace where the logging configuration exists.
+	//
+	// Workspace is a required field
+	Workspace *string `locationName:"workspace" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingConfigurationMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingConfigurationMetadata) GoString() string {
+	return s.String()
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *LoggingConfigurationMetadata) SetCreatedAt(v time.Time) *LoggingConfigurationMetadata {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetLogGroupArn sets the LogGroupArn field's value.
+func (s *LoggingConfigurationMetadata) SetLogGroupArn(v string) *LoggingConfigurationMetadata {
+	s.LogGroupArn = &v
+	return s
+}
+
+// SetModifiedAt sets the ModifiedAt field's value.
+func (s *LoggingConfigurationMetadata) SetModifiedAt(v time.Time) *LoggingConfigurationMetadata {
+	s.ModifiedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LoggingConfigurationMetadata) SetStatus(v *LoggingConfigurationStatus) *LoggingConfigurationMetadata {
+	s.Status = v
+	return s
+}
+
+// SetWorkspace sets the Workspace field's value.
+func (s *LoggingConfigurationMetadata) SetWorkspace(v string) *LoggingConfigurationMetadata {
+	s.Workspace = &v
+	return s
+}
+
+// Represents the status of a logging configuration.
+type LoggingConfigurationStatus struct {
+	_ struct{} `type:"structure"`
+
+	// Status code of the logging configuration.
+	//
+	// StatusCode is a required field
+	StatusCode *string `locationName:"statusCode" type:"string" required:"true" enum:"LoggingConfigurationStatusCode"`
+
+	// The reason for failure if any.
+	StatusReason *string `locationName:"statusReason" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingConfigurationStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingConfigurationStatus) GoString() string {
+	return s.String()
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *LoggingConfigurationStatus) SetStatusCode(v string) *LoggingConfigurationStatus {
+	s.StatusCode = &v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *LoggingConfigurationStatus) SetStatusReason(v string) *LoggingConfigurationStatus {
+	s.StatusReason = &v
 	return s
 }
 
@@ -3888,6 +5878,362 @@ func (s *RuleGroupsNamespaceSummary) SetTags(v map[string]*string) *RuleGroupsNa
 	return s
 }
 
+// A representation of a Prometheus configuration file.
+type ScrapeConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Binary data representing a Prometheus configuration file.
+	// ConfigurationBlob is automatically base64 encoded/decoded by the SDK.
+	ConfigurationBlob []byte `locationName:"configurationBlob" type:"blob"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScrapeConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScrapeConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetConfigurationBlob sets the ConfigurationBlob field's value.
+func (s *ScrapeConfiguration) SetConfigurationBlob(v []byte) *ScrapeConfiguration {
+	s.ConfigurationBlob = v
+	return s
+}
+
+// Represents the properties of a scraper.
+type ScraperDescription struct {
+	_ struct{} `type:"structure"`
+
+	// Alias of this scraper.
+	Alias *string `locationName:"alias" min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of this scraper.
+	//
+	// Arn is a required field
+	Arn *string `locationName:"arn" type:"string" required:"true"`
+
+	// The time when the scraper was created.
+	//
+	// CreatedAt is a required field
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp" required:"true"`
+
+	// The destination that the scraper is producing metrics to.
+	//
+	// Destination is a required field
+	Destination *Destination `locationName:"destination" type:"structure" required:"true"`
+
+	// The time when the scraper was last modified.
+	//
+	// LastModifiedAt is a required field
+	LastModifiedAt *time.Time `locationName:"lastModifiedAt" type:"timestamp" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the IAM role that provides permissions
+	// for the scraper to dsicover, collect, and produce metrics on your behalf.
+	//
+	// RoleArn is a required field
+	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
+
+	// The configuration used to create the scraper.
+	//
+	// ScrapeConfiguration is a required field
+	ScrapeConfiguration *ScrapeConfiguration `locationName:"scrapeConfiguration" type:"structure" required:"true"`
+
+	// Unique string identifying this scraper.
+	//
+	// ScraperId is a required field
+	ScraperId *string `locationName:"scraperId" min:"1" type:"string" required:"true"`
+
+	// The source that the scraper is discovering and collecting metrics from.
+	//
+	// Source is a required field
+	Source *Source `locationName:"source" type:"structure" required:"true"`
+
+	// The status of this scraper.
+	//
+	// Status is a required field
+	Status *ScraperStatus `locationName:"status" type:"structure" required:"true"`
+
+	// The reason for failure if any.
+	StatusReason *string `locationName:"statusReason" min:"1" type:"string"`
+
+	// The tags of this scraper.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScraperDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScraperDescription) GoString() string {
+	return s.String()
+}
+
+// SetAlias sets the Alias field's value.
+func (s *ScraperDescription) SetAlias(v string) *ScraperDescription {
+	s.Alias = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *ScraperDescription) SetArn(v string) *ScraperDescription {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ScraperDescription) SetCreatedAt(v time.Time) *ScraperDescription {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *ScraperDescription) SetDestination(v *Destination) *ScraperDescription {
+	s.Destination = v
+	return s
+}
+
+// SetLastModifiedAt sets the LastModifiedAt field's value.
+func (s *ScraperDescription) SetLastModifiedAt(v time.Time) *ScraperDescription {
+	s.LastModifiedAt = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ScraperDescription) SetRoleArn(v string) *ScraperDescription {
+	s.RoleArn = &v
+	return s
+}
+
+// SetScrapeConfiguration sets the ScrapeConfiguration field's value.
+func (s *ScraperDescription) SetScrapeConfiguration(v *ScrapeConfiguration) *ScraperDescription {
+	s.ScrapeConfiguration = v
+	return s
+}
+
+// SetScraperId sets the ScraperId field's value.
+func (s *ScraperDescription) SetScraperId(v string) *ScraperDescription {
+	s.ScraperId = &v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *ScraperDescription) SetSource(v *Source) *ScraperDescription {
+	s.Source = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ScraperDescription) SetStatus(v *ScraperStatus) *ScraperDescription {
+	s.Status = v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *ScraperDescription) SetStatusReason(v string) *ScraperDescription {
+	s.StatusReason = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ScraperDescription) SetTags(v map[string]*string) *ScraperDescription {
+	s.Tags = v
+	return s
+}
+
+// Represents the status of a scraper.
+type ScraperStatus struct {
+	_ struct{} `type:"structure"`
+
+	// Status code of this scraper.
+	//
+	// StatusCode is a required field
+	StatusCode *string `locationName:"statusCode" type:"string" required:"true" enum:"ScraperStatusCode"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScraperStatus) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScraperStatus) GoString() string {
+	return s.String()
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *ScraperStatus) SetStatusCode(v string) *ScraperStatus {
+	s.StatusCode = &v
+	return s
+}
+
+// Represents a summary of the properties of a scraper.
+type ScraperSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Alias of this scraper.
+	Alias *string `locationName:"alias" min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of this scraper.
+	//
+	// Arn is a required field
+	Arn *string `locationName:"arn" type:"string" required:"true"`
+
+	// The time when the scraper was created.
+	//
+	// CreatedAt is a required field
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp" required:"true"`
+
+	// The destination that the scraper is producing metrics to.
+	//
+	// Destination is a required field
+	Destination *Destination `locationName:"destination" type:"structure" required:"true"`
+
+	// The time when the scraper was last modified.
+	//
+	// LastModifiedAt is a required field
+	LastModifiedAt *time.Time `locationName:"lastModifiedAt" type:"timestamp" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the IAM role that provides permissions
+	// for the scraper to dsicover, collect, and produce metrics on your behalf.
+	//
+	// RoleArn is a required field
+	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
+
+	// Unique string identifying this scraper.
+	//
+	// ScraperId is a required field
+	ScraperId *string `locationName:"scraperId" min:"1" type:"string" required:"true"`
+
+	// The source that the scraper is discovering and collecting metrics from.
+	//
+	// Source is a required field
+	Source *Source `locationName:"source" type:"structure" required:"true"`
+
+	// The status of this scraper.
+	//
+	// Status is a required field
+	Status *ScraperStatus `locationName:"status" type:"structure" required:"true"`
+
+	// The reason for failure if any.
+	StatusReason *string `locationName:"statusReason" min:"1" type:"string"`
+
+	// The tags of this scraper.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScraperSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ScraperSummary) GoString() string {
+	return s.String()
+}
+
+// SetAlias sets the Alias field's value.
+func (s *ScraperSummary) SetAlias(v string) *ScraperSummary {
+	s.Alias = &v
+	return s
+}
+
+// SetArn sets the Arn field's value.
+func (s *ScraperSummary) SetArn(v string) *ScraperSummary {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ScraperSummary) SetCreatedAt(v time.Time) *ScraperSummary {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *ScraperSummary) SetDestination(v *Destination) *ScraperSummary {
+	s.Destination = v
+	return s
+}
+
+// SetLastModifiedAt sets the LastModifiedAt field's value.
+func (s *ScraperSummary) SetLastModifiedAt(v time.Time) *ScraperSummary {
+	s.LastModifiedAt = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *ScraperSummary) SetRoleArn(v string) *ScraperSummary {
+	s.RoleArn = &v
+	return s
+}
+
+// SetScraperId sets the ScraperId field's value.
+func (s *ScraperSummary) SetScraperId(v string) *ScraperSummary {
+	s.ScraperId = &v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *ScraperSummary) SetSource(v *Source) *ScraperSummary {
+	s.Source = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ScraperSummary) SetStatus(v *ScraperStatus) *ScraperSummary {
+	s.Status = v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *ScraperSummary) SetStatusReason(v string) *ScraperSummary {
+	s.StatusReason = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ScraperSummary) SetTags(v map[string]*string) *ScraperSummary {
+	s.Tags = v
+	return s
+}
+
 // Request would cause a service quota to be exceeded.
 type ServiceQuotaExceededException struct {
 	_            struct{}                  `type:"structure"`
@@ -3971,6 +6317,54 @@ func (s *ServiceQuotaExceededException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ServiceQuotaExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// A representation of a source that a scraper can discover and collect metrics
+// from.
+type Source struct {
+	_ struct{} `type:"structure"`
+
+	// A representation of an EKS source.
+	EksConfiguration *EksConfiguration `locationName:"eksConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Source) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Source) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Source) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Source"}
+	if s.EksConfiguration != nil {
+		if err := s.EksConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("EksConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEksConfiguration sets the EksConfiguration field's value.
+func (s *Source) SetEksConfiguration(v *EksConfiguration) *Source {
+	s.EksConfiguration = v
+	return s
 }
 
 type TagResourceInput struct {
@@ -4215,6 +6609,117 @@ func (s UntagResourceOutput) String() string {
 // value will be replaced with "sensitive".
 func (s UntagResourceOutput) GoString() string {
 	return s.String()
+}
+
+// Represents the input of an UpdateLoggingConfiguration operation.
+type UpdateLoggingConfigurationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Optional, unique, case-sensitive, user-provided identifier to ensure the
+	// idempotency of the request.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The ARN of the CW log group to which the vended log data will be published.
+	//
+	// LogGroupArn is a required field
+	LogGroupArn *string `locationName:"logGroupArn" type:"string" required:"true"`
+
+	// The ID of the workspace to vend logs to.
+	//
+	// WorkspaceId is a required field
+	WorkspaceId *string `location:"uri" locationName:"workspaceId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateLoggingConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateLoggingConfigurationInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.LogGroupArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LogGroupArn"))
+	}
+	if s.WorkspaceId == nil {
+		invalidParams.Add(request.NewErrParamRequired("WorkspaceId"))
+	}
+	if s.WorkspaceId != nil && len(*s.WorkspaceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WorkspaceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateLoggingConfigurationInput) SetClientToken(v string) *UpdateLoggingConfigurationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetLogGroupArn sets the LogGroupArn field's value.
+func (s *UpdateLoggingConfigurationInput) SetLogGroupArn(v string) *UpdateLoggingConfigurationInput {
+	s.LogGroupArn = &v
+	return s
+}
+
+// SetWorkspaceId sets the WorkspaceId field's value.
+func (s *UpdateLoggingConfigurationInput) SetWorkspaceId(v string) *UpdateLoggingConfigurationInput {
+	s.WorkspaceId = &v
+	return s
+}
+
+// Represents the output of an UpdateLoggingConfiguration operation.
+type UpdateLoggingConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The status of the logging configuration.
+	//
+	// Status is a required field
+	Status *LoggingConfigurationStatus `locationName:"status" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateLoggingConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *UpdateLoggingConfigurationOutput) SetStatus(v *LoggingConfigurationStatus) *UpdateLoggingConfigurationOutput {
+	s.Status = v
+	return s
 }
 
 // Represents the input of an UpdateWorkspaceAlias operation.
@@ -4680,6 +7185,39 @@ func AlertManagerDefinitionStatusCode_Values() []string {
 	}
 }
 
+// State of a logging configuration.
+const (
+	// LoggingConfigurationStatusCodeCreating is a LoggingConfigurationStatusCode enum value
+	LoggingConfigurationStatusCodeCreating = "CREATING"
+
+	// LoggingConfigurationStatusCodeActive is a LoggingConfigurationStatusCode enum value
+	LoggingConfigurationStatusCodeActive = "ACTIVE"
+
+	// LoggingConfigurationStatusCodeUpdating is a LoggingConfigurationStatusCode enum value
+	LoggingConfigurationStatusCodeUpdating = "UPDATING"
+
+	// LoggingConfigurationStatusCodeDeleting is a LoggingConfigurationStatusCode enum value
+	LoggingConfigurationStatusCodeDeleting = "DELETING"
+
+	// LoggingConfigurationStatusCodeCreationFailed is a LoggingConfigurationStatusCode enum value
+	LoggingConfigurationStatusCodeCreationFailed = "CREATION_FAILED"
+
+	// LoggingConfigurationStatusCodeUpdateFailed is a LoggingConfigurationStatusCode enum value
+	LoggingConfigurationStatusCodeUpdateFailed = "UPDATE_FAILED"
+)
+
+// LoggingConfigurationStatusCode_Values returns all elements of the LoggingConfigurationStatusCode enum
+func LoggingConfigurationStatusCode_Values() []string {
+	return []string{
+		LoggingConfigurationStatusCodeCreating,
+		LoggingConfigurationStatusCodeActive,
+		LoggingConfigurationStatusCodeUpdating,
+		LoggingConfigurationStatusCodeDeleting,
+		LoggingConfigurationStatusCodeCreationFailed,
+		LoggingConfigurationStatusCodeUpdateFailed,
+	}
+}
+
 // State of a namespace.
 const (
 	// RuleGroupsNamespaceStatusCodeCreating is a RuleGroupsNamespaceStatusCode enum value
@@ -4710,6 +7248,35 @@ func RuleGroupsNamespaceStatusCode_Values() []string {
 		RuleGroupsNamespaceStatusCodeDeleting,
 		RuleGroupsNamespaceStatusCodeCreationFailed,
 		RuleGroupsNamespaceStatusCodeUpdateFailed,
+	}
+}
+
+// State of a scraper.
+const (
+	// ScraperStatusCodeCreating is a ScraperStatusCode enum value
+	ScraperStatusCodeCreating = "CREATING"
+
+	// ScraperStatusCodeActive is a ScraperStatusCode enum value
+	ScraperStatusCodeActive = "ACTIVE"
+
+	// ScraperStatusCodeDeleting is a ScraperStatusCode enum value
+	ScraperStatusCodeDeleting = "DELETING"
+
+	// ScraperStatusCodeCreationFailed is a ScraperStatusCode enum value
+	ScraperStatusCodeCreationFailed = "CREATION_FAILED"
+
+	// ScraperStatusCodeDeletionFailed is a ScraperStatusCode enum value
+	ScraperStatusCodeDeletionFailed = "DELETION_FAILED"
+)
+
+// ScraperStatusCode_Values returns all elements of the ScraperStatusCode enum
+func ScraperStatusCode_Values() []string {
+	return []string{
+		ScraperStatusCodeCreating,
+		ScraperStatusCodeActive,
+		ScraperStatusCodeDeleting,
+		ScraperStatusCodeCreationFailed,
+		ScraperStatusCodeDeletionFailed,
 	}
 }
 

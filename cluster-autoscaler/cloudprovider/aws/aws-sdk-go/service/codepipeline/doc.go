@@ -5,12 +5,12 @@
 //
 // # Overview
 //
-// This is the AWS CodePipeline API Reference. This guide provides descriptions
-// of the actions and data types for AWS CodePipeline. Some functionality for
-// your pipeline can only be configured through the API. For more information,
-// see the AWS CodePipeline User Guide (https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html).
+// This is the CodePipeline API Reference. This guide provides descriptions
+// of the actions and data types for CodePipeline. Some functionality for your
+// pipeline can only be configured through the API. For more information, see
+// the CodePipeline User Guide (https://docs.aws.amazon.com/codepipeline/latest/userguide/welcome.html).
 //
-// You can use the AWS CodePipeline API to work with pipelines, stages, actions,
+// You can use the CodePipeline API to work with pipelines, stages, actions,
 // and transitions.
 //
 // Pipelines are models of automated release processes. Each pipeline is uniquely
@@ -59,8 +59,8 @@
 // You can call GetPipelineState, which displays the status of a pipeline, including
 // the status of stages in the pipeline, or GetPipeline, which returns the entire
 // structure of the pipeline, including the stages of that pipeline. For more
-// information about the structure of stages and actions, see AWS CodePipeline
-// Pipeline Structure Reference (https://docs.aws.amazon.com/codepipeline/latest/userguide/pipeline-structure.html).
+// information about the structure of stages and actions, see CodePipeline Pipeline
+// Structure Reference (https://docs.aws.amazon.com/codepipeline/latest/userguide/pipeline-structure.html).
 //
 // Pipeline stages include actions that are categorized into categories such
 // as source or build actions performed in a stage of a pipeline. For example,
@@ -93,12 +93,12 @@
 //   - EnableStageTransition, which enables transition of artifacts between
 //     stages in a pipeline.
 //
-// # Using the API to integrate with AWS CodePipeline
+// # Using the API to integrate with CodePipeline
 //
 // For third-party integrators or developers who want to create their own integrations
-// with AWS CodePipeline, the expected sequence varies from the standard API
-// user. To integrate with AWS CodePipeline, developers need to work with the
-// following items:
+// with CodePipeline, the expected sequence varies from the standard API user.
+// To integrate with CodePipeline, developers need to work with the following
+// items:
 //
 // Jobs, which are instances of an action. For example, a job for a source action
 // might import a revision of an artifact from a source.
@@ -117,8 +117,8 @@
 //   - PutJobSuccessResult, which provides details of a job success.
 //
 // Third party jobs, which are instances of an action created by a partner action
-// and integrated into AWS CodePipeline. Partner actions are created by members
-// of the AWS Partner Network.
+// and integrated into CodePipeline. Partner actions are created by members
+// of the Amazon Web Services Partner Network.
 //
 // You can work with third party jobs by calling:
 //

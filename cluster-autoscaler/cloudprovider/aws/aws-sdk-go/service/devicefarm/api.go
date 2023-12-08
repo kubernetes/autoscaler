@@ -7923,7 +7923,7 @@ type AccountSettings struct {
 	// again. For public devices, Device Farm always signs your apps again.
 	//
 	// For more information about how Device Farm re-signs your apps, see Do you
-	// modify my app? (https://aws.amazon.com/device-farm/faq/) in the AWS Device
+	// modify my app? (http://aws.amazon.com/device-farm/faqs/) in the AWS Device
 	// Farm FAQs.
 	SkipAppResign *bool `locationName:"skipAppResign" type:"boolean"`
 
@@ -8853,6 +8853,9 @@ type CreateProjectInput struct {
 	//
 	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The VPC security groups and subnets that are attached to a project.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation.
@@ -8879,6 +8882,11 @@ func (s *CreateProjectInput) Validate() error {
 	if s.Name == nil {
 		invalidParams.Add(request.NewErrParamRequired("Name"))
 	}
+	if s.VpcConfig != nil {
+		if err := s.VpcConfig.Validate(); err != nil {
+			invalidParams.AddNested("VpcConfig", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -8895,6 +8903,12 @@ func (s *CreateProjectInput) SetDefaultJobTimeoutMinutes(v int64) *CreateProject
 // SetName sets the Name field's value.
 func (s *CreateProjectInput) SetName(v string) *CreateProjectInput {
 	s.Name = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *CreateProjectInput) SetVpcConfig(v *VpcConfig) *CreateProjectInput {
+	s.VpcConfig = v
 	return s
 }
 
@@ -9036,7 +9050,7 @@ type CreateRemoteAccessSessionInput struct {
 	// again. For public devices, Device Farm always signs your apps again.
 	//
 	// For more information on how Device Farm modifies your uploads during tests,
-	// see Do you modify my app? (https://aws.amazon.com/device-farm/faq/)
+	// see Do you modify my app? (http://aws.amazon.com/device-farm/faqs/)
 	SkipAppResign *bool `locationName:"skipAppResign" type:"boolean"`
 
 	// Ignored. The public key of the ssh key pair you want to use for connecting
@@ -11297,7 +11311,7 @@ type ExecutionConfiguration struct {
 	// again. For public devices, Device Farm always signs your apps again.
 	//
 	// For more information about how Device Farm re-signs your apps, see Do you
-	// modify my app? (https://aws.amazon.com/device-farm/faq/) in the AWS Device
+	// modify my app? (http://aws.amazon.com/device-farm/faqs/) in the AWS Device
 	// Farm FAQs.
 	SkipAppResign *bool `locationName:"skipAppResign" type:"boolean"`
 
@@ -17119,6 +17133,9 @@ type Project struct {
 
 	// The project's name.
 	Name *string `locationName:"name" type:"string"`
+
+	// The VPC security groups and subnets that are attached to a project.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation.
@@ -17160,6 +17177,12 @@ func (s *Project) SetDefaultJobTimeoutMinutes(v int64) *Project {
 // SetName sets the Name field's value.
 func (s *Project) SetName(v string) *Project {
 	s.Name = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *Project) SetVpcConfig(v *VpcConfig) *Project {
+	s.VpcConfig = v
 	return s
 }
 
@@ -17473,7 +17496,7 @@ type RemoteAccessSession struct {
 	// again. For public devices, Device Farm always signs your apps again.
 	//
 	// For more information about how Device Farm re-signs your apps, see Do you
-	// modify my app? (https://aws.amazon.com/device-farm/faq/) in the AWS Device
+	// modify my app? (http://aws.amazon.com/device-farm/faqs/) in the AWS Device
 	// Farm FAQs.
 	SkipAppResign *bool `locationName:"skipAppResign" type:"boolean"`
 
@@ -17503,6 +17526,9 @@ type RemoteAccessSession struct {
 
 	// The date and time the remote access session was stopped.
 	Stopped *time.Time `locationName:"stopped" type:"timestamp"`
+
+	// The VPC security groups and subnets that are attached to a project.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation.
@@ -17646,6 +17672,12 @@ func (s *RemoteAccessSession) SetStatus(v string) *RemoteAccessSession {
 // SetStopped sets the Stopped field's value.
 func (s *RemoteAccessSession) SetStopped(v time.Time) *RemoteAccessSession {
 	s.Stopped = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *RemoteAccessSession) SetVpcConfig(v *VpcConfig) *RemoteAccessSession {
+	s.VpcConfig = v
 	return s
 }
 
@@ -18035,7 +18067,7 @@ type Run struct {
 	// again. For public devices, Device Farm always signs your apps again.
 	//
 	// For more information about how Device Farm re-signs your apps, see Do you
-	// modify my app? (https://aws.amazon.com/device-farm/faq/) in the AWS Device
+	// modify my app? (http://aws.amazon.com/device-farm/faqs/) in the AWS Device
 	// Farm FAQs.
 	SkipAppResign *bool `locationName:"skipAppResign" type:"boolean"`
 
@@ -18115,6 +18147,9 @@ type Run struct {
 	//
 	//    * XCTEST_UI
 	Type *string `locationName:"type" type:"string" enum:"TestType"`
+
+	// The VPC security groups and subnets that are attached to a project.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 
 	// The Device Farm console URL for the recording of the run.
 	WebUrl *string `locationName:"webUrl" type:"string"`
@@ -18315,6 +18350,12 @@ func (s *Run) SetTotalJobs(v int64) *Run {
 // SetType sets the Type field's value.
 func (s *Run) SetType(v string) *Run {
 	s.Type = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *Run) SetVpcConfig(v *VpcConfig) *Run {
+	s.VpcConfig = v
 	return s
 }
 
@@ -21090,6 +21131,9 @@ type UpdateProjectInput struct {
 
 	// A string that represents the new name of the project that you are updating.
 	Name *string `locationName:"name" type:"string"`
+
+	// The VPC security groups and subnets that are attached to a project.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation.
@@ -21119,6 +21163,11 @@ func (s *UpdateProjectInput) Validate() error {
 	if s.Arn != nil && len(*s.Arn) < 32 {
 		invalidParams.Add(request.NewErrParamMinLen("Arn", 32))
 	}
+	if s.VpcConfig != nil {
+		if err := s.VpcConfig.Validate(); err != nil {
+			invalidParams.AddNested("VpcConfig", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -21141,6 +21190,12 @@ func (s *UpdateProjectInput) SetDefaultJobTimeoutMinutes(v int64) *UpdateProject
 // SetName sets the Name field's value.
 func (s *UpdateProjectInput) SetName(v string) *UpdateProjectInput {
 	s.Name = &v
+	return s
+}
+
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *UpdateProjectInput) SetVpcConfig(v *VpcConfig) *UpdateProjectInput {
+	s.VpcConfig = v
 	return s
 }
 
@@ -21790,6 +21845,91 @@ func (s *VPCEConfiguration) SetVpceConfigurationName(v string) *VPCEConfiguratio
 // SetVpceServiceName sets the VpceServiceName field's value.
 func (s *VPCEConfiguration) SetVpceServiceName(v string) *VPCEConfiguration {
 	s.VpceServiceName = &v
+	return s
+}
+
+// Contains the VPC configuration data necessary to interface with AWS Device
+// Farm's services.
+type VpcConfig struct {
+	_ struct{} `type:"structure"`
+
+	// An array of one or more security groups IDs in your Amazon VPC.
+	//
+	// SecurityGroupIds is a required field
+	SecurityGroupIds []*string `locationName:"securityGroupIds" min:"1" type:"list" required:"true"`
+
+	// An array of one or more subnet IDs in your Amazon VPC.
+	//
+	// SubnetIds is a required field
+	SubnetIds []*string `locationName:"subnetIds" min:"1" type:"list" required:"true"`
+
+	// The ID of the Amazon VPC.
+	//
+	// VpcId is a required field
+	VpcId *string `locationName:"vpcId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *VpcConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "VpcConfig"}
+	if s.SecurityGroupIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("SecurityGroupIds"))
+	}
+	if s.SecurityGroupIds != nil && len(s.SecurityGroupIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SecurityGroupIds", 1))
+	}
+	if s.SubnetIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("SubnetIds"))
+	}
+	if s.SubnetIds != nil && len(s.SubnetIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("SubnetIds", 1))
+	}
+	if s.VpcId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcId"))
+	}
+	if s.VpcId != nil && len(*s.VpcId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *VpcConfig) SetSecurityGroupIds(v []*string) *VpcConfig {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnetIds sets the SubnetIds field's value.
+func (s *VpcConfig) SetSubnetIds(v []*string) *VpcConfig {
+	s.SubnetIds = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *VpcConfig) SetVpcId(v string) *VpcConfig {
+	s.VpcId = &v
 	return s
 }
 

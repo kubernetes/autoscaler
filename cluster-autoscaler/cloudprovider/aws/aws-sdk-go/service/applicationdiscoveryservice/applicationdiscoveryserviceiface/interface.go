@@ -64,6 +64,10 @@ type ApplicationDiscoveryServiceAPI interface {
 	AssociateConfigurationItemsToApplicationWithContext(aws.Context, *applicationdiscoveryservice.AssociateConfigurationItemsToApplicationInput, ...request.Option) (*applicationdiscoveryservice.AssociateConfigurationItemsToApplicationOutput, error)
 	AssociateConfigurationItemsToApplicationRequest(*applicationdiscoveryservice.AssociateConfigurationItemsToApplicationInput) (*request.Request, *applicationdiscoveryservice.AssociateConfigurationItemsToApplicationOutput)
 
+	BatchDeleteAgents(*applicationdiscoveryservice.BatchDeleteAgentsInput) (*applicationdiscoveryservice.BatchDeleteAgentsOutput, error)
+	BatchDeleteAgentsWithContext(aws.Context, *applicationdiscoveryservice.BatchDeleteAgentsInput, ...request.Option) (*applicationdiscoveryservice.BatchDeleteAgentsOutput, error)
+	BatchDeleteAgentsRequest(*applicationdiscoveryservice.BatchDeleteAgentsInput) (*request.Request, *applicationdiscoveryservice.BatchDeleteAgentsOutput)
+
 	BatchDeleteImportData(*applicationdiscoveryservice.BatchDeleteImportDataInput) (*applicationdiscoveryservice.BatchDeleteImportDataOutput, error)
 	BatchDeleteImportDataWithContext(aws.Context, *applicationdiscoveryservice.BatchDeleteImportDataInput, ...request.Option) (*applicationdiscoveryservice.BatchDeleteImportDataOutput, error)
 	BatchDeleteImportDataRequest(*applicationdiscoveryservice.BatchDeleteImportDataInput) (*request.Request, *applicationdiscoveryservice.BatchDeleteImportDataOutput)
@@ -88,6 +92,13 @@ type ApplicationDiscoveryServiceAPI interface {
 	DescribeAgentsWithContext(aws.Context, *applicationdiscoveryservice.DescribeAgentsInput, ...request.Option) (*applicationdiscoveryservice.DescribeAgentsOutput, error)
 	DescribeAgentsRequest(*applicationdiscoveryservice.DescribeAgentsInput) (*request.Request, *applicationdiscoveryservice.DescribeAgentsOutput)
 
+	DescribeAgentsPages(*applicationdiscoveryservice.DescribeAgentsInput, func(*applicationdiscoveryservice.DescribeAgentsOutput, bool) bool) error
+	DescribeAgentsPagesWithContext(aws.Context, *applicationdiscoveryservice.DescribeAgentsInput, func(*applicationdiscoveryservice.DescribeAgentsOutput, bool) bool, ...request.Option) error
+
+	DescribeBatchDeleteConfigurationTask(*applicationdiscoveryservice.DescribeBatchDeleteConfigurationTaskInput) (*applicationdiscoveryservice.DescribeBatchDeleteConfigurationTaskOutput, error)
+	DescribeBatchDeleteConfigurationTaskWithContext(aws.Context, *applicationdiscoveryservice.DescribeBatchDeleteConfigurationTaskInput, ...request.Option) (*applicationdiscoveryservice.DescribeBatchDeleteConfigurationTaskOutput, error)
+	DescribeBatchDeleteConfigurationTaskRequest(*applicationdiscoveryservice.DescribeBatchDeleteConfigurationTaskInput) (*request.Request, *applicationdiscoveryservice.DescribeBatchDeleteConfigurationTaskOutput)
+
 	DescribeConfigurations(*applicationdiscoveryservice.DescribeConfigurationsInput) (*applicationdiscoveryservice.DescribeConfigurationsOutput, error)
 	DescribeConfigurationsWithContext(aws.Context, *applicationdiscoveryservice.DescribeConfigurationsInput, ...request.Option) (*applicationdiscoveryservice.DescribeConfigurationsOutput, error)
 	DescribeConfigurationsRequest(*applicationdiscoveryservice.DescribeConfigurationsInput) (*request.Request, *applicationdiscoveryservice.DescribeConfigurationsOutput)
@@ -103,9 +114,15 @@ type ApplicationDiscoveryServiceAPI interface {
 	DescribeExportConfigurationsWithContext(aws.Context, *applicationdiscoveryservice.DescribeExportConfigurationsInput, ...request.Option) (*applicationdiscoveryservice.DescribeExportConfigurationsOutput, error)
 	DescribeExportConfigurationsRequest(*applicationdiscoveryservice.DescribeExportConfigurationsInput) (*request.Request, *applicationdiscoveryservice.DescribeExportConfigurationsOutput)
 
+	DescribeExportConfigurationsPages(*applicationdiscoveryservice.DescribeExportConfigurationsInput, func(*applicationdiscoveryservice.DescribeExportConfigurationsOutput, bool) bool) error
+	DescribeExportConfigurationsPagesWithContext(aws.Context, *applicationdiscoveryservice.DescribeExportConfigurationsInput, func(*applicationdiscoveryservice.DescribeExportConfigurationsOutput, bool) bool, ...request.Option) error
+
 	DescribeExportTasks(*applicationdiscoveryservice.DescribeExportTasksInput) (*applicationdiscoveryservice.DescribeExportTasksOutput, error)
 	DescribeExportTasksWithContext(aws.Context, *applicationdiscoveryservice.DescribeExportTasksInput, ...request.Option) (*applicationdiscoveryservice.DescribeExportTasksOutput, error)
 	DescribeExportTasksRequest(*applicationdiscoveryservice.DescribeExportTasksInput) (*request.Request, *applicationdiscoveryservice.DescribeExportTasksOutput)
+
+	DescribeExportTasksPages(*applicationdiscoveryservice.DescribeExportTasksInput, func(*applicationdiscoveryservice.DescribeExportTasksOutput, bool) bool) error
+	DescribeExportTasksPagesWithContext(aws.Context, *applicationdiscoveryservice.DescribeExportTasksInput, func(*applicationdiscoveryservice.DescribeExportTasksOutput, bool) bool, ...request.Option) error
 
 	DescribeImportTasks(*applicationdiscoveryservice.DescribeImportTasksInput) (*applicationdiscoveryservice.DescribeImportTasksOutput, error)
 	DescribeImportTasksWithContext(aws.Context, *applicationdiscoveryservice.DescribeImportTasksInput, ...request.Option) (*applicationdiscoveryservice.DescribeImportTasksOutput, error)
@@ -117,6 +134,9 @@ type ApplicationDiscoveryServiceAPI interface {
 	DescribeTags(*applicationdiscoveryservice.DescribeTagsInput) (*applicationdiscoveryservice.DescribeTagsOutput, error)
 	DescribeTagsWithContext(aws.Context, *applicationdiscoveryservice.DescribeTagsInput, ...request.Option) (*applicationdiscoveryservice.DescribeTagsOutput, error)
 	DescribeTagsRequest(*applicationdiscoveryservice.DescribeTagsInput) (*request.Request, *applicationdiscoveryservice.DescribeTagsOutput)
+
+	DescribeTagsPages(*applicationdiscoveryservice.DescribeTagsInput, func(*applicationdiscoveryservice.DescribeTagsOutput, bool) bool) error
+	DescribeTagsPagesWithContext(aws.Context, *applicationdiscoveryservice.DescribeTagsInput, func(*applicationdiscoveryservice.DescribeTagsOutput, bool) bool, ...request.Option) error
 
 	DisassociateConfigurationItemsFromApplication(*applicationdiscoveryservice.DisassociateConfigurationItemsFromApplicationInput) (*applicationdiscoveryservice.DisassociateConfigurationItemsFromApplicationOutput, error)
 	DisassociateConfigurationItemsFromApplicationWithContext(aws.Context, *applicationdiscoveryservice.DisassociateConfigurationItemsFromApplicationInput, ...request.Option) (*applicationdiscoveryservice.DisassociateConfigurationItemsFromApplicationOutput, error)
@@ -134,9 +154,16 @@ type ApplicationDiscoveryServiceAPI interface {
 	ListConfigurationsWithContext(aws.Context, *applicationdiscoveryservice.ListConfigurationsInput, ...request.Option) (*applicationdiscoveryservice.ListConfigurationsOutput, error)
 	ListConfigurationsRequest(*applicationdiscoveryservice.ListConfigurationsInput) (*request.Request, *applicationdiscoveryservice.ListConfigurationsOutput)
 
+	ListConfigurationsPages(*applicationdiscoveryservice.ListConfigurationsInput, func(*applicationdiscoveryservice.ListConfigurationsOutput, bool) bool) error
+	ListConfigurationsPagesWithContext(aws.Context, *applicationdiscoveryservice.ListConfigurationsInput, func(*applicationdiscoveryservice.ListConfigurationsOutput, bool) bool, ...request.Option) error
+
 	ListServerNeighbors(*applicationdiscoveryservice.ListServerNeighborsInput) (*applicationdiscoveryservice.ListServerNeighborsOutput, error)
 	ListServerNeighborsWithContext(aws.Context, *applicationdiscoveryservice.ListServerNeighborsInput, ...request.Option) (*applicationdiscoveryservice.ListServerNeighborsOutput, error)
 	ListServerNeighborsRequest(*applicationdiscoveryservice.ListServerNeighborsInput) (*request.Request, *applicationdiscoveryservice.ListServerNeighborsOutput)
+
+	StartBatchDeleteConfigurationTask(*applicationdiscoveryservice.StartBatchDeleteConfigurationTaskInput) (*applicationdiscoveryservice.StartBatchDeleteConfigurationTaskOutput, error)
+	StartBatchDeleteConfigurationTaskWithContext(aws.Context, *applicationdiscoveryservice.StartBatchDeleteConfigurationTaskInput, ...request.Option) (*applicationdiscoveryservice.StartBatchDeleteConfigurationTaskOutput, error)
+	StartBatchDeleteConfigurationTaskRequest(*applicationdiscoveryservice.StartBatchDeleteConfigurationTaskInput) (*request.Request, *applicationdiscoveryservice.StartBatchDeleteConfigurationTaskOutput)
 
 	StartContinuousExport(*applicationdiscoveryservice.StartContinuousExportInput) (*applicationdiscoveryservice.StartContinuousExportOutput, error)
 	StartContinuousExportWithContext(aws.Context, *applicationdiscoveryservice.StartContinuousExportInput, ...request.Option) (*applicationdiscoveryservice.StartContinuousExportOutput, error)

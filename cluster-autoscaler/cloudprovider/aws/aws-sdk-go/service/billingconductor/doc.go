@@ -4,7 +4,7 @@
 // requests to AWSBillingConductor.
 //
 // Amazon Web Services Billing Conductor is a fully managed service that you
-// can use to customize a pro forma (https://docs.aws.amazon.com/enterprisebilling/6b7c01c5-b592-467e-9769-90052eaf359c/userguide/understanding-eb.html#eb-other-definitions)
+// can use to customize a pro forma (https://docs.aws.amazon.com/billingconductor/latest/userguide/understanding-eb.html#eb-other-definitions)
 // version of your billing data each month, to accurately show or chargeback
 // your end customers. Amazon Web Services Billing Conductor doesn't change
 // the way you're billed by Amazon Web Services each month by design. Instead,
@@ -19,9 +19,9 @@
 //
 // This documentation shows how you can configure Amazon Web Services Billing
 // Conductor using its API. For more information about using the Amazon Web
-// Services Billing Conductor (https://console.aws.amazon.com/enterprisebilling/)
-// user interface, see the Amazon Web Services Enterprise Billing Console User
-// Guide (https://docs.aws.amazon.com/enterprisebilling/6b7c01c5-b592-467e-9769-90052eaf359c/userguide/what-is-enterprisebilling.html).
+// Services Billing Conductor (https://console.aws.amazon.com/billingconductor/)
+// user interface, see the Amazon Web Services Billing Conductor User Guide
+// (https://docs.aws.amazon.com/billingconductor/latest/userguide/what-is-billingconductor.html).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/billingconductor-2021-07-30 for more information on this service.
 //

@@ -77,8 +77,9 @@ func (c *EKS) AssociateEncryptionConfigRequest(input *AssociateEncryptionConfigI
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -185,8 +186,9 @@ func (c *EKS) AssociateIdentityProviderConfigRequest(input *AssociateIdentityPro
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -271,12 +273,9 @@ func (c *EKS) CreateAddonRequest(input *CreateAddonInput) (req *request.Request,
 // Creates an Amazon EKS add-on.
 //
 // Amazon EKS add-ons help to automate the provisioning and lifecycle management
-// of common operational software for Amazon EKS clusters. Amazon EKS add-ons
-// require clusters running version 1.18 or later because Amazon EKS add-ons
-// rely on the Server-side Apply Kubernetes feature, which is only available
-// in Kubernetes 1.18 and later. For more information, see Amazon EKS add-ons
-// (https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html) in the
-// Amazon EKS User Guide.
+// of common operational software for Amazon EKS clusters. For more information,
+// see Amazon EKS add-ons (https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html)
+// in the Amazon EKS User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -305,8 +304,9 @@ func (c *EKS) CreateAddonRequest(input *CreateAddonInput) (req *request.Request,
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -395,6 +395,23 @@ func (c *EKS) CreateClusterRequest(input *CreateClusterInput) (req *request.Requ
 // cluster's control plane over the Kubernetes API server endpoint and a certificate
 // file that is created for your cluster.
 //
+// You can use the endpointPublicAccess and endpointPrivateAccess parameters
+// to enable or disable public and private access to your cluster's Kubernetes
+// API server endpoint. By default, public access is enabled, and private access
+// is disabled. For more information, see Amazon EKS Cluster Endpoint Access
+// Control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
+// in the Amazon EKS User Guide .
+//
+// You can use the logging parameter to enable or disable exporting the Kubernetes
+// control plane logs for your cluster to CloudWatch Logs. By default, cluster
+// control plane logs aren't exported to CloudWatch Logs. For more information,
+// see Amazon EKS Cluster Control Plane Logs (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
+// in the Amazon EKS User Guide .
+//
+// CloudWatch Logs ingestion, archive storage, and data scanning rates apply
+// to exported control plane logs. For more information, see CloudWatch Pricing
+// (http://aws.amazon.com/cloudwatch/pricing/).
+//
 // In most cases, it takes several minutes to create a cluster. After you create
 // an Amazon EKS cluster, you must configure your Kubernetes tooling to communicate
 // with the API server and launch nodes into your cluster. For more information,
@@ -423,8 +440,9 @@ func (c *EKS) CreateClusterRequest(input *CreateClusterInput) (req *request.Requ
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -455,6 +473,105 @@ func (c *EKS) CreateCluster(input *CreateClusterInput) (*CreateClusterOutput, er
 // for more information on using Contexts.
 func (c *EKS) CreateClusterWithContext(ctx aws.Context, input *CreateClusterInput, opts ...request.Option) (*CreateClusterOutput, error) {
 	req, out := c.CreateClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateEksAnywhereSubscription = "CreateEksAnywhereSubscription"
+
+// CreateEksAnywhereSubscriptionRequest generates a "aws/request.Request" representing the
+// client's request for the CreateEksAnywhereSubscription operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateEksAnywhereSubscription for more information on using the CreateEksAnywhereSubscription
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateEksAnywhereSubscriptionRequest method.
+//	req, resp := client.CreateEksAnywhereSubscriptionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateEksAnywhereSubscription
+func (c *EKS) CreateEksAnywhereSubscriptionRequest(input *CreateEksAnywhereSubscriptionInput) (req *request.Request, output *CreateEksAnywhereSubscriptionOutput) {
+	op := &request.Operation{
+		Name:       opCreateEksAnywhereSubscription,
+		HTTPMethod: "POST",
+		HTTPPath:   "/eks-anywhere-subscriptions",
+	}
+
+	if input == nil {
+		input = &CreateEksAnywhereSubscriptionInput{}
+	}
+
+	output = &CreateEksAnywhereSubscriptionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateEksAnywhereSubscription API operation for Amazon Elastic Kubernetes Service.
+//
+// Creates an EKS Anywhere subscription. When a subscription is created, it
+// is a contract agreement for the length of the term specified in the request.
+// Licenses that are used to validate support are provisioned in Amazon Web
+// Services License Manager and the caller account is granted access to EKS
+// Anywhere Curated Packages.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation CreateEksAnywhereSubscription for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceLimitExceededException
+//     You have encountered a service limit on the specified resource.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreateEksAnywhereSubscription
+func (c *EKS) CreateEksAnywhereSubscription(input *CreateEksAnywhereSubscriptionInput) (*CreateEksAnywhereSubscriptionOutput, error) {
+	req, out := c.CreateEksAnywhereSubscriptionRequest(input)
+	return out, req.Send()
+}
+
+// CreateEksAnywhereSubscriptionWithContext is the same as CreateEksAnywhereSubscription with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateEksAnywhereSubscription for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) CreateEksAnywhereSubscriptionWithContext(ctx aws.Context, input *CreateEksAnywhereSubscriptionInput, opts ...request.Option) (*CreateEksAnywhereSubscriptionOutput, error) {
+	req, out := c.CreateEksAnywhereSubscriptionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -517,7 +634,7 @@ func (c *EKS) CreateFargateProfileRequest(input *CreateFargateProfileInput) (req
 //
 // When you create a Fargate profile, you must specify a pod execution role
 // to use with the pods that are scheduled with the profile. This role is added
-// to the cluster's Kubernetes Role Based Access Control (https://kubernetes.io/docs/admin/authorization/rbac/)
+// to the cluster's Kubernetes Role Based Access Control (https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 // (RBAC) for authorization so that the kubelet that is running on the Fargate
 // infrastructure can register with your Amazon EKS cluster so that it can appear
 // in your cluster as a node. The pod execution role also provides IAM permissions
@@ -555,8 +672,9 @@ func (c *EKS) CreateFargateProfileRequest(input *CreateFargateProfileInput) (req
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -637,16 +755,15 @@ func (c *EKS) CreateNodegroupRequest(input *CreateNodegroupInput) (req *request.
 //
 // Creates a managed node group for an Amazon EKS cluster. You can only create
 // a node group for your cluster that is equal to the current Kubernetes version
-// for the cluster. All node groups are created with the latest AMI release
-// version for the respective minor Kubernetes version of the cluster, unless
-// you deploy a custom AMI using a launch template. For more information about
-// using launch templates, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html).
+// for the cluster.
 //
 // An Amazon EKS managed node group is an Amazon EC2 Auto Scaling group and
 // associated Amazon EC2 instances that are managed by Amazon Web Services for
-// an Amazon EKS cluster. Each node group uses a version of the Amazon EKS optimized
-// Amazon Linux 2 AMI. For more information, see Managed Node Groups (https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
+// an Amazon EKS cluster. For more information, see Managed node groups (https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html)
 // in the Amazon EKS User Guide.
+//
+// Windows AMI types are only supported for commercial Regions that support
+// Windows Amazon EKS.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -673,8 +790,9 @@ func (c *EKS) CreateNodegroupRequest(input *CreateNodegroupInput) (req *request.
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -699,6 +817,119 @@ func (c *EKS) CreateNodegroup(input *CreateNodegroupInput) (*CreateNodegroupOutp
 // for more information on using Contexts.
 func (c *EKS) CreateNodegroupWithContext(ctx aws.Context, input *CreateNodegroupInput, opts ...request.Option) (*CreateNodegroupOutput, error) {
 	req, out := c.CreateNodegroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreatePodIdentityAssociation = "CreatePodIdentityAssociation"
+
+// CreatePodIdentityAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the CreatePodIdentityAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreatePodIdentityAssociation for more information on using the CreatePodIdentityAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreatePodIdentityAssociationRequest method.
+//	req, resp := client.CreatePodIdentityAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreatePodIdentityAssociation
+func (c *EKS) CreatePodIdentityAssociationRequest(input *CreatePodIdentityAssociationInput) (req *request.Request, output *CreatePodIdentityAssociationOutput) {
+	op := &request.Operation{
+		Name:       opCreatePodIdentityAssociation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/clusters/{name}/pod-identity-associations",
+	}
+
+	if input == nil {
+		input = &CreatePodIdentityAssociationInput{}
+	}
+
+	output = &CreatePodIdentityAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreatePodIdentityAssociation API operation for Amazon Elastic Kubernetes Service.
+//
+// Creates an EKS Pod Identity association between a service account in an Amazon
+// EKS cluster and an IAM role with EKS Pod Identity. Use EKS Pod Identity to
+// give temporary IAM credentials to pods and the credentials are rotated automatically.
+//
+// Amazon EKS Pod Identity associations provide the ability to manage credentials
+// for your applications, similar to the way that 7EC2l instance profiles provide
+// credentials to Amazon EC2 instances.
+//
+// If a pod uses a service account that has an association, Amazon EKS sets
+// environment variables in the containers of the pod. The environment variables
+// configure the Amazon Web Services SDKs, including the Command Line Interface,
+// to use the EKS Pod Identity credentials.
+//
+// Pod Identity is a simpler method than IAM roles for service accounts, as
+// this method doesn't use OIDC identity providers. Additionally, you can configure
+// a role for Pod Identity once, and reuse it across clusters.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation CreatePodIdentityAssociation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ResourceLimitExceededException
+//     You have encountered a service limit on the specified resource.
+//
+//   - ResourceInUseException
+//     The specified resource is in use.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/CreatePodIdentityAssociation
+func (c *EKS) CreatePodIdentityAssociation(input *CreatePodIdentityAssociationInput) (*CreatePodIdentityAssociationOutput, error) {
+	req, out := c.CreatePodIdentityAssociationRequest(input)
+	return out, req.Send()
+}
+
+// CreatePodIdentityAssociationWithContext is the same as CreatePodIdentityAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreatePodIdentityAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) CreatePodIdentityAssociationWithContext(ctx aws.Context, input *CreatePodIdentityAssociationInput, opts ...request.Option) (*CreatePodIdentityAssociationOutput, error) {
+	req, out := c.CreatePodIdentityAssociationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -776,8 +1007,9 @@ func (c *EKS) DeleteAddonRequest(input *DeleteAddonInput) (req *request.Request,
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -879,8 +1111,9 @@ func (c *EKS) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Requ
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -905,6 +1138,104 @@ func (c *EKS) DeleteCluster(input *DeleteClusterInput) (*DeleteClusterOutput, er
 // for more information on using Contexts.
 func (c *EKS) DeleteClusterWithContext(ctx aws.Context, input *DeleteClusterInput, opts ...request.Option) (*DeleteClusterOutput, error) {
 	req, out := c.DeleteClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteEksAnywhereSubscription = "DeleteEksAnywhereSubscription"
+
+// DeleteEksAnywhereSubscriptionRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteEksAnywhereSubscription operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteEksAnywhereSubscription for more information on using the DeleteEksAnywhereSubscription
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteEksAnywhereSubscriptionRequest method.
+//	req, resp := client.DeleteEksAnywhereSubscriptionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteEksAnywhereSubscription
+func (c *EKS) DeleteEksAnywhereSubscriptionRequest(input *DeleteEksAnywhereSubscriptionInput) (req *request.Request, output *DeleteEksAnywhereSubscriptionOutput) {
+	op := &request.Operation{
+		Name:       opDeleteEksAnywhereSubscription,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/eks-anywhere-subscriptions/{id}",
+	}
+
+	if input == nil {
+		input = &DeleteEksAnywhereSubscriptionInput{}
+	}
+
+	output = &DeleteEksAnywhereSubscriptionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteEksAnywhereSubscription API operation for Amazon Elastic Kubernetes Service.
+//
+// Deletes an expired or inactive subscription. Deleting inactive subscriptions
+// removes them from the Amazon Web Services Management Console view and from
+// list/describe API responses. Subscriptions can only be cancelled within 7
+// days of creation and are cancelled by creating a ticket in the Amazon Web
+// Services Support Center.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation DeleteEksAnywhereSubscription for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeleteEksAnywhereSubscription
+func (c *EKS) DeleteEksAnywhereSubscription(input *DeleteEksAnywhereSubscriptionInput) (*DeleteEksAnywhereSubscriptionOutput, error) {
+	req, out := c.DeleteEksAnywhereSubscriptionRequest(input)
+	return out, req.Send()
+}
+
+// DeleteEksAnywhereSubscriptionWithContext is the same as DeleteEksAnywhereSubscription with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteEksAnywhereSubscription for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) DeleteEksAnywhereSubscriptionWithContext(ctx aws.Context, input *DeleteEksAnywhereSubscriptionInput, opts ...request.Option) (*DeleteEksAnywhereSubscriptionOutput, error) {
+	req, out := c.DeleteEksAnywhereSubscriptionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -980,8 +1311,9 @@ func (c *EKS) DeleteFargateProfileRequest(input *DeleteFargateProfileInput) (req
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1081,8 +1413,9 @@ func (c *EKS) DeleteNodegroupRequest(input *DeleteNodegroupInput) (req *request.
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1107,6 +1440,103 @@ func (c *EKS) DeleteNodegroup(input *DeleteNodegroupInput) (*DeleteNodegroupOutp
 // for more information on using Contexts.
 func (c *EKS) DeleteNodegroupWithContext(ctx aws.Context, input *DeleteNodegroupInput, opts ...request.Option) (*DeleteNodegroupOutput, error) {
 	req, out := c.DeleteNodegroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeletePodIdentityAssociation = "DeletePodIdentityAssociation"
+
+// DeletePodIdentityAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the DeletePodIdentityAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeletePodIdentityAssociation for more information on using the DeletePodIdentityAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeletePodIdentityAssociationRequest method.
+//	req, resp := client.DeletePodIdentityAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeletePodIdentityAssociation
+func (c *EKS) DeletePodIdentityAssociationRequest(input *DeletePodIdentityAssociationInput) (req *request.Request, output *DeletePodIdentityAssociationOutput) {
+	op := &request.Operation{
+		Name:       opDeletePodIdentityAssociation,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/clusters/{name}/pod-identity-associations/{associationId}",
+	}
+
+	if input == nil {
+		input = &DeletePodIdentityAssociationInput{}
+	}
+
+	output = &DeletePodIdentityAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeletePodIdentityAssociation API operation for Amazon Elastic Kubernetes Service.
+//
+// Deletes a EKS Pod Identity association.
+//
+// The temporary Amazon Web Services credentials from the previous IAM role
+// session might still be valid until the session expiry. If you need to immediately
+// revoke the temporary session credentials, then go to the role in the IAM
+// console.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation DeletePodIdentityAssociation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeletePodIdentityAssociation
+func (c *EKS) DeletePodIdentityAssociation(input *DeletePodIdentityAssociationInput) (*DeletePodIdentityAssociationOutput, error) {
+	req, out := c.DeletePodIdentityAssociationRequest(input)
+	return out, req.Send()
+}
+
+// DeletePodIdentityAssociationWithContext is the same as DeletePodIdentityAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeletePodIdentityAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) DeletePodIdentityAssociationWithContext(ctx aws.Context, input *DeletePodIdentityAssociationInput, opts ...request.Option) (*DeletePodIdentityAssociationOutput, error) {
+	req, out := c.DeletePodIdentityAssociationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1177,8 +1607,9 @@ func (c *EKS) DeregisterClusterRequest(input *DeregisterClusterInput) (req *requ
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1187,11 +1618,12 @@ func (c *EKS) DeregisterClusterRequest(input *DeregisterClusterInput) (req *requ
 //     The service is unavailable. Back off and retry the operation.
 //
 //   - AccessDeniedException
-//     You don't have permissions to perform the requested operation. The user or
-//     role that is making the request must have at least one IAM permissions policy
-//     attached that grants the required permissions. For more information, see
-//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//     in the IAM User Guide.
+//     You don't have permissions to perform the requested operation. The IAM principal
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     making the request must have at least one IAM permissions policy attached
+//     that grants the required permissions. For more information, see Access management
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html) in the IAM
+//     User Guide.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DeregisterCluster
 func (c *EKS) DeregisterCluster(input *DeregisterClusterInput) (*DeregisterClusterOutput, error) {
@@ -1284,8 +1716,9 @@ func (c *EKS) DescribeAddonRequest(input *DescribeAddonInput) (req *request.Requ
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1307,6 +1740,94 @@ func (c *EKS) DescribeAddon(input *DescribeAddonInput) (*DescribeAddonOutput, er
 // for more information on using Contexts.
 func (c *EKS) DescribeAddonWithContext(ctx aws.Context, input *DescribeAddonInput, opts ...request.Option) (*DescribeAddonOutput, error) {
 	req, out := c.DescribeAddonRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeAddonConfiguration = "DescribeAddonConfiguration"
+
+// DescribeAddonConfigurationRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeAddonConfiguration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeAddonConfiguration for more information on using the DescribeAddonConfiguration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeAddonConfigurationRequest method.
+//	req, resp := client.DescribeAddonConfigurationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeAddonConfiguration
+func (c *EKS) DescribeAddonConfigurationRequest(input *DescribeAddonConfigurationInput) (req *request.Request, output *DescribeAddonConfigurationOutput) {
+	op := &request.Operation{
+		Name:       opDescribeAddonConfiguration,
+		HTTPMethod: "GET",
+		HTTPPath:   "/addons/configuration-schemas",
+	}
+
+	if input == nil {
+		input = &DescribeAddonConfigurationInput{}
+	}
+
+	output = &DescribeAddonConfigurationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeAddonConfiguration API operation for Amazon Elastic Kubernetes Service.
+//
+// Returns configuration options.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation DescribeAddonConfiguration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeAddonConfiguration
+func (c *EKS) DescribeAddonConfiguration(input *DescribeAddonConfigurationInput) (*DescribeAddonConfigurationOutput, error) {
+	req, out := c.DescribeAddonConfigurationRequest(input)
+	return out, req.Send()
+}
+
+// DescribeAddonConfigurationWithContext is the same as DescribeAddonConfiguration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeAddonConfiguration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) DescribeAddonConfigurationWithContext(ctx aws.Context, input *DescribeAddonConfigurationInput, opts ...request.Option) (*DescribeAddonConfigurationOutput, error) {
+	req, out := c.DescribeAddonConfigurationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1361,7 +1882,9 @@ func (c *EKS) DescribeAddonVersionsRequest(input *DescribeAddonVersionsInput) (r
 
 // DescribeAddonVersions API operation for Amazon Elastic Kubernetes Service.
 //
-// Describes the Kubernetes versions that the add-on can be used with.
+// Describes the versions for an add-on. Information such as the Kubernetes
+// versions that you can use the add-on with, the owner, publisher, and the
+// type of the add-on are returned.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1526,8 +2049,9 @@ func (c *EKS) DescribeClusterRequest(input *DescribeClusterInput) (req *request.
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1552,6 +2076,99 @@ func (c *EKS) DescribeCluster(input *DescribeClusterInput) (*DescribeClusterOutp
 // for more information on using Contexts.
 func (c *EKS) DescribeClusterWithContext(ctx aws.Context, input *DescribeClusterInput, opts ...request.Option) (*DescribeClusterOutput, error) {
 	req, out := c.DescribeClusterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeEksAnywhereSubscription = "DescribeEksAnywhereSubscription"
+
+// DescribeEksAnywhereSubscriptionRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeEksAnywhereSubscription operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeEksAnywhereSubscription for more information on using the DescribeEksAnywhereSubscription
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeEksAnywhereSubscriptionRequest method.
+//	req, resp := client.DescribeEksAnywhereSubscriptionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeEksAnywhereSubscription
+func (c *EKS) DescribeEksAnywhereSubscriptionRequest(input *DescribeEksAnywhereSubscriptionInput) (req *request.Request, output *DescribeEksAnywhereSubscriptionOutput) {
+	op := &request.Operation{
+		Name:       opDescribeEksAnywhereSubscription,
+		HTTPMethod: "GET",
+		HTTPPath:   "/eks-anywhere-subscriptions/{id}",
+	}
+
+	if input == nil {
+		input = &DescribeEksAnywhereSubscriptionInput{}
+	}
+
+	output = &DescribeEksAnywhereSubscriptionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeEksAnywhereSubscription API operation for Amazon Elastic Kubernetes Service.
+//
+// Returns descriptive information about a subscription.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation DescribeEksAnywhereSubscription for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribeEksAnywhereSubscription
+func (c *EKS) DescribeEksAnywhereSubscription(input *DescribeEksAnywhereSubscriptionInput) (*DescribeEksAnywhereSubscriptionOutput, error) {
+	req, out := c.DescribeEksAnywhereSubscriptionRequest(input)
+	return out, req.Send()
+}
+
+// DescribeEksAnywhereSubscriptionWithContext is the same as DescribeEksAnywhereSubscription with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeEksAnywhereSubscription for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) DescribeEksAnywhereSubscriptionWithContext(ctx aws.Context, input *DescribeEksAnywhereSubscriptionInput, opts ...request.Option) (*DescribeEksAnywhereSubscriptionOutput, error) {
+	req, out := c.DescribeEksAnywhereSubscriptionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1617,8 +2234,9 @@ func (c *EKS) DescribeFargateProfileRequest(input *DescribeFargateProfileInput) 
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1715,8 +2333,9 @@ func (c *EKS) DescribeIdentityProviderConfigRequest(input *DescribeIdentityProvi
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1811,8 +2430,9 @@ func (c *EKS) DescribeNodegroupRequest(input *DescribeNodegroupInput) (req *requ
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1837,6 +2457,103 @@ func (c *EKS) DescribeNodegroup(input *DescribeNodegroupInput) (*DescribeNodegro
 // for more information on using Contexts.
 func (c *EKS) DescribeNodegroupWithContext(ctx aws.Context, input *DescribeNodegroupInput, opts ...request.Option) (*DescribeNodegroupOutput, error) {
 	req, out := c.DescribeNodegroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribePodIdentityAssociation = "DescribePodIdentityAssociation"
+
+// DescribePodIdentityAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the DescribePodIdentityAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribePodIdentityAssociation for more information on using the DescribePodIdentityAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribePodIdentityAssociationRequest method.
+//	req, resp := client.DescribePodIdentityAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribePodIdentityAssociation
+func (c *EKS) DescribePodIdentityAssociationRequest(input *DescribePodIdentityAssociationInput) (req *request.Request, output *DescribePodIdentityAssociationOutput) {
+	op := &request.Operation{
+		Name:       opDescribePodIdentityAssociation,
+		HTTPMethod: "GET",
+		HTTPPath:   "/clusters/{name}/pod-identity-associations/{associationId}",
+	}
+
+	if input == nil {
+		input = &DescribePodIdentityAssociationInput{}
+	}
+
+	output = &DescribePodIdentityAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribePodIdentityAssociation API operation for Amazon Elastic Kubernetes Service.
+//
+// Returns descriptive information about an EKS Pod Identity association.
+//
+// This action requires the ID of the association. You can get the ID from the
+// response to the CreatePodIdentityAssocation for newly created associations.
+// Or, you can list the IDs for associations with ListPodIdentityAssociations
+// and filter the list by namespace or service account.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation DescribePodIdentityAssociation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/DescribePodIdentityAssociation
+func (c *EKS) DescribePodIdentityAssociation(input *DescribePodIdentityAssociationInput) (*DescribePodIdentityAssociationOutput, error) {
+	req, out := c.DescribePodIdentityAssociationRequest(input)
+	return out, req.Send()
+}
+
+// DescribePodIdentityAssociationWithContext is the same as DescribePodIdentityAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribePodIdentityAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) DescribePodIdentityAssociationWithContext(ctx aws.Context, input *DescribePodIdentityAssociationInput, opts ...request.Option) (*DescribePodIdentityAssociationOutput, error) {
+	req, out := c.DescribePodIdentityAssociationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1907,8 +2624,9 @@ func (c *EKS) DescribeUpdateRequest(input *DescribeUpdateInput) (req *request.Re
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -1986,7 +2704,7 @@ func (c *EKS) DisassociateIdentityProviderConfigRequest(input *DisassociateIdent
 // Disassociates an identity provider configuration from a cluster. If you disassociate
 // an identity provider from your cluster, users included in the provider can
 // no longer access the cluster. However, you can still access the cluster with
-// Amazon Web Services IAM users.
+// IAM principals (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2003,8 +2721,9 @@ func (c *EKS) DisassociateIdentityProviderConfigRequest(input *DisassociateIdent
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -2092,7 +2811,7 @@ func (c *EKS) ListAddonsRequest(input *ListAddonsInput) (req *request.Request, o
 
 // ListAddons API operation for Amazon Elastic Kubernetes Service.
 //
-// Lists the available add-ons.
+// Lists the installed add-ons.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2113,8 +2832,9 @@ func (c *EKS) ListAddonsRequest(input *ListAddonsInput) (req *request.Request, o
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ResourceNotFoundException
 //     The specified resource could not be found. You can view your available clusters
@@ -2264,8 +2984,9 @@ func (c *EKS) ListClustersRequest(input *ListClustersInput) (req *request.Reques
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -2346,6 +3067,155 @@ func (c *EKS) ListClustersPagesWithContext(ctx aws.Context, input *ListClustersI
 	return p.Err()
 }
 
+const opListEksAnywhereSubscriptions = "ListEksAnywhereSubscriptions"
+
+// ListEksAnywhereSubscriptionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListEksAnywhereSubscriptions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListEksAnywhereSubscriptions for more information on using the ListEksAnywhereSubscriptions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListEksAnywhereSubscriptionsRequest method.
+//	req, resp := client.ListEksAnywhereSubscriptionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListEksAnywhereSubscriptions
+func (c *EKS) ListEksAnywhereSubscriptionsRequest(input *ListEksAnywhereSubscriptionsInput) (req *request.Request, output *ListEksAnywhereSubscriptionsOutput) {
+	op := &request.Operation{
+		Name:       opListEksAnywhereSubscriptions,
+		HTTPMethod: "GET",
+		HTTPPath:   "/eks-anywhere-subscriptions",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListEksAnywhereSubscriptionsInput{}
+	}
+
+	output = &ListEksAnywhereSubscriptionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListEksAnywhereSubscriptions API operation for Amazon Elastic Kubernetes Service.
+//
+// Displays the full description of the subscription.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation ListEksAnywhereSubscriptions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ServiceUnavailableException
+//     The service is unavailable. Back off and retry the operation.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListEksAnywhereSubscriptions
+func (c *EKS) ListEksAnywhereSubscriptions(input *ListEksAnywhereSubscriptionsInput) (*ListEksAnywhereSubscriptionsOutput, error) {
+	req, out := c.ListEksAnywhereSubscriptionsRequest(input)
+	return out, req.Send()
+}
+
+// ListEksAnywhereSubscriptionsWithContext is the same as ListEksAnywhereSubscriptions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListEksAnywhereSubscriptions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) ListEksAnywhereSubscriptionsWithContext(ctx aws.Context, input *ListEksAnywhereSubscriptionsInput, opts ...request.Option) (*ListEksAnywhereSubscriptionsOutput, error) {
+	req, out := c.ListEksAnywhereSubscriptionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListEksAnywhereSubscriptionsPages iterates over the pages of a ListEksAnywhereSubscriptions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListEksAnywhereSubscriptions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListEksAnywhereSubscriptions operation.
+//	pageNum := 0
+//	err := client.ListEksAnywhereSubscriptionsPages(params,
+//	    func(page *eks.ListEksAnywhereSubscriptionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EKS) ListEksAnywhereSubscriptionsPages(input *ListEksAnywhereSubscriptionsInput, fn func(*ListEksAnywhereSubscriptionsOutput, bool) bool) error {
+	return c.ListEksAnywhereSubscriptionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListEksAnywhereSubscriptionsPagesWithContext same as ListEksAnywhereSubscriptionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) ListEksAnywhereSubscriptionsPagesWithContext(ctx aws.Context, input *ListEksAnywhereSubscriptionsInput, fn func(*ListEksAnywhereSubscriptionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListEksAnywhereSubscriptionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListEksAnywhereSubscriptionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListEksAnywhereSubscriptionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListFargateProfiles = "ListFargateProfiles"
 
 // ListFargateProfilesRequest generates a "aws/request.Request" representing the
@@ -2418,8 +3288,9 @@ func (c *EKS) ListFargateProfilesRequest(input *ListFargateProfilesInput) (req *
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -2563,8 +3434,9 @@ func (c *EKS) ListIdentityProviderConfigsRequest(input *ListIdentityProviderConf
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -2718,8 +3590,9 @@ func (c *EKS) ListNodegroupsRequest(input *ListNodegroupsInput) (req *request.Re
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -2798,6 +3671,157 @@ func (c *EKS) ListNodegroupsPagesWithContext(ctx aws.Context, input *ListNodegro
 
 	for p.Next() {
 		if !fn(p.Page().(*ListNodegroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListPodIdentityAssociations = "ListPodIdentityAssociations"
+
+// ListPodIdentityAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListPodIdentityAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListPodIdentityAssociations for more information on using the ListPodIdentityAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListPodIdentityAssociationsRequest method.
+//	req, resp := client.ListPodIdentityAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListPodIdentityAssociations
+func (c *EKS) ListPodIdentityAssociationsRequest(input *ListPodIdentityAssociationsInput) (req *request.Request, output *ListPodIdentityAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opListPodIdentityAssociations,
+		HTTPMethod: "GET",
+		HTTPPath:   "/clusters/{name}/pod-identity-associations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListPodIdentityAssociationsInput{}
+	}
+
+	output = &ListPodIdentityAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListPodIdentityAssociations API operation for Amazon Elastic Kubernetes Service.
+//
+// List the EKS Pod Identity associations in a cluster. You can filter the list
+// by the namespace that the association is in or the service account that the
+// association uses.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation ListPodIdentityAssociations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/ListPodIdentityAssociations
+func (c *EKS) ListPodIdentityAssociations(input *ListPodIdentityAssociationsInput) (*ListPodIdentityAssociationsOutput, error) {
+	req, out := c.ListPodIdentityAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// ListPodIdentityAssociationsWithContext is the same as ListPodIdentityAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListPodIdentityAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) ListPodIdentityAssociationsWithContext(ctx aws.Context, input *ListPodIdentityAssociationsInput, opts ...request.Option) (*ListPodIdentityAssociationsOutput, error) {
+	req, out := c.ListPodIdentityAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListPodIdentityAssociationsPages iterates over the pages of a ListPodIdentityAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPodIdentityAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPodIdentityAssociations operation.
+//	pageNum := 0
+//	err := client.ListPodIdentityAssociationsPages(params,
+//	    func(page *eks.ListPodIdentityAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *EKS) ListPodIdentityAssociationsPages(input *ListPodIdentityAssociationsInput, fn func(*ListPodIdentityAssociationsOutput, bool) bool) error {
+	return c.ListPodIdentityAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPodIdentityAssociationsPagesWithContext same as ListPodIdentityAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) ListPodIdentityAssociationsPagesWithContext(ctx aws.Context, input *ListPodIdentityAssociationsInput, fn func(*ListPodIdentityAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPodIdentityAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPodIdentityAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPodIdentityAssociationsOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -2956,8 +3980,9 @@ func (c *EKS) ListUpdatesRequest(input *ListUpdatesInput) (req *request.Request,
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3118,8 +4143,9 @@ func (c *EKS) RegisterClusterRequest(input *RegisterClusterInput) (req *request.
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3128,11 +4154,12 @@ func (c *EKS) RegisterClusterRequest(input *RegisterClusterInput) (req *request.
 //     The service is unavailable. Back off and retry the operation.
 //
 //   - AccessDeniedException
-//     You don't have permissions to perform the requested operation. The user or
-//     role that is making the request must have at least one IAM permissions policy
-//     attached that grants the required permissions. For more information, see
-//     Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-//     in the IAM User Guide.
+//     You don't have permissions to perform the requested operation. The IAM principal
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     making the request must have at least one IAM permissions policy attached
+//     that grants the required permissions. For more information, see Access management
+//     (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html) in the IAM
+//     User Guide.
 //
 //   - ResourceInUseException
 //     The specified resource is in use.
@@ -3411,8 +4438,9 @@ func (c *EKS) UpdateAddonRequest(input *UpdateAddonInput) (req *request.Request,
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3503,7 +4531,13 @@ func (c *EKS) UpdateClusterConfigRequest(input *UpdateClusterConfigInput) (req *
 // see Amazon EKS cluster endpoint access control (https://docs.aws.amazon.com/eks/latest/userguide/cluster-endpoint.html)
 // in the Amazon EKS User Guide .
 //
-// You can't update the subnets or security group IDs for an existing cluster.
+// You can also use this API operation to choose different subnets and security
+// groups for the cluster. You must specify at least two subnets that are in
+// different Availability Zones. You can't change which VPC the subnets are
+// from, the subnets must be in the same VPC as the subnets that the cluster
+// was created with. For more information about the VPC requirements, see https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html
+// (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html) in the
+// Amazon EKS User Guide .
 //
 // Cluster updates are asynchronous, and they should finish within a few minutes.
 // During an update, the cluster status moves to UPDATING (this status transition
@@ -3525,8 +4559,9 @@ func (c *EKS) UpdateClusterConfigRequest(input *UpdateClusterConfigInput) (req *
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3637,8 +4672,9 @@ func (c *EKS) UpdateClusterVersionRequest(input *UpdateClusterVersionInput) (req
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3672,6 +4708,105 @@ func (c *EKS) UpdateClusterVersion(input *UpdateClusterVersionInput) (*UpdateClu
 // for more information on using Contexts.
 func (c *EKS) UpdateClusterVersionWithContext(ctx aws.Context, input *UpdateClusterVersionInput, opts ...request.Option) (*UpdateClusterVersionOutput, error) {
 	req, out := c.UpdateClusterVersionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateEksAnywhereSubscription = "UpdateEksAnywhereSubscription"
+
+// UpdateEksAnywhereSubscriptionRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateEksAnywhereSubscription operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateEksAnywhereSubscription for more information on using the UpdateEksAnywhereSubscription
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateEksAnywhereSubscriptionRequest method.
+//	req, resp := client.UpdateEksAnywhereSubscriptionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateEksAnywhereSubscription
+func (c *EKS) UpdateEksAnywhereSubscriptionRequest(input *UpdateEksAnywhereSubscriptionInput) (req *request.Request, output *UpdateEksAnywhereSubscriptionOutput) {
+	op := &request.Operation{
+		Name:       opUpdateEksAnywhereSubscription,
+		HTTPMethod: "POST",
+		HTTPPath:   "/eks-anywhere-subscriptions/{id}",
+	}
+
+	if input == nil {
+		input = &UpdateEksAnywhereSubscriptionInput{}
+	}
+
+	output = &UpdateEksAnywhereSubscriptionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateEksAnywhereSubscription API operation for Amazon Elastic Kubernetes Service.
+//
+// Update an EKS Anywhere Subscription. Only auto renewal and tags can be updated
+// after subscription creation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation UpdateEksAnywhereSubscription for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+//   - ClientException
+//     These errors are usually caused by a client action. Actions can include using
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdateEksAnywhereSubscription
+func (c *EKS) UpdateEksAnywhereSubscription(input *UpdateEksAnywhereSubscriptionInput) (*UpdateEksAnywhereSubscriptionOutput, error) {
+	req, out := c.UpdateEksAnywhereSubscriptionRequest(input)
+	return out, req.Send()
+}
+
+// UpdateEksAnywhereSubscriptionWithContext is the same as UpdateEksAnywhereSubscription with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateEksAnywhereSubscription for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) UpdateEksAnywhereSubscriptionWithContext(ctx aws.Context, input *UpdateEksAnywhereSubscriptionInput, opts ...request.Option) (*UpdateEksAnywhereSubscriptionOutput, error) {
+	req, out := c.UpdateEksAnywhereSubscriptionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3741,8 +4876,9 @@ func (c *EKS) UpdateNodegroupConfigRequest(input *UpdateNodegroupConfigInput) (r
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3837,8 +4973,10 @@ func (c *EKS) UpdateNodegroupVersionRequest(input *UpdateNodegroupVersionInput) 
 // available AMI version of a node group's current Kubernetes version by not
 // specifying a Kubernetes version in the request. You can update to the latest
 // AMI version of your cluster's current Kubernetes version by specifying your
-// cluster's Kubernetes version in the request. For more information, see Amazon
-// EKS optimized Amazon Linux 2 AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
+// cluster's Kubernetes version in the request. For information about Linux
+// versions, see Amazon EKS optimized Amazon Linux AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
+// in the Amazon EKS User Guide. For information about Windows versions, see
+// Amazon EKS optimized Windows AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-ami-versions-windows.html)
 // in the Amazon EKS User Guide.
 //
 // You cannot roll back a node group to an earlier Kubernetes version or AMI
@@ -3865,8 +5003,9 @@ func (c *EKS) UpdateNodegroupVersionRequest(input *UpdateNodegroupVersionInput) 
 //
 //   - ClientException
 //     These errors are usually caused by a client action. Actions can include using
-//     an action or resource on behalf of a user that doesn't have permissions to
-//     use the action or resource or specifying an identifier that is not valid.
+//     an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+//     that doesn't have permissions to use the action or resource or specifying
+//     an identifier that is not valid.
 //
 //   - ServerException
 //     These errors are usually caused by a server-side issue.
@@ -3905,15 +5044,112 @@ func (c *EKS) UpdateNodegroupVersionWithContext(ctx aws.Context, input *UpdateNo
 	return out, req.Send()
 }
 
-// You don't have permissions to perform the requested operation. The user or
-// role that is making the request must have at least one IAM permissions policy
-// attached that grants the required permissions. For more information, see
-// Access Management (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html)
-// in the IAM User Guide.
+const opUpdatePodIdentityAssociation = "UpdatePodIdentityAssociation"
+
+// UpdatePodIdentityAssociationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdatePodIdentityAssociation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdatePodIdentityAssociation for more information on using the UpdatePodIdentityAssociation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdatePodIdentityAssociationRequest method.
+//	req, resp := client.UpdatePodIdentityAssociationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdatePodIdentityAssociation
+func (c *EKS) UpdatePodIdentityAssociationRequest(input *UpdatePodIdentityAssociationInput) (req *request.Request, output *UpdatePodIdentityAssociationOutput) {
+	op := &request.Operation{
+		Name:       opUpdatePodIdentityAssociation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/clusters/{name}/pod-identity-associations/{associationId}",
+	}
+
+	if input == nil {
+		input = &UpdatePodIdentityAssociationInput{}
+	}
+
+	output = &UpdatePodIdentityAssociationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdatePodIdentityAssociation API operation for Amazon Elastic Kubernetes Service.
+//
+// Updates a EKS Pod Identity association. Only the IAM role can be changed;
+// an association can't be moved between clusters, namespaces, or service accounts.
+// If you need to edit the namespace or service account, you need to remove
+// the association and then create a new association with your desired settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elastic Kubernetes Service's
+// API operation UpdatePodIdentityAssociation for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerException
+//     These errors are usually caused by a server-side issue.
+//
+//   - ResourceNotFoundException
+//     The specified resource could not be found. You can view your available clusters
+//     with ListClusters. You can view your available managed node groups with ListNodegroups.
+//     Amazon EKS clusters and node groups are Region-specific.
+//
+//   - InvalidRequestException
+//     The request is invalid given the state of the cluster. Check the state of
+//     the cluster and the associated operations.
+//
+//   - InvalidParameterException
+//     The specified parameter is invalid. Review the available parameters for the
+//     API request.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/eks-2017-11-01/UpdatePodIdentityAssociation
+func (c *EKS) UpdatePodIdentityAssociation(input *UpdatePodIdentityAssociationInput) (*UpdatePodIdentityAssociationOutput, error) {
+	req, out := c.UpdatePodIdentityAssociationRequest(input)
+	return out, req.Send()
+}
+
+// UpdatePodIdentityAssociationWithContext is the same as UpdatePodIdentityAssociation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdatePodIdentityAssociation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *EKS) UpdatePodIdentityAssociationWithContext(ctx aws.Context, input *UpdatePodIdentityAssociationInput, opts ...request.Option) (*UpdatePodIdentityAssociationOutput, error) {
+	req, out := c.UpdatePodIdentityAssociationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// You don't have permissions to perform the requested operation. The IAM principal
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+// making the request must have at least one IAM permissions policy attached
+// that grants the required permissions. For more information, see Access management
+// (https://docs.aws.amazon.com/IAM/latest/UserGuide/access.html) in the IAM
+// User Guide.
 type AccessDeniedException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// You do not have sufficient access to perform this action.
 	Message_ *string `locationName:"message" type:"string"`
 }
 
@@ -3990,17 +5226,29 @@ type Addon struct {
 	// The name of the cluster.
 	ClusterName *string `locationName:"clusterName" min:"1" type:"string"`
 
+	// The configuration values that you provided.
+	ConfigurationValues *string `locationName:"configurationValues" type:"string"`
+
 	// The date and time that the add-on was created.
 	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
 
 	// An object that represents the health of the add-on.
 	Health *AddonHealth `locationName:"health" type:"structure"`
 
+	// Information about an Amazon EKS add-on from the Amazon Web Services Marketplace.
+	MarketplaceInformation *MarketplaceInformation `locationName:"marketplaceInformation" type:"structure"`
+
 	// The date and time that the add-on was last modified.
 	ModifiedAt *time.Time `locationName:"modifiedAt" type:"timestamp"`
 
-	// The Amazon Resource Name (ARN) of the IAM role that is bound to the Kubernetes
-	// service account used by the add-on.
+	// The owner of the add-on.
+	Owner *string `locationName:"owner" type:"string"`
+
+	// The publisher of the add-on.
+	Publisher *string `locationName:"publisher" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the IAM role that's bound to the Kubernetes
+	// service account that the add-on uses.
 	ServiceAccountRoleArn *string `locationName:"serviceAccountRoleArn" type:"string"`
 
 	// The status of the add-on.
@@ -4055,6 +5303,12 @@ func (s *Addon) SetClusterName(v string) *Addon {
 	return s
 }
 
+// SetConfigurationValues sets the ConfigurationValues field's value.
+func (s *Addon) SetConfigurationValues(v string) *Addon {
+	s.ConfigurationValues = &v
+	return s
+}
+
 // SetCreatedAt sets the CreatedAt field's value.
 func (s *Addon) SetCreatedAt(v time.Time) *Addon {
 	s.CreatedAt = &v
@@ -4067,9 +5321,27 @@ func (s *Addon) SetHealth(v *AddonHealth) *Addon {
 	return s
 }
 
+// SetMarketplaceInformation sets the MarketplaceInformation field's value.
+func (s *Addon) SetMarketplaceInformation(v *MarketplaceInformation) *Addon {
+	s.MarketplaceInformation = v
+	return s
+}
+
 // SetModifiedAt sets the ModifiedAt field's value.
 func (s *Addon) SetModifiedAt(v time.Time) *Addon {
 	s.ModifiedAt = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *Addon) SetOwner(v string) *Addon {
+	s.Owner = &v
+	return s
+}
+
+// SetPublisher sets the Publisher field's value.
+func (s *Addon) SetPublisher(v string) *Addon {
+	s.Publisher = &v
 	return s
 }
 
@@ -4095,7 +5367,7 @@ func (s *Addon) SetTags(v map[string]*string) *Addon {
 type AddonHealth struct {
 	_ struct{} `type:"structure"`
 
-	// An object that represents the add-on's health issues.
+	// An object representing the health issues for an add-on.
 	Issues []*AddonIssue `locationName:"issues" type:"list"`
 }
 
@@ -4130,9 +5402,18 @@ type AddonInfo struct {
 	// The name of the add-on.
 	AddonName *string `locationName:"addonName" type:"string"`
 
-	// An object that represents information about available add-on versions and
-	// compatible Kubernetes versions.
+	// An object representing information about available add-on versions and compatible
+	// Kubernetes versions.
 	AddonVersions []*AddonVersionInfo `locationName:"addonVersions" type:"list"`
+
+	// Information about the add-on from the Amazon Web Services Marketplace.
+	MarketplaceInformation *MarketplaceInformation `locationName:"marketplaceInformation" type:"structure"`
+
+	// The owner of the add-on.
+	Owner *string `locationName:"owner" type:"string"`
+
+	// The publisher of the add-on.
+	Publisher *string `locationName:"publisher" type:"string"`
 
 	// The type of the add-on.
 	Type *string `locationName:"type" type:"string"`
@@ -4165,6 +5446,24 @@ func (s *AddonInfo) SetAddonName(v string) *AddonInfo {
 // SetAddonVersions sets the AddonVersions field's value.
 func (s *AddonInfo) SetAddonVersions(v []*AddonVersionInfo) *AddonInfo {
 	s.AddonVersions = v
+	return s
+}
+
+// SetMarketplaceInformation sets the MarketplaceInformation field's value.
+func (s *AddonInfo) SetMarketplaceInformation(v *MarketplaceInformation) *AddonInfo {
+	s.MarketplaceInformation = v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *AddonInfo) SetOwner(v string) *AddonInfo {
+	s.Owner = &v
+	return s
+}
+
+// SetPublisher sets the Publisher field's value.
+func (s *AddonInfo) SetPublisher(v string) *AddonInfo {
+	s.Publisher = &v
 	return s
 }
 
@@ -4234,8 +5533,11 @@ type AddonVersionInfo struct {
 	// The architectures that the version supports.
 	Architecture []*string `locationName:"architecture" type:"list"`
 
-	// An object that represents the compatibilities of a version.
+	// An object representing the compatibilities of a version.
 	Compatibilities []*Compatibility `locationName:"compatibilities" type:"list"`
+
+	// Whether the add-on requires configuration.
+	RequiresConfiguration *bool `locationName:"requiresConfiguration" type:"boolean"`
 }
 
 // String returns the string representation.
@@ -4271,6 +5573,12 @@ func (s *AddonVersionInfo) SetArchitecture(v []*string) *AddonVersionInfo {
 // SetCompatibilities sets the Compatibilities field's value.
 func (s *AddonVersionInfo) SetCompatibilities(v []*Compatibility) *AddonVersionInfo {
 	s.Compatibilities = v
+	return s
+}
+
+// SetRequiresConfiguration sets the RequiresConfiguration field's value.
+func (s *AddonVersionInfo) SetRequiresConfiguration(v bool) *AddonVersionInfo {
+	s.RequiresConfiguration = &v
 	return s
 }
 
@@ -4389,7 +5697,7 @@ type AssociateIdentityProviderConfigInput struct {
 	// ClusterName is a required field
 	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
 
-	// An object that represents an OpenID Connect (OIDC) identity provider configuration.
+	// An object representing an OpenID Connect (OIDC) identity provider configuration.
 	//
 	// Oidc is a required field
 	Oidc *OidcIdentityProviderConfigRequest `locationName:"oidc" type:"structure" required:"true"`
@@ -4549,6 +5857,8 @@ type BadRequestException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// This exception is thrown if the request contains a semantic error. The precise
+	// meaning will depend on the API, and will be documented in the error message.
 	Message_ *string `locationName:"message" type:"string"`
 }
 
@@ -4643,21 +5953,30 @@ func (s *Certificate) SetData(v string) *Certificate {
 }
 
 // These errors are usually caused by a client action. Actions can include using
-// an action or resource on behalf of a user that doesn't have permissions to
-// use the action or resource or specifying an identifier that is not valid.
+// an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+// that doesn't have permissions to use the action or resource or specifying
+// an identifier that is not valid.
 type ClientException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The Amazon EKS add-on name associated with the exception.
 	AddonName *string `locationName:"addonName" type:"string"`
 
 	// The Amazon EKS cluster associated with the exception.
 	ClusterName *string `locationName:"clusterName" type:"string"`
 
+	// These errors are usually caused by a client action. Actions can include using
+	// an action or resource on behalf of an IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+	// that doesn't have permissions to use the action or resource or specifying
+	// an identifier that is not valid.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
 	NodegroupName *string `locationName:"nodegroupName" type:"string"`
+
+	// The Amazon EKS subscription ID with the exception.
+	SubscriptionId *string `locationName:"subscriptionId" type:"string"`
 }
 
 // String returns the string representation.
@@ -4742,6 +6061,16 @@ type Cluster struct {
 	// The endpoint for your Kubernetes API server.
 	Endpoint *string `locationName:"endpoint" type:"string"`
 
+	// An object representing the health of your local Amazon EKS cluster on an
+	// Amazon Web Services Outpost. This object isn't available for clusters on
+	// the Amazon Web Services cloud.
+	Health *ClusterHealth `locationName:"health" type:"structure"`
+
+	// The ID of your local Amazon EKS cluster on an Amazon Web Services Outpost.
+	// This property isn't available for an Amazon EKS cluster on the Amazon Web
+	// Services cloud.
+	Id *string `locationName:"id" type:"string"`
+
 	// The identity provider information for the cluster.
 	Identity *Identity `locationName:"identity" type:"structure"`
 
@@ -4753,6 +6082,11 @@ type Cluster struct {
 
 	// The name of the cluster.
 	Name *string `locationName:"name" type:"string"`
+
+	// An object representing the configuration of your local Amazon EKS cluster
+	// on an Amazon Web Services Outpost. This object isn't available for clusters
+	// on the Amazon Web Services cloud.
+	OutpostConfig *OutpostConfigResponse `locationName:"outpostConfig" type:"structure"`
 
 	// The platform version of your Amazon EKS cluster. For more information, see
 	// Platform Versions (https://docs.aws.amazon.com/eks/latest/userguide/platform-versions.html)
@@ -4844,6 +6178,18 @@ func (s *Cluster) SetEndpoint(v string) *Cluster {
 	return s
 }
 
+// SetHealth sets the Health field's value.
+func (s *Cluster) SetHealth(v *ClusterHealth) *Cluster {
+	s.Health = v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Cluster) SetId(v string) *Cluster {
+	s.Id = &v
+	return s
+}
+
 // SetIdentity sets the Identity field's value.
 func (s *Cluster) SetIdentity(v *Identity) *Cluster {
 	s.Identity = v
@@ -4865,6 +6211,12 @@ func (s *Cluster) SetLogging(v *Logging) *Cluster {
 // SetName sets the Name field's value.
 func (s *Cluster) SetName(v string) *Cluster {
 	s.Name = &v
+	return s
+}
+
+// SetOutpostConfig sets the OutpostConfig field's value.
+func (s *Cluster) SetOutpostConfig(v *OutpostConfigResponse) *Cluster {
+	s.OutpostConfig = v
 	return s
 }
 
@@ -4901,6 +6253,93 @@ func (s *Cluster) SetTags(v map[string]*string) *Cluster {
 // SetVersion sets the Version field's value.
 func (s *Cluster) SetVersion(v string) *Cluster {
 	s.Version = &v
+	return s
+}
+
+// An object representing the health of your local Amazon EKS cluster on an
+// Amazon Web Services Outpost. You can't use this API with an Amazon EKS cluster
+// on the Amazon Web Services cloud.
+type ClusterHealth struct {
+	_ struct{} `type:"structure"`
+
+	// An object representing the health issues of your local Amazon EKS cluster
+	// on an Amazon Web Services Outpost.
+	Issues []*ClusterIssue `locationName:"issues" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterHealth) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterHealth) GoString() string {
+	return s.String()
+}
+
+// SetIssues sets the Issues field's value.
+func (s *ClusterHealth) SetIssues(v []*ClusterIssue) *ClusterHealth {
+	s.Issues = v
+	return s
+}
+
+// An issue with your local Amazon EKS cluster on an Amazon Web Services Outpost.
+// You can't use this API with an Amazon EKS cluster on the Amazon Web Services
+// cloud.
+type ClusterIssue struct {
+	_ struct{} `type:"structure"`
+
+	// The error code of the issue.
+	Code *string `locationName:"code" type:"string" enum:"ClusterIssueCode"`
+
+	// A description of the issue.
+	Message *string `locationName:"message" type:"string"`
+
+	// The resource IDs that the issue relates to.
+	ResourceIds []*string `locationName:"resourceIds" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterIssue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClusterIssue) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *ClusterIssue) SetCode(v string) *ClusterIssue {
+	s.Code = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *ClusterIssue) SetMessage(v string) *ClusterIssue {
+	s.Message = &v
+	return s
+}
+
+// SetResourceIds sets the ResourceIds field's value.
+func (s *ClusterIssue) SetResourceIds(v []*string) *ClusterIssue {
+	s.ResourceIds = v
 	return s
 }
 
@@ -5086,11 +6525,83 @@ func (s *ConnectorConfigResponse) SetRoleArn(v string) *ConnectorConfigResponse 
 	return s
 }
 
+// The placement configuration for all the control plane instances of your local
+// Amazon EKS cluster on an Amazon Web Services Outpost. For more information,
+// see Capacity considerations (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-capacity-considerations.html)
+// in the Amazon EKS User Guide.
+type ControlPlanePlacementRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the placement group for the Kubernetes control plane instances.
+	// This setting can't be changed after cluster creation.
+	GroupName *string `locationName:"groupName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ControlPlanePlacementRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ControlPlanePlacementRequest) GoString() string {
+	return s.String()
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *ControlPlanePlacementRequest) SetGroupName(v string) *ControlPlanePlacementRequest {
+	s.GroupName = &v
+	return s
+}
+
+// The placement configuration for all the control plane instances of your local
+// Amazon EKS cluster on an Amazon Web Services Outpost. For more information,
+// see Capacity considerations (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-capacity-considerations.html)
+// in the Amazon EKS User Guide.
+type ControlPlanePlacementResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the placement group for the Kubernetes control plane instances.
+	GroupName *string `locationName:"groupName" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ControlPlanePlacementResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ControlPlanePlacementResponse) GoString() string {
+	return s.String()
+}
+
+// SetGroupName sets the GroupName field's value.
+func (s *ControlPlanePlacementResponse) SetGroupName(v string) *ControlPlanePlacementResponse {
+	s.GroupName = &v
+	return s
+}
+
 type CreateAddonInput struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the add-on. The name must match one of the names returned by
-	// DescribeAddonVersions (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html).
+	// The name of the add-on. The name must match one of the names that DescribeAddonVersions
+	// (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html)
+	// returns.
 	//
 	// AddonName is a required field
 	AddonName *string `locationName:"addonName" type:"string" required:"true"`
@@ -5108,8 +6619,32 @@ type CreateAddonInput struct {
 	// ClusterName is a required field
 	ClusterName *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
 
-	// How to resolve parameter value conflicts when migrating an existing add-on
-	// to an Amazon EKS add-on.
+	// The set of configuration values for the add-on that's created. The values
+	// that you provide are validated against the schema in DescribeAddonConfiguration
+	// (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonConfiguration.html).
+	ConfigurationValues *string `locationName:"configurationValues" type:"string"`
+
+	// How to resolve field value conflicts for an Amazon EKS add-on. Conflicts
+	// are handled based on the value you choose:
+	//
+	//    * None – If the self-managed version of the add-on is installed on your
+	//    cluster, Amazon EKS doesn't change the value. Creation of the add-on might
+	//    fail.
+	//
+	//    * Overwrite – If the self-managed version of the add-on is installed
+	//    on your cluster and the Amazon EKS default value is different than the
+	//    existing value, Amazon EKS changes the value to the Amazon EKS default
+	//    value.
+	//
+	//    * Preserve – This is similar to the NONE option. If the self-managed
+	//    version of the add-on is installed on your cluster Amazon EKS doesn't
+	//    change the add-on resource properties. Creation of the add-on might fail
+	//    if conflicts are detected. This option works differently during the update
+	//    operation. For more information, see UpdateAddon (https://docs.aws.amazon.com/eks/latest/APIReference/API_UpdateAddon.html).
+	//
+	// If you don't currently have the self-managed version of the add-on installed
+	// on your cluster, the Amazon EKS add-on is installed. Amazon EKS sets all
+	// values to default values, regardless of the option that you specify.
 	ResolveConflicts *string `locationName:"resolveConflicts" type:"string" enum:"ResolveConflicts"`
 
 	// The Amazon Resource Name (ARN) of an existing IAM role to bind to the add-on's
@@ -5197,6 +6732,12 @@ func (s *CreateAddonInput) SetClusterName(v string) *CreateAddonInput {
 	return s
 }
 
+// SetConfigurationValues sets the ConfigurationValues field's value.
+func (s *CreateAddonInput) SetConfigurationValues(v string) *CreateAddonInput {
+	s.ConfigurationValues = &v
+	return s
+}
+
 // SetResolveConflicts sets the ResolveConflicts field's value.
 func (s *CreateAddonInput) SetResolveConflicts(v string) *CreateAddonInput {
 	s.ResolveConflicts = &v
@@ -5276,6 +6817,14 @@ type CreateClusterInput struct {
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
+	// An object representing the configuration of your local Amazon EKS cluster
+	// on an Amazon Web Services Outpost. Before creating a local cluster on an
+	// Outpost, review Local clusters for Amazon EKS on Amazon Web Services Outposts
+	// (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-local-cluster-overview.html)
+	// in the Amazon EKS User Guide. This object isn't available for creating Amazon
+	// EKS clusters on the Amazon Web Services cloud.
+	OutpostConfig *OutpostConfigRequest `locationName:"outpostConfig" type:"structure"`
+
 	// The VPC configuration that's used by the cluster control plane. Amazon EKS
 	// VPC resources have specific requirements to work properly with Kubernetes.
 	// For more information, see Cluster VPC Considerations (https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html)
@@ -5301,7 +6850,9 @@ type CreateClusterInput struct {
 	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
 
 	// The desired Kubernetes version for your cluster. If you don't specify a value
-	// here, the latest version available in Amazon EKS is used.
+	// here, the default version available in Amazon EKS is used.
+	//
+	// The default version might not be the latest version available.
 	Version *string `locationName:"version" type:"string"`
 }
 
@@ -5341,6 +6892,11 @@ func (s *CreateClusterInput) Validate() error {
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
 	}
+	if s.OutpostConfig != nil {
+		if err := s.OutpostConfig.Validate(); err != nil {
+			invalidParams.AddNested("OutpostConfig", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -5375,6 +6931,12 @@ func (s *CreateClusterInput) SetLogging(v *Logging) *CreateClusterInput {
 // SetName sets the Name field's value.
 func (s *CreateClusterInput) SetName(v string) *CreateClusterInput {
 	s.Name = &v
+	return s
+}
+
+// SetOutpostConfig sets the OutpostConfig field's value.
+func (s *CreateClusterInput) SetOutpostConfig(v *OutpostConfigRequest) *CreateClusterInput {
+	s.OutpostConfig = v
 	return s
 }
 
@@ -5430,6 +6992,162 @@ func (s CreateClusterOutput) GoString() string {
 // SetCluster sets the Cluster field's value.
 func (s *CreateClusterOutput) SetCluster(v *Cluster) *CreateClusterOutput {
 	s.Cluster = v
+	return s
+}
+
+type CreateEksAnywhereSubscriptionInput struct {
+	_ struct{} `type:"structure"`
+
+	// A boolean indicating whether the subscription auto renews at the end of the
+	// term.
+	AutoRenew *bool `locationName:"autoRenew" type:"boolean"`
+
+	// Unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request.
+	ClientRequestToken *string `locationName:"clientRequestToken" type:"string" idempotencyToken:"true"`
+
+	// The number of licenses to purchase with the subscription. Valid values are
+	// between 1 and 100. This value can't be changed after creating the subscription.
+	LicenseQuantity *int64 `locationName:"licenseQuantity" type:"integer"`
+
+	// The license type for all licenses in the subscription. Valid value is CLUSTER.
+	// With the CLUSTER license type, each license covers support for a single EKS
+	// Anywhere cluster.
+	LicenseType *string `locationName:"licenseType" type:"string" enum:"EksAnywhereSubscriptionLicenseType"`
+
+	// The unique name for your subscription. It must be unique in your Amazon Web
+	// Services account in the Amazon Web Services Region you're creating the subscription
+	// in. The name can contain only alphanumeric characters (case-sensitive), hyphens,
+	// and underscores. It must start with an alphabetic character and can't be
+	// longer than 100 characters.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The metadata for a subscription to assist with categorization and organization.
+	// Each tag consists of a key and an optional value. Subscription tags don't
+	// propagate to any other resources associated with the subscription.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+
+	// An object representing the term duration and term unit type of your subscription.
+	// This determines the term length of your subscription. Valid values are MONTHS
+	// for term unit and 12 or 36 for term duration, indicating a 12 month or 36
+	// month subscription. This value cannot be changed after creating the subscription.
+	//
+	// Term is a required field
+	Term *EksAnywhereSubscriptionTerm `locationName:"term" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEksAnywhereSubscriptionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEksAnywhereSubscriptionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateEksAnywhereSubscriptionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateEksAnywhereSubscriptionInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.Term == nil {
+		invalidParams.Add(request.NewErrParamRequired("Term"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoRenew sets the AutoRenew field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetAutoRenew(v bool) *CreateEksAnywhereSubscriptionInput {
+	s.AutoRenew = &v
+	return s
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetClientRequestToken(v string) *CreateEksAnywhereSubscriptionInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetLicenseQuantity sets the LicenseQuantity field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetLicenseQuantity(v int64) *CreateEksAnywhereSubscriptionInput {
+	s.LicenseQuantity = &v
+	return s
+}
+
+// SetLicenseType sets the LicenseType field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetLicenseType(v string) *CreateEksAnywhereSubscriptionInput {
+	s.LicenseType = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetName(v string) *CreateEksAnywhereSubscriptionInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetTags(v map[string]*string) *CreateEksAnywhereSubscriptionInput {
+	s.Tags = v
+	return s
+}
+
+// SetTerm sets the Term field's value.
+func (s *CreateEksAnywhereSubscriptionInput) SetTerm(v *EksAnywhereSubscriptionTerm) *CreateEksAnywhereSubscriptionInput {
+	s.Term = v
+	return s
+}
+
+type CreateEksAnywhereSubscriptionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the subscription.
+	Subscription *EksAnywhereSubscription `locationName:"subscription" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEksAnywhereSubscriptionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateEksAnywhereSubscriptionOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubscription sets the Subscription field's value.
+func (s *CreateEksAnywhereSubscriptionOutput) SetSubscription(v *EksAnywhereSubscription) *CreateEksAnywhereSubscriptionOutput {
+	s.Subscription = v
 	return s
 }
 
@@ -5596,13 +7314,12 @@ func (s *CreateFargateProfileOutput) SetFargateProfile(v *FargateProfile) *Creat
 type CreateNodegroupInput struct {
 	_ struct{} `type:"structure"`
 
-	// The AMI type for your node group. GPU instance types should use the AL2_x86_64_GPU
-	// AMI type. Non-GPU instances should use the AL2_x86_64 AMI type. Arm instances
-	// should use the AL2_ARM_64 AMI type. All types use the Amazon EKS optimized
-	// Amazon Linux 2 AMI. If you specify launchTemplate, and your launch template
-	// uses a custom AMI, then don't specify amiType, or the node group deployment
-	// will fail. For more information about using launch templates with Amazon
-	// EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
+	// The AMI type for your node group. If you specify launchTemplate, and your
+	// launch template uses a custom AMI, then don't specify amiType, or the node
+	// group deployment will fail. If your launch template uses a Windows custom
+	// AMI, then add eks:kube-proxy-windows to your Windows nodes rolearn in the
+	// aws-auth ConfigMap. For more information about using launch templates with
+	// Amazon EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 	// in the Amazon EKS User Guide.
 	AmiType *string `locationName:"amiType" type:"string" enum:"AMITypes"`
 
@@ -5619,22 +7336,23 @@ type CreateNodegroupInput struct {
 	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
 
 	// The root device disk size (in GiB) for your node group instances. The default
-	// disk size is 20 GiB. If you specify launchTemplate, then don't specify diskSize,
+	// disk size is 20 GiB for Linux and Bottlerocket. The default disk size is
+	// 50 GiB for Windows. If you specify launchTemplate, then don't specify diskSize,
 	// or the node group deployment will fail. For more information about using
 	// launch templates with Amazon EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 	// in the Amazon EKS User Guide.
 	DiskSize *int64 `locationName:"diskSize" type:"integer"`
 
 	// Specify the instance types for a node group. If you specify a GPU instance
-	// type, be sure to specify AL2_x86_64_GPU with the amiType parameter. If you
-	// specify launchTemplate, then you can specify zero or one instance type in
-	// your launch template or you can specify 0-20 instance types for instanceTypes.
-	// If however, you specify an instance type in your launch template and specify
-	// any instanceTypes, the node group deployment will fail. If you don't specify
-	// an instance type in a launch template or for instanceTypes, then t3.medium
-	// is used, by default. If you specify Spot for capacityType, then we recommend
-	// specifying multiple values for instanceTypes. For more information, see Managed
-	// node group capacity types (https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html#managed-node-group-capacity-types)
+	// type, make sure to also specify an applicable GPU AMI type with the amiType
+	// parameter. If you specify launchTemplate, then you can specify zero or one
+	// instance type in your launch template or you can specify 0-20 instance types
+	// for instanceTypes. If however, you specify an instance type in your launch
+	// template and specify any instanceTypes, the node group deployment will fail.
+	// If you don't specify an instance type in a launch template or for instanceTypes,
+	// then t3.medium is used, by default. If you specify Spot for capacityType,
+	// then we recommend specifying multiple values for instanceTypes. For more
+	// information, see Managed node group capacity types (https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html#managed-node-group-capacity-types)
 	// and Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 	// in the Amazon EKS User Guide.
 	InstanceTypes []*string `locationName:"instanceTypes" type:"list"`
@@ -5672,19 +7390,25 @@ type CreateNodegroupInput struct {
 
 	// The AMI version of the Amazon EKS optimized AMI to use with your node group.
 	// By default, the latest available AMI version for the node group's current
-	// Kubernetes version is used. For more information, see Amazon EKS optimized
-	// Amazon Linux 2 AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
-	// in the Amazon EKS User Guide. If you specify launchTemplate, and your launch
-	// template uses a custom AMI, then don't specify releaseVersion, or the node
-	// group deployment will fail. For more information about using launch templates
-	// with Amazon EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
+	// Kubernetes version is used. For information about Linux versions, see Amazon
+	// EKS optimized Amazon Linux AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
+	// in the Amazon EKS User Guide. Amazon EKS managed node groups support the
+	// November 2022 and later releases of the Windows AMIs. For information about
+	// Windows versions, see Amazon EKS optimized Windows AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-ami-versions-windows.html)
+	// in the Amazon EKS User Guide.
+	//
+	// If you specify launchTemplate, and your launch template uses a custom AMI,
+	// then don't specify releaseVersion, or the node group deployment will fail.
+	// For more information about using launch templates with Amazon EKS, see Launch
+	// template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 	// in the Amazon EKS User Guide.
 	ReleaseVersion *string `locationName:"releaseVersion" type:"string"`
 
-	// The remote access (SSH) configuration to use with your node group. If you
-	// specify launchTemplate, then don't specify remoteAccess, or the node group
-	// deployment will fail. For more information about using launch templates with
-	// Amazon EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
+	// The remote access configuration to use with your node group. For Linux, the
+	// protocol is SSH. For Windows, the protocol is RDP. If you specify launchTemplate,
+	// then don't specify remoteAccess, or the node group deployment will fail.
+	// For more information about using launch templates with Amazon EKS, see Launch
+	// template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 	// in the Amazon EKS User Guide.
 	RemoteAccess *RemoteAccessConfig `locationName:"remoteAccess" type:"structure"`
 
@@ -5930,6 +7654,183 @@ func (s *CreateNodegroupOutput) SetNodegroup(v *Nodegroup) *CreateNodegroupOutpu
 	return s
 }
 
+type CreatePodIdentityAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request.
+	ClientRequestToken *string `locationName:"clientRequestToken" type:"string" idempotencyToken:"true"`
+
+	// The name of the cluster to create the association in.
+	//
+	// ClusterName is a required field
+	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
+
+	// The name of the Kubernetes namespace inside the cluster to create the association
+	// in. The service account and the pods that use the service account must be
+	// in this namespace.
+	//
+	// Namespace is a required field
+	Namespace *string `locationName:"namespace" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to associate with the service
+	// account. The EKS Pod Identity agent manages credentials to assume this role
+	// for applications in the containers in the pods that use this service account.
+	//
+	// RoleArn is a required field
+	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
+
+	// The name of the Kubernetes service account inside the cluster to associate
+	// the IAM credentials with.
+	//
+	// ServiceAccount is a required field
+	ServiceAccount *string `locationName:"serviceAccount" type:"string" required:"true"`
+
+	// The metadata that you apply to a resource to assist with categorization and
+	// organization. Each tag consists of a key and an optional value. You define
+	// both.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePodIdentityAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePodIdentityAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreatePodIdentityAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreatePodIdentityAssociationInput"}
+	if s.ClusterName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterName"))
+	}
+	if s.ClusterName != nil && len(*s.ClusterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterName", 1))
+	}
+	if s.Namespace == nil {
+		invalidParams.Add(request.NewErrParamRequired("Namespace"))
+	}
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
+	}
+	if s.ServiceAccount == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceAccount"))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *CreatePodIdentityAssociationInput) SetClientRequestToken(v string) *CreatePodIdentityAssociationInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *CreatePodIdentityAssociationInput) SetClusterName(v string) *CreatePodIdentityAssociationInput {
+	s.ClusterName = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *CreatePodIdentityAssociationInput) SetNamespace(v string) *CreatePodIdentityAssociationInput {
+	s.Namespace = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *CreatePodIdentityAssociationInput) SetRoleArn(v string) *CreatePodIdentityAssociationInput {
+	s.RoleArn = &v
+	return s
+}
+
+// SetServiceAccount sets the ServiceAccount field's value.
+func (s *CreatePodIdentityAssociationInput) SetServiceAccount(v string) *CreatePodIdentityAssociationInput {
+	s.ServiceAccount = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreatePodIdentityAssociationInput) SetTags(v map[string]*string) *CreatePodIdentityAssociationInput {
+	s.Tags = v
+	return s
+}
+
+type CreatePodIdentityAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of your new association.
+	//
+	// The description includes an ID for the association. Use the ID of the association
+	// in further actions to manage the association.
+	Association *PodIdentityAssociation `locationName:"association" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePodIdentityAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePodIdentityAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociation sets the Association field's value.
+func (s *CreatePodIdentityAssociationOutput) SetAssociation(v *PodIdentityAssociation) *CreatePodIdentityAssociationOutput {
+	s.Association = v
+	return s
+}
+
 type DeleteAddonInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -5946,7 +7847,7 @@ type DeleteAddonInput struct {
 
 	// Specifying this option preserves the add-on software on your cluster but
 	// Amazon EKS stops managing any settings for the add-on. If an IAM account
-	// is associated with the add-on, it is not removed.
+	// is associated with the add-on, it isn't removed.
 	Preserve *bool `location:"querystring" locationName:"preserve" type:"boolean"`
 }
 
@@ -6117,6 +8018,86 @@ func (s DeleteClusterOutput) GoString() string {
 // SetCluster sets the Cluster field's value.
 func (s *DeleteClusterOutput) SetCluster(v *Cluster) *DeleteClusterOutput {
 	s.Cluster = v
+	return s
+}
+
+type DeleteEksAnywhereSubscriptionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the subscription.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEksAnywhereSubscriptionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEksAnywhereSubscriptionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteEksAnywhereSubscriptionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteEksAnywhereSubscriptionInput"}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetId sets the Id field's value.
+func (s *DeleteEksAnywhereSubscriptionInput) SetId(v string) *DeleteEksAnywhereSubscriptionInput {
+	s.Id = &v
+	return s
+}
+
+type DeleteEksAnywhereSubscriptionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the subscription to be deleted.
+	Subscription *EksAnywhereSubscription `locationName:"subscription" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEksAnywhereSubscriptionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteEksAnywhereSubscriptionOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubscription sets the Subscription field's value.
+func (s *DeleteEksAnywhereSubscriptionOutput) SetSubscription(v *EksAnywhereSubscription) *DeleteEksAnywhereSubscriptionOutput {
+	s.Subscription = v
 	return s
 }
 
@@ -6315,6 +8296,103 @@ func (s *DeleteNodegroupOutput) SetNodegroup(v *Nodegroup) *DeleteNodegroupOutpu
 	return s
 }
 
+type DeletePodIdentityAssociationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the association to be deleted.
+	//
+	// AssociationId is a required field
+	AssociationId *string `location:"uri" locationName:"associationId" type:"string" required:"true"`
+
+	// The cluster name that
+	//
+	// ClusterName is a required field
+	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePodIdentityAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePodIdentityAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeletePodIdentityAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeletePodIdentityAssociationInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.AssociationId != nil && len(*s.AssociationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AssociationId", 1))
+	}
+	if s.ClusterName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterName"))
+	}
+	if s.ClusterName != nil && len(*s.ClusterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DeletePodIdentityAssociationInput) SetAssociationId(v string) *DeletePodIdentityAssociationInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *DeletePodIdentityAssociationInput) SetClusterName(v string) *DeletePodIdentityAssociationInput {
+	s.ClusterName = &v
+	return s
+}
+
+type DeletePodIdentityAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the EKS Pod Identity association that was deleted.
+	Association *PodIdentityAssociation `locationName:"association" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePodIdentityAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePodIdentityAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociation sets the Association field's value.
+func (s *DeletePodIdentityAssociationOutput) SetAssociation(v *PodIdentityAssociation) *DeletePodIdentityAssociationOutput {
+	s.Association = v
+	return s
+}
+
 type DeregisterClusterInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6392,6 +8470,120 @@ func (s DeregisterClusterOutput) GoString() string {
 // SetCluster sets the Cluster field's value.
 func (s *DeregisterClusterOutput) SetCluster(v *Cluster) *DeregisterClusterOutput {
 	s.Cluster = v
+	return s
+}
+
+type DescribeAddonConfigurationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the add-on. The name must match one of the names that DescribeAddonVersions
+	// (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html)
+	// returns.
+	//
+	// AddonName is a required field
+	AddonName *string `location:"querystring" locationName:"addonName" type:"string" required:"true"`
+
+	// The version of the add-on. The version must match one of the versions returned
+	// by DescribeAddonVersions (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html).
+	//
+	// AddonVersion is a required field
+	AddonVersion *string `location:"querystring" locationName:"addonVersion" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAddonConfigurationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAddonConfigurationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeAddonConfigurationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeAddonConfigurationInput"}
+	if s.AddonName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AddonName"))
+	}
+	if s.AddonVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("AddonVersion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAddonName sets the AddonName field's value.
+func (s *DescribeAddonConfigurationInput) SetAddonName(v string) *DescribeAddonConfigurationInput {
+	s.AddonName = &v
+	return s
+}
+
+// SetAddonVersion sets the AddonVersion field's value.
+func (s *DescribeAddonConfigurationInput) SetAddonVersion(v string) *DescribeAddonConfigurationInput {
+	s.AddonVersion = &v
+	return s
+}
+
+type DescribeAddonConfigurationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the add-on.
+	AddonName *string `locationName:"addonName" type:"string"`
+
+	// The version of the add-on. The version must match one of the versions returned
+	// by DescribeAddonVersions (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonVersions.html).
+	AddonVersion *string `locationName:"addonVersion" type:"string"`
+
+	// A JSON schema that's used to validate the configuration values that you provide
+	// when an addon is created or updated.
+	ConfigurationSchema *string `locationName:"configurationSchema" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAddonConfigurationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAddonConfigurationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAddonName sets the AddonName field's value.
+func (s *DescribeAddonConfigurationOutput) SetAddonName(v string) *DescribeAddonConfigurationOutput {
+	s.AddonName = &v
+	return s
+}
+
+// SetAddonVersion sets the AddonVersion field's value.
+func (s *DescribeAddonConfigurationOutput) SetAddonVersion(v string) *DescribeAddonConfigurationOutput {
+	s.AddonVersion = &v
+	return s
+}
+
+// SetConfigurationSchema sets the ConfigurationSchema field's value.
+func (s *DescribeAddonConfigurationOutput) SetConfigurationSchema(v string) *DescribeAddonConfigurationOutput {
+	s.ConfigurationSchema = &v
 	return s
 }
 
@@ -6501,7 +8693,7 @@ type DescribeAddonVersionsInput struct {
 	// ListAddons (https://docs.aws.amazon.com/eks/latest/APIReference/API_ListAddons.html).
 	AddonName *string `location:"querystring" locationName:"addonName" type:"string"`
 
-	// The Kubernetes versions that the add-on can be used with.
+	// The Kubernetes versions that you can use the add-on with.
 	KubernetesVersion *string `location:"querystring" locationName:"kubernetesVersion" type:"string"`
 
 	// The maximum number of results to return.
@@ -6515,6 +8707,17 @@ type DescribeAddonVersionsInput struct {
 	// This token should be treated as an opaque identifier that is used only to
 	// retrieve the next items in a list and not for other programmatic purposes.
 	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+
+	// The owner of the add-on. For valid owners, don't specify a value for this
+	// property.
+	Owners []*string `location:"querystring" locationName:"owners" type:"list"`
+
+	// The publisher of the add-on. For valid publishers, don't specify a value
+	// for this property.
+	Publishers []*string `location:"querystring" locationName:"publishers" type:"list"`
+
+	// The type of the add-on. For valid types, don't specify a value for this property.
+	Types []*string `location:"querystring" locationName:"types" type:"list"`
 }
 
 // String returns the string representation.
@@ -6572,16 +8775,35 @@ func (s *DescribeAddonVersionsInput) SetNextToken(v string) *DescribeAddonVersio
 	return s
 }
 
+// SetOwners sets the Owners field's value.
+func (s *DescribeAddonVersionsInput) SetOwners(v []*string) *DescribeAddonVersionsInput {
+	s.Owners = v
+	return s
+}
+
+// SetPublishers sets the Publishers field's value.
+func (s *DescribeAddonVersionsInput) SetPublishers(v []*string) *DescribeAddonVersionsInput {
+	s.Publishers = v
+	return s
+}
+
+// SetTypes sets the Types field's value.
+func (s *DescribeAddonVersionsInput) SetTypes(v []*string) *DescribeAddonVersionsInput {
+	s.Types = v
+	return s
+}
+
 type DescribeAddonVersionsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The list of available versions with Kubernetes version compatibility.
+	// The list of available versions with Kubernetes version compatibility and
+	// other properties.
 	Addons []*AddonInfo `locationName:"addons" type:"list"`
 
-	// The nextToken value returned from a previous paginated DescribeAddonVersionsResponse
-	// where maxResults was used and the results exceeded the value of that parameter.
-	// Pagination continues from the end of the previous results that returned the
-	// nextToken value.
+	// The nextToken value to include in a future DescribeAddonVersions request.
+	// When the results of a DescribeAddonVersions request exceed maxResults, you
+	// can use this value to retrieve the next page of results. This value is null
+	// when there are no more results to return.
 	//
 	// This token should be treated as an opaque identifier that is used only to
 	// retrieve the next items in a list and not for other programmatic purposes.
@@ -6698,6 +8920,86 @@ func (s *DescribeClusterOutput) SetCluster(v *Cluster) *DescribeClusterOutput {
 	return s
 }
 
+type DescribeEksAnywhereSubscriptionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the subscription.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEksAnywhereSubscriptionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEksAnywhereSubscriptionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeEksAnywhereSubscriptionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeEksAnywhereSubscriptionInput"}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetId sets the Id field's value.
+func (s *DescribeEksAnywhereSubscriptionInput) SetId(v string) *DescribeEksAnywhereSubscriptionInput {
+	s.Id = &v
+	return s
+}
+
+type DescribeEksAnywhereSubscriptionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the subscription.
+	Subscription *EksAnywhereSubscription `locationName:"subscription" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEksAnywhereSubscriptionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeEksAnywhereSubscriptionOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubscription sets the Subscription field's value.
+func (s *DescribeEksAnywhereSubscriptionOutput) SetSubscription(v *EksAnywhereSubscription) *DescribeEksAnywhereSubscriptionOutput {
+	s.Subscription = v
+	return s
+}
+
 type DescribeFargateProfileInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6803,7 +9105,7 @@ type DescribeIdentityProviderConfigInput struct {
 	// ClusterName is a required field
 	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
 
-	// An object that represents an identity provider configuration.
+	// An object representing an identity provider configuration.
 	//
 	// IdentityProviderConfig is a required field
 	IdentityProviderConfig *IdentityProviderConfig `locationName:"identityProviderConfig" type:"structure" required:"true"`
@@ -6991,6 +9293,103 @@ func (s *DescribeNodegroupOutput) SetNodegroup(v *Nodegroup) *DescribeNodegroupO
 	return s
 }
 
+type DescribePodIdentityAssociationInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ID of the association that you want the description of.
+	//
+	// AssociationId is a required field
+	AssociationId *string `location:"uri" locationName:"associationId" type:"string" required:"true"`
+
+	// The name of the cluster that the association is in.
+	//
+	// ClusterName is a required field
+	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribePodIdentityAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribePodIdentityAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribePodIdentityAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribePodIdentityAssociationInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.AssociationId != nil && len(*s.AssociationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AssociationId", 1))
+	}
+	if s.ClusterName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterName"))
+	}
+	if s.ClusterName != nil && len(*s.ClusterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *DescribePodIdentityAssociationInput) SetAssociationId(v string) *DescribePodIdentityAssociationInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *DescribePodIdentityAssociationInput) SetClusterName(v string) *DescribePodIdentityAssociationInput {
+	s.ClusterName = &v
+	return s
+}
+
+type DescribePodIdentityAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the EKS Pod Identity association.
+	Association *PodIdentityAssociation `locationName:"association" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribePodIdentityAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribePodIdentityAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociation sets the Association field's value.
+func (s *DescribePodIdentityAssociationOutput) SetAssociation(v *PodIdentityAssociation) *DescribePodIdentityAssociationOutput {
+	s.Association = v
+	return s
+}
+
 type DescribeUpdateInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -7121,7 +9520,7 @@ type DisassociateIdentityProviderConfigInput struct {
 	// ClusterName is a required field
 	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
 
-	// An object that represents an identity provider configuration.
+	// An object representing an identity provider configuration.
 	//
 	// IdentityProviderConfig is a required field
 	IdentityProviderConfig *IdentityProviderConfig `locationName:"identityProviderConfig" type:"structure" required:"true"`
@@ -7215,6 +9614,190 @@ func (s DisassociateIdentityProviderConfigOutput) GoString() string {
 // SetUpdate sets the Update field's value.
 func (s *DisassociateIdentityProviderConfigOutput) SetUpdate(v *Update) *DisassociateIdentityProviderConfigOutput {
 	s.Update = v
+	return s
+}
+
+// An EKS Anywhere subscription authorizing the customer to support for licensed
+// clusters and access to EKS Anywhere Curated Packages.
+type EksAnywhereSubscription struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) for the subscription.
+	Arn *string `locationName:"arn" type:"string"`
+
+	// A boolean indicating whether or not a subscription will auto renew when it
+	// expires.
+	AutoRenew *bool `locationName:"autoRenew" type:"boolean"`
+
+	// The Unix timestamp in seconds for when the subscription was created.
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
+
+	// The Unix timestamp in seconds for when the subscription is effective.
+	EffectiveDate *time.Time `locationName:"effectiveDate" type:"timestamp"`
+
+	// The Unix timestamp in seconds for when the subscription will expire or auto
+	// renew, depending on the auto renew configuration of the subscription object.
+	ExpirationDate *time.Time `locationName:"expirationDate" type:"timestamp"`
+
+	// UUID identifying a subscription.
+	Id *string `locationName:"id" type:"string"`
+
+	// Amazon Web Services License Manager ARN associated with the subscription.
+	LicenseArns []*string `locationName:"licenseArns" type:"list"`
+
+	// The number of licenses included in a subscription. Valid values are between
+	// 1 and 100.
+	LicenseQuantity *int64 `locationName:"licenseQuantity" type:"integer"`
+
+	// The type of licenses included in the subscription. Valid value is CLUSTER.
+	// With the CLUSTER license type, each license covers support for a single EKS
+	// Anywhere cluster.
+	LicenseType *string `locationName:"licenseType" type:"string" enum:"EksAnywhereSubscriptionLicenseType"`
+
+	// The status of a subscription.
+	Status *string `locationName:"status" type:"string"`
+
+	// The metadata for a subscription to assist with categorization and organization.
+	// Each tag consists of a key and an optional value. Subscription tags do not
+	// propagate to any other resources associated with the subscription.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+
+	// An EksAnywhereSubscriptionTerm object.
+	Term *EksAnywhereSubscriptionTerm `locationName:"term" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAnywhereSubscription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAnywhereSubscription) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *EksAnywhereSubscription) SetArn(v string) *EksAnywhereSubscription {
+	s.Arn = &v
+	return s
+}
+
+// SetAutoRenew sets the AutoRenew field's value.
+func (s *EksAnywhereSubscription) SetAutoRenew(v bool) *EksAnywhereSubscription {
+	s.AutoRenew = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *EksAnywhereSubscription) SetCreatedAt(v time.Time) *EksAnywhereSubscription {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetEffectiveDate sets the EffectiveDate field's value.
+func (s *EksAnywhereSubscription) SetEffectiveDate(v time.Time) *EksAnywhereSubscription {
+	s.EffectiveDate = &v
+	return s
+}
+
+// SetExpirationDate sets the ExpirationDate field's value.
+func (s *EksAnywhereSubscription) SetExpirationDate(v time.Time) *EksAnywhereSubscription {
+	s.ExpirationDate = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *EksAnywhereSubscription) SetId(v string) *EksAnywhereSubscription {
+	s.Id = &v
+	return s
+}
+
+// SetLicenseArns sets the LicenseArns field's value.
+func (s *EksAnywhereSubscription) SetLicenseArns(v []*string) *EksAnywhereSubscription {
+	s.LicenseArns = v
+	return s
+}
+
+// SetLicenseQuantity sets the LicenseQuantity field's value.
+func (s *EksAnywhereSubscription) SetLicenseQuantity(v int64) *EksAnywhereSubscription {
+	s.LicenseQuantity = &v
+	return s
+}
+
+// SetLicenseType sets the LicenseType field's value.
+func (s *EksAnywhereSubscription) SetLicenseType(v string) *EksAnywhereSubscription {
+	s.LicenseType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *EksAnywhereSubscription) SetStatus(v string) *EksAnywhereSubscription {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *EksAnywhereSubscription) SetTags(v map[string]*string) *EksAnywhereSubscription {
+	s.Tags = v
+	return s
+}
+
+// SetTerm sets the Term field's value.
+func (s *EksAnywhereSubscription) SetTerm(v *EksAnywhereSubscriptionTerm) *EksAnywhereSubscription {
+	s.Term = v
+	return s
+}
+
+// An object representing the term duration and term unit type of your subscription.
+// This determines the term length of your subscription. Valid values are MONTHS
+// for term unit and 12 or 36 for term duration, indicating a 12 month or 36
+// month subscription.
+type EksAnywhereSubscriptionTerm struct {
+	_ struct{} `type:"structure"`
+
+	// The duration of the subscription term. Valid values are 12 and 36, indicating
+	// a 12 month or 36 month subscription.
+	Duration *int64 `locationName:"duration" type:"integer"`
+
+	// The term unit of the subscription. Valid value is MONTHS.
+	Unit *string `locationName:"unit" type:"string" enum:"EksAnywhereSubscriptionTermUnit"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAnywhereSubscriptionTerm) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EksAnywhereSubscriptionTerm) GoString() string {
+	return s.String()
+}
+
+// SetDuration sets the Duration field's value.
+func (s *EksAnywhereSubscriptionTerm) SetDuration(v int64) *EksAnywhereSubscriptionTerm {
+	s.Duration = &v
+	return s
+}
+
+// SetUnit sets the Unit field's value.
+func (s *EksAnywhereSubscriptionTerm) SetUnit(v string) *EksAnywhereSubscriptionTerm {
+	s.Unit = &v
 	return s
 }
 
@@ -7580,7 +10163,7 @@ func (s *IdentityProviderConfig) SetType(v string) *IdentityProviderConfig {
 type IdentityProviderConfigResponse struct {
 	_ struct{} `type:"structure"`
 
-	// An object that represents an OpenID Connect (OIDC) identity provider configuration.
+	// An object representing an OpenID Connect (OIDC) identity provider configuration.
 	Oidc *OidcIdentityProviderConfig `locationName:"oidc" type:"structure"`
 }
 
@@ -7614,6 +10197,8 @@ type InvalidParameterException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The specified parameter for the add-on name is invalid. Review the available
+	// parameters for the API request
 	AddonName *string `locationName:"addonName" type:"string"`
 
 	// The Amazon EKS cluster associated with the exception.
@@ -7622,10 +10207,15 @@ type InvalidParameterException struct {
 	// The Fargate profile associated with the exception.
 	FargateProfileName *string `locationName:"fargateProfileName" type:"string"`
 
+	// The specified parameter is invalid. Review the available parameters for the
+	// API request.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
 	NodegroupName *string `locationName:"nodegroupName" type:"string"`
+
+	// The Amazon EKS subscription ID with the exception.
+	SubscriptionId *string `locationName:"subscriptionId" type:"string"`
 }
 
 // String returns the string representation.
@@ -7690,15 +10280,21 @@ type InvalidRequestException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The request is invalid given the state of the add-on name. Check the state
+	// of the cluster and the associated operations.
 	AddonName *string `locationName:"addonName" type:"string"`
 
 	// The Amazon EKS cluster associated with the exception.
 	ClusterName *string `locationName:"clusterName" type:"string"`
 
+	// The Amazon EKS add-on name associated with the exception.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
 	NodegroupName *string `locationName:"nodegroupName" type:"string"`
+
+	// The Amazon EKS subscription ID with the exception.
+	SubscriptionId *string `locationName:"subscriptionId" type:"string"`
 }
 
 // String returns the string representation.
@@ -8005,7 +10601,7 @@ func (s *KubernetesNetworkConfigResponse) SetServiceIpv6Cidr(v string) *Kubernet
 }
 
 // An object representing a node group launch template specification. The launch
-// template cannot include SubnetId (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html),
+// template can't include SubnetId (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreateNetworkInterface.html),
 // IamInstanceProfile (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_IamInstanceProfile.html),
 // RequestSpotInstances (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_RequestSpotInstances.html),
 // HibernationOptions (https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_HibernationOptionsRequest.html),
@@ -8016,18 +10612,25 @@ func (s *KubernetesNetworkConfigResponse) SetServiceIpv6Cidr(v string) *Kubernet
 // templates with Amazon EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 // in the Amazon EKS User Guide.
 //
-// Specify either name or id, but not both.
+// You must specify either the launch template ID or the launch template name
+// in the request, but not both.
 type LaunchTemplateSpecification struct {
 	_ struct{} `type:"structure"`
 
 	// The ID of the launch template.
+	//
+	// You must specify either the launch template ID or the launch template name
+	// in the request, but not both.
 	Id *string `locationName:"id" type:"string"`
 
 	// The name of the launch template.
+	//
+	// You must specify either the launch template name or the launch template ID
+	// in the request, but not both.
 	Name *string `locationName:"name" type:"string"`
 
-	// The version of the launch template to use. If no version is specified, then
-	// the template's default version is used.
+	// The version number of the launch template to use. If no version is specified,
+	// then the template's default version is used.
 	Version *string `locationName:"version" type:"string"`
 }
 
@@ -8152,13 +10755,13 @@ func (s *ListAddonsInput) SetNextToken(v string) *ListAddonsInput {
 type ListAddonsOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A list of available add-ons.
+	// A list of installed add-ons.
 	Addons []*string `locationName:"addons" type:"list"`
 
-	// The nextToken value returned from a previous paginated ListAddonsResponse
-	// where maxResults was used and the results exceeded the value of that parameter.
-	// Pagination continues from the end of the previous results that returned the
-	// nextToken value.
+	// The nextToken value to include in a future ListAddons request. When the results
+	// of a ListAddons request exceed maxResults, you can use this value to retrieve
+	// the next page of results. This value is null when there are no more results
+	// to return.
 	//
 	// This token should be treated as an opaque identifier that is used only to
 	// retrieve the next items in a list and not for other programmatic purposes.
@@ -8311,6 +10914,122 @@ func (s *ListClustersOutput) SetClusters(v []*string) *ListClustersOutput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListClustersOutput) SetNextToken(v string) *ListClustersOutput {
 	s.NextToken = &v
+	return s
+}
+
+type ListEksAnywhereSubscriptionsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// An array of subscription statuses to filter on.
+	IncludeStatus []*string `location:"querystring" locationName:"includeStatus" type:"list" enum:"EksAnywhereSubscriptionStatus"`
+
+	// The maximum number of cluster results returned by ListEksAnywhereSubscriptions
+	// in paginated output. When you use this parameter, ListEksAnywhereSubscriptions
+	// returns only maxResults results in a single page along with a nextToken response
+	// element. You can see the remaining results of the initial request by sending
+	// another ListEksAnywhereSubscriptions request with the returned nextToken
+	// value. This value can be between 1 and 100. If you don't use this parameter,
+	// ListEksAnywhereSubscriptions returns up to 10 results and a nextToken value
+	// if applicable.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The nextToken value returned from a previous paginated ListEksAnywhereSubscriptions
+	// request where maxResults was used and the results exceeded the value of that
+	// parameter. Pagination continues from the end of the previous results that
+	// returned the nextToken value.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEksAnywhereSubscriptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEksAnywhereSubscriptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListEksAnywhereSubscriptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListEksAnywhereSubscriptionsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIncludeStatus sets the IncludeStatus field's value.
+func (s *ListEksAnywhereSubscriptionsInput) SetIncludeStatus(v []*string) *ListEksAnywhereSubscriptionsInput {
+	s.IncludeStatus = v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListEksAnywhereSubscriptionsInput) SetMaxResults(v int64) *ListEksAnywhereSubscriptionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListEksAnywhereSubscriptionsInput) SetNextToken(v string) *ListEksAnywhereSubscriptionsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListEksAnywhereSubscriptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The nextToken value to include in a future ListEksAnywhereSubscriptions request.
+	// When the results of a ListEksAnywhereSubscriptions request exceed maxResults,
+	// you can use this value to retrieve the next page of results. This value is
+	// null when there are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// A list of all subscription objects in the region, filtered by includeStatus
+	// and paginated by nextToken and maxResults.
+	Subscriptions []*EksAnywhereSubscription `locationName:"subscriptions" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEksAnywhereSubscriptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListEksAnywhereSubscriptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListEksAnywhereSubscriptionsOutput) SetNextToken(v string) *ListEksAnywhereSubscriptionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSubscriptions sets the Subscriptions field's value.
+func (s *ListEksAnywhereSubscriptionsOutput) SetSubscriptions(v []*EksAnywhereSubscription) *ListEksAnywhereSubscriptionsOutput {
+	s.Subscriptions = v
 	return s
 }
 
@@ -8522,10 +11241,10 @@ type ListIdentityProviderConfigsOutput struct {
 	// The identity provider configurations for the cluster.
 	IdentityProviderConfigs []*IdentityProviderConfig `locationName:"identityProviderConfigs" type:"list"`
 
-	// The nextToken value returned from a previous paginated ListIdentityProviderConfigsResponse
-	// where maxResults was used and the results exceeded the value of that parameter.
-	// Pagination continues from the end of the previous results that returned the
-	// nextToken value.
+	// The nextToken value to include in a future ListIdentityProviderConfigsResponse
+	// request. When the results of a ListIdentityProviderConfigsResponse request
+	// exceed maxResults, you can use this value to retrieve the next page of results.
+	// This value is null when there are no more results to return.
 	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
@@ -8679,6 +11398,165 @@ func (s *ListNodegroupsOutput) SetNextToken(v string) *ListNodegroupsOutput {
 // SetNodegroups sets the Nodegroups field's value.
 func (s *ListNodegroupsOutput) SetNodegroups(v []*string) *ListNodegroupsOutput {
 	s.Nodegroups = v
+	return s
+}
+
+type ListPodIdentityAssociationsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the cluster that the associations are in.
+	//
+	// ClusterName is a required field
+	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
+
+	// The maximum number of EKS Pod Identity association results returned by ListPodIdentityAssociations
+	// in paginated output. When you use this parameter, ListPodIdentityAssociations
+	// returns only maxResults results in a single page along with a nextToken response
+	// element. You can see the remaining results of the initial request by sending
+	// another ListPodIdentityAssociations request with the returned nextToken value.
+	// This value can be between 1 and 100. If you don't use this parameter, ListPodIdentityAssociations
+	// returns up to 100 results and a nextToken value if applicable.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The name of the Kubernetes namespace inside the cluster that the associations
+	// are in.
+	Namespace *string `location:"querystring" locationName:"namespace" type:"string"`
+
+	// The nextToken value returned from a previous paginated ListUpdates request
+	// where maxResults was used and the results exceeded the value of that parameter.
+	// Pagination continues from the end of the previous results that returned the
+	// nextToken value.
+	//
+	// This token should be treated as an opaque identifier that is used only to
+	// retrieve the next items in a list and not for other programmatic purposes.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+
+	// The name of the Kubernetes service account that the associations use.
+	ServiceAccount *string `location:"querystring" locationName:"serviceAccount" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPodIdentityAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPodIdentityAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPodIdentityAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPodIdentityAssociationsInput"}
+	if s.ClusterName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterName"))
+	}
+	if s.ClusterName != nil && len(*s.ClusterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterName", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *ListPodIdentityAssociationsInput) SetClusterName(v string) *ListPodIdentityAssociationsInput {
+	s.ClusterName = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListPodIdentityAssociationsInput) SetMaxResults(v int64) *ListPodIdentityAssociationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *ListPodIdentityAssociationsInput) SetNamespace(v string) *ListPodIdentityAssociationsInput {
+	s.Namespace = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPodIdentityAssociationsInput) SetNextToken(v string) *ListPodIdentityAssociationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetServiceAccount sets the ServiceAccount field's value.
+func (s *ListPodIdentityAssociationsInput) SetServiceAccount(v string) *ListPodIdentityAssociationsInput {
+	s.ServiceAccount = &v
+	return s
+}
+
+type ListPodIdentityAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The list of summarized descriptions of the associations that are in the cluster
+	// and match any filters that you provided.
+	//
+	// Each summary is simplified by removing these fields compared to the full
+	// PodIdentityAssociation :
+	//
+	//    * The IAM role: roleArn
+	//
+	//    * The timestamp that the association was created at: createdAt
+	//
+	//    * The most recent timestamp that the association was modified at:. modifiedAt
+	//
+	//    * The tags on the association: tags
+	Associations []*PodIdentityAssociationSummary `locationName:"associations" type:"list"`
+
+	// The nextToken value to include in a future ListPodIdentityAssociations request.
+	// When the results of a ListPodIdentityAssociations request exceed maxResults,
+	// you can use this value to retrieve the next page of results. This value is
+	// null when there are no more results to return.
+	//
+	// This token should be treated as an opaque identifier that is used only to
+	// retrieve the next items in a list and not for other programmatic purposes.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPodIdentityAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPodIdentityAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociations sets the Associations field's value.
+func (s *ListPodIdentityAssociationsOutput) SetAssociations(v []*PodIdentityAssociationSummary) *ListPodIdentityAssociationsOutput {
+	s.Associations = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPodIdentityAssociationsOutput) SetNextToken(v string) *ListPodIdentityAssociationsOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -8978,6 +11856,47 @@ func (s Logging) GoString() string {
 // SetClusterLogging sets the ClusterLogging field's value.
 func (s *Logging) SetClusterLogging(v []*LogSetup) *Logging {
 	s.ClusterLogging = v
+	return s
+}
+
+// Information about an Amazon EKS add-on from the Amazon Web Services Marketplace.
+type MarketplaceInformation struct {
+	_ struct{} `type:"structure"`
+
+	// The product ID from the Amazon Web Services Marketplace.
+	ProductId *string `locationName:"productId" type:"string"`
+
+	// The product URL from the Amazon Web Services Marketplace.
+	ProductUrl *string `locationName:"productUrl" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MarketplaceInformation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MarketplaceInformation) GoString() string {
+	return s.String()
+}
+
+// SetProductId sets the ProductId field's value.
+func (s *MarketplaceInformation) SetProductId(v string) *MarketplaceInformation {
+	s.ProductId = &v
+	return s
+}
+
+// SetProductUrl sets the ProductUrl field's value.
+func (s *MarketplaceInformation) SetProductUrl(v string) *MarketplaceInformation {
+	s.ProductUrl = &v
 	return s
 }
 
@@ -9471,6 +12390,8 @@ type NotFoundException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// A service resource associated with the request could not be found. Clients
+	// should not retry such requests.
 	Message_ *string `locationName:"message" type:"string"`
 }
 
@@ -9563,8 +12484,8 @@ func (s *OIDC) SetIssuer(v string) *OIDC {
 	return s
 }
 
-// An object that represents the configuration for an OpenID Connect (OIDC)
-// identity provider.
+// An object representing the configuration for an OpenID Connect (OIDC) identity
+// provider.
 type OidcIdentityProviderConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -9847,14 +12768,380 @@ func (s *OidcIdentityProviderConfigRequest) SetUsernamePrefix(v string) *OidcIde
 	return s
 }
 
+// The configuration of your local Amazon EKS cluster on an Amazon Web Services
+// Outpost. Before creating a cluster on an Outpost, review Creating a local
+// cluster on an Outpost (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-local-cluster-create.html)
+// in the Amazon EKS User Guide. This API isn't available for Amazon EKS clusters
+// on the Amazon Web Services cloud.
+type OutpostConfigRequest struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon EC2 instance type that you want to use for your local Amazon EKS
+	// cluster on Outposts. Choose an instance type based on the number of nodes
+	// that your cluster will have. For more information, see Capacity considerations
+	// (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-capacity-considerations.html)
+	// in the Amazon EKS User Guide.
+	//
+	// The instance type that you specify is used for all Kubernetes control plane
+	// instances. The instance type can't be changed after cluster creation. The
+	// control plane is not automatically scaled by Amazon EKS.
+	//
+	// ControlPlaneInstanceType is a required field
+	ControlPlaneInstanceType *string `locationName:"controlPlaneInstanceType" type:"string" required:"true"`
+
+	// An object representing the placement configuration for all the control plane
+	// instances of your local Amazon EKS cluster on an Amazon Web Services Outpost.
+	// For more information, see Capacity considerations (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-capacity-considerations.html)
+	// in the Amazon EKS User Guide.
+	ControlPlanePlacement *ControlPlanePlacementRequest `locationName:"controlPlanePlacement" type:"structure"`
+
+	// The ARN of the Outpost that you want to use for your local Amazon EKS cluster
+	// on Outposts. Only a single Outpost ARN is supported.
+	//
+	// OutpostArns is a required field
+	OutpostArns []*string `locationName:"outpostArns" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OutpostConfigRequest) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OutpostConfigRequest) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *OutpostConfigRequest) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "OutpostConfigRequest"}
+	if s.ControlPlaneInstanceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ControlPlaneInstanceType"))
+	}
+	if s.OutpostArns == nil {
+		invalidParams.Add(request.NewErrParamRequired("OutpostArns"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetControlPlaneInstanceType sets the ControlPlaneInstanceType field's value.
+func (s *OutpostConfigRequest) SetControlPlaneInstanceType(v string) *OutpostConfigRequest {
+	s.ControlPlaneInstanceType = &v
+	return s
+}
+
+// SetControlPlanePlacement sets the ControlPlanePlacement field's value.
+func (s *OutpostConfigRequest) SetControlPlanePlacement(v *ControlPlanePlacementRequest) *OutpostConfigRequest {
+	s.ControlPlanePlacement = v
+	return s
+}
+
+// SetOutpostArns sets the OutpostArns field's value.
+func (s *OutpostConfigRequest) SetOutpostArns(v []*string) *OutpostConfigRequest {
+	s.OutpostArns = v
+	return s
+}
+
+// An object representing the configuration of your local Amazon EKS cluster
+// on an Amazon Web Services Outpost. This API isn't available for Amazon EKS
+// clusters on the Amazon Web Services cloud.
+type OutpostConfigResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon EC2 instance type used for the control plane. The instance type
+	// is the same for all control plane instances.
+	//
+	// ControlPlaneInstanceType is a required field
+	ControlPlaneInstanceType *string `locationName:"controlPlaneInstanceType" type:"string" required:"true"`
+
+	// An object representing the placement configuration for all the control plane
+	// instances of your local Amazon EKS cluster on an Amazon Web Services Outpost.
+	// For more information, see Capacity considerations (https://docs.aws.amazon.com/eks/latest/userguide/eks-outposts-capacity-considerations.html)
+	// in the Amazon EKS User Guide.
+	ControlPlanePlacement *ControlPlanePlacementResponse `locationName:"controlPlanePlacement" type:"structure"`
+
+	// The ARN of the Outpost that you specified for use with your local Amazon
+	// EKS cluster on Outposts.
+	//
+	// OutpostArns is a required field
+	OutpostArns []*string `locationName:"outpostArns" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OutpostConfigResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OutpostConfigResponse) GoString() string {
+	return s.String()
+}
+
+// SetControlPlaneInstanceType sets the ControlPlaneInstanceType field's value.
+func (s *OutpostConfigResponse) SetControlPlaneInstanceType(v string) *OutpostConfigResponse {
+	s.ControlPlaneInstanceType = &v
+	return s
+}
+
+// SetControlPlanePlacement sets the ControlPlanePlacement field's value.
+func (s *OutpostConfigResponse) SetControlPlanePlacement(v *ControlPlanePlacementResponse) *OutpostConfigResponse {
+	s.ControlPlanePlacement = v
+	return s
+}
+
+// SetOutpostArns sets the OutpostArns field's value.
+func (s *OutpostConfigResponse) SetOutpostArns(v []*string) *OutpostConfigResponse {
+	s.OutpostArns = v
+	return s
+}
+
+// Amazon EKS Pod Identity associations provide the ability to manage credentials
+// for your applications, similar to the way that 7EC2l instance profiles provide
+// credentials to Amazon EC2 instances.
+type PodIdentityAssociation struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the association.
+	AssociationArn *string `locationName:"associationArn" type:"string"`
+
+	// The ID of the association.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The name of the cluster that the association is in.
+	ClusterName *string `locationName:"clusterName" type:"string"`
+
+	// The timestamp that the association was created at.
+	CreatedAt *time.Time `locationName:"createdAt" type:"timestamp"`
+
+	// The most recent timestamp that the association was modified at
+	ModifiedAt *time.Time `locationName:"modifiedAt" type:"timestamp"`
+
+	// The name of the Kubernetes namespace inside the cluster to create the association
+	// in. The service account and the pods that use the service account must be
+	// in this namespace.
+	Namespace *string `locationName:"namespace" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to associate with the service
+	// account. The EKS Pod Identity agent manages credentials to assume this role
+	// for applications in the containers in the pods that use this service account.
+	RoleArn *string `locationName:"roleArn" type:"string"`
+
+	// The name of the Kubernetes service account inside the cluster to associate
+	// the IAM credentials with.
+	ServiceAccount *string `locationName:"serviceAccount" type:"string"`
+
+	// The metadata that you apply to a resource to assist with categorization and
+	// organization. Each tag consists of a key and an optional value. You define
+	// both.
+	//
+	// The following basic restrictions apply to tags:
+	//
+	//    * Maximum number of tags per resource – 50
+	//
+	//    * For each resource, each tag key must be unique, and each tag key can
+	//    have only one value.
+	//
+	//    * Maximum key length – 128 Unicode characters in UTF-8
+	//
+	//    * Maximum value length – 256 Unicode characters in UTF-8
+	//
+	//    * If your tagging schema is used across multiple services and resources,
+	//    remember that other services may have restrictions on allowed characters.
+	//    Generally allowed characters are: letters, numbers, and spaces representable
+	//    in UTF-8, and the following characters: + - = . _ : / @.
+	//
+	//    * Tag keys and values are case-sensitive.
+	//
+	//    * Do not use aws:, AWS:, or any upper or lowercase combination of such
+	//    as a prefix for either keys or values as it is reserved for Amazon Web
+	//    Services use. You cannot edit or delete tag keys or values with this prefix.
+	//    Tags with this prefix do not count against your tags per resource limit.
+	Tags map[string]*string `locationName:"tags" min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PodIdentityAssociation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PodIdentityAssociation) GoString() string {
+	return s.String()
+}
+
+// SetAssociationArn sets the AssociationArn field's value.
+func (s *PodIdentityAssociation) SetAssociationArn(v string) *PodIdentityAssociation {
+	s.AssociationArn = &v
+	return s
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *PodIdentityAssociation) SetAssociationId(v string) *PodIdentityAssociation {
+	s.AssociationId = &v
+	return s
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *PodIdentityAssociation) SetClusterName(v string) *PodIdentityAssociation {
+	s.ClusterName = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *PodIdentityAssociation) SetCreatedAt(v time.Time) *PodIdentityAssociation {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetModifiedAt sets the ModifiedAt field's value.
+func (s *PodIdentityAssociation) SetModifiedAt(v time.Time) *PodIdentityAssociation {
+	s.ModifiedAt = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *PodIdentityAssociation) SetNamespace(v string) *PodIdentityAssociation {
+	s.Namespace = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *PodIdentityAssociation) SetRoleArn(v string) *PodIdentityAssociation {
+	s.RoleArn = &v
+	return s
+}
+
+// SetServiceAccount sets the ServiceAccount field's value.
+func (s *PodIdentityAssociation) SetServiceAccount(v string) *PodIdentityAssociation {
+	s.ServiceAccount = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *PodIdentityAssociation) SetTags(v map[string]*string) *PodIdentityAssociation {
+	s.Tags = v
+	return s
+}
+
+// The summarized description of the association.
+//
+// Each summary is simplified by removing these fields compared to the full
+// PodIdentityAssociation :
+//
+//   - The IAM role: roleArn
+//
+//   - The timestamp that the association was created at: createdAt
+//
+//   - The most recent timestamp that the association was modified at:. modifiedAt
+//
+//   - The tags on the association: tags
+type PodIdentityAssociationSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the association.
+	AssociationArn *string `locationName:"associationArn" type:"string"`
+
+	// The ID of the association.
+	AssociationId *string `locationName:"associationId" type:"string"`
+
+	// The name of the cluster that the association is in.
+	ClusterName *string `locationName:"clusterName" type:"string"`
+
+	// The name of the Kubernetes namespace inside the cluster to create the association
+	// in. The service account and the pods that use the service account must be
+	// in this namespace.
+	Namespace *string `locationName:"namespace" type:"string"`
+
+	// The name of the Kubernetes service account inside the cluster to associate
+	// the IAM credentials with.
+	ServiceAccount *string `locationName:"serviceAccount" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PodIdentityAssociationSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PodIdentityAssociationSummary) GoString() string {
+	return s.String()
+}
+
+// SetAssociationArn sets the AssociationArn field's value.
+func (s *PodIdentityAssociationSummary) SetAssociationArn(v string) *PodIdentityAssociationSummary {
+	s.AssociationArn = &v
+	return s
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *PodIdentityAssociationSummary) SetAssociationId(v string) *PodIdentityAssociationSummary {
+	s.AssociationId = &v
+	return s
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *PodIdentityAssociationSummary) SetClusterName(v string) *PodIdentityAssociationSummary {
+	s.ClusterName = &v
+	return s
+}
+
+// SetNamespace sets the Namespace field's value.
+func (s *PodIdentityAssociationSummary) SetNamespace(v string) *PodIdentityAssociationSummary {
+	s.Namespace = &v
+	return s
+}
+
+// SetServiceAccount sets the ServiceAccount field's value.
+func (s *PodIdentityAssociationSummary) SetServiceAccount(v string) *PodIdentityAssociationSummary {
+	s.ServiceAccount = &v
+	return s
+}
+
 // Identifies the Key Management Service (KMS) key used to encrypt the secrets.
 type Provider struct {
 	_ struct{} `type:"structure"`
 
-	// Amazon Resource Name (ARN) or alias of the KMS key. The KMS key must be symmetric,
-	// created in the same region as the cluster, and if the KMS key was created
-	// in a different account, the user must have access to the KMS key. For more
-	// information, see Allowing Users in Other Accounts to Use a KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html)
+	// Amazon Resource Name (ARN) or alias of the KMS key. The KMS key must be symmetric
+	// and created in the same Amazon Web Services Region as the cluster. If the
+	// KMS key was created in a different account, the IAM principal (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_terms-and-concepts.html)
+	// must have access to the KMS key. For more information, see Allowing users
+	// in other accounts to use a KMS key (https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-modifying-external-accounts.html)
 	// in the Key Management Service Developer Guide.
 	KeyArn *string `locationName:"keyArn" type:"string"`
 }
@@ -10013,17 +13300,20 @@ func (s *RegisterClusterOutput) SetCluster(v *Cluster) *RegisterClusterOutput {
 type RemoteAccessConfig struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon EC2 SSH key that provides access for SSH communication with the
-	// nodes in the managed node group. For more information, see Amazon EC2 key
-	// pairs and Linux instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
-	// in the Amazon Elastic Compute Cloud User Guide for Linux Instances.
+	// The Amazon EC2 SSH key name that provides access for SSH communication with
+	// the nodes in the managed node group. For more information, see Amazon EC2
+	// key pairs and Linux instances (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
+	// in the Amazon Elastic Compute Cloud User Guide for Linux Instances. For Windows,
+	// an Amazon EC2 SSH key is used to obtain the RDP password. For more information,
+	// see Amazon EC2 key pairs and Windows instances (https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-key-pairs.html)
+	// in the Amazon Elastic Compute Cloud User Guide for Windows Instances.
 	Ec2SshKey *string `locationName:"ec2SshKey" type:"string"`
 
-	// The security groups that are allowed SSH access (port 22) to the nodes. If
-	// you specify an Amazon EC2 SSH key but do not specify a source security group
-	// when you create a managed node group, then port 22 on the nodes is opened
-	// to the internet (0.0.0.0/0). For more information, see Security Groups for
-	// Your VPC (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html)
+	// The security group IDs that are allowed SSH access (port 22) to the nodes.
+	// For Windows, the port is 3389. If you specify an Amazon EC2 SSH key but don't
+	// specify a source security group when you create a managed node group, then
+	// the port on the nodes is opened to the internet (0.0.0.0/0). For more information,
+	// see Security Groups for Your VPC (https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html)
 	// in the Amazon Virtual Private Cloud User Guide.
 	SourceSecurityGroups []*string `locationName:"sourceSecurityGroups" type:"list"`
 }
@@ -10063,11 +13353,13 @@ type ResourceInUseException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The specified add-on name is in use.
 	AddonName *string `locationName:"addonName" type:"string"`
 
 	// The Amazon EKS cluster associated with the exception.
 	ClusterName *string `locationName:"clusterName" type:"string"`
 
+	// The Amazon EKS message associated with the exception.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
@@ -10138,10 +13430,14 @@ type ResourceLimitExceededException struct {
 	// The Amazon EKS cluster associated with the exception.
 	ClusterName *string `locationName:"clusterName" type:"string"`
 
+	// The Amazon EKS message associated with the exception.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
 	NodegroupName *string `locationName:"nodegroupName" type:"string"`
+
+	// The Amazon EKS subscription ID with the exception.
+	SubscriptionId *string `locationName:"subscriptionId" type:"string"`
 }
 
 // String returns the string representation.
@@ -10207,6 +13503,7 @@ type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The Amazon EKS add-on name associated with the exception.
 	AddonName *string `locationName:"addonName" type:"string"`
 
 	// The Amazon EKS cluster associated with the exception.
@@ -10215,10 +13512,14 @@ type ResourceNotFoundException struct {
 	// The Fargate profile associated with the exception.
 	FargateProfileName *string `locationName:"fargateProfileName" type:"string"`
 
+	// The Amazon EKS message associated with the exception.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
 	NodegroupName *string `locationName:"nodegroupName" type:"string"`
+
+	// The Amazon EKS subscription ID with the exception.
+	SubscriptionId *string `locationName:"subscriptionId" type:"string"`
 }
 
 // String returns the string representation.
@@ -10283,6 +13584,8 @@ type ResourcePropagationDelayException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// Required resources (such as service-linked roles) were created and are still
+	// propagating. Retry later.
 	Message_ *string `locationName:"message" type:"string"`
 }
 
@@ -10347,15 +13650,20 @@ type ServerException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The Amazon EKS add-on name associated with the exception.
 	AddonName *string `locationName:"addonName" type:"string"`
 
 	// The Amazon EKS cluster associated with the exception.
 	ClusterName *string `locationName:"clusterName" type:"string"`
 
+	// These errors are usually caused by a server-side issue.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
 	NodegroupName *string `locationName:"nodegroupName" type:"string"`
+
+	// The Amazon EKS subscription ID with the exception.
+	SubscriptionId *string `locationName:"subscriptionId" type:"string"`
 }
 
 // String returns the string representation.
@@ -10419,6 +13727,7 @@ type ServiceUnavailableException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
 
+	// The request has failed due to a temporary failure of the server.
 	Message_ *string `locationName:"message" type:"string"`
 }
 
@@ -10642,6 +13951,10 @@ type UnsupportedAvailabilityZoneException struct {
 	// The Amazon EKS cluster associated with the exception.
 	ClusterName *string `locationName:"clusterName" type:"string"`
 
+	// At least one of your specified cluster subnets is in an Availability Zone
+	// that does not support Amazon EKS. The exception output specifies the supported
+	// Availability Zones for your account, from which you can choose subnets for
+	// your cluster.
 	Message_ *string `locationName:"message" type:"string"`
 
 	// The Amazon EKS managed node group associated with the exception.
@@ -10897,8 +14210,23 @@ type UpdateAddonInput struct {
 	// ClusterName is a required field
 	ClusterName *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
 
-	// How to resolve parameter value conflicts when applying the new version of
-	// the add-on to the cluster.
+	// The set of configuration values for the add-on that's created. The values
+	// that you provide are validated against the schema in DescribeAddonConfiguration
+	// (https://docs.aws.amazon.com/eks/latest/APIReference/API_DescribeAddonConfiguration.html).
+	ConfigurationValues *string `locationName:"configurationValues" type:"string"`
+
+	// How to resolve field value conflicts for an Amazon EKS add-on if you've changed
+	// a value from the Amazon EKS default value. Conflicts are handled based on
+	// the option you choose:
+	//
+	//    * None – Amazon EKS doesn't change the value. The update might fail.
+	//
+	//    * Overwrite – Amazon EKS overwrites the changed value back to the Amazon
+	//    EKS default value.
+	//
+	//    * Preserve – Amazon EKS preserves the value. If you choose this option,
+	//    we recommend that you test any field and value changes on a non-production
+	//    cluster before updating the add-on on your production cluster.
 	ResolveConflicts *string `locationName:"resolveConflicts" type:"string" enum:"ResolveConflicts"`
 
 	// The Amazon Resource Name (ARN) of an existing IAM role to bind to the add-on's
@@ -10979,6 +14307,12 @@ func (s *UpdateAddonInput) SetClientRequestToken(v string) *UpdateAddonInput {
 // SetClusterName sets the ClusterName field's value.
 func (s *UpdateAddonInput) SetClusterName(v string) *UpdateAddonInput {
 	s.ClusterName = &v
+	return s
+}
+
+// SetConfigurationValues sets the ConfigurationValues field's value.
+func (s *UpdateAddonInput) SetConfigurationValues(v string) *UpdateAddonInput {
+	s.ConfigurationValues = &v
 	return s
 }
 
@@ -11245,6 +14579,109 @@ func (s *UpdateClusterVersionOutput) SetUpdate(v *Update) *UpdateClusterVersionO
 	return s
 }
 
+type UpdateEksAnywhereSubscriptionInput struct {
+	_ struct{} `type:"structure"`
+
+	// A boolean indicating whether or not to automatically renew the subscription.
+	//
+	// AutoRenew is a required field
+	AutoRenew *bool `locationName:"autoRenew" type:"boolean" required:"true"`
+
+	// Unique, case-sensitive identifier to ensure the idempotency of the request.
+	ClientRequestToken *string `locationName:"clientRequestToken" type:"string" idempotencyToken:"true"`
+
+	// The ID of the subscription.
+	//
+	// Id is a required field
+	Id *string `location:"uri" locationName:"id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEksAnywhereSubscriptionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEksAnywhereSubscriptionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateEksAnywhereSubscriptionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateEksAnywhereSubscriptionInput"}
+	if s.AutoRenew == nil {
+		invalidParams.Add(request.NewErrParamRequired("AutoRenew"))
+	}
+	if s.Id == nil {
+		invalidParams.Add(request.NewErrParamRequired("Id"))
+	}
+	if s.Id != nil && len(*s.Id) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Id", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAutoRenew sets the AutoRenew field's value.
+func (s *UpdateEksAnywhereSubscriptionInput) SetAutoRenew(v bool) *UpdateEksAnywhereSubscriptionInput {
+	s.AutoRenew = &v
+	return s
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *UpdateEksAnywhereSubscriptionInput) SetClientRequestToken(v string) *UpdateEksAnywhereSubscriptionInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *UpdateEksAnywhereSubscriptionInput) SetId(v string) *UpdateEksAnywhereSubscriptionInput {
+	s.Id = &v
+	return s
+}
+
+type UpdateEksAnywhereSubscriptionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the updated subscription.
+	Subscription *EksAnywhereSubscription `locationName:"subscription" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEksAnywhereSubscriptionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateEksAnywhereSubscriptionOutput) GoString() string {
+	return s.String()
+}
+
+// SetSubscription sets the Subscription field's value.
+func (s *UpdateEksAnywhereSubscriptionOutput) SetSubscription(v *EksAnywhereSubscription) *UpdateEksAnywhereSubscriptionOutput {
+	s.Subscription = v
+	return s
+}
+
 // An object representing a Kubernetes label change for a managed node group.
 type UpdateLabelsPayload struct {
 	_ struct{} `type:"structure"`
@@ -11478,12 +14915,17 @@ type UpdateNodegroupVersionInput struct {
 
 	// The AMI version of the Amazon EKS optimized AMI to use for the update. By
 	// default, the latest available AMI version for the node group's Kubernetes
-	// version is used. For more information, see Amazon EKS optimized Amazon Linux
-	// 2 AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
-	// in the Amazon EKS User Guide. If you specify launchTemplate, and your launch
-	// template uses a custom AMI, then don't specify releaseVersion, or the node
-	// group update will fail. For more information about using launch templates
-	// with Amazon EKS, see Launch template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
+	// version is used. For information about Linux versions, see Amazon EKS optimized
+	// Amazon Linux AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-linux-ami-versions.html)
+	// in the Amazon EKS User Guide. Amazon EKS managed node groups support the
+	// November 2022 and later releases of the Windows AMIs. For information about
+	// Windows versions, see Amazon EKS optimized Windows AMI versions (https://docs.aws.amazon.com/eks/latest/userguide/eks-ami-versions-windows.html)
+	// in the Amazon EKS User Guide.
+	//
+	// If you specify launchTemplate, and your launch template uses a custom AMI,
+	// then don't specify releaseVersion, or the node group update will fail. For
+	// more information about using launch templates with Amazon EKS, see Launch
+	// template support (https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html)
 	// in the Amazon EKS User Guide.
 	ReleaseVersion *string `locationName:"releaseVersion" type:"string"`
 
@@ -11652,6 +15094,122 @@ func (s *UpdateParam) SetValue(v string) *UpdateParam {
 	return s
 }
 
+type UpdatePodIdentityAssociationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the association to be updated.
+	//
+	// AssociationId is a required field
+	AssociationId *string `location:"uri" locationName:"associationId" type:"string" required:"true"`
+
+	// Unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request.
+	ClientRequestToken *string `locationName:"clientRequestToken" type:"string" idempotencyToken:"true"`
+
+	// The name of the cluster that you want to update the association in.
+	//
+	// ClusterName is a required field
+	ClusterName *string `location:"uri" locationName:"name" type:"string" required:"true"`
+
+	// The new IAM role to change the
+	RoleArn *string `locationName:"roleArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePodIdentityAssociationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePodIdentityAssociationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdatePodIdentityAssociationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdatePodIdentityAssociationInput"}
+	if s.AssociationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AssociationId"))
+	}
+	if s.AssociationId != nil && len(*s.AssociationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AssociationId", 1))
+	}
+	if s.ClusterName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ClusterName"))
+	}
+	if s.ClusterName != nil && len(*s.ClusterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClusterName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationId sets the AssociationId field's value.
+func (s *UpdatePodIdentityAssociationInput) SetAssociationId(v string) *UpdatePodIdentityAssociationInput {
+	s.AssociationId = &v
+	return s
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *UpdatePodIdentityAssociationInput) SetClientRequestToken(v string) *UpdatePodIdentityAssociationInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetClusterName sets the ClusterName field's value.
+func (s *UpdatePodIdentityAssociationInput) SetClusterName(v string) *UpdatePodIdentityAssociationInput {
+	s.ClusterName = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *UpdatePodIdentityAssociationInput) SetRoleArn(v string) *UpdatePodIdentityAssociationInput {
+	s.RoleArn = &v
+	return s
+}
+
+type UpdatePodIdentityAssociationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The full description of the EKS Pod Identity association that was updated.
+	Association *PodIdentityAssociation `locationName:"association" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePodIdentityAssociationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdatePodIdentityAssociationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAssociation sets the Association field's value.
+func (s *UpdatePodIdentityAssociationOutput) SetAssociation(v *PodIdentityAssociation) *UpdatePodIdentityAssociationOutput {
+	s.Association = v
+	return s
+}
+
 // An object representing the details of an update to a taints payload. For
 // more information, see Node taints on managed node groups (https://docs.aws.amazon.com/eks/latest/userguide/node-taints-managed-node-groups.html).
 type UpdateTaintsPayload struct {
@@ -11660,7 +15218,7 @@ type UpdateTaintsPayload struct {
 	// Kubernetes taints to be added or updated.
 	AddOrUpdateTaints []*Taint `locationName:"addOrUpdateTaints" type:"list"`
 
-	// Kubernetes taints to be removed.
+	// Kubernetes taints to remove.
 	RemoveTaints []*Taint `locationName:"removeTaints" type:"list"`
 }
 
@@ -11761,13 +15319,8 @@ type VpcConfigRequest struct {
 	// interfaces that Amazon EKS creates to use that allow communication between
 	// your nodes and the Kubernetes control plane. If you don't specify any security
 	// groups, then familiarize yourself with the difference between Amazon EKS
-	// defaults for clusters deployed with Kubernetes:
-	//
-	//    * 1.14 Amazon EKS platform version eks.2 and earlier
-	//
-	//    * 1.14 Amazon EKS platform version eks.3 and later
-	//
-	// For more information, see Amazon EKS security group considerations (https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html)
+	// defaults for clusters deployed with Kubernetes. For more information, see
+	// Amazon EKS security group considerations (https://docs.aws.amazon.com/eks/latest/userguide/sec-group-reqs.html)
 	// in the Amazon EKS User Guide .
 	SecurityGroupIds []*string `locationName:"securityGroupIds" type:"list"`
 
@@ -11956,6 +15509,18 @@ const (
 
 	// AMITypesBottlerocketX8664Nvidia is a AMITypes enum value
 	AMITypesBottlerocketX8664Nvidia = "BOTTLEROCKET_x86_64_NVIDIA"
+
+	// AMITypesWindowsCore2019X8664 is a AMITypes enum value
+	AMITypesWindowsCore2019X8664 = "WINDOWS_CORE_2019_x86_64"
+
+	// AMITypesWindowsFull2019X8664 is a AMITypes enum value
+	AMITypesWindowsFull2019X8664 = "WINDOWS_FULL_2019_x86_64"
+
+	// AMITypesWindowsCore2022X8664 is a AMITypes enum value
+	AMITypesWindowsCore2022X8664 = "WINDOWS_CORE_2022_x86_64"
+
+	// AMITypesWindowsFull2022X8664 is a AMITypes enum value
+	AMITypesWindowsFull2022X8664 = "WINDOWS_FULL_2022_x86_64"
 )
 
 // AMITypes_Values returns all elements of the AMITypes enum
@@ -11969,6 +15534,10 @@ func AMITypes_Values() []string {
 		AMITypesBottlerocketX8664,
 		AMITypesBottlerocketArm64Nvidia,
 		AMITypesBottlerocketX8664Nvidia,
+		AMITypesWindowsCore2019X8664,
+		AMITypesWindowsFull2019X8664,
+		AMITypesWindowsCore2022X8664,
+		AMITypesWindowsFull2022X8664,
 	}
 }
 
@@ -12033,6 +15602,9 @@ const (
 
 	// AddonStatusDegraded is a AddonStatus enum value
 	AddonStatusDegraded = "DEGRADED"
+
+	// AddonStatusUpdateFailed is a AddonStatus enum value
+	AddonStatusUpdateFailed = "UPDATE_FAILED"
 )
 
 // AddonStatus_Values returns all elements of the AddonStatus enum
@@ -12045,6 +15617,7 @@ func AddonStatus_Values() []string {
 		AddonStatusDeleting,
 		AddonStatusDeleteFailed,
 		AddonStatusDegraded,
+		AddonStatusUpdateFailed,
 	}
 }
 
@@ -12061,6 +15634,90 @@ func CapacityTypes_Values() []string {
 	return []string{
 		CapacityTypesOnDemand,
 		CapacityTypesSpot,
+	}
+}
+
+const (
+	// ClusterIssueCodeAccessDenied is a ClusterIssueCode enum value
+	ClusterIssueCodeAccessDenied = "AccessDenied"
+
+	// ClusterIssueCodeClusterUnreachable is a ClusterIssueCode enum value
+	ClusterIssueCodeClusterUnreachable = "ClusterUnreachable"
+
+	// ClusterIssueCodeConfigurationConflict is a ClusterIssueCode enum value
+	ClusterIssueCodeConfigurationConflict = "ConfigurationConflict"
+
+	// ClusterIssueCodeInternalFailure is a ClusterIssueCode enum value
+	ClusterIssueCodeInternalFailure = "InternalFailure"
+
+	// ClusterIssueCodeResourceLimitExceeded is a ClusterIssueCode enum value
+	ClusterIssueCodeResourceLimitExceeded = "ResourceLimitExceeded"
+
+	// ClusterIssueCodeResourceNotFound is a ClusterIssueCode enum value
+	ClusterIssueCodeResourceNotFound = "ResourceNotFound"
+
+	// ClusterIssueCodeIamRoleNotFound is a ClusterIssueCode enum value
+	ClusterIssueCodeIamRoleNotFound = "IamRoleNotFound"
+
+	// ClusterIssueCodeVpcNotFound is a ClusterIssueCode enum value
+	ClusterIssueCodeVpcNotFound = "VpcNotFound"
+
+	// ClusterIssueCodeInsufficientFreeAddresses is a ClusterIssueCode enum value
+	ClusterIssueCodeInsufficientFreeAddresses = "InsufficientFreeAddresses"
+
+	// ClusterIssueCodeEc2serviceNotSubscribed is a ClusterIssueCode enum value
+	ClusterIssueCodeEc2serviceNotSubscribed = "Ec2ServiceNotSubscribed"
+
+	// ClusterIssueCodeEc2subnetNotFound is a ClusterIssueCode enum value
+	ClusterIssueCodeEc2subnetNotFound = "Ec2SubnetNotFound"
+
+	// ClusterIssueCodeEc2securityGroupNotFound is a ClusterIssueCode enum value
+	ClusterIssueCodeEc2securityGroupNotFound = "Ec2SecurityGroupNotFound"
+
+	// ClusterIssueCodeKmsGrantRevoked is a ClusterIssueCode enum value
+	ClusterIssueCodeKmsGrantRevoked = "KmsGrantRevoked"
+
+	// ClusterIssueCodeKmsKeyNotFound is a ClusterIssueCode enum value
+	ClusterIssueCodeKmsKeyNotFound = "KmsKeyNotFound"
+
+	// ClusterIssueCodeKmsKeyMarkedForDeletion is a ClusterIssueCode enum value
+	ClusterIssueCodeKmsKeyMarkedForDeletion = "KmsKeyMarkedForDeletion"
+
+	// ClusterIssueCodeKmsKeyDisabled is a ClusterIssueCode enum value
+	ClusterIssueCodeKmsKeyDisabled = "KmsKeyDisabled"
+
+	// ClusterIssueCodeStsRegionalEndpointDisabled is a ClusterIssueCode enum value
+	ClusterIssueCodeStsRegionalEndpointDisabled = "StsRegionalEndpointDisabled"
+
+	// ClusterIssueCodeUnsupportedVersion is a ClusterIssueCode enum value
+	ClusterIssueCodeUnsupportedVersion = "UnsupportedVersion"
+
+	// ClusterIssueCodeOther is a ClusterIssueCode enum value
+	ClusterIssueCodeOther = "Other"
+)
+
+// ClusterIssueCode_Values returns all elements of the ClusterIssueCode enum
+func ClusterIssueCode_Values() []string {
+	return []string{
+		ClusterIssueCodeAccessDenied,
+		ClusterIssueCodeClusterUnreachable,
+		ClusterIssueCodeConfigurationConflict,
+		ClusterIssueCodeInternalFailure,
+		ClusterIssueCodeResourceLimitExceeded,
+		ClusterIssueCodeResourceNotFound,
+		ClusterIssueCodeIamRoleNotFound,
+		ClusterIssueCodeVpcNotFound,
+		ClusterIssueCodeInsufficientFreeAddresses,
+		ClusterIssueCodeEc2serviceNotSubscribed,
+		ClusterIssueCodeEc2subnetNotFound,
+		ClusterIssueCodeEc2securityGroupNotFound,
+		ClusterIssueCodeKmsGrantRevoked,
+		ClusterIssueCodeKmsKeyNotFound,
+		ClusterIssueCodeKmsKeyMarkedForDeletion,
+		ClusterIssueCodeKmsKeyDisabled,
+		ClusterIssueCodeStsRegionalEndpointDisabled,
+		ClusterIssueCodeUnsupportedVersion,
+		ClusterIssueCodeOther,
 	}
 }
 
@@ -12157,6 +15814,62 @@ func ConnectorConfigProvider_Values() []string {
 		ConnectorConfigProviderRancher,
 		ConnectorConfigProviderEc2,
 		ConnectorConfigProviderOther,
+	}
+}
+
+const (
+	// EksAnywhereSubscriptionLicenseTypeCluster is a EksAnywhereSubscriptionLicenseType enum value
+	EksAnywhereSubscriptionLicenseTypeCluster = "Cluster"
+)
+
+// EksAnywhereSubscriptionLicenseType_Values returns all elements of the EksAnywhereSubscriptionLicenseType enum
+func EksAnywhereSubscriptionLicenseType_Values() []string {
+	return []string{
+		EksAnywhereSubscriptionLicenseTypeCluster,
+	}
+}
+
+const (
+	// EksAnywhereSubscriptionStatusCreating is a EksAnywhereSubscriptionStatus enum value
+	EksAnywhereSubscriptionStatusCreating = "CREATING"
+
+	// EksAnywhereSubscriptionStatusActive is a EksAnywhereSubscriptionStatus enum value
+	EksAnywhereSubscriptionStatusActive = "ACTIVE"
+
+	// EksAnywhereSubscriptionStatusUpdating is a EksAnywhereSubscriptionStatus enum value
+	EksAnywhereSubscriptionStatusUpdating = "UPDATING"
+
+	// EksAnywhereSubscriptionStatusExpiring is a EksAnywhereSubscriptionStatus enum value
+	EksAnywhereSubscriptionStatusExpiring = "EXPIRING"
+
+	// EksAnywhereSubscriptionStatusExpired is a EksAnywhereSubscriptionStatus enum value
+	EksAnywhereSubscriptionStatusExpired = "EXPIRED"
+
+	// EksAnywhereSubscriptionStatusDeleting is a EksAnywhereSubscriptionStatus enum value
+	EksAnywhereSubscriptionStatusDeleting = "DELETING"
+)
+
+// EksAnywhereSubscriptionStatus_Values returns all elements of the EksAnywhereSubscriptionStatus enum
+func EksAnywhereSubscriptionStatus_Values() []string {
+	return []string{
+		EksAnywhereSubscriptionStatusCreating,
+		EksAnywhereSubscriptionStatusActive,
+		EksAnywhereSubscriptionStatusUpdating,
+		EksAnywhereSubscriptionStatusExpiring,
+		EksAnywhereSubscriptionStatusExpired,
+		EksAnywhereSubscriptionStatusDeleting,
+	}
+}
+
+const (
+	// EksAnywhereSubscriptionTermUnitMonths is a EksAnywhereSubscriptionTermUnit enum value
+	EksAnywhereSubscriptionTermUnitMonths = "MONTHS"
+)
+
+// EksAnywhereSubscriptionTermUnit_Values returns all elements of the EksAnywhereSubscriptionTermUnit enum
+func EksAnywhereSubscriptionTermUnit_Values() []string {
+	return []string{
+		EksAnywhereSubscriptionTermUnitMonths,
 	}
 }
 
@@ -12336,6 +16049,9 @@ const (
 	// NodegroupIssueCodeIamInstanceProfileNotFound is a NodegroupIssueCode enum value
 	NodegroupIssueCodeIamInstanceProfileNotFound = "IamInstanceProfileNotFound"
 
+	// NodegroupIssueCodeEc2subnetMissingIpv6assignment is a NodegroupIssueCode enum value
+	NodegroupIssueCodeEc2subnetMissingIpv6assignment = "Ec2SubnetMissingIpv6Assignment"
+
 	// NodegroupIssueCodeIamLimitExceeded is a NodegroupIssueCode enum value
 	NodegroupIssueCodeIamLimitExceeded = "IamLimitExceeded"
 
@@ -12363,8 +16079,47 @@ const (
 	// NodegroupIssueCodeClusterUnreachable is a NodegroupIssueCode enum value
 	NodegroupIssueCodeClusterUnreachable = "ClusterUnreachable"
 
-	// NodegroupIssueCodeEc2subnetMissingIpv6assignment is a NodegroupIssueCode enum value
-	NodegroupIssueCodeEc2subnetMissingIpv6assignment = "Ec2SubnetMissingIpv6Assignment"
+	// NodegroupIssueCodeAmiIdNotFound is a NodegroupIssueCode enum value
+	NodegroupIssueCodeAmiIdNotFound = "AmiIdNotFound"
+
+	// NodegroupIssueCodeAutoScalingGroupOptInRequired is a NodegroupIssueCode enum value
+	NodegroupIssueCodeAutoScalingGroupOptInRequired = "AutoScalingGroupOptInRequired"
+
+	// NodegroupIssueCodeAutoScalingGroupRateLimitExceeded is a NodegroupIssueCode enum value
+	NodegroupIssueCodeAutoScalingGroupRateLimitExceeded = "AutoScalingGroupRateLimitExceeded"
+
+	// NodegroupIssueCodeEc2launchTemplateDeletionFailure is a NodegroupIssueCode enum value
+	NodegroupIssueCodeEc2launchTemplateDeletionFailure = "Ec2LaunchTemplateDeletionFailure"
+
+	// NodegroupIssueCodeEc2launchTemplateInvalidConfiguration is a NodegroupIssueCode enum value
+	NodegroupIssueCodeEc2launchTemplateInvalidConfiguration = "Ec2LaunchTemplateInvalidConfiguration"
+
+	// NodegroupIssueCodeEc2launchTemplateMaxLimitExceeded is a NodegroupIssueCode enum value
+	NodegroupIssueCodeEc2launchTemplateMaxLimitExceeded = "Ec2LaunchTemplateMaxLimitExceeded"
+
+	// NodegroupIssueCodeEc2subnetListTooLong is a NodegroupIssueCode enum value
+	NodegroupIssueCodeEc2subnetListTooLong = "Ec2SubnetListTooLong"
+
+	// NodegroupIssueCodeIamThrottling is a NodegroupIssueCode enum value
+	NodegroupIssueCodeIamThrottling = "IamThrottling"
+
+	// NodegroupIssueCodeNodeTerminationFailure is a NodegroupIssueCode enum value
+	NodegroupIssueCodeNodeTerminationFailure = "NodeTerminationFailure"
+
+	// NodegroupIssueCodePodEvictionFailure is a NodegroupIssueCode enum value
+	NodegroupIssueCodePodEvictionFailure = "PodEvictionFailure"
+
+	// NodegroupIssueCodeSourceEc2launchTemplateNotFound is a NodegroupIssueCode enum value
+	NodegroupIssueCodeSourceEc2launchTemplateNotFound = "SourceEc2LaunchTemplateNotFound"
+
+	// NodegroupIssueCodeLimitExceeded is a NodegroupIssueCode enum value
+	NodegroupIssueCodeLimitExceeded = "LimitExceeded"
+
+	// NodegroupIssueCodeUnknown is a NodegroupIssueCode enum value
+	NodegroupIssueCodeUnknown = "Unknown"
+
+	// NodegroupIssueCodeAutoScalingGroupInstanceRefreshActive is a NodegroupIssueCode enum value
+	NodegroupIssueCodeAutoScalingGroupInstanceRefreshActive = "AutoScalingGroupInstanceRefreshActive"
 )
 
 // NodegroupIssueCode_Values returns all elements of the NodegroupIssueCode enum
@@ -12379,6 +16134,7 @@ func NodegroupIssueCode_Values() []string {
 		NodegroupIssueCodeEc2subnetNotFound,
 		NodegroupIssueCodeEc2subnetInvalidConfiguration,
 		NodegroupIssueCodeIamInstanceProfileNotFound,
+		NodegroupIssueCodeEc2subnetMissingIpv6assignment,
 		NodegroupIssueCodeIamLimitExceeded,
 		NodegroupIssueCodeIamNodeRoleNotFound,
 		NodegroupIssueCodeNodeCreationFailure,
@@ -12388,7 +16144,20 @@ func NodegroupIssueCode_Values() []string {
 		NodegroupIssueCodeAccessDenied,
 		NodegroupIssueCodeInternalFailure,
 		NodegroupIssueCodeClusterUnreachable,
-		NodegroupIssueCodeEc2subnetMissingIpv6assignment,
+		NodegroupIssueCodeAmiIdNotFound,
+		NodegroupIssueCodeAutoScalingGroupOptInRequired,
+		NodegroupIssueCodeAutoScalingGroupRateLimitExceeded,
+		NodegroupIssueCodeEc2launchTemplateDeletionFailure,
+		NodegroupIssueCodeEc2launchTemplateInvalidConfiguration,
+		NodegroupIssueCodeEc2launchTemplateMaxLimitExceeded,
+		NodegroupIssueCodeEc2subnetListTooLong,
+		NodegroupIssueCodeIamThrottling,
+		NodegroupIssueCodeNodeTerminationFailure,
+		NodegroupIssueCodePodEvictionFailure,
+		NodegroupIssueCodeSourceEc2launchTemplateNotFound,
+		NodegroupIssueCodeLimitExceeded,
+		NodegroupIssueCodeUnknown,
+		NodegroupIssueCodeAutoScalingGroupInstanceRefreshActive,
 	}
 }
 
@@ -12434,6 +16203,9 @@ const (
 
 	// ResolveConflictsNone is a ResolveConflicts enum value
 	ResolveConflictsNone = "NONE"
+
+	// ResolveConflictsPreserve is a ResolveConflicts enum value
+	ResolveConflictsPreserve = "PRESERVE"
 )
 
 // ResolveConflicts_Values returns all elements of the ResolveConflicts enum
@@ -12441,6 +16213,7 @@ func ResolveConflicts_Values() []string {
 	return []string{
 		ResolveConflictsOverwrite,
 		ResolveConflictsNone,
+		ResolveConflictsPreserve,
 	}
 }
 
@@ -12533,6 +16306,15 @@ const (
 
 	// UpdateParamTypeMaxUnavailablePercentage is a UpdateParamType enum value
 	UpdateParamTypeMaxUnavailablePercentage = "MaxUnavailablePercentage"
+
+	// UpdateParamTypeConfigurationValues is a UpdateParamType enum value
+	UpdateParamTypeConfigurationValues = "ConfigurationValues"
+
+	// UpdateParamTypeSecurityGroups is a UpdateParamType enum value
+	UpdateParamTypeSecurityGroups = "SecurityGroups"
+
+	// UpdateParamTypeSubnets is a UpdateParamType enum value
+	UpdateParamTypeSubnets = "Subnets"
 )
 
 // UpdateParamType_Values returns all elements of the UpdateParamType enum
@@ -12561,6 +16343,9 @@ func UpdateParamType_Values() []string {
 		UpdateParamTypeResolveConflicts,
 		UpdateParamTypeMaxUnavailable,
 		UpdateParamTypeMaxUnavailablePercentage,
+		UpdateParamTypeConfigurationValues,
+		UpdateParamTypeSecurityGroups,
+		UpdateParamTypeSubnets,
 	}
 }
 
@@ -12612,6 +16397,9 @@ const (
 
 	// UpdateTypeAddonUpdate is a UpdateType enum value
 	UpdateTypeAddonUpdate = "AddonUpdate"
+
+	// UpdateTypeVpcConfigUpdate is a UpdateType enum value
+	UpdateTypeVpcConfigUpdate = "VpcConfigUpdate"
 )
 
 // UpdateType_Values returns all elements of the UpdateType enum
@@ -12625,5 +16413,6 @@ func UpdateType_Values() []string {
 		UpdateTypeDisassociateIdentityProviderConfig,
 		UpdateTypeAssociateEncryptionConfig,
 		UpdateTypeAddonUpdate,
+		UpdateTypeVpcConfigUpdate,
 	}
 }

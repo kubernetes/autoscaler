@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// AWS MediaTailor.
 //	func myFunc(svc mediatailoriface.MediaTailorAPI) bool {
-//	    // Make svc.ConfigureLogsForPlaybackConfiguration request
+//	    // Make svc.ConfigureLogsForChannel request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockMediaTailorClient struct {
 //	    mediatailoriface.MediaTailorAPI
 //	}
-//	func (m *mockMediaTailorClient) ConfigureLogsForPlaybackConfiguration(input *mediatailor.ConfigureLogsForPlaybackConfigurationInput) (*mediatailor.ConfigureLogsForPlaybackConfigurationOutput, error) {
+//	func (m *mockMediaTailorClient) ConfigureLogsForChannel(input *mediatailor.ConfigureLogsForChannelInput) (*mediatailor.ConfigureLogsForChannelOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type MediaTailorAPI interface {
+	ConfigureLogsForChannel(*mediatailor.ConfigureLogsForChannelInput) (*mediatailor.ConfigureLogsForChannelOutput, error)
+	ConfigureLogsForChannelWithContext(aws.Context, *mediatailor.ConfigureLogsForChannelInput, ...request.Option) (*mediatailor.ConfigureLogsForChannelOutput, error)
+	ConfigureLogsForChannelRequest(*mediatailor.ConfigureLogsForChannelInput) (*request.Request, *mediatailor.ConfigureLogsForChannelOutput)
+
 	ConfigureLogsForPlaybackConfiguration(*mediatailor.ConfigureLogsForPlaybackConfigurationInput) (*mediatailor.ConfigureLogsForPlaybackConfigurationOutput, error)
 	ConfigureLogsForPlaybackConfigurationWithContext(aws.Context, *mediatailor.ConfigureLogsForPlaybackConfigurationInput, ...request.Option) (*mediatailor.ConfigureLogsForPlaybackConfigurationOutput, error)
 	ConfigureLogsForPlaybackConfigurationRequest(*mediatailor.ConfigureLogsForPlaybackConfigurationInput) (*request.Request, *mediatailor.ConfigureLogsForPlaybackConfigurationOutput)
@@ -243,6 +247,10 @@ type MediaTailorAPI interface {
 	UpdateLiveSource(*mediatailor.UpdateLiveSourceInput) (*mediatailor.UpdateLiveSourceOutput, error)
 	UpdateLiveSourceWithContext(aws.Context, *mediatailor.UpdateLiveSourceInput, ...request.Option) (*mediatailor.UpdateLiveSourceOutput, error)
 	UpdateLiveSourceRequest(*mediatailor.UpdateLiveSourceInput) (*request.Request, *mediatailor.UpdateLiveSourceOutput)
+
+	UpdateProgram(*mediatailor.UpdateProgramInput) (*mediatailor.UpdateProgramOutput, error)
+	UpdateProgramWithContext(aws.Context, *mediatailor.UpdateProgramInput, ...request.Option) (*mediatailor.UpdateProgramOutput, error)
+	UpdateProgramRequest(*mediatailor.UpdateProgramInput) (*request.Request, *mediatailor.UpdateProgramOutput)
 
 	UpdateSourceLocation(*mediatailor.UpdateSourceLocationInput) (*mediatailor.UpdateSourceLocationOutput, error)
 	UpdateSourceLocationWithContext(aws.Context, *mediatailor.UpdateSourceLocationInput, ...request.Option) (*mediatailor.UpdateSourceLocationOutput, error)

@@ -23,6 +23,11 @@ import (
 // January 1, 0001 UTC, and January 1, 0001 UTC.
 type UnixTime time.Time
 
+// String calls the underlying time.Time.String to return a human readable representation
+func (e UnixTime) String() string {
+	return time.Time(e).String()
+}
+
 // MarshalDynamoDBAttributeValue implements the Marshaler interface so that
 // the UnixTime can be marshaled from to a DynamoDB AttributeValue number
 // value encoded in the number of seconds since January 1, 1970 UTC.

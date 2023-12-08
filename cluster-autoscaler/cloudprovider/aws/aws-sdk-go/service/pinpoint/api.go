@@ -6525,6 +6525,299 @@ func (c *Pinpoint) GetJourneyExecutionMetricsWithContext(ctx aws.Context, input 
 	return out, req.Send()
 }
 
+const opGetJourneyRunExecutionActivityMetrics = "GetJourneyRunExecutionActivityMetrics"
+
+// GetJourneyRunExecutionActivityMetricsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJourneyRunExecutionActivityMetrics operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetJourneyRunExecutionActivityMetrics for more information on using the GetJourneyRunExecutionActivityMetrics
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetJourneyRunExecutionActivityMetricsRequest method.
+//	req, resp := client.GetJourneyRunExecutionActivityMetricsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionActivityMetrics
+func (c *Pinpoint) GetJourneyRunExecutionActivityMetricsRequest(input *GetJourneyRunExecutionActivityMetricsInput) (req *request.Request, output *GetJourneyRunExecutionActivityMetricsOutput) {
+	op := &request.Operation{
+		Name:       opGetJourneyRunExecutionActivityMetrics,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}/journeys/{journey-id}/runs/{run-id}/activities/{journey-activity-id}/execution-metrics",
+	}
+
+	if input == nil {
+		input = &GetJourneyRunExecutionActivityMetricsInput{}
+	}
+
+	output = &GetJourneyRunExecutionActivityMetricsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetJourneyRunExecutionActivityMetrics API operation for Amazon Pinpoint.
+//
+// Retrieves (queries) pre-aggregated data for a standard run execution metric
+// that applies to a journey activity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetJourneyRunExecutionActivityMetrics for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Provides information about an API request or response.
+//
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
+//
+//   - NotFoundException
+//     Provides information about an API request or response.
+//
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionActivityMetrics
+func (c *Pinpoint) GetJourneyRunExecutionActivityMetrics(input *GetJourneyRunExecutionActivityMetricsInput) (*GetJourneyRunExecutionActivityMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionActivityMetricsRequest(input)
+	return out, req.Send()
+}
+
+// GetJourneyRunExecutionActivityMetricsWithContext is the same as GetJourneyRunExecutionActivityMetrics with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetJourneyRunExecutionActivityMetrics for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetJourneyRunExecutionActivityMetricsWithContext(ctx aws.Context, input *GetJourneyRunExecutionActivityMetricsInput, opts ...request.Option) (*GetJourneyRunExecutionActivityMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionActivityMetricsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetJourneyRunExecutionMetrics = "GetJourneyRunExecutionMetrics"
+
+// GetJourneyRunExecutionMetricsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJourneyRunExecutionMetrics operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetJourneyRunExecutionMetrics for more information on using the GetJourneyRunExecutionMetrics
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetJourneyRunExecutionMetricsRequest method.
+//	req, resp := client.GetJourneyRunExecutionMetricsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionMetrics
+func (c *Pinpoint) GetJourneyRunExecutionMetricsRequest(input *GetJourneyRunExecutionMetricsInput) (req *request.Request, output *GetJourneyRunExecutionMetricsOutput) {
+	op := &request.Operation{
+		Name:       opGetJourneyRunExecutionMetrics,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}/journeys/{journey-id}/runs/{run-id}/execution-metrics",
+	}
+
+	if input == nil {
+		input = &GetJourneyRunExecutionMetricsInput{}
+	}
+
+	output = &GetJourneyRunExecutionMetricsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetJourneyRunExecutionMetrics API operation for Amazon Pinpoint.
+//
+// Retrieves (queries) pre-aggregated data for a standard run execution metric
+// that applies to a journey.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetJourneyRunExecutionMetrics for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Provides information about an API request or response.
+//
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
+//
+//   - NotFoundException
+//     Provides information about an API request or response.
+//
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionMetrics
+func (c *Pinpoint) GetJourneyRunExecutionMetrics(input *GetJourneyRunExecutionMetricsInput) (*GetJourneyRunExecutionMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionMetricsRequest(input)
+	return out, req.Send()
+}
+
+// GetJourneyRunExecutionMetricsWithContext is the same as GetJourneyRunExecutionMetrics with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetJourneyRunExecutionMetrics for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetJourneyRunExecutionMetricsWithContext(ctx aws.Context, input *GetJourneyRunExecutionMetricsInput, opts ...request.Option) (*GetJourneyRunExecutionMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionMetricsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetJourneyRuns = "GetJourneyRuns"
+
+// GetJourneyRunsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJourneyRuns operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetJourneyRuns for more information on using the GetJourneyRuns
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetJourneyRunsRequest method.
+//	req, resp := client.GetJourneyRunsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRuns
+func (c *Pinpoint) GetJourneyRunsRequest(input *GetJourneyRunsInput) (req *request.Request, output *GetJourneyRunsOutput) {
+	op := &request.Operation{
+		Name:       opGetJourneyRuns,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}/journeys/{journey-id}/runs",
+	}
+
+	if input == nil {
+		input = &GetJourneyRunsInput{}
+	}
+
+	output = &GetJourneyRunsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetJourneyRuns API operation for Amazon Pinpoint.
+//
+// Provides information about the runs of a journey.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetJourneyRuns for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Provides information about an API request or response.
+//
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
+//
+//   - NotFoundException
+//     Provides information about an API request or response.
+//
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRuns
+func (c *Pinpoint) GetJourneyRuns(input *GetJourneyRunsInput) (*GetJourneyRunsOutput, error) {
+	req, out := c.GetJourneyRunsRequest(input)
+	return out, req.Send()
+}
+
+// GetJourneyRunsWithContext is the same as GetJourneyRuns with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetJourneyRuns for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetJourneyRunsWithContext(ctx aws.Context, input *GetJourneyRunsInput, opts ...request.Option) (*GetJourneyRunsOutput, error) {
+	req, out := c.GetJourneyRunsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetPushTemplate = "GetPushTemplate"
 
 // GetPushTemplateRequest generates a "aws/request.Request" representing the
@@ -8594,8 +8887,9 @@ func (c *Pinpoint) RemoveAttributesRequest(input *RemoveAttributesInput) (req *r
 
 // RemoveAttributes API operation for Amazon Pinpoint.
 //
-// Removes one or more attributes, of the same attribute type, from all the
-// endpoints that are associated with an application.
+// Removes one or more custom attributes, of the same attribute type, from the
+// application. Existing endpoints still have the attributes but Amazon Pinpoint
+// will stop capturing new or changed values for these attributes.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -13530,6 +13824,12 @@ type ActivityResponse struct {
 	// or COMPLETED.
 	End *string `type:"string"`
 
+	// A JSON object that contains metrics relating to the campaign execution for
+	// this campaign activity. For information about the structure and contents
+	// of the results, see Standard Amazon Pinpoint analytics metrics (https://docs.aws.amazon.com//pinpoint/latest/developerguide/analytics-standard-metrics.html)
+	// in the Amazon Pinpoint Developer Guide.
+	ExecutionMetrics map[string]*string `type:"map"`
+
 	// The unique identifier for the activity.
 	//
 	// Id is a required field
@@ -13602,6 +13902,12 @@ func (s *ActivityResponse) SetCampaignId(v string) *ActivityResponse {
 // SetEnd sets the End field's value.
 func (s *ActivityResponse) SetEnd(v string) *ActivityResponse {
 	s.End = &v
+	return s
+}
+
+// SetExecutionMetrics sets the ExecutionMetrics field's value.
+func (s *ActivityResponse) SetExecutionMetrics(v map[string]*string) *ActivityResponse {
+	s.ExecutionMetrics = v
 	return s
 }
 
@@ -14052,6 +14358,61 @@ func (s *ApplicationResponse) SetTags(v map[string]*string) *ApplicationResponse
 	return s
 }
 
+// The default sending limits for journeys in the application. To override these
+// limits and define custom limits for a specific journey, use the Journey resource.
+type ApplicationSettingsJourneyLimits struct {
+	_ struct{} `type:"structure"`
+
+	// The daily number of messages that an endpoint can receive from all journeys.
+	// The maximum value is 100. If set to 0, this limit will not apply.
+	DailyCap *int64 `type:"integer"`
+
+	// The default maximum number of messages that can be sent to an endpoint during
+	// the specified timeframe for all journeys.
+	TimeframeCap *JourneyTimeframeCap `type:"structure"`
+
+	// The default maximum number of messages that a single journey can sent to
+	// a single endpoint. The maximum value is 100. If set to 0, this limit will
+	// not apply.
+	TotalCap *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSettingsJourneyLimits) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSettingsJourneyLimits) GoString() string {
+	return s.String()
+}
+
+// SetDailyCap sets the DailyCap field's value.
+func (s *ApplicationSettingsJourneyLimits) SetDailyCap(v int64) *ApplicationSettingsJourneyLimits {
+	s.DailyCap = &v
+	return s
+}
+
+// SetTimeframeCap sets the TimeframeCap field's value.
+func (s *ApplicationSettingsJourneyLimits) SetTimeframeCap(v *JourneyTimeframeCap) *ApplicationSettingsJourneyLimits {
+	s.TimeframeCap = v
+	return s
+}
+
+// SetTotalCap sets the TotalCap field's value.
+func (s *ApplicationSettingsJourneyLimits) SetTotalCap(v int64) *ApplicationSettingsJourneyLimits {
+	s.TotalCap = &v
+	return s
+}
+
 // Provides information about an application, including the default settings
 // for an application.
 type ApplicationSettingsResource struct {
@@ -14067,6 +14428,11 @@ type ApplicationSettingsResource struct {
 	// for campaigns in the application. You can use this hook to customize segments
 	// that are used by campaigns in the application.
 	CampaignHook *CampaignHook `type:"structure"`
+
+	// The default sending limits for journeys in the application. These limits
+	// apply to each journey for the application but can be overridden, on a per
+	// journey basis, with the JourneyLimits resource.
+	JourneyLimits *ApplicationSettingsJourneyLimits `type:"structure"`
 
 	// The date and time, in ISO 8601 format, when the application's settings were
 	// last modified.
@@ -14122,6 +14488,12 @@ func (s *ApplicationSettingsResource) SetApplicationId(v string) *ApplicationSet
 // SetCampaignHook sets the CampaignHook field's value.
 func (s *ApplicationSettingsResource) SetCampaignHook(v *CampaignHook) *ApplicationSettingsResource {
 	s.CampaignHook = v
+	return s
+}
+
+// SetJourneyLimits sets the JourneyLimits field's value.
+func (s *ApplicationSettingsResource) SetJourneyLimits(v *ApplicationSettingsJourneyLimits) *ApplicationSettingsResource {
+	s.JourneyLimits = v
 	return s
 }
 
@@ -15862,6 +16234,125 @@ func (s ChannelsResponse) GoString() string {
 // SetChannels sets the Channels field's value.
 func (s *ChannelsResponse) SetChannels(v map[string]*ChannelResponse) *ChannelsResponse {
 	s.Channels = v
+	return s
+}
+
+// The time when a journey will not send messages. QuietTime should be configured
+// first and SendingSchedule should be set to true.
+type ClosedDays struct {
+	_ struct{} `type:"structure"`
+
+	// Rules for a Channel.
+	CUSTOM []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	EMAIL []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	PUSH []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	SMS []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	VOICE []*ClosedDaysRule `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDays) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDays) GoString() string {
+	return s.String()
+}
+
+// SetCUSTOM sets the CUSTOM field's value.
+func (s *ClosedDays) SetCUSTOM(v []*ClosedDaysRule) *ClosedDays {
+	s.CUSTOM = v
+	return s
+}
+
+// SetEMAIL sets the EMAIL field's value.
+func (s *ClosedDays) SetEMAIL(v []*ClosedDaysRule) *ClosedDays {
+	s.EMAIL = v
+	return s
+}
+
+// SetPUSH sets the PUSH field's value.
+func (s *ClosedDays) SetPUSH(v []*ClosedDaysRule) *ClosedDays {
+	s.PUSH = v
+	return s
+}
+
+// SetSMS sets the SMS field's value.
+func (s *ClosedDays) SetSMS(v []*ClosedDaysRule) *ClosedDays {
+	s.SMS = v
+	return s
+}
+
+// SetVOICE sets the VOICE field's value.
+func (s *ClosedDays) SetVOICE(v []*ClosedDaysRule) *ClosedDays {
+	s.VOICE = v
+	return s
+}
+
+// Specifies the rule settings for when messages can't be sent.
+type ClosedDaysRule struct {
+	_ struct{} `type:"structure"`
+
+	// End DateTime ISO 8601 format
+	EndDateTime *string `type:"string"`
+
+	// The name of the closed day rule.
+	Name *string `type:"string"`
+
+	// Start DateTime ISO 8601 format
+	StartDateTime *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDaysRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDaysRule) GoString() string {
+	return s.String()
+}
+
+// SetEndDateTime sets the EndDateTime field's value.
+func (s *ClosedDaysRule) SetEndDateTime(v string) *ClosedDaysRule {
+	s.EndDateTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ClosedDaysRule) SetName(v string) *ClosedDaysRule {
+	s.Name = &v
+	return s
+}
+
+// SetStartDateTime sets the StartDateTime field's value.
+func (s *ClosedDaysRule) SetStartDateTime(v string) *ClosedDaysRule {
+	s.StartDateTime = &v
 	return s
 }
 
@@ -20614,9 +21105,17 @@ type EmailTemplateRequest struct {
 	// message template.
 	Subject *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -20896,7 +21395,8 @@ type EndpointBatchItem struct {
 	// specified by the Address property.
 	EndpointStatus *string `type:"string"`
 
-	// The unique identifier for the endpoint in the context of the batch.
+	// The case insensitive unique identifier for the endpoint in the context of
+	// the batch. The identifier can't contain $, { or }.
 	Id *string `type:"string"`
 
 	// The geographic information for the endpoint.
@@ -23062,12 +23562,19 @@ type GCMChannelRequest struct {
 
 	// The Web API Key, also referred to as an API_KEY or server key, that you received
 	// from Google to communicate with Google services.
-	//
-	// ApiKey is a required field
-	ApiKey *string `type:"string" required:"true"`
+	ApiKey *string `type:"string"`
+
+	// The default authentication method used for GCM. Values are either "TOKEN"
+	// or "KEY". Defaults to "KEY".
+	DefaultAuthenticationMethod *string `type:"string"`
 
 	// Specifies whether to enable the GCM channel for the application.
 	Enabled *bool `type:"boolean"`
+
+	// The contents of the JSON file provided by Google during registration in order
+	// to generate an access token for authentication. For more information see
+	// Migrate from legacy FCM APIs to HTTP v1 (https://firebase.google.com/docs/cloud-messaging/migrate-v1).
+	ServiceJson *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -23088,28 +23595,27 @@ func (s GCMChannelRequest) GoString() string {
 	return s.String()
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *GCMChannelRequest) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "GCMChannelRequest"}
-	if s.ApiKey == nil {
-		invalidParams.Add(request.NewErrParamRequired("ApiKey"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
 // SetApiKey sets the ApiKey field's value.
 func (s *GCMChannelRequest) SetApiKey(v string) *GCMChannelRequest {
 	s.ApiKey = &v
 	return s
 }
 
+// SetDefaultAuthenticationMethod sets the DefaultAuthenticationMethod field's value.
+func (s *GCMChannelRequest) SetDefaultAuthenticationMethod(v string) *GCMChannelRequest {
+	s.DefaultAuthenticationMethod = &v
+	return s
+}
+
 // SetEnabled sets the Enabled field's value.
 func (s *GCMChannelRequest) SetEnabled(v bool) *GCMChannelRequest {
 	s.Enabled = &v
+	return s
+}
+
+// SetServiceJson sets the ServiceJson field's value.
+func (s *GCMChannelRequest) SetServiceJson(v string) *GCMChannelRequest {
+	s.ServiceJson = &v
 	return s
 }
 
@@ -23128,15 +23634,21 @@ type GCMChannelResponse struct {
 
 	// The Web API Key, also referred to as an API_KEY or server key, that you received
 	// from Google to communicate with Google services.
-	//
-	// Credential is a required field
-	Credential *string `type:"string" required:"true"`
+	Credential *string `type:"string"`
+
+	// The default authentication method used for GCM. Values are either "TOKEN"
+	// or "KEY". Defaults to "KEY".
+	DefaultAuthenticationMethod *string `type:"string"`
 
 	// Specifies whether the GCM channel is enabled for the application.
 	Enabled *bool `type:"boolean"`
 
 	// (Not used) This property is retained only for backward compatibility.
 	HasCredential *bool `type:"boolean"`
+
+	// Returns true if the JSON file provided by Google during registration process
+	// was used in the ServiceJson field of the request.
+	HasFcmServiceCredentials *bool `type:"boolean"`
 
 	// (Deprecated) An identifier for the GCM channel. This property is retained
 	// only for backward compatibility.
@@ -23197,6 +23709,12 @@ func (s *GCMChannelResponse) SetCredential(v string) *GCMChannelResponse {
 	return s
 }
 
+// SetDefaultAuthenticationMethod sets the DefaultAuthenticationMethod field's value.
+func (s *GCMChannelResponse) SetDefaultAuthenticationMethod(v string) *GCMChannelResponse {
+	s.DefaultAuthenticationMethod = &v
+	return s
+}
+
 // SetEnabled sets the Enabled field's value.
 func (s *GCMChannelResponse) SetEnabled(v bool) *GCMChannelResponse {
 	s.Enabled = &v
@@ -23206,6 +23724,12 @@ func (s *GCMChannelResponse) SetEnabled(v bool) *GCMChannelResponse {
 // SetHasCredential sets the HasCredential field's value.
 func (s *GCMChannelResponse) SetHasCredential(v bool) *GCMChannelResponse {
 	s.HasCredential = &v
+	return s
+}
+
+// SetHasFcmServiceCredentials sets the HasFcmServiceCredentials field's value.
+func (s *GCMChannelResponse) SetHasFcmServiceCredentials(v bool) *GCMChannelResponse {
+	s.HasFcmServiceCredentials = &v
 	return s
 }
 
@@ -23292,6 +23816,10 @@ type GCMMessage struct {
 
 	// The URL of an image to display in the push notification.
 	ImageUrl *string `type:"string"`
+
+	// The preferred authentication method, with valid values "KEY" or "TOKEN".
+	// If a value isn't provided then the DefaultAuthenticationMethod is used.
+	PreferredAuthenticationMethod *string `type:"string"`
 
 	// para>normal - The notification might be delayed. Delivery is optimized for
 	// battery usage on the recipient's device. Use this value unless immediate
@@ -23409,6 +23937,12 @@ func (s *GCMMessage) SetImageIconUrl(v string) *GCMMessage {
 // SetImageUrl sets the ImageUrl field's value.
 func (s *GCMMessage) SetImageUrl(v string) *GCMMessage {
 	s.ImageUrl = &v
+	return s
+}
+
+// SetPreferredAuthenticationMethod sets the PreferredAuthenticationMethod field's value.
+func (s *GCMMessage) SetPreferredAuthenticationMethod(v string) *GCMMessage {
+	s.PreferredAuthenticationMethod = &v
 	return s
 }
 
@@ -26675,6 +27209,388 @@ func (s *GetJourneyOutput) SetJourneyResponse(v *JourneyResponse) *GetJourneyOut
 	return s
 }
 
+type GetJourneyRunExecutionActivityMetricsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+
+	// JourneyActivityId is a required field
+	JourneyActivityId *string `location:"uri" locationName:"journey-activity-id" type:"string" required:"true"`
+
+	// JourneyId is a required field
+	JourneyId *string `location:"uri" locationName:"journey-id" type:"string" required:"true"`
+
+	NextToken *string `location:"querystring" locationName:"next-token" type:"string"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	// RunId is a required field
+	RunId *string `location:"uri" locationName:"run-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJourneyRunExecutionActivityMetricsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJourneyRunExecutionActivityMetricsInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+	if s.ApplicationId != nil && len(*s.ApplicationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationId", 1))
+	}
+	if s.JourneyActivityId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyActivityId"))
+	}
+	if s.JourneyActivityId != nil && len(*s.JourneyActivityId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyActivityId", 1))
+	}
+	if s.JourneyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyId"))
+	}
+	if s.JourneyId != nil && len(*s.JourneyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyId", 1))
+	}
+	if s.RunId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RunId"))
+	}
+	if s.RunId != nil && len(*s.RunId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RunId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetApplicationId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyActivityId sets the JourneyActivityId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetJourneyActivityId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.JourneyActivityId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetJourneyId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.JourneyId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetNextToken(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetPageSize(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetRunId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.RunId = &v
+	return s
+}
+
+type GetJourneyRunExecutionActivityMetricsOutput struct {
+	_ struct{} `type:"structure" payload:"JourneyRunExecutionActivityMetricsResponse"`
+
+	// Provides the results of a query that retrieved the data for a standard execution
+	// metric that applies to a journey activity for a particular journey run, and
+	// provides information about that query.
+	//
+	// JourneyRunExecutionActivityMetricsResponse is a required field
+	JourneyRunExecutionActivityMetricsResponse *JourneyRunExecutionActivityMetricsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsOutput) GoString() string {
+	return s.String()
+}
+
+// SetJourneyRunExecutionActivityMetricsResponse sets the JourneyRunExecutionActivityMetricsResponse field's value.
+func (s *GetJourneyRunExecutionActivityMetricsOutput) SetJourneyRunExecutionActivityMetricsResponse(v *JourneyRunExecutionActivityMetricsResponse) *GetJourneyRunExecutionActivityMetricsOutput {
+	s.JourneyRunExecutionActivityMetricsResponse = v
+	return s
+}
+
+type GetJourneyRunExecutionMetricsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+
+	// JourneyId is a required field
+	JourneyId *string `location:"uri" locationName:"journey-id" type:"string" required:"true"`
+
+	NextToken *string `location:"querystring" locationName:"next-token" type:"string"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	// RunId is a required field
+	RunId *string `location:"uri" locationName:"run-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJourneyRunExecutionMetricsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJourneyRunExecutionMetricsInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+	if s.ApplicationId != nil && len(*s.ApplicationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationId", 1))
+	}
+	if s.JourneyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyId"))
+	}
+	if s.JourneyId != nil && len(*s.JourneyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyId", 1))
+	}
+	if s.RunId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RunId"))
+	}
+	if s.RunId != nil && len(*s.RunId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RunId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetApplicationId(v string) *GetJourneyRunExecutionMetricsInput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetJourneyId(v string) *GetJourneyRunExecutionMetricsInput {
+	s.JourneyId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetNextToken(v string) *GetJourneyRunExecutionMetricsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetPageSize(v string) *GetJourneyRunExecutionMetricsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetRunId(v string) *GetJourneyRunExecutionMetricsInput {
+	s.RunId = &v
+	return s
+}
+
+type GetJourneyRunExecutionMetricsOutput struct {
+	_ struct{} `type:"structure" payload:"JourneyRunExecutionMetricsResponse"`
+
+	// Provides the results of a query that retrieved the data for a standard execution
+	// metric that applies to a journey run, and provides information about that
+	// query.
+	//
+	// JourneyRunExecutionMetricsResponse is a required field
+	JourneyRunExecutionMetricsResponse *JourneyRunExecutionMetricsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsOutput) GoString() string {
+	return s.String()
+}
+
+// SetJourneyRunExecutionMetricsResponse sets the JourneyRunExecutionMetricsResponse field's value.
+func (s *GetJourneyRunExecutionMetricsOutput) SetJourneyRunExecutionMetricsResponse(v *JourneyRunExecutionMetricsResponse) *GetJourneyRunExecutionMetricsOutput {
+	s.JourneyRunExecutionMetricsResponse = v
+	return s
+}
+
+type GetJourneyRunsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+
+	// JourneyId is a required field
+	JourneyId *string `location:"uri" locationName:"journey-id" type:"string" required:"true"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	Token *string `location:"querystring" locationName:"token" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJourneyRunsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJourneyRunsInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+	if s.ApplicationId != nil && len(*s.ApplicationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationId", 1))
+	}
+	if s.JourneyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyId"))
+	}
+	if s.JourneyId != nil && len(*s.JourneyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetJourneyRunsInput) SetApplicationId(v string) *GetJourneyRunsInput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *GetJourneyRunsInput) SetJourneyId(v string) *GetJourneyRunsInput {
+	s.JourneyId = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetJourneyRunsInput) SetPageSize(v string) *GetJourneyRunsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *GetJourneyRunsInput) SetToken(v string) *GetJourneyRunsInput {
+	s.Token = &v
+	return s
+}
+
+type GetJourneyRunsOutput struct {
+	_ struct{} `type:"structure" payload:"JourneyRunsResponse"`
+
+	// Provides information from all runs of a journey.
+	//
+	// JourneyRunsResponse is a required field
+	JourneyRunsResponse *JourneyRunsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsOutput) GoString() string {
+	return s.String()
+}
+
+// SetJourneyRunsResponse sets the JourneyRunsResponse field's value.
+func (s *GetJourneyRunsOutput) SetJourneyRunsResponse(v *JourneyRunsResponse) *GetJourneyRunsOutput {
+	s.JourneyRunsResponse = v
+	return s
+}
+
 type GetPushTemplateInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -29128,9 +30044,17 @@ type InAppTemplateRequest struct {
 	// The layout of the message.
 	Layout *string `type:"string" enum:"Layout"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The description of the template.
@@ -29243,7 +30167,8 @@ type InAppTemplateResponse struct {
 	// TemplateName is a required field
 	TemplateName *string `type:"string" required:"true"`
 
-	// The type of the template.
+	// The type of channel that the message template is designed for. For an in-app
+	// message template, this value is INAPP.
 	//
 	// TemplateType is a required field
 	TemplateType *string `type:"string" required:"true" enum:"TemplateType"`
@@ -29665,26 +30590,26 @@ type JourneyExecutionActivityMetricsResponse struct {
 
 	// The type of activity that the metric applies to. Possible values are:
 	//
-	//    * CONDITIONAL_SPLIT - For a yes/no split activity, which is an activity
+	//    * CONDITIONAL_SPLIT – For a yes/no split activity, which is an activity
 	//    that sends participants down one of two paths in a journey.
 	//
-	//    * HOLDOUT - For a holdout activity, which is an activity that stops a
-	//    journey for a specified percentage of participants.
+	//    * HOLDOUT – For a holdout activity, which is an activity that stops
+	//    a journey for a specified percentage of participants.
 	//
-	//    * MESSAGE - For an email activity, which is an activity that sends an
+	//    * MESSAGE – For an email activity, which is an activity that sends an
 	//    email message to participants.
 	//
-	//    * MULTI_CONDITIONAL_SPLIT - For a multivariate split activity, which is
-	//    an activity that sends participants down one of as many as five paths
+	//    * MULTI_CONDITIONAL_SPLIT – For a multivariate split activity, which
+	//    is an activity that sends participants down one of as many as five paths
 	//    in a journey.
 	//
-	//    * RANDOM_SPLIT - For a random split activity, which is an activity that
+	//    * RANDOM_SPLIT – For a random split activity, which is an activity that
 	//    sends specified percentages of participants down one of as many as five
 	//    paths in a journey.
 	//
-	//    * WAIT - For a wait activity, which is an activity that waits for a certain
-	//    amount of time or until a specific date and time before moving participants
-	//    to the next activity in a journey.
+	//    * WAIT – For a wait activity, which is an activity that waits for a
+	//    certain amount of time or until a specific date and time before moving
+	//    participants to the next activity in a journey.
 	//
 	// ActivityType is a required field
 	ActivityType *string `type:"string" required:"true"`
@@ -29857,10 +30782,19 @@ type JourneyLimits struct {
 	// number of times, set this value to 0.
 	EndpointReentryCap *int64 `type:"integer"`
 
+	// Minimum time that must pass before an endpoint can re-enter a given journey.
 	EndpointReentryInterval *string `type:"string"`
 
 	// The maximum number of messages that the journey can send each second.
 	MessagesPerSecond *int64 `type:"integer"`
+
+	// The number of messages that an endpoint can receive during the specified
+	// timeframe.
+	TimeframeCap *JourneyTimeframeCap `type:"structure"`
+
+	// The maximum number of messages a journey can sent to a single endpoint. The
+	// maximum value is 100. If set to 0, this limit will not apply.
+	TotalCap *int64 `type:"integer"`
 }
 
 // String returns the string representation.
@@ -29905,6 +30839,18 @@ func (s *JourneyLimits) SetMessagesPerSecond(v int64) *JourneyLimits {
 	return s
 }
 
+// SetTimeframeCap sets the TimeframeCap field's value.
+func (s *JourneyLimits) SetTimeframeCap(v *JourneyTimeframeCap) *JourneyLimits {
+	s.TimeframeCap = v
+	return s
+}
+
+// SetTotalCap sets the TotalCap field's value.
+func (s *JourneyLimits) SetTotalCap(v int64) *JourneyLimits {
+	s.TotalCap = &v
+	return s
+}
+
 // Specifies the message configuration for a push notification that's sent to
 // participants in a journey.
 type JourneyPushMessage struct {
@@ -29912,7 +30858,7 @@ type JourneyPushMessage struct {
 
 	// The number of seconds that the push notification service should keep the
 	// message, if the service is unable to deliver the notification the first time.
-	// This value is converted to an expiration value when it's sent to a push-notification
+	// This value is converted to an expiration value when it's sent to a push notification
 	// service. If this value is 0, the service treats the notification as if it
 	// expires immediately and the service doesn't store or try to deliver the notification
 	// again.
@@ -29961,6 +30907,10 @@ type JourneyResponse struct {
 	// ApplicationId is a required field
 	ApplicationId *string `type:"string" required:"true"`
 
+	// The time when a journey will not send messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	ClosedDays *ClosedDays `type:"structure"`
+
 	// The date, in ISO 8601 format, when the journey was created.
 	CreationDate *string `type:"string"`
 
@@ -29988,6 +30938,10 @@ type JourneyResponse struct {
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
+	// The time when a journey can send messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	OpenHours *OpenHours `type:"structure"`
+
 	// The quiet time settings for the journey. Quiet time is a specific time range
 	// when a journey doesn't send messages to participants, if all the following
 	// conditions are met:
@@ -30009,8 +30963,16 @@ type JourneyResponse struct {
 	// for the journey, as a duration in ISO 8601 format.
 	RefreshFrequency *string `type:"string"`
 
+	// Indicates whether the journey participants should be refreshed when a segment
+	// is updated.
+	RefreshOnSegmentUpdate *bool `type:"boolean"`
+
 	// The schedule settings for the journey.
 	Schedule *JourneySchedule `type:"structure"`
+
+	// Indicates if journey has Advance Quiet Time enabled. This flag should be
+	// set to true in order to allow using OpenHours and ClosedDays.
+	SendingSchedule *bool `type:"boolean"`
 
 	// The unique identifier for the first activity in the journey.
 	StartActivity *string `type:"string"`
@@ -30049,6 +31011,25 @@ type JourneyResponse struct {
 
 	// This object is not used or supported.
 	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// An array of time zone estimation methods, if any, to use for determining
+	// an Endpoints (https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints-endpoint-id.html)
+	// time zone if the Endpoint does not have a value for the Demographic.Timezone
+	// attribute.
+	//
+	//    * PHONE_NUMBER - A time zone is determined based on the Endpoint.Address
+	//    and Endpoint.Location.Country.
+	//
+	//    * POSTAL_CODE - A time zone is determined based on the Endpoint.Location.PostalCode
+	//    and Endpoint.Location.Country. POSTAL_CODE detection is only supported
+	//    in the United States, United Kingdom, Australia, New Zealand, Canada,
+	//    France, Italy, Spain, Germany and in regions where Amazon Pinpoint is
+	//    available.
+	TimezoneEstimationMethods []*string `type:"list" enum:"TimezoneEstimationMethodsElement"`
+
+	// Indicates whether endpoints in quiet hours should enter a wait activity until
+	// quiet hours have elapsed.
+	WaitForQuietTime *bool `type:"boolean"`
 }
 
 // String returns the string representation.
@@ -30078,6 +31059,12 @@ func (s *JourneyResponse) SetActivities(v map[string]*Activity) *JourneyResponse
 // SetApplicationId sets the ApplicationId field's value.
 func (s *JourneyResponse) SetApplicationId(v string) *JourneyResponse {
 	s.ApplicationId = &v
+	return s
+}
+
+// SetClosedDays sets the ClosedDays field's value.
+func (s *JourneyResponse) SetClosedDays(v *ClosedDays) *JourneyResponse {
+	s.ClosedDays = v
 	return s
 }
 
@@ -30123,6 +31110,12 @@ func (s *JourneyResponse) SetName(v string) *JourneyResponse {
 	return s
 }
 
+// SetOpenHours sets the OpenHours field's value.
+func (s *JourneyResponse) SetOpenHours(v *OpenHours) *JourneyResponse {
+	s.OpenHours = v
+	return s
+}
+
 // SetQuietTime sets the QuietTime field's value.
 func (s *JourneyResponse) SetQuietTime(v *QuietTime) *JourneyResponse {
 	s.QuietTime = v
@@ -30135,9 +31128,21 @@ func (s *JourneyResponse) SetRefreshFrequency(v string) *JourneyResponse {
 	return s
 }
 
+// SetRefreshOnSegmentUpdate sets the RefreshOnSegmentUpdate field's value.
+func (s *JourneyResponse) SetRefreshOnSegmentUpdate(v bool) *JourneyResponse {
+	s.RefreshOnSegmentUpdate = &v
+	return s
+}
+
 // SetSchedule sets the Schedule field's value.
 func (s *JourneyResponse) SetSchedule(v *JourneySchedule) *JourneyResponse {
 	s.Schedule = v
+	return s
+}
+
+// SetSendingSchedule sets the SendingSchedule field's value.
+func (s *JourneyResponse) SetSendingSchedule(v bool) *JourneyResponse {
+	s.SendingSchedule = &v
 	return s
 }
 
@@ -30162,6 +31167,341 @@ func (s *JourneyResponse) SetState(v string) *JourneyResponse {
 // SetTags sets the Tags field's value.
 func (s *JourneyResponse) SetTags(v map[string]*string) *JourneyResponse {
 	s.Tags = v
+	return s
+}
+
+// SetTimezoneEstimationMethods sets the TimezoneEstimationMethods field's value.
+func (s *JourneyResponse) SetTimezoneEstimationMethods(v []*string) *JourneyResponse {
+	s.TimezoneEstimationMethods = v
+	return s
+}
+
+// SetWaitForQuietTime sets the WaitForQuietTime field's value.
+func (s *JourneyResponse) SetWaitForQuietTime(v bool) *JourneyResponse {
+	s.WaitForQuietTime = &v
+	return s
+}
+
+// Provides the results of a query that retrieved the data for a standard execution
+// metric that applies to a journey activity for a particular journey run, and
+// provides information about that query.
+type JourneyRunExecutionActivityMetricsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The type of activity that the metric applies to. Possible values are:
+	//
+	//    * CONDITIONAL_SPLIT – For a yes/no split activity, which is an activity
+	//    that sends participants down one of two paths in a journey.
+	//
+	//    * HOLDOUT – For a holdout activity, which is an activity that stops
+	//    a journey for a specified percentage of participants.
+	//
+	//    * MESSAGE – For an email activity, which is an activity that sends an
+	//    email message to participants.
+	//
+	//    * MULTI_CONDITIONAL_SPLIT – For a multivariate split activity, which
+	//    is an activity that sends participants down one of as many as five paths
+	//    in a journey.
+	//
+	//    * RANDOM_SPLIT – For a random split activity, which is an activity that
+	//    sends specified percentages of participants down one of as many as five
+	//    paths in a journey.
+	//
+	//    * WAIT – For a wait activity, which is an activity that waits for a
+	//    certain amount of time or until a specific date and time before moving
+	//    participants to the next activity in a journey.
+	//
+	// ActivityType is a required field
+	ActivityType *string `type:"string" required:"true"`
+
+	// The unique identifier for the application that the metric applies to.
+	//
+	// ApplicationId is a required field
+	ApplicationId *string `type:"string" required:"true"`
+
+	// The unique identifier for the activity that the metric applies to.
+	//
+	// JourneyActivityId is a required field
+	JourneyActivityId *string `type:"string" required:"true"`
+
+	// The unique identifier for the journey that the metric applies to.
+	//
+	// JourneyId is a required field
+	JourneyId *string `type:"string" required:"true"`
+
+	// The date and time, in ISO 8601 format, when Amazon Pinpoint last evaluated
+	// the execution status of the activity for this journey run and updated the
+	// data for the metric.
+	//
+	// LastEvaluatedTime is a required field
+	LastEvaluatedTime *string `type:"string" required:"true"`
+
+	// A JSON object that contains the results of the query. For information about
+	// the structure and contents of the results, see see Standard Amazon Pinpoint
+	// analytics metrics (https://docs.aws.amazon.com//pinpoint/latest/developerguide/analytics-standard-metrics.html)
+	// in the Amazon Pinpoint Developer Guide.
+	//
+	// Metrics is a required field
+	Metrics map[string]*string `type:"map" required:"true"`
+
+	// The unique identifier for the journey run that the metric applies to.
+	//
+	// RunId is a required field
+	RunId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionActivityMetricsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionActivityMetricsResponse) GoString() string {
+	return s.String()
+}
+
+// SetActivityType sets the ActivityType field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetActivityType(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.ActivityType = &v
+	return s
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetApplicationId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyActivityId sets the JourneyActivityId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetJourneyActivityId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.JourneyActivityId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetJourneyId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.JourneyId = &v
+	return s
+}
+
+// SetLastEvaluatedTime sets the LastEvaluatedTime field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetLastEvaluatedTime(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.LastEvaluatedTime = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetMetrics(v map[string]*string) *JourneyRunExecutionActivityMetricsResponse {
+	s.Metrics = v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetRunId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.RunId = &v
+	return s
+}
+
+// Provides the results of a query that retrieved the data for a standard execution
+// metric that applies to a journey run, and provides information about that
+// query.
+type JourneyRunExecutionMetricsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the application that the metric applies to.
+	//
+	// ApplicationId is a required field
+	ApplicationId *string `type:"string" required:"true"`
+
+	// The unique identifier for the journey that the metric applies to.
+	//
+	// JourneyId is a required field
+	JourneyId *string `type:"string" required:"true"`
+
+	// The date and time, in ISO 8601 format, when Amazon Pinpoint last evaluated
+	// the journey run and updated the data for the metric.
+	//
+	// LastEvaluatedTime is a required field
+	LastEvaluatedTime *string `type:"string" required:"true"`
+
+	// A JSON object that contains the results of the query. For information about
+	// the structure and contents of the results, see the Standard Amazon Pinpoint
+	// analytics metrics (https://docs.aws.amazon.com//pinpoint/latest/developerguide/analytics-standard-metrics.html)
+	// in the Amazon Pinpoint Developer Guide.
+	//
+	// Metrics is a required field
+	Metrics map[string]*string `type:"map" required:"true"`
+
+	// The unique identifier for the journey run that the metric applies to.
+	//
+	// RunId is a required field
+	RunId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionMetricsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionMetricsResponse) GoString() string {
+	return s.String()
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetApplicationId(v string) *JourneyRunExecutionMetricsResponse {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetJourneyId(v string) *JourneyRunExecutionMetricsResponse {
+	s.JourneyId = &v
+	return s
+}
+
+// SetLastEvaluatedTime sets the LastEvaluatedTime field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetLastEvaluatedTime(v string) *JourneyRunExecutionMetricsResponse {
+	s.LastEvaluatedTime = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetMetrics(v map[string]*string) *JourneyRunExecutionMetricsResponse {
+	s.Metrics = v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetRunId(v string) *JourneyRunExecutionMetricsResponse {
+	s.RunId = &v
+	return s
+}
+
+// Provides information from a specified run of a journey.
+type JourneyRunResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The time when the journey run was created or scheduled, in ISO 8601 format.
+	//
+	// CreationTime is a required field
+	CreationTime *string `type:"string" required:"true"`
+
+	// The last time the journey run was updated, in ISO 8601 format..
+	//
+	// LastUpdateTime is a required field
+	LastUpdateTime *string `type:"string" required:"true"`
+
+	// The unique identifier for the run.
+	//
+	// RunId is a required field
+	RunId *string `type:"string" required:"true"`
+
+	// The current status of the journey run.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"JourneyRunStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunResponse) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *JourneyRunResponse) SetCreationTime(v string) *JourneyRunResponse {
+	s.CreationTime = &v
+	return s
+}
+
+// SetLastUpdateTime sets the LastUpdateTime field's value.
+func (s *JourneyRunResponse) SetLastUpdateTime(v string) *JourneyRunResponse {
+	s.LastUpdateTime = &v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *JourneyRunResponse) SetRunId(v string) *JourneyRunResponse {
+	s.RunId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *JourneyRunResponse) SetStatus(v string) *JourneyRunResponse {
+	s.Status = &v
+	return s
+}
+
+// Provides information from all runs of a journey.
+type JourneyRunsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// An array of responses, one for each run of the journey
+	//
+	// Item is a required field
+	Item []*JourneyRunResponse `type:"list" required:"true"`
+
+	// The string to use in a subsequent request to get the next page of results
+	// in a paginated response. This value is null if there are no additional pages.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunsResponse) GoString() string {
+	return s.String()
+}
+
+// SetItem sets the Item field's value.
+func (s *JourneyRunsResponse) SetItem(v []*JourneyRunResponse) *JourneyRunsResponse {
+	s.Item = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *JourneyRunsResponse) SetNextToken(v string) *JourneyRunsResponse {
+	s.NextToken = &v
 	return s
 }
 
@@ -30345,6 +31685,51 @@ func (s JourneyStateRequest) GoString() string {
 // SetState sets the State field's value.
 func (s *JourneyStateRequest) SetState(v string) *JourneyStateRequest {
 	s.State = &v
+	return s
+}
+
+// The number of messages that can be sent to an endpoint during the specified
+// timeframe for all journeys.
+type JourneyTimeframeCap struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of messages that all journeys can send to an endpoint
+	// during the specified timeframe. The maximum value is 100. If set to 0, this
+	// limit will not apply.
+	Cap *int64 `type:"integer"`
+
+	// The length of the timeframe in days. The maximum value is 30. If set to 0,
+	// this limit will not apply.
+	Days *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyTimeframeCap) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyTimeframeCap) GoString() string {
+	return s.String()
+}
+
+// SetCap sets the Cap field's value.
+func (s *JourneyTimeframeCap) SetCap(v int64) *JourneyTimeframeCap {
+	s.Cap = &v
+	return s
+}
+
+// SetDays sets the Days field's value.
+func (s *JourneyTimeframeCap) SetDays(v int64) *JourneyTimeframeCap {
+	s.Days = &v
 	return s
 }
 
@@ -31953,6 +33338,117 @@ func (s *NumberValidateResponse) SetZipCode(v string) *NumberValidateResponse {
 	return s
 }
 
+// Specifies the times when message are allowed to be sent to endpoints.
+type OpenHours struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the schedule settings for the custom channel.
+	CUSTOM map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the email channel.
+	EMAIL map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the push channel.
+	PUSH map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the SMS channel.
+	SMS map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the voice channel.
+	VOICE map[string][]*OpenHoursRule `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHours) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHours) GoString() string {
+	return s.String()
+}
+
+// SetCUSTOM sets the CUSTOM field's value.
+func (s *OpenHours) SetCUSTOM(v map[string][]*OpenHoursRule) *OpenHours {
+	s.CUSTOM = v
+	return s
+}
+
+// SetEMAIL sets the EMAIL field's value.
+func (s *OpenHours) SetEMAIL(v map[string][]*OpenHoursRule) *OpenHours {
+	s.EMAIL = v
+	return s
+}
+
+// SetPUSH sets the PUSH field's value.
+func (s *OpenHours) SetPUSH(v map[string][]*OpenHoursRule) *OpenHours {
+	s.PUSH = v
+	return s
+}
+
+// SetSMS sets the SMS field's value.
+func (s *OpenHours) SetSMS(v map[string][]*OpenHoursRule) *OpenHours {
+	s.SMS = v
+	return s
+}
+
+// SetVOICE sets the VOICE field's value.
+func (s *OpenHours) SetVOICE(v map[string][]*OpenHoursRule) *OpenHours {
+	s.VOICE = v
+	return s
+}
+
+// Specifies the start and end time for OpenHours.
+type OpenHoursRule struct {
+	_ struct{} `type:"structure"`
+
+	// The end of the scheduled time, in ISO 8601 format, when the channel can't
+	// send messages.
+	EndTime *string `type:"string"`
+
+	// The start of the scheduled time, in ISO 8601 format, when the channel can
+	// send messages.
+	StartTime *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHoursRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHoursRule) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *OpenHoursRule) SetEndTime(v string) *OpenHoursRule {
+	s.EndTime = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *OpenHoursRule) SetStartTime(v string) *OpenHoursRule {
+	s.StartTime = &v
+	return s
+}
+
 // Override button configuration.
 type OverrideButtonConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -32408,9 +33904,17 @@ type PushNotificationTemplateRequest struct {
 	// if the template contains message variables for recommendation data.
 	RecommenderId *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -33922,9 +35426,17 @@ type SMSTemplateRequest struct {
 	// if the template contains message variables for recommendation data.
 	RecommenderId *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -36412,6 +37924,10 @@ type TemplateConfiguration struct {
 	// The email template to use for the message.
 	EmailTemplate *Template `type:"structure"`
 
+	// The InApp template to use for the message. The InApp template object is not
+	// supported for SendMessages.
+	InAppTemplate *Template `type:"structure"`
+
 	// The push notification template to use for the message.
 	PushTemplate *Template `type:"structure"`
 
@@ -36444,6 +37960,12 @@ func (s TemplateConfiguration) GoString() string {
 // SetEmailTemplate sets the EmailTemplate field's value.
 func (s *TemplateConfiguration) SetEmailTemplate(v *Template) *TemplateConfiguration {
 	s.EmailTemplate = v
+	return s
+}
+
+// SetInAppTemplate sets the InAppTemplate field's value.
+func (s *TemplateConfiguration) SetInAppTemplate(v *Template) *TemplateConfiguration {
+	s.InAppTemplate = v
 	return s
 }
 
@@ -36565,7 +38087,7 @@ type TemplateResponse struct {
 	TemplateName *string `type:"string" required:"true"`
 
 	// The type of channel that the message template is designed for. Possible values
-	// are: EMAIL, PUSH, SMS, and VOICE.
+	// are: EMAIL, PUSH, SMS, INAPP, and VOICE.
 	//
 	// TemplateType is a required field
 	TemplateType *string `type:"string" required:"true" enum:"TemplateType"`
@@ -36678,7 +38200,7 @@ type TemplateVersionResponse struct {
 	TemplateName *string `type:"string" required:"true"`
 
 	// The type of channel that the message template is designed for. Possible values
-	// are: EMAIL, PUSH, SMS, and VOICE.
+	// are: EMAIL, PUSH, SMS, INAPP, and VOICE.
 	//
 	// TemplateType is a required field
 	TemplateType *string `type:"string" required:"true"`
@@ -38414,11 +39936,6 @@ func (s *UpdateGcmChannelInput) Validate() error {
 	}
 	if s.GCMChannelRequest == nil {
 		invalidParams.Add(request.NewErrParamRequired("GCMChannelRequest"))
-	}
-	if s.GCMChannelRequest != nil {
-		if err := s.GCMChannelRequest.Validate(); err != nil {
-			invalidParams.AddNested("GCMChannelRequest", err.(request.ErrInvalidParams))
-		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -40308,9 +41825,17 @@ type VoiceTemplateRequest struct {
 	// (https://docs.aws.amazon.com/polly/latest/dg/what-is.html).
 	LanguageCode *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -40637,6 +42162,11 @@ type WriteApplicationSettingsRequest struct {
 	// Specifies whether to enable application-related alarms in Amazon CloudWatch.
 	CloudWatchMetricsEnabled *bool `type:"boolean"`
 
+	// The default sending limits for journeys in the application. These limits
+	// apply to each journey for the application but can be overridden, on a per
+	// journey basis, with the JourneyLimits resource.
+	JourneyLimits *ApplicationSettingsJourneyLimits `type:"structure"`
+
 	// The default sending limits for campaigns in the application. To override
 	// these limits and define custom limits for a specific campaign or journey,
 	// use the Campaign resource or the Journey resource, respectively.
@@ -40693,6 +42223,12 @@ func (s *WriteApplicationSettingsRequest) SetCampaignHook(v *CampaignHook) *Writ
 // SetCloudWatchMetricsEnabled sets the CloudWatchMetricsEnabled field's value.
 func (s *WriteApplicationSettingsRequest) SetCloudWatchMetricsEnabled(v bool) *WriteApplicationSettingsRequest {
 	s.CloudWatchMetricsEnabled = &v
+	return s
+}
+
+// SetJourneyLimits sets the JourneyLimits field's value.
+func (s *WriteApplicationSettingsRequest) SetJourneyLimits(v *ApplicationSettingsJourneyLimits) *WriteApplicationSettingsRequest {
+	s.JourneyLimits = v
 	return s
 }
 
@@ -40760,9 +42296,17 @@ type WriteCampaignRequest struct {
 	// The version of the segment to associate with the campaign.
 	SegmentVersion *int64 `type:"integer"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the campaign. Each tag consists of a required tag key and an associated
-	// tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the campaign. Each tag consists of a required tag key and
+	// an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The message template to use for the campaign.
@@ -41013,6 +42557,10 @@ type WriteJourneyRequest struct {
 	// must be alphanumeric characters.
 	Activities map[string]*Activity `type:"map"`
 
+	// The time when journey will stop sending messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	ClosedDays *ClosedDays `type:"structure"`
+
 	// The date, in ISO 8601 format, when the journey was created.
 	CreationDate *string `type:"string"`
 
@@ -41038,6 +42586,10 @@ type WriteJourneyRequest struct {
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
+	// The time when journey allow to send messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	OpenHours *OpenHours `type:"structure"`
+
 	// The quiet time settings for the journey. Quiet time is a specific time range
 	// when a journey doesn't send messages to participants, if all the following
 	// conditions are met:
@@ -41059,10 +42611,16 @@ type WriteJourneyRequest struct {
 	// for the journey, as a duration in ISO 8601 format.
 	RefreshFrequency *string `type:"string"`
 
+	// Indicates whether the journey participants should be refreshed when a segment
+	// is updated.
 	RefreshOnSegmentUpdate *bool `type:"boolean"`
 
 	// The schedule settings for the journey.
 	Schedule *JourneySchedule `type:"structure"`
+
+	// Indicates if journey has Advance Quiet Time enabled. This flag should be
+	// set to true in order to allow using OpenHours and ClosedDays.
+	SendingSchedule *bool `type:"boolean"`
 
 	// The unique identifier for the first activity in the journey. The identifier
 	// for this activity can contain a maximum of 128 characters. The characters
@@ -41086,6 +42644,23 @@ type WriteJourneyRequest struct {
 	// the Journey State resource.
 	State *string `type:"string" enum:"State"`
 
+	// An array of time zone estimation methods, if any, to use for determining
+	// an Endpoints (https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints-endpoint-id.html)
+	// time zone if the Endpoint does not have a value for the Demographic.Timezone
+	// attribute.
+	//
+	//    * PHONE_NUMBER - A time zone is determined based on the Endpoint.Address
+	//    and Endpoint.Location.Country.
+	//
+	//    * POSTAL_CODE - A time zone is determined based on the Endpoint.Location.PostalCode
+	//    and Endpoint.Location.Country. POSTAL_CODE detection is only supported
+	//    in the United States, United Kingdom, Australia, New Zealand, Canada,
+	//    France, Italy, Spain, Germany and in regions where Amazon Pinpoint is
+	//    available.
+	TimezoneEstimationMethods []*string `type:"list" enum:"TimezoneEstimationMethodsElement"`
+
+	// Indicates whether endpoints in quiet hours should enter a wait activity until
+	// quiet hours have elapsed.
 	WaitForQuietTime *bool `type:"boolean"`
 }
 
@@ -41141,6 +42716,12 @@ func (s *WriteJourneyRequest) SetActivities(v map[string]*Activity) *WriteJourne
 	return s
 }
 
+// SetClosedDays sets the ClosedDays field's value.
+func (s *WriteJourneyRequest) SetClosedDays(v *ClosedDays) *WriteJourneyRequest {
+	s.ClosedDays = v
+	return s
+}
+
 // SetCreationDate sets the CreationDate field's value.
 func (s *WriteJourneyRequest) SetCreationDate(v string) *WriteJourneyRequest {
 	s.CreationDate = &v
@@ -41177,6 +42758,12 @@ func (s *WriteJourneyRequest) SetName(v string) *WriteJourneyRequest {
 	return s
 }
 
+// SetOpenHours sets the OpenHours field's value.
+func (s *WriteJourneyRequest) SetOpenHours(v *OpenHours) *WriteJourneyRequest {
+	s.OpenHours = v
+	return s
+}
+
 // SetQuietTime sets the QuietTime field's value.
 func (s *WriteJourneyRequest) SetQuietTime(v *QuietTime) *WriteJourneyRequest {
 	s.QuietTime = v
@@ -41201,6 +42788,12 @@ func (s *WriteJourneyRequest) SetSchedule(v *JourneySchedule) *WriteJourneyReque
 	return s
 }
 
+// SetSendingSchedule sets the SendingSchedule field's value.
+func (s *WriteJourneyRequest) SetSendingSchedule(v bool) *WriteJourneyRequest {
+	s.SendingSchedule = &v
+	return s
+}
+
 // SetStartActivity sets the StartActivity field's value.
 func (s *WriteJourneyRequest) SetStartActivity(v string) *WriteJourneyRequest {
 	s.StartActivity = &v
@@ -41216,6 +42809,12 @@ func (s *WriteJourneyRequest) SetStartCondition(v *StartCondition) *WriteJourney
 // SetState sets the State field's value.
 func (s *WriteJourneyRequest) SetState(v string) *WriteJourneyRequest {
 	s.State = &v
+	return s
+}
+
+// SetTimezoneEstimationMethods sets the TimezoneEstimationMethods field's value.
+func (s *WriteJourneyRequest) SetTimezoneEstimationMethods(v []*string) *WriteJourneyRequest {
+	s.TimezoneEstimationMethods = v
 	return s
 }
 
@@ -41242,9 +42841,17 @@ type WriteSegmentRequest struct {
 	// or more base segments. Your request can include only one segment group.
 	SegmentGroups *SegmentGroupList `type:"structure"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the segment. Each tag consists of a required tag key and an associated
-	// tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the segment. Each tag consists of a required tag key and
+	// an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
@@ -41622,6 +43229,43 @@ func ChannelType_Values() []string {
 	}
 }
 
+// Day of a week.
+const (
+	// DayOfWeekMonday is a DayOfWeek enum value
+	DayOfWeekMonday = "MONDAY"
+
+	// DayOfWeekTuesday is a DayOfWeek enum value
+	DayOfWeekTuesday = "TUESDAY"
+
+	// DayOfWeekWednesday is a DayOfWeek enum value
+	DayOfWeekWednesday = "WEDNESDAY"
+
+	// DayOfWeekThursday is a DayOfWeek enum value
+	DayOfWeekThursday = "THURSDAY"
+
+	// DayOfWeekFriday is a DayOfWeek enum value
+	DayOfWeekFriday = "FRIDAY"
+
+	// DayOfWeekSaturday is a DayOfWeek enum value
+	DayOfWeekSaturday = "SATURDAY"
+
+	// DayOfWeekSunday is a DayOfWeek enum value
+	DayOfWeekSunday = "SUNDAY"
+)
+
+// DayOfWeek_Values returns all elements of the DayOfWeek enum
+func DayOfWeek_Values() []string {
+	return []string{
+		DayOfWeekMonday,
+		DayOfWeekTuesday,
+		DayOfWeekWednesday,
+		DayOfWeekThursday,
+		DayOfWeekFriday,
+		DayOfWeekSaturday,
+		DayOfWeekSunday,
+	}
+}
+
 const (
 	// DeliveryStatusSuccessful is a DeliveryStatus enum value
 	DeliveryStatusSuccessful = "SUCCESSFUL"
@@ -41891,6 +43535,30 @@ func JobStatus_Values() []string {
 }
 
 const (
+	// JourneyRunStatusScheduled is a JourneyRunStatus enum value
+	JourneyRunStatusScheduled = "SCHEDULED"
+
+	// JourneyRunStatusRunning is a JourneyRunStatus enum value
+	JourneyRunStatusRunning = "RUNNING"
+
+	// JourneyRunStatusCompleted is a JourneyRunStatus enum value
+	JourneyRunStatusCompleted = "COMPLETED"
+
+	// JourneyRunStatusCancelled is a JourneyRunStatus enum value
+	JourneyRunStatusCancelled = "CANCELLED"
+)
+
+// JourneyRunStatus_Values returns all elements of the JourneyRunStatus enum
+func JourneyRunStatus_Values() []string {
+	return []string{
+		JourneyRunStatusScheduled,
+		JourneyRunStatusRunning,
+		JourneyRunStatusCompleted,
+		JourneyRunStatusCancelled,
+	}
+}
+
+const (
 	// LayoutBottomBanner is a Layout enum value
 	LayoutBottomBanner = "BOTTOM_BANNER"
 
@@ -42079,6 +43747,22 @@ func TemplateType_Values() []string {
 		TemplateTypeVoice,
 		TemplateTypePush,
 		TemplateTypeInapp,
+	}
+}
+
+const (
+	// TimezoneEstimationMethodsElementPhoneNumber is a TimezoneEstimationMethodsElement enum value
+	TimezoneEstimationMethodsElementPhoneNumber = "PHONE_NUMBER"
+
+	// TimezoneEstimationMethodsElementPostalCode is a TimezoneEstimationMethodsElement enum value
+	TimezoneEstimationMethodsElementPostalCode = "POSTAL_CODE"
+)
+
+// TimezoneEstimationMethodsElement_Values returns all elements of the TimezoneEstimationMethodsElement enum
+func TimezoneEstimationMethodsElement_Values() []string {
+	return []string{
+		TimezoneEstimationMethodsElementPhoneNumber,
+		TimezoneEstimationMethodsElementPostalCode,
 	}
 }
 

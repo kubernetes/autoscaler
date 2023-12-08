@@ -15,6 +15,14 @@ const (
 	// required permissions.
 	ErrCodeAccessDeniedException = "AccessDeniedException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// The request could not be processed because of a conflict in the current status
+	// of the resource. For example, this happens if you try to enable a Region
+	// that is currently being disabled (in a status of DISABLING).
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeInternalServerException for service response error code
 	// "InternalServerException".
 	//
@@ -44,6 +52,7 @@ const (
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessDeniedException":     newErrorAccessDeniedException,
+	"ConflictException":         newErrorConflictException,
 	"InternalServerException":   newErrorInternalServerException,
 	"ResourceNotFoundException": newErrorResourceNotFoundException,
 	"TooManyRequestsException":  newErrorTooManyRequestsException,

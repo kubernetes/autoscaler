@@ -14,6 +14,12 @@ const (
 	// The input parameters don't match the service's restrictions.
 	ErrCodeBadRequestException = "BadRequestException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// Multiple instances of the same request have been made simultaneously.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeForbiddenException for service response error code
 	// "ForbiddenException".
 	//
@@ -31,6 +37,12 @@ const (
 	//
 	// One or more of the resources in the request does not exist in the system.
 	ErrCodeNotFoundException = "NotFoundException"
+
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// The resource that you want to tag couldn't be found.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
 	// ErrCodeServiceFailureException for service response error code
 	// "ServiceFailureException".
@@ -50,6 +62,12 @@ const (
 	// The number of customer requests exceeds the request rate limit.
 	ErrCodeThrottlingException = "ThrottlingException"
 
+	// ErrCodeTooManyTagsException for service response error code
+	// "TooManyTagsException".
+	//
+	// Too many tags were added to the specified resource.
+	ErrCodeTooManyTagsException = "TooManyTagsException"
+
 	// ErrCodeUnauthorizedException for service response error code
 	// "UnauthorizedException".
 	//
@@ -66,12 +84,15 @@ const (
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"BadRequestException":          newErrorBadRequestException,
+	"ConflictException":            newErrorConflictException,
 	"ForbiddenException":           newErrorForbiddenException,
 	"LimitExceededException":       newErrorLimitExceededException,
 	"NotFoundException":            newErrorNotFoundException,
+	"ResourceNotFoundException":    newErrorResourceNotFoundException,
 	"ServiceFailureException":      newErrorServiceFailureException,
 	"ServiceUnavailableException":  newErrorServiceUnavailableException,
 	"ThrottlingException":          newErrorThrottlingException,
+	"TooManyTagsException":         newErrorTooManyTagsException,
 	"UnauthorizedException":        newErrorUnauthorizedException,
 	"UnprocessableEntityException": newErrorUnprocessableEntityException,
 }

@@ -10,6 +10,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 const opCreateHomeRegionControl = "CreateHomeRegionControl"
@@ -105,6 +106,103 @@ func (c *MigrationHubConfig) CreateHomeRegionControl(input *CreateHomeRegionCont
 // for more information on using Contexts.
 func (c *MigrationHubConfig) CreateHomeRegionControlWithContext(ctx aws.Context, input *CreateHomeRegionControlInput, opts ...request.Option) (*CreateHomeRegionControlOutput, error) {
 	req, out := c.CreateHomeRegionControlRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteHomeRegionControl = "DeleteHomeRegionControl"
+
+// DeleteHomeRegionControlRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteHomeRegionControl operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteHomeRegionControl for more information on using the DeleteHomeRegionControl
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteHomeRegionControlRequest method.
+//	req, resp := client.DeleteHomeRegionControlRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/DeleteHomeRegionControl
+func (c *MigrationHubConfig) DeleteHomeRegionControlRequest(input *DeleteHomeRegionControlInput) (req *request.Request, output *DeleteHomeRegionControlOutput) {
+	op := &request.Operation{
+		Name:       opDeleteHomeRegionControl,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteHomeRegionControlInput{}
+	}
+
+	output = &DeleteHomeRegionControlOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteHomeRegionControl API operation for AWS Migration Hub Config.
+//
+// This operation deletes the home region configuration for the calling account.
+// The operation does not delete discovery or migration tracking data in the
+// home region.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Migration Hub Config's
+// API operation DeleteHomeRegionControl for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerError
+//     Exception raised when an internal, configuration, or dependency error is
+//     encountered.
+//
+//   - ServiceUnavailableException
+//     Exception raised when a request fails due to temporary unavailability of
+//     the service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - InvalidInputException
+//     Exception raised when the provided input violates a policy constraint or
+//     is entered in the wrong format or data type.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/migrationhub-config-2019-06-30/DeleteHomeRegionControl
+func (c *MigrationHubConfig) DeleteHomeRegionControl(input *DeleteHomeRegionControlInput) (*DeleteHomeRegionControlOutput, error) {
+	req, out := c.DeleteHomeRegionControlRequest(input)
+	return out, req.Send()
+}
+
+// DeleteHomeRegionControlWithContext is the same as DeleteHomeRegionControl with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteHomeRegionControl for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MigrationHubConfig) DeleteHomeRegionControlWithContext(ctx aws.Context, input *DeleteHomeRegionControlInput, opts ...request.Option) (*DeleteHomeRegionControlOutput, error) {
+	req, out := c.DeleteHomeRegionControlRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -532,6 +630,78 @@ func (s CreateHomeRegionControlOutput) GoString() string {
 func (s *CreateHomeRegionControlOutput) SetHomeRegionControl(v *HomeRegionControl) *CreateHomeRegionControlOutput {
 	s.HomeRegionControl = v
 	return s
+}
+
+type DeleteHomeRegionControlInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier that's generated for each home region control. It's always
+	// a string that begins with "hrc-" followed by 12 lowercase letters and numbers.
+	//
+	// ControlId is a required field
+	ControlId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteHomeRegionControlInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteHomeRegionControlInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteHomeRegionControlInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteHomeRegionControlInput"}
+	if s.ControlId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ControlId"))
+	}
+	if s.ControlId != nil && len(*s.ControlId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ControlId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetControlId sets the ControlId field's value.
+func (s *DeleteHomeRegionControlInput) SetControlId(v string) *DeleteHomeRegionControlInput {
+	s.ControlId = &v
+	return s
+}
+
+type DeleteHomeRegionControlOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteHomeRegionControlOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteHomeRegionControlOutput) GoString() string {
+	return s.String()
 }
 
 type DescribeHomeRegionControlsInput struct {

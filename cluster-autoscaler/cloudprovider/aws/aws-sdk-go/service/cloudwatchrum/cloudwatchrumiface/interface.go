@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// CloudWatch RUM.
 //	func myFunc(svc cloudwatchrumiface.CloudWatchRUMAPI) bool {
-//	    // Make svc.CreateAppMonitor request
+//	    // Make svc.BatchCreateRumMetricDefinitions request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockCloudWatchRUMClient struct {
 //	    cloudwatchrumiface.CloudWatchRUMAPI
 //	}
-//	func (m *mockCloudWatchRUMClient) CreateAppMonitor(input *cloudwatchrum.CreateAppMonitorInput) (*cloudwatchrum.CreateAppMonitorOutput, error) {
+//	func (m *mockCloudWatchRUMClient) BatchCreateRumMetricDefinitions(input *cloudwatchrum.BatchCreateRumMetricDefinitionsInput) (*cloudwatchrum.BatchCreateRumMetricDefinitionsOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,21 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type CloudWatchRUMAPI interface {
+	BatchCreateRumMetricDefinitions(*cloudwatchrum.BatchCreateRumMetricDefinitionsInput) (*cloudwatchrum.BatchCreateRumMetricDefinitionsOutput, error)
+	BatchCreateRumMetricDefinitionsWithContext(aws.Context, *cloudwatchrum.BatchCreateRumMetricDefinitionsInput, ...request.Option) (*cloudwatchrum.BatchCreateRumMetricDefinitionsOutput, error)
+	BatchCreateRumMetricDefinitionsRequest(*cloudwatchrum.BatchCreateRumMetricDefinitionsInput) (*request.Request, *cloudwatchrum.BatchCreateRumMetricDefinitionsOutput)
+
+	BatchDeleteRumMetricDefinitions(*cloudwatchrum.BatchDeleteRumMetricDefinitionsInput) (*cloudwatchrum.BatchDeleteRumMetricDefinitionsOutput, error)
+	BatchDeleteRumMetricDefinitionsWithContext(aws.Context, *cloudwatchrum.BatchDeleteRumMetricDefinitionsInput, ...request.Option) (*cloudwatchrum.BatchDeleteRumMetricDefinitionsOutput, error)
+	BatchDeleteRumMetricDefinitionsRequest(*cloudwatchrum.BatchDeleteRumMetricDefinitionsInput) (*request.Request, *cloudwatchrum.BatchDeleteRumMetricDefinitionsOutput)
+
+	BatchGetRumMetricDefinitions(*cloudwatchrum.BatchGetRumMetricDefinitionsInput) (*cloudwatchrum.BatchGetRumMetricDefinitionsOutput, error)
+	BatchGetRumMetricDefinitionsWithContext(aws.Context, *cloudwatchrum.BatchGetRumMetricDefinitionsInput, ...request.Option) (*cloudwatchrum.BatchGetRumMetricDefinitionsOutput, error)
+	BatchGetRumMetricDefinitionsRequest(*cloudwatchrum.BatchGetRumMetricDefinitionsInput) (*request.Request, *cloudwatchrum.BatchGetRumMetricDefinitionsOutput)
+
+	BatchGetRumMetricDefinitionsPages(*cloudwatchrum.BatchGetRumMetricDefinitionsInput, func(*cloudwatchrum.BatchGetRumMetricDefinitionsOutput, bool) bool) error
+	BatchGetRumMetricDefinitionsPagesWithContext(aws.Context, *cloudwatchrum.BatchGetRumMetricDefinitionsInput, func(*cloudwatchrum.BatchGetRumMetricDefinitionsOutput, bool) bool, ...request.Option) error
+
 	CreateAppMonitor(*cloudwatchrum.CreateAppMonitorInput) (*cloudwatchrum.CreateAppMonitorOutput, error)
 	CreateAppMonitorWithContext(aws.Context, *cloudwatchrum.CreateAppMonitorInput, ...request.Option) (*cloudwatchrum.CreateAppMonitorOutput, error)
 	CreateAppMonitorRequest(*cloudwatchrum.CreateAppMonitorInput) (*request.Request, *cloudwatchrum.CreateAppMonitorOutput)
@@ -67,6 +82,10 @@ type CloudWatchRUMAPI interface {
 	DeleteAppMonitor(*cloudwatchrum.DeleteAppMonitorInput) (*cloudwatchrum.DeleteAppMonitorOutput, error)
 	DeleteAppMonitorWithContext(aws.Context, *cloudwatchrum.DeleteAppMonitorInput, ...request.Option) (*cloudwatchrum.DeleteAppMonitorOutput, error)
 	DeleteAppMonitorRequest(*cloudwatchrum.DeleteAppMonitorInput) (*request.Request, *cloudwatchrum.DeleteAppMonitorOutput)
+
+	DeleteRumMetricsDestination(*cloudwatchrum.DeleteRumMetricsDestinationInput) (*cloudwatchrum.DeleteRumMetricsDestinationOutput, error)
+	DeleteRumMetricsDestinationWithContext(aws.Context, *cloudwatchrum.DeleteRumMetricsDestinationInput, ...request.Option) (*cloudwatchrum.DeleteRumMetricsDestinationOutput, error)
+	DeleteRumMetricsDestinationRequest(*cloudwatchrum.DeleteRumMetricsDestinationInput) (*request.Request, *cloudwatchrum.DeleteRumMetricsDestinationOutput)
 
 	GetAppMonitor(*cloudwatchrum.GetAppMonitorInput) (*cloudwatchrum.GetAppMonitorOutput, error)
 	GetAppMonitorWithContext(aws.Context, *cloudwatchrum.GetAppMonitorInput, ...request.Option) (*cloudwatchrum.GetAppMonitorOutput, error)
@@ -86,6 +105,13 @@ type CloudWatchRUMAPI interface {
 	ListAppMonitorsPages(*cloudwatchrum.ListAppMonitorsInput, func(*cloudwatchrum.ListAppMonitorsOutput, bool) bool) error
 	ListAppMonitorsPagesWithContext(aws.Context, *cloudwatchrum.ListAppMonitorsInput, func(*cloudwatchrum.ListAppMonitorsOutput, bool) bool, ...request.Option) error
 
+	ListRumMetricsDestinations(*cloudwatchrum.ListRumMetricsDestinationsInput) (*cloudwatchrum.ListRumMetricsDestinationsOutput, error)
+	ListRumMetricsDestinationsWithContext(aws.Context, *cloudwatchrum.ListRumMetricsDestinationsInput, ...request.Option) (*cloudwatchrum.ListRumMetricsDestinationsOutput, error)
+	ListRumMetricsDestinationsRequest(*cloudwatchrum.ListRumMetricsDestinationsInput) (*request.Request, *cloudwatchrum.ListRumMetricsDestinationsOutput)
+
+	ListRumMetricsDestinationsPages(*cloudwatchrum.ListRumMetricsDestinationsInput, func(*cloudwatchrum.ListRumMetricsDestinationsOutput, bool) bool) error
+	ListRumMetricsDestinationsPagesWithContext(aws.Context, *cloudwatchrum.ListRumMetricsDestinationsInput, func(*cloudwatchrum.ListRumMetricsDestinationsOutput, bool) bool, ...request.Option) error
+
 	ListTagsForResource(*cloudwatchrum.ListTagsForResourceInput) (*cloudwatchrum.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *cloudwatchrum.ListTagsForResourceInput, ...request.Option) (*cloudwatchrum.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*cloudwatchrum.ListTagsForResourceInput) (*request.Request, *cloudwatchrum.ListTagsForResourceOutput)
@@ -93,6 +119,10 @@ type CloudWatchRUMAPI interface {
 	PutRumEvents(*cloudwatchrum.PutRumEventsInput) (*cloudwatchrum.PutRumEventsOutput, error)
 	PutRumEventsWithContext(aws.Context, *cloudwatchrum.PutRumEventsInput, ...request.Option) (*cloudwatchrum.PutRumEventsOutput, error)
 	PutRumEventsRequest(*cloudwatchrum.PutRumEventsInput) (*request.Request, *cloudwatchrum.PutRumEventsOutput)
+
+	PutRumMetricsDestination(*cloudwatchrum.PutRumMetricsDestinationInput) (*cloudwatchrum.PutRumMetricsDestinationOutput, error)
+	PutRumMetricsDestinationWithContext(aws.Context, *cloudwatchrum.PutRumMetricsDestinationInput, ...request.Option) (*cloudwatchrum.PutRumMetricsDestinationOutput, error)
+	PutRumMetricsDestinationRequest(*cloudwatchrum.PutRumMetricsDestinationInput) (*request.Request, *cloudwatchrum.PutRumMetricsDestinationOutput)
 
 	TagResource(*cloudwatchrum.TagResourceInput) (*cloudwatchrum.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *cloudwatchrum.TagResourceInput, ...request.Option) (*cloudwatchrum.TagResourceOutput, error)
@@ -105,6 +135,10 @@ type CloudWatchRUMAPI interface {
 	UpdateAppMonitor(*cloudwatchrum.UpdateAppMonitorInput) (*cloudwatchrum.UpdateAppMonitorOutput, error)
 	UpdateAppMonitorWithContext(aws.Context, *cloudwatchrum.UpdateAppMonitorInput, ...request.Option) (*cloudwatchrum.UpdateAppMonitorOutput, error)
 	UpdateAppMonitorRequest(*cloudwatchrum.UpdateAppMonitorInput) (*request.Request, *cloudwatchrum.UpdateAppMonitorOutput)
+
+	UpdateRumMetricDefinition(*cloudwatchrum.UpdateRumMetricDefinitionInput) (*cloudwatchrum.UpdateRumMetricDefinitionOutput, error)
+	UpdateRumMetricDefinitionWithContext(aws.Context, *cloudwatchrum.UpdateRumMetricDefinitionInput, ...request.Option) (*cloudwatchrum.UpdateRumMetricDefinitionOutput, error)
+	UpdateRumMetricDefinitionRequest(*cloudwatchrum.UpdateRumMetricDefinitionInput) (*request.Request, *cloudwatchrum.UpdateRumMetricDefinitionOutput)
 }
 
 var _ CloudWatchRUMAPI = (*cloudwatchrum.CloudWatchRUM)(nil)

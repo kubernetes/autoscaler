@@ -13,6 +13,122 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+const opCancelFlowExecutions = "CancelFlowExecutions"
+
+// CancelFlowExecutionsRequest generates a "aws/request.Request" representing the
+// client's request for the CancelFlowExecutions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CancelFlowExecutions for more information on using the CancelFlowExecutions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CancelFlowExecutionsRequest method.
+//	req, resp := client.CancelFlowExecutionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CancelFlowExecutions
+func (c *Appflow) CancelFlowExecutionsRequest(input *CancelFlowExecutionsInput) (req *request.Request, output *CancelFlowExecutionsOutput) {
+	op := &request.Operation{
+		Name:       opCancelFlowExecutions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/cancel-flow-executions",
+	}
+
+	if input == nil {
+		input = &CancelFlowExecutionsInput{}
+	}
+
+	output = &CancelFlowExecutionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CancelFlowExecutions API operation for Amazon Appflow.
+//
+// Cancels active runs for a flow.
+//
+// You can cancel all of the active runs for a flow, or you can cancel specific
+// runs by providing their IDs.
+//
+// You can cancel a flow run only when the run is in progress. You can't cancel
+// a run that has already completed or failed. You also can't cancel a run that's
+// scheduled to occur but hasn't started yet. To prevent a scheduled run, you
+// can deactivate the flow with the StopFlow action.
+//
+// You cannot resume a run after you cancel it.
+//
+// When you send your request, the status for each run becomes CancelStarted.
+// When the cancellation completes, the status becomes Canceled.
+//
+// When you cancel a run, you still incur charges for any data that the run
+// already processed before the cancellation. If the run had already written
+// some data to the flow destination, then that data remains in the destination.
+// If you configured the flow to use a batch API (such as the Salesforce Bulk
+// API 2.0), then the run will finish reading or writing its entire batch of
+// data after the cancellation. For these operations, the data processing charges
+// for Amazon AppFlow apply. For the pricing information, see Amazon AppFlow
+// pricing (http://aws.amazon.com/appflow/pricing/).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Appflow's
+// API operation CancelFlowExecutions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - AccessDeniedException
+//     AppFlow/Requester has invalid or missing permissions.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
+//
+//   - ThrottlingException
+//     API calls have exceeded the maximum allowed API request rate per account
+//     and per Region.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CancelFlowExecutions
+func (c *Appflow) CancelFlowExecutions(input *CancelFlowExecutionsInput) (*CancelFlowExecutionsOutput, error) {
+	req, out := c.CancelFlowExecutionsRequest(input)
+	return out, req.Send()
+}
+
+// CancelFlowExecutionsWithContext is the same as CancelFlowExecutions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CancelFlowExecutions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Appflow) CancelFlowExecutionsWithContext(ctx aws.Context, input *CancelFlowExecutionsInput, opts ...request.Option) (*CancelFlowExecutionsOutput, error) {
+	req, out := c.CancelFlowExecutionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateConnectorProfile = "CreateConnectorProfile"
 
 // CreateConnectorProfileRequest generates a "aws/request.Request" representing the
@@ -196,6 +312,9 @@ func (c *Appflow) CreateFlowRequest(input *CreateFlowInput) (req *request.Reques
 //
 //   - ConnectorServerException
 //     An error occurred when retrieving data from the connector endpoint.
+//
+//   - AccessDeniedException
+//     AppFlow/Requester has invalid or missing permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/CreateFlow
 func (c *Appflow) CreateFlow(input *CreateFlowInput) (*CreateFlowOutput, error) {
@@ -1610,8 +1729,9 @@ func (c *Appflow) RegisterConnectorRequest(input *RegisterConnectorInput) (req *
 
 // RegisterConnector API operation for Amazon Appflow.
 //
-// Registers a new connector with your Amazon Web Services account. Before you
-// can register the connector, you must deploy lambda in your account.
+// Registers a new custom connector with your Amazon Web Services account. Before
+// you can register the connector, you must deploy the associated AWS lambda
+// function in your account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1672,6 +1792,108 @@ func (c *Appflow) RegisterConnector(input *RegisterConnectorInput) (*RegisterCon
 // for more information on using Contexts.
 func (c *Appflow) RegisterConnectorWithContext(ctx aws.Context, input *RegisterConnectorInput, opts ...request.Option) (*RegisterConnectorOutput, error) {
 	req, out := c.RegisterConnectorRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opResetConnectorMetadataCache = "ResetConnectorMetadataCache"
+
+// ResetConnectorMetadataCacheRequest generates a "aws/request.Request" representing the
+// client's request for the ResetConnectorMetadataCache operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ResetConnectorMetadataCache for more information on using the ResetConnectorMetadataCache
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ResetConnectorMetadataCacheRequest method.
+//	req, resp := client.ResetConnectorMetadataCacheRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ResetConnectorMetadataCache
+func (c *Appflow) ResetConnectorMetadataCacheRequest(input *ResetConnectorMetadataCacheInput) (req *request.Request, output *ResetConnectorMetadataCacheOutput) {
+	op := &request.Operation{
+		Name:       opResetConnectorMetadataCache,
+		HTTPMethod: "POST",
+		HTTPPath:   "/reset-connector-metadata-cache",
+	}
+
+	if input == nil {
+		input = &ResetConnectorMetadataCacheInput{}
+	}
+
+	output = &ResetConnectorMetadataCacheOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// ResetConnectorMetadataCache API operation for Amazon Appflow.
+//
+// Resets metadata about your connector entities that Amazon AppFlow stored
+// in its cache. Use this action when you want Amazon AppFlow to return the
+// latest information about the data that you have in a source application.
+//
+// Amazon AppFlow returns metadata about your entities when you use the ListConnectorEntities
+// or DescribeConnectorEntities actions. Following these actions, Amazon AppFlow
+// caches the metadata to reduce the number of API requests that it must send
+// to the source application. Amazon AppFlow automatically resets the cache
+// once every hour, but you can use this action when you want to get the latest
+// metadata right away.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Appflow's
+// API operation ResetConnectorMetadataCache for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
+//
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/ResetConnectorMetadataCache
+func (c *Appflow) ResetConnectorMetadataCache(input *ResetConnectorMetadataCacheInput) (*ResetConnectorMetadataCacheOutput, error) {
+	req, out := c.ResetConnectorMetadataCacheRequest(input)
+	return out, req.Send()
+}
+
+// ResetConnectorMetadataCacheWithContext is the same as ResetConnectorMetadataCache with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ResetConnectorMetadataCache for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Appflow) ResetConnectorMetadataCacheWithContext(ctx aws.Context, input *ResetConnectorMetadataCacheInput, opts ...request.Option) (*ResetConnectorMetadataCacheOutput, error) {
+	req, out := c.ResetConnectorMetadataCacheRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1999,7 +2221,7 @@ func (c *Appflow) UnregisterConnectorRequest(input *UnregisterConnectorInput) (r
 // UnregisterConnector API operation for Amazon Appflow.
 //
 // Unregisters the custom connector registered in your account that matches
-// the connectorLabel provided in the request.
+// the connector label provided in the request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2228,6 +2450,121 @@ func (c *Appflow) UpdateConnectorProfileWithContext(ctx aws.Context, input *Upda
 	return out, req.Send()
 }
 
+const opUpdateConnectorRegistration = "UpdateConnectorRegistration"
+
+// UpdateConnectorRegistrationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateConnectorRegistration operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateConnectorRegistration for more information on using the UpdateConnectorRegistration
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateConnectorRegistrationRequest method.
+//	req, resp := client.UpdateConnectorRegistrationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateConnectorRegistration
+func (c *Appflow) UpdateConnectorRegistrationRequest(input *UpdateConnectorRegistrationInput) (req *request.Request, output *UpdateConnectorRegistrationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateConnectorRegistration,
+		HTTPMethod: "POST",
+		HTTPPath:   "/update-connector-registration",
+	}
+
+	if input == nil {
+		input = &UpdateConnectorRegistrationInput{}
+	}
+
+	output = &UpdateConnectorRegistrationOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateConnectorRegistration API operation for Amazon Appflow.
+//
+// Updates a custom connector that you've previously registered. This operation
+// updates the connector with one of the following:
+//
+//   - The latest version of the AWS Lambda function that's assigned to the
+//     connector
+//
+//   - A new AWS Lambda function that you specify
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Appflow's
+// API operation UpdateConnectorRegistration for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The request has invalid or missing parameters.
+//
+//   - ConflictException
+//     There was a conflict when processing the request (for example, a flow with
+//     the given name already exists within the account. Check for conflicting resource
+//     names and try again.
+//
+//   - AccessDeniedException
+//     AppFlow/Requester has invalid or missing permissions.
+//
+//   - ResourceNotFoundException
+//     The resource specified in the request (such as the source or destination
+//     connector profile) is not found.
+//
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota (such as the number of flows) to
+//     be exceeded.
+//
+//   - ThrottlingException
+//     API calls have exceeded the maximum allowed API request rate per account
+//     and per Region.
+//
+//   - InternalServerException
+//     An internal service error occurred during the processing of your request.
+//     Try again later.
+//
+//   - ConnectorServerException
+//     An error occurred when retrieving data from the connector endpoint.
+//
+//   - ConnectorAuthenticationException
+//     An error occurred when authenticating with the connector endpoint.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateConnectorRegistration
+func (c *Appflow) UpdateConnectorRegistration(input *UpdateConnectorRegistrationInput) (*UpdateConnectorRegistrationOutput, error) {
+	req, out := c.UpdateConnectorRegistrationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateConnectorRegistrationWithContext is the same as UpdateConnectorRegistration with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateConnectorRegistration for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Appflow) UpdateConnectorRegistrationWithContext(ctx aws.Context, input *UpdateConnectorRegistrationInput, opts ...request.Option) (*UpdateConnectorRegistrationOutput, error) {
+	req, out := c.UpdateConnectorRegistrationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateFlow = "UpdateFlow"
 
 // UpdateFlowRequest generates a "aws/request.Request" representing the
@@ -2307,6 +2644,9 @@ func (c *Appflow) UpdateFlowRequest(input *UpdateFlowInput) (req *request.Reques
 //   - InternalServerException
 //     An internal service error occurred during the processing of your request.
 //     Try again later.
+//
+//   - AccessDeniedException
+//     AppFlow/Requester has invalid or missing permissions.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appflow-2020-08-23/UpdateFlow
 func (c *Appflow) UpdateFlow(input *UpdateFlowInput) (*UpdateFlowOutput, error) {
@@ -2402,6 +2742,12 @@ type AggregationConfig struct {
 	// Specifies whether Amazon AppFlow aggregates the flow records into a single
 	// file, or leave them unaggregated.
 	AggregationType *string `locationName:"aggregationType" type:"string" enum:"AggregationType"`
+
+	// The desired file size, in MB, for each output file that Amazon AppFlow writes
+	// to the flow destination. For each file, Amazon AppFlow attempts to achieve
+	// the size that you specify. The actual file sizes might differ from this target
+	// based on the number and size of the records that each file contains.
+	TargetFileSize *int64 `locationName:"targetFileSize" type:"long"`
 }
 
 // String returns the string representation.
@@ -2425,6 +2771,12 @@ func (s AggregationConfig) GoString() string {
 // SetAggregationType sets the AggregationType field's value.
 func (s *AggregationConfig) SetAggregationType(v string) *AggregationConfig {
 	s.AggregationType = &v
+	return s
+}
+
+// SetTargetFileSize sets the TargetFileSize field's value.
+func (s *AggregationConfig) SetTargetFileSize(v int64) *AggregationConfig {
+	s.TargetFileSize = &v
 	return s
 }
 
@@ -2875,6 +3227,98 @@ func (s *BasicAuthCredentials) SetUsername(v string) *BasicAuthCredentials {
 	return s
 }
 
+type CancelFlowExecutionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of each active run to cancel. These runs must belong to the flow you
+	// specify in your request.
+	//
+	// If you omit this parameter, your request ends all active runs that belong
+	// to the flow.
+	ExecutionIds []*string `locationName:"executionIds" type:"list"`
+
+	// The name of a flow with active runs that you want to cancel.
+	//
+	// FlowName is a required field
+	FlowName *string `locationName:"flowName" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelFlowExecutionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelFlowExecutionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CancelFlowExecutionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CancelFlowExecutionsInput"}
+	if s.FlowName == nil {
+		invalidParams.Add(request.NewErrParamRequired("FlowName"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExecutionIds sets the ExecutionIds field's value.
+func (s *CancelFlowExecutionsInput) SetExecutionIds(v []*string) *CancelFlowExecutionsInput {
+	s.ExecutionIds = v
+	return s
+}
+
+// SetFlowName sets the FlowName field's value.
+func (s *CancelFlowExecutionsInput) SetFlowName(v string) *CancelFlowExecutionsInput {
+	s.FlowName = &v
+	return s
+}
+
+type CancelFlowExecutionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of runs that Amazon AppFlow couldn't cancel. These runs might be
+	// ineligible for canceling because they haven't started yet or have already
+	// completed.
+	InvalidExecutions []*string `locationName:"invalidExecutions" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelFlowExecutionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CancelFlowExecutionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetInvalidExecutions sets the InvalidExecutions field's value.
+func (s *CancelFlowExecutionsOutput) SetInvalidExecutions(v []*string) *CancelFlowExecutionsOutput {
+	s.InvalidExecutions = v
+	return s
+}
+
 // There was a conflict when processing the request (for example, a flow with
 // the given name already exists within the account. Check for conflicting resource
 // names and try again.
@@ -3073,6 +3517,21 @@ type ConnectorConfiguration struct {
 	// A list of API versions that are supported by the connector.
 	SupportedApiVersions []*string `locationName:"supportedApiVersions" type:"list"`
 
+	// The APIs of the connector application that Amazon AppFlow can use to transfer
+	// your data.
+	SupportedDataTransferApis []*DataTransferApi `locationName:"supportedDataTransferApis" type:"list"`
+
+	// The data transfer types that the connector supports.
+	//
+	// RECORD
+	//
+	// Structured records.
+	//
+	// FILE
+	//
+	// Files or binary data.
+	SupportedDataTransferTypes []*string `locationName:"supportedDataTransferTypes" type:"list" enum:"SupportedDataTransferType"`
+
 	// Lists the connectors that are available for use as destinations.
 	SupportedDestinationConnectors []*string `locationName:"supportedDestinationConnectors" type:"list" enum:"ConnectorType"`
 
@@ -3233,6 +3692,18 @@ func (s *ConnectorConfiguration) SetSupportedApiVersions(v []*string) *Connector
 	return s
 }
 
+// SetSupportedDataTransferApis sets the SupportedDataTransferApis field's value.
+func (s *ConnectorConfiguration) SetSupportedDataTransferApis(v []*DataTransferApi) *ConnectorConfiguration {
+	s.SupportedDataTransferApis = v
+	return s
+}
+
+// SetSupportedDataTransferTypes sets the SupportedDataTransferTypes field's value.
+func (s *ConnectorConfiguration) SetSupportedDataTransferTypes(v []*string) *ConnectorConfiguration {
+	s.SupportedDataTransferTypes = v
+	return s
+}
+
 // SetSupportedDestinationConnectors sets the SupportedDestinationConnectors field's value.
 func (s *ConnectorConfiguration) SetSupportedDestinationConnectors(v []*string) *ConnectorConfiguration {
 	s.SupportedDestinationConnectors = v
@@ -3299,6 +3770,17 @@ type ConnectorDetail struct {
 
 	// The user who registered the connector.
 	RegisteredBy *string `locationName:"registeredBy" type:"string"`
+
+	// The data transfer types that the connector supports.
+	//
+	// RECORD
+	//
+	// Structured records.
+	//
+	// FILE
+	//
+	// Files or binary data.
+	SupportedDataTransferTypes []*string `locationName:"supportedDataTransferTypes" type:"list" enum:"SupportedDataTransferType"`
 }
 
 // String returns the string representation.
@@ -3382,6 +3864,12 @@ func (s *ConnectorDetail) SetRegisteredAt(v time.Time) *ConnectorDetail {
 // SetRegisteredBy sets the RegisteredBy field's value.
 func (s *ConnectorDetail) SetRegisteredBy(v string) *ConnectorDetail {
 	s.RegisteredBy = &v
+	return s
+}
+
+// SetSupportedDataTransferTypes sets the SupportedDataTransferTypes field's value.
+func (s *ConnectorDetail) SetSupportedDataTransferTypes(v []*string) *ConnectorDetail {
+	s.SupportedDataTransferTypes = v
 	return s
 }
 
@@ -3603,6 +4091,9 @@ type ConnectorMetadata struct {
 	// The connector metadata specific to Marketo.
 	Marketo *MarketoMetadata `type:"structure"`
 
+	// The connector metadata specific to Salesforce Pardot.
+	Pardot *PardotMetadata `type:"structure"`
+
 	// The connector metadata specific to Amazon Redshift.
 	Redshift *RedshiftMetadata `type:"structure"`
 
@@ -3709,6 +4200,12 @@ func (s *ConnectorMetadata) SetInforNexus(v *InforNexusMetadata) *ConnectorMetad
 // SetMarketo sets the Marketo field's value.
 func (s *ConnectorMetadata) SetMarketo(v *MarketoMetadata) *ConnectorMetadata {
 	s.Marketo = v
+	return s
+}
+
+// SetPardot sets the Pardot field's value.
+func (s *ConnectorMetadata) SetPardot(v *PardotMetadata) *ConnectorMetadata {
+	s.Pardot = v
 	return s
 }
 
@@ -3853,6 +4350,9 @@ type ConnectorOperator struct {
 	// The operation to be performed on the provided Marketo source fields.
 	Marketo *string `type:"string" enum:"MarketoConnectorOperator"`
 
+	// The operation to be performed on the provided Salesforce Pardot source fields.
+	Pardot *string `type:"string" enum:"PardotConnectorOperator"`
+
 	// The operation to be performed on the provided Amazon S3 source fields.
 	S3 *string `type:"string" enum:"S3ConnectorOperator"`
 
@@ -3938,6 +4438,12 @@ func (s *ConnectorOperator) SetInforNexus(v string) *ConnectorOperator {
 // SetMarketo sets the Marketo field's value.
 func (s *ConnectorOperator) SetMarketo(v string) *ConnectorOperator {
 	s.Marketo = &v
+	return s
+}
+
+// SetPardot sets the Pardot field's value.
+func (s *ConnectorOperator) SetPardot(v string) *ConnectorOperator {
+	s.Pardot = &v
 	return s
 }
 
@@ -4119,9 +4625,7 @@ type ConnectorProfileConfig struct {
 	_ struct{} `type:"structure"`
 
 	// The connector-specific credentials required by each connector.
-	//
-	// ConnectorProfileCredentials is a required field
-	ConnectorProfileCredentials *ConnectorProfileCredentials `locationName:"connectorProfileCredentials" type:"structure" required:"true"`
+	ConnectorProfileCredentials *ConnectorProfileCredentials `locationName:"connectorProfileCredentials" type:"structure"`
 
 	// The connector-specific properties of the profile configuration.
 	//
@@ -4150,9 +4654,6 @@ func (s ConnectorProfileConfig) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *ConnectorProfileConfig) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "ConnectorProfileConfig"}
-	if s.ConnectorProfileCredentials == nil {
-		invalidParams.Add(request.NewErrParamRequired("ConnectorProfileCredentials"))
-	}
 	if s.ConnectorProfileProperties == nil {
 		invalidParams.Add(request.NewErrParamRequired("ConnectorProfileProperties"))
 	}
@@ -4213,6 +4714,9 @@ type ConnectorProfileCredentials struct {
 
 	// The connector-specific credentials required when using Marketo.
 	Marketo *MarketoConnectorProfileCredentials `type:"structure"`
+
+	// The connector-specific credentials required when using Salesforce Pardot.
+	Pardot *PardotConnectorProfileCredentials `type:"structure"`
 
 	// The connector-specific credentials required when using Amazon Redshift.
 	Redshift *RedshiftConnectorProfileCredentials `type:"structure"`
@@ -4301,9 +4805,9 @@ func (s *ConnectorProfileCredentials) Validate() error {
 			invalidParams.AddNested("Marketo", err.(request.ErrInvalidParams))
 		}
 	}
-	if s.Redshift != nil {
-		if err := s.Redshift.Validate(); err != nil {
-			invalidParams.AddNested("Redshift", err.(request.ErrInvalidParams))
+	if s.Pardot != nil {
+		if err := s.Pardot.Validate(); err != nil {
+			invalidParams.AddNested("Pardot", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.SAPOData != nil {
@@ -4314,11 +4818,6 @@ func (s *ConnectorProfileCredentials) Validate() error {
 	if s.Salesforce != nil {
 		if err := s.Salesforce.Validate(); err != nil {
 			invalidParams.AddNested("Salesforce", err.(request.ErrInvalidParams))
-		}
-	}
-	if s.ServiceNow != nil {
-		if err := s.ServiceNow.Validate(); err != nil {
-			invalidParams.AddNested("ServiceNow", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.Singular != nil {
@@ -4403,6 +4902,12 @@ func (s *ConnectorProfileCredentials) SetInforNexus(v *InforNexusConnectorProfil
 // SetMarketo sets the Marketo field's value.
 func (s *ConnectorProfileCredentials) SetMarketo(v *MarketoConnectorProfileCredentials) *ConnectorProfileCredentials {
 	s.Marketo = v
+	return s
+}
+
+// SetPardot sets the Pardot field's value.
+func (s *ConnectorProfileCredentials) SetPardot(v *PardotConnectorProfileCredentials) *ConnectorProfileCredentials {
+	s.Pardot = v
 	return s
 }
 
@@ -4493,6 +4998,9 @@ type ConnectorProfileProperties struct {
 
 	// The connector-specific properties required by Marketo.
 	Marketo *MarketoConnectorProfileProperties `type:"structure"`
+
+	// The connector-specific properties required by Salesforce Pardot.
+	Pardot *PardotConnectorProfileProperties `type:"structure"`
 
 	// The connector-specific properties required by Amazon Redshift.
 	Redshift *RedshiftConnectorProfileProperties `type:"structure"`
@@ -4658,6 +5166,12 @@ func (s *ConnectorProfileProperties) SetInforNexus(v *InforNexusConnectorProfile
 // SetMarketo sets the Marketo field's value.
 func (s *ConnectorProfileProperties) SetMarketo(v *MarketoConnectorProfileProperties) *ConnectorProfileProperties {
 	s.Marketo = v
+	return s
+}
+
+// SetPardot sets the Pardot field's value.
+func (s *ConnectorProfileProperties) SetPardot(v *PardotConnectorProfileProperties) *ConnectorProfileProperties {
+	s.Pardot = v
 	return s
 }
 
@@ -4924,6 +5438,21 @@ func (s *ConnectorServerException) RequestID() string {
 type CreateConnectorProfileInput struct {
 	_ struct{} `type:"structure"`
 
+	// The clientToken parameter is an idempotency token. It ensures that your CreateConnectorProfile
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs. If you use a different value for clientToken, Amazon AppFlow considers
+	// it a new call to CreateConnectorProfile. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
 	// Indicates the connection mode and specifies whether it is public or private.
 	// Private flows use Amazon Web Services PrivateLink to route data over Amazon
 	// Web Services infrastructure without exposing it to the public internet.
@@ -4980,6 +5509,9 @@ func (s CreateConnectorProfileInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateConnectorProfileInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateConnectorProfileInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
 	if s.ConnectionMode == nil {
 		invalidParams.Add(request.NewErrParamRequired("ConnectionMode"))
 	}
@@ -5005,6 +5537,12 @@ func (s *CreateConnectorProfileInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateConnectorProfileInput) SetClientToken(v string) *CreateConnectorProfileInput {
+	s.ClientToken = &v
+	return s
 }
 
 // SetConnectionMode sets the ConnectionMode field's value.
@@ -5077,6 +5615,21 @@ func (s *CreateConnectorProfileOutput) SetConnectorProfileArn(v string) *CreateC
 type CreateFlowInput struct {
 	_ struct{} `type:"structure"`
 
+	// The clientToken parameter is an idempotency token. It ensures that your CreateFlow
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs. If you use a different value for clientToken, Amazon AppFlow considers
+	// it a new call to CreateFlow. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
 	// A description of the flow you want to create.
 	Description *string `locationName:"description" type:"string"`
 
@@ -5097,6 +5650,11 @@ type CreateFlowInput struct {
 	// AppFlow-managed KMS key. If you don't provide anything here, Amazon AppFlow
 	// uses the Amazon AppFlow-managed KMS key.
 	KmsArn *string `locationName:"kmsArn" min:"20" type:"string"`
+
+	// Specifies the configuration that Amazon AppFlow uses when it catalogs the
+	// data that's transferred by the associated flow. When Amazon AppFlow catalogs
+	// the data from a flow, it stores metadata in a data catalog.
+	MetadataCatalogConfig *MetadataCatalogConfig `locationName:"metadataCatalogConfig" type:"structure"`
 
 	// The configuration that controls how Amazon AppFlow retrieves data from the
 	// source connector.
@@ -5140,6 +5698,9 @@ func (s CreateFlowInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *CreateFlowInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "CreateFlowInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
 	if s.DestinationFlowConfigList == nil {
 		invalidParams.Add(request.NewErrParamRequired("DestinationFlowConfigList"))
 	}
@@ -5166,6 +5727,11 @@ func (s *CreateFlowInput) Validate() error {
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "DestinationFlowConfigList", i), err.(request.ErrInvalidParams))
 			}
+		}
+	}
+	if s.MetadataCatalogConfig != nil {
+		if err := s.MetadataCatalogConfig.Validate(); err != nil {
+			invalidParams.AddNested("MetadataCatalogConfig", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.SourceFlowConfig != nil {
@@ -5195,6 +5761,12 @@ func (s *CreateFlowInput) Validate() error {
 	return nil
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateFlowInput) SetClientToken(v string) *CreateFlowInput {
+	s.ClientToken = &v
+	return s
+}
+
 // SetDescription sets the Description field's value.
 func (s *CreateFlowInput) SetDescription(v string) *CreateFlowInput {
 	s.Description = &v
@@ -5216,6 +5788,12 @@ func (s *CreateFlowInput) SetFlowName(v string) *CreateFlowInput {
 // SetKmsArn sets the KmsArn field's value.
 func (s *CreateFlowInput) SetKmsArn(v string) *CreateFlowInput {
 	s.KmsArn = &v
+	return s
+}
+
+// SetMetadataCatalogConfig sets the MetadataCatalogConfig field's value.
+func (s *CreateFlowInput) SetMetadataCatalogConfig(v *MetadataCatalogConfig) *CreateFlowInput {
+	s.MetadataCatalogConfig = v
 	return s
 }
 
@@ -5639,6 +6217,10 @@ type CustomConnectorSourceProperties struct {
 	// Custom properties that are required to use the custom connector as a source.
 	CustomProperties map[string]*string `locationName:"customProperties" type:"map"`
 
+	// The API of the connector application that Amazon AppFlow uses to transfer
+	// your data.
+	DataTransferApi *DataTransferApi `locationName:"dataTransferApi" type:"structure"`
+
 	// The entity specified in the custom connector as a source in the flow.
 	//
 	// EntityName is a required field
@@ -5679,6 +6261,12 @@ func (s *CustomConnectorSourceProperties) Validate() error {
 // SetCustomProperties sets the CustomProperties field's value.
 func (s *CustomConnectorSourceProperties) SetCustomProperties(v map[string]*string) *CustomConnectorSourceProperties {
 	s.CustomProperties = v
+	return s
+}
+
+// SetDataTransferApi sets the DataTransferApi field's value.
+func (s *CustomConnectorSourceProperties) SetDataTransferApi(v *DataTransferApi) *CustomConnectorSourceProperties {
+	s.DataTransferApi = v
 	return s
 }
 
@@ -5766,6 +6354,63 @@ func (s CustomerProfilesMetadata) String() string {
 // value will be replaced with "sensitive".
 func (s CustomerProfilesMetadata) GoString() string {
 	return s.String()
+}
+
+// The API of the connector application that Amazon AppFlow uses to transfer
+// your data.
+type DataTransferApi struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the connector application API.
+	Name *string `type:"string"`
+
+	// You can specify one of the following types:
+	//
+	// AUTOMATIC
+	//
+	// The default. Optimizes a flow for datasets that fluctuate in size from small
+	// to large. For each flow run, Amazon AppFlow chooses to use the SYNC or ASYNC
+	// API type based on the amount of data that the run transfers.
+	//
+	// SYNC
+	//
+	// A synchronous API. This type of API optimizes a flow for small to medium-sized
+	// datasets.
+	//
+	// ASYNC
+	//
+	// An asynchronous API. This type of API optimizes a flow for large datasets.
+	Type *string `type:"string" enum:"DataTransferApiType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataTransferApi) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DataTransferApi) GoString() string {
+	return s.String()
+}
+
+// SetName sets the Name field's value.
+func (s *DataTransferApi) SetName(v string) *DataTransferApi {
+	s.Name = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *DataTransferApi) SetType(v string) *DataTransferApi {
+	s.Type = &v
+	return s
 }
 
 // The connector-specific credentials required by Datadog.
@@ -6742,11 +7387,31 @@ type DescribeFlowOutput struct {
 	// Describes the details of the most recent flow run.
 	LastRunExecutionDetails *ExecutionDetails `locationName:"lastRunExecutionDetails" type:"structure"`
 
+	// Describes the metadata catalog, metadata table, and data partitions that
+	// Amazon AppFlow used for the associated flow run.
+	LastRunMetadataCatalogDetails []*MetadataCatalogDetail `locationName:"lastRunMetadataCatalogDetails" type:"list"`
+
 	// Specifies when the flow was last updated.
 	LastUpdatedAt *time.Time `locationName:"lastUpdatedAt" type:"timestamp"`
 
 	// Specifies the user name of the account that performed the most recent update.
 	LastUpdatedBy *string `locationName:"lastUpdatedBy" type:"string"`
+
+	// Specifies the configuration that Amazon AppFlow uses when it catalogs the
+	// data that's transferred by the associated flow. When Amazon AppFlow catalogs
+	// the data from a flow, it stores metadata in a data catalog.
+	MetadataCatalogConfig *MetadataCatalogConfig `locationName:"metadataCatalogConfig" type:"structure"`
+
+	// The version number of your data schema. Amazon AppFlow assigns this version
+	// number. The version number increases by one when you change any of the following
+	// settings in your flow configuration:
+	//
+	//    * Source-to-destination field mappings
+	//
+	//    * Field data types
+	//
+	//    * Partition keys
+	SchemaVersion *int64 `locationName:"schemaVersion" type:"long"`
 
 	// The configuration that controls how Amazon AppFlow retrieves data from the
 	// source connector.
@@ -6841,6 +7506,12 @@ func (s *DescribeFlowOutput) SetLastRunExecutionDetails(v *ExecutionDetails) *De
 	return s
 }
 
+// SetLastRunMetadataCatalogDetails sets the LastRunMetadataCatalogDetails field's value.
+func (s *DescribeFlowOutput) SetLastRunMetadataCatalogDetails(v []*MetadataCatalogDetail) *DescribeFlowOutput {
+	s.LastRunMetadataCatalogDetails = v
+	return s
+}
+
 // SetLastUpdatedAt sets the LastUpdatedAt field's value.
 func (s *DescribeFlowOutput) SetLastUpdatedAt(v time.Time) *DescribeFlowOutput {
 	s.LastUpdatedAt = &v
@@ -6850,6 +7521,18 @@ func (s *DescribeFlowOutput) SetLastUpdatedAt(v time.Time) *DescribeFlowOutput {
 // SetLastUpdatedBy sets the LastUpdatedBy field's value.
 func (s *DescribeFlowOutput) SetLastUpdatedBy(v string) *DescribeFlowOutput {
 	s.LastUpdatedBy = &v
+	return s
+}
+
+// SetMetadataCatalogConfig sets the MetadataCatalogConfig field's value.
+func (s *DescribeFlowOutput) SetMetadataCatalogConfig(v *MetadataCatalogConfig) *DescribeFlowOutput {
+	s.MetadataCatalogConfig = v
+	return s
+}
+
+// SetSchemaVersion sets the SchemaVersion field's value.
+func (s *DescribeFlowOutput) SetSchemaVersion(v int64) *DescribeFlowOutput {
+	s.SchemaVersion = &v
 	return s
 }
 
@@ -7694,6 +8377,10 @@ type ExecutionRecord struct {
 	// Specifies the time of the most recent update.
 	LastUpdatedAt *time.Time `locationName:"lastUpdatedAt" type:"timestamp"`
 
+	// Describes the metadata catalog, metadata table, and data partitions that
+	// Amazon AppFlow used for the associated flow run.
+	MetadataCatalogDetails []*MetadataCatalogDetail `locationName:"metadataCatalogDetails" type:"list"`
+
 	// Specifies the start time of the flow run.
 	StartedAt *time.Time `locationName:"startedAt" type:"timestamp"`
 }
@@ -7752,6 +8439,12 @@ func (s *ExecutionRecord) SetLastUpdatedAt(v time.Time) *ExecutionRecord {
 	return s
 }
 
+// SetMetadataCatalogDetails sets the MetadataCatalogDetails field's value.
+func (s *ExecutionRecord) SetMetadataCatalogDetails(v []*MetadataCatalogDetail) *ExecutionRecord {
+	s.MetadataCatalogDetails = v
+	return s
+}
+
 // SetStartedAt sets the StartedAt field's value.
 func (s *ExecutionRecord) SetStartedAt(v time.Time) *ExecutionRecord {
 	s.StartedAt = &v
@@ -7770,6 +8463,14 @@ type ExecutionResult struct {
 
 	// Provides any error message information related to the flow run.
 	ErrorInfo *ErrorInfo `locationName:"errorInfo" type:"structure"`
+
+	// The maximum number of records that Amazon AppFlow receives in each page of
+	// the response from your SAP application.
+	MaxPageSize *int64 `locationName:"maxPageSize" type:"long"`
+
+	// The number of processes that Amazon AppFlow ran at the same time when it
+	// retrieved your data.
+	NumParallelProcesses *int64 `locationName:"numParallelProcesses" type:"long"`
 
 	// The number of records processed in the flow run.
 	RecordsProcessed *int64 `locationName:"recordsProcessed" type:"long"`
@@ -7808,6 +8509,18 @@ func (s *ExecutionResult) SetBytesWritten(v int64) *ExecutionResult {
 // SetErrorInfo sets the ErrorInfo field's value.
 func (s *ExecutionResult) SetErrorInfo(v *ErrorInfo) *ExecutionResult {
 	s.ErrorInfo = v
+	return s
+}
+
+// SetMaxPageSize sets the MaxPageSize field's value.
+func (s *ExecutionResult) SetMaxPageSize(v int64) *ExecutionResult {
+	s.MaxPageSize = &v
+	return s
+}
+
+// SetNumParallelProcesses sets the NumParallelProcesses field's value.
+func (s *ExecutionResult) SetNumParallelProcesses(v int64) *ExecutionResult {
+	s.NumParallelProcesses = &v
 	return s
 }
 
@@ -8068,6 +8781,99 @@ func (s *FlowDefinition) SetTags(v map[string]*string) *FlowDefinition {
 // SetTriggerType sets the TriggerType field's value.
 func (s *FlowDefinition) SetTriggerType(v string) *FlowDefinition {
 	s.TriggerType = &v
+	return s
+}
+
+// Specifies the configuration that Amazon AppFlow uses when it catalogs your
+// data with the Glue Data Catalog. When Amazon AppFlow catalogs your data,
+// it stores metadata in Data Catalog tables. This metadata represents the data
+// that's transferred by the flow that you configure with these settings.
+//
+// You can configure a flow with these settings only when the flow destination
+// is Amazon S3.
+type GlueDataCatalogConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Data Catalog database that stores the metadata tables that
+	// Amazon AppFlow creates in your Amazon Web Services account. These tables
+	// contain metadata for the data that's transferred by the flow that you configure
+	// with this parameter.
+	//
+	// When you configure a new flow with this parameter, you must specify an existing
+	// database.
+	//
+	// DatabaseName is a required field
+	DatabaseName *string `locationName:"databaseName" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of an IAM role that grants Amazon AppFlow
+	// the permissions it needs to create Data Catalog tables, databases, and partitions.
+	//
+	// For an example IAM policy that has the required permissions, see Identity-based
+	// policy examples for Amazon AppFlow (https://docs.aws.amazon.com/appflow/latest/userguide/security_iam_id-based-policy-examples.html).
+	//
+	// RoleArn is a required field
+	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
+
+	// A naming prefix for each Data Catalog table that Amazon AppFlow creates for
+	// the flow that you configure with this setting. Amazon AppFlow adds the prefix
+	// to the beginning of the each table name.
+	//
+	// TablePrefix is a required field
+	TablePrefix *string `locationName:"tablePrefix" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlueDataCatalogConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GlueDataCatalogConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GlueDataCatalogConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GlueDataCatalogConfig"}
+	if s.DatabaseName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DatabaseName"))
+	}
+	if s.RoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
+	}
+	if s.TablePrefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("TablePrefix"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDatabaseName sets the DatabaseName field's value.
+func (s *GlueDataCatalogConfig) SetDatabaseName(v string) *GlueDataCatalogConfig {
+	s.DatabaseName = &v
+	return s
+}
+
+// SetRoleArn sets the RoleArn field's value.
+func (s *GlueDataCatalogConfig) SetRoleArn(v string) *GlueDataCatalogConfig {
+	s.RoleArn = &v
+	return s
+}
+
+// SetTablePrefix sets the TablePrefix field's value.
+func (s *GlueDataCatalogConfig) SetTablePrefix(v string) *GlueDataCatalogConfig {
+	s.TablePrefix = &v
 	return s
 }
 
@@ -8825,6 +9631,14 @@ type ListConnectorEntitiesInput struct {
 	// request returns the list of roots. Otherwise, this request returns all entities
 	// supported by the provider.
 	EntitiesPath *string `locationName:"entitiesPath" type:"string"`
+
+	// The maximum number of items that the operation returns in the response.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// A token that was provided by your prior ListConnectorEntities operation if
+	// the response was too big for the page size. You specify this token to get
+	// the next page of results in paginated response.
+	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
 // String returns the string representation.
@@ -8843,6 +9657,19 @@ func (s ListConnectorEntitiesInput) String() string {
 // value will be replaced with "sensitive".
 func (s ListConnectorEntitiesInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListConnectorEntitiesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListConnectorEntitiesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetApiVersion sets the ApiVersion field's value.
@@ -8869,6 +9696,18 @@ func (s *ListConnectorEntitiesInput) SetEntitiesPath(v string) *ListConnectorEnt
 	return s
 }
 
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListConnectorEntitiesInput) SetMaxResults(v int64) *ListConnectorEntitiesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListConnectorEntitiesInput) SetNextToken(v string) *ListConnectorEntitiesInput {
+	s.NextToken = &v
+	return s
+}
+
 type ListConnectorEntitiesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -8878,6 +9717,11 @@ type ListConnectorEntitiesOutput struct {
 	//
 	// ConnectorEntityMap is a required field
 	ConnectorEntityMap map[string][]*ConnectorEntity `locationName:"connectorEntityMap" type:"map" required:"true"`
+
+	// A token that you specify in your next ListConnectorEntities operation to
+	// get the next page of results in paginated response. The ListConnectorEntities
+	// operation provides this token if the response is too big for the page size.
+	NextToken *string `locationName:"nextToken" type:"string"`
 }
 
 // String returns the string representation.
@@ -8901,6 +9745,12 @@ func (s ListConnectorEntitiesOutput) GoString() string {
 // SetConnectorEntityMap sets the ConnectorEntityMap field's value.
 func (s *ListConnectorEntitiesOutput) SetConnectorEntityMap(v map[string][]*ConnectorEntity) *ListConnectorEntitiesOutput {
 	s.ConnectorEntityMap = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListConnectorEntitiesOutput) SetNextToken(v string) *ListConnectorEntitiesOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -9469,6 +10319,130 @@ func (s *MarketoSourceProperties) SetObject(v string) *MarketoSourceProperties {
 	return s
 }
 
+// Specifies the configuration that Amazon AppFlow uses when it catalogs your
+// data. When Amazon AppFlow catalogs your data, it stores metadata in a data
+// catalog.
+type MetadataCatalogConfig struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the configuration that Amazon AppFlow uses when it catalogs your
+	// data with the Glue Data Catalog.
+	GlueDataCatalog *GlueDataCatalogConfig `locationName:"glueDataCatalog" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetadataCatalogConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetadataCatalogConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MetadataCatalogConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MetadataCatalogConfig"}
+	if s.GlueDataCatalog != nil {
+		if err := s.GlueDataCatalog.Validate(); err != nil {
+			invalidParams.AddNested("GlueDataCatalog", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGlueDataCatalog sets the GlueDataCatalog field's value.
+func (s *MetadataCatalogConfig) SetGlueDataCatalog(v *GlueDataCatalogConfig) *MetadataCatalogConfig {
+	s.GlueDataCatalog = v
+	return s
+}
+
+// Describes the metadata catalog, metadata table, and data partitions that
+// Amazon AppFlow used for the associated flow run.
+type MetadataCatalogDetail struct {
+	_ struct{} `type:"structure"`
+
+	// The type of metadata catalog that Amazon AppFlow used for the associated
+	// flow run. This parameter returns the following value:
+	//
+	// GLUE
+	//
+	// The metadata catalog is provided by the Glue Data Catalog. Glue includes
+	// the Glue Data Catalog as a component.
+	CatalogType *string `locationName:"catalogType" type:"string" enum:"CatalogType"`
+
+	// Describes the status of the attempt from Amazon AppFlow to register the data
+	// partitions with the metadata catalog. The data partitions organize the flow
+	// output into a hierarchical path, such as a folder path in an S3 bucket. Amazon
+	// AppFlow creates the partitions (if they don't already exist) based on your
+	// flow configuration.
+	PartitionRegistrationOutput *RegistrationOutput_ `locationName:"partitionRegistrationOutput" type:"structure"`
+
+	// The name of the table that stores the metadata for the associated flow run.
+	// The table stores metadata that represents the data that the flow transferred.
+	// Amazon AppFlow stores the table in the metadata catalog.
+	TableName *string `locationName:"tableName" type:"string"`
+
+	// Describes the status of the attempt from Amazon AppFlow to register the metadata
+	// table with the metadata catalog. Amazon AppFlow creates or updates this table
+	// for the associated flow run.
+	TableRegistrationOutput *RegistrationOutput_ `locationName:"tableRegistrationOutput" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetadataCatalogDetail) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MetadataCatalogDetail) GoString() string {
+	return s.String()
+}
+
+// SetCatalogType sets the CatalogType field's value.
+func (s *MetadataCatalogDetail) SetCatalogType(v string) *MetadataCatalogDetail {
+	s.CatalogType = &v
+	return s
+}
+
+// SetPartitionRegistrationOutput sets the PartitionRegistrationOutput field's value.
+func (s *MetadataCatalogDetail) SetPartitionRegistrationOutput(v *RegistrationOutput_) *MetadataCatalogDetail {
+	s.PartitionRegistrationOutput = v
+	return s
+}
+
+// SetTableName sets the TableName field's value.
+func (s *MetadataCatalogDetail) SetTableName(v string) *MetadataCatalogDetail {
+	s.TableName = &v
+	return s
+}
+
+// SetTableRegistrationOutput sets the TableRegistrationOutput field's value.
+func (s *MetadataCatalogDetail) SetTableRegistrationOutput(v *RegistrationOutput_) *MetadataCatalogDetail {
+	s.TableRegistrationOutput = v
+	return s
+}
+
 // The OAuth 2.0 credentials required for OAuth 2.0 authentication.
 type OAuth2Credentials struct {
 	_ struct{} `type:"structure"`
@@ -9949,13 +10923,239 @@ func (s *OAuthProperties) SetTokenUrl(v string) *OAuthProperties {
 	return s
 }
 
-// Determines the prefix that Amazon AppFlow applies to the destination folder
-// name. You can name your destination folders according to the flow frequency
-// and date.
+// The connector-specific profile credentials required when using Salesforce
+// Pardot.
+type PardotConnectorProfileCredentials struct {
+	_ struct{} `type:"structure"`
+
+	// The credentials used to access protected Salesforce Pardot resources.
+	//
+	// AccessToken is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by PardotConnectorProfileCredentials's
+	// String and GoString methods.
+	AccessToken *string `locationName:"accessToken" type:"string" sensitive:"true"`
+
+	// The secret manager ARN, which contains the client ID and client secret of
+	// the connected app.
+	//
+	// ClientCredentialsArn is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by PardotConnectorProfileCredentials's
+	// String and GoString methods.
+	ClientCredentialsArn *string `locationName:"clientCredentialsArn" min:"20" type:"string" sensitive:"true"`
+
+	// Used by select connectors for which the OAuth workflow is supported, such
+	// as Salesforce, Google Analytics, Marketo, Zendesk, and Slack.
+	OAuthRequest *ConnectorOAuthRequest `locationName:"oAuthRequest" type:"structure"`
+
+	// The credentials used to acquire new access tokens.
+	RefreshToken *string `locationName:"refreshToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotConnectorProfileCredentials) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotConnectorProfileCredentials) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PardotConnectorProfileCredentials) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PardotConnectorProfileCredentials"}
+	if s.ClientCredentialsArn != nil && len(*s.ClientCredentialsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientCredentialsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessToken sets the AccessToken field's value.
+func (s *PardotConnectorProfileCredentials) SetAccessToken(v string) *PardotConnectorProfileCredentials {
+	s.AccessToken = &v
+	return s
+}
+
+// SetClientCredentialsArn sets the ClientCredentialsArn field's value.
+func (s *PardotConnectorProfileCredentials) SetClientCredentialsArn(v string) *PardotConnectorProfileCredentials {
+	s.ClientCredentialsArn = &v
+	return s
+}
+
+// SetOAuthRequest sets the OAuthRequest field's value.
+func (s *PardotConnectorProfileCredentials) SetOAuthRequest(v *ConnectorOAuthRequest) *PardotConnectorProfileCredentials {
+	s.OAuthRequest = v
+	return s
+}
+
+// SetRefreshToken sets the RefreshToken field's value.
+func (s *PardotConnectorProfileCredentials) SetRefreshToken(v string) *PardotConnectorProfileCredentials {
+	s.RefreshToken = &v
+	return s
+}
+
+// The connector-specific profile properties required when using Salesforce
+// Pardot.
+type PardotConnectorProfileProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The business unit id of Salesforce Pardot instance.
+	BusinessUnitId *string `locationName:"businessUnitId" type:"string"`
+
+	// The location of the Salesforce Pardot resource.
+	InstanceUrl *string `locationName:"instanceUrl" type:"string"`
+
+	// Indicates whether the connector profile applies to a sandbox or production
+	// environment.
+	IsSandboxEnvironment *bool `locationName:"isSandboxEnvironment" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotConnectorProfileProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotConnectorProfileProperties) GoString() string {
+	return s.String()
+}
+
+// SetBusinessUnitId sets the BusinessUnitId field's value.
+func (s *PardotConnectorProfileProperties) SetBusinessUnitId(v string) *PardotConnectorProfileProperties {
+	s.BusinessUnitId = &v
+	return s
+}
+
+// SetInstanceUrl sets the InstanceUrl field's value.
+func (s *PardotConnectorProfileProperties) SetInstanceUrl(v string) *PardotConnectorProfileProperties {
+	s.InstanceUrl = &v
+	return s
+}
+
+// SetIsSandboxEnvironment sets the IsSandboxEnvironment field's value.
+func (s *PardotConnectorProfileProperties) SetIsSandboxEnvironment(v bool) *PardotConnectorProfileProperties {
+	s.IsSandboxEnvironment = &v
+	return s
+}
+
+// The connector metadata specific to Salesforce Pardot.
+type PardotMetadata struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotMetadata) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotMetadata) GoString() string {
+	return s.String()
+}
+
+// The properties that are applied when Salesforce Pardot is being used as a
+// source.
+type PardotSourceProperties struct {
+	_ struct{} `type:"structure"`
+
+	// The object specified in the Salesforce Pardot flow source.
+	//
+	// Object is a required field
+	Object *string `locationName:"object" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotSourceProperties) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PardotSourceProperties) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PardotSourceProperties) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PardotSourceProperties"}
+	if s.Object == nil {
+		invalidParams.Add(request.NewErrParamRequired("Object"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetObject sets the Object field's value.
+func (s *PardotSourceProperties) SetObject(v string) *PardotSourceProperties {
+	s.Object = &v
+	return s
+}
+
+// Specifies elements that Amazon AppFlow includes in the file and folder names
+// in the flow destination.
 type PrefixConfig struct {
 	_ struct{} `type:"structure"`
 
-	// Determines the level of granularity that's included in the prefix.
+	// Specifies whether the destination file path includes either or both of the
+	// following elements:
+	//
+	// EXECUTION_ID
+	//
+	// The ID that Amazon AppFlow assigns to the flow run.
+	//
+	// SCHEMA_VERSION
+	//
+	// The version number of your data schema. Amazon AppFlow assigns this version
+	// number. The version number increases by one when you change any of the following
+	// settings in your flow configuration:
+	//
+	//    * Source-to-destination field mappings
+	//
+	//    * Field data types
+	//
+	//    * Partition keys
+	PathPrefixHierarchy []*string `locationName:"pathPrefixHierarchy" type:"list" enum:"PathPrefix"`
+
+	// Determines the level of granularity for the date and time that's included
+	// in the prefix.
 	PrefixFormat *string `locationName:"prefixFormat" type:"string" enum:"PrefixFormat"`
 
 	// Determines the format of the prefix, and whether it applies to the file name,
@@ -9979,6 +11179,12 @@ func (s PrefixConfig) String() string {
 // value will be replaced with "sensitive".
 func (s PrefixConfig) GoString() string {
 	return s.String()
+}
+
+// SetPathPrefixHierarchy sets the PathPrefixHierarchy field's value.
+func (s *PrefixConfig) SetPathPrefixHierarchy(v []*string) *PrefixConfig {
+	s.PathPrefixHierarchy = v
+	return s
 }
 
 // SetPrefixFormat sets the PrefixFormat field's value.
@@ -10093,14 +11299,10 @@ type RedshiftConnectorProfileCredentials struct {
 	// Password is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by RedshiftConnectorProfileCredentials's
 	// String and GoString methods.
-	//
-	// Password is a required field
-	Password *string `locationName:"password" type:"string" required:"true" sensitive:"true"`
+	Password *string `locationName:"password" type:"string" sensitive:"true"`
 
 	// The name of the user.
-	//
-	// Username is a required field
-	Username *string `locationName:"username" type:"string" required:"true"`
+	Username *string `locationName:"username" type:"string"`
 }
 
 // String returns the string representation.
@@ -10119,22 +11321,6 @@ func (s RedshiftConnectorProfileCredentials) String() string {
 // value will be replaced with "sensitive".
 func (s RedshiftConnectorProfileCredentials) GoString() string {
 	return s.String()
-}
-
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *RedshiftConnectorProfileCredentials) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "RedshiftConnectorProfileCredentials"}
-	if s.Password == nil {
-		invalidParams.Add(request.NewErrParamRequired("Password"))
-	}
-	if s.Username == nil {
-		invalidParams.Add(request.NewErrParamRequired("Username"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
 }
 
 // SetPassword sets the Password field's value.
@@ -10162,15 +11348,35 @@ type RedshiftConnectorProfileProperties struct {
 	// the files.
 	BucketPrefix *string `locationName:"bucketPrefix" type:"string"`
 
-	// The JDBC URL of the Amazon Redshift cluster.
-	//
-	// DatabaseUrl is a required field
-	DatabaseUrl *string `locationName:"databaseUrl" type:"string" required:"true"`
+	// The unique ID that's assigned to an Amazon Redshift cluster.
+	ClusterIdentifier *string `locationName:"clusterIdentifier" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the IAM role.
+	// The Amazon Resource Name (ARN) of an IAM role that permits Amazon AppFlow
+	// to access your Amazon Redshift database through the Data API. For more information,
+	// and for the polices that you attach to this role, see Allow Amazon AppFlow
+	// to access Amazon Redshift databases with the Data API (https://docs.aws.amazon.com/appflow/latest/userguide/security_iam_service-role-policies.html#access-redshift).
+	DataApiRoleArn *string `locationName:"dataApiRoleArn" type:"string"`
+
+	// The name of an Amazon Redshift database.
+	DatabaseName *string `locationName:"databaseName" type:"string"`
+
+	// The JDBC URL of the Amazon Redshift cluster.
+	DatabaseUrl *string `locationName:"databaseUrl" type:"string"`
+
+	// Indicates whether the connector profile defines a connection to an Amazon
+	// Redshift Serverless data warehouse.
+	IsRedshiftServerless *bool `locationName:"isRedshiftServerless" type:"boolean"`
+
+	// The Amazon Resource Name (ARN) of IAM role that grants Amazon Redshift read-only
+	// access to Amazon S3. For more information, and for the polices that you attach
+	// to this role, see Allow Amazon Redshift to access your Amazon AppFlow data
+	// in Amazon S3 (https://docs.aws.amazon.com/appflow/latest/userguide/security_iam_service-role-policies.html#redshift-access-s3).
 	//
 	// RoleArn is a required field
 	RoleArn *string `locationName:"roleArn" type:"string" required:"true"`
+
+	// The name of an Amazon Redshift workgroup.
+	WorkgroupName *string `locationName:"workgroupName" type:"string"`
 }
 
 // String returns the string representation.
@@ -10200,9 +11406,6 @@ func (s *RedshiftConnectorProfileProperties) Validate() error {
 	if s.BucketName != nil && len(*s.BucketName) < 3 {
 		invalidParams.Add(request.NewErrParamMinLen("BucketName", 3))
 	}
-	if s.DatabaseUrl == nil {
-		invalidParams.Add(request.NewErrParamRequired("DatabaseUrl"))
-	}
 	if s.RoleArn == nil {
 		invalidParams.Add(request.NewErrParamRequired("RoleArn"))
 	}
@@ -10225,15 +11428,45 @@ func (s *RedshiftConnectorProfileProperties) SetBucketPrefix(v string) *Redshift
 	return s
 }
 
+// SetClusterIdentifier sets the ClusterIdentifier field's value.
+func (s *RedshiftConnectorProfileProperties) SetClusterIdentifier(v string) *RedshiftConnectorProfileProperties {
+	s.ClusterIdentifier = &v
+	return s
+}
+
+// SetDataApiRoleArn sets the DataApiRoleArn field's value.
+func (s *RedshiftConnectorProfileProperties) SetDataApiRoleArn(v string) *RedshiftConnectorProfileProperties {
+	s.DataApiRoleArn = &v
+	return s
+}
+
+// SetDatabaseName sets the DatabaseName field's value.
+func (s *RedshiftConnectorProfileProperties) SetDatabaseName(v string) *RedshiftConnectorProfileProperties {
+	s.DatabaseName = &v
+	return s
+}
+
 // SetDatabaseUrl sets the DatabaseUrl field's value.
 func (s *RedshiftConnectorProfileProperties) SetDatabaseUrl(v string) *RedshiftConnectorProfileProperties {
 	s.DatabaseUrl = &v
 	return s
 }
 
+// SetIsRedshiftServerless sets the IsRedshiftServerless field's value.
+func (s *RedshiftConnectorProfileProperties) SetIsRedshiftServerless(v bool) *RedshiftConnectorProfileProperties {
+	s.IsRedshiftServerless = &v
+	return s
+}
+
 // SetRoleArn sets the RoleArn field's value.
 func (s *RedshiftConnectorProfileProperties) SetRoleArn(v string) *RedshiftConnectorProfileProperties {
 	s.RoleArn = &v
+	return s
+}
+
+// SetWorkgroupName sets the WorkgroupName field's value.
+func (s *RedshiftConnectorProfileProperties) SetWorkgroupName(v string) *RedshiftConnectorProfileProperties {
+	s.WorkgroupName = &v
 	return s
 }
 
@@ -10356,6 +11589,21 @@ func (s RedshiftMetadata) GoString() string {
 type RegisterConnectorInput struct {
 	_ struct{} `type:"structure"`
 
+	// The clientToken parameter is an idempotency token. It ensures that your RegisterConnector
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs. If you use a different value for clientToken, Amazon AppFlow considers
+	// it a new call to RegisterConnector. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
 	// The name of the connector. The name is unique for each ConnectorRegistration
 	// in your Amazon Web Services account.
 	ConnectorLabel *string `locationName:"connectorLabel" type:"string"`
@@ -10393,6 +11641,9 @@ func (s RegisterConnectorInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *RegisterConnectorInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "RegisterConnectorInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
 	if s.ConnectorProvisioningConfig != nil {
 		if err := s.ConnectorProvisioningConfig.Validate(); err != nil {
 			invalidParams.AddNested("ConnectorProvisioningConfig", err.(request.ErrInvalidParams))
@@ -10403,6 +11654,12 @@ func (s *RegisterConnectorInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *RegisterConnectorInput) SetClientToken(v string) *RegisterConnectorInput {
+	s.ClientToken = &v
+	return s
 }
 
 // SetConnectorLabel sets the ConnectorLabel field's value.
@@ -10458,6 +11715,190 @@ func (s RegisterConnectorOutput) GoString() string {
 func (s *RegisterConnectorOutput) SetConnectorArn(v string) *RegisterConnectorOutput {
 	s.ConnectorArn = &v
 	return s
+}
+
+// Describes the status of an attempt from Amazon AppFlow to register a resource.
+//
+// When you run a flow that you've configured to use a metadata catalog, Amazon
+// AppFlow registers a metadata table and data partitions with that catalog.
+// This operation provides the status of that registration attempt. The operation
+// also indicates how many related resources Amazon AppFlow created or updated.
+type RegistrationOutput_ struct {
+	_ struct{} `type:"structure"`
+
+	// Explains the status of the registration attempt from Amazon AppFlow. If the
+	// attempt fails, the message explains why.
+	Message *string `locationName:"message" type:"string"`
+
+	// Indicates the number of resources that Amazon AppFlow created or updated.
+	// Possible resources include metadata tables and data partitions.
+	Result *string `locationName:"result" type:"string"`
+
+	// Indicates the status of the registration attempt from Amazon AppFlow.
+	Status *string `locationName:"status" type:"string" enum:"ExecutionStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RegistrationOutput_) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RegistrationOutput_) GoString() string {
+	return s.String()
+}
+
+// SetMessage sets the Message field's value.
+func (s *RegistrationOutput_) SetMessage(v string) *RegistrationOutput_ {
+	s.Message = &v
+	return s
+}
+
+// SetResult sets the Result field's value.
+func (s *RegistrationOutput_) SetResult(v string) *RegistrationOutput_ {
+	s.Result = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *RegistrationOutput_) SetStatus(v string) *RegistrationOutput_ {
+	s.Status = &v
+	return s
+}
+
+type ResetConnectorMetadataCacheInput struct {
+	_ struct{} `type:"structure"`
+
+	// The API version that you specified in the connector profile that you’re
+	// resetting cached metadata for. You must use this parameter only if the connector
+	// supports multiple API versions or if the connector type is CustomConnector.
+	//
+	// To look up how many versions a connector supports, use the DescribeConnectors
+	// action. In the response, find the value that Amazon AppFlow returns for the
+	// connectorVersion parameter.
+	//
+	// To look up the connector type, use the DescribeConnectorProfiles action.
+	// In the response, find the value that Amazon AppFlow returns for the connectorType
+	// parameter.
+	//
+	// To look up the API version that you specified in a connector profile, use
+	// the DescribeConnectorProfiles action.
+	ApiVersion *string `locationName:"apiVersion" type:"string"`
+
+	// Use this parameter if you want to reset cached metadata about the details
+	// for an individual entity.
+	//
+	// If you don't include this parameter in your request, Amazon AppFlow only
+	// resets cached metadata about entity names, not entity details.
+	ConnectorEntityName *string `locationName:"connectorEntityName" type:"string"`
+
+	// The name of the connector profile that you want to reset cached metadata
+	// for.
+	//
+	// You can omit this parameter if you're resetting the cache for any of the
+	// following connectors: Amazon Connect, Amazon EventBridge, Amazon Lookout
+	// for Metrics, Amazon S3, or Upsolver. If you're resetting the cache for any
+	// other connector, you must include this parameter in your request.
+	ConnectorProfileName *string `locationName:"connectorProfileName" type:"string"`
+
+	// The type of connector to reset cached metadata for.
+	//
+	// You must include this parameter in your request if you're resetting the cache
+	// for any of the following connectors: Amazon Connect, Amazon EventBridge,
+	// Amazon Lookout for Metrics, Amazon S3, or Upsolver. If you're resetting the
+	// cache for any other connector, you can omit this parameter from your request.
+	ConnectorType *string `locationName:"connectorType" type:"string" enum:"ConnectorType"`
+
+	// Use this parameter only if you’re resetting the cached metadata about a
+	// nested entity. Only some connectors support nested entities. A nested entity
+	// is one that has another entity as a parent. To use this parameter, specify
+	// the name of the parent entity.
+	//
+	// To look up the parent-child relationship of entities, you can send a ListConnectorEntities
+	// request that omits the entitiesPath parameter. Amazon AppFlow will return
+	// a list of top-level entities. For each one, it indicates whether the entity
+	// has nested entities. Then, in a subsequent ListConnectorEntities request,
+	// you can specify a parent entity name for the entitiesPath parameter. Amazon
+	// AppFlow will return a list of the child entities for that parent.
+	EntitiesPath *string `locationName:"entitiesPath" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetConnectorMetadataCacheInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetConnectorMetadataCacheInput) GoString() string {
+	return s.String()
+}
+
+// SetApiVersion sets the ApiVersion field's value.
+func (s *ResetConnectorMetadataCacheInput) SetApiVersion(v string) *ResetConnectorMetadataCacheInput {
+	s.ApiVersion = &v
+	return s
+}
+
+// SetConnectorEntityName sets the ConnectorEntityName field's value.
+func (s *ResetConnectorMetadataCacheInput) SetConnectorEntityName(v string) *ResetConnectorMetadataCacheInput {
+	s.ConnectorEntityName = &v
+	return s
+}
+
+// SetConnectorProfileName sets the ConnectorProfileName field's value.
+func (s *ResetConnectorMetadataCacheInput) SetConnectorProfileName(v string) *ResetConnectorMetadataCacheInput {
+	s.ConnectorProfileName = &v
+	return s
+}
+
+// SetConnectorType sets the ConnectorType field's value.
+func (s *ResetConnectorMetadataCacheInput) SetConnectorType(v string) *ResetConnectorMetadataCacheInput {
+	s.ConnectorType = &v
+	return s
+}
+
+// SetEntitiesPath sets the EntitiesPath field's value.
+func (s *ResetConnectorMetadataCacheInput) SetEntitiesPath(v string) *ResetConnectorMetadataCacheInput {
+	s.EntitiesPath = &v
+	return s
+}
+
+type ResetConnectorMetadataCacheOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetConnectorMetadataCacheOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResetConnectorMetadataCacheOutput) GoString() string {
+	return s.String()
 }
 
 // The resource specified in the request (such as the source or destination
@@ -10875,6 +12316,17 @@ type SAPODataConnectorProfileProperties struct {
 	// ClientNumber is a required field
 	ClientNumber *string `locationName:"clientNumber" min:"3" type:"string" required:"true"`
 
+	// If you set this parameter to true, Amazon AppFlow bypasses the single sign-on
+	// (SSO) settings in your SAP account when it accesses your SAP OData instance.
+	//
+	// Whether you need this option depends on the types of credentials that you
+	// applied to your SAP OData connection profile. If your profile uses basic
+	// authentication credentials, SAP SSO can prevent Amazon AppFlow from connecting
+	// to your account with your username and password. In this case, bypassing
+	// SSO makes it possible for Amazon AppFlow to connect successfully. However,
+	// if your profile uses OAuth credentials, this parameter has no affect.
+	DisableSSO *bool `locationName:"disableSSO" type:"boolean"`
+
 	// The logon language of SAPOData instance.
 	LogonLanguage *string `locationName:"logonLanguage" type:"string"`
 
@@ -10956,6 +12408,12 @@ func (s *SAPODataConnectorProfileProperties) SetApplicationServicePath(v string)
 // SetClientNumber sets the ClientNumber field's value.
 func (s *SAPODataConnectorProfileProperties) SetClientNumber(v string) *SAPODataConnectorProfileProperties {
 	s.ClientNumber = &v
+	return s
+}
+
+// SetDisableSSO sets the DisableSSO field's value.
+func (s *SAPODataConnectorProfileProperties) SetDisableSSO(v bool) *SAPODataConnectorProfileProperties {
+	s.DisableSSO = &v
 	return s
 }
 
@@ -11109,12 +12567,130 @@ func (s SAPODataMetadata) GoString() string {
 	return s.String()
 }
 
+// Sets the page size for each concurrent process that transfers OData records
+// from your SAP instance. A concurrent process is query that retrieves a batch
+// of records as part of a flow run. Amazon AppFlow can run multiple concurrent
+// processes in parallel to transfer data faster.
+type SAPODataPaginationConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of records that Amazon AppFlow receives in each page of
+	// the response from your SAP application. For transfers of OData records, the
+	// maximum page size is 3,000. For transfers of data that comes from an ODP
+	// provider, the maximum page size is 10,000.
+	//
+	// MaxPageSize is a required field
+	MaxPageSize *int64 `locationName:"maxPageSize" min:"1" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SAPODataPaginationConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SAPODataPaginationConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SAPODataPaginationConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SAPODataPaginationConfig"}
+	if s.MaxPageSize == nil {
+		invalidParams.Add(request.NewErrParamRequired("MaxPageSize"))
+	}
+	if s.MaxPageSize != nil && *s.MaxPageSize < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxPageSize", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxPageSize sets the MaxPageSize field's value.
+func (s *SAPODataPaginationConfig) SetMaxPageSize(v int64) *SAPODataPaginationConfig {
+	s.MaxPageSize = &v
+	return s
+}
+
+// Sets the number of concurrent processes that transfer OData records from
+// your SAP instance. A concurrent process is query that retrieves a batch of
+// records as part of a flow run. Amazon AppFlow can run multiple concurrent
+// processes in parallel to transfer data faster.
+type SAPODataParallelismConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of processes that Amazon AppFlow runs at the same time
+	// when it retrieves your data from your SAP application.
+	//
+	// MaxParallelism is a required field
+	MaxParallelism *int64 `locationName:"maxParallelism" min:"1" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SAPODataParallelismConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SAPODataParallelismConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SAPODataParallelismConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SAPODataParallelismConfig"}
+	if s.MaxParallelism == nil {
+		invalidParams.Add(request.NewErrParamRequired("MaxParallelism"))
+	}
+	if s.MaxParallelism != nil && *s.MaxParallelism < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxParallelism", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxParallelism sets the MaxParallelism field's value.
+func (s *SAPODataParallelismConfig) SetMaxParallelism(v int64) *SAPODataParallelismConfig {
+	s.MaxParallelism = &v
+	return s
+}
+
 // The properties that are applied when using SAPOData as a flow source.
 type SAPODataSourceProperties struct {
 	_ struct{} `type:"structure"`
 
 	// The object path specified in the SAPOData flow source.
 	ObjectPath *string `locationName:"objectPath" type:"string"`
+
+	// Sets the page size for each concurrent process that transfers OData records
+	// from your SAP instance.
+	PaginationConfig *SAPODataPaginationConfig `locationName:"paginationConfig" type:"structure"`
+
+	// Sets the number of concurrent processes that transfers OData records from
+	// your SAP instance.
+	ParallelismConfig *SAPODataParallelismConfig `locationName:"parallelismConfig" type:"structure"`
 }
 
 // String returns the string representation.
@@ -11135,9 +12711,41 @@ func (s SAPODataSourceProperties) GoString() string {
 	return s.String()
 }
 
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SAPODataSourceProperties) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SAPODataSourceProperties"}
+	if s.PaginationConfig != nil {
+		if err := s.PaginationConfig.Validate(); err != nil {
+			invalidParams.AddNested("PaginationConfig", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ParallelismConfig != nil {
+		if err := s.ParallelismConfig.Validate(); err != nil {
+			invalidParams.AddNested("ParallelismConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
 // SetObjectPath sets the ObjectPath field's value.
 func (s *SAPODataSourceProperties) SetObjectPath(v string) *SAPODataSourceProperties {
 	s.ObjectPath = &v
+	return s
+}
+
+// SetPaginationConfig sets the PaginationConfig field's value.
+func (s *SAPODataSourceProperties) SetPaginationConfig(v *SAPODataPaginationConfig) *SAPODataSourceProperties {
+	s.PaginationConfig = v
+	return s
+}
+
+// SetParallelismConfig sets the ParallelismConfig field's value.
+func (s *SAPODataSourceProperties) SetParallelismConfig(v *SAPODataParallelismConfig) *SAPODataSourceProperties {
+	s.ParallelismConfig = v
 	return s
 }
 
@@ -11159,6 +12767,42 @@ type SalesforceConnectorProfileCredentials struct {
 	// replaced with "sensitive" in string returned by SalesforceConnectorProfileCredentials's
 	// String and GoString methods.
 	ClientCredentialsArn *string `locationName:"clientCredentialsArn" min:"20" type:"string" sensitive:"true"`
+
+	// A JSON web token (JWT) that authorizes Amazon AppFlow to access your Salesforce
+	// records.
+	//
+	// JwtToken is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by SalesforceConnectorProfileCredentials's
+	// String and GoString methods.
+	JwtToken *string `locationName:"jwtToken" type:"string" sensitive:"true"`
+
+	// Specifies the OAuth 2.0 grant type that Amazon AppFlow uses when it requests
+	// an access token from Salesforce. Amazon AppFlow requires an access token
+	// each time it attempts to access your Salesforce records.
+	//
+	// You can specify one of the following values:
+	//
+	// AUTHORIZATION_CODE
+	//
+	// Amazon AppFlow passes an authorization code when it requests the access token
+	// from Salesforce. Amazon AppFlow receives the authorization code from Salesforce
+	// after you log in to your Salesforce account and authorize Amazon AppFlow
+	// to access your records.
+	//
+	// CLIENT_CREDENTIALS
+	//
+	// Amazon AppFlow passes client credentials (a client ID and client secret)
+	// when it requests the access token from Salesforce. You provide these credentials
+	// to Amazon AppFlow when you define the connection to your Salesforce account.
+	//
+	// JWT_BEARER
+	//
+	// Amazon AppFlow passes a JSON web token (JWT) when it requests the access
+	// token from Salesforce. You provide the JWT to Amazon AppFlow when you define
+	// the connection to your Salesforce account. When you use this grant type,
+	// you don't need to log in to your Salesforce account to authorize Amazon AppFlow
+	// to access your records.
+	OAuth2GrantType *string `locationName:"oAuth2GrantType" type:"string" enum:"OAuth2GrantType"`
 
 	// The OAuth requirement needed to request security tokens from the connector
 	// endpoint.
@@ -11211,6 +12855,18 @@ func (s *SalesforceConnectorProfileCredentials) SetClientCredentialsArn(v string
 	return s
 }
 
+// SetJwtToken sets the JwtToken field's value.
+func (s *SalesforceConnectorProfileCredentials) SetJwtToken(v string) *SalesforceConnectorProfileCredentials {
+	s.JwtToken = &v
+	return s
+}
+
+// SetOAuth2GrantType sets the OAuth2GrantType field's value.
+func (s *SalesforceConnectorProfileCredentials) SetOAuth2GrantType(v string) *SalesforceConnectorProfileCredentials {
+	s.OAuth2GrantType = &v
+	return s
+}
+
 // SetOAuthRequest sets the OAuthRequest field's value.
 func (s *SalesforceConnectorProfileCredentials) SetOAuthRequest(v *ConnectorOAuthRequest) *SalesforceConnectorProfileCredentials {
 	s.OAuthRequest = v
@@ -11233,6 +12889,44 @@ type SalesforceConnectorProfileProperties struct {
 	// Indicates whether the connector profile applies to a sandbox or production
 	// environment.
 	IsSandboxEnvironment *bool `locationName:"isSandboxEnvironment" type:"boolean"`
+
+	// If the connection mode for the connector profile is private, this parameter
+	// sets whether Amazon AppFlow uses the private network to send metadata and
+	// authorization calls to Salesforce. Amazon AppFlow sends private calls through
+	// Amazon Web Services PrivateLink. These calls travel through Amazon Web Services
+	// infrastructure without being exposed to the public internet.
+	//
+	// Set either of the following values:
+	//
+	// true
+	//
+	// Amazon AppFlow sends all calls to Salesforce over the private network.
+	//
+	// These private calls are:
+	//
+	//    * Calls to get metadata about your Salesforce records. This metadata describes
+	//    your Salesforce objects and their fields.
+	//
+	//    * Calls to get or refresh access tokens that allow Amazon AppFlow to access
+	//    your Salesforce records.
+	//
+	//    * Calls to transfer your Salesforce records as part of a flow run.
+	//
+	// false
+	//
+	// The default value. Amazon AppFlow sends some calls to Salesforce privately
+	// and other calls over the public internet.
+	//
+	// The public calls are:
+	//
+	//    * Calls to get metadata about your Salesforce records.
+	//
+	//    * Calls to get or refresh access tokens.
+	//
+	// The private calls are:
+	//
+	//    * Calls to transfer your Salesforce records as part of a flow run.
+	UsePrivateLinkForMetadataAndAuthorization *bool `locationName:"usePrivateLinkForMetadataAndAuthorization" type:"boolean"`
 }
 
 // String returns the string representation.
@@ -11265,9 +12959,57 @@ func (s *SalesforceConnectorProfileProperties) SetIsSandboxEnvironment(v bool) *
 	return s
 }
 
+// SetUsePrivateLinkForMetadataAndAuthorization sets the UsePrivateLinkForMetadataAndAuthorization field's value.
+func (s *SalesforceConnectorProfileProperties) SetUsePrivateLinkForMetadataAndAuthorization(v bool) *SalesforceConnectorProfileProperties {
+	s.UsePrivateLinkForMetadataAndAuthorization = &v
+	return s
+}
+
 // The properties that are applied when Salesforce is being used as a destination.
 type SalesforceDestinationProperties struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies which Salesforce API is used by Amazon AppFlow when your flow transfers
+	// data to Salesforce.
+	//
+	// AUTOMATIC
+	//
+	// The default. Amazon AppFlow selects which API to use based on the number
+	// of records that your flow transfers to Salesforce. If your flow transfers
+	// fewer than 1,000 records, Amazon AppFlow uses Salesforce REST API. If your
+	// flow transfers 1,000 records or more, Amazon AppFlow uses Salesforce Bulk
+	// API 2.0.
+	//
+	// Each of these Salesforce APIs structures data differently. If Amazon AppFlow
+	// selects the API automatically, be aware that, for recurring flows, the data
+	// output might vary from one flow run to the next. For example, if a flow runs
+	// daily, it might use REST API on one day to transfer 900 records, and it might
+	// use Bulk API 2.0 on the next day to transfer 1,100 records. For each of these
+	// flow runs, the respective Salesforce API formats the data differently. Some
+	// of the differences include how dates are formatted and null values are represented.
+	// Also, Bulk API 2.0 doesn't transfer Salesforce compound fields.
+	//
+	// By choosing this option, you optimize flow performance for both small and
+	// large data transfers, but the tradeoff is inconsistent formatting in the
+	// output.
+	//
+	// BULKV2
+	//
+	// Amazon AppFlow uses only Salesforce Bulk API 2.0. This API runs asynchronous
+	// data transfers, and it's optimal for large sets of data. By choosing this
+	// option, you ensure that your flow writes consistent output, but you optimize
+	// performance only for large data transfers.
+	//
+	// Note that Bulk API 2.0 does not transfer Salesforce compound fields.
+	//
+	// REST_SYNC
+	//
+	// Amazon AppFlow uses only Salesforce REST API. By choosing this option, you
+	// ensure that your flow writes consistent output, but you decrease performance
+	// for large data transfers that are better suited for Bulk API 2.0. In some
+	// cases, if your flow attempts to transfer a vary large set of data, it might
+	// fail with a timed out error.
+	DataTransferApi *string `locationName:"dataTransferApi" type:"string" enum:"SalesforceDataTransferApi"`
 
 	// The settings that determine how Amazon AppFlow handles an error when placing
 	// data in the Salesforce destination. For example, this setting would determine
@@ -11326,6 +13068,12 @@ func (s *SalesforceDestinationProperties) Validate() error {
 	return nil
 }
 
+// SetDataTransferApi sets the DataTransferApi field's value.
+func (s *SalesforceDestinationProperties) SetDataTransferApi(v string) *SalesforceDestinationProperties {
+	s.DataTransferApi = &v
+	return s
+}
+
 // SetErrorHandlingConfig sets the ErrorHandlingConfig field's value.
 func (s *SalesforceDestinationProperties) SetErrorHandlingConfig(v *ErrorHandlingConfig) *SalesforceDestinationProperties {
 	s.ErrorHandlingConfig = v
@@ -11354,8 +13102,38 @@ func (s *SalesforceDestinationProperties) SetWriteOperationType(v string) *Sales
 type SalesforceMetadata struct {
 	_ struct{} `type:"structure"`
 
+	// The Salesforce APIs that you can have Amazon AppFlow use when your flows
+	// transfers data to or from Salesforce.
+	DataTransferApis []*string `locationName:"dataTransferApis" type:"list" enum:"SalesforceDataTransferApi"`
+
 	// The desired authorization scope for the Salesforce account.
 	OAuthScopes []*string `locationName:"oAuthScopes" type:"list"`
+
+	// The OAuth 2.0 grant types that Amazon AppFlow can use when it requests an
+	// access token from Salesforce. Amazon AppFlow requires an access token each
+	// time it attempts to access your Salesforce records.
+	//
+	// AUTHORIZATION_CODE
+	//
+	// Amazon AppFlow passes an authorization code when it requests the access token
+	// from Salesforce. Amazon AppFlow receives the authorization code from Salesforce
+	// after you log in to your Salesforce account and authorize Amazon AppFlow
+	// to access your records.
+	//
+	// CLIENT_CREDENTIALS
+	//
+	// Amazon AppFlow passes client credentials (a client ID and client secret)
+	// when it requests the access token from Salesforce. You provide these credentials
+	// to Amazon AppFlow when you define the connection to your Salesforce account.
+	//
+	// JWT_BEARER
+	//
+	// Amazon AppFlow passes a JSON web token (JWT) when it requests the access
+	// token from Salesforce. You provide the JWT to Amazon AppFlow when you define
+	// the connection to your Salesforce account. When you use this grant type,
+	// you don't need to log in to your Salesforce account to authorize Amazon AppFlow
+	// to access your records.
+	Oauth2GrantTypesSupported []*string `locationName:"oauth2GrantTypesSupported" type:"list" enum:"OAuth2GrantType"`
 }
 
 // String returns the string representation.
@@ -11376,15 +13154,70 @@ func (s SalesforceMetadata) GoString() string {
 	return s.String()
 }
 
+// SetDataTransferApis sets the DataTransferApis field's value.
+func (s *SalesforceMetadata) SetDataTransferApis(v []*string) *SalesforceMetadata {
+	s.DataTransferApis = v
+	return s
+}
+
 // SetOAuthScopes sets the OAuthScopes field's value.
 func (s *SalesforceMetadata) SetOAuthScopes(v []*string) *SalesforceMetadata {
 	s.OAuthScopes = v
 	return s
 }
 
+// SetOauth2GrantTypesSupported sets the Oauth2GrantTypesSupported field's value.
+func (s *SalesforceMetadata) SetOauth2GrantTypesSupported(v []*string) *SalesforceMetadata {
+	s.Oauth2GrantTypesSupported = v
+	return s
+}
+
 // The properties that are applied when Salesforce is being used as a source.
 type SalesforceSourceProperties struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies which Salesforce API is used by Amazon AppFlow when your flow transfers
+	// data from Salesforce.
+	//
+	// AUTOMATIC
+	//
+	// The default. Amazon AppFlow selects which API to use based on the number
+	// of records that your flow transfers from Salesforce. If your flow transfers
+	// fewer than 1,000,000 records, Amazon AppFlow uses Salesforce REST API. If
+	// your flow transfers 1,000,000 records or more, Amazon AppFlow uses Salesforce
+	// Bulk API 2.0.
+	//
+	// Each of these Salesforce APIs structures data differently. If Amazon AppFlow
+	// selects the API automatically, be aware that, for recurring flows, the data
+	// output might vary from one flow run to the next. For example, if a flow runs
+	// daily, it might use REST API on one day to transfer 900,000 records, and
+	// it might use Bulk API 2.0 on the next day to transfer 1,100,000 records.
+	// For each of these flow runs, the respective Salesforce API formats the data
+	// differently. Some of the differences include how dates are formatted and
+	// null values are represented. Also, Bulk API 2.0 doesn't transfer Salesforce
+	// compound fields.
+	//
+	// By choosing this option, you optimize flow performance for both small and
+	// large data transfers, but the tradeoff is inconsistent formatting in the
+	// output.
+	//
+	// BULKV2
+	//
+	// Amazon AppFlow uses only Salesforce Bulk API 2.0. This API runs asynchronous
+	// data transfers, and it's optimal for large sets of data. By choosing this
+	// option, you ensure that your flow writes consistent output, but you optimize
+	// performance only for large data transfers.
+	//
+	// Note that Bulk API 2.0 does not transfer Salesforce compound fields.
+	//
+	// REST_SYNC
+	//
+	// Amazon AppFlow uses only Salesforce REST API. By choosing this option, you
+	// ensure that your flow writes consistent output, but you decrease performance
+	// for large data transfers that are better suited for Bulk API 2.0. In some
+	// cases, if your flow attempts to transfer a vary large set of data, it might
+	// fail wituh a timed out error.
+	DataTransferApi *string `locationName:"dataTransferApi" type:"string" enum:"SalesforceDataTransferApi"`
 
 	// The flag that enables dynamic fetching of new (recently added) fields in
 	// the Salesforce objects while running a flow.
@@ -11428,6 +13261,12 @@ func (s *SalesforceSourceProperties) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetDataTransferApi sets the DataTransferApi field's value.
+func (s *SalesforceSourceProperties) SetDataTransferApi(v string) *SalesforceSourceProperties {
+	s.DataTransferApi = &v
+	return s
 }
 
 // SetEnableDynamicFieldUpdate sets the EnableDynamicFieldUpdate field's value.
@@ -11581,19 +13420,18 @@ func (s *ScheduledTriggerProperties) SetTimezone(v string) *ScheduledTriggerProp
 type ServiceNowConnectorProfileCredentials struct {
 	_ struct{} `type:"structure"`
 
+	// The OAuth 2.0 credentials required to authenticate the user.
+	OAuth2Credentials *OAuth2Credentials `locationName:"oAuth2Credentials" type:"structure"`
+
 	// The password that corresponds to the user name.
 	//
 	// Password is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by ServiceNowConnectorProfileCredentials's
 	// String and GoString methods.
-	//
-	// Password is a required field
-	Password *string `locationName:"password" type:"string" required:"true" sensitive:"true"`
+	Password *string `locationName:"password" type:"string" sensitive:"true"`
 
 	// The name of the user.
-	//
-	// Username is a required field
-	Username *string `locationName:"username" type:"string" required:"true"`
+	Username *string `locationName:"username" type:"string"`
 }
 
 // String returns the string representation.
@@ -11614,20 +13452,10 @@ func (s ServiceNowConnectorProfileCredentials) GoString() string {
 	return s.String()
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *ServiceNowConnectorProfileCredentials) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "ServiceNowConnectorProfileCredentials"}
-	if s.Password == nil {
-		invalidParams.Add(request.NewErrParamRequired("Password"))
-	}
-	if s.Username == nil {
-		invalidParams.Add(request.NewErrParamRequired("Username"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
+// SetOAuth2Credentials sets the OAuth2Credentials field's value.
+func (s *ServiceNowConnectorProfileCredentials) SetOAuth2Credentials(v *OAuth2Credentials) *ServiceNowConnectorProfileCredentials {
+	s.OAuth2Credentials = v
+	return s
 }
 
 // SetPassword sets the Password field's value.
@@ -12515,6 +14343,9 @@ type SourceConnectorProperties struct {
 	// Specifies the information that is required for querying Marketo.
 	Marketo *MarketoSourceProperties `type:"structure"`
 
+	// Specifies the information that is required for querying Salesforce Pardot.
+	Pardot *PardotSourceProperties `type:"structure"`
+
 	// Specifies the information that is required for querying Amazon S3.
 	S3 *S3SourceProperties `type:"structure"`
 
@@ -12599,9 +14430,19 @@ func (s *SourceConnectorProperties) Validate() error {
 			invalidParams.AddNested("Marketo", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.Pardot != nil {
+		if err := s.Pardot.Validate(); err != nil {
+			invalidParams.AddNested("Pardot", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.S3 != nil {
 		if err := s.S3.Validate(); err != nil {
 			invalidParams.AddNested("S3", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.SAPOData != nil {
+		if err := s.SAPOData.Validate(); err != nil {
+			invalidParams.AddNested("SAPOData", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.Salesforce != nil {
@@ -12685,6 +14526,12 @@ func (s *SourceConnectorProperties) SetInforNexus(v *InforNexusSourceProperties)
 // SetMarketo sets the Marketo field's value.
 func (s *SourceConnectorProperties) SetMarketo(v *MarketoSourceProperties) *SourceConnectorProperties {
 	s.Marketo = v
+	return s
+}
+
+// SetPardot sets the Pardot field's value.
+func (s *SourceConnectorProperties) SetPardot(v *PardotSourceProperties) *SourceConnectorProperties {
+	s.Pardot = v
 	return s
 }
 
@@ -12893,6 +14740,25 @@ func (s *SourceFlowConfig) SetSourceConnectorProperties(v *SourceConnectorProper
 type StartFlowInput struct {
 	_ struct{} `type:"structure"`
 
+	// The clientToken parameter is an idempotency token. It ensures that your StartFlow
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs for flows that run on a schedule or based on an event. However, the
+	// error doesn't occur for flows that run on demand. You set the conditions
+	// that initiate your flow for the triggerConfig parameter.
+	//
+	// If you use a different value for clientToken, Amazon AppFlow considers it
+	// a new call to StartFlow. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
 	// The specified name of the flow. Spaces are not allowed. Use underscores (_)
 	// or hyphens (-) only.
 	//
@@ -12921,6 +14787,9 @@ func (s StartFlowInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *StartFlowInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "StartFlowInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
 	if s.FlowName == nil {
 		invalidParams.Add(request.NewErrParamRequired("FlowName"))
 	}
@@ -12929,6 +14798,12 @@ func (s *StartFlowInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *StartFlowInput) SetClientToken(v string) *StartFlowInput {
+	s.ClientToken = &v
+	return s
 }
 
 // SetFlowName sets the FlowName field's value.
@@ -13898,6 +15773,21 @@ func (s UntagResourceOutput) GoString() string {
 type UpdateConnectorProfileInput struct {
 	_ struct{} `type:"structure"`
 
+	// The clientToken parameter is an idempotency token. It ensures that your UpdateConnectorProfile
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs. If you use a different value for clientToken, Amazon AppFlow considers
+	// it a new call to UpdateConnectorProfile. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
 	// Indicates the connection mode and if it is public or private.
 	//
 	// ConnectionMode is a required field
@@ -13936,6 +15826,9 @@ func (s UpdateConnectorProfileInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UpdateConnectorProfileInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UpdateConnectorProfileInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
 	if s.ConnectionMode == nil {
 		invalidParams.Add(request.NewErrParamRequired("ConnectionMode"))
 	}
@@ -13955,6 +15848,12 @@ func (s *UpdateConnectorProfileInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateConnectorProfileInput) SetClientToken(v string) *UpdateConnectorProfileInput {
+	s.ClientToken = &v
+	return s
 }
 
 // SetConnectionMode sets the ConnectionMode field's value.
@@ -14006,8 +15905,148 @@ func (s *UpdateConnectorProfileOutput) SetConnectorProfileArn(v string) *UpdateC
 	return s
 }
 
+type UpdateConnectorRegistrationInput struct {
+	_ struct{} `type:"structure"`
+
+	// The clientToken parameter is an idempotency token. It ensures that your UpdateConnectorRegistration
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs. If you use a different value for clientToken, Amazon AppFlow considers
+	// it a new call to UpdateConnectorRegistration. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The name of the connector. The name is unique for each connector registration
+	// in your AWS account.
+	//
+	// ConnectorLabel is a required field
+	ConnectorLabel *string `locationName:"connectorLabel" type:"string" required:"true"`
+
+	// Contains information about the configuration of the connector being registered.
+	ConnectorProvisioningConfig *ConnectorProvisioningConfig `locationName:"connectorProvisioningConfig" type:"structure"`
+
+	// A description about the update that you're applying to the connector.
+	Description *string `locationName:"description" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConnectorRegistrationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConnectorRegistrationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateConnectorRegistrationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateConnectorRegistrationInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.ConnectorLabel == nil {
+		invalidParams.Add(request.NewErrParamRequired("ConnectorLabel"))
+	}
+	if s.ConnectorProvisioningConfig != nil {
+		if err := s.ConnectorProvisioningConfig.Validate(); err != nil {
+			invalidParams.AddNested("ConnectorProvisioningConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateConnectorRegistrationInput) SetClientToken(v string) *UpdateConnectorRegistrationInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetConnectorLabel sets the ConnectorLabel field's value.
+func (s *UpdateConnectorRegistrationInput) SetConnectorLabel(v string) *UpdateConnectorRegistrationInput {
+	s.ConnectorLabel = &v
+	return s
+}
+
+// SetConnectorProvisioningConfig sets the ConnectorProvisioningConfig field's value.
+func (s *UpdateConnectorRegistrationInput) SetConnectorProvisioningConfig(v *ConnectorProvisioningConfig) *UpdateConnectorRegistrationInput {
+	s.ConnectorProvisioningConfig = v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateConnectorRegistrationInput) SetDescription(v string) *UpdateConnectorRegistrationInput {
+	s.Description = &v
+	return s
+}
+
+type UpdateConnectorRegistrationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the connector being updated.
+	ConnectorArn *string `locationName:"connectorArn" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConnectorRegistrationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateConnectorRegistrationOutput) GoString() string {
+	return s.String()
+}
+
+// SetConnectorArn sets the ConnectorArn field's value.
+func (s *UpdateConnectorRegistrationOutput) SetConnectorArn(v string) *UpdateConnectorRegistrationOutput {
+	s.ConnectorArn = &v
+	return s
+}
+
 type UpdateFlowInput struct {
 	_ struct{} `type:"structure"`
+
+	// The clientToken parameter is an idempotency token. It ensures that your UpdateFlow
+	// request completes only once. You choose the value to pass. For example, if
+	// you don't receive a response from your request, you can safely retry the
+	// request with the same clientToken parameter value.
+	//
+	// If you omit a clientToken value, the Amazon Web Services SDK that you are
+	// using inserts a value for you. This way, the SDK can safely retry requests
+	// multiple times after a network error. You must provide your own value for
+	// other use cases.
+	//
+	// If you specify input parameters that differ from your first request, an error
+	// occurs. If you use a different value for clientToken, Amazon AppFlow considers
+	// it a new call to UpdateFlow. The token is active for 8 hours.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// A description of the flow.
 	Description *string `locationName:"description" type:"string"`
@@ -14023,6 +16062,11 @@ type UpdateFlowInput struct {
 	//
 	// FlowName is a required field
 	FlowName *string `locationName:"flowName" type:"string" required:"true"`
+
+	// Specifies the configuration that Amazon AppFlow uses when it catalogs the
+	// data that's transferred by the associated flow. When Amazon AppFlow catalogs
+	// the data from a flow, it stores metadata in a data catalog.
+	MetadataCatalogConfig *MetadataCatalogConfig `locationName:"metadataCatalogConfig" type:"structure"`
 
 	// Contains information about the configuration of the source connector used
 	// in the flow.
@@ -14063,6 +16107,9 @@ func (s UpdateFlowInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UpdateFlowInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UpdateFlowInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
 	if s.DestinationFlowConfigList == nil {
 		invalidParams.Add(request.NewErrParamRequired("DestinationFlowConfigList"))
 	}
@@ -14086,6 +16133,11 @@ func (s *UpdateFlowInput) Validate() error {
 			if err := v.Validate(); err != nil {
 				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "DestinationFlowConfigList", i), err.(request.ErrInvalidParams))
 			}
+		}
+	}
+	if s.MetadataCatalogConfig != nil {
+		if err := s.MetadataCatalogConfig.Validate(); err != nil {
+			invalidParams.AddNested("MetadataCatalogConfig", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.SourceFlowConfig != nil {
@@ -14115,6 +16167,12 @@ func (s *UpdateFlowInput) Validate() error {
 	return nil
 }
 
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateFlowInput) SetClientToken(v string) *UpdateFlowInput {
+	s.ClientToken = &v
+	return s
+}
+
 // SetDescription sets the Description field's value.
 func (s *UpdateFlowInput) SetDescription(v string) *UpdateFlowInput {
 	s.Description = &v
@@ -14130,6 +16188,12 @@ func (s *UpdateFlowInput) SetDestinationFlowConfigList(v []*DestinationFlowConfi
 // SetFlowName sets the FlowName field's value.
 func (s *UpdateFlowInput) SetFlowName(v string) *UpdateFlowInput {
 	s.FlowName = &v
+	return s
+}
+
+// SetMetadataCatalogConfig sets the MetadataCatalogConfig field's value.
+func (s *UpdateFlowInput) SetMetadataCatalogConfig(v *MetadataCatalogConfig) *UpdateFlowInput {
+	s.MetadataCatalogConfig = v
 	return s
 }
 
@@ -14299,9 +16363,8 @@ type UpsolverS3OutputFormatConfig struct {
 	// S3 bucket.
 	FileType *string `locationName:"fileType" type:"string" enum:"FileType"`
 
-	// Determines the prefix that Amazon AppFlow applies to the destination folder
-	// name. You can name your destination folders according to the flow frequency
-	// and date.
+	// Specifies elements that Amazon AppFlow includes in the file and folder names
+	// in the flow destination.
 	//
 	// PrefixConfig is a required field
 	PrefixConfig *PrefixConfig `locationName:"prefixConfig" type:"structure" required:"true"`
@@ -14992,6 +17055,18 @@ func AuthenticationType_Values() []string {
 }
 
 const (
+	// CatalogTypeGlue is a CatalogType enum value
+	CatalogTypeGlue = "GLUE"
+)
+
+// CatalogType_Values returns all elements of the CatalogType enum
+func CatalogType_Values() []string {
+	return []string{
+		CatalogTypeGlue,
+	}
+}
+
+const (
 	// ConnectionModePublic is a ConnectionMode enum value
 	ConnectionModePublic = "Public"
 
@@ -15089,6 +17164,9 @@ const (
 
 	// ConnectorTypeCustomConnector is a ConnectorType enum value
 	ConnectorTypeCustomConnector = "CustomConnector"
+
+	// ConnectorTypePardot is a ConnectorType enum value
+	ConnectorTypePardot = "Pardot"
 )
 
 // ConnectorType_Values returns all elements of the ConnectorType enum
@@ -15117,6 +17195,7 @@ func ConnectorType_Values() []string {
 		ConnectorTypeCustomerProfiles,
 		ConnectorTypeSapodata,
 		ConnectorTypeCustomConnector,
+		ConnectorTypePardot,
 	}
 }
 
@@ -15133,6 +17212,26 @@ func DataPullMode_Values() []string {
 	return []string{
 		DataPullModeIncremental,
 		DataPullModeComplete,
+	}
+}
+
+const (
+	// DataTransferApiTypeSync is a DataTransferApiType enum value
+	DataTransferApiTypeSync = "SYNC"
+
+	// DataTransferApiTypeAsync is a DataTransferApiType enum value
+	DataTransferApiTypeAsync = "ASYNC"
+
+	// DataTransferApiTypeAutomatic is a DataTransferApiType enum value
+	DataTransferApiTypeAutomatic = "AUTOMATIC"
+)
+
+// DataTransferApiType_Values returns all elements of the DataTransferApiType enum
+func DataTransferApiType_Values() []string {
+	return []string{
+		DataTransferApiTypeSync,
+		DataTransferApiTypeAsync,
+		DataTransferApiTypeAutomatic,
 	}
 }
 
@@ -15281,6 +17380,12 @@ const (
 
 	// ExecutionStatusError is a ExecutionStatus enum value
 	ExecutionStatusError = "Error"
+
+	// ExecutionStatusCancelStarted is a ExecutionStatus enum value
+	ExecutionStatusCancelStarted = "CancelStarted"
+
+	// ExecutionStatusCanceled is a ExecutionStatus enum value
+	ExecutionStatusCanceled = "Canceled"
 )
 
 // ExecutionStatus_Values returns all elements of the ExecutionStatus enum
@@ -15289,6 +17394,8 @@ func ExecutionStatus_Values() []string {
 		ExecutionStatusInProgress,
 		ExecutionStatusSuccessful,
 		ExecutionStatusError,
+		ExecutionStatusCancelStarted,
+		ExecutionStatusCanceled,
 	}
 }
 
@@ -15522,6 +17629,9 @@ const (
 
 	// OAuth2GrantTypeAuthorizationCode is a OAuth2GrantType enum value
 	OAuth2GrantTypeAuthorizationCode = "AUTHORIZATION_CODE"
+
+	// OAuth2GrantTypeJwtBearer is a OAuth2GrantType enum value
+	OAuth2GrantTypeJwtBearer = "JWT_BEARER"
 )
 
 // OAuth2GrantType_Values returns all elements of the OAuth2GrantType enum
@@ -15529,6 +17639,7 @@ func OAuth2GrantType_Values() []string {
 	return []string{
 		OAuth2GrantTypeClientCredentials,
 		OAuth2GrantTypeAuthorizationCode,
+		OAuth2GrantTypeJwtBearer,
 	}
 }
 
@@ -15669,6 +17780,12 @@ const (
 
 	// OperatorPropertiesKeysExcludeSourceFieldsList is a OperatorPropertiesKeys enum value
 	OperatorPropertiesKeysExcludeSourceFieldsList = "EXCLUDE_SOURCE_FIELDS_LIST"
+
+	// OperatorPropertiesKeysIncludeNewFields is a OperatorPropertiesKeys enum value
+	OperatorPropertiesKeysIncludeNewFields = "INCLUDE_NEW_FIELDS"
+
+	// OperatorPropertiesKeysOrderedPartitionKeysList is a OperatorPropertiesKeys enum value
+	OperatorPropertiesKeysOrderedPartitionKeysList = "ORDERED_PARTITION_KEYS_LIST"
 )
 
 // OperatorPropertiesKeys_Values returns all elements of the OperatorPropertiesKeys enum
@@ -15689,6 +17806,8 @@ func OperatorPropertiesKeys_Values() []string {
 		OperatorPropertiesKeysConcatFormat,
 		OperatorPropertiesKeysSubfieldCategoryMap,
 		OperatorPropertiesKeysExcludeSourceFieldsList,
+		OperatorPropertiesKeysIncludeNewFields,
+		OperatorPropertiesKeysOrderedPartitionKeysList,
 	}
 }
 
@@ -15781,6 +17900,86 @@ func Operators_Values() []string {
 		OperatorsValidateNonNegative,
 		OperatorsValidateNumeric,
 		OperatorsNoOp,
+	}
+}
+
+const (
+	// PardotConnectorOperatorProjection is a PardotConnectorOperator enum value
+	PardotConnectorOperatorProjection = "PROJECTION"
+
+	// PardotConnectorOperatorEqualTo is a PardotConnectorOperator enum value
+	PardotConnectorOperatorEqualTo = "EQUAL_TO"
+
+	// PardotConnectorOperatorNoOp is a PardotConnectorOperator enum value
+	PardotConnectorOperatorNoOp = "NO_OP"
+
+	// PardotConnectorOperatorAddition is a PardotConnectorOperator enum value
+	PardotConnectorOperatorAddition = "ADDITION"
+
+	// PardotConnectorOperatorMultiplication is a PardotConnectorOperator enum value
+	PardotConnectorOperatorMultiplication = "MULTIPLICATION"
+
+	// PardotConnectorOperatorDivision is a PardotConnectorOperator enum value
+	PardotConnectorOperatorDivision = "DIVISION"
+
+	// PardotConnectorOperatorSubtraction is a PardotConnectorOperator enum value
+	PardotConnectorOperatorSubtraction = "SUBTRACTION"
+
+	// PardotConnectorOperatorMaskAll is a PardotConnectorOperator enum value
+	PardotConnectorOperatorMaskAll = "MASK_ALL"
+
+	// PardotConnectorOperatorMaskFirstN is a PardotConnectorOperator enum value
+	PardotConnectorOperatorMaskFirstN = "MASK_FIRST_N"
+
+	// PardotConnectorOperatorMaskLastN is a PardotConnectorOperator enum value
+	PardotConnectorOperatorMaskLastN = "MASK_LAST_N"
+
+	// PardotConnectorOperatorValidateNonNull is a PardotConnectorOperator enum value
+	PardotConnectorOperatorValidateNonNull = "VALIDATE_NON_NULL"
+
+	// PardotConnectorOperatorValidateNonZero is a PardotConnectorOperator enum value
+	PardotConnectorOperatorValidateNonZero = "VALIDATE_NON_ZERO"
+
+	// PardotConnectorOperatorValidateNonNegative is a PardotConnectorOperator enum value
+	PardotConnectorOperatorValidateNonNegative = "VALIDATE_NON_NEGATIVE"
+
+	// PardotConnectorOperatorValidateNumeric is a PardotConnectorOperator enum value
+	PardotConnectorOperatorValidateNumeric = "VALIDATE_NUMERIC"
+)
+
+// PardotConnectorOperator_Values returns all elements of the PardotConnectorOperator enum
+func PardotConnectorOperator_Values() []string {
+	return []string{
+		PardotConnectorOperatorProjection,
+		PardotConnectorOperatorEqualTo,
+		PardotConnectorOperatorNoOp,
+		PardotConnectorOperatorAddition,
+		PardotConnectorOperatorMultiplication,
+		PardotConnectorOperatorDivision,
+		PardotConnectorOperatorSubtraction,
+		PardotConnectorOperatorMaskAll,
+		PardotConnectorOperatorMaskFirstN,
+		PardotConnectorOperatorMaskLastN,
+		PardotConnectorOperatorValidateNonNull,
+		PardotConnectorOperatorValidateNonZero,
+		PardotConnectorOperatorValidateNonNegative,
+		PardotConnectorOperatorValidateNumeric,
+	}
+}
+
+const (
+	// PathPrefixExecutionId is a PathPrefix enum value
+	PathPrefixExecutionId = "EXECUTION_ID"
+
+	// PathPrefixSchemaVersion is a PathPrefix enum value
+	PathPrefixSchemaVersion = "SCHEMA_VERSION"
+)
+
+// PathPrefix_Values returns all elements of the PathPrefix enum
+func PathPrefix_Values() []string {
+	return []string{
+		PathPrefixExecutionId,
+		PathPrefixSchemaVersion,
 	}
 }
 
@@ -16169,6 +18368,26 @@ func SalesforceConnectorOperator_Values() []string {
 }
 
 const (
+	// SalesforceDataTransferApiAutomatic is a SalesforceDataTransferApi enum value
+	SalesforceDataTransferApiAutomatic = "AUTOMATIC"
+
+	// SalesforceDataTransferApiBulkv2 is a SalesforceDataTransferApi enum value
+	SalesforceDataTransferApiBulkv2 = "BULKV2"
+
+	// SalesforceDataTransferApiRestSync is a SalesforceDataTransferApi enum value
+	SalesforceDataTransferApiRestSync = "REST_SYNC"
+)
+
+// SalesforceDataTransferApi_Values returns all elements of the SalesforceDataTransferApi enum
+func SalesforceDataTransferApi_Values() []string {
+	return []string{
+		SalesforceDataTransferApiAutomatic,
+		SalesforceDataTransferApiBulkv2,
+		SalesforceDataTransferApiRestSync,
+	}
+}
+
+const (
 	// ScheduleFrequencyTypeByminute is a ScheduleFrequencyType enum value
 	ScheduleFrequencyTypeByminute = "BYMINUTE"
 
@@ -16441,6 +18660,22 @@ func SlackConnectorOperator_Values() []string {
 }
 
 const (
+	// SupportedDataTransferTypeRecord is a SupportedDataTransferType enum value
+	SupportedDataTransferTypeRecord = "RECORD"
+
+	// SupportedDataTransferTypeFile is a SupportedDataTransferType enum value
+	SupportedDataTransferTypeFile = "FILE"
+)
+
+// SupportedDataTransferType_Values returns all elements of the SupportedDataTransferType enum
+func SupportedDataTransferType_Values() []string {
+	return []string{
+		SupportedDataTransferTypeRecord,
+		SupportedDataTransferTypeFile,
+	}
+}
+
+const (
 	// TaskTypeArithmetic is a TaskType enum value
 	TaskTypeArithmetic = "Arithmetic"
 
@@ -16467,6 +18702,9 @@ const (
 
 	// TaskTypeValidate is a TaskType enum value
 	TaskTypeValidate = "Validate"
+
+	// TaskTypePartition is a TaskType enum value
+	TaskTypePartition = "Partition"
 )
 
 // TaskType_Values returns all elements of the TaskType enum
@@ -16481,6 +18719,7 @@ func TaskType_Values() []string {
 		TaskTypePassthrough,
 		TaskTypeTruncate,
 		TaskTypeValidate,
+		TaskTypePartition,
 	}
 }
 

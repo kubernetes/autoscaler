@@ -63,6 +63,10 @@ type ForecastQueryServiceAPI interface {
 	QueryForecast(*forecastqueryservice.QueryForecastInput) (*forecastqueryservice.QueryForecastOutput, error)
 	QueryForecastWithContext(aws.Context, *forecastqueryservice.QueryForecastInput, ...request.Option) (*forecastqueryservice.QueryForecastOutput, error)
 	QueryForecastRequest(*forecastqueryservice.QueryForecastInput) (*request.Request, *forecastqueryservice.QueryForecastOutput)
+
+	QueryWhatIfForecast(*forecastqueryservice.QueryWhatIfForecastInput) (*forecastqueryservice.QueryWhatIfForecastOutput, error)
+	QueryWhatIfForecastWithContext(aws.Context, *forecastqueryservice.QueryWhatIfForecastInput, ...request.Option) (*forecastqueryservice.QueryWhatIfForecastOutput, error)
+	QueryWhatIfForecastRequest(*forecastqueryservice.QueryWhatIfForecastInput) (*request.Request, *forecastqueryservice.QueryWhatIfForecastOutput)
 }
 
 var _ ForecastQueryServiceAPI = (*forecastqueryservice.ForecastQueryService)(nil)

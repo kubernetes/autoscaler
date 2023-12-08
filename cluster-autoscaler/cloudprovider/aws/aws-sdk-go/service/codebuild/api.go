@@ -4170,8 +4170,7 @@ func (c *CodeBuild) UpdateProjectVisibilityRequest(input *UpdateProjectVisibilit
 //     variables, source code, and other sensitive information may have been
 //     output to the build logs and artifacts. You must be careful about what
 //     information is output to the build logs. Some best practice are: Do not
-//     store sensitive values, especially Amazon Web Services access key IDs
-//     and secret access keys, in environment variables. We recommend that you
+//     store sensitive values in environment variables. We recommend that you
 //     use an Amazon EC2 Systems Manager Parameter Store or Secrets Manager to
 //     store sensitive values. Follow Best practices for using webhooks (https://docs.aws.amazon.com/codebuild/latest/userguide/webhooks.html#webhook-best-practices)
 //     in the CodeBuild User Guide to limit which entities can trigger a build,
@@ -5116,7 +5115,7 @@ type Build struct {
 	//    * If CodePipeline started the build, the pipeline's name (for example,
 	//    codepipeline/my-demo-pipeline).
 	//
-	//    * If an IAM user started the build, the user's name (for example, MyUserName).
+	//    * If a user started the build, the user's name (for example, MyUserName).
 	//
 	//    * If the Jenkins plugin for CodeBuild started the build, the string CodeBuild-Jenkins-Plugin.
 	Initiator *string `locationName:"initiator" type:"string"`
@@ -5622,7 +5621,7 @@ type BuildBatch struct {
 	//    * If CodePipeline started the build, the pipeline's name (for example,
 	//    codepipeline/my-demo-pipeline).
 	//
-	//    * If an IAM user started the build, the user's name.
+	//    * If a user started the build, the user's name.
 	//
 	//    * If the Jenkins plugin for CodeBuild started the build, the string CodeBuild-Jenkins-Plugin.
 	Initiator *string `locationName:"initiator" type:"string"`
@@ -8450,15 +8449,21 @@ type EnvironmentVariable struct {
 	// The type of environment variable. Valid values include:
 	//
 	//    * PARAMETER_STORE: An environment variable stored in Systems Manager Parameter
-	//    Store. To learn how to specify a parameter store environment variable,
-	//    see env/parameter-store (https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html#build-spec.env.parameter-store)
+	//    Store. For environment variables of this type, specify the name of the
+	//    parameter as the value of the EnvironmentVariable. The parameter value
+	//    will be substituted for the name at runtime. You can also define Parameter
+	//    Store environment variables in the buildspec. To learn how to do so, see
+	//    env/parameter-store (https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html#build-spec.env.parameter-store)
 	//    in the CodeBuild User Guide.
 	//
 	//    * PLAINTEXT: An environment variable in plain text format. This is the
 	//    default value.
 	//
 	//    * SECRETS_MANAGER: An environment variable stored in Secrets Manager.
-	//    To learn how to specify a secrets manager environment variable, see env/secrets-manager
+	//    For environment variables of this type, specify the name of the secret
+	//    as the value of the EnvironmentVariable. The secret value will be substituted
+	//    for the name at runtime. You can also define Secrets Manager environment
+	//    variables in the buildspec. To learn how to do so, see env/secrets-manager
 	//    (https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html#build-spec.env.secrets-manager)
 	//    in the CodeBuild User Guide.
 	Type *string `locationName:"type" type:"string" enum:"EnvironmentVariableType"`
@@ -8466,10 +8471,10 @@ type EnvironmentVariable struct {
 	// The value of the environment variable.
 	//
 	// We strongly discourage the use of PLAINTEXT environment variables to store
-	// sensitive values, especially Amazon Web Services secret key IDs and secret
-	// access keys. PLAINTEXT environment variables can be displayed in plain text
-	// using the CodeBuild console and the CLI. For sensitive values, we recommend
-	// you use an environment variable of type PARAMETER_STORE or SECRETS_MANAGER.
+	// sensitive values, especially Amazon Web Services secret key IDs. PLAINTEXT
+	// environment variables can be displayed in plain text using the CodeBuild
+	// console and the CLI. For sensitive values, we recommend you use an environment
+	// variable of type PARAMETER_STORE or SECRETS_MANAGER.
 	//
 	// Value is a required field
 	Value *string `locationName:"value" type:"string" required:"true"`
@@ -10600,11 +10605,16 @@ type LogsLocation struct {
 	// Information about CloudWatch Logs for a build project.
 	CloudWatchLogs *CloudWatchLogsConfig `locationName:"cloudWatchLogs" type:"structure"`
 
-	// The ARN of CloudWatch Logs for a build project. Its format is arn:${Partition}:logs:${Region}:${Account}:log-group:${LogGroupName}:log-stream:${LogStreamName}.
-	// For more information, see Resources Defined by CloudWatch Logs (https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncloudwatchlogs.html#amazoncloudwatchlogs-resources-for-iam-policies).
+	// The ARN of the CloudWatch Logs stream for a build execution. Its format is
+	// arn:${Partition}:logs:${Region}:${Account}:log-group:${LogGroupName}:log-stream:${LogStreamName}.
+	// The CloudWatch Logs stream is created during the PROVISIONING phase of a
+	// build and the ARN will not be valid until it is created. For more information,
+	// see Resources Defined by CloudWatch Logs (https://docs.aws.amazon.com/IAM/latest/UserGuide/list_amazoncloudwatchlogs.html#amazoncloudwatchlogs-resources-for-iam-policies).
 	CloudWatchLogsArn *string `locationName:"cloudWatchLogsArn" type:"string"`
 
-	// The URL to an individual build log in CloudWatch Logs.
+	// The URL to an individual build log in CloudWatch Logs. The log stream is
+	// created during the PROVISIONING phase of a build and the deeplink will not
+	// be valid until it is created.
 	DeepLink *string `locationName:"deepLink" type:"string"`
 
 	// The name of the CloudWatch Logs group for the build logs.
@@ -11701,6 +11711,32 @@ type ProjectEnvironment struct {
 	//    of SSD storage for builds. This compute type supports Docker images up
 	//    to 100 GB uncompressed.
 	//
+	//    * BUILD_LAMBDA_1GB: Use up to 1 GB memory for builds. Only available for
+	//    environment type LINUX_LAMBDA_CONTAINER and ARM_LAMBDA_CONTAINER.
+	//
+	//    * BUILD_LAMBDA_2GB: Use up to 2 GB memory for builds. Only available for
+	//    environment type LINUX_LAMBDA_CONTAINER and ARM_LAMBDA_CONTAINER.
+	//
+	//    * BUILD_LAMBDA_4GB: Use up to 4 GB memory for builds. Only available for
+	//    environment type LINUX_LAMBDA_CONTAINER and ARM_LAMBDA_CONTAINER.
+	//
+	//    * BUILD_LAMBDA_8GB: Use up to 8 GB memory for builds. Only available for
+	//    environment type LINUX_LAMBDA_CONTAINER and ARM_LAMBDA_CONTAINER.
+	//
+	//    * BUILD_LAMBDA_10GB: Use up to 10 GB memory for builds. Only available
+	//    for environment type LINUX_LAMBDA_CONTAINER and ARM_LAMBDA_CONTAINER.
+	//
+	// If you use BUILD_GENERAL1_SMALL:
+	//
+	//    * For environment type LINUX_CONTAINER, you can use up to 3 GB memory
+	//    and 2 vCPUs for builds.
+	//
+	//    * For environment type LINUX_GPU_CONTAINER, you can use up to 16 GB memory,
+	//    4 vCPUs, and 1 NVIDIA A10G Tensor Core GPU for builds.
+	//
+	//    * For environment type ARM_CONTAINER, you can use up to 4 GB memory and
+	//    2 vCPUs on ARM-based processors for builds.
+	//
 	// If you use BUILD_GENERAL1_LARGE:
 	//
 	//    * For environment type LINUX_CONTAINER, you can use up to 15 GB memory
@@ -11799,6 +11835,12 @@ type ProjectEnvironment struct {
 	//    EU (Ireland), EU (London), EU (Frankfurt), Asia Pacific (Tokyo), Asia
 	//    Pacific (Seoul), Asia Pacific (Singapore), Asia Pacific (Sydney) , China
 	//    (Beijing), and China (Ningxia).
+	//
+	//    * The environment types ARM_LAMBDA_CONTAINER and LINUX_LAMBDA_CONTAINER
+	//    are available only in regions US East (N. Virginia), US East (Ohio), US
+	//    West (Oregon), Asia Pacific (Mumbai), Asia Pacific (Singapore), Asia Pacific
+	//    (Sydney), Asia Pacific (Tokyo), EU (Frankfurt), EU (Ireland), and South
+	//    America (São Paulo).
 	//
 	//    * The environment types WINDOWS_CONTAINER and WINDOWS_SERVER_2019_CONTAINER
 	//    are available only in regions US East (N. Virginia), US East (Ohio), US
@@ -16490,6 +16532,21 @@ const (
 
 	// ComputeTypeBuildGeneral12xlarge is a ComputeType enum value
 	ComputeTypeBuildGeneral12xlarge = "BUILD_GENERAL1_2XLARGE"
+
+	// ComputeTypeBuildLambda1gb is a ComputeType enum value
+	ComputeTypeBuildLambda1gb = "BUILD_LAMBDA_1GB"
+
+	// ComputeTypeBuildLambda2gb is a ComputeType enum value
+	ComputeTypeBuildLambda2gb = "BUILD_LAMBDA_2GB"
+
+	// ComputeTypeBuildLambda4gb is a ComputeType enum value
+	ComputeTypeBuildLambda4gb = "BUILD_LAMBDA_4GB"
+
+	// ComputeTypeBuildLambda8gb is a ComputeType enum value
+	ComputeTypeBuildLambda8gb = "BUILD_LAMBDA_8GB"
+
+	// ComputeTypeBuildLambda10gb is a ComputeType enum value
+	ComputeTypeBuildLambda10gb = "BUILD_LAMBDA_10GB"
 )
 
 // ComputeType_Values returns all elements of the ComputeType enum
@@ -16499,6 +16556,11 @@ func ComputeType_Values() []string {
 		ComputeTypeBuildGeneral1Medium,
 		ComputeTypeBuildGeneral1Large,
 		ComputeTypeBuildGeneral12xlarge,
+		ComputeTypeBuildLambda1gb,
+		ComputeTypeBuildLambda2gb,
+		ComputeTypeBuildLambda4gb,
+		ComputeTypeBuildLambda8gb,
+		ComputeTypeBuildLambda10gb,
 	}
 }
 
@@ -16529,6 +16591,12 @@ const (
 
 	// EnvironmentTypeWindowsServer2019Container is a EnvironmentType enum value
 	EnvironmentTypeWindowsServer2019Container = "WINDOWS_SERVER_2019_CONTAINER"
+
+	// EnvironmentTypeLinuxLambdaContainer is a EnvironmentType enum value
+	EnvironmentTypeLinuxLambdaContainer = "LINUX_LAMBDA_CONTAINER"
+
+	// EnvironmentTypeArmLambdaContainer is a EnvironmentType enum value
+	EnvironmentTypeArmLambdaContainer = "ARM_LAMBDA_CONTAINER"
 )
 
 // EnvironmentType_Values returns all elements of the EnvironmentType enum
@@ -16539,6 +16607,8 @@ func EnvironmentType_Values() []string {
 		EnvironmentTypeLinuxGpuContainer,
 		EnvironmentTypeArmContainer,
 		EnvironmentTypeWindowsServer2019Container,
+		EnvironmentTypeLinuxLambdaContainer,
+		EnvironmentTypeArmLambdaContainer,
 	}
 }
 

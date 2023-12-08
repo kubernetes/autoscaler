@@ -7,33 +7,32 @@
 //
 // Static credentials will never expire once they have been retrieved. The format
 // of the static credentials response:
-//
-//	{
-//	    "AccessKeyId" : "MUA...",
-//	    "SecretAccessKey" : "/7PC5om....",
-//	}
+//    {
+//        "AccessKeyId" : "MUA...",
+//        "SecretAccessKey" : "/7PC5om....",
+//    }
 //
 // Refreshable credentials will expire within the "ExpiryWindow" of the Expiration
 // value in the response. The format of the refreshable credentials response:
-//
-//	{
-//	    "AccessKeyId" : "MUA...",
-//	    "SecretAccessKey" : "/7PC5om....",
-//	    "Token" : "AQoDY....=",
-//	    "Expiration" : "2016-02-25T06:03:31Z"
-//	}
+//    {
+//        "AccessKeyId" : "MUA...",
+//        "SecretAccessKey" : "/7PC5om....",
+//        "Token" : "AQoDY....=",
+//        "Expiration" : "2016-02-25T06:03:31Z"
+//    }
 //
 // Errors should be returned in the following format and only returned with 400
 // or 500 HTTP status codes.
-//
-//	{
-//	    "code": "ErrorCode",
-//	    "message": "Helpful error message."
-//	}
+//    {
+//        "code": "ErrorCode",
+//        "message": "Helpful error message."
+//    }
 package endpointcreds
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
@@ -72,7 +71,37 @@ type Provider struct {
 
 	// Optional authorization token value if set will be used as the value of
 	// the Authorization header of the endpoint credential request.
+	//
+	// When constructed from environment, the provider will use the value of
+	// AWS_CONTAINER_AUTHORIZATION_TOKEN environment variable as the token
+	//
+	// Will be overridden if AuthorizationTokenProvider is configured
 	AuthorizationToken string
+
+	// Optional auth provider func to dynamically load the auth token from a file
+	// everytime a credential is retrieved
+	//
+	// When constructed from environment, the provider will read and use the content
+	// of the file pointed to by AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE environment variable
+	// as the auth token everytime credentials are retrieved
+	//
+	// Will override AuthorizationToken if configured
+	AuthorizationTokenProvider AuthTokenProvider
+}
+
+// AuthTokenProvider defines an interface to dynamically load a value to be passed
+// for the Authorization header of a credentials request.
+type AuthTokenProvider interface {
+	GetToken() (string, error)
+}
+
+// TokenProviderFunc is a func type implementing AuthTokenProvider interface
+// and enables customizing token provider behavior
+type TokenProviderFunc func() (string, error)
+
+// GetToken func retrieves auth token according to TokenProviderFunc implementation
+func (p TokenProviderFunc) GetToken() (string, error) {
+	return p()
 }
 
 // NewProviderClient returns a credentials Provider for retrieving AWS credentials
@@ -167,7 +196,20 @@ func (p *Provider) getCredentials(ctx aws.Context) (*getCredentialsOutput, error
 	req := p.Client.NewRequest(op, nil, out)
 	req.SetContext(ctx)
 	req.HTTPRequest.Header.Set("Accept", "application/json")
-	if authToken := p.AuthorizationToken; len(authToken) != 0 {
+
+	authToken := p.AuthorizationToken
+	var err error
+	if p.AuthorizationTokenProvider != nil {
+		authToken, err = p.AuthorizationTokenProvider.GetToken()
+		if err != nil {
+			return nil, fmt.Errorf("get authorization token: %v", err)
+		}
+	}
+
+	if strings.ContainsAny(authToken, "\r\n") {
+		return nil, fmt.Errorf("authorization token contains invalid newline sequence")
+	}
+	if len(authToken) != 0 {
 		req.HTTPRequest.Header.Set("Authorization", authToken)
 	}
 

@@ -19,43 +19,44 @@ const (
 	// ErrCodeConflictException for service response error code
 	// "ConflictException".
 	//
-	// Occurs when a conflict with a previous successful write is detected. This
-	// generally occurs when the previous write did not have time to propagate to
-	// the host serving the current request. A retry (with appropriate backoff logic)
-	// is the recommended response to this exception.
+	// This exception occurs when a conflict with a previous successful write is
+	// detected. This generally occurs when the previous write did not have time
+	// to propagate to the host serving the current request. A retry (with appropriate
+	// backoff logic) is the recommended response to this exception.
 	ErrCodeConflictException = "ConflictException"
 
 	// ErrCodeInternalServerException for service response error code
 	// "InternalServerException".
 	//
-	// This exception occurs when there is an internal failure in the AWS Resilience
+	// This exception occurs when there is an internal failure in the Resilience
 	// Hub service.
 	ErrCodeInternalServerException = "InternalServerException"
 
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
-	// The specified resource could not be found.
+	// This exception occurs when the specified resource could not be found.
 	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
 	// ErrCodeServiceQuotaExceededException for service response error code
 	// "ServiceQuotaExceededException".
 	//
-	// You have exceeded your service quota. To perform the requested action, remove
-	// some of the relevant resources, or use Service Quotas to request a service
-	// quota increase.
+	// This exception occurs when you have exceeded your service quota. To perform
+	// the requested action, remove some of the relevant resources, or use Service
+	// Quotas to request a service quota increase.
 	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
 
 	// ErrCodeThrottlingException for service response error code
 	// "ThrottlingException".
 	//
-	// The limit on the number of requests per second was exceeded.
+	// This exception occurs when you have exceeded the limit on the number of requests
+	// per second.
 	ErrCodeThrottlingException = "ThrottlingException"
 
 	// ErrCodeValidationException for service response error code
 	// "ValidationException".
 	//
-	// Indicates that a request was not valid.
+	// This exception occurs when a request is not valid.
 	ErrCodeValidationException = "ValidationException"
 )
 

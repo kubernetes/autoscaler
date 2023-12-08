@@ -3,12 +3,12 @@
 // Package datasync provides the client and types for making API
 // requests to AWS DataSync.
 //
-// DataSync is a managed data transfer service that makes it simpler for you
-// to automate moving data between on-premises storage and Amazon Simple Storage
-// Service (Amazon S3) or Amazon Elastic File System (Amazon EFS).
+// DataSync is an online data movement and discovery service that simplifies
+// data migration and helps you quickly, easily, and securely transfer your
+// file or object data to, from, and between Amazon Web Services storage services.
 //
-// This API interface reference for DataSync contains documentation for a programming
-// interface that you can use to manage DataSync.
+// This API interface reference includes documentation for using DataSync programmatically.
+// For complete information, see the DataSync User Guide (https://docs.aws.amazon.com/datasync/latest/userguide/what-is-datasync.html) .
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/datasync-2018-11-09 for more information on this service.
 //

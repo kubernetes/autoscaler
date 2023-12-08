@@ -26,6 +26,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	resourcehelper "k8s.io/kubernetes/pkg/api/v1/resource"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
 
 	klog "k8s.io/klog/v2"
@@ -89,40 +90,37 @@ func CalculateUtilizationOfResource(nodeInfo *schedulerframework.NodeInfo, resou
 	if nodeAllocatable.MilliValue() == 0 {
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, nodeInfo.Node().Name)
 	}
-	podsRequest := resource.MustParse("0")
+
+	opts := resourcehelper.PodResourcesOptions{}
 
 	// if skipDaemonSetPods = True, DaemonSet pods resourses will be subtracted
 	// from the node allocatable and won't be added to pods requests
 	// the same with the Mirror pod.
+	podsRequest := resource.MustParse("0")
 	daemonSetAndMirrorPodsUtilization := resource.MustParse("0")
 	for _, podInfo := range nodeInfo.Pods {
+		requestedResourceList := resourcehelper.PodRequests(podInfo.Pod, opts)
+		resourceValue := requestedResourceList[resourceName]
+
 		// factor daemonset pods out of the utilization calculations
 		if skipDaemonSetPods && pod_util.IsDaemonSetPod(podInfo.Pod) {
-			for _, container := range podInfo.Pod.Spec.Containers {
-				if resourceValue, found := container.Resources.Requests[resourceName]; found {
-					daemonSetAndMirrorPodsUtilization.Add(resourceValue)
-				}
-			}
+			daemonSetAndMirrorPodsUtilization.Add(resourceValue)
 			continue
 		}
+
 		// factor mirror pods out of the utilization calculations
 		if skipMirrorPods && pod_util.IsMirrorPod(podInfo.Pod) {
-			for _, container := range podInfo.Pod.Spec.Containers {
-				if resourceValue, found := container.Resources.Requests[resourceName]; found {
-					daemonSetAndMirrorPodsUtilization.Add(resourceValue)
-				}
-			}
+			daemonSetAndMirrorPodsUtilization.Add(resourceValue)
 			continue
 		}
+
 		// ignore Pods that should be terminated
 		if drain.IsPodLongTerminating(podInfo.Pod, currentTime) {
 			continue
 		}
-		for _, container := range podInfo.Pod.Spec.Containers {
-			if resourceValue, found := container.Resources.Requests[resourceName]; found {
-				podsRequest.Add(resourceValue)
-			}
-		}
+
+		podsRequest.Add(resourceValue)
 	}
+
 	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()-daemonSetAndMirrorPodsUtilization.MilliValue()), nil
 }

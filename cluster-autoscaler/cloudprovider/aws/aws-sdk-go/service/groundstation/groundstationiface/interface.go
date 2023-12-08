@@ -72,6 +72,10 @@ type GroundStationAPI interface {
 	CreateDataflowEndpointGroupWithContext(aws.Context, *groundstation.CreateDataflowEndpointGroupInput, ...request.Option) (*groundstation.CreateDataflowEndpointGroupOutput, error)
 	CreateDataflowEndpointGroupRequest(*groundstation.CreateDataflowEndpointGroupInput) (*request.Request, *groundstation.CreateDataflowEndpointGroupOutput)
 
+	CreateEphemeris(*groundstation.CreateEphemerisInput) (*groundstation.CreateEphemerisOutput, error)
+	CreateEphemerisWithContext(aws.Context, *groundstation.CreateEphemerisInput, ...request.Option) (*groundstation.CreateEphemerisOutput, error)
+	CreateEphemerisRequest(*groundstation.CreateEphemerisInput) (*request.Request, *groundstation.CreateEphemerisOutput)
+
 	CreateMissionProfile(*groundstation.CreateMissionProfileInput) (*groundstation.CreateMissionProfileOutput, error)
 	CreateMissionProfileWithContext(aws.Context, *groundstation.CreateMissionProfileInput, ...request.Option) (*groundstation.CreateMissionProfileOutput, error)
 	CreateMissionProfileRequest(*groundstation.CreateMissionProfileInput) (*request.Request, *groundstation.CreateMissionProfileOutput)
@@ -84,6 +88,10 @@ type GroundStationAPI interface {
 	DeleteDataflowEndpointGroupWithContext(aws.Context, *groundstation.DeleteDataflowEndpointGroupInput, ...request.Option) (*groundstation.DeleteDataflowEndpointGroupOutput, error)
 	DeleteDataflowEndpointGroupRequest(*groundstation.DeleteDataflowEndpointGroupInput) (*request.Request, *groundstation.DeleteDataflowEndpointGroupOutput)
 
+	DeleteEphemeris(*groundstation.DeleteEphemerisInput) (*groundstation.DeleteEphemerisOutput, error)
+	DeleteEphemerisWithContext(aws.Context, *groundstation.DeleteEphemerisInput, ...request.Option) (*groundstation.DeleteEphemerisOutput, error)
+	DeleteEphemerisRequest(*groundstation.DeleteEphemerisInput) (*request.Request, *groundstation.DeleteEphemerisOutput)
+
 	DeleteMissionProfile(*groundstation.DeleteMissionProfileInput) (*groundstation.DeleteMissionProfileOutput, error)
 	DeleteMissionProfileWithContext(aws.Context, *groundstation.DeleteMissionProfileInput, ...request.Option) (*groundstation.DeleteMissionProfileOutput, error)
 	DeleteMissionProfileRequest(*groundstation.DeleteMissionProfileInput) (*request.Request, *groundstation.DeleteMissionProfileOutput)
@@ -91,6 +99,14 @@ type GroundStationAPI interface {
 	DescribeContact(*groundstation.DescribeContactInput) (*groundstation.DescribeContactOutput, error)
 	DescribeContactWithContext(aws.Context, *groundstation.DescribeContactInput, ...request.Option) (*groundstation.DescribeContactOutput, error)
 	DescribeContactRequest(*groundstation.DescribeContactInput) (*request.Request, *groundstation.DescribeContactOutput)
+
+	DescribeEphemeris(*groundstation.DescribeEphemerisInput) (*groundstation.DescribeEphemerisOutput, error)
+	DescribeEphemerisWithContext(aws.Context, *groundstation.DescribeEphemerisInput, ...request.Option) (*groundstation.DescribeEphemerisOutput, error)
+	DescribeEphemerisRequest(*groundstation.DescribeEphemerisInput) (*request.Request, *groundstation.DescribeEphemerisOutput)
+
+	GetAgentConfiguration(*groundstation.GetAgentConfigurationInput) (*groundstation.GetAgentConfigurationOutput, error)
+	GetAgentConfigurationWithContext(aws.Context, *groundstation.GetAgentConfigurationInput, ...request.Option) (*groundstation.GetAgentConfigurationOutput, error)
+	GetAgentConfigurationRequest(*groundstation.GetAgentConfigurationInput) (*request.Request, *groundstation.GetAgentConfigurationOutput)
 
 	GetConfig(*groundstation.GetConfigInput) (*groundstation.GetConfigOutput, error)
 	GetConfigWithContext(aws.Context, *groundstation.GetConfigInput, ...request.Option) (*groundstation.GetConfigOutput, error)
@@ -133,6 +149,13 @@ type GroundStationAPI interface {
 	ListDataflowEndpointGroupsPages(*groundstation.ListDataflowEndpointGroupsInput, func(*groundstation.ListDataflowEndpointGroupsOutput, bool) bool) error
 	ListDataflowEndpointGroupsPagesWithContext(aws.Context, *groundstation.ListDataflowEndpointGroupsInput, func(*groundstation.ListDataflowEndpointGroupsOutput, bool) bool, ...request.Option) error
 
+	ListEphemerides(*groundstation.ListEphemeridesInput) (*groundstation.ListEphemeridesOutput, error)
+	ListEphemeridesWithContext(aws.Context, *groundstation.ListEphemeridesInput, ...request.Option) (*groundstation.ListEphemeridesOutput, error)
+	ListEphemeridesRequest(*groundstation.ListEphemeridesInput) (*request.Request, *groundstation.ListEphemeridesOutput)
+
+	ListEphemeridesPages(*groundstation.ListEphemeridesInput, func(*groundstation.ListEphemeridesOutput, bool) bool) error
+	ListEphemeridesPagesWithContext(aws.Context, *groundstation.ListEphemeridesInput, func(*groundstation.ListEphemeridesOutput, bool) bool, ...request.Option) error
+
 	ListGroundStations(*groundstation.ListGroundStationsInput) (*groundstation.ListGroundStationsOutput, error)
 	ListGroundStationsWithContext(aws.Context, *groundstation.ListGroundStationsInput, ...request.Option) (*groundstation.ListGroundStationsOutput, error)
 	ListGroundStationsRequest(*groundstation.ListGroundStationsInput) (*request.Request, *groundstation.ListGroundStationsOutput)
@@ -158,6 +181,10 @@ type GroundStationAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *groundstation.ListTagsForResourceInput, ...request.Option) (*groundstation.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*groundstation.ListTagsForResourceInput) (*request.Request, *groundstation.ListTagsForResourceOutput)
 
+	RegisterAgent(*groundstation.RegisterAgentInput) (*groundstation.RegisterAgentOutput, error)
+	RegisterAgentWithContext(aws.Context, *groundstation.RegisterAgentInput, ...request.Option) (*groundstation.RegisterAgentOutput, error)
+	RegisterAgentRequest(*groundstation.RegisterAgentInput) (*request.Request, *groundstation.RegisterAgentOutput)
+
 	ReserveContact(*groundstation.ReserveContactInput) (*groundstation.ReserveContactOutput, error)
 	ReserveContactWithContext(aws.Context, *groundstation.ReserveContactInput, ...request.Option) (*groundstation.ReserveContactOutput, error)
 	ReserveContactRequest(*groundstation.ReserveContactInput) (*request.Request, *groundstation.ReserveContactOutput)
@@ -170,13 +197,24 @@ type GroundStationAPI interface {
 	UntagResourceWithContext(aws.Context, *groundstation.UntagResourceInput, ...request.Option) (*groundstation.UntagResourceOutput, error)
 	UntagResourceRequest(*groundstation.UntagResourceInput) (*request.Request, *groundstation.UntagResourceOutput)
 
+	UpdateAgentStatus(*groundstation.UpdateAgentStatusInput) (*groundstation.UpdateAgentStatusOutput, error)
+	UpdateAgentStatusWithContext(aws.Context, *groundstation.UpdateAgentStatusInput, ...request.Option) (*groundstation.UpdateAgentStatusOutput, error)
+	UpdateAgentStatusRequest(*groundstation.UpdateAgentStatusInput) (*request.Request, *groundstation.UpdateAgentStatusOutput)
+
 	UpdateConfig(*groundstation.UpdateConfigInput) (*groundstation.UpdateConfigOutput, error)
 	UpdateConfigWithContext(aws.Context, *groundstation.UpdateConfigInput, ...request.Option) (*groundstation.UpdateConfigOutput, error)
 	UpdateConfigRequest(*groundstation.UpdateConfigInput) (*request.Request, *groundstation.UpdateConfigOutput)
 
+	UpdateEphemeris(*groundstation.UpdateEphemerisInput) (*groundstation.UpdateEphemerisOutput, error)
+	UpdateEphemerisWithContext(aws.Context, *groundstation.UpdateEphemerisInput, ...request.Option) (*groundstation.UpdateEphemerisOutput, error)
+	UpdateEphemerisRequest(*groundstation.UpdateEphemerisInput) (*request.Request, *groundstation.UpdateEphemerisOutput)
+
 	UpdateMissionProfile(*groundstation.UpdateMissionProfileInput) (*groundstation.UpdateMissionProfileOutput, error)
 	UpdateMissionProfileWithContext(aws.Context, *groundstation.UpdateMissionProfileInput, ...request.Option) (*groundstation.UpdateMissionProfileOutput, error)
 	UpdateMissionProfileRequest(*groundstation.UpdateMissionProfileInput) (*request.Request, *groundstation.UpdateMissionProfileOutput)
+
+	WaitUntilContactScheduled(*groundstation.DescribeContactInput) error
+	WaitUntilContactScheduledWithContext(aws.Context, *groundstation.DescribeContactInput, ...request.WaiterOption) error
 }
 
 var _ GroundStationAPI = (*groundstation.GroundStation)(nil)

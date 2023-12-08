@@ -4,11 +4,13 @@ package textract
 
 import (
 	"fmt"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/request"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/jsonrpc"
 )
 
 const opAnalyzeDocument = "AnalyzeDocument"
@@ -72,9 +74,17 @@ func (c *Textract) AnalyzeDocumentRequest(input *AnalyzeDocumentInput) (req *req
 //     returned (including text that doesn't have a relationship with the value
 //     of FeatureTypes).
 //
-//   - Queries.A QUERIES_RESULT Block object contains the answer to the query,
-//     the alias associated and an ID that connect it to the query asked. This
-//     Block also contains a location and attached confidence score.
+//   - Signatures. A SIGNATURE Block object contains the location information
+//     of a signature in a document. If used in conjunction with forms or tables,
+//     a signature can be given a Key-Value pairing or be detected in the cell
+//     of a table.
+//
+//   - Query. A QUERY Block object contains the query text, alias and link
+//     to the associated Query results block object.
+//
+//   - Query Result. A QUERY_RESULT Block object contains the answer to the
+//     query and an ID that connects it to the query asked. This Block also contains
+//     a confidence score.
 //
 // Selection elements such as check boxes and option buttons (radio buttons)
 // can be detected in form data and in tables. A SELECTION_ELEMENT Block object
@@ -210,7 +220,7 @@ func (c *Textract) AnalyzeExpenseRequest(input *AnalyzeExpenseInput) (req *reque
 // AnalyzeExpense synchronously analyzes an input document for financially related
 // relationships between text.
 //
-// Information is returned as ExpenseDocuments and seperated as follows.
+// Information is returned as ExpenseDocuments and seperated as follows:
 //
 //   - LineItemGroups- A data set containing LineItems which store information
 //     about the lines of text, such as an item purchased and its price on a
@@ -334,7 +344,7 @@ func (c *Textract) AnalyzeIDRequest(input *AnalyzeIDInput) (req *request.Request
 //
 // Analyzes identity documents for relevant information. This information is
 // extracted and returned as IdentityDocumentFields, which records both the
-// normalized field and value of the extracted text.Unlike other Amazon Textract
+// normalized field and value of the extracted text. Unlike other Amazon Textract
 // operations, AnalyzeID doesn't return any Geometry data.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -407,6 +417,481 @@ func (c *Textract) AnalyzeIDWithContext(ctx aws.Context, input *AnalyzeIDInput, 
 	return out, req.Send()
 }
 
+const opCreateAdapter = "CreateAdapter"
+
+// CreateAdapterRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAdapter operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAdapter for more information on using the CreateAdapter
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAdapterRequest method.
+//	req, resp := client.CreateAdapterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/CreateAdapter
+func (c *Textract) CreateAdapterRequest(input *CreateAdapterInput) (req *request.Request, output *CreateAdapterOutput) {
+	op := &request.Operation{
+		Name:       opCreateAdapter,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateAdapterInput{}
+	}
+
+	output = &CreateAdapterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateAdapter API operation for Amazon Textract.
+//
+// Creates an adapter, which can be fine-tuned for enhanced performance on user
+// provided documents. Takes an AdapterName and FeatureType. Currently the only
+// supported feature type is QUERIES. You can also provide a Description, Tags,
+// and a ClientRequestToken. You can choose whether or not the adapter should
+// be AutoUpdated with the AutoUpdate argument. By default, AutoUpdate is set
+// to DISABLED.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation CreateAdapter for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - IdempotentParameterMismatchException
+//     A ClientRequestToken input parameter was reused with an operation, but at
+//     least one of the other input parameters is different from the previous call
+//     to the operation.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - LimitExceededException
+//     An Amazon Textract service limit was exceeded. For example, if you start
+//     too many asynchronous jobs concurrently, calls to start operations (StartDocumentTextDetection,
+//     for example) raise a LimitExceededException exception (HTTP status code:
+//     400) until the number of concurrently running jobs is below the Amazon Textract
+//     service limit.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ServiceQuotaExceededException
+//     Returned when a request cannot be completed as it would exceed a maximum
+//     service quota.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/CreateAdapter
+func (c *Textract) CreateAdapter(input *CreateAdapterInput) (*CreateAdapterOutput, error) {
+	req, out := c.CreateAdapterRequest(input)
+	return out, req.Send()
+}
+
+// CreateAdapterWithContext is the same as CreateAdapter with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAdapter for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) CreateAdapterWithContext(ctx aws.Context, input *CreateAdapterInput, opts ...request.Option) (*CreateAdapterOutput, error) {
+	req, out := c.CreateAdapterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateAdapterVersion = "CreateAdapterVersion"
+
+// CreateAdapterVersionRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAdapterVersion operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAdapterVersion for more information on using the CreateAdapterVersion
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAdapterVersionRequest method.
+//	req, resp := client.CreateAdapterVersionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/CreateAdapterVersion
+func (c *Textract) CreateAdapterVersionRequest(input *CreateAdapterVersionInput) (req *request.Request, output *CreateAdapterVersionOutput) {
+	op := &request.Operation{
+		Name:       opCreateAdapterVersion,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateAdapterVersionInput{}
+	}
+
+	output = &CreateAdapterVersionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateAdapterVersion API operation for Amazon Textract.
+//
+// Creates a new version of an adapter. Operates on a provided AdapterId and
+// a specified dataset provided via the DatasetConfig argument. Requires that
+// you specify an Amazon S3 bucket with the OutputConfig argument. You can provide
+// an optional KMSKeyId, an optional ClientRequestToken, and optional tags.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation CreateAdapterVersion for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - InvalidS3ObjectException
+//     Amazon Textract is unable to access the S3 object that's specified in the
+//     request. for more information, Configure Access to Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html)
+//     For troubleshooting information, see Troubleshooting Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/troubleshooting.html)
+//
+//   - InvalidKMSKeyException
+//     Indicates you do not have decrypt permissions with the KMS key entered, or
+//     the KMS key was entered incorrectly.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - IdempotentParameterMismatchException
+//     A ClientRequestToken input parameter was reused with an operation, but at
+//     least one of the other input parameters is different from the previous call
+//     to the operation.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - LimitExceededException
+//     An Amazon Textract service limit was exceeded. For example, if you start
+//     too many asynchronous jobs concurrently, calls to start operations (StartDocumentTextDetection,
+//     for example) raise a LimitExceededException exception (HTTP status code:
+//     400) until the number of concurrently running jobs is below the Amazon Textract
+//     service limit.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ServiceQuotaExceededException
+//     Returned when a request cannot be completed as it would exceed a maximum
+//     service quota.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/CreateAdapterVersion
+func (c *Textract) CreateAdapterVersion(input *CreateAdapterVersionInput) (*CreateAdapterVersionOutput, error) {
+	req, out := c.CreateAdapterVersionRequest(input)
+	return out, req.Send()
+}
+
+// CreateAdapterVersionWithContext is the same as CreateAdapterVersion with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAdapterVersion for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) CreateAdapterVersionWithContext(ctx aws.Context, input *CreateAdapterVersionInput, opts ...request.Option) (*CreateAdapterVersionOutput, error) {
+	req, out := c.CreateAdapterVersionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAdapter = "DeleteAdapter"
+
+// DeleteAdapterRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAdapter operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAdapter for more information on using the DeleteAdapter
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAdapterRequest method.
+//	req, resp := client.DeleteAdapterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/DeleteAdapter
+func (c *Textract) DeleteAdapterRequest(input *DeleteAdapterInput) (req *request.Request, output *DeleteAdapterOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAdapter,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteAdapterInput{}
+	}
+
+	output = &DeleteAdapterOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteAdapter API operation for Amazon Textract.
+//
+// Deletes an Amazon Textract adapter. Takes an AdapterId and deletes the adapter
+// specified by the ID.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation DeleteAdapter for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/DeleteAdapter
+func (c *Textract) DeleteAdapter(input *DeleteAdapterInput) (*DeleteAdapterOutput, error) {
+	req, out := c.DeleteAdapterRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAdapterWithContext is the same as DeleteAdapter with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAdapter for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) DeleteAdapterWithContext(ctx aws.Context, input *DeleteAdapterInput, opts ...request.Option) (*DeleteAdapterOutput, error) {
+	req, out := c.DeleteAdapterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAdapterVersion = "DeleteAdapterVersion"
+
+// DeleteAdapterVersionRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAdapterVersion operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAdapterVersion for more information on using the DeleteAdapterVersion
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAdapterVersionRequest method.
+//	req, resp := client.DeleteAdapterVersionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/DeleteAdapterVersion
+func (c *Textract) DeleteAdapterVersionRequest(input *DeleteAdapterVersionInput) (req *request.Request, output *DeleteAdapterVersionOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAdapterVersion,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteAdapterVersionInput{}
+	}
+
+	output = &DeleteAdapterVersionOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteAdapterVersion API operation for Amazon Textract.
+//
+// Deletes an Amazon Textract adapter version. Requires that you specify both
+// an AdapterId and a AdapterVersion. Deletes the adapter version specified
+// by the AdapterId and the AdapterVersion.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation DeleteAdapterVersion for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/DeleteAdapterVersion
+func (c *Textract) DeleteAdapterVersion(input *DeleteAdapterVersionInput) (*DeleteAdapterVersionOutput, error) {
+	req, out := c.DeleteAdapterVersionRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAdapterVersionWithContext is the same as DeleteAdapterVersion with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAdapterVersion for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) DeleteAdapterVersionWithContext(ctx aws.Context, input *DeleteAdapterVersionInput, opts ...request.Option) (*DeleteAdapterVersionOutput, error) {
+	req, out := c.DeleteAdapterVersionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDetectDocumentText = "DetectDocumentText"
 
 // DetectDocumentTextRequest generates a "aws/request.Request" representing the
@@ -451,9 +936,9 @@ func (c *Textract) DetectDocumentTextRequest(input *DetectDocumentTextInput) (re
 // DetectDocumentText API operation for Amazon Textract.
 //
 // Detects text in the input document. Amazon Textract can detect lines of text
-// and the words that make up a line of text. The input document must be an
-// image in JPEG, PNG, PDF, or TIFF format. DetectDocumentText returns the detected
-// text in an array of Block objects.
+// and the words that make up a line of text. The input document must be in
+// one of the following image formats: JPEG, PNG, PDF, or TIFF. DetectDocumentText
+// returns the detected text in an array of Block objects.
 //
 // Each document page has as an associated Block of type PAGE. Each PAGE Block
 // object is the parent of LINE Block objects that represent the lines of detected
@@ -535,6 +1020,216 @@ func (c *Textract) DetectDocumentTextWithContext(ctx aws.Context, input *DetectD
 	return out, req.Send()
 }
 
+const opGetAdapter = "GetAdapter"
+
+// GetAdapterRequest generates a "aws/request.Request" representing the
+// client's request for the GetAdapter operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAdapter for more information on using the GetAdapter
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAdapterRequest method.
+//	req, resp := client.GetAdapterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetAdapter
+func (c *Textract) GetAdapterRequest(input *GetAdapterInput) (req *request.Request, output *GetAdapterOutput) {
+	op := &request.Operation{
+		Name:       opGetAdapter,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetAdapterInput{}
+	}
+
+	output = &GetAdapterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetAdapter API operation for Amazon Textract.
+//
+// Gets configuration information for an adapter specified by an AdapterId,
+// returning information on AdapterName, Description, CreationTime, AutoUpdate
+// status, and FeatureTypes.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation GetAdapter for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetAdapter
+func (c *Textract) GetAdapter(input *GetAdapterInput) (*GetAdapterOutput, error) {
+	req, out := c.GetAdapterRequest(input)
+	return out, req.Send()
+}
+
+// GetAdapterWithContext is the same as GetAdapter with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAdapter for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) GetAdapterWithContext(ctx aws.Context, input *GetAdapterInput, opts ...request.Option) (*GetAdapterOutput, error) {
+	req, out := c.GetAdapterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAdapterVersion = "GetAdapterVersion"
+
+// GetAdapterVersionRequest generates a "aws/request.Request" representing the
+// client's request for the GetAdapterVersion operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAdapterVersion for more information on using the GetAdapterVersion
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAdapterVersionRequest method.
+//	req, resp := client.GetAdapterVersionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetAdapterVersion
+func (c *Textract) GetAdapterVersionRequest(input *GetAdapterVersionInput) (req *request.Request, output *GetAdapterVersionOutput) {
+	op := &request.Operation{
+		Name:       opGetAdapterVersion,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetAdapterVersionInput{}
+	}
+
+	output = &GetAdapterVersionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetAdapterVersion API operation for Amazon Textract.
+//
+// Gets configuration information for the specified adapter version, including:
+// AdapterId, AdapterVersion, FeatureTypes, Status, StatusMessage, DatasetConfig,
+// KMSKeyId, OutputConfig, Tags and EvaluationMetrics.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation GetAdapterVersion for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetAdapterVersion
+func (c *Textract) GetAdapterVersion(input *GetAdapterVersionInput) (*GetAdapterVersionOutput, error) {
+	req, out := c.GetAdapterVersionRequest(input)
+	return out, req.Send()
+}
+
+// GetAdapterVersionWithContext is the same as GetAdapterVersion with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAdapterVersion for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) GetAdapterVersionWithContext(ctx aws.Context, input *GetAdapterVersionInput, opts ...request.Option) (*GetAdapterVersionOutput, error) {
+	req, out := c.GetAdapterVersionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetDocumentAnalysis = "GetDocumentAnalysis"
 
 // GetDocumentAnalysisRequest generates a "aws/request.Request" representing the
@@ -607,9 +1302,17 @@ func (c *Textract) GetDocumentAnalysisRequest(input *GetDocumentAnalysisInput) (
 //     returned (including text that doesn't have a relationship with the value
 //     of the StartDocumentAnalysis FeatureTypes input parameter).
 //
-//   - Queries. A QUERIES_RESULT Block object contains the answer to the query,
-//     the alias associated and an ID that connect it to the query asked. This
-//     Block also contains a location and attached confidence score
+//   - Query. A QUERY Block object contains the query text, alias and link
+//     to the associated Query results block object.
+//
+//   - Query Results. A QUERY_RESULT Block object contains the answer to the
+//     query and an ID that connects it to the query asked. This Block also contains
+//     a confidence score.
+//
+// While processing a document with queries, look out for INVALID_REQUEST_PARAMETERS
+// output. This indicates that either the per page query limit has been exceeded
+// or that the operation is trying to query a page in the document which doesn’t
+// exist.
 //
 // Selection elements such as check boxes and option buttons (radio buttons)
 // can be detected in form data and in tables. A SELECTION_ELEMENT Block object
@@ -648,7 +1351,7 @@ func (c *Textract) GetDocumentAnalysisRequest(input *GetDocumentAnalysisInput) (
 //     this limit, contact Amazon Textract.
 //
 //   - InvalidJobIdException
-//     An invalid job identifier was passed to GetDocumentAnalysis or to GetDocumentAnalysis.
+//     An invalid job identifier was passed to an asynchronous analysis operation.
 //
 //   - InternalServerError
 //     Amazon Textract experienced a service issue. Try your call again.
@@ -784,7 +1487,7 @@ func (c *Textract) GetDocumentTextDetectionRequest(input *GetDocumentTextDetecti
 //     this limit, contact Amazon Textract.
 //
 //   - InvalidJobIdException
-//     An invalid job identifier was passed to GetDocumentAnalysis or to GetDocumentAnalysis.
+//     An invalid job identifier was passed to an asynchronous analysis operation.
 //
 //   - InternalServerError
 //     Amazon Textract experienced a service issue. Try your call again.
@@ -913,7 +1616,7 @@ func (c *Textract) GetExpenseAnalysisRequest(input *GetExpenseAnalysisInput) (re
 //     this limit, contact Amazon Textract.
 //
 //   - InvalidJobIdException
-//     An invalid job identifier was passed to GetDocumentAnalysis or to GetDocumentAnalysis.
+//     An invalid job identifier was passed to an asynchronous analysis operation.
 //
 //   - InternalServerError
 //     Amazon Textract experienced a service issue. Try your call again.
@@ -948,6 +1651,667 @@ func (c *Textract) GetExpenseAnalysis(input *GetExpenseAnalysisInput) (*GetExpen
 // for more information on using Contexts.
 func (c *Textract) GetExpenseAnalysisWithContext(ctx aws.Context, input *GetExpenseAnalysisInput, opts ...request.Option) (*GetExpenseAnalysisOutput, error) {
 	req, out := c.GetExpenseAnalysisRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetLendingAnalysis = "GetLendingAnalysis"
+
+// GetLendingAnalysisRequest generates a "aws/request.Request" representing the
+// client's request for the GetLendingAnalysis operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetLendingAnalysis for more information on using the GetLendingAnalysis
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetLendingAnalysisRequest method.
+//	req, resp := client.GetLendingAnalysisRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetLendingAnalysis
+func (c *Textract) GetLendingAnalysisRequest(input *GetLendingAnalysisInput) (req *request.Request, output *GetLendingAnalysisOutput) {
+	op := &request.Operation{
+		Name:       opGetLendingAnalysis,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetLendingAnalysisInput{}
+	}
+
+	output = &GetLendingAnalysisOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetLendingAnalysis API operation for Amazon Textract.
+//
+// Gets the results for an Amazon Textract asynchronous operation that analyzes
+// text in a lending document.
+//
+// You start asynchronous text analysis by calling StartLendingAnalysis, which
+// returns a job identifier (JobId). When the text analysis operation finishes,
+// Amazon Textract publishes a completion status to the Amazon Simple Notification
+// Service (Amazon SNS) topic that's registered in the initial call to StartLendingAnalysis.
+//
+// To get the results of the text analysis operation, first check that the status
+// value published to the Amazon SNS topic is SUCCEEDED. If so, call GetLendingAnalysis,
+// and pass the job identifier (JobId) from the initial call to StartLendingAnalysis.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation GetLendingAnalysis for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InvalidJobIdException
+//     An invalid job identifier was passed to an asynchronous analysis operation.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InvalidS3ObjectException
+//     Amazon Textract is unable to access the S3 object that's specified in the
+//     request. for more information, Configure Access to Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html)
+//     For troubleshooting information, see Troubleshooting Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/troubleshooting.html)
+//
+//   - InvalidKMSKeyException
+//     Indicates you do not have decrypt permissions with the KMS key entered, or
+//     the KMS key was entered incorrectly.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetLendingAnalysis
+func (c *Textract) GetLendingAnalysis(input *GetLendingAnalysisInput) (*GetLendingAnalysisOutput, error) {
+	req, out := c.GetLendingAnalysisRequest(input)
+	return out, req.Send()
+}
+
+// GetLendingAnalysisWithContext is the same as GetLendingAnalysis with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetLendingAnalysis for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) GetLendingAnalysisWithContext(ctx aws.Context, input *GetLendingAnalysisInput, opts ...request.Option) (*GetLendingAnalysisOutput, error) {
+	req, out := c.GetLendingAnalysisRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetLendingAnalysisSummary = "GetLendingAnalysisSummary"
+
+// GetLendingAnalysisSummaryRequest generates a "aws/request.Request" representing the
+// client's request for the GetLendingAnalysisSummary operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetLendingAnalysisSummary for more information on using the GetLendingAnalysisSummary
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetLendingAnalysisSummaryRequest method.
+//	req, resp := client.GetLendingAnalysisSummaryRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetLendingAnalysisSummary
+func (c *Textract) GetLendingAnalysisSummaryRequest(input *GetLendingAnalysisSummaryInput) (req *request.Request, output *GetLendingAnalysisSummaryOutput) {
+	op := &request.Operation{
+		Name:       opGetLendingAnalysisSummary,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &GetLendingAnalysisSummaryInput{}
+	}
+
+	output = &GetLendingAnalysisSummaryOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetLendingAnalysisSummary API operation for Amazon Textract.
+//
+// Gets summarized results for the StartLendingAnalysis operation, which analyzes
+// text in a lending document. The returned summary consists of information
+// about documents grouped together by a common document type. Information like
+// detected signatures, page numbers, and split documents is returned with respect
+// to the type of grouped document.
+//
+// You start asynchronous text analysis by calling StartLendingAnalysis, which
+// returns a job identifier (JobId). When the text analysis operation finishes,
+// Amazon Textract publishes a completion status to the Amazon Simple Notification
+// Service (Amazon SNS) topic that's registered in the initial call to StartLendingAnalysis.
+//
+// To get the results of the text analysis operation, first check that the status
+// value published to the Amazon SNS topic is SUCCEEDED. If so, call GetLendingAnalysisSummary,
+// and pass the job identifier (JobId) from the initial call to StartLendingAnalysis.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation GetLendingAnalysisSummary for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InvalidJobIdException
+//     An invalid job identifier was passed to an asynchronous analysis operation.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - InvalidS3ObjectException
+//     Amazon Textract is unable to access the S3 object that's specified in the
+//     request. for more information, Configure Access to Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html)
+//     For troubleshooting information, see Troubleshooting Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/troubleshooting.html)
+//
+//   - InvalidKMSKeyException
+//     Indicates you do not have decrypt permissions with the KMS key entered, or
+//     the KMS key was entered incorrectly.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/GetLendingAnalysisSummary
+func (c *Textract) GetLendingAnalysisSummary(input *GetLendingAnalysisSummaryInput) (*GetLendingAnalysisSummaryOutput, error) {
+	req, out := c.GetLendingAnalysisSummaryRequest(input)
+	return out, req.Send()
+}
+
+// GetLendingAnalysisSummaryWithContext is the same as GetLendingAnalysisSummary with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetLendingAnalysisSummary for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) GetLendingAnalysisSummaryWithContext(ctx aws.Context, input *GetLendingAnalysisSummaryInput, opts ...request.Option) (*GetLendingAnalysisSummaryOutput, error) {
+	req, out := c.GetLendingAnalysisSummaryRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListAdapterVersions = "ListAdapterVersions"
+
+// ListAdapterVersionsRequest generates a "aws/request.Request" representing the
+// client's request for the ListAdapterVersions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAdapterVersions for more information on using the ListAdapterVersions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAdapterVersionsRequest method.
+//	req, resp := client.ListAdapterVersionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/ListAdapterVersions
+func (c *Textract) ListAdapterVersionsRequest(input *ListAdapterVersionsInput) (req *request.Request, output *ListAdapterVersionsOutput) {
+	op := &request.Operation{
+		Name:       opListAdapterVersions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAdapterVersionsInput{}
+	}
+
+	output = &ListAdapterVersionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListAdapterVersions API operation for Amazon Textract.
+//
+// List all version of an adapter that meet the specified filtration criteria.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation ListAdapterVersions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/ListAdapterVersions
+func (c *Textract) ListAdapterVersions(input *ListAdapterVersionsInput) (*ListAdapterVersionsOutput, error) {
+	req, out := c.ListAdapterVersionsRequest(input)
+	return out, req.Send()
+}
+
+// ListAdapterVersionsWithContext is the same as ListAdapterVersions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAdapterVersions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) ListAdapterVersionsWithContext(ctx aws.Context, input *ListAdapterVersionsInput, opts ...request.Option) (*ListAdapterVersionsOutput, error) {
+	req, out := c.ListAdapterVersionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAdapterVersionsPages iterates over the pages of a ListAdapterVersions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAdapterVersions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAdapterVersions operation.
+//	pageNum := 0
+//	err := client.ListAdapterVersionsPages(params,
+//	    func(page *textract.ListAdapterVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Textract) ListAdapterVersionsPages(input *ListAdapterVersionsInput, fn func(*ListAdapterVersionsOutput, bool) bool) error {
+	return c.ListAdapterVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAdapterVersionsPagesWithContext same as ListAdapterVersionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) ListAdapterVersionsPagesWithContext(ctx aws.Context, input *ListAdapterVersionsInput, fn func(*ListAdapterVersionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAdapterVersionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAdapterVersionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAdapterVersionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListAdapters = "ListAdapters"
+
+// ListAdaptersRequest generates a "aws/request.Request" representing the
+// client's request for the ListAdapters operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAdapters for more information on using the ListAdapters
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAdaptersRequest method.
+//	req, resp := client.ListAdaptersRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/ListAdapters
+func (c *Textract) ListAdaptersRequest(input *ListAdaptersInput) (req *request.Request, output *ListAdaptersOutput) {
+	op := &request.Operation{
+		Name:       opListAdapters,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAdaptersInput{}
+	}
+
+	output = &ListAdaptersOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListAdapters API operation for Amazon Textract.
+//
+// Lists all adapters that match the specified filtration criteria.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation ListAdapters for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/ListAdapters
+func (c *Textract) ListAdapters(input *ListAdaptersInput) (*ListAdaptersOutput, error) {
+	req, out := c.ListAdaptersRequest(input)
+	return out, req.Send()
+}
+
+// ListAdaptersWithContext is the same as ListAdapters with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAdapters for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) ListAdaptersWithContext(ctx aws.Context, input *ListAdaptersInput, opts ...request.Option) (*ListAdaptersOutput, error) {
+	req, out := c.ListAdaptersRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAdaptersPages iterates over the pages of a ListAdapters operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAdapters method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAdapters operation.
+//	pageNum := 0
+//	err := client.ListAdaptersPages(params,
+//	    func(page *textract.ListAdaptersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Textract) ListAdaptersPages(input *ListAdaptersInput, fn func(*ListAdaptersOutput, bool) bool) error {
+	return c.ListAdaptersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAdaptersPagesWithContext same as ListAdaptersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) ListAdaptersPagesWithContext(ctx aws.Context, input *ListAdaptersInput, fn func(*ListAdaptersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAdaptersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAdaptersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAdaptersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTagsForResource for more information on using the ListTagsForResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/ListTagsForResource
+func (c *Textract) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	output = &ListTagsForResourceOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListTagsForResource API operation for Amazon Textract.
+//
+// Lists all tags for an Amazon Textract resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation ListTagsForResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/ListTagsForResource
+func (c *Textract) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	return out, req.Send()
+}
+
+// ListTagsForResourceWithContext is the same as ListTagsForResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTagsForResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1393,6 +2757,482 @@ func (c *Textract) StartExpenseAnalysisWithContext(ctx aws.Context, input *Start
 	return out, req.Send()
 }
 
+const opStartLendingAnalysis = "StartLendingAnalysis"
+
+// StartLendingAnalysisRequest generates a "aws/request.Request" representing the
+// client's request for the StartLendingAnalysis operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartLendingAnalysis for more information on using the StartLendingAnalysis
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartLendingAnalysisRequest method.
+//	req, resp := client.StartLendingAnalysisRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/StartLendingAnalysis
+func (c *Textract) StartLendingAnalysisRequest(input *StartLendingAnalysisInput) (req *request.Request, output *StartLendingAnalysisOutput) {
+	op := &request.Operation{
+		Name:       opStartLendingAnalysis,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &StartLendingAnalysisInput{}
+	}
+
+	output = &StartLendingAnalysisOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartLendingAnalysis API operation for Amazon Textract.
+//
+// Starts the classification and analysis of an input document. StartLendingAnalysis
+// initiates the classification and analysis of a packet of lending documents.
+// StartLendingAnalysis operates on a document file located in an Amazon S3
+// bucket.
+//
+// StartLendingAnalysis can analyze text in documents that are in one of the
+// following formats: JPEG, PNG, TIFF, PDF. Use DocumentLocation to specify
+// the bucket name and the file name of the document.
+//
+// StartLendingAnalysis returns a job identifier (JobId) that you use to get
+// the results of the operation. When the text analysis is finished, Amazon
+// Textract publishes a completion status to the Amazon Simple Notification
+// Service (Amazon SNS) topic that you specify in NotificationChannel. To get
+// the results of the text analysis operation, first check that the status value
+// published to the Amazon SNS topic is SUCCEEDED. If the status is SUCCEEDED
+// you can call either GetLendingAnalysis or GetLendingAnalysisSummary and provide
+// the JobId to obtain the results of the analysis.
+//
+// If using OutputConfig to specify an Amazon S3 bucket, the output will be
+// contained within the specified prefix in a directory labeled with the job-id.
+// In the directory there are 3 sub-directories:
+//
+//   - detailedResponse (contains the GetLendingAnalysis response)
+//
+//   - summaryResponse (for the GetLendingAnalysisSummary response)
+//
+//   - splitDocuments (documents split across logical boundaries)
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation StartLendingAnalysis for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - InvalidS3ObjectException
+//     Amazon Textract is unable to access the S3 object that's specified in the
+//     request. for more information, Configure Access to Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/s3-access-control.html)
+//     For troubleshooting information, see Troubleshooting Amazon S3 (https://docs.aws.amazon.com/AmazonS3/latest/dev/troubleshooting.html)
+//
+//   - InvalidKMSKeyException
+//     Indicates you do not have decrypt permissions with the KMS key entered, or
+//     the KMS key was entered incorrectly.
+//
+//   - UnsupportedDocumentException
+//     The format of the input document isn't supported. Documents for operations
+//     can be in PNG, JPEG, PDF, or TIFF format.
+//
+//   - DocumentTooLargeException
+//     The document can't be processed because it's too large. The maximum document
+//     size for synchronous operations 10 MB. The maximum document size for asynchronous
+//     operations is 500 MB for PDF files.
+//
+//   - BadDocumentException
+//     Amazon Textract isn't able to read the document. For more information on
+//     the document limits in Amazon Textract, see limits.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - IdempotentParameterMismatchException
+//     A ClientRequestToken input parameter was reused with an operation, but at
+//     least one of the other input parameters is different from the previous call
+//     to the operation.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - LimitExceededException
+//     An Amazon Textract service limit was exceeded. For example, if you start
+//     too many asynchronous jobs concurrently, calls to start operations (StartDocumentTextDetection,
+//     for example) raise a LimitExceededException exception (HTTP status code:
+//     400) until the number of concurrently running jobs is below the Amazon Textract
+//     service limit.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/StartLendingAnalysis
+func (c *Textract) StartLendingAnalysis(input *StartLendingAnalysisInput) (*StartLendingAnalysisOutput, error) {
+	req, out := c.StartLendingAnalysisRequest(input)
+	return out, req.Send()
+}
+
+// StartLendingAnalysisWithContext is the same as StartLendingAnalysis with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartLendingAnalysis for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) StartLendingAnalysisWithContext(ctx aws.Context, input *StartLendingAnalysisInput, opts ...request.Option) (*StartLendingAnalysisOutput, error) {
+	req, out := c.StartLendingAnalysisRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TagResource for more information on using the TagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/TagResource
+func (c *Textract) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	output = &TagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// TagResource API operation for Amazon Textract.
+//
+// Adds one or more tags to the specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation TagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - ServiceQuotaExceededException
+//     Returned when a request cannot be completed as it would exceed a maximum
+//     service quota.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/TagResource
+func (c *Textract) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	return out, req.Send()
+}
+
+// TagResourceWithContext is the same as TagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UntagResource for more information on using the UntagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/UntagResource
+func (c *Textract) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	output = &UntagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(jsonrpc.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// UntagResource API operation for Amazon Textract.
+//
+// Removes any tags with the specified keys from the specified resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation UntagResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/UntagResource
+func (c *Textract) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	return out, req.Send()
+}
+
+// UntagResourceWithContext is the same as UntagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UntagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateAdapter = "UpdateAdapter"
+
+// UpdateAdapterRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAdapter operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAdapter for more information on using the UpdateAdapter
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAdapterRequest method.
+//	req, resp := client.UpdateAdapterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/UpdateAdapter
+func (c *Textract) UpdateAdapterRequest(input *UpdateAdapterInput) (req *request.Request, output *UpdateAdapterOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAdapter,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &UpdateAdapterInput{}
+	}
+
+	output = &UpdateAdapterOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateAdapter API operation for Amazon Textract.
+//
+// Update the configuration for an adapter. FeatureTypes configurations cannot
+// be updated. At least one new parameter must be specified as an argument.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Textract's
+// API operation UpdateAdapter for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     An input parameter violated a constraint. For example, in synchronous operations,
+//     an InvalidParameterException exception occurs when neither of the S3Object
+//     or Bytes values are supplied in the Document request parameter. Validate
+//     your parameter before calling the API operation again.
+//
+//   - AccessDeniedException
+//     You aren't authorized to perform the action. Use the Amazon Resource Name
+//     (ARN) of an authorized user or IAM role to perform the operation.
+//
+//   - ConflictException
+//     Updating or deleting a resource can cause an inconsistent state.
+//
+//   - ProvisionedThroughputExceededException
+//     The number of requests exceeded your throughput limit. If you want to increase
+//     this limit, contact Amazon Textract.
+//
+//   - InternalServerError
+//     Amazon Textract experienced a service issue. Try your call again.
+//
+//   - ThrottlingException
+//     Amazon Textract is temporarily unable to process the request. Try your call
+//     again.
+//
+//   - ValidationException
+//     Indicates that a request was not valid. Check request for proper formatting.
+//
+//   - ResourceNotFoundException
+//     Returned when an operation tried to access a nonexistent resource.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/textract-2018-06-27/UpdateAdapter
+func (c *Textract) UpdateAdapter(input *UpdateAdapterInput) (*UpdateAdapterOutput, error) {
+	req, out := c.UpdateAdapterRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAdapterWithContext is the same as UpdateAdapter with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAdapter for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Textract) UpdateAdapterWithContext(ctx aws.Context, input *UpdateAdapterInput, opts ...request.Option) (*UpdateAdapterOutput, error) {
+	req, out := c.UpdateAdapterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // You aren't authorized to perform the action. Use the Amazon Resource Name
 // (ARN) of an authorized user or IAM role to perform the operation.
 type AccessDeniedException struct {
@@ -1458,8 +3298,412 @@ func (s *AccessDeniedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// An adapter selected for use when analyzing documents. Contains an adapter
+// ID and a version number. Contains information on pages selected for analysis
+// when analyzing documents asychronously.
+type Adapter struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the adapter resource.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+
+	// Pages is a parameter that the user inputs to specify which pages to apply
+	// an adapter to. The following is a list of rules for using this parameter.
+	//
+	//    * If a page is not specified, it is set to ["1"] by default.
+	//
+	//    * The following characters are allowed in the parameter's string: 0 1
+	//    2 3 4 5 6 7 8 9 - *. No whitespace is allowed.
+	//
+	//    * When using * to indicate all pages, it must be the only element in the
+	//    list.
+	//
+	//    * You can use page intervals, such as ["1-3", "1-1", "4-*"]. Where * indicates
+	//    last page of document.
+	//
+	//    * Specified pages must be greater than 0 and less than or equal to the
+	//    number of pages in the document.
+	Pages []*string `min:"1" type:"list"`
+
+	// A string that identifies the version of the adapter.
+	//
+	// Version is a required field
+	Version *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Adapter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Adapter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Adapter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Adapter"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+	if s.Pages != nil && len(s.Pages) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Pages", 1))
+	}
+	if s.Version == nil {
+		invalidParams.Add(request.NewErrParamRequired("Version"))
+	}
+	if s.Version != nil && len(*s.Version) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Version", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *Adapter) SetAdapterId(v string) *Adapter {
+	s.AdapterId = &v
+	return s
+}
+
+// SetPages sets the Pages field's value.
+func (s *Adapter) SetPages(v []*string) *Adapter {
+	s.Pages = v
+	return s
+}
+
+// SetVersion sets the Version field's value.
+func (s *Adapter) SetVersion(v string) *Adapter {
+	s.Version = &v
+	return s
+}
+
+// Contains information on the adapter, including the adapter ID, Name, Creation
+// time, and feature types.
+type AdapterOverview struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the adapter resource.
+	AdapterId *string `min:"12" type:"string"`
+
+	// A string naming the adapter resource.
+	AdapterName *string `min:"1" type:"string"`
+
+	// The date and time that the adapter was created.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// The feature types that the adapter is operating on.
+	FeatureTypes []*string `type:"list" enum:"FeatureType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterOverview) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterOverview) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *AdapterOverview) SetAdapterId(v string) *AdapterOverview {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterName sets the AdapterName field's value.
+func (s *AdapterOverview) SetAdapterName(v string) *AdapterOverview {
+	s.AdapterName = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *AdapterOverview) SetCreationTime(v time.Time) *AdapterOverview {
+	s.CreationTime = &v
+	return s
+}
+
+// SetFeatureTypes sets the FeatureTypes field's value.
+func (s *AdapterOverview) SetFeatureTypes(v []*string) *AdapterOverview {
+	s.FeatureTypes = v
+	return s
+}
+
+// The dataset configuration options for a given version of an adapter. Can
+// include an Amazon S3 bucket if specified.
+type AdapterVersionDatasetConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The S3 bucket name and file name that identifies the document.
+	//
+	// The AWS Region for the S3 bucket that contains the document must match the
+	// Region that you use for Amazon Textract operations.
+	//
+	// For Amazon Textract to process a file in an S3 bucket, the user must have
+	// permission to access the S3 bucket and file.
+	ManifestS3Object *S3Object `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterVersionDatasetConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterVersionDatasetConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AdapterVersionDatasetConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AdapterVersionDatasetConfig"}
+	if s.ManifestS3Object != nil {
+		if err := s.ManifestS3Object.Validate(); err != nil {
+			invalidParams.AddNested("ManifestS3Object", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetManifestS3Object sets the ManifestS3Object field's value.
+func (s *AdapterVersionDatasetConfig) SetManifestS3Object(v *S3Object) *AdapterVersionDatasetConfig {
+	s.ManifestS3Object = v
+	return s
+}
+
+// Contains information on the metrics used to evalute the peformance of a given
+// adapter version. Includes data for baseline model performance and individual
+// adapter version perfromance.
+type AdapterVersionEvaluationMetric struct {
+	_ struct{} `type:"structure"`
+
+	// The F1 score, precision, and recall metrics for the baseline model.
+	AdapterVersion *EvaluationMetric `type:"structure"`
+
+	// The F1 score, precision, and recall metrics for the baseline model.
+	Baseline *EvaluationMetric `type:"structure"`
+
+	// Indicates the feature type being analyzed by a given adapter version.
+	FeatureType *string `type:"string" enum:"FeatureType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterVersionEvaluationMetric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterVersionEvaluationMetric) GoString() string {
+	return s.String()
+}
+
+// SetAdapterVersion sets the AdapterVersion field's value.
+func (s *AdapterVersionEvaluationMetric) SetAdapterVersion(v *EvaluationMetric) *AdapterVersionEvaluationMetric {
+	s.AdapterVersion = v
+	return s
+}
+
+// SetBaseline sets the Baseline field's value.
+func (s *AdapterVersionEvaluationMetric) SetBaseline(v *EvaluationMetric) *AdapterVersionEvaluationMetric {
+	s.Baseline = v
+	return s
+}
+
+// SetFeatureType sets the FeatureType field's value.
+func (s *AdapterVersionEvaluationMetric) SetFeatureType(v string) *AdapterVersionEvaluationMetric {
+	s.FeatureType = &v
+	return s
+}
+
+// Summary info for an adapter version. Contains information on the AdapterId,
+// AdapterVersion, CreationTime, FeatureTypes, and Status.
+type AdapterVersionOverview struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the adapter associated with a given adapter version.
+	AdapterId *string `min:"12" type:"string"`
+
+	// An identified for a given adapter version.
+	AdapterVersion *string `min:"1" type:"string"`
+
+	// The date and time that a given adapter version was created.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// The feature types that the adapter version is operating on.
+	FeatureTypes []*string `type:"list" enum:"FeatureType"`
+
+	// Contains information on the status of a given adapter version.
+	Status *string `type:"string" enum:"AdapterVersionStatus"`
+
+	// A message explaining the status of a given adapter vesion.
+	StatusMessage *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterVersionOverview) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdapterVersionOverview) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *AdapterVersionOverview) SetAdapterId(v string) *AdapterVersionOverview {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterVersion sets the AdapterVersion field's value.
+func (s *AdapterVersionOverview) SetAdapterVersion(v string) *AdapterVersionOverview {
+	s.AdapterVersion = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *AdapterVersionOverview) SetCreationTime(v time.Time) *AdapterVersionOverview {
+	s.CreationTime = &v
+	return s
+}
+
+// SetFeatureTypes sets the FeatureTypes field's value.
+func (s *AdapterVersionOverview) SetFeatureTypes(v []*string) *AdapterVersionOverview {
+	s.FeatureTypes = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AdapterVersionOverview) SetStatus(v string) *AdapterVersionOverview {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *AdapterVersionOverview) SetStatusMessage(v string) *AdapterVersionOverview {
+	s.StatusMessage = &v
+	return s
+}
+
+// Contains information about adapters used when analyzing a document, with
+// each adapter specified using an AdapterId and version
+type AdaptersConfig struct {
+	_ struct{} `type:"structure"`
+
+	// A list of adapters to be used when analyzing the specified document.
+	//
+	// Adapters is a required field
+	Adapters []*Adapter `min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdaptersConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdaptersConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AdaptersConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AdaptersConfig"}
+	if s.Adapters == nil {
+		invalidParams.Add(request.NewErrParamRequired("Adapters"))
+	}
+	if s.Adapters != nil && len(s.Adapters) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Adapters", 1))
+	}
+	if s.Adapters != nil {
+		for i, v := range s.Adapters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Adapters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapters sets the Adapters field's value.
+func (s *AdaptersConfig) SetAdapters(v []*Adapter) *AdaptersConfig {
+	s.Adapters = v
+	return s
+}
+
 type AnalyzeDocumentInput struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies the adapter to be used when analyzing a document.
+	AdaptersConfig *AdaptersConfig `type:"structure"`
 
 	// The input document as base64-encoded bytes or an Amazon S3 object. If you
 	// use the AWS CLI to call Amazon Textract operations, you can't pass image
@@ -1473,8 +3717,9 @@ type AnalyzeDocumentInput struct {
 
 	// A list of the types of analysis to perform. Add TABLES to the list to return
 	// information about the tables that are detected in the input document. Add
-	// FORMS to return detected form data. To perform both types of analysis, add
-	// TABLES and FORMS to FeatureTypes. All lines and words detected in the document
+	// FORMS to return detected form data. Add SIGNATURES to return the locations
+	// of detected signatures. Add LAYOUT to the list to return information about
+	// the layout of the document. All lines and words detected in the document
 	// are included in the response (including text that isn't related to the value
 	// of FeatureTypes).
 	//
@@ -1515,6 +3760,11 @@ func (s *AnalyzeDocumentInput) Validate() error {
 	if s.FeatureTypes == nil {
 		invalidParams.Add(request.NewErrParamRequired("FeatureTypes"))
 	}
+	if s.AdaptersConfig != nil {
+		if err := s.AdaptersConfig.Validate(); err != nil {
+			invalidParams.AddNested("AdaptersConfig", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Document != nil {
 		if err := s.Document.Validate(); err != nil {
 			invalidParams.AddNested("Document", err.(request.ErrInvalidParams))
@@ -1535,6 +3785,12 @@ func (s *AnalyzeDocumentInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAdaptersConfig sets the AdaptersConfig field's value.
+func (s *AnalyzeDocumentInput) SetAdaptersConfig(v *AdaptersConfig) *AnalyzeDocumentInput {
+	s.AdaptersConfig = v
+	return s
 }
 
 // SetDocument sets the Document field's value.
@@ -2006,39 +4262,99 @@ type Block struct {
 	//    information with two or more rows or columns, with a cell span of one
 	//    row and one column each.
 	//
+	//    * TABLE_TITLE - The title of a table. A title is typically a line of text
+	//    above or below a table, or embedded as the first row of a table.
+	//
+	//    * TABLE_FOOTER - The footer associated with a table. A footer is typically
+	//    a line or lines of text below a table or embedded as the last row of a
+	//    table.
+	//
 	//    * CELL - A cell within a detected table. The cell is the parent of the
 	//    block that contains the text in the cell.
+	//
+	//    * MERGED_CELL - A cell in a table whose content spans more than one row
+	//    or column. The Relationships array for this cell contain data from individual
+	//    cells.
 	//
 	//    * SELECTION_ELEMENT - A selection element such as an option button (radio
 	//    button) or a check box that's detected on a document page. Use the value
 	//    of SelectionStatus to determine the status of the selection element.
 	//
+	//    * SIGNATURE - The location and confidence score of a signature detected
+	//    on a document page. Can be returned as part of a Key-Value pair or a detected
+	//    cell.
+	//
 	//    * QUERY - A question asked during the call of AnalyzeDocument. Contains
-	//    an alias and an ID that attachs it to its answer.
+	//    an alias and an ID that attaches it to its answer.
 	//
 	//    * QUERY_RESULT - A response to a question asked during the call of analyze
 	//    document. Comes with an alias and ID for ease of locating in a response.
 	//    Also contains location and confidence score.
+	//
+	// The following BlockTypes are only returned for Amazon Textract Layout.
+	//
+	//    * LAYOUT_TITLE - The main title of the document.
+	//
+	//    * LAYOUT_HEADER - Text located in the top margin of the document.
+	//
+	//    * LAYOUT_FOOTER - Text located in the bottom margin of the document.
+	//
+	//    * LAYOUT_SECTION_HEADER - The titles of sections within a document.
+	//
+	//    * LAYOUT_PAGE_NUMBER - The page number of the documents.
+	//
+	//    * LAYOUT_LIST - Any information grouped together in list form.
+	//
+	//    * LAYOUT_FIGURE - Indicates the location of an image in a document.
+	//
+	//    * LAYOUT_TABLE - Indicates the location of a table in the document.
+	//
+	//    * LAYOUT_KEY_VALUE - Indicates the location of form key-values in a document.
+	//
+	//    * LAYOUT_TEXT - Text that is present typically as a part of paragraphs
+	//    in documents.
 	BlockType *string `type:"string" enum:"BlockType"`
 
 	// The column in which a table cell appears. The first column position is 1.
 	// ColumnIndex isn't returned by DetectDocumentText and GetDocumentTextDetection.
 	ColumnIndex *int64 `type:"integer"`
 
-	// The number of columns that a table cell spans. Currently this value is always
-	// 1, even if the number of columns spanned is greater than 1. ColumnSpan isn't
-	// returned by DetectDocumentText and GetDocumentTextDetection.
+	// The number of columns that a table cell spans. ColumnSpan isn't returned
+	// by DetectDocumentText and GetDocumentTextDetection.
 	ColumnSpan *int64 `type:"integer"`
 
 	// The confidence score that Amazon Textract has in the accuracy of the recognized
 	// text and the accuracy of the geometry points around the recognized text.
 	Confidence *float64 `type:"float"`
 
-	// The type of entity. The following can be returned:
+	// The type of entity.
+	//
+	// The following entity types can be returned by FORMS analysis:
 	//
 	//    * KEY - An identifier for a field on the document.
 	//
 	//    * VALUE - The field text.
+	//
+	// The following entity types can be returned by TABLES analysis:
+	//
+	//    * COLUMN_HEADER - Identifies a cell that is a header of a column.
+	//
+	//    * TABLE_TITLE - Identifies a cell that is a title within the table.
+	//
+	//    * TABLE_SECTION_TITLE - Identifies a cell that is a title of a section
+	//    within a table. A section title is a cell that typically spans an entire
+	//    row above a section.
+	//
+	//    * TABLE_FOOTER - Identifies a cell that is a footer of a table.
+	//
+	//    * TABLE_SUMMARY - Identifies a summary cell of a table. A summary cell
+	//    can be a row of a table or an additional, smaller table that contains
+	//    summary information for another table.
+	//
+	//    * STRUCTURED_TABLE - Identifies a table with column headers where the
+	//    content of each row corresponds to the headers.
+	//
+	//    * SEMI_STRUCTURED_TABLE - Identifies a non-structured table.
 	//
 	// EntityTypes isn't returned by DetectDocumentText and GetDocumentTextDetection.
 	EntityTypes []*string `type:"list" enum:"EntityType"`
@@ -2052,35 +4368,31 @@ type Block struct {
 	// a single operation.
 	Id *string `type:"string"`
 
-	// The page on which a block was detected. Page is returned by asynchronous
-	// operations. Page values greater than 1 are only returned for multipage documents
-	// that are in PDF or TIFF format. A scanned image (JPEG/PNG), even if it contains
-	// multiple document pages, is considered to be a single-page document. The
-	// value of Page is always 1. Synchronous operations don't return Page because
-	// every input document is considered to be a single-page document.
+	// The page on which a block was detected. Page is returned by synchronous and
+	// asynchronous operations. Page values greater than 1 are only returned for
+	// multipage documents that are in PDF or TIFF format. A scanned image (JPEG/PNG)
+	// provided to an asynchronous operation, even if it contains multiple document
+	// pages, is considered a single-page document. This means that for scanned
+	// images the value of Page is always 1.
 	Page *int64 `type:"integer"`
 
 	// Each query contains the question you want to ask in the Text and the alias
 	// you want to associate.
 	Query *Query `type:"structure"`
 
-	// A list of child blocks of the current block. For example, a LINE object has
-	// child blocks for each WORD block that's part of the line of text. There aren't
-	// Relationship objects in the list for relationships that don't exist, such
-	// as when the current block has no child blocks. The list size can be the following:
-	//
-	//    * 0 - The block has no child blocks.
-	//
-	//    * 1 - The block has child blocks.
+	// A list of relationship objects that describe how blocks are related to each
+	// other. For example, a LINE block object contains a CHILD relationship type
+	// with the WORD blocks that make up the line of text. There aren't Relationship
+	// objects in the list for relationships that don't exist, such as when the
+	// current block has no child blocks.
 	Relationships []*Relationship `type:"list"`
 
 	// The row in which a table cell is located. The first row position is 1. RowIndex
 	// isn't returned by DetectDocumentText and GetDocumentTextDetection.
 	RowIndex *int64 `type:"integer"`
 
-	// The number of rows that a table cell spans. Currently this value is always
-	// 1, even if the number of rows spanned is greater than 1. RowSpan isn't returned
-	// by DetectDocumentText and GetDocumentTextDetection.
+	// The number of rows that a table cell spans. RowSpan isn't returned by DetectDocumentText
+	// and GetDocumentTextDetection.
 	RowSpan *int64 `type:"integer"`
 
 	// The selection status of a selection element, such as an option button or
@@ -2278,6 +4590,554 @@ func (s *BoundingBox) SetWidth(v float64) *BoundingBox {
 	return s
 }
 
+// Updating or deleting a resource can cause an inconsistent state.
+type ConflictException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) GoString() string {
+	return s.String()
+}
+
+func newErrorConflictException(v protocol.ResponseMetadata) error {
+	return &ConflictException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ConflictException) Code() string {
+	return "ConflictException"
+}
+
+// Message returns the exception's message.
+func (s *ConflictException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ConflictException) OrigErr() error {
+	return nil
+}
+
+func (s *ConflictException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ConflictException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ConflictException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+type CreateAdapterInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name to be assigned to the adapter being created.
+	//
+	// AdapterName is a required field
+	AdapterName *string `min:"1" type:"string" required:"true"`
+
+	// Controls whether or not the adapter should automatically update.
+	AutoUpdate *string `type:"string" enum:"AutoUpdate"`
+
+	// Idempotent token is used to recognize the request. If the same token is used
+	// with multiple CreateAdapter requests, the same session is returned. This
+	// token is employed to avoid unintentionally creating the same session multiple
+	// times.
+	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// The description to be assigned to the adapter being created.
+	Description *string `min:"1" type:"string"`
+
+	// The type of feature that the adapter is being trained on. Currrenly, supported
+	// feature types are: QUERIES
+	//
+	// FeatureTypes is a required field
+	FeatureTypes []*string `type:"list" required:"true" enum:"FeatureType"`
+
+	// A list of tags to be added to the adapter.
+	Tags map[string]*string `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAdapterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAdapterInput"}
+	if s.AdapterName == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterName"))
+	}
+	if s.AdapterName != nil && len(*s.AdapterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterName", 1))
+	}
+	if s.ClientRequestToken != nil && len(*s.ClientRequestToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientRequestToken", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.FeatureTypes == nil {
+		invalidParams.Add(request.NewErrParamRequired("FeatureTypes"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterName sets the AdapterName field's value.
+func (s *CreateAdapterInput) SetAdapterName(v string) *CreateAdapterInput {
+	s.AdapterName = &v
+	return s
+}
+
+// SetAutoUpdate sets the AutoUpdate field's value.
+func (s *CreateAdapterInput) SetAutoUpdate(v string) *CreateAdapterInput {
+	s.AutoUpdate = &v
+	return s
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *CreateAdapterInput) SetClientRequestToken(v string) *CreateAdapterInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateAdapterInput) SetDescription(v string) *CreateAdapterInput {
+	s.Description = &v
+	return s
+}
+
+// SetFeatureTypes sets the FeatureTypes field's value.
+func (s *CreateAdapterInput) SetFeatureTypes(v []*string) *CreateAdapterInput {
+	s.FeatureTypes = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAdapterInput) SetTags(v map[string]*string) *CreateAdapterInput {
+	s.Tags = v
+	return s
+}
+
+type CreateAdapterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing the unique ID for the adapter that has been created.
+	AdapterId *string `min:"12" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *CreateAdapterOutput) SetAdapterId(v string) *CreateAdapterOutput {
+	s.AdapterId = &v
+	return s
+}
+
+type CreateAdapterVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter that will receive a new version.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+
+	// Idempotent token is used to recognize the request. If the same token is used
+	// with multiple CreateAdapterVersion requests, the same session is returned.
+	// This token is employed to avoid unintentionally creating the same session
+	// multiple times.
+	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
+
+	// Specifies a dataset used to train a new adapter version. Takes a ManifestS3Object
+	// as the value.
+	//
+	// DatasetConfig is a required field
+	DatasetConfig *AdapterVersionDatasetConfig `type:"structure" required:"true"`
+
+	// The identifier for your AWS Key Management Service key (AWS KMS key). Used
+	// to encrypt your documents.
+	KMSKeyId *string `min:"1" type:"string"`
+
+	// Sets whether or not your output will go to a user created bucket. Used to
+	// set the name of the bucket, and the prefix on the output file.
+	//
+	// OutputConfig is an optional parameter which lets you adjust where your output
+	// will be placed. By default, Amazon Textract will store the results internally
+	// and can only be accessed by the Get API operations. With OutputConfig enabled,
+	// you can set the name of the bucket the output will be sent to the file prefix
+	// of the results where you can download your results. Additionally, you can
+	// set the KMSKeyID parameter to a customer master key (CMK) to encrypt your
+	// output. Without this parameter set Amazon Textract will encrypt server-side
+	// using the AWS managed CMK for Amazon S3.
+	//
+	// Decryption of Customer Content is necessary for processing of the documents
+	// by Amazon Textract. If your account is opted out under an AI services opt
+	// out policy then all unencrypted Customer Content is immediately and permanently
+	// deleted after the Customer Content has been processed by the service. No
+	// copy of of the output is retained by Amazon Textract. For information about
+	// how to opt out, see Managing AI services opt-out policy. (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_ai-opt-out.html)
+	//
+	// For more information on data privacy, see the Data Privacy FAQ (https://aws.amazon.com/compliance/data-privacy-faq/).
+	//
+	// OutputConfig is a required field
+	OutputConfig *OutputConfig `type:"structure" required:"true"`
+
+	// A set of tags (key-value pairs) that you want to attach to the adapter version.
+	Tags map[string]*string `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAdapterVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAdapterVersionInput"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+	if s.ClientRequestToken != nil && len(*s.ClientRequestToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientRequestToken", 1))
+	}
+	if s.DatasetConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("DatasetConfig"))
+	}
+	if s.KMSKeyId != nil && len(*s.KMSKeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KMSKeyId", 1))
+	}
+	if s.OutputConfig == nil {
+		invalidParams.Add(request.NewErrParamRequired("OutputConfig"))
+	}
+	if s.DatasetConfig != nil {
+		if err := s.DatasetConfig.Validate(); err != nil {
+			invalidParams.AddNested("DatasetConfig", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.OutputConfig != nil {
+		if err := s.OutputConfig.Validate(); err != nil {
+			invalidParams.AddNested("OutputConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *CreateAdapterVersionInput) SetAdapterId(v string) *CreateAdapterVersionInput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *CreateAdapterVersionInput) SetClientRequestToken(v string) *CreateAdapterVersionInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetDatasetConfig sets the DatasetConfig field's value.
+func (s *CreateAdapterVersionInput) SetDatasetConfig(v *AdapterVersionDatasetConfig) *CreateAdapterVersionInput {
+	s.DatasetConfig = v
+	return s
+}
+
+// SetKMSKeyId sets the KMSKeyId field's value.
+func (s *CreateAdapterVersionInput) SetKMSKeyId(v string) *CreateAdapterVersionInput {
+	s.KMSKeyId = &v
+	return s
+}
+
+// SetOutputConfig sets the OutputConfig field's value.
+func (s *CreateAdapterVersionInput) SetOutputConfig(v *OutputConfig) *CreateAdapterVersionInput {
+	s.OutputConfig = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAdapterVersionInput) SetTags(v map[string]*string) *CreateAdapterVersionInput {
+	s.Tags = v
+	return s
+}
+
+type CreateAdapterVersionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing the unique ID for the adapter that has received a new
+	// version.
+	AdapterId *string `min:"12" type:"string"`
+
+	// A string describing the new version of the adapter.
+	AdapterVersion *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAdapterVersionOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *CreateAdapterVersionOutput) SetAdapterId(v string) *CreateAdapterVersionOutput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterVersion sets the AdapterVersion field's value.
+func (s *CreateAdapterVersionOutput) SetAdapterVersion(v string) *CreateAdapterVersionOutput {
+	s.AdapterVersion = &v
+	return s
+}
+
+type DeleteAdapterInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter to be deleted.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAdapterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAdapterInput"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *DeleteAdapterInput) SetAdapterId(v string) *DeleteAdapterInput {
+	s.AdapterId = &v
+	return s
+}
+
+type DeleteAdapterOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteAdapterVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter version that will be deleted.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+
+	// Specifies the adapter version to be deleted.
+	//
+	// AdapterVersion is a required field
+	AdapterVersion *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAdapterVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAdapterVersionInput"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+	if s.AdapterVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterVersion"))
+	}
+	if s.AdapterVersion != nil && len(*s.AdapterVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterVersion", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *DeleteAdapterVersionInput) SetAdapterId(v string) *DeleteAdapterVersionInput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterVersion sets the AdapterVersion field's value.
+func (s *DeleteAdapterVersionInput) SetAdapterVersion(v string) *DeleteAdapterVersionInput {
+	s.AdapterVersion = &v
+	return s
+}
+
+type DeleteAdapterVersionOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAdapterVersionOutput) GoString() string {
+	return s.String()
+}
+
 type DetectDocumentTextInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2383,6 +5243,38 @@ func (s *DetectDocumentTextOutput) SetDocumentMetadata(v *DocumentMetadata) *Det
 	return s
 }
 
+// A structure that holds information regarding a detected signature on a page.
+type DetectedSignature struct {
+	_ struct{} `type:"structure"`
+
+	// The page a detected signature was found on.
+	Page *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetectedSignature) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetectedSignature) GoString() string {
+	return s.String()
+}
+
+// SetPage sets the Page field's value.
+func (s *DetectedSignature) SetPage(v int64) *DetectedSignature {
+	s.Page = &v
+	return s
+}
+
 // The input document, either as bytes or as an S3 object.
 //
 // You pass image bytes to an Amazon Textract API operation by using the Bytes
@@ -2470,8 +5362,70 @@ func (s *Document) SetS3Object(v *S3Object) *Document {
 	return s
 }
 
+// Summary information about documents grouped by the same document type.
+type DocumentGroup struct {
+	_ struct{} `type:"structure"`
+
+	// A list of the detected signatures found in a document group.
+	DetectedSignatures []*DetectedSignature `type:"list"`
+
+	// An array that contains information about the pages of a document, defined
+	// by logical boundary.
+	SplitDocuments []*SplitDocument `type:"list"`
+
+	// The type of document that Amazon Textract has detected. See Analyze Lending
+	// Response Objects (https://docs.aws.amazon.com/textract/latest/dg/lending-response-objects.html)
+	// for a list of all types returned by Textract.
+	Type *string `type:"string"`
+
+	// A list of any expected signatures not found in a document group.
+	UndetectedSignatures []*UndetectedSignature `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DocumentGroup) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DocumentGroup) GoString() string {
+	return s.String()
+}
+
+// SetDetectedSignatures sets the DetectedSignatures field's value.
+func (s *DocumentGroup) SetDetectedSignatures(v []*DetectedSignature) *DocumentGroup {
+	s.DetectedSignatures = v
+	return s
+}
+
+// SetSplitDocuments sets the SplitDocuments field's value.
+func (s *DocumentGroup) SetSplitDocuments(v []*SplitDocument) *DocumentGroup {
+	s.SplitDocuments = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *DocumentGroup) SetType(v string) *DocumentGroup {
+	s.Type = &v
+	return s
+}
+
+// SetUndetectedSignatures sets the UndetectedSignatures field's value.
+func (s *DocumentGroup) SetUndetectedSignatures(v []*UndetectedSignature) *DocumentGroup {
+	s.UndetectedSignatures = v
+	return s
+}
+
 // The Amazon S3 bucket that contains the document to be processed. It's used
-// by asynchronous operations such as StartDocumentTextDetection.
+// by asynchronous operations.
 //
 // The input document can be an image file in JPEG or PNG format. It can also
 // be a file in PDF format.
@@ -2619,6 +5573,121 @@ func (s *DocumentTooLargeException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The evaluation metrics (F1 score, Precision, and Recall) for an adapter version.
+type EvaluationMetric struct {
+	_ struct{} `type:"structure"`
+
+	// The F1 score for an adapter version.
+	F1Score *float64 `type:"float"`
+
+	// The Precision score for an adapter version.
+	Precision *float64 `type:"float"`
+
+	// The Recall score for an adapter version.
+	Recall *float64 `type:"float"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EvaluationMetric) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EvaluationMetric) GoString() string {
+	return s.String()
+}
+
+// SetF1Score sets the F1Score field's value.
+func (s *EvaluationMetric) SetF1Score(v float64) *EvaluationMetric {
+	s.F1Score = &v
+	return s
+}
+
+// SetPrecision sets the Precision field's value.
+func (s *EvaluationMetric) SetPrecision(v float64) *EvaluationMetric {
+	s.Precision = &v
+	return s
+}
+
+// SetRecall sets the Recall field's value.
+func (s *EvaluationMetric) SetRecall(v float64) *EvaluationMetric {
+	s.Recall = &v
+	return s
+}
+
+// Returns the kind of currency detected.
+type ExpenseCurrency struct {
+	_ struct{} `type:"structure"`
+
+	// Currency code for detected currency. the current supported codes are:
+	//
+	//    * USD
+	//
+	//    * EUR
+	//
+	//    * GBP
+	//
+	//    * CAD
+	//
+	//    * INR
+	//
+	//    * JPY
+	//
+	//    * CHF
+	//
+	//    * AUD
+	//
+	//    * CNY
+	//
+	//    * BZR
+	//
+	//    * SEK
+	//
+	//    * HKD
+	Code *string `type:"string"`
+
+	// Percentage confideence in the detected currency.
+	Confidence *float64 `type:"float"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExpenseCurrency) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExpenseCurrency) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *ExpenseCurrency) SetCode(v string) *ExpenseCurrency {
+	s.Code = &v
+	return s
+}
+
+// SetConfidence sets the Confidence field's value.
+func (s *ExpenseCurrency) SetConfidence(v float64) *ExpenseCurrency {
+	s.Confidence = &v
+	return s
+}
+
 // An object used to store information about the Value or Label detected by
 // Amazon Textract.
 type ExpenseDetection struct {
@@ -2676,6 +5745,10 @@ func (s *ExpenseDetection) SetText(v string) *ExpenseDetection {
 type ExpenseDocument struct {
 	_ struct{} `type:"structure"`
 
+	// This is a block object, the same as reported when DetectDocumentText is run
+	// on a document. It provides word level recognition of text.
+	Blocks []*Block `type:"list"`
+
 	// Denotes which invoice or receipt in the document the information is coming
 	// from. First document will be 1, the second 2, and so on.
 	ExpenseIndex *int64 `type:"integer"`
@@ -2705,6 +5778,12 @@ func (s ExpenseDocument) GoString() string {
 	return s.String()
 }
 
+// SetBlocks sets the Blocks field's value.
+func (s *ExpenseDocument) SetBlocks(v []*Block) *ExpenseDocument {
+	s.Blocks = v
+	return s
+}
+
 // SetExpenseIndex sets the ExpenseIndex field's value.
 func (s *ExpenseDocument) SetExpenseIndex(v int64) *ExpenseDocument {
 	s.ExpenseIndex = &v
@@ -2727,6 +5806,14 @@ func (s *ExpenseDocument) SetSummaryFields(v []*ExpenseField) *ExpenseDocument {
 // and ValueDetection
 type ExpenseField struct {
 	_ struct{} `type:"structure"`
+
+	// Shows the kind of currency, both the code and confidence associated with
+	// any monatary value detected.
+	Currency *ExpenseCurrency `type:"structure"`
+
+	// Shows which group a response object belongs to, such as whether an address
+	// line belongs to the vendor's address or the recipent's address.
+	GroupProperties []*ExpenseGroupProperty `type:"list"`
 
 	// The explicitly stated label of a detected element.
 	LabelDetection *ExpenseDetection `type:"structure"`
@@ -2760,6 +5847,18 @@ func (s ExpenseField) GoString() string {
 	return s.String()
 }
 
+// SetCurrency sets the Currency field's value.
+func (s *ExpenseField) SetCurrency(v *ExpenseCurrency) *ExpenseField {
+	s.Currency = v
+	return s
+}
+
+// SetGroupProperties sets the GroupProperties field's value.
+func (s *ExpenseField) SetGroupProperties(v []*ExpenseGroupProperty) *ExpenseField {
+	s.GroupProperties = v
+	return s
+}
+
 // SetLabelDetection sets the LabelDetection field's value.
 func (s *ExpenseField) SetLabelDetection(v *ExpenseDetection) *ExpenseField {
 	s.LabelDetection = v
@@ -2781,6 +5880,49 @@ func (s *ExpenseField) SetType(v *ExpenseType) *ExpenseField {
 // SetValueDetection sets the ValueDetection field's value.
 func (s *ExpenseField) SetValueDetection(v *ExpenseDetection) *ExpenseField {
 	s.ValueDetection = v
+	return s
+}
+
+// Shows the group that a certain key belongs to. This helps differentiate between
+// names and addresses for different organizations, that can be hard to determine
+// via JSON response.
+type ExpenseGroupProperty struct {
+	_ struct{} `type:"structure"`
+
+	// Provides a group Id number, which will be the same for each in the group.
+	Id *string `type:"string"`
+
+	// Informs you on whether the expense group is a name or an address.
+	Types []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExpenseGroupProperty) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExpenseGroupProperty) GoString() string {
+	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *ExpenseGroupProperty) SetId(v string) *ExpenseGroupProperty {
+	s.Id = &v
+	return s
+}
+
+// SetTypes sets the Types field's value.
+func (s *ExpenseGroupProperty) SetTypes(v []*string) *ExpenseGroupProperty {
+	s.Types = v
 	return s
 }
 
@@ -2825,6 +5967,56 @@ func (s *ExpenseType) SetText(v string) *ExpenseType {
 	return s
 }
 
+// Contains information extracted by an analysis operation after using StartLendingAnalysis.
+type Extraction struct {
+	_ struct{} `type:"structure"`
+
+	// The structure holding all the information returned by AnalyzeExpense
+	ExpenseDocument *ExpenseDocument `type:"structure"`
+
+	// The structure that lists each document processed in an AnalyzeID operation.
+	IdentityDocument *IdentityDocument `type:"structure"`
+
+	// Holds the structured data returned by AnalyzeDocument for lending documents.
+	LendingDocument *LendingDocument `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Extraction) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Extraction) GoString() string {
+	return s.String()
+}
+
+// SetExpenseDocument sets the ExpenseDocument field's value.
+func (s *Extraction) SetExpenseDocument(v *ExpenseDocument) *Extraction {
+	s.ExpenseDocument = v
+	return s
+}
+
+// SetIdentityDocument sets the IdentityDocument field's value.
+func (s *Extraction) SetIdentityDocument(v *IdentityDocument) *Extraction {
+	s.IdentityDocument = v
+	return s
+}
+
+// SetLendingDocument sets the LendingDocument field's value.
+func (s *Extraction) SetLendingDocument(v *LendingDocument) *Extraction {
+	s.LendingDocument = v
+	return s
+}
+
 // Information about where the following items are located on a document page:
 // detected page, text, key-value pairs, tables, table cells, and selection
 // elements.
@@ -2866,6 +6058,353 @@ func (s *Geometry) SetBoundingBox(v *BoundingBox) *Geometry {
 // SetPolygon sets the Polygon field's value.
 func (s *Geometry) SetPolygon(v []*Point) *Geometry {
 	s.Polygon = v
+	return s
+}
+
+type GetAdapterInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAdapterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAdapterInput"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *GetAdapterInput) SetAdapterId(v string) *GetAdapterInput {
+	s.AdapterId = &v
+	return s
+}
+
+type GetAdapterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A string identifying the adapter that information has been retrieved for.
+	AdapterId *string `min:"12" type:"string"`
+
+	// The name of the requested adapter.
+	AdapterName *string `min:"1" type:"string"`
+
+	// Binary value indicating if the adapter is being automatically updated or
+	// not.
+	AutoUpdate *string `type:"string" enum:"AutoUpdate"`
+
+	// The date and time the requested adapter was created at.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// The description for the requested adapter.
+	Description *string `min:"1" type:"string"`
+
+	// List of the targeted feature types for the requested adapter.
+	FeatureTypes []*string `type:"list" enum:"FeatureType"`
+
+	// A set of tags (key-value pairs) associated with the adapter that has been
+	// retrieved.
+	Tags map[string]*string `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *GetAdapterOutput) SetAdapterId(v string) *GetAdapterOutput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterName sets the AdapterName field's value.
+func (s *GetAdapterOutput) SetAdapterName(v string) *GetAdapterOutput {
+	s.AdapterName = &v
+	return s
+}
+
+// SetAutoUpdate sets the AutoUpdate field's value.
+func (s *GetAdapterOutput) SetAutoUpdate(v string) *GetAdapterOutput {
+	s.AutoUpdate = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *GetAdapterOutput) SetCreationTime(v time.Time) *GetAdapterOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *GetAdapterOutput) SetDescription(v string) *GetAdapterOutput {
+	s.Description = &v
+	return s
+}
+
+// SetFeatureTypes sets the FeatureTypes field's value.
+func (s *GetAdapterOutput) SetFeatureTypes(v []*string) *GetAdapterOutput {
+	s.FeatureTypes = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *GetAdapterOutput) SetTags(v map[string]*string) *GetAdapterOutput {
+	s.Tags = v
+	return s
+}
+
+type GetAdapterVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string specifying a unique ID for the adapter version you want to retrieve
+	// information for.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+
+	// A string specifying the adapter version you want to retrieve information
+	// for.
+	//
+	// AdapterVersion is a required field
+	AdapterVersion *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAdapterVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAdapterVersionInput"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+	if s.AdapterVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterVersion"))
+	}
+	if s.AdapterVersion != nil && len(*s.AdapterVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterVersion", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *GetAdapterVersionInput) SetAdapterId(v string) *GetAdapterVersionInput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterVersion sets the AdapterVersion field's value.
+func (s *GetAdapterVersionInput) SetAdapterVersion(v string) *GetAdapterVersionInput {
+	s.AdapterVersion = &v
+	return s
+}
+
+type GetAdapterVersionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter version being retrieved.
+	AdapterId *string `min:"12" type:"string"`
+
+	// A string containing the adapter version that has been retrieved.
+	AdapterVersion *string `min:"1" type:"string"`
+
+	// The time that the adapter version was created.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// Specifies a dataset used to train a new adapter version. Takes a ManifestS3Objec
+	// as the value.
+	DatasetConfig *AdapterVersionDatasetConfig `type:"structure"`
+
+	// The evaluation metrics (F1 score, Precision, and Recall) for the requested
+	// version, grouped by baseline metrics and adapter version.
+	EvaluationMetrics []*AdapterVersionEvaluationMetric `type:"list"`
+
+	// List of the targeted feature types for the requested adapter version.
+	FeatureTypes []*string `type:"list" enum:"FeatureType"`
+
+	// The identifier for your AWS Key Management Service key (AWS KMS key). Used
+	// to encrypt your documents.
+	KMSKeyId *string `min:"1" type:"string"`
+
+	// Sets whether or not your output will go to a user created bucket. Used to
+	// set the name of the bucket, and the prefix on the output file.
+	//
+	// OutputConfig is an optional parameter which lets you adjust where your output
+	// will be placed. By default, Amazon Textract will store the results internally
+	// and can only be accessed by the Get API operations. With OutputConfig enabled,
+	// you can set the name of the bucket the output will be sent to the file prefix
+	// of the results where you can download your results. Additionally, you can
+	// set the KMSKeyID parameter to a customer master key (CMK) to encrypt your
+	// output. Without this parameter set Amazon Textract will encrypt server-side
+	// using the AWS managed CMK for Amazon S3.
+	//
+	// Decryption of Customer Content is necessary for processing of the documents
+	// by Amazon Textract. If your account is opted out under an AI services opt
+	// out policy then all unencrypted Customer Content is immediately and permanently
+	// deleted after the Customer Content has been processed by the service. No
+	// copy of of the output is retained by Amazon Textract. For information about
+	// how to opt out, see Managing AI services opt-out policy. (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_ai-opt-out.html)
+	//
+	// For more information on data privacy, see the Data Privacy FAQ (https://aws.amazon.com/compliance/data-privacy-faq/).
+	OutputConfig *OutputConfig `type:"structure"`
+
+	// The status of the adapter version that has been requested.
+	Status *string `type:"string" enum:"AdapterVersionStatus"`
+
+	// A message that describes the status of the requested adapter version.
+	StatusMessage *string `min:"1" type:"string"`
+
+	// A set of tags (key-value pairs) that are associated with the adapter version.
+	Tags map[string]*string `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAdapterVersionOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *GetAdapterVersionOutput) SetAdapterId(v string) *GetAdapterVersionOutput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterVersion sets the AdapterVersion field's value.
+func (s *GetAdapterVersionOutput) SetAdapterVersion(v string) *GetAdapterVersionOutput {
+	s.AdapterVersion = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *GetAdapterVersionOutput) SetCreationTime(v time.Time) *GetAdapterVersionOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDatasetConfig sets the DatasetConfig field's value.
+func (s *GetAdapterVersionOutput) SetDatasetConfig(v *AdapterVersionDatasetConfig) *GetAdapterVersionOutput {
+	s.DatasetConfig = v
+	return s
+}
+
+// SetEvaluationMetrics sets the EvaluationMetrics field's value.
+func (s *GetAdapterVersionOutput) SetEvaluationMetrics(v []*AdapterVersionEvaluationMetric) *GetAdapterVersionOutput {
+	s.EvaluationMetrics = v
+	return s
+}
+
+// SetFeatureTypes sets the FeatureTypes field's value.
+func (s *GetAdapterVersionOutput) SetFeatureTypes(v []*string) *GetAdapterVersionOutput {
+	s.FeatureTypes = v
+	return s
+}
+
+// SetKMSKeyId sets the KMSKeyId field's value.
+func (s *GetAdapterVersionOutput) SetKMSKeyId(v string) *GetAdapterVersionOutput {
+	s.KMSKeyId = &v
+	return s
+}
+
+// SetOutputConfig sets the OutputConfig field's value.
+func (s *GetAdapterVersionOutput) SetOutputConfig(v *OutputConfig) *GetAdapterVersionOutput {
+	s.OutputConfig = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetAdapterVersionOutput) SetStatus(v string) *GetAdapterVersionOutput {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *GetAdapterVersionOutput) SetStatusMessage(v string) *GetAdapterVersionOutput {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *GetAdapterVersionOutput) SetTags(v map[string]*string) *GetAdapterVersionOutput {
+	s.Tags = v
 	return s
 }
 
@@ -3373,6 +6912,300 @@ func (s *GetExpenseAnalysisOutput) SetWarnings(v []*Warning) *GetExpenseAnalysis
 	return s
 }
 
+type GetLendingAnalysisInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the lending or text-detection job. The JobId is returned
+	// from StartLendingAnalysis. A JobId value is only valid for 7 days.
+	//
+	// JobId is a required field
+	JobId *string `min:"1" type:"string" required:"true"`
+
+	// The maximum number of results to return per paginated call. The largest value
+	// that you can specify is 30. If you specify a value greater than 30, a maximum
+	// of 30 results is returned. The default value is 30.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// If the previous response was incomplete, Amazon Textract returns a pagination
+	// token in the response. You can use this pagination token to retrieve the
+	// next set of lending results.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetLendingAnalysisInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetLendingAnalysisInput"}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetJobId sets the JobId field's value.
+func (s *GetLendingAnalysisInput) SetJobId(v string) *GetLendingAnalysisInput {
+	s.JobId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *GetLendingAnalysisInput) SetMaxResults(v int64) *GetLendingAnalysisInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetLendingAnalysisInput) SetNextToken(v string) *GetLendingAnalysisInput {
+	s.NextToken = &v
+	return s
+}
+
+type GetLendingAnalysisOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The current model version of the Analyze Lending API.
+	AnalyzeLendingModelVersion *string `type:"string"`
+
+	// Information about the input document.
+	DocumentMetadata *DocumentMetadata `type:"structure"`
+
+	// The current status of the lending analysis job.
+	JobStatus *string `type:"string" enum:"JobStatus"`
+
+	// If the response is truncated, Amazon Textract returns this token. You can
+	// use this token in the subsequent request to retrieve the next set of lending
+	// results.
+	NextToken *string `min:"1" type:"string"`
+
+	// Holds the information returned by one of AmazonTextract's document analysis
+	// operations for the pinstripe.
+	Results []*LendingResult `type:"list"`
+
+	// Returns if the lending analysis job could not be completed. Contains explanation
+	// for what error occurred.
+	StatusMessage *string `type:"string"`
+
+	// A list of warnings that occurred during the lending analysis operation.
+	Warnings []*Warning `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisOutput) GoString() string {
+	return s.String()
+}
+
+// SetAnalyzeLendingModelVersion sets the AnalyzeLendingModelVersion field's value.
+func (s *GetLendingAnalysisOutput) SetAnalyzeLendingModelVersion(v string) *GetLendingAnalysisOutput {
+	s.AnalyzeLendingModelVersion = &v
+	return s
+}
+
+// SetDocumentMetadata sets the DocumentMetadata field's value.
+func (s *GetLendingAnalysisOutput) SetDocumentMetadata(v *DocumentMetadata) *GetLendingAnalysisOutput {
+	s.DocumentMetadata = v
+	return s
+}
+
+// SetJobStatus sets the JobStatus field's value.
+func (s *GetLendingAnalysisOutput) SetJobStatus(v string) *GetLendingAnalysisOutput {
+	s.JobStatus = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetLendingAnalysisOutput) SetNextToken(v string) *GetLendingAnalysisOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResults sets the Results field's value.
+func (s *GetLendingAnalysisOutput) SetResults(v []*LendingResult) *GetLendingAnalysisOutput {
+	s.Results = v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *GetLendingAnalysisOutput) SetStatusMessage(v string) *GetLendingAnalysisOutput {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *GetLendingAnalysisOutput) SetWarnings(v []*Warning) *GetLendingAnalysisOutput {
+	s.Warnings = v
+	return s
+}
+
+type GetLendingAnalysisSummaryInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the lending or text-detection job. The JobId is returned
+	// from StartLendingAnalysis. A JobId value is only valid for 7 days.
+	//
+	// JobId is a required field
+	JobId *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisSummaryInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisSummaryInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetLendingAnalysisSummaryInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetLendingAnalysisSummaryInput"}
+	if s.JobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JobId"))
+	}
+	if s.JobId != nil && len(*s.JobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetJobId sets the JobId field's value.
+func (s *GetLendingAnalysisSummaryInput) SetJobId(v string) *GetLendingAnalysisSummaryInput {
+	s.JobId = &v
+	return s
+}
+
+type GetLendingAnalysisSummaryOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The current model version of the Analyze Lending API.
+	AnalyzeLendingModelVersion *string `type:"string"`
+
+	// Information about the input document.
+	DocumentMetadata *DocumentMetadata `type:"structure"`
+
+	// The current status of the lending analysis job.
+	JobStatus *string `type:"string" enum:"JobStatus"`
+
+	// Returns if the lending analysis could not be completed. Contains explanation
+	// for what error occurred.
+	StatusMessage *string `type:"string"`
+
+	// Contains summary information for documents grouped by type.
+	Summary *LendingSummary `type:"structure"`
+
+	// A list of warnings that occurred during the lending analysis operation.
+	Warnings []*Warning `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisSummaryOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetLendingAnalysisSummaryOutput) GoString() string {
+	return s.String()
+}
+
+// SetAnalyzeLendingModelVersion sets the AnalyzeLendingModelVersion field's value.
+func (s *GetLendingAnalysisSummaryOutput) SetAnalyzeLendingModelVersion(v string) *GetLendingAnalysisSummaryOutput {
+	s.AnalyzeLendingModelVersion = &v
+	return s
+}
+
+// SetDocumentMetadata sets the DocumentMetadata field's value.
+func (s *GetLendingAnalysisSummaryOutput) SetDocumentMetadata(v *DocumentMetadata) *GetLendingAnalysisSummaryOutput {
+	s.DocumentMetadata = v
+	return s
+}
+
+// SetJobStatus sets the JobStatus field's value.
+func (s *GetLendingAnalysisSummaryOutput) SetJobStatus(v string) *GetLendingAnalysisSummaryOutput {
+	s.JobStatus = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *GetLendingAnalysisSummaryOutput) SetStatusMessage(v string) *GetLendingAnalysisSummaryOutput {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetSummary sets the Summary field's value.
+func (s *GetLendingAnalysisSummaryOutput) SetSummary(v *LendingSummary) *GetLendingAnalysisSummaryOutput {
+	s.Summary = v
+	return s
+}
+
+// SetWarnings sets the Warnings field's value.
+func (s *GetLendingAnalysisSummaryOutput) SetWarnings(v []*Warning) *GetLendingAnalysisSummaryOutput {
+	s.Warnings = v
+	return s
+}
+
 // Shows the results of the human in the loop evaluation. If there is no HumanLoopArn,
 // the input did not trigger human review.
 type HumanLoopActivationOutput struct {
@@ -3679,6 +7512,9 @@ func (s *IdempotentParameterMismatchException) RequestID() string {
 type IdentityDocument struct {
 	_ struct{} `type:"structure"`
 
+	// Individual word recognition, as returned by document detection.
+	Blocks []*Block `type:"list"`
+
 	// Denotes the placement of a document in the IdentityDocument list. The first
 	// document is marked 1, the second 2 and so on.
 	DocumentIndex *int64 `type:"integer"`
@@ -3704,6 +7540,12 @@ func (s IdentityDocument) String() string {
 // value will be replaced with "sensitive".
 func (s IdentityDocument) GoString() string {
 	return s.String()
+}
+
+// SetBlocks sets the Blocks field's value.
+func (s *IdentityDocument) SetBlocks(v []*Block) *IdentityDocument {
+	s.Blocks = v
+	return s
 }
 
 // SetDocumentIndex sets the DocumentIndex field's value.
@@ -3824,7 +7666,7 @@ func (s *InternalServerError) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// An invalid job identifier was passed to GetDocumentAnalysis or to GetDocumentAnalysis.
+// An invalid job identifier was passed to an asynchronous analysis operation.
 type InvalidJobIdException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -4086,6 +7928,253 @@ func (s *InvalidS3ObjectException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The results extracted for a lending document.
+type LendingDetection struct {
+	_ struct{} `type:"structure"`
+
+	// The confidence level for the text of a detected value in a lending document.
+	Confidence *float64 `type:"float"`
+
+	// Information about where the following items are located on a document page:
+	// detected page, text, key-value pairs, tables, table cells, and selection
+	// elements.
+	Geometry *Geometry `type:"structure"`
+
+	// The selection status of a selection element, such as an option button or
+	// check box.
+	SelectionStatus *string `type:"string" enum:"SelectionStatus"`
+
+	// The text extracted for a detected value in a lending document.
+	Text *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingDetection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingDetection) GoString() string {
+	return s.String()
+}
+
+// SetConfidence sets the Confidence field's value.
+func (s *LendingDetection) SetConfidence(v float64) *LendingDetection {
+	s.Confidence = &v
+	return s
+}
+
+// SetGeometry sets the Geometry field's value.
+func (s *LendingDetection) SetGeometry(v *Geometry) *LendingDetection {
+	s.Geometry = v
+	return s
+}
+
+// SetSelectionStatus sets the SelectionStatus field's value.
+func (s *LendingDetection) SetSelectionStatus(v string) *LendingDetection {
+	s.SelectionStatus = &v
+	return s
+}
+
+// SetText sets the Text field's value.
+func (s *LendingDetection) SetText(v string) *LendingDetection {
+	s.Text = &v
+	return s
+}
+
+// Holds the structured data returned by AnalyzeDocument for lending documents.
+type LendingDocument struct {
+	_ struct{} `type:"structure"`
+
+	// An array of LendingField objects.
+	LendingFields []*LendingField `type:"list"`
+
+	// A list of signatures detected in a lending document.
+	SignatureDetections []*SignatureDetection `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingDocument) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingDocument) GoString() string {
+	return s.String()
+}
+
+// SetLendingFields sets the LendingFields field's value.
+func (s *LendingDocument) SetLendingFields(v []*LendingField) *LendingDocument {
+	s.LendingFields = v
+	return s
+}
+
+// SetSignatureDetections sets the SignatureDetections field's value.
+func (s *LendingDocument) SetSignatureDetections(v []*SignatureDetection) *LendingDocument {
+	s.SignatureDetections = v
+	return s
+}
+
+// Holds the normalized key-value pairs returned by AnalyzeDocument, including
+// the document type, detected text, and geometry.
+type LendingField struct {
+	_ struct{} `type:"structure"`
+
+	// The results extracted for a lending document.
+	KeyDetection *LendingDetection `type:"structure"`
+
+	// The type of the lending document.
+	Type *string `type:"string"`
+
+	// An array of LendingDetection objects.
+	ValueDetections []*LendingDetection `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingField) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingField) GoString() string {
+	return s.String()
+}
+
+// SetKeyDetection sets the KeyDetection field's value.
+func (s *LendingField) SetKeyDetection(v *LendingDetection) *LendingField {
+	s.KeyDetection = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *LendingField) SetType(v string) *LendingField {
+	s.Type = &v
+	return s
+}
+
+// SetValueDetections sets the ValueDetections field's value.
+func (s *LendingField) SetValueDetections(v []*LendingDetection) *LendingField {
+	s.ValueDetections = v
+	return s
+}
+
+// Contains the detections for each page analyzed through the Analyze Lending
+// API.
+type LendingResult struct {
+	_ struct{} `type:"structure"`
+
+	// An array of Extraction to hold structured data. e.g. normalized key value
+	// pairs instead of raw OCR detections .
+	Extractions []*Extraction `type:"list"`
+
+	// The page number for a page, with regard to whole submission.
+	Page *int64 `type:"integer"`
+
+	// The classifier result for a given page.
+	PageClassification *PageClassification `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingResult) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingResult) GoString() string {
+	return s.String()
+}
+
+// SetExtractions sets the Extractions field's value.
+func (s *LendingResult) SetExtractions(v []*Extraction) *LendingResult {
+	s.Extractions = v
+	return s
+}
+
+// SetPage sets the Page field's value.
+func (s *LendingResult) SetPage(v int64) *LendingResult {
+	s.Page = &v
+	return s
+}
+
+// SetPageClassification sets the PageClassification field's value.
+func (s *LendingResult) SetPageClassification(v *PageClassification) *LendingResult {
+	s.PageClassification = v
+	return s
+}
+
+// Contains information regarding DocumentGroups and UndetectedDocumentTypes.
+type LendingSummary struct {
+	_ struct{} `type:"structure"`
+
+	// Contains an array of all DocumentGroup objects.
+	DocumentGroups []*DocumentGroup `type:"list"`
+
+	// UndetectedDocumentTypes.
+	UndetectedDocumentTypes []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LendingSummary) GoString() string {
+	return s.String()
+}
+
+// SetDocumentGroups sets the DocumentGroups field's value.
+func (s *LendingSummary) SetDocumentGroups(v []*DocumentGroup) *LendingSummary {
+	s.DocumentGroups = v
+	return s
+}
+
+// SetUndetectedDocumentTypes sets the UndetectedDocumentTypes field's value.
+func (s *LendingSummary) SetUndetectedDocumentTypes(v []*string) *LendingSummary {
+	s.UndetectedDocumentTypes = v
+	return s
+}
+
 // An Amazon Textract service limit was exceeded. For example, if you start
 // too many asynchronous jobs concurrently, calls to start operations (StartDocumentTextDetection,
 // for example) raise a LimitExceededException exception (HTTP status code:
@@ -4230,6 +8319,335 @@ func (s *LineItemGroup) SetLineItems(v []*LineItemFields) *LineItemGroup {
 	return s
 }
 
+type ListAdapterVersionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter to match for when listing
+	// adapter versions.
+	AdapterId *string `min:"12" type:"string"`
+
+	// Specifies the lower bound for the ListAdapterVersions operation. Ensures
+	// ListAdapterVersions returns only adapter versions created after the specified
+	// creation time.
+	AfterCreationTime *time.Time `type:"timestamp"`
+
+	// Specifies the upper bound for the ListAdapterVersions operation. Ensures
+	// ListAdapterVersions returns only adapter versions created after the specified
+	// creation time.
+	BeforeCreationTime *time.Time `type:"timestamp"`
+
+	// The maximum number of results to return when listing adapter versions.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Identifies the next page of results to return when listing adapter versions.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdapterVersionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdapterVersionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAdapterVersionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAdapterVersionsInput"}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *ListAdapterVersionsInput) SetAdapterId(v string) *ListAdapterVersionsInput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAfterCreationTime sets the AfterCreationTime field's value.
+func (s *ListAdapterVersionsInput) SetAfterCreationTime(v time.Time) *ListAdapterVersionsInput {
+	s.AfterCreationTime = &v
+	return s
+}
+
+// SetBeforeCreationTime sets the BeforeCreationTime field's value.
+func (s *ListAdapterVersionsInput) SetBeforeCreationTime(v time.Time) *ListAdapterVersionsInput {
+	s.BeforeCreationTime = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAdapterVersionsInput) SetMaxResults(v int64) *ListAdapterVersionsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAdapterVersionsInput) SetNextToken(v string) *ListAdapterVersionsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListAdapterVersionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Adapter versions that match the filtering criteria specified when calling
+	// ListAdapters.
+	AdapterVersions []*AdapterVersionOverview `type:"list"`
+
+	// Identifies the next page of results to return when listing adapter versions.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdapterVersionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdapterVersionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapterVersions sets the AdapterVersions field's value.
+func (s *ListAdapterVersionsOutput) SetAdapterVersions(v []*AdapterVersionOverview) *ListAdapterVersionsOutput {
+	s.AdapterVersions = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAdapterVersionsOutput) SetNextToken(v string) *ListAdapterVersionsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListAdaptersInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the lower bound for the ListAdapters operation. Ensures ListAdapters
+	// returns only adapters created after the specified creation time.
+	AfterCreationTime *time.Time `type:"timestamp"`
+
+	// Specifies the upper bound for the ListAdapters operation. Ensures ListAdapters
+	// returns only adapters created before the specified creation time.
+	BeforeCreationTime *time.Time `type:"timestamp"`
+
+	// The maximum number of results to return when listing adapters.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// Identifies the next page of results to return when listing adapters.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdaptersInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdaptersInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAdaptersInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAdaptersInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAfterCreationTime sets the AfterCreationTime field's value.
+func (s *ListAdaptersInput) SetAfterCreationTime(v time.Time) *ListAdaptersInput {
+	s.AfterCreationTime = &v
+	return s
+}
+
+// SetBeforeCreationTime sets the BeforeCreationTime field's value.
+func (s *ListAdaptersInput) SetBeforeCreationTime(v time.Time) *ListAdaptersInput {
+	s.BeforeCreationTime = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAdaptersInput) SetMaxResults(v int64) *ListAdaptersInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAdaptersInput) SetNextToken(v string) *ListAdaptersInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListAdaptersOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of adapters that matches the filtering criteria specified when calling
+	// ListAdapters.
+	Adapters []*AdapterOverview `type:"list"`
+
+	// Identifies the next page of results to return when listing adapters.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdaptersOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAdaptersOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapters sets the Adapters field's value.
+func (s *ListAdaptersOutput) SetAdapters(v []*AdapterOverview) *ListAdaptersOutput {
+	s.Adapters = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAdaptersOutput) SetNextToken(v string) *ListAdaptersOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListTagsForResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) that specifies the resource to list tags for.
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *ListTagsForResourceInput) SetResourceARN(v string) *ListTagsForResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A set of tags (key-value pairs) that are part of the requested resource.
+	Tags map[string]*string `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
 // Contains information relating to dates in a document, including the type
 // of value, and the value.
 type NormalizedValue struct {
@@ -4273,8 +8691,7 @@ func (s *NormalizedValue) SetValueType(v string) *NormalizedValue {
 }
 
 // The Amazon Simple Notification Service (Amazon SNS) topic to which Amazon
-// Textract publishes the completion status of an asynchronous document operation,
-// such as StartDocumentTextDetection.
+// Textract publishes the completion status of an asynchronous document operation.
 type NotificationChannel struct {
 	_ struct{} `type:"structure"`
 
@@ -4348,10 +8765,10 @@ func (s *NotificationChannel) SetSNSTopicArn(v string) *NotificationChannel {
 // OutputConfig is an optional parameter which lets you adjust where your output
 // will be placed. By default, Amazon Textract will store the results internally
 // and can only be accessed by the Get API operations. With OutputConfig enabled,
-// you can set the name of the bucket the output will be sent to and the file
-// prefix of the results where you can download your results. Additionally,
-// you can set the KMSKeyID parameter to a customer master key (CMK) to encrypt
-// your output. Without this parameter set Amazon Textract will encrypt server-side
+// you can set the name of the bucket the output will be sent to the file prefix
+// of the results where you can download your results. Additionally, you can
+// set the KMSKeyID parameter to a customer master key (CMK) to encrypt your
+// output. Without this parameter set Amazon Textract will encrypt server-side
 // using the AWS managed CMK for Amazon S3.
 //
 // Decryption of Customer Content is necessary for processing of the documents
@@ -4424,6 +8841,55 @@ func (s *OutputConfig) SetS3Prefix(v string) *OutputConfig {
 	return s
 }
 
+// The class assigned to a Page object detected in an input document. Contains
+// information regarding the predicted type/class of a document's page and the
+// page number that the Page object was detected on.
+type PageClassification struct {
+	_ struct{} `type:"structure"`
+
+	// The page number the value was detected on, relative to Amazon Textract's
+	// starting position.
+	//
+	// PageNumber is a required field
+	PageNumber []*Prediction `type:"list" required:"true"`
+
+	// The class, or document type, assigned to a detected Page object. The class,
+	// or document type, assigned to a detected Page object.
+	//
+	// PageType is a required field
+	PageType []*Prediction `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PageClassification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PageClassification) GoString() string {
+	return s.String()
+}
+
+// SetPageNumber sets the PageNumber field's value.
+func (s *PageClassification) SetPageNumber(v []*Prediction) *PageClassification {
+	s.PageNumber = v
+	return s
+}
+
+// SetPageType sets the PageType field's value.
+func (s *PageClassification) SetPageType(v []*Prediction) *PageClassification {
+	s.PageType = v
+	return s
+}
+
 // The X and Y coordinates of a point on a document page. The X and Y values
 // that are returned are ratios of the overall document page size. For example,
 // if the input document is 700 x 200 and the operation returns X=0.5 and Y=0.25,
@@ -4469,6 +8935,49 @@ func (s *Point) SetX(v float64) *Point {
 // SetY sets the Y field's value.
 func (s *Point) SetY(v float64) *Point {
 	s.Y = &v
+	return s
+}
+
+// Contains information regarding predicted values returned by Amazon Textract
+// operations, including the predicted value and the confidence in the predicted
+// value.
+type Prediction struct {
+	_ struct{} `type:"structure"`
+
+	// Amazon Textract's confidence in its predicted value.
+	Confidence *float64 `type:"float"`
+
+	// The predicted value of a detected object.
+	Value *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Prediction) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Prediction) GoString() string {
+	return s.String()
+}
+
+// SetConfidence sets the Confidence field's value.
+func (s *Prediction) SetConfidence(v float64) *Prediction {
+	s.Confidence = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Prediction) SetValue(v string) *Prediction {
+	s.Value = &v
 	return s
 }
 
@@ -4602,8 +9111,8 @@ type Query struct {
 	// Alias attached to the query, for ease of location.
 	Alias *string `min:"1" type:"string"`
 
-	// List of pages associated with the query. The following is a list of rules
-	// for using this parameter.
+	// Pages is a parameter that the user inputs to specify which pages to apply
+	// a query to. The following is a list of rules for using this parameter.
 	//
 	//    * If a page is not specified, it is set to ["1"] by default.
 	//
@@ -4611,7 +9120,7 @@ type Query struct {
 	//    2 3 4 5 6 7 8 9 - *. No whitespace is allowed.
 	//
 	//    * When using * to indicate all pages, it must be the only element in the
-	//    string.
+	//    list.
 	//
 	//    * You can use page intervals, such as [“1-3”, “1-1”, “4-*”].
 	//    Where * indicates last page of document.
@@ -4698,12 +9207,29 @@ type Relationship struct {
 	// from the Type element.
 	Ids []*string `type:"list"`
 
-	// The type of relationship that the blocks in the IDs array have with the current
-	// block. The relationship can be VALUE or CHILD. A relationship of type VALUE
-	// is a list that contains the ID of the VALUE block that's associated with
-	// the KEY of a key-value pair. A relationship of type CHILD is a list of IDs
-	// that identify WORD blocks in the case of lines Cell blocks in the case of
-	// Tables, and WORD blocks in the case of Selection Elements.
+	// The type of relationship between the blocks in the IDs array and the current
+	// block. The following list describes the relationship types that can be returned.
+	//
+	//    * VALUE - A list that contains the ID of the VALUE block that's associated
+	//    with the KEY of a key-value pair.
+	//
+	//    * CHILD - A list of IDs that identify blocks found within the current
+	//    block object. For example, WORD blocks have a CHILD relationship to the
+	//    LINE block type.
+	//
+	//    * MERGED_CELL - A list of IDs that identify each of the MERGED_CELL block
+	//    types in a table.
+	//
+	//    * ANSWER - A list that contains the ID of the QUERY_RESULT block that’s
+	//    associated with the corresponding QUERY block.
+	//
+	//    * TABLE - A list of IDs that identify associated TABLE block types.
+	//
+	//    * TABLE_TITLE - A list that contains the ID for the TABLE_TITLE block
+	//    type in a table.
+	//
+	//    * TABLE_FOOTER - A list of IDs that identify the TABLE_FOOTER block types
+	//    in a table.
 	Type *string `type:"string" enum:"RelationshipType"`
 }
 
@@ -4735,6 +9261,70 @@ func (s *Relationship) SetIds(v []*string) *Relationship {
 func (s *Relationship) SetType(v string) *Relationship {
 	s.Type = &v
 	return s
+}
+
+// Returned when an operation tried to access a nonexistent resource.
+type ResourceNotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ResourceNotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorResourceNotFoundException(v protocol.ResponseMetadata) error {
+	return &ResourceNotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ResourceNotFoundException) Code() string {
+	return "ResourceNotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *ResourceNotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ResourceNotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *ResourceNotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ResourceNotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ResourceNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // The S3 bucket name and file name that identifies the document.
@@ -4815,8 +9405,160 @@ func (s *S3Object) SetVersion(v string) *S3Object {
 	return s
 }
 
+// Returned when a request cannot be completed as it would exceed a maximum
+// service quota.
+type ServiceQuotaExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceQuotaExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceQuotaExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorServiceQuotaExceededException(v protocol.ResponseMetadata) error {
+	return &ServiceQuotaExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ServiceQuotaExceededException) Code() string {
+	return "ServiceQuotaExceededException"
+}
+
+// Message returns the exception's message.
+func (s *ServiceQuotaExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ServiceQuotaExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *ServiceQuotaExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ServiceQuotaExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ServiceQuotaExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// Information regarding a detected signature on a page.
+type SignatureDetection struct {
+	_ struct{} `type:"structure"`
+
+	// The confidence, from 0 to 100, in the predicted values for a detected signature.
+	Confidence *float64 `type:"float"`
+
+	// Information about where the following items are located on a document page:
+	// detected page, text, key-value pairs, tables, table cells, and selection
+	// elements.
+	Geometry *Geometry `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignatureDetection) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SignatureDetection) GoString() string {
+	return s.String()
+}
+
+// SetConfidence sets the Confidence field's value.
+func (s *SignatureDetection) SetConfidence(v float64) *SignatureDetection {
+	s.Confidence = &v
+	return s
+}
+
+// SetGeometry sets the Geometry field's value.
+func (s *SignatureDetection) SetGeometry(v *Geometry) *SignatureDetection {
+	s.Geometry = v
+	return s
+}
+
+// Contains information about the pages of a document, defined by logical boundary.
+type SplitDocument struct {
+	_ struct{} `type:"structure"`
+
+	// The index for a given document in a DocumentGroup of a specific Type.
+	Index *int64 `type:"integer"`
+
+	// An array of page numbers for a for a given document, ordered by logical boundary.
+	Pages []*int64 `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SplitDocument) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SplitDocument) GoString() string {
+	return s.String()
+}
+
+// SetIndex sets the Index field's value.
+func (s *SplitDocument) SetIndex(v int64) *SplitDocument {
+	s.Index = &v
+	return s
+}
+
+// SetPages sets the Pages field's value.
+func (s *SplitDocument) SetPages(v []*int64) *SplitDocument {
+	s.Pages = v
+	return s
+}
+
 type StartDocumentAnalysisInput struct {
 	_ struct{} `type:"structure"`
+
+	// Specifies the adapter to be used when analyzing a document.
+	AdaptersConfig *AdaptersConfig `type:"structure"`
 
 	// The idempotent token that you use to identify the start request. If you use
 	// the same token with multiple StartDocumentAnalysis requests, the same JobId
@@ -4901,6 +9643,11 @@ func (s *StartDocumentAnalysisInput) Validate() error {
 	if s.KMSKeyId != nil && len(*s.KMSKeyId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KMSKeyId", 1))
 	}
+	if s.AdaptersConfig != nil {
+		if err := s.AdaptersConfig.Validate(); err != nil {
+			invalidParams.AddNested("AdaptersConfig", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.DocumentLocation != nil {
 		if err := s.DocumentLocation.Validate(); err != nil {
 			invalidParams.AddNested("DocumentLocation", err.(request.ErrInvalidParams))
@@ -4926,6 +9673,12 @@ func (s *StartDocumentAnalysisInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAdaptersConfig sets the AdaptersConfig field's value.
+func (s *StartDocumentAnalysisInput) SetAdaptersConfig(v *AdaptersConfig) *StartDocumentAnalysisInput {
+	s.AdaptersConfig = v
+	return s
 }
 
 // SetClientRequestToken sets the ClientRequestToken field's value.
@@ -5332,6 +10085,273 @@ func (s *StartExpenseAnalysisOutput) SetJobId(v string) *StartExpenseAnalysisOut
 	return s
 }
 
+type StartLendingAnalysisInput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotent token that you use to identify the start request. If you use
+	// the same token with multiple StartLendingAnalysis requests, the same JobId
+	// is returned. Use ClientRequestToken to prevent the same job from being accidentally
+	// started more than once. For more information, see Calling Amazon Textract
+	// Asynchronous Operations (https://docs.aws.amazon.com/textract/latest/dg/api-sync.html).
+	ClientRequestToken *string `min:"1" type:"string"`
+
+	// The Amazon S3 bucket that contains the document to be processed. It's used
+	// by asynchronous operations.
+	//
+	// The input document can be an image file in JPEG or PNG format. It can also
+	// be a file in PDF format.
+	//
+	// DocumentLocation is a required field
+	DocumentLocation *DocumentLocation `type:"structure" required:"true"`
+
+	// An identifier that you specify to be included in the completion notification
+	// published to the Amazon SNS topic. For example, you can use JobTag to identify
+	// the type of document that the completion notification corresponds to (such
+	// as a tax form or a receipt).
+	JobTag *string `min:"1" type:"string"`
+
+	// The KMS key used to encrypt the inference results. This can be in either
+	// Key ID or Key Alias format. When a KMS key is provided, the KMS key will
+	// be used for server-side encryption of the objects in the customer bucket.
+	// When this parameter is not enabled, the result will be encrypted server side,
+	// using SSE-S3.
+	KMSKeyId *string `min:"1" type:"string"`
+
+	// The Amazon Simple Notification Service (Amazon SNS) topic to which Amazon
+	// Textract publishes the completion status of an asynchronous document operation.
+	NotificationChannel *NotificationChannel `type:"structure"`
+
+	// Sets whether or not your output will go to a user created bucket. Used to
+	// set the name of the bucket, and the prefix on the output file.
+	//
+	// OutputConfig is an optional parameter which lets you adjust where your output
+	// will be placed. By default, Amazon Textract will store the results internally
+	// and can only be accessed by the Get API operations. With OutputConfig enabled,
+	// you can set the name of the bucket the output will be sent to the file prefix
+	// of the results where you can download your results. Additionally, you can
+	// set the KMSKeyID parameter to a customer master key (CMK) to encrypt your
+	// output. Without this parameter set Amazon Textract will encrypt server-side
+	// using the AWS managed CMK for Amazon S3.
+	//
+	// Decryption of Customer Content is necessary for processing of the documents
+	// by Amazon Textract. If your account is opted out under an AI services opt
+	// out policy then all unencrypted Customer Content is immediately and permanently
+	// deleted after the Customer Content has been processed by the service. No
+	// copy of of the output is retained by Amazon Textract. For information about
+	// how to opt out, see Managing AI services opt-out policy. (https://docs.aws.amazon.com/organizations/latest/userguide/orgs_manage_policies_ai-opt-out.html)
+	//
+	// For more information on data privacy, see the Data Privacy FAQ (https://aws.amazon.com/compliance/data-privacy-faq/).
+	OutputConfig *OutputConfig `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartLendingAnalysisInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartLendingAnalysisInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartLendingAnalysisInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartLendingAnalysisInput"}
+	if s.ClientRequestToken != nil && len(*s.ClientRequestToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientRequestToken", 1))
+	}
+	if s.DocumentLocation == nil {
+		invalidParams.Add(request.NewErrParamRequired("DocumentLocation"))
+	}
+	if s.JobTag != nil && len(*s.JobTag) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JobTag", 1))
+	}
+	if s.KMSKeyId != nil && len(*s.KMSKeyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KMSKeyId", 1))
+	}
+	if s.DocumentLocation != nil {
+		if err := s.DocumentLocation.Validate(); err != nil {
+			invalidParams.AddNested("DocumentLocation", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.NotificationChannel != nil {
+		if err := s.NotificationChannel.Validate(); err != nil {
+			invalidParams.AddNested("NotificationChannel", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.OutputConfig != nil {
+		if err := s.OutputConfig.Validate(); err != nil {
+			invalidParams.AddNested("OutputConfig", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *StartLendingAnalysisInput) SetClientRequestToken(v string) *StartLendingAnalysisInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetDocumentLocation sets the DocumentLocation field's value.
+func (s *StartLendingAnalysisInput) SetDocumentLocation(v *DocumentLocation) *StartLendingAnalysisInput {
+	s.DocumentLocation = v
+	return s
+}
+
+// SetJobTag sets the JobTag field's value.
+func (s *StartLendingAnalysisInput) SetJobTag(v string) *StartLendingAnalysisInput {
+	s.JobTag = &v
+	return s
+}
+
+// SetKMSKeyId sets the KMSKeyId field's value.
+func (s *StartLendingAnalysisInput) SetKMSKeyId(v string) *StartLendingAnalysisInput {
+	s.KMSKeyId = &v
+	return s
+}
+
+// SetNotificationChannel sets the NotificationChannel field's value.
+func (s *StartLendingAnalysisInput) SetNotificationChannel(v *NotificationChannel) *StartLendingAnalysisInput {
+	s.NotificationChannel = v
+	return s
+}
+
+// SetOutputConfig sets the OutputConfig field's value.
+func (s *StartLendingAnalysisInput) SetOutputConfig(v *OutputConfig) *StartLendingAnalysisInput {
+	s.OutputConfig = v
+	return s
+}
+
+type StartLendingAnalysisOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique identifier for the lending or text-detection job. The JobId is returned
+	// from StartLendingAnalysis. A JobId value is only valid for 7 days.
+	JobId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartLendingAnalysisOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartLendingAnalysisOutput) GoString() string {
+	return s.String()
+}
+
+// SetJobId sets the JobId field's value.
+func (s *StartLendingAnalysisOutput) SetJobId(v string) *StartLendingAnalysisOutput {
+	s.JobId = &v
+	return s
+}
+
+type TagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) that specifies the resource to be tagged.
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// A set of tags (key-value pairs) that you want to assign to the resource.
+	//
+	// Tags is a required field
+	Tags map[string]*string `type:"map" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *TagResourceInput) SetResourceARN(v string) *TagResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v map[string]*string) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) GoString() string {
+	return s.String()
+}
+
 // Amazon Textract is temporarily unable to process the request. Try your call
 // again.
 type ThrottlingException struct {
@@ -5395,6 +10415,39 @@ func (s *ThrottlingException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ThrottlingException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// A structure containing information about an undetected signature on a page
+// where it was expected but not found.
+type UndetectedSignature struct {
+	_ struct{} `type:"structure"`
+
+	// The page where a signature was expected but not found.
+	Page *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UndetectedSignature) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UndetectedSignature) GoString() string {
+	return s.String()
+}
+
+// SetPage sets the Page field's value.
+func (s *UndetectedSignature) SetPage(v int64) *UndetectedSignature {
+	s.Page = &v
+	return s
 }
 
 // The format of the input document isn't supported. Documents for operations
@@ -5462,6 +10515,313 @@ func (s *UnsupportedDocumentException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type UntagResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) that specifies the resource to be untagged.
+	//
+	// ResourceARN is a required field
+	ResourceARN *string `min:"1" type:"string" required:"true"`
+
+	// Specifies the tags to be removed from the resource specified by the ResourceARN.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.ResourceARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceARN"))
+	}
+	if s.ResourceARN != nil && len(*s.ResourceARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceARN", 1))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetResourceARN sets the ResourceARN field's value.
+func (s *UntagResourceInput) SetResourceARN(v string) *UntagResourceInput {
+	s.ResourceARN = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
+}
+
+type UpdateAdapterInput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter that will be updated.
+	//
+	// AdapterId is a required field
+	AdapterId *string `min:"12" type:"string" required:"true"`
+
+	// The new name to be applied to the adapter.
+	AdapterName *string `min:"1" type:"string"`
+
+	// The new auto-update status to be applied to the adapter.
+	AutoUpdate *string `type:"string" enum:"AutoUpdate"`
+
+	// The new description to be applied to the adapter.
+	Description *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAdapterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAdapterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateAdapterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateAdapterInput"}
+	if s.AdapterId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AdapterId"))
+	}
+	if s.AdapterId != nil && len(*s.AdapterId) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterId", 12))
+	}
+	if s.AdapterName != nil && len(*s.AdapterName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AdapterName", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *UpdateAdapterInput) SetAdapterId(v string) *UpdateAdapterInput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterName sets the AdapterName field's value.
+func (s *UpdateAdapterInput) SetAdapterName(v string) *UpdateAdapterInput {
+	s.AdapterName = &v
+	return s
+}
+
+// SetAutoUpdate sets the AutoUpdate field's value.
+func (s *UpdateAdapterInput) SetAutoUpdate(v string) *UpdateAdapterInput {
+	s.AutoUpdate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateAdapterInput) SetDescription(v string) *UpdateAdapterInput {
+	s.Description = &v
+	return s
+}
+
+type UpdateAdapterOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A string containing a unique ID for the adapter that has been updated.
+	AdapterId *string `min:"12" type:"string"`
+
+	// A string containing the name of the adapter that has been updated.
+	AdapterName *string `min:"1" type:"string"`
+
+	// The auto-update status of the adapter that has been updated.
+	AutoUpdate *string `type:"string" enum:"AutoUpdate"`
+
+	// An object specifying the creation time of the the adapter that has been updated.
+	CreationTime *time.Time `type:"timestamp"`
+
+	// A string containing the description of the adapter that has been updated.
+	Description *string `min:"1" type:"string"`
+
+	// List of the targeted feature types for the updated adapter.
+	FeatureTypes []*string `type:"list" enum:"FeatureType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAdapterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAdapterOutput) GoString() string {
+	return s.String()
+}
+
+// SetAdapterId sets the AdapterId field's value.
+func (s *UpdateAdapterOutput) SetAdapterId(v string) *UpdateAdapterOutput {
+	s.AdapterId = &v
+	return s
+}
+
+// SetAdapterName sets the AdapterName field's value.
+func (s *UpdateAdapterOutput) SetAdapterName(v string) *UpdateAdapterOutput {
+	s.AdapterName = &v
+	return s
+}
+
+// SetAutoUpdate sets the AutoUpdate field's value.
+func (s *UpdateAdapterOutput) SetAutoUpdate(v string) *UpdateAdapterOutput {
+	s.AutoUpdate = &v
+	return s
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *UpdateAdapterOutput) SetCreationTime(v time.Time) *UpdateAdapterOutput {
+	s.CreationTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateAdapterOutput) SetDescription(v string) *UpdateAdapterOutput {
+	s.Description = &v
+	return s
+}
+
+// SetFeatureTypes sets the FeatureTypes field's value.
+func (s *UpdateAdapterOutput) SetFeatureTypes(v []*string) *UpdateAdapterOutput {
+	s.FeatureTypes = v
+	return s
+}
+
+// Indicates that a request was not valid. Check request for proper formatting.
+type ValidationException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidationException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ValidationException) GoString() string {
+	return s.String()
+}
+
+func newErrorValidationException(v protocol.ResponseMetadata) error {
+	return &ValidationException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ValidationException) Code() string {
+	return "ValidationException"
+}
+
+// Message returns the exception's message.
+func (s *ValidationException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ValidationException) OrigErr() error {
+	return nil
+}
+
+func (s *ValidationException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ValidationException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ValidationException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // A warning about an issue that occurred during asynchronous text analysis
 // (StartDocumentAnalysis) or asynchronous document text detection (StartDocumentTextDetection).
 type Warning struct {
@@ -5505,6 +10865,50 @@ func (s *Warning) SetPages(v []*int64) *Warning {
 }
 
 const (
+	// AdapterVersionStatusActive is a AdapterVersionStatus enum value
+	AdapterVersionStatusActive = "ACTIVE"
+
+	// AdapterVersionStatusAtRisk is a AdapterVersionStatus enum value
+	AdapterVersionStatusAtRisk = "AT_RISK"
+
+	// AdapterVersionStatusDeprecated is a AdapterVersionStatus enum value
+	AdapterVersionStatusDeprecated = "DEPRECATED"
+
+	// AdapterVersionStatusCreationError is a AdapterVersionStatus enum value
+	AdapterVersionStatusCreationError = "CREATION_ERROR"
+
+	// AdapterVersionStatusCreationInProgress is a AdapterVersionStatus enum value
+	AdapterVersionStatusCreationInProgress = "CREATION_IN_PROGRESS"
+)
+
+// AdapterVersionStatus_Values returns all elements of the AdapterVersionStatus enum
+func AdapterVersionStatus_Values() []string {
+	return []string{
+		AdapterVersionStatusActive,
+		AdapterVersionStatusAtRisk,
+		AdapterVersionStatusDeprecated,
+		AdapterVersionStatusCreationError,
+		AdapterVersionStatusCreationInProgress,
+	}
+}
+
+const (
+	// AutoUpdateEnabled is a AutoUpdate enum value
+	AutoUpdateEnabled = "ENABLED"
+
+	// AutoUpdateDisabled is a AutoUpdate enum value
+	AutoUpdateDisabled = "DISABLED"
+)
+
+// AutoUpdate_Values returns all elements of the AutoUpdate enum
+func AutoUpdate_Values() []string {
+	return []string{
+		AutoUpdateEnabled,
+		AutoUpdateDisabled,
+	}
+}
+
+const (
 	// BlockTypeKeyValueSet is a BlockType enum value
 	BlockTypeKeyValueSet = "KEY_VALUE_SET"
 
@@ -5537,6 +10941,45 @@ const (
 
 	// BlockTypeQueryResult is a BlockType enum value
 	BlockTypeQueryResult = "QUERY_RESULT"
+
+	// BlockTypeSignature is a BlockType enum value
+	BlockTypeSignature = "SIGNATURE"
+
+	// BlockTypeTableTitle is a BlockType enum value
+	BlockTypeTableTitle = "TABLE_TITLE"
+
+	// BlockTypeTableFooter is a BlockType enum value
+	BlockTypeTableFooter = "TABLE_FOOTER"
+
+	// BlockTypeLayoutText is a BlockType enum value
+	BlockTypeLayoutText = "LAYOUT_TEXT"
+
+	// BlockTypeLayoutTitle is a BlockType enum value
+	BlockTypeLayoutTitle = "LAYOUT_TITLE"
+
+	// BlockTypeLayoutHeader is a BlockType enum value
+	BlockTypeLayoutHeader = "LAYOUT_HEADER"
+
+	// BlockTypeLayoutFooter is a BlockType enum value
+	BlockTypeLayoutFooter = "LAYOUT_FOOTER"
+
+	// BlockTypeLayoutSectionHeader is a BlockType enum value
+	BlockTypeLayoutSectionHeader = "LAYOUT_SECTION_HEADER"
+
+	// BlockTypeLayoutPageNumber is a BlockType enum value
+	BlockTypeLayoutPageNumber = "LAYOUT_PAGE_NUMBER"
+
+	// BlockTypeLayoutList is a BlockType enum value
+	BlockTypeLayoutList = "LAYOUT_LIST"
+
+	// BlockTypeLayoutFigure is a BlockType enum value
+	BlockTypeLayoutFigure = "LAYOUT_FIGURE"
+
+	// BlockTypeLayoutTable is a BlockType enum value
+	BlockTypeLayoutTable = "LAYOUT_TABLE"
+
+	// BlockTypeLayoutKeyValue is a BlockType enum value
+	BlockTypeLayoutKeyValue = "LAYOUT_KEY_VALUE"
 )
 
 // BlockType_Values returns all elements of the BlockType enum
@@ -5553,6 +10996,19 @@ func BlockType_Values() []string {
 		BlockTypeTitle,
 		BlockTypeQuery,
 		BlockTypeQueryResult,
+		BlockTypeSignature,
+		BlockTypeTableTitle,
+		BlockTypeTableFooter,
+		BlockTypeLayoutText,
+		BlockTypeLayoutTitle,
+		BlockTypeLayoutHeader,
+		BlockTypeLayoutFooter,
+		BlockTypeLayoutSectionHeader,
+		BlockTypeLayoutPageNumber,
+		BlockTypeLayoutList,
+		BlockTypeLayoutFigure,
+		BlockTypeLayoutTable,
+		BlockTypeLayoutKeyValue,
 	}
 }
 
@@ -5581,6 +11037,24 @@ const (
 
 	// EntityTypeColumnHeader is a EntityType enum value
 	EntityTypeColumnHeader = "COLUMN_HEADER"
+
+	// EntityTypeTableTitle is a EntityType enum value
+	EntityTypeTableTitle = "TABLE_TITLE"
+
+	// EntityTypeTableFooter is a EntityType enum value
+	EntityTypeTableFooter = "TABLE_FOOTER"
+
+	// EntityTypeTableSectionTitle is a EntityType enum value
+	EntityTypeTableSectionTitle = "TABLE_SECTION_TITLE"
+
+	// EntityTypeTableSummary is a EntityType enum value
+	EntityTypeTableSummary = "TABLE_SUMMARY"
+
+	// EntityTypeStructuredTable is a EntityType enum value
+	EntityTypeStructuredTable = "STRUCTURED_TABLE"
+
+	// EntityTypeSemiStructuredTable is a EntityType enum value
+	EntityTypeSemiStructuredTable = "SEMI_STRUCTURED_TABLE"
 )
 
 // EntityType_Values returns all elements of the EntityType enum
@@ -5589,6 +11063,12 @@ func EntityType_Values() []string {
 		EntityTypeKey,
 		EntityTypeValue,
 		EntityTypeColumnHeader,
+		EntityTypeTableTitle,
+		EntityTypeTableFooter,
+		EntityTypeTableSectionTitle,
+		EntityTypeTableSummary,
+		EntityTypeStructuredTable,
+		EntityTypeSemiStructuredTable,
 	}
 }
 
@@ -5601,6 +11081,12 @@ const (
 
 	// FeatureTypeQueries is a FeatureType enum value
 	FeatureTypeQueries = "QUERIES"
+
+	// FeatureTypeSignatures is a FeatureType enum value
+	FeatureTypeSignatures = "SIGNATURES"
+
+	// FeatureTypeLayout is a FeatureType enum value
+	FeatureTypeLayout = "LAYOUT"
 )
 
 // FeatureType_Values returns all elements of the FeatureType enum
@@ -5609,6 +11095,8 @@ func FeatureType_Values() []string {
 		FeatureTypeTables,
 		FeatureTypeForms,
 		FeatureTypeQueries,
+		FeatureTypeSignatures,
+		FeatureTypeLayout,
 	}
 }
 
@@ -5654,6 +11142,15 @@ const (
 
 	// RelationshipTypeAnswer is a RelationshipType enum value
 	RelationshipTypeAnswer = "ANSWER"
+
+	// RelationshipTypeTable is a RelationshipType enum value
+	RelationshipTypeTable = "TABLE"
+
+	// RelationshipTypeTableTitle is a RelationshipType enum value
+	RelationshipTypeTableTitle = "TABLE_TITLE"
+
+	// RelationshipTypeTableFooter is a RelationshipType enum value
+	RelationshipTypeTableFooter = "TABLE_FOOTER"
 )
 
 // RelationshipType_Values returns all elements of the RelationshipType enum
@@ -5665,6 +11162,9 @@ func RelationshipType_Values() []string {
 		RelationshipTypeMergedCell,
 		RelationshipTypeTitle,
 		RelationshipTypeAnswer,
+		RelationshipTypeTable,
+		RelationshipTypeTableTitle,
+		RelationshipTypeTableFooter,
 	}
 }
 

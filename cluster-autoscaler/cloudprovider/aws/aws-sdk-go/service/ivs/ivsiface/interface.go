@@ -68,6 +68,10 @@ type IVSAPI interface {
 	BatchGetStreamKeyWithContext(aws.Context, *ivs.BatchGetStreamKeyInput, ...request.Option) (*ivs.BatchGetStreamKeyOutput, error)
 	BatchGetStreamKeyRequest(*ivs.BatchGetStreamKeyInput) (*request.Request, *ivs.BatchGetStreamKeyOutput)
 
+	BatchStartViewerSessionRevocation(*ivs.BatchStartViewerSessionRevocationInput) (*ivs.BatchStartViewerSessionRevocationOutput, error)
+	BatchStartViewerSessionRevocationWithContext(aws.Context, *ivs.BatchStartViewerSessionRevocationInput, ...request.Option) (*ivs.BatchStartViewerSessionRevocationOutput, error)
+	BatchStartViewerSessionRevocationRequest(*ivs.BatchStartViewerSessionRevocationInput) (*request.Request, *ivs.BatchStartViewerSessionRevocationOutput)
+
 	CreateChannel(*ivs.CreateChannelInput) (*ivs.CreateChannelOutput, error)
 	CreateChannelWithContext(aws.Context, *ivs.CreateChannelInput, ...request.Option) (*ivs.CreateChannelOutput, error)
 	CreateChannelRequest(*ivs.CreateChannelInput) (*request.Request, *ivs.CreateChannelOutput)
@@ -173,6 +177,10 @@ type IVSAPI interface {
 	PutMetadata(*ivs.PutMetadataInput) (*ivs.PutMetadataOutput, error)
 	PutMetadataWithContext(aws.Context, *ivs.PutMetadataInput, ...request.Option) (*ivs.PutMetadataOutput, error)
 	PutMetadataRequest(*ivs.PutMetadataInput) (*request.Request, *ivs.PutMetadataOutput)
+
+	StartViewerSessionRevocation(*ivs.StartViewerSessionRevocationInput) (*ivs.StartViewerSessionRevocationOutput, error)
+	StartViewerSessionRevocationWithContext(aws.Context, *ivs.StartViewerSessionRevocationInput, ...request.Option) (*ivs.StartViewerSessionRevocationOutput, error)
+	StartViewerSessionRevocationRequest(*ivs.StartViewerSessionRevocationInput) (*request.Request, *ivs.StartViewerSessionRevocationOutput)
 
 	StopStream(*ivs.StopStreamInput) (*ivs.StopStreamOutput, error)
 	StopStreamWithContext(aws.Context, *ivs.StopStreamInput, ...request.Option) (*ivs.StopStreamOutput, error)

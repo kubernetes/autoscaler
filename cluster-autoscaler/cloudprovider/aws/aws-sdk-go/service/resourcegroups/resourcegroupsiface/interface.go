@@ -68,6 +68,10 @@ type ResourceGroupsAPI interface {
 	DeleteGroupWithContext(aws.Context, *resourcegroups.DeleteGroupInput, ...request.Option) (*resourcegroups.DeleteGroupOutput, error)
 	DeleteGroupRequest(*resourcegroups.DeleteGroupInput) (*request.Request, *resourcegroups.DeleteGroupOutput)
 
+	GetAccountSettings(*resourcegroups.GetAccountSettingsInput) (*resourcegroups.GetAccountSettingsOutput, error)
+	GetAccountSettingsWithContext(aws.Context, *resourcegroups.GetAccountSettingsInput, ...request.Option) (*resourcegroups.GetAccountSettingsOutput, error)
+	GetAccountSettingsRequest(*resourcegroups.GetAccountSettingsInput) (*request.Request, *resourcegroups.GetAccountSettingsOutput)
+
 	GetGroup(*resourcegroups.GetGroupInput) (*resourcegroups.GetGroupOutput, error)
 	GetGroupWithContext(aws.Context, *resourcegroups.GetGroupInput, ...request.Option) (*resourcegroups.GetGroupOutput, error)
 	GetGroupRequest(*resourcegroups.GetGroupInput) (*request.Request, *resourcegroups.GetGroupOutput)
@@ -124,6 +128,10 @@ type ResourceGroupsAPI interface {
 	Untag(*resourcegroups.UntagInput) (*resourcegroups.UntagOutput, error)
 	UntagWithContext(aws.Context, *resourcegroups.UntagInput, ...request.Option) (*resourcegroups.UntagOutput, error)
 	UntagRequest(*resourcegroups.UntagInput) (*request.Request, *resourcegroups.UntagOutput)
+
+	UpdateAccountSettings(*resourcegroups.UpdateAccountSettingsInput) (*resourcegroups.UpdateAccountSettingsOutput, error)
+	UpdateAccountSettingsWithContext(aws.Context, *resourcegroups.UpdateAccountSettingsInput, ...request.Option) (*resourcegroups.UpdateAccountSettingsOutput, error)
+	UpdateAccountSettingsRequest(*resourcegroups.UpdateAccountSettingsInput) (*request.Request, *resourcegroups.UpdateAccountSettingsOutput)
 
 	UpdateGroup(*resourcegroups.UpdateGroupInput) (*resourcegroups.UpdateGroupOutput, error)
 	UpdateGroupWithContext(aws.Context, *resourcegroups.UpdateGroupInput, ...request.Option) (*resourcegroups.UpdateGroupOutput, error)

@@ -30,7 +30,7 @@ const (
 	// "ResourceNotFoundException".
 	//
 	// 404 response - MalformedQueryString. The query string contains a syntax error
-	// or resource not found..
+	// or resource not found.
 	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
 	// ErrCodeServiceQuotaExceededException for service response error code

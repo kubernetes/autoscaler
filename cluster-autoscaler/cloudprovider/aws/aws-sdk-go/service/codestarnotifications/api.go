@@ -57,8 +57,8 @@ func (c *CodeStarNotifications) CreateNotificationRuleRequest(input *CreateNotif
 // CreateNotificationRule API operation for AWS CodeStar Notifications.
 //
 // Creates a notification rule for a resource. The rule specifies the events
-// you want notifications about and the targets (such as SNS topics) where you
-// want to receive them.
+// you want notifications about and the targets (such as Chatbot topics or Chatbot
+// clients configured for Slack) where you want to receive them.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -71,7 +71,7 @@ func (c *CodeStarNotifications) CreateNotificationRuleRequest(input *CreateNotif
 //
 //   - ResourceAlreadyExistsException
 //     A resource with the same name or ID already exists. Notification rule names
-//     must be unique in your AWS account.
+//     must be unique in your Amazon Web Services account.
 //
 //   - ValidationException
 //     One or more parameter values are not valid.
@@ -553,7 +553,7 @@ func (c *CodeStarNotifications) ListNotificationRulesRequest(input *ListNotifica
 
 // ListNotificationRules API operation for AWS CodeStar Notifications.
 //
-// Returns a list of the notification rules for an AWS account.
+// Returns a list of the notification rules for an Amazon Web Services account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -776,7 +776,8 @@ func (c *CodeStarNotifications) ListTargetsRequest(input *ListTargetsInput) (req
 
 // ListTargets API operation for AWS CodeStar Notifications.
 //
-// Returns a list of the notification rule targets for an AWS account.
+// Returns a list of the notification rule targets for an Amazon Web Services
+// account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -910,9 +911,9 @@ func (c *CodeStarNotifications) SubscribeRequest(input *SubscribeInput) (req *re
 
 // Subscribe API operation for AWS CodeStar Notifications.
 //
-// Creates an association between a notification rule and an SNS topic so that
-// the associated target can receive notifications when the events described
-// in the rule are triggered.
+// Creates an association between a notification rule and an Chatbot topic or
+// Chatbot client so that the associated target can receive notifications when
+// the events described in the rule are triggered.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -929,6 +930,9 @@ func (c *CodeStarNotifications) SubscribeRequest(input *SubscribeInput) (req *re
 //   - ResourceNotFoundException
 //     AWS CodeStar Notifications can't find a resource that matches the provided
 //     ARN.
+//
+//   - ConfigurationException
+//     Some or all of the configuration is incomplete, missing, or not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/Subscribe
 func (c *CodeStarNotifications) Subscribe(input *SubscribeInput) (*SubscribeOutput, error) {
@@ -1010,6 +1014,11 @@ func (c *CodeStarNotifications) TagResourceRequest(input *TagResourceInput) (req
 //     AWS CodeStar Notifications can't find a resource that matches the provided
 //     ARN.
 //
+//   - LimitExceededException
+//     One of the AWS CodeStar Notifications limits has been exceeded. Limits apply
+//     to accounts, notification rules, notifications, resources, and targets. For
+//     more information, see Limits.
+//
 //   - ValidationException
 //     One or more parameter values are not valid.
 //
@@ -1082,8 +1091,8 @@ func (c *CodeStarNotifications) UnsubscribeRequest(input *UnsubscribeInput) (req
 
 // Unsubscribe API operation for AWS CodeStar Notifications.
 //
-// Removes an association between a notification rule and an Amazon SNS topic
-// so that subscribers to that topic stop receiving notifications when the events
+// Removes an association between a notification rule and an Chatbot topic so
+// that subscribers to that topic stop receiving notifications when the events
 // described in the rule are triggered.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -1148,7 +1157,7 @@ func (c *CodeStarNotifications) UntagResourceRequest(input *UntagResourceInput) 
 	op := &request.Operation{
 		Name:       opUntagResource,
 		HTTPMethod: "POST",
-		HTTPPath:   "/untagResource",
+		HTTPPath:   "/untagResource/{resourceArn}",
 	}
 
 	if input == nil {
@@ -1178,6 +1187,11 @@ func (c *CodeStarNotifications) UntagResourceRequest(input *UntagResourceInput) 
 //   - ResourceNotFoundException
 //     AWS CodeStar Notifications can't find a resource that matches the provided
 //     ARN.
+//
+//   - LimitExceededException
+//     One of the AWS CodeStar Notifications limits has been exceeded. Limits apply
+//     to accounts, notification rules, notifications, resources, and targets. For
+//     more information, see Limits.
 //
 //   - ValidationException
 //     One or more parameter values are not valid.
@@ -1274,6 +1288,9 @@ func (c *CodeStarNotifications) UpdateNotificationRuleRequest(input *UpdateNotif
 //   - ResourceNotFoundException
 //     AWS CodeStar Notifications can't find a resource that matches the provided
 //     ARN.
+//
+//   - ConfigurationException
+//     Some or all of the configuration is incomplete, missing, or not valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15/UpdateNotificationRule
 func (c *CodeStarNotifications) UpdateNotificationRule(input *UpdateNotificationRuleInput) (*UpdateNotificationRuleOutput, error) {
@@ -1499,14 +1516,15 @@ type CreateNotificationRuleInput struct {
 	// with the same parameters is received and a token is included, the request
 	// returns information about the initial request that used that token.
 	//
-	// The AWS SDKs prepopulate client request tokens. If you are using an AWS SDK,
-	// an idempotency token is created for you.
+	// The Amazon Web Services SDKs prepopulate client request tokens. If you are
+	// using an Amazon Web Services SDK, an idempotency token is created for you.
 	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The level of detail to include in the notifications for this resource. BASIC
-	// will include only the contents of the event as it would appear in AWS CloudWatch.
-	// FULL will include any supplemental information provided by AWS CodeStar Notifications
-	// and/or the service for the resource for which the notification is created.
+	// will include only the contents of the event as it would appear in Amazon
+	// CloudWatch. FULL will include any supplemental information provided by AWS
+	// CodeStar Notifications and/or the service for the resource for which the
+	// notification is created.
 	//
 	// DetailType is a required field
 	DetailType *string `type:"string" required:"true" enum:"DetailType"`
@@ -1517,8 +1535,8 @@ type CreateNotificationRuleInput struct {
 	// EventTypeIds is a required field
 	EventTypeIds []*string `type:"list" required:"true"`
 
-	// The name for the notification rule. Notifictaion rule names must be unique
-	// in your AWS account.
+	// The name for the notification rule. Notification rule names must be unique
+	// in your Amazon Web Services account.
 	//
 	// Name is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by CreateNotificationRuleInput's
@@ -1528,8 +1546,8 @@ type CreateNotificationRuleInput struct {
 	Name *string `min:"1" type:"string" required:"true" sensitive:"true"`
 
 	// The Amazon Resource Name (ARN) of the resource to associate with the notification
-	// rule. Supported resources include pipelines in AWS CodePipeline, repositories
-	// in AWS CodeCommit, and build projects in AWS CodeBuild.
+	// rule. Supported resources include pipelines in CodePipeline, repositories
+	// in CodeCommit, and build projects in CodeBuild.
 	//
 	// Resource is a required field
 	Resource *string `type:"string" required:"true"`
@@ -1543,8 +1561,8 @@ type CreateNotificationRuleInput struct {
 	// with "aws".
 	Tags map[string]*string `type:"map"`
 
-	// A list of Amazon Resource Names (ARNs) of SNS topics to associate with the
-	// notification rule.
+	// A list of Amazon Resource Names (ARNs) of Amazon Simple Notification Service
+	// topics and Chatbot clients to associate with the notification rule.
 	//
 	// Targets is a required field
 	Targets []*Target `type:"list" required:"true"`
@@ -1768,12 +1786,14 @@ func (s *DeleteNotificationRuleOutput) SetArn(v string) *DeleteNotificationRuleO
 type DeleteTargetInput struct {
 	_ struct{} `type:"structure"`
 
-	// A Boolean value that can be used to delete all associations with this SNS
+	// A Boolean value that can be used to delete all associations with this Chatbot
 	// topic. The default value is FALSE. If set to TRUE, all associations between
-	// that target and every notification rule in your AWS account are deleted.
+	// that target and every notification rule in your Amazon Web Services account
+	// are deleted.
 	ForceUnsubscribeAll *bool `type:"boolean"`
 
-	// The Amazon Resource Name (ARN) of the SNS topic to delete.
+	// The Amazon Resource Name (ARN) of the Chatbot topic or Chatbot client to
+	// delete.
 	//
 	// TargetAddress is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by DeleteTargetInput's
@@ -1912,9 +1932,10 @@ type DescribeNotificationRuleOutput struct {
 	CreatedTimestamp *time.Time `type:"timestamp"`
 
 	// The level of detail included in the notifications for this resource. BASIC
-	// will include only the contents of the event as it would appear in AWS CloudWatch.
-	// FULL will include any supplemental information provided by AWS CodeStar Notifications
-	// and/or the service for the resource for which the notification is created.
+	// will include only the contents of the event as it would appear in Amazon
+	// CloudWatch. FULL will include any supplemental information provided by AWS
+	// CodeStar Notifications and/or the service for the resource for which the
+	// notification is created.
 	DetailType *string `type:"string" enum:"DetailType"`
 
 	// A list of the event types associated with the notification rule.
@@ -1942,7 +1963,8 @@ type DescribeNotificationRuleOutput struct {
 	// The tags associated with the notification rule.
 	Tags map[string]*string `type:"map"`
 
-	// A list of the SNS topics associated with the notification rule.
+	// A list of the Chatbot topics and Chatbot clients associated with the notification
+	// rule.
 	Targets []*TargetSummary `type:"list"`
 }
 
@@ -2034,7 +2056,9 @@ func (s *DescribeNotificationRuleOutput) SetTargets(v []*TargetSummary) *Describ
 type EventTypeSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The system-generated ID of the event.
+	// The system-generated ID of the event. For a complete list of event types
+	// and IDs, see Notification concepts (https://docs.aws.amazon.com/codestar-notifications/latest/userguide/concepts.html#concepts-api)
+	// in the Developer Tools Console User Guide.
 	EventTypeId *string `min:"1" type:"string"`
 
 	// The name of the event.
@@ -2413,7 +2437,7 @@ type ListNotificationRulesFilter struct {
 
 	// The value of the attribute you want to use to filter the returned notification
 	// rules. For example, if you specify filtering by RESOURCE in Name, you might
-	// specify the ARN of a pipeline in AWS CodePipeline for the value.
+	// specify the ARN of a pipeline in CodePipeline for the value.
 	//
 	// Value is a required field
 	Value *string `type:"string" required:"true"`
@@ -2550,8 +2574,8 @@ type ListNotificationRulesOutput struct {
 	// of the results.
 	NextToken *string `type:"string"`
 
-	// The list of notification rules for the AWS account, by Amazon Resource Name
-	// (ARN) and ID.
+	// The list of notification rules for the Amazon Web Services account, by Amazon
+	// Resource Name (ARN) and ID.
 	NotificationRules []*NotificationRuleSummary `type:"list"`
 }
 
@@ -2664,9 +2688,9 @@ func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForRe
 
 // Information about a filter to apply to the list of returned targets. You
 // can filter by target type, address, or status. For example, to filter results
-// to notification rules that have active Amazon SNS topics as targets, you
-// could specify a ListTargetsFilter Name as TargetType and a Value of SNS,
-// and a Name of TARGET_STATUS and a Value of ACTIVE.
+// to notification rules that have active Chatbot topics as targets, you could
+// specify a ListTargetsFilter Name as TargetType and a Value of SNS, and a
+// Name of TARGET_STATUS and a Value of ACTIVE.
 type ListTargetsFilter struct {
 	_ struct{} `type:"structure"`
 
@@ -2890,7 +2914,7 @@ func (s *NotificationRuleSummary) SetId(v string) *NotificationRuleSummary {
 }
 
 // A resource with the same name or ID already exists. Notification rule names
-// must be unique in your AWS account.
+// must be unique in your Amazon Web Services account.
 type ResourceAlreadyExistsException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -3032,7 +3056,8 @@ type SubscribeInput struct {
 	// of the results.
 	ClientRequestToken *string `min:"1" type:"string"`
 
-	// Information about the SNS topics associated with a notification rule.
+	// Information about the Chatbot topics or Chatbot clients associated with a
+	// notification rule.
 	//
 	// Target is a required field
 	Target *Target `type:"structure" required:"true"`
@@ -3222,18 +3247,23 @@ func (s *TagResourceOutput) SetTags(v map[string]*string) *TagResourceOutput {
 	return s
 }
 
-// Information about the SNS topics associated with a notification rule.
+// Information about the Chatbot topics or Chatbot clients associated with a
+// notification rule.
 type Target struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the SNS topic.
+	// The Amazon Resource Name (ARN) of the Chatbot topic or Chatbot client.
 	//
 	// TargetAddress is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by Target's
 	// String and GoString methods.
 	TargetAddress *string `min:"1" type:"string" sensitive:"true"`
 
-	// The target type. Can be an Amazon SNS topic.
+	// The target type. Can be an Chatbot topic or Chatbot client.
+	//
+	//    * Chatbot topics are specified as SNS.
+	//
+	//    * Chatbot clients are specified as AWSChatbotSlack.
 	TargetType *string `type:"string"`
 }
 
@@ -3284,7 +3314,7 @@ func (s *Target) SetTargetType(v string) *Target {
 type TargetSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the SNS topic.
+	// The Amazon Resource Name (ARN) of the Chatbot topic or Chatbot client.
 	//
 	// TargetAddress is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by TargetSummary's
@@ -3295,6 +3325,10 @@ type TargetSummary struct {
 	TargetStatus *string `type:"string" enum:"TargetStatus"`
 
 	// The type of the target (for example, SNS).
+	//
+	//    * Chatbot topics are specified as SNS.
+	//
+	//    * Chatbot clients are specified as AWSChatbotSlack.
 	TargetType *string `type:"string"`
 }
 
@@ -3342,7 +3376,7 @@ type UnsubscribeInput struct {
 	// Arn is a required field
 	Arn *string `type:"string" required:"true"`
 
-	// The ARN of the SNS topic to unsubscribe from the notification rule.
+	// The ARN of the Chatbot topic to unsubscribe from the notification rule.
 	//
 	// TargetAddress is a sensitive parameter and its value will be
 	// replaced with "sensitive" in string returned by UnsubscribeInput's
@@ -3436,18 +3470,18 @@ func (s *UnsubscribeOutput) SetArn(v string) *UnsubscribeOutput {
 }
 
 type UntagResourceInput struct {
-	_ struct{} `type:"structure"`
+	_ struct{} `type:"structure" nopayload:"true"`
 
 	// The Amazon Resource Name (ARN) of the notification rule from which to remove
 	// the tags.
 	//
 	// Arn is a required field
-	Arn *string `type:"string" required:"true"`
+	Arn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
 
 	// The key names of the tags to remove.
 	//
 	// TagKeys is a required field
-	TagKeys []*string `type:"list" required:"true"`
+	TagKeys []*string `location:"querystring" locationName:"tagKeys" type:"list" required:"true"`
 }
 
 // String returns the string representation.
@@ -3473,6 +3507,9 @@ func (s *UntagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
 	if s.Arn == nil {
 		invalidParams.Add(request.NewErrParamRequired("Arn"))
+	}
+	if s.Arn != nil && len(*s.Arn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Arn", 1))
 	}
 	if s.TagKeys == nil {
 		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
@@ -3527,12 +3564,15 @@ type UpdateNotificationRuleInput struct {
 	Arn *string `type:"string" required:"true"`
 
 	// The level of detail to include in the notifications for this resource. BASIC
-	// will include only the contents of the event as it would appear in AWS CloudWatch.
-	// FULL will include any supplemental information provided by AWS CodeStar Notifications
-	// and/or the service for the resource for which the notification is created.
+	// will include only the contents of the event as it would appear in Amazon
+	// CloudWatch. FULL will include any supplemental information provided by AWS
+	// CodeStar Notifications and/or the service for the resource for which the
+	// notification is created.
 	DetailType *string `type:"string" enum:"DetailType"`
 
-	// A list of event types associated with this notification rule.
+	// A list of event types associated with this notification rule. For a complete
+	// list of event types and IDs, see Notification concepts (https://docs.aws.amazon.com/codestar-notifications/latest/userguide/concepts.html#concepts-api)
+	// in the Developer Tools Console User Guide.
 	EventTypeIds []*string `type:"list"`
 
 	// The name of the notification rule.

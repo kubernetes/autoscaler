@@ -104,6 +104,9 @@ type KMSAPI interface {
 	DescribeCustomKeyStoresWithContext(aws.Context, *kms.DescribeCustomKeyStoresInput, ...request.Option) (*kms.DescribeCustomKeyStoresOutput, error)
 	DescribeCustomKeyStoresRequest(*kms.DescribeCustomKeyStoresInput) (*request.Request, *kms.DescribeCustomKeyStoresOutput)
 
+	DescribeCustomKeyStoresPages(*kms.DescribeCustomKeyStoresInput, func(*kms.DescribeCustomKeyStoresOutput, bool) bool) error
+	DescribeCustomKeyStoresPagesWithContext(aws.Context, *kms.DescribeCustomKeyStoresInput, func(*kms.DescribeCustomKeyStoresOutput, bool) bool, ...request.Option) error
+
 	DescribeKey(*kms.DescribeKeyInput) (*kms.DescribeKeyOutput, error)
 	DescribeKeyWithContext(aws.Context, *kms.DescribeKeyInput, ...request.Option) (*kms.DescribeKeyOutput, error)
 	DescribeKeyRequest(*kms.DescribeKeyInput) (*request.Request, *kms.DescribeKeyOutput)
@@ -208,9 +211,15 @@ type KMSAPI interface {
 	ListResourceTagsWithContext(aws.Context, *kms.ListResourceTagsInput, ...request.Option) (*kms.ListResourceTagsOutput, error)
 	ListResourceTagsRequest(*kms.ListResourceTagsInput) (*request.Request, *kms.ListResourceTagsOutput)
 
+	ListResourceTagsPages(*kms.ListResourceTagsInput, func(*kms.ListResourceTagsOutput, bool) bool) error
+	ListResourceTagsPagesWithContext(aws.Context, *kms.ListResourceTagsInput, func(*kms.ListResourceTagsOutput, bool) bool, ...request.Option) error
+
 	ListRetirableGrants(*kms.ListRetirableGrantsInput) (*kms.ListGrantsResponse, error)
 	ListRetirableGrantsWithContext(aws.Context, *kms.ListRetirableGrantsInput, ...request.Option) (*kms.ListGrantsResponse, error)
 	ListRetirableGrantsRequest(*kms.ListRetirableGrantsInput) (*request.Request, *kms.ListGrantsResponse)
+
+	ListRetirableGrantsPages(*kms.ListRetirableGrantsInput, func(*kms.ListGrantsResponse, bool) bool) error
+	ListRetirableGrantsPagesWithContext(aws.Context, *kms.ListRetirableGrantsInput, func(*kms.ListGrantsResponse, bool) bool, ...request.Option) error
 
 	PutKeyPolicy(*kms.PutKeyPolicyInput) (*kms.PutKeyPolicyOutput, error)
 	PutKeyPolicyWithContext(aws.Context, *kms.PutKeyPolicyInput, ...request.Option) (*kms.PutKeyPolicyOutput, error)

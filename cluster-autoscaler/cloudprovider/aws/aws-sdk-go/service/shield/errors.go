@@ -79,7 +79,7 @@ const (
 	// ErrCodeNoAssociatedRoleException for service response error code
 	// "NoAssociatedRoleException".
 	//
-	// The ARN of the role that you specifed does not exist.
+	// The ARN of the role that you specified does not exist.
 	ErrCodeNoAssociatedRoleException = "NoAssociatedRoleException"
 
 	// ErrCodeOptimisticLockException for service response error code

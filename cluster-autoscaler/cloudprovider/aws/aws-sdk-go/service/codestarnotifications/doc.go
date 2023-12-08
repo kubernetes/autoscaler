@@ -30,8 +30,8 @@
 //
 // Targets, by calling the following:
 //
-//   - DeleteTarget, which removes a notification rule target (SNS topic) from
-//     a notification rule.
+//   - DeleteTarget, which removes a notification rule target from a notification
+//     rule.
 //
 //   - ListTargets, which lists the targets associated with a notification
 //     rule.
@@ -52,8 +52,8 @@
 //   - UntagResource, which removes a tag from a notification rule in your
 //     account.
 //
-// For information about how to use AWS CodeStar Notifications, see link in
-// the CodeStarNotifications User Guide.
+// For information about how to use AWS CodeStar Notifications, see the Amazon
+// Web Services Developer Tools Console User Guide (https://docs.aws.amazon.com/dtconsole/latest/userguide/what-is-dtconsole.html).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/codestar-notifications-2019-10-15 for more information on this service.
 //

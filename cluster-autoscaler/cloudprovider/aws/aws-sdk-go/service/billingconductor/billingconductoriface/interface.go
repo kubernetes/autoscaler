@@ -137,6 +137,13 @@ type BillingConductorAPI interface {
 	ListBillingGroupsPages(*billingconductor.ListBillingGroupsInput, func(*billingconductor.ListBillingGroupsOutput, bool) bool) error
 	ListBillingGroupsPagesWithContext(aws.Context, *billingconductor.ListBillingGroupsInput, func(*billingconductor.ListBillingGroupsOutput, bool) bool, ...request.Option) error
 
+	ListCustomLineItemVersions(*billingconductor.ListCustomLineItemVersionsInput) (*billingconductor.ListCustomLineItemVersionsOutput, error)
+	ListCustomLineItemVersionsWithContext(aws.Context, *billingconductor.ListCustomLineItemVersionsInput, ...request.Option) (*billingconductor.ListCustomLineItemVersionsOutput, error)
+	ListCustomLineItemVersionsRequest(*billingconductor.ListCustomLineItemVersionsInput) (*request.Request, *billingconductor.ListCustomLineItemVersionsOutput)
+
+	ListCustomLineItemVersionsPages(*billingconductor.ListCustomLineItemVersionsInput, func(*billingconductor.ListCustomLineItemVersionsOutput, bool) bool) error
+	ListCustomLineItemVersionsPagesWithContext(aws.Context, *billingconductor.ListCustomLineItemVersionsInput, func(*billingconductor.ListCustomLineItemVersionsOutput, bool) bool, ...request.Option) error
+
 	ListCustomLineItems(*billingconductor.ListCustomLineItemsInput) (*billingconductor.ListCustomLineItemsOutput, error)
 	ListCustomLineItemsWithContext(aws.Context, *billingconductor.ListCustomLineItemsInput, ...request.Option) (*billingconductor.ListCustomLineItemsOutput, error)
 	ListCustomLineItemsRequest(*billingconductor.ListCustomLineItemsInput) (*request.Request, *billingconductor.ListCustomLineItemsOutput)

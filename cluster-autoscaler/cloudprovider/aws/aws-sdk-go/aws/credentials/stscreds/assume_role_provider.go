@@ -198,6 +198,10 @@ type AssumeRoleProvider struct {
 	// or an Amazon Resource Name (ARN) for a virtual device (such as arn:aws:iam::123456789012:mfa/user).
 	SerialNumber *string
 
+	// The SourceIdentity which is used to identity a persistent identity through the whole session.
+	// For more details see https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_control-access_monitor.html
+	SourceIdentity *string
+
 	// The value provided by the MFA device, if the trust policy of the role being
 	// assumed requires MFA (that is, if the policy includes a condition that tests
 	// for MFA). If the role being assumed requires MFA and if the TokenCode value
@@ -319,6 +323,7 @@ func (p *AssumeRoleProvider) RetrieveWithContext(ctx credentials.Context) (crede
 		Tags:              p.Tags,
 		PolicyArns:        p.PolicyArns,
 		TransitiveTagKeys: p.TransitiveTagKeys,
+		SourceIdentity:    p.SourceIdentity,
 	}
 	if p.Policy != nil {
 		input.Policy = p.Policy

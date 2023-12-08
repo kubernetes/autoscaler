@@ -46,6 +46,13 @@ const (
 	// parameter value or a missing required parameter.
 	ErrCodeBadRequest = "BadRequest"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// Returned if the source file system in a replication is encrypted but the
+	// destination file system is unencrypted.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeDependencyTimeout for service response error code
 	// "DependencyTimeout".
 	//
@@ -163,6 +170,12 @@ const (
 	// system specified.
 	ErrCodePolicyNotFound = "PolicyNotFound"
 
+	// ErrCodeReplicationAlreadyExists for service response error code
+	// "ReplicationAlreadyExists".
+	//
+	// Returned if the file system is already included in a replication configuration.>
+	ErrCodeReplicationAlreadyExists = "ReplicationAlreadyExists"
+
 	// ErrCodeReplicationNotFound for service response error code
 	// "ReplicationNotFound".
 	//
@@ -193,7 +206,8 @@ const (
 	// "ThrottlingException".
 	//
 	// Returned when the CreateAccessPoint API action is called too quickly and
-	// the number of Access Points in the account is nearing the limit of 120.
+	// the number of Access Points on the file system is nearing the limit of 120
+	// (https://docs.aws.amazon.com/efs/latest/ug/limits.html#limits-efs-resources-per-account-per-region).
 	ErrCodeThrottlingException = "ThrottlingException"
 
 	// ErrCodeThroughputLimitExceeded for service response error code
@@ -231,6 +245,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessPointNotFound":               newErrorAccessPointNotFound,
 	"AvailabilityZonesMismatch":         newErrorAvailabilityZonesMismatch,
 	"BadRequest":                        newErrorBadRequest,
+	"ConflictException":                 newErrorConflictException,
 	"DependencyTimeout":                 newErrorDependencyTimeout,
 	"FileSystemAlreadyExists":           newErrorFileSystemAlreadyExists,
 	"FileSystemInUse":                   newErrorFileSystemInUse,
@@ -247,6 +262,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"NetworkInterfaceLimitExceeded":     newErrorNetworkInterfaceLimitExceeded,
 	"NoFreeAddressesInSubnet":           newErrorNoFreeAddressesInSubnet,
 	"PolicyNotFound":                    newErrorPolicyNotFound,
+	"ReplicationAlreadyExists":          newErrorReplicationAlreadyExists,
 	"ReplicationNotFound":               newErrorReplicationNotFound,
 	"SecurityGroupLimitExceeded":        newErrorSecurityGroupLimitExceeded,
 	"SecurityGroupNotFound":             newErrorSecurityGroupNotFound,
