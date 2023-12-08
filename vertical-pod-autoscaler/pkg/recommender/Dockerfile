@@ -12,11 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+FROM --platform=$BUILDPLATFORM golang:1.21.5 as builder
+
+ENV GOPATH /gopath/
+ENV PATH $GOPATH/bin:$PATH
+
+COPY . /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
+WORKDIR /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler
+
+ARG TARGETOS TARGETARCH
+
+RUN CGO_ENABLED=0 LD_FLAGS=-s GOARCH=$TARGETARCH GOOS=$TARGETOS go build -C pkg/recommender -mod vendor -o recommender-$TARGETARCH
+
 FROM gcr.io/distroless/static:latest
 MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
 
-ARG ARCH
-COPY recommender-$ARCH /recommender
+ARG TARGETARCH
+
+COPY --from=builder /gopath/src/k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/recommender-$TARGETARCH /recommender
 
 ENTRYPOINT ["/recommender"]
 CMD ["--v=4", "--stderrthreshold=info", "--prometheus-address=http://prometheus.monitoring.svc"]
