@@ -22,6 +22,7 @@
   - [Resource Policy Overriding Limit Range](#resource-policy-overriding-limit-range)
   - [Starting multiple recommenders](#starting-multiple-recommenders)
   - [Using CPU management with static policy](#using-cpu-management-with-static-policy)
+  - [Controlling eviction behavior based on scaling direction and resource](#controlling-eviction-behavior-based-on-scaling-direction-and-resource)
 - [Known limitations](#known-limitations)
 - [Related links](#related-links)
 
@@ -291,7 +292,7 @@ It will maintain limit to request ratio specified for all containers.
 
 VPA will try to cap recommendations between min and max of
 [limit ranges](https://kubernetes.io/docs/concepts/policy/limit-range/). If limit range conflicts
-and VPA resource policy conflict, VPA will follow VPA policy (and set values outside the limit
+with VPA resource policy, VPA will follow VPA policy (and set values outside the limit
 range).
 
 To disable getting VPA recommendations for an individual container, set `mode` to `"Off"` in `containerPolicies`.

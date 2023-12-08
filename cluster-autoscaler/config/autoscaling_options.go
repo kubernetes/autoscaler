@@ -60,8 +60,8 @@ type GCEOptions struct {
 	ConcurrentRefreshes int
 	// MigInstancesMinRefreshWaitTime is the minimum time which needs to pass before GCE MIG instances from a given MIG can be refreshed.
 	MigInstancesMinRefreshWaitTime time.Duration
-	// ExpanderEphemeralStorageSupport is whether scale-up takes ephemeral storage resources into account.
-	ExpanderEphemeralStorageSupport bool
+	// DomainUrl is the GCE url used to make calls to GCE API.
+	DomainUrl string
 }
 
 const (
@@ -221,12 +221,8 @@ type AutoscalingOptions struct {
 	AWSUseStaticInstanceList bool
 	// GCEOptions contain autoscaling options specific to GCE cloud provider.
 	GCEOptions GCEOptions
-	// Path to kube configuration if available
-	KubeConfigPath string
-	// Burst setting for kubernetes client
-	KubeClientBurst int
-	// QPS setting for kubernetes client
-	KubeClientQPS float64
+	// KubeClientOpts specify options for kube client
+	KubeClientOpts KubeClientOptions
 	// ClusterAPICloudConfigAuthoritative tells the Cluster API provider to treat the CloudConfig option as authoritative and
 	// not use KubeConfigPath as a fallback when it is not provided.
 	ClusterAPICloudConfigAuthoritative bool
@@ -277,4 +273,16 @@ type AutoscalingOptions struct {
 	// dynamicNodeDeleteDelayAfterTaintEnabled is used to enable/disable dynamic adjustment of NodeDeleteDelayAfterTaint
 	// based on the latency between the CA and the api-server
 	DynamicNodeDeleteDelayAfterTaintEnabled bool
+	// BypassedSchedulers are used to specify which schedulers to bypass their processing
+	BypassedSchedulers map[string]bool
+}
+
+// KubeClientOptions specify options for kube client
+type KubeClientOptions struct {
+	// Master specifies master location.
+	Master string
+	// Path to kube configuration if available
+	KubeConfigPath string
+	// APIContentType specifies type of requests sent to APIServer.
+	APIContentType string
 }

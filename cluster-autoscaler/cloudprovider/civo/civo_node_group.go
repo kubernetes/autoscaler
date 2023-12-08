@@ -19,10 +19,13 @@ package civo
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	civocloud "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/civo/civo-cloud-sdk-go"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	autoscaler "k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/klog/v2"
@@ -33,13 +36,26 @@ import (
 // configuration info and functions to control a set of nodes that have the
 // same capacity and set of labels.
 type NodeGroup struct {
-	id         string
-	clusterID  string
-	client     nodeGroupClient
-	nodePool   *civocloud.KubernetesPool
-	minSize    int
-	maxSize    int
-	getOptions *autoscaler.NodeGroupAutoscalingOptions
+	id           string
+	clusterID    string
+	client       nodeGroupClient
+	nodePool     *civocloud.KubernetesPool
+	minSize      int
+	maxSize      int
+	getOptions   *autoscaler.NodeGroupAutoscalingOptions
+	nodeTemplate *CivoNodeTemplate
+}
+
+// CivoNodeTemplate reference to implements TemplateNodeInfo
+type CivoNodeTemplate struct {
+	// Size represents the pool size of civocloud
+	Size          string            `json:"size,omitempty"`
+	CPUCores      int               `json:"cpu_cores,omitempty"`
+	RAMMegabytes  int               `json:"ram_mb,omitempty"`
+	DiskGigabytes int               `json:"disk_gb,omitempty"`
+	Labels        map[string]string `json:"labels,omitempty"`
+	Taints        []apiv1.Taint     `json:"taint,omitempty"`
+	Region        string            `json:"region,omitempty"`
 }
 
 // MaxSize returns maximum size of the node group.
@@ -90,9 +106,9 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 		return err
 	}
 
-	if updatedNodePool.Count != targetSize {
-		return fmt.Errorf("couldn't increase size to %d (delta: %d). Current size is: %d",
-			targetSize, delta, updatedNodePool.Count)
+	if targetSize > n.MaxSize() {
+		return fmt.Errorf("size increase too large. current: %d, desired: %d, max: %d",
+			updatedNodePool.Count, targetSize, n.MaxSize())
 	}
 
 	// update internal cache
@@ -164,7 +180,7 @@ func (n *NodeGroup) Id() string {
 
 // Debug returns a string containing all information regarding this node group.
 func (n *NodeGroup) Debug() string {
-	return fmt.Sprintf("cluster ID: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
+	return fmt.Sprintf("id: %s (min:%d max:%d)", n.Id(), n.MinSize(), n.MaxSize())
 }
 
 // Nodes returns a list of all nodes that belong to this node group.  It is
@@ -186,7 +202,15 @@ func (n *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 // that are started on the node by default, using manifest (most likely only
 // kube-proxy). Implementation optional.
 func (n *NodeGroup) TemplateNodeInfo() (*schedulerframework.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	node, err := n.buildNodeFromTemplate(n.Id(), n.nodeTemplate)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build node from template")
+	}
+
+	nodeInfo := schedulerframework.NewNodeInfo(cloudprovider.BuildKubeProxy(n.Id()))
+	nodeInfo.SetNode(node)
+
+	return nodeInfo, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
@@ -258,4 +282,57 @@ func toInstanceStatus(nodeState string) *cloudprovider.InstanceStatus {
 	}
 
 	return st
+}
+
+// buildNodeFromTemplate returns a Node object from the given template
+func (n *NodeGroup) buildNodeFromTemplate(name string, template *CivoNodeTemplate) (*apiv1.Node, error) {
+	node := &apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-nodegroup-%d", name, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(template.CPUCores*1000), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.RAMMegabytes*1024*1024), resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *resource.NewQuantity(int64(template.DiskGigabytes*1024*1024), resource.DecimalSI)
+
+	node.Status.Allocatable = node.Status.Capacity
+
+	// GenericLabels and NodeLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildLabels(template, nodeName))
+
+	_, ok := node.Labels["kubernetes.civo.com/civo-node-pool"]
+	if !ok {
+		node.Labels["kubernetes.civo.com/civo-node-pool"] = n.Id()
+	}
+
+	node.Spec.Taints = template.Taints
+
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+
+	return node, nil
+}
+
+func buildLabels(template *CivoNodeTemplate, nodeName string) map[string]string {
+	result := make(map[string]string)
+
+	// NodeLabels
+	for key, value := range template.Labels {
+		result[key] = value
+	}
+
+	// GenericLabels
+	result[apiv1.LabelOSStable] = cloudprovider.DefaultOS
+	result[apiv1.LabelInstanceTypeStable] = template.Size
+	result[apiv1.LabelTopologyRegion] = template.Region
+	result[apiv1.LabelHostname] = nodeName
+
+	return result
 }

@@ -78,8 +78,8 @@ const (
 	// ErrCodeNotFoundException for service response error code
 	// "NotFoundException".
 	//
-	// A service resource associated with the request could not be found. Clients
-	// should not retry such requests.
+	// THe requested resources was not found. The resource was either not created
+	// yet or deleted.
 	ErrCodeNotFoundException = "NotFoundException"
 
 	// ErrCodeOutOfCapacityException for service response error code

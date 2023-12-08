@@ -18,7 +18,7 @@ const (
 	// ErrCodeInternalServerError for service response error code
 	// "InternalServerError".
 	//
-	// Your request is valid, but Network Firewall couldn’t perform the operation
+	// Your request is valid, but Network Firewall couldn't perform the operation
 	// because of a system problem. Retry your request.
 	ErrCodeInternalServerError = "InternalServerError"
 

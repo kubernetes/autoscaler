@@ -75,14 +75,6 @@ azureClientID: ""
 # Required if `cloudProvider=azure`
 azureClientSecret: ""
 
-# azureClusterName -- Azure AKS cluster name.
-# Required if `cloudProvider=azure`
-azureClusterName: ""
-
-# azureNodeResourceGroup -- Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`.
-# Required if `cloudProvider=azure`
-azureNodeResourceGroup: ""
-
 # azureResourceGroup -- Azure resource group that the cluster is located.
 # Required if `cloudProvider=azure`
 azureResourceGroup: ""
@@ -230,7 +222,7 @@ image:
   # image.repository -- Image repository
   repository: registry.k8s.io/autoscaling/cluster-autoscaler
   # image.tag -- Image tag
-  tag: v1.27.2
+  tag: v1.28.2
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
@@ -243,6 +235,9 @@ image:
 
 # kubeTargetVersionOverride -- Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands.
 kubeTargetVersionOverride: ""
+
+# kwokConfigMapName -- configmap for configuring kwok provider
+kwokConfigMapName: "kwok-provider-config"
 
 # magnumCABundlePath -- Path to the host's CA bundle, from `ca-file` in the cloud-config file.
 magnumCABundlePath: "/etc/kubernetes/ca-bundle.crt"
@@ -320,6 +315,9 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 300Mi
+
+# revisionHistoryLimit -- The number of revisions to keep.
+revisionHistoryLimit: 10
 
 # securityContext -- [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/)
 securityContext: {}

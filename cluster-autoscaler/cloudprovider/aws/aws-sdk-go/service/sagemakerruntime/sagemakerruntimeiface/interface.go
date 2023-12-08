@@ -67,6 +67,10 @@ type SageMakerRuntimeAPI interface {
 	InvokeEndpointAsync(*sagemakerruntime.InvokeEndpointAsyncInput) (*sagemakerruntime.InvokeEndpointAsyncOutput, error)
 	InvokeEndpointAsyncWithContext(aws.Context, *sagemakerruntime.InvokeEndpointAsyncInput, ...request.Option) (*sagemakerruntime.InvokeEndpointAsyncOutput, error)
 	InvokeEndpointAsyncRequest(*sagemakerruntime.InvokeEndpointAsyncInput) (*request.Request, *sagemakerruntime.InvokeEndpointAsyncOutput)
+
+	InvokeEndpointWithResponseStream(*sagemakerruntime.InvokeEndpointWithResponseStreamInput) (*sagemakerruntime.InvokeEndpointWithResponseStreamOutput, error)
+	InvokeEndpointWithResponseStreamWithContext(aws.Context, *sagemakerruntime.InvokeEndpointWithResponseStreamInput, ...request.Option) (*sagemakerruntime.InvokeEndpointWithResponseStreamOutput, error)
+	InvokeEndpointWithResponseStreamRequest(*sagemakerruntime.InvokeEndpointWithResponseStreamInput) (*request.Request, *sagemakerruntime.InvokeEndpointWithResponseStreamOutput)
 }
 
 var _ SageMakerRuntimeAPI = (*sagemakerruntime.SageMakerRuntime)(nil)

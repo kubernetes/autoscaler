@@ -11,6 +11,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   selector:
     matchLabels:
 {{ include "cluster-autoscaler.instance-name" . | indent 6 }}
@@ -88,10 +89,10 @@ spec:
           {{- end }}
           {{- else if eq .Values.cloudProvider "magnum" }}
             {{- if .Values.autoDiscovery.clusterName }}
-            - --cluster-name={{ .Values.autoDiscovery.clusterName }}
+            - --cluster-name={{ tpl (.Values.autoDiscovery.clusterName) . }}
             - --node-group-auto-discovery=magnum:role={{ tpl (join "," .Values.autoDiscovery.roles) . }}
             {{- else }}
-            - --cluster-name={{ .Values.magnumClusterName }}
+            - --cluster-name={{ tpl (.Values.magnumClusterName) . }}
             {{- end }}
           {{- else if eq .Values.cloudProvider "clusterapi" }}
             {{- if or .Values.autoDiscovery.clusterName .Values.autoDiscovery.labels }}
@@ -110,7 +111,7 @@ spec:
             {{- end }}
           {{- else if eq .Values.cloudProvider "azure" }}
             {{- if .Values.autoDiscovery.clusterName }}
-            - --node-group-auto-discovery=label:cluster-autoscaler-enabled=true,cluster-autoscaler-name={{ .Values.autoDiscovery.clusterName }}
+            - --node-group-auto-discovery=label:cluster-autoscaler-enabled=true,cluster-autoscaler-name={{ tpl (.Values.autoDiscovery.clusterName) . }}
             {{- end }}
           {{- end }}
           {{- if eq .Values.cloudProvider "magnum" }}
@@ -124,6 +125,14 @@ spec:
             {{- end }}
           {{- end }}
           env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
           {{- if and (eq .Values.cloudProvider "aws") (ne .Values.awsRegion "") }}
             - name: AWS_REGION
               value: "{{ .Values.awsRegion }}"
@@ -190,6 +199,25 @@ spec:
                   key: NodeResourceGroup
                   name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
             {{- end }}
+          {{- else if eq .Values.cloudProvider "exoscale" }}
+            - name: EXOSCALE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: api-key
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: EXOSCALE_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: api-secret
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+            - name: EXOSCALE_ZONE
+              valueFrom:
+                secretKeyRef:
+                  key: api-zone
+                  name: {{ default (include "cluster-autoscaler.fullname" .) .Values.secretKeyRefNameOverride }}
+          {{- else if eq .Values.cloudProvider "kwok" }}
+            - name: KWOK_PROVIDER_CONFIGMAP
+              value: "{{.Values.kwokConfigMapName | default "kwok-provider-config"}}"
           {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}

@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Sagemaker Edge Manager.
 //	func myFunc(svc sagemakeredgemanageriface.SagemakerEdgeManagerAPI) bool {
-//	    // Make svc.GetDeviceRegistration request
+//	    // Make svc.GetDeployments request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockSagemakerEdgeManagerClient struct {
 //	    sagemakeredgemanageriface.SagemakerEdgeManagerAPI
 //	}
-//	func (m *mockSagemakerEdgeManagerClient) GetDeviceRegistration(input *sagemakeredgemanager.GetDeviceRegistrationInput) (*sagemakeredgemanager.GetDeviceRegistrationOutput, error) {
+//	func (m *mockSagemakerEdgeManagerClient) GetDeployments(input *sagemakeredgemanager.GetDeploymentsInput) (*sagemakeredgemanager.GetDeploymentsOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type SagemakerEdgeManagerAPI interface {
+	GetDeployments(*sagemakeredgemanager.GetDeploymentsInput) (*sagemakeredgemanager.GetDeploymentsOutput, error)
+	GetDeploymentsWithContext(aws.Context, *sagemakeredgemanager.GetDeploymentsInput, ...request.Option) (*sagemakeredgemanager.GetDeploymentsOutput, error)
+	GetDeploymentsRequest(*sagemakeredgemanager.GetDeploymentsInput) (*request.Request, *sagemakeredgemanager.GetDeploymentsOutput)
+
 	GetDeviceRegistration(*sagemakeredgemanager.GetDeviceRegistrationInput) (*sagemakeredgemanager.GetDeviceRegistrationOutput, error)
 	GetDeviceRegistrationWithContext(aws.Context, *sagemakeredgemanager.GetDeviceRegistrationInput, ...request.Option) (*sagemakeredgemanager.GetDeviceRegistrationOutput, error)
 	GetDeviceRegistrationRequest(*sagemakeredgemanager.GetDeviceRegistrationInput) (*request.Request, *sagemakeredgemanager.GetDeviceRegistrationOutput)

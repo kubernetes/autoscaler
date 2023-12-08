@@ -34,7 +34,6 @@ import (
 
 	klog "k8s.io/klog/v2"
 
-	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/containerserviceclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/diskclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/interfaceclient"
 	"sigs.k8s.io/cloud-provider-azure/pkg/azureclients/storageaccountclient"
@@ -151,7 +150,6 @@ type azClient struct {
 	interfacesClient                interfaceclient.Interface
 	disksClient                     diskclient.Interface
 	storageAccountsClient           storageaccountclient.Interface
-	managedKubernetesServicesClient containerserviceclient.Interface
 	skuClient                       compute.ResourceSkusClient
 }
 
@@ -274,10 +272,6 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	disksClient := diskclient.New(diskClientConfig)
 	klog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
 
-	aksClientConfig := azClientConfig.WithRateLimiter(cfg.KubernetesServiceRateLimit)
-	kubernetesServicesClient := containerserviceclient.New(aksClientConfig)
-	klog.V(5).Infof("Created kubernetes services client with authorizer: %v", kubernetesServicesClient)
-
 	// Reference on why selecting ResourceManagerEndpoint as baseURI -
 	// https://github.com/Azure/go-autorest/blob/main/autorest/azure/environments.go
 	skuClient := compute.NewResourceSkusClientWithBaseURI(azClientConfig.ResourceManagerEndpoint, cfg.SubscriptionID)
@@ -292,7 +286,6 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		deploymentsClient:               deploymentsClient,
 		virtualMachinesClient:           virtualMachinesClient,
 		storageAccountsClient:           storageAccountsClient,
-		managedKubernetesServicesClient: kubernetesServicesClient,
 		skuClient:                       skuClient,
 	}, nil
 }

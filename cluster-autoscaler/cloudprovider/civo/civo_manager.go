@@ -43,6 +43,8 @@ type nodeGroupClient interface {
 	UpdateKubernetesClusterPool(cid, pid string, config *civocloud.KubernetesClusterPoolUpdateConfig) (*civocloud.KubernetesPool, error)
 	// DeleteKubernetesClusterPoolInstance deletes a instance from pool
 	DeleteKubernetesClusterPoolInstance(clusterID, poolID, instanceID string) (*civocloud.SimpleResponse, error)
+	// FindInstanceSizes find instance size
+	FindInstanceSizes(size string) (*civocloud.InstanceSize, error)
 }
 
 // Manager handles Civo communication and data caching of
@@ -148,11 +150,11 @@ func (m *Manager) Refresh() error {
 			klog.V(4).Infof("found configuration for workers node group: min: %d max: %d", minSize, maxSize)
 		} else {
 			poolConfigFound = true
-			pool := m.getNodeGroupConfig(spec, pools)
-			if pool != nil {
-				poolGroups = append(poolGroups, pool)
+			nodeGroup := m.getNodeGroupConfig(spec, pools)
+			if nodeGroup != nil {
+				poolGroups = append(poolGroups, nodeGroup)
+				klog.V(4).Infof("found configuration for pool node group: min: %d max: %d", nodeGroup.minSize, nodeGroup.maxSize)
 			}
-			klog.V(4).Infof("found configuration for pool node group: min: %d max: %d", minSize, maxSize)
 		}
 	}
 
@@ -164,12 +166,13 @@ func (m *Manager) Refresh() error {
 			klog.V(4).Infof("adding node pool: %q", nodePool.ID)
 
 			workerGroups = append(workerGroups, &NodeGroup{
-				id:        nodePool.ID,
-				clusterID: m.clusterID,
-				client:    m.client,
-				nodePool:  &np,
-				minSize:   minSize,
-				maxSize:   maxSize,
+				id:           nodePool.ID,
+				clusterID:    m.clusterID,
+				client:       m.client,
+				nodePool:     &np,
+				minSize:      minSize,
+				maxSize:      maxSize,
+				nodeTemplate: getCivoNodeTemplate(nodePool, m.client),
 			})
 		}
 		m.nodeGroups = workerGroups
@@ -197,14 +200,40 @@ func (m *Manager) getNodeGroupConfig(spec *dynamic.NodeGroupSpec, pools []civocl
 			klog.V(4).Infof("adding node pool: %q min: %d max: %d", nodePool.ID, spec.MinSize, spec.MaxSize)
 
 			return &NodeGroup{
-				id:        nodePool.ID,
-				clusterID: m.clusterID,
-				client:    m.client,
-				nodePool:  &np,
-				minSize:   spec.MinSize,
-				maxSize:   spec.MaxSize,
+				id:           nodePool.ID,
+				clusterID:    m.clusterID,
+				client:       m.client,
+				nodePool:     &np,
+				minSize:      spec.MinSize,
+				maxSize:      spec.MaxSize,
+				nodeTemplate: getCivoNodeTemplate(nodePool, m.client),
 			}
 		}
 	}
 	return nil
+}
+
+// getCivoNodeTemplate returns the CivoNodeTemplate for the given node pool
+func getCivoNodeTemplate(pool civocloud.KubernetesPool, client nodeGroupClient) *CivoNodeTemplate {
+	template := &CivoNodeTemplate{}
+	size, err := client.FindInstanceSizes(pool.Size)
+	if err != nil {
+		klog.V(4).ErrorS(err, "Failed to get size")
+		template.Size = pool.Size
+		template.CPUCores = 2
+		template.RAMMegabytes = 1024 * 1024
+		template.DiskGigabytes = 1024 * 1024
+		template.Labels["kubernetes.civo.com/civo-node-pool"] = pool.ID
+		return template
+	}
+
+	template.Size = pool.Size
+	template.CPUCores = size.CPUCores
+	template.RAMMegabytes = size.RAMMegabytes
+	template.DiskGigabytes = size.DiskGigabytes
+	template.Labels = pool.Labels
+	template.Region = pool.Region
+	template.Taints = pool.Taints
+
+	return template
 }

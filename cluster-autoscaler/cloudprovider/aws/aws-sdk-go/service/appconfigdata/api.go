@@ -57,7 +57,7 @@ func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurat
 // Retrieves the latest deployed configuration. This API may return empty configuration
 // data if the client already has the latest version. For more information about
 // this API action and to view example CLI commands that show how to use it
-// with the StartConfigurationSession API action, see Receiving the configuration
+// with the StartConfigurationSession API action, see Retrieving the configuration
 // (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration)
 // in the AppConfig User Guide.
 //
@@ -159,7 +159,7 @@ func (c *AppConfigData) StartConfigurationSessionRequest(input *StartConfigurati
 //
 // Starts a configuration session used to retrieve a deployed configuration.
 // For more information about this API action and to view example CLI commands
-// that show how to use it with the GetLatestConfiguration API action, see Receiving
+// that show how to use it with the GetLatestConfiguration API action, see Retrieving
 // the configuration (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration)
 // in the AppConfig User Guide.
 //
@@ -315,8 +315,12 @@ type GetLatestConfigurationInput struct {
 	// Token describing the current state of the configuration session. To obtain
 	// a token, first call the StartConfigurationSession API. Note that every call
 	// to GetLatestConfiguration will return a new ConfigurationToken (NextPollConfigurationToken
-	// in the response) and MUST be provided to subsequent GetLatestConfiguration
+	// in the response) and must be provided to subsequent GetLatestConfiguration
 	// API calls.
+	//
+	// This token should only be used once. To support long poll use cases, the
+	// token is valid for up to 24 hours. If a GetLatestConfiguration call uses
+	// an expired token, the system returns BadRequestException.
 	//
 	// ConfigurationToken is a required field
 	ConfigurationToken *string `location:"querystring" locationName:"configuration_token" type:"string" required:"true"`
@@ -374,13 +378,23 @@ type GetLatestConfigurationOutput struct {
 	ContentType *string `location:"header" locationName:"Content-Type" type:"string"`
 
 	// The latest token describing the current state of the configuration session.
-	// This MUST be provided to the next call to GetLatestConfiguration.
+	// This must be provided to the next call to GetLatestConfiguration.
+	//
+	// This token should only be used once. To support long poll use cases, the
+	// token is valid for up to 24 hours. If a GetLatestConfiguration call uses
+	// an expired token, the system returns BadRequestException.
 	NextPollConfigurationToken *string `location:"header" locationName:"Next-Poll-Configuration-Token" type:"string"`
 
 	// The amount of time the client should wait before polling for configuration
 	// updates again. Use RequiredMinimumPollIntervalInSeconds to set the desired
 	// poll interval.
 	NextPollIntervalInSeconds *int64 `location:"header" locationName:"Next-Poll-Interval-In-Seconds" type:"integer"`
+
+	// The user-defined label for the AppConfig hosted configuration version. This
+	// attribute doesn't apply if the configuration is not from an AppConfig hosted
+	// configuration version. If the client already has the latest version of the
+	// configuration data, this value is empty.
+	VersionLabel *string `location:"header" locationName:"Version-Label" type:"string"`
 }
 
 // String returns the string representation.
@@ -422,6 +436,12 @@ func (s *GetLatestConfigurationOutput) SetNextPollConfigurationToken(v string) *
 // SetNextPollIntervalInSeconds sets the NextPollIntervalInSeconds field's value.
 func (s *GetLatestConfigurationOutput) SetNextPollIntervalInSeconds(v int64) *GetLatestConfigurationOutput {
 	s.NextPollIntervalInSeconds = &v
+	return s
+}
+
+// SetVersionLabel sets the VersionLabel field's value.
+func (s *GetLatestConfigurationOutput) SetVersionLabel(v string) *GetLatestConfigurationOutput {
+	s.VersionLabel = &v
 	return s
 }
 
@@ -612,7 +632,7 @@ type StartConfigurationSessionInput struct {
 
 	// Sets a constraint on a session. If you specify a value of, for example, 60
 	// seconds, then the client that established the session can't call GetLatestConfiguration
-	// more frequently then every 60 seconds.
+	// more frequently than every 60 seconds.
 	RequiredMinimumPollIntervalInSeconds *int64 `min:"15" type:"integer"`
 }
 
@@ -696,8 +716,13 @@ type StartConfigurationSessionOutput struct {
 	// to the GetLatestConfiguration API to retrieve configuration data.
 	//
 	// This token should only be used once in your first call to GetLatestConfiguration.
-	// You MUST use the new token in the GetLatestConfiguration response (NextPollConfigurationToken)
+	// You must use the new token in the GetLatestConfiguration response (NextPollConfigurationToken)
 	// in each subsequent call to GetLatestConfiguration.
+	//
+	// The InitialConfigurationToken and NextPollConfigurationToken should only
+	// be used once. To support long poll use cases, the tokens are valid for up
+	// to 24 hours. If a GetLatestConfiguration call uses an expired token, the
+	// system returns BadRequestException.
 	InitialConfigurationToken *string `type:"string"`
 }
 

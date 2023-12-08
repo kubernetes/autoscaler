@@ -429,13 +429,14 @@ To refresh static list, please run `go run ec2_instance_types/gen.go` under
 
 If you want to use a newer version of the AWS SDK than the version currently vendored as a direct dependency by Cluster Autoscaler, then you can use the version vendored under this AWS cloudprovider.
 
-The current version vendored is `v1.44.24`.
+The current version vendored is `v1.48.7`.
 
 If you want to update the vendored AWS SDK to a newer version, please make sure of the following:
 
 1. Place the copy of the new desired version of the AWS SDK under the `aws-sdk-go` directory.
-2. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`).
-3. Update the version number above to indicate the new vendored version.
+2. Remove folders : models and examples. Remove _test.go file `find . -name '*_test.go' -exec rm {}+`
+3. Update the import statements within the newly-copied AWS SDK to reference the new paths (e.g., `github.com/aws/aws-sdk-go/aws/awsutil` -> `k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil`). You can use this command from the aws-sdk-go folder `find . -type f -exec sed -i ‘s#github.com/aws/aws-sdk-go#k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go#’ {} \;`
+4. Update the version number above to indicate the new vendored version.
 
 ## Using cloud config with helm
 
@@ -496,11 +497,8 @@ Please note: it is also possible to mount the cloud config file from host:
   enabled, which means it will actively work to balance the number of instances
   between AZs, and possibly terminate instances. If your applications could be
   impacted from sudden termination, you can either suspend the AZRebalance
-  feature, or use a tool for automatic draining upon ASG scale-in such as the
-  [k8s-node-drainer](https://github.com/aws-samples/amazon-k8s-node-drainer). The
-  [AWS Node Termination
-  Handler](https://github.com/aws/aws-node-termination-handler/issues/95) will
-  also support this use-case in the future.
+  feature, or use a tool for automatic draining upon ASG scale-in such as the [AWS Node Termination
+  Handler](https://github.com/aws/aws-node-termination-handler/).
 - By default, cluster autoscaler will not terminate nodes running pods in the
   kube-system namespace. You can override this default behaviour by passing in
   the `--skip-nodes-with-system-pods=false` flag.

@@ -88,6 +88,10 @@ type Route53ResolverAPI interface {
 	CreateFirewallRuleGroupWithContext(aws.Context, *route53resolver.CreateFirewallRuleGroupInput, ...request.Option) (*route53resolver.CreateFirewallRuleGroupOutput, error)
 	CreateFirewallRuleGroupRequest(*route53resolver.CreateFirewallRuleGroupInput) (*request.Request, *route53resolver.CreateFirewallRuleGroupOutput)
 
+	CreateOutpostResolver(*route53resolver.CreateOutpostResolverInput) (*route53resolver.CreateOutpostResolverOutput, error)
+	CreateOutpostResolverWithContext(aws.Context, *route53resolver.CreateOutpostResolverInput, ...request.Option) (*route53resolver.CreateOutpostResolverOutput, error)
+	CreateOutpostResolverRequest(*route53resolver.CreateOutpostResolverInput) (*request.Request, *route53resolver.CreateOutpostResolverOutput)
+
 	CreateResolverEndpoint(*route53resolver.CreateResolverEndpointInput) (*route53resolver.CreateResolverEndpointOutput, error)
 	CreateResolverEndpointWithContext(aws.Context, *route53resolver.CreateResolverEndpointInput, ...request.Option) (*route53resolver.CreateResolverEndpointOutput, error)
 	CreateResolverEndpointRequest(*route53resolver.CreateResolverEndpointInput) (*request.Request, *route53resolver.CreateResolverEndpointOutput)
@@ -111,6 +115,10 @@ type Route53ResolverAPI interface {
 	DeleteFirewallRuleGroup(*route53resolver.DeleteFirewallRuleGroupInput) (*route53resolver.DeleteFirewallRuleGroupOutput, error)
 	DeleteFirewallRuleGroupWithContext(aws.Context, *route53resolver.DeleteFirewallRuleGroupInput, ...request.Option) (*route53resolver.DeleteFirewallRuleGroupOutput, error)
 	DeleteFirewallRuleGroupRequest(*route53resolver.DeleteFirewallRuleGroupInput) (*request.Request, *route53resolver.DeleteFirewallRuleGroupOutput)
+
+	DeleteOutpostResolver(*route53resolver.DeleteOutpostResolverInput) (*route53resolver.DeleteOutpostResolverOutput, error)
+	DeleteOutpostResolverWithContext(aws.Context, *route53resolver.DeleteOutpostResolverInput, ...request.Option) (*route53resolver.DeleteOutpostResolverOutput, error)
+	DeleteOutpostResolverRequest(*route53resolver.DeleteOutpostResolverInput) (*request.Request, *route53resolver.DeleteOutpostResolverOutput)
 
 	DeleteResolverEndpoint(*route53resolver.DeleteResolverEndpointInput) (*route53resolver.DeleteResolverEndpointOutput, error)
 	DeleteResolverEndpointWithContext(aws.Context, *route53resolver.DeleteResolverEndpointInput, ...request.Option) (*route53resolver.DeleteResolverEndpointOutput, error)
@@ -159,6 +167,10 @@ type Route53ResolverAPI interface {
 	GetFirewallRuleGroupPolicy(*route53resolver.GetFirewallRuleGroupPolicyInput) (*route53resolver.GetFirewallRuleGroupPolicyOutput, error)
 	GetFirewallRuleGroupPolicyWithContext(aws.Context, *route53resolver.GetFirewallRuleGroupPolicyInput, ...request.Option) (*route53resolver.GetFirewallRuleGroupPolicyOutput, error)
 	GetFirewallRuleGroupPolicyRequest(*route53resolver.GetFirewallRuleGroupPolicyInput) (*request.Request, *route53resolver.GetFirewallRuleGroupPolicyOutput)
+
+	GetOutpostResolver(*route53resolver.GetOutpostResolverInput) (*route53resolver.GetOutpostResolverOutput, error)
+	GetOutpostResolverWithContext(aws.Context, *route53resolver.GetOutpostResolverInput, ...request.Option) (*route53resolver.GetOutpostResolverOutput, error)
+	GetOutpostResolverRequest(*route53resolver.GetOutpostResolverInput) (*request.Request, *route53resolver.GetOutpostResolverOutput)
 
 	GetResolverConfig(*route53resolver.GetResolverConfigInput) (*route53resolver.GetResolverConfigOutput, error)
 	GetResolverConfigWithContext(aws.Context, *route53resolver.GetResolverConfigInput, ...request.Option) (*route53resolver.GetResolverConfigOutput, error)
@@ -241,6 +253,13 @@ type Route53ResolverAPI interface {
 
 	ListFirewallRulesPages(*route53resolver.ListFirewallRulesInput, func(*route53resolver.ListFirewallRulesOutput, bool) bool) error
 	ListFirewallRulesPagesWithContext(aws.Context, *route53resolver.ListFirewallRulesInput, func(*route53resolver.ListFirewallRulesOutput, bool) bool, ...request.Option) error
+
+	ListOutpostResolvers(*route53resolver.ListOutpostResolversInput) (*route53resolver.ListOutpostResolversOutput, error)
+	ListOutpostResolversWithContext(aws.Context, *route53resolver.ListOutpostResolversInput, ...request.Option) (*route53resolver.ListOutpostResolversOutput, error)
+	ListOutpostResolversRequest(*route53resolver.ListOutpostResolversInput) (*request.Request, *route53resolver.ListOutpostResolversOutput)
+
+	ListOutpostResolversPages(*route53resolver.ListOutpostResolversInput, func(*route53resolver.ListOutpostResolversOutput, bool) bool) error
+	ListOutpostResolversPagesWithContext(aws.Context, *route53resolver.ListOutpostResolversInput, func(*route53resolver.ListOutpostResolversOutput, bool) bool, ...request.Option) error
 
 	ListResolverConfigs(*route53resolver.ListResolverConfigsInput) (*route53resolver.ListResolverConfigsOutput, error)
 	ListResolverConfigsWithContext(aws.Context, *route53resolver.ListResolverConfigsInput, ...request.Option) (*route53resolver.ListResolverConfigsOutput, error)
@@ -340,6 +359,10 @@ type Route53ResolverAPI interface {
 	UpdateFirewallRuleGroupAssociation(*route53resolver.UpdateFirewallRuleGroupAssociationInput) (*route53resolver.UpdateFirewallRuleGroupAssociationOutput, error)
 	UpdateFirewallRuleGroupAssociationWithContext(aws.Context, *route53resolver.UpdateFirewallRuleGroupAssociationInput, ...request.Option) (*route53resolver.UpdateFirewallRuleGroupAssociationOutput, error)
 	UpdateFirewallRuleGroupAssociationRequest(*route53resolver.UpdateFirewallRuleGroupAssociationInput) (*request.Request, *route53resolver.UpdateFirewallRuleGroupAssociationOutput)
+
+	UpdateOutpostResolver(*route53resolver.UpdateOutpostResolverInput) (*route53resolver.UpdateOutpostResolverOutput, error)
+	UpdateOutpostResolverWithContext(aws.Context, *route53resolver.UpdateOutpostResolverInput, ...request.Option) (*route53resolver.UpdateOutpostResolverOutput, error)
+	UpdateOutpostResolverRequest(*route53resolver.UpdateOutpostResolverInput) (*request.Request, *route53resolver.UpdateOutpostResolverOutput)
 
 	UpdateResolverConfig(*route53resolver.UpdateResolverConfigInput) (*route53resolver.UpdateResolverConfigOutput, error)
 	UpdateResolverConfigWithContext(aws.Context, *route53resolver.UpdateResolverConfigInput, ...request.Option) (*route53resolver.UpdateResolverConfigOutput, error)

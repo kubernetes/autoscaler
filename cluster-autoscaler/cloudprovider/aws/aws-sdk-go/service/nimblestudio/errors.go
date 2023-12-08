@@ -39,7 +39,7 @@ const (
 	// Your current quota does not allow you to perform the request action. You
 	// can request increases for some quotas, and other quotas cannot be increased.
 	//
-	// Please use AWS Service Quotas to request an increase.
+	// Please use Amazon Web Services Service Quotas to request an increase.
 	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
 
 	// ErrCodeThrottlingException for service response error code

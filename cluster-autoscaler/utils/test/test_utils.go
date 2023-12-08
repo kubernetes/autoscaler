@@ -82,6 +82,13 @@ func MarkUnschedulable() func(*apiv1.Pod) {
 	}
 }
 
+// AddSchedulerName adds scheduler name to a pod.
+func AddSchedulerName(schedulerName string) func(*apiv1.Pod) {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.SchedulerName = schedulerName
+	}
+}
+
 // BuildDSTestPod creates a DaemonSet pod with cpu and memory.
 func BuildDSTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 

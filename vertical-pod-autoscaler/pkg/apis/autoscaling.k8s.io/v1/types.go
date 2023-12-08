@@ -126,7 +126,7 @@ type EvictionRequirement struct {
 	// Resources is a list of one or more resources that the condition applies
 	// to. If more than one resource is given, the EvictionRequirement is fulfilled
 	// if at least one resource meets `changeRequirement`.
-	Resources         []v1.ResourceName         `json:"resource" protobuf:"bytes,1,name=resources"`
+	Resources         []v1.ResourceName         `json:"resources" protobuf:"bytes,1,name=resources"`
 	ChangeRequirement EvictionChangeRequirement `json:"changeRequirement" protobuf:"bytes,2,name=changeRequirement"`
 }
 
