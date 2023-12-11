@@ -424,12 +424,18 @@ func createServer(n *hetznerNodeGroup) error {
 		return fmt.Errorf("could not create server type %s in region %s: %v", n.instanceType, n.region, err)
 	}
 
-	action := serverCreateResult.Action
 	server := serverCreateResult.Server
-	err = waitForServerAction(n.manager, server.Name, action)
-	if err != nil {
-		_ = n.manager.deleteServer(server)
-		return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
+
+	actions := []*hcloud.Action{serverCreateResult.Action}
+	actions = append(actions, serverCreateResult.NextActions...)
+
+	// Delete the server if any action (most importantly create_server & start_server) fails
+	for _, action := range actions {
+		err = waitForServerAction(n.manager, server.Name, action)
+		if err != nil {
+			_ = n.manager.deleteServer(server)
+			return fmt.Errorf("failed to start server %s error: %v", server.Name, err)
+		}
 	}
 
 	return nil
