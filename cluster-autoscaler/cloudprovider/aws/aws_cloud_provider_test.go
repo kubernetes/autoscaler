@@ -728,7 +728,7 @@ func TestHasInstance(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "node-2",
 			Annotations: map[string]string{
-				"k8s.io/cluster-autoscaler/enabled": "false",
+				"k8s.io/cluster-autoscaler-enabled": "false",
 			},
 		},
 		Spec: apiv1.NodeSpec{
