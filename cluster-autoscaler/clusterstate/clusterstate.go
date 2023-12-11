@@ -319,6 +319,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
+	metrics.UpdateNodeGroupTargetSize(targetSizes)
 
 	cloudProviderNodeInstances, err := csr.getCloudProviderNodeInstances()
 	if err != nil {
