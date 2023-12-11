@@ -14,4 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-sed -i s/'^\(const VerticalPodAutoscalerVersion = "\).*"'/\\1$1'"'/ vertical-pod-autoscaler/common/version.go
+new_version=$(cat -)
+sed -i s/'^\(const VerticalPodAutoscalerVersion = "\).*"'/\\1${new_version}'"'/ vertical-pod-autoscaler/common/version.go
