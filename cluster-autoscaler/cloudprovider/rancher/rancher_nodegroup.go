@@ -458,7 +458,7 @@ func parseResourceAnnotations(annotations map[string]string) (corev1.ResourceLis
 
 	cpuResources, err := resource.ParseQuantity(cpu)
 	if err != nil {
-		return nil, fmt.Errorf("Error %w: unable to parse cpu resources: %s", err, cpu)
+		return nil, fmt.Errorf("unable to parse cpu resources: %w", err)
 	}
 	memory, ok := annotations[resourceMemoryAnnotation]
 	if !ok {
@@ -467,7 +467,7 @@ func parseResourceAnnotations(annotations map[string]string) (corev1.ResourceLis
 
 	memoryResources, err := resource.ParseQuantity(memory)
 	if err != nil {
-		return nil, fmt.Errorf("Error %w: unable to parse memory resources: %s", err, memoryResources)
+		return nil, fmt.Errorf("unable to parse memory resources: %w", err)
 	}
 	ephemeralStorage, ok := annotations[resourceEphemeralStorageAnnotation]
 	if !ok {
@@ -476,7 +476,7 @@ func parseResourceAnnotations(annotations map[string]string) (corev1.ResourceLis
 
 	ephemeralStorageResources, err := resource.ParseQuantity(ephemeralStorage)
 	if err != nil {
-		return nil, fmt.Errorf("Error %w: unable to parse ephemeralStorage resources: %s", err, ephemeralStorageResources)
+		return nil, fmt.Errorf("unable to parse ephemeralStorage resources: %w", err)
 	}
 
 	return corev1.ResourceList{
