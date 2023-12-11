@@ -200,6 +200,14 @@ var (
 		}, []string{"node_group"},
 	)
 
+	nodesGroupTargetSize = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_target_count",
+			Help:      "Target number of nodes in the node group by CA.",
+		}, []string{"node_group"},
+	)
+
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
@@ -422,6 +430,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
 		legacyregistry.MustRegister(nodesGroupMaxNodes)
+		legacyregistry.MustRegister(nodesGroupTargetSize)
 	}
 }
 
@@ -518,6 +527,13 @@ func UpdateNodeGroupMin(nodeGroup string, minNodes int) {
 // UpdateNodeGroupMax records the node group maximum allowed number of nodes
 func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 	nodesGroupMaxNodes.WithLabelValues(nodeGroup).Set(float64(maxNodes))
+}
+
+// UpdateNodeGroupTargetSize records the node group target size
+func UpdateNodeGroupTargetSize(targetSizes map[string]int) {
+	for nodeGroup, targetSize := range targetSizes {
+		nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
 }
 
 // RegisterError records any errors preventing Cluster Autoscaler from working.
