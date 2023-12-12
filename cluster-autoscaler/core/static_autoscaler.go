@@ -228,7 +228,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if allNodes, err := a.AllNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
-	} else if allNodes, err = filterNodeGroups(a.CloudProvider, allNodes...); err != nil {
+	} else if allNodes, err = filterNodesFromSelectedGroups(a.CloudProvider, allNodes...); err != nil {
 		klog.Errorf("Failed to filter nodes based on selected node groups: %v", err)
 	} else {
 		taints.CleanAllToBeDeleted(allNodes,
@@ -667,7 +667,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				taintableNodes := a.scaleDownPlanner.UnneededNodes()
-				allNodes, err := filterNodeGroups(a.CloudProvider, allNodes...)
+				allNodes, err := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
 				if err != nil {
 					klog.Warningf("Failed filtering nodes based on selected node groups: %v", err)
 				}
@@ -974,7 +974,7 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 	return allNodes, readyNodes, nil
 }
 
-func filterNodeGroups(cp cloudprovider.CloudProvider, nodes ...*apiv1.Node) ([]*apiv1.Node, caerrors.AutoscalerError) {
+func filterNodesFromSelectedGroups(cp cloudprovider.CloudProvider, nodes ...*apiv1.Node) ([]*apiv1.Node, caerrors.AutoscalerError) {
 	filtered := make([]*apiv1.Node, 0, len(nodes))
 	for _, n := range nodes {
 		if ng, err := cp.NodeGroupForNode(n); err != nil {
