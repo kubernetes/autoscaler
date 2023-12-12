@@ -33,7 +33,7 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
                 {
                     "key": "node.kubernetes.io/role",
                     "value": "autoscaler-node",
-                    "effect": "NoExecute",
+                    "effect": "NoExecute"
                 }
             ]
         }
@@ -42,11 +42,11 @@ The cluster autoscaler for Hetzner Cloud scales worker nodes.
 ```
 
 
-`HCLOUD_NETWORK` Default empty , The name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
+`HCLOUD_NETWORK` Default empty , The id or name of the network that is used in the cluster , @see https://docs.hetzner.cloud/#networks
 
-`HCLOUD_FIREWALL` Default empty , The name of the firewall that is used in the cluster , @see https://docs.hetzner.cloud/#firewalls
+`HCLOUD_FIREWALL` Default empty , The id or name of the firewall that is used in the cluster , @see https://docs.hetzner.cloud/#firewalls
 
-`HCLOUD_SSH_KEY` Default empty , This SSH Key will have access to the fresh created server, @see https://docs.hetzner.cloud/#ssh-keys
+`HCLOUD_SSH_KEY` Default empty , The id or name of SSH Key that will have access to the fresh created server, @see https://docs.hetzner.cloud/#ssh-keys
 
 `HCLOUD_PUBLIC_IPV4` Default true , Whether the server is created with a public IPv4 address or not, @see https://docs.hetzner.cloud/#primary-ips
 
