@@ -231,7 +231,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	} else {
 		// Make sure we are only cleaning taints from selected node groups.
 		// If filtering fails, we use the initial list of all nodes as a fallback.
-		selectedNodes, err = filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+		selectedNodes, err := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
 		if err != nil {
 			klog.Warningf("Failed to filter nodes based on selected node groups: %v", err)
 			selectedNodes = allNodes

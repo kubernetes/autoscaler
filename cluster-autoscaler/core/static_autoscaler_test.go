@@ -364,7 +364,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
 	assert.NoError(t, err)
-	newN5, err = clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n5.Name, metav1.GetOptions{})
+	newN5, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n5.Name, metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.Equal(t, n5.Spec.Taints, newN5.Spec.Taints)
 }
