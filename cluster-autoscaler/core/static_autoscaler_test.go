@@ -173,13 +173,6 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	SetNodeReadyState(n2, true, time.Now())
 	n3 := BuildTestNode("n3", 1000, 1000)
 	n4 := BuildTestNode("n4", 1000, 1000)
-	n5 := BuildTestNode("n5", 1000, 1000)
-	n5.Spec.Taints = append(n5.Spec.Taints, apiv1.Taint{
-		Key:    taints.DeletionCandidateTaint,
-		Value:  fmt.Sprint(time.Now().Unix()),
-		Effect: apiv1.TaintEffectPreferNoSchedule,
-	})
-	SetNodeReadyState(n5, true, time.Now())
 
 	p1 := BuildTestPod("p1", 600, 100)
 	p1.Spec.NodeName = "n1"
@@ -222,8 +215,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	}
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
-	clientset := fake.NewSimpleClientset(n1, n2, n3, n4, n5)
-	context, err := NewScaleTestAutoscalingContext(options, clientset, nil, provider, processorCallbacks, nil)
+	context, err := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
 	setUpScaleDownActuator(&context, options)
@@ -351,22 +343,6 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, onScaleUpMock)
-
-	// Node from non-selected node groups should keep their taints.
-	autoscaler.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount = 10
-	autoscaler.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintTime = 3 * time.Second
-
-	readyNodeLister.SetNodes([]*apiv1.Node{n5})
-	allNodeLister.SetNodes([]*apiv1.Node{n5})
-	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
-	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
-	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
-
-	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
-	assert.NoError(t, err)
-	newN5, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n5.Name, metav1.GetOptions{})
-	assert.NoError(t, err)
-	assert.Equal(t, n5.Spec.Taints, newN5.Spec.Taints)
 }
 
 func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
@@ -1014,6 +990,129 @@ func TestStaticAutoscalerRunOnceWithFilteringOnUpcomingNodesEnabledNoScaleUp(t *
 
 	mock.AssertExpectationsForObjects(t, allPodListerMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
+}
+
+// We should not touch taints from unselected node groups.
+func TestStaticAutoscalerRunOnceWithUnselectedNodeGroups(t *testing.T) {
+	readyNodeLister := kubernetes.NewTestNodeLister(nil)
+	allNodeLister := kubernetes.NewTestNodeLister(nil)
+	allPodListerMock := &podListerMock{}
+	podDisruptionBudgetListerMock := &podDisruptionBudgetListerMock{}
+	daemonSetListerMock := &daemonSetListerMock{}
+	onScaleUpMock := &onScaleUpMock{}
+	onScaleDownMock := &onScaleDownMock{}
+	deleteFinished := make(chan bool, 1)
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	n1.Spec.Taints = append(n1.Spec.Taints, apiv1.Taint{
+		Key:    taints.DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	})
+	SetNodeReadyState(n1, true, time.Now())
+	n2 := BuildTestNode("n2", 1000, 1000)
+	n2.Spec.Taints = append(n2.Spec.Taints, apiv1.Taint{
+		Key:    taints.DeletionCandidateTaint,
+		Value:  fmt.Sprint(time.Now().Unix()),
+		Effect: apiv1.TaintEffectPreferNoSchedule,
+	})
+	SetNodeReadyState(n2, true, time.Now())
+
+	p1 := BuildTestPod("p1", 600, 100)
+	p1.Spec.NodeName = n1.Name
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		func(id string, delta int) error {
+			return onScaleUpMock.ScaleUp(id, delta)
+		}, func(id string, name string) error {
+			ret := onScaleDownMock.ScaleDown(id, name)
+			deleteFinished <- true
+			return ret
+		},
+		nil, nil, nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", n1)
+	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
+	assert.NotNil(t, ng1)
+	assert.NotNil(t, provider)
+
+	// Create context with mocked lister registry.
+	options := config.AutoscalingOptions{
+		NodeGroupDefaults: config.NodeGroupAutoscalingOptions{
+			ScaleDownUnneededTime:         time.Minute,
+			ScaleDownUnreadyTime:          time.Minute,
+			ScaleDownUtilizationThreshold: 0.5,
+			MaxNodeProvisionTime:          10 * time.Second,
+		},
+		EstimatorName:           estimator.BinpackingEstimatorName,
+		EnforceNodeGroupMinSize: true,
+		ScaleDownEnabled:        true,
+		MaxNodesTotal:           1,
+		MaxCoresTotal:           10,
+		MaxMemoryTotal:          100000,
+	}
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+
+	clientset := fake.NewSimpleClientset(n1, n2)
+	context, err := NewScaleTestAutoscalingContext(options, clientset, nil, provider, processorCallbacks, nil)
+	assert.NoError(t, err)
+
+	setUpScaleDownActuator(&context, options)
+
+	listerRegistry := kube_util.NewListerRegistry(allNodeLister, readyNodeLister, allPodListerMock, podDisruptionBudgetListerMock, daemonSetListerMock,
+		nil, nil, nil, nil)
+	context.ListerRegistry = listerRegistry
+
+	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+		OkTotalUnreadyCount: 1,
+	}
+	processors := NewTestProcessors(&context)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, NewBackoff(), nodegroupconfig.NewDefaultNodeGroupConfigProcessor(options.NodeGroupDefaults))
+	sdPlanner, sdActuator := newScaleDownPlannerAndActuator(t, &context, processors, clusterState)
+	suOrchestrator := orchestrator.New()
+	suOrchestrator.Initialize(&context, processors, clusterState, taints.TaintConfig{})
+
+	context.AutoscalingOptions.MaxBulkSoftTaintCount = 10
+	context.AutoscalingOptions.MaxBulkSoftTaintTime = 3 * time.Second
+
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:    &context,
+		clusterStateRegistry:  clusterState,
+		lastScaleUpTime:       time.Now(),
+		lastScaleDownFailTime: time.Now(),
+		scaleDownPlanner:      sdPlanner,
+		scaleDownActuator:     sdActuator,
+		scaleUpOrchestrator:   suOrchestrator,
+		processors:            processors,
+		processorCallbacks:    processorCallbacks,
+		initialized:           true,
+	}
+
+	// Node from selected node groups can get their deletion candidate taints removed.
+	readyNodeLister.SetNodes([]*apiv1.Node{n1})
+	allNodeLister.SetNodes([]*apiv1.Node{n1})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{p1}, nil).Twice()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+
+	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+	assert.NoError(t, err)
+	newN1, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n1.Name, metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.Empty(t, newN1.Spec.Taints)
+
+	// Node from non-selected node groups should keep their deletion candidate taints.
+	readyNodeLister.SetNodes([]*apiv1.Node{n2})
+	allNodeLister.SetNodes([]*apiv1.Node{n2})
+	allPodListerMock.On("List").Return([]*apiv1.Pod{}, nil).Twice()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil)
+	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil)
+
+	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+	assert.NoError(t, err)
+	newN2, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n2.Name, metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.NotEmpty(t, newN2.Spec.Taints)
 }
 
 func TestStaticAutoscalerInstanceCreationErrors(t *testing.T) {
