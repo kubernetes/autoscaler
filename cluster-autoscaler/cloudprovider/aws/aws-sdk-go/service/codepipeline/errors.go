@@ -143,8 +143,8 @@ const (
 	// ErrCodeLimitExceededException for service response error code
 	// "LimitExceededException".
 	//
-	// The number of pipelines associated with the AWS account has exceeded the
-	// limit allowed for the account.
+	// The number of pipelines associated with the Amazon Web Services account has
+	// exceeded the limit allowed for the account.
 	ErrCodeLimitExceededException = "LimitExceededException"
 
 	// ErrCodeNotLatestPipelineExecutionException for service response error code

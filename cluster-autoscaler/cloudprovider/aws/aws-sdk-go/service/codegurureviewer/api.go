@@ -56,7 +56,7 @@ func (c *CodeGuruReviewer) AssociateRepositoryRequest(input *AssociateRepository
 
 // AssociateRepository API operation for Amazon CodeGuru Reviewer.
 //
-// Use to associate an Amazon Web Services CodeCommit repository or a repostory
+// Use to associate an Amazon Web Services CodeCommit repository or a repository
 // managed by Amazon Web Services CodeStar Connections with Amazon CodeGuru
 // Reviewer. When you associate a repository, CodeGuru Reviewer reviews source
 // code changes in the repository's pull requests and provides automatic recommendations.
@@ -1614,7 +1614,7 @@ type AssociateRepositoryInput struct {
 	//    or customer managed (CUSTOMER_MANAGED_CMK).
 	//
 	//    * The ID of the Amazon Web Services KMS key that is associated with this
-	//    respository association.
+	//    repository association.
 	KMSKeyDetails *KMSKeyDetails `type:"structure"`
 
 	// The repository to associate.
@@ -1835,7 +1835,7 @@ type CodeArtifacts struct {
 
 	// The S3 object key for a build artifacts .zip file that contains .jar or .class
 	// files. This is required for a code review with security analysis. For more
-	// information, see Create code reviews with security analysis (https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/code-review-security.html)
+	// information, see Create code reviews with GitHub Actions (https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/working-with-cicd.html)
 	// in the Amazon CodeGuru Reviewer User Guide.
 	BuildArtifactsObjectKey *string `min:"1" type:"string"`
 
@@ -3156,7 +3156,7 @@ func (s *InternalServerException) RequestID() string {
 //     customer managed (CUSTOMER_MANAGED_CMK).
 //
 //   - The ID of the Amazon Web Services KMS key that is associated with a
-//     respository association.
+//     repository association.
 type KMSKeyDetails struct {
 	_ struct{} `type:"structure"`
 
@@ -3165,7 +3165,7 @@ type KMSKeyDetails struct {
 	// managed (CUSTOMER_MANAGED_CMK).
 	EncryptionOption *string `type:"string" enum:"EncryptionOption"`
 
-	// The ID of the Amazon Web Services KMS key that is associated with a respository
+	// The ID of the Amazon Web Services KMS key that is associated with a repository
 	// association.
 	KMSKeyId *string `min:"1" type:"string"`
 }
@@ -3699,7 +3699,7 @@ type ListRepositoryAssociationsInput struct {
 	//    * Disassociated: CodeGuru Reviewer successfully disassociated the repository.
 	//    You can create a new association with this repository if you want to review
 	//    source code in it later. You can control access to code reviews created
-	//    in an associated repository with tags after it has been disassociated.
+	//    in anassociated repository with tags after it has been disassociated.
 	//    For more information, see Using tags to control access to associated repositories
 	//    (https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/auth-and-access-control-using-tags.html)
 	//    in the Amazon CodeGuru Reviewer User Guide.
@@ -4646,7 +4646,7 @@ type RepositoryAssociation struct {
 	//    or customer managed (CUSTOMER_MANAGED_CMK).
 	//
 	//    * The ID of the Amazon Web Services KMS key that is associated with this
-	//    respository association.
+	//    repository association.
 	KMSKeyDetails *KMSKeyDetails `type:"structure"`
 
 	// The time, in milliseconds since the epoch, when the repository association
@@ -4694,7 +4694,7 @@ type RepositoryAssociation struct {
 	//    * Disassociated: CodeGuru Reviewer successfully disassociated the repository.
 	//    You can create a new association with this repository if you want to review
 	//    source code in it later. You can control access to code reviews created
-	//    in an associated repository with tags after it has been disassociated.
+	//    in anassociated repository with tags after it has been disassociated.
 	//    For more information, see Using tags to control access to associated repositories
 	//    (https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/auth-and-access-control-using-tags.html)
 	//    in the Amazon CodeGuru Reviewer User Guide.
@@ -4853,7 +4853,7 @@ type RepositoryAssociationSummary struct {
 	//    * Disassociated: CodeGuru Reviewer successfully disassociated the repository.
 	//    You can create a new association with this repository if you want to review
 	//    source code in it later. You can control access to code reviews created
-	//    in an associated repository with tags after it has been disassociated.
+	//    in anassociated repository with tags after it has been disassociated.
 	//    For more information, see Using tags to control access to associated repositories
 	//    (https://docs.aws.amazon.com/codeguru/latest/reviewer-ug/auth-and-access-control-using-tags.html)
 	//    in the Amazon CodeGuru Reviewer User Guide.
@@ -5633,7 +5633,7 @@ type ThirdPartySourceRepository struct {
 	// The owner of the repository. For a GitHub, GitHub Enterprise, or Bitbucket
 	// repository, this is the username for the account that owns the repository.
 	// For an S3 repository, this can be the username or Amazon Web Services account
-	// ID.
+	// ID
 	//
 	// Owner is a required field
 	Owner *string `min:"1" type:"string" required:"true"`

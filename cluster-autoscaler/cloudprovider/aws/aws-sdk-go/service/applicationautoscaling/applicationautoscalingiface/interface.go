@@ -100,6 +100,10 @@ type ApplicationAutoScalingAPI interface {
 	DescribeScheduledActionsPages(*applicationautoscaling.DescribeScheduledActionsInput, func(*applicationautoscaling.DescribeScheduledActionsOutput, bool) bool) error
 	DescribeScheduledActionsPagesWithContext(aws.Context, *applicationautoscaling.DescribeScheduledActionsInput, func(*applicationautoscaling.DescribeScheduledActionsOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*applicationautoscaling.ListTagsForResourceInput) (*applicationautoscaling.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *applicationautoscaling.ListTagsForResourceInput, ...request.Option) (*applicationautoscaling.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*applicationautoscaling.ListTagsForResourceInput) (*request.Request, *applicationautoscaling.ListTagsForResourceOutput)
+
 	PutScalingPolicy(*applicationautoscaling.PutScalingPolicyInput) (*applicationautoscaling.PutScalingPolicyOutput, error)
 	PutScalingPolicyWithContext(aws.Context, *applicationautoscaling.PutScalingPolicyInput, ...request.Option) (*applicationautoscaling.PutScalingPolicyOutput, error)
 	PutScalingPolicyRequest(*applicationautoscaling.PutScalingPolicyInput) (*request.Request, *applicationautoscaling.PutScalingPolicyOutput)
@@ -111,6 +115,14 @@ type ApplicationAutoScalingAPI interface {
 	RegisterScalableTarget(*applicationautoscaling.RegisterScalableTargetInput) (*applicationautoscaling.RegisterScalableTargetOutput, error)
 	RegisterScalableTargetWithContext(aws.Context, *applicationautoscaling.RegisterScalableTargetInput, ...request.Option) (*applicationautoscaling.RegisterScalableTargetOutput, error)
 	RegisterScalableTargetRequest(*applicationautoscaling.RegisterScalableTargetInput) (*request.Request, *applicationautoscaling.RegisterScalableTargetOutput)
+
+	TagResource(*applicationautoscaling.TagResourceInput) (*applicationautoscaling.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *applicationautoscaling.TagResourceInput, ...request.Option) (*applicationautoscaling.TagResourceOutput, error)
+	TagResourceRequest(*applicationautoscaling.TagResourceInput) (*request.Request, *applicationautoscaling.TagResourceOutput)
+
+	UntagResource(*applicationautoscaling.UntagResourceInput) (*applicationautoscaling.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *applicationautoscaling.UntagResourceInput, ...request.Option) (*applicationautoscaling.UntagResourceOutput, error)
+	UntagResourceRequest(*applicationautoscaling.UntagResourceInput) (*request.Request, *applicationautoscaling.UntagResourceOutput)
 }
 
 var _ ApplicationAutoScalingAPI = (*applicationautoscaling.ApplicationAutoScaling)(nil)

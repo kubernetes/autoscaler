@@ -73,6 +73,7 @@ type NetworkProtection struct {
 // NetworkClient is a client for the network API.
 type NetworkClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a network by its ID. If the network does not exist, nil is returned.
@@ -162,7 +163,7 @@ func (c *NetworkClient) All(ctx context.Context) ([]*Network, error) {
 
 // AllWithOpts returns all networks for the given options.
 func (c *NetworkClient) AllWithOpts(ctx context.Context, opts NetworkListOpts) ([]*Network, error) {
-	var allNetworks []*Network
+	allNetworks := []*Network{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page

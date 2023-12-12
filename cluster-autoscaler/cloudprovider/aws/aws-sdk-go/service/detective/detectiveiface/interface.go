@@ -64,6 +64,14 @@ type DetectiveAPI interface {
 	AcceptInvitationWithContext(aws.Context, *detective.AcceptInvitationInput, ...request.Option) (*detective.AcceptInvitationOutput, error)
 	AcceptInvitationRequest(*detective.AcceptInvitationInput) (*request.Request, *detective.AcceptInvitationOutput)
 
+	BatchGetGraphMemberDatasources(*detective.BatchGetGraphMemberDatasourcesInput) (*detective.BatchGetGraphMemberDatasourcesOutput, error)
+	BatchGetGraphMemberDatasourcesWithContext(aws.Context, *detective.BatchGetGraphMemberDatasourcesInput, ...request.Option) (*detective.BatchGetGraphMemberDatasourcesOutput, error)
+	BatchGetGraphMemberDatasourcesRequest(*detective.BatchGetGraphMemberDatasourcesInput) (*request.Request, *detective.BatchGetGraphMemberDatasourcesOutput)
+
+	BatchGetMembershipDatasources(*detective.BatchGetMembershipDatasourcesInput) (*detective.BatchGetMembershipDatasourcesOutput, error)
+	BatchGetMembershipDatasourcesWithContext(aws.Context, *detective.BatchGetMembershipDatasourcesInput, ...request.Option) (*detective.BatchGetMembershipDatasourcesOutput, error)
+	BatchGetMembershipDatasourcesRequest(*detective.BatchGetMembershipDatasourcesInput) (*request.Request, *detective.BatchGetMembershipDatasourcesOutput)
+
 	CreateGraph(*detective.CreateGraphInput) (*detective.CreateGraphOutput, error)
 	CreateGraphWithContext(aws.Context, *detective.CreateGraphInput, ...request.Option) (*detective.CreateGraphOutput, error)
 	CreateGraphRequest(*detective.CreateGraphInput) (*request.Request, *detective.CreateGraphOutput)
@@ -96,9 +104,20 @@ type DetectiveAPI interface {
 	EnableOrganizationAdminAccountWithContext(aws.Context, *detective.EnableOrganizationAdminAccountInput, ...request.Option) (*detective.EnableOrganizationAdminAccountOutput, error)
 	EnableOrganizationAdminAccountRequest(*detective.EnableOrganizationAdminAccountInput) (*request.Request, *detective.EnableOrganizationAdminAccountOutput)
 
+	GetInvestigation(*detective.GetInvestigationInput) (*detective.GetInvestigationOutput, error)
+	GetInvestigationWithContext(aws.Context, *detective.GetInvestigationInput, ...request.Option) (*detective.GetInvestigationOutput, error)
+	GetInvestigationRequest(*detective.GetInvestigationInput) (*request.Request, *detective.GetInvestigationOutput)
+
 	GetMembers(*detective.GetMembersInput) (*detective.GetMembersOutput, error)
 	GetMembersWithContext(aws.Context, *detective.GetMembersInput, ...request.Option) (*detective.GetMembersOutput, error)
 	GetMembersRequest(*detective.GetMembersInput) (*request.Request, *detective.GetMembersOutput)
+
+	ListDatasourcePackages(*detective.ListDatasourcePackagesInput) (*detective.ListDatasourcePackagesOutput, error)
+	ListDatasourcePackagesWithContext(aws.Context, *detective.ListDatasourcePackagesInput, ...request.Option) (*detective.ListDatasourcePackagesOutput, error)
+	ListDatasourcePackagesRequest(*detective.ListDatasourcePackagesInput) (*request.Request, *detective.ListDatasourcePackagesOutput)
+
+	ListDatasourcePackagesPages(*detective.ListDatasourcePackagesInput, func(*detective.ListDatasourcePackagesOutput, bool) bool) error
+	ListDatasourcePackagesPagesWithContext(aws.Context, *detective.ListDatasourcePackagesInput, func(*detective.ListDatasourcePackagesOutput, bool) bool, ...request.Option) error
 
 	ListGraphs(*detective.ListGraphsInput) (*detective.ListGraphsOutput, error)
 	ListGraphsWithContext(aws.Context, *detective.ListGraphsInput, ...request.Option) (*detective.ListGraphsOutput, error)
@@ -106,6 +125,14 @@ type DetectiveAPI interface {
 
 	ListGraphsPages(*detective.ListGraphsInput, func(*detective.ListGraphsOutput, bool) bool) error
 	ListGraphsPagesWithContext(aws.Context, *detective.ListGraphsInput, func(*detective.ListGraphsOutput, bool) bool, ...request.Option) error
+
+	ListIndicators(*detective.ListIndicatorsInput) (*detective.ListIndicatorsOutput, error)
+	ListIndicatorsWithContext(aws.Context, *detective.ListIndicatorsInput, ...request.Option) (*detective.ListIndicatorsOutput, error)
+	ListIndicatorsRequest(*detective.ListIndicatorsInput) (*request.Request, *detective.ListIndicatorsOutput)
+
+	ListInvestigations(*detective.ListInvestigationsInput) (*detective.ListInvestigationsOutput, error)
+	ListInvestigationsWithContext(aws.Context, *detective.ListInvestigationsInput, ...request.Option) (*detective.ListInvestigationsOutput, error)
+	ListInvestigationsRequest(*detective.ListInvestigationsInput) (*request.Request, *detective.ListInvestigationsOutput)
 
 	ListInvitations(*detective.ListInvitationsInput) (*detective.ListInvitationsOutput, error)
 	ListInvitationsWithContext(aws.Context, *detective.ListInvitationsInput, ...request.Option) (*detective.ListInvitationsOutput, error)
@@ -136,6 +163,10 @@ type DetectiveAPI interface {
 	RejectInvitationWithContext(aws.Context, *detective.RejectInvitationInput, ...request.Option) (*detective.RejectInvitationOutput, error)
 	RejectInvitationRequest(*detective.RejectInvitationInput) (*request.Request, *detective.RejectInvitationOutput)
 
+	StartInvestigation(*detective.StartInvestigationInput) (*detective.StartInvestigationOutput, error)
+	StartInvestigationWithContext(aws.Context, *detective.StartInvestigationInput, ...request.Option) (*detective.StartInvestigationOutput, error)
+	StartInvestigationRequest(*detective.StartInvestigationInput) (*request.Request, *detective.StartInvestigationOutput)
+
 	StartMonitoringMember(*detective.StartMonitoringMemberInput) (*detective.StartMonitoringMemberOutput, error)
 	StartMonitoringMemberWithContext(aws.Context, *detective.StartMonitoringMemberInput, ...request.Option) (*detective.StartMonitoringMemberOutput, error)
 	StartMonitoringMemberRequest(*detective.StartMonitoringMemberInput) (*request.Request, *detective.StartMonitoringMemberOutput)
@@ -147,6 +178,14 @@ type DetectiveAPI interface {
 	UntagResource(*detective.UntagResourceInput) (*detective.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *detective.UntagResourceInput, ...request.Option) (*detective.UntagResourceOutput, error)
 	UntagResourceRequest(*detective.UntagResourceInput) (*request.Request, *detective.UntagResourceOutput)
+
+	UpdateDatasourcePackages(*detective.UpdateDatasourcePackagesInput) (*detective.UpdateDatasourcePackagesOutput, error)
+	UpdateDatasourcePackagesWithContext(aws.Context, *detective.UpdateDatasourcePackagesInput, ...request.Option) (*detective.UpdateDatasourcePackagesOutput, error)
+	UpdateDatasourcePackagesRequest(*detective.UpdateDatasourcePackagesInput) (*request.Request, *detective.UpdateDatasourcePackagesOutput)
+
+	UpdateInvestigationState(*detective.UpdateInvestigationStateInput) (*detective.UpdateInvestigationStateOutput, error)
+	UpdateInvestigationStateWithContext(aws.Context, *detective.UpdateInvestigationStateInput, ...request.Option) (*detective.UpdateInvestigationStateOutput, error)
+	UpdateInvestigationStateRequest(*detective.UpdateInvestigationStateInput) (*request.Request, *detective.UpdateInvestigationStateOutput)
 
 	UpdateOrganizationConfiguration(*detective.UpdateOrganizationConfigurationInput) (*detective.UpdateOrganizationConfigurationOutput, error)
 	UpdateOrganizationConfigurationWithContext(aws.Context, *detective.UpdateOrganizationConfigurationInput, ...request.Option) (*detective.UpdateOrganizationConfigurationOutput, error)

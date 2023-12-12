@@ -11799,6 +11799,10 @@ type FunctionConfiguration struct {
 	// The name of the function executable.
 	Executable *string `type:"string"`
 
+	// The Lambda runtime supported by Greengrass which is to be used instead of
+	// the one specified in the Lambda function.
+	FunctionRuntimeOverride *string `type:"string"`
+
 	// The memory size, in KB, which the function requires. This setting is not
 	// applicable and should be cleared when you run the Lambda function without
 	// containerization.
@@ -11868,6 +11872,12 @@ func (s *FunctionConfiguration) SetExecArgs(v string) *FunctionConfiguration {
 // SetExecutable sets the Executable field's value.
 func (s *FunctionConfiguration) SetExecutable(v string) *FunctionConfiguration {
 	s.Executable = &v
+	return s
+}
+
+// SetFunctionRuntimeOverride sets the FunctionRuntimeOverride field's value.
+func (s *FunctionConfiguration) SetFunctionRuntimeOverride(v string) *FunctionConfiguration {
+	s.FunctionRuntimeOverride = &v
 	return s
 }
 

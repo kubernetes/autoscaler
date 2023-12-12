@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// AWS Secrets Manager.
 //	func myFunc(svc secretsmanageriface.SecretsManagerAPI) bool {
-//	    // Make svc.CancelRotateSecret request
+//	    // Make svc.BatchGetSecretValue request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockSecretsManagerClient struct {
 //	    secretsmanageriface.SecretsManagerAPI
 //	}
-//	func (m *mockSecretsManagerClient) CancelRotateSecret(input *secretsmanager.CancelRotateSecretInput) (*secretsmanager.CancelRotateSecretOutput, error) {
+//	func (m *mockSecretsManagerClient) BatchGetSecretValue(input *secretsmanager.BatchGetSecretValueInput) (*secretsmanager.BatchGetSecretValueOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,13 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type SecretsManagerAPI interface {
+	BatchGetSecretValue(*secretsmanager.BatchGetSecretValueInput) (*secretsmanager.BatchGetSecretValueOutput, error)
+	BatchGetSecretValueWithContext(aws.Context, *secretsmanager.BatchGetSecretValueInput, ...request.Option) (*secretsmanager.BatchGetSecretValueOutput, error)
+	BatchGetSecretValueRequest(*secretsmanager.BatchGetSecretValueInput) (*request.Request, *secretsmanager.BatchGetSecretValueOutput)
+
+	BatchGetSecretValuePages(*secretsmanager.BatchGetSecretValueInput, func(*secretsmanager.BatchGetSecretValueOutput, bool) bool) error
+	BatchGetSecretValuePagesWithContext(aws.Context, *secretsmanager.BatchGetSecretValueInput, func(*secretsmanager.BatchGetSecretValueOutput, bool) bool, ...request.Option) error
+
 	CancelRotateSecret(*secretsmanager.CancelRotateSecretInput) (*secretsmanager.CancelRotateSecretOutput, error)
 	CancelRotateSecretWithContext(aws.Context, *secretsmanager.CancelRotateSecretInput, ...request.Option) (*secretsmanager.CancelRotateSecretOutput, error)
 	CancelRotateSecretRequest(*secretsmanager.CancelRotateSecretInput) (*request.Request, *secretsmanager.CancelRotateSecretOutput)

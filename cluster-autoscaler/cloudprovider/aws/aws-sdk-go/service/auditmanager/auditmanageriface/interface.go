@@ -177,6 +177,10 @@ type AuditManagerAPI interface {
 	GetEvidenceByEvidenceFolderPages(*auditmanager.GetEvidenceByEvidenceFolderInput, func(*auditmanager.GetEvidenceByEvidenceFolderOutput, bool) bool) error
 	GetEvidenceByEvidenceFolderPagesWithContext(aws.Context, *auditmanager.GetEvidenceByEvidenceFolderInput, func(*auditmanager.GetEvidenceByEvidenceFolderOutput, bool) bool, ...request.Option) error
 
+	GetEvidenceFileUploadUrl(*auditmanager.GetEvidenceFileUploadUrlInput) (*auditmanager.GetEvidenceFileUploadUrlOutput, error)
+	GetEvidenceFileUploadUrlWithContext(aws.Context, *auditmanager.GetEvidenceFileUploadUrlInput, ...request.Option) (*auditmanager.GetEvidenceFileUploadUrlOutput, error)
+	GetEvidenceFileUploadUrlRequest(*auditmanager.GetEvidenceFileUploadUrlInput) (*request.Request, *auditmanager.GetEvidenceFileUploadUrlOutput)
+
 	GetEvidenceFolder(*auditmanager.GetEvidenceFolderInput) (*auditmanager.GetEvidenceFolderOutput, error)
 	GetEvidenceFolderWithContext(aws.Context, *auditmanager.GetEvidenceFolderInput, ...request.Option) (*auditmanager.GetEvidenceFolderOutput, error)
 	GetEvidenceFolderRequest(*auditmanager.GetEvidenceFolderInput) (*request.Request, *auditmanager.GetEvidenceFolderOutput)

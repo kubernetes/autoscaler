@@ -8,6 +8,12 @@ import (
 
 const (
 
+	// ErrCodeAccessDeniedException for service response error code
+	// "AccessDeniedException".
+	//
+	// Access is denied.
+	ErrCodeAccessDeniedException = "AccessDeniedException"
+
 	// ErrCodeConflictingOperationException for service response error code
 	// "ConflictingOperationException".
 	//
@@ -38,6 +44,12 @@ const (
 	// For more information, see Quotas (https://docs.aws.amazon.com/iot-sitewise/latest/userguide/quotas.html)
 	// in the IoT SiteWise User Guide.
 	ErrCodeLimitExceededException = "LimitExceededException"
+
+	// ErrCodeQueryTimeoutException for service response error code
+	// "QueryTimeoutException".
+	//
+	// The query timed out.
+	ErrCodeQueryTimeoutException = "QueryTimeoutException"
 
 	// ErrCodeResourceAlreadyExistsException for service response error code
 	// "ResourceAlreadyExistsException".
@@ -81,17 +93,26 @@ const (
 	//
 	// You are not authorized.
 	ErrCodeUnauthorizedException = "UnauthorizedException"
+
+	// ErrCodeValidationException for service response error code
+	// "ValidationException".
+	//
+	// The validation failed for this query.
+	ErrCodeValidationException = "ValidationException"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
+	"AccessDeniedException":          newErrorAccessDeniedException,
 	"ConflictingOperationException":  newErrorConflictingOperationException,
 	"InternalFailureException":       newErrorInternalFailureException,
 	"InvalidRequestException":        newErrorInvalidRequestException,
 	"LimitExceededException":         newErrorLimitExceededException,
+	"QueryTimeoutException":          newErrorQueryTimeoutException,
 	"ResourceAlreadyExistsException": newErrorResourceAlreadyExistsException,
 	"ResourceNotFoundException":      newErrorResourceNotFoundException,
 	"ServiceUnavailableException":    newErrorServiceUnavailableException,
 	"ThrottlingException":            newErrorThrottlingException,
 	"TooManyTagsException":           newErrorTooManyTagsException,
 	"UnauthorizedException":          newErrorUnauthorizedException,
+	"ValidationException":            newErrorValidationException,
 }

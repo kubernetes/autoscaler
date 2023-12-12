@@ -151,7 +151,7 @@ func newProvider(
 func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	managementKubeconfig := opts.CloudConfig
 	if managementKubeconfig == "" && !opts.ClusterAPICloudConfigAuthoritative {
-		managementKubeconfig = opts.KubeConfigPath
+		managementKubeconfig = opts.KubeClientOpts.KubeConfigPath
 	}
 
 	managementConfig, err := clientcmd.BuildConfigFromFlags("", managementKubeconfig)
@@ -159,7 +159,7 @@ func BuildClusterAPI(opts config.AutoscalingOptions, do cloudprovider.NodeGroupD
 		klog.Fatalf("cannot build management cluster config: %v", err)
 	}
 
-	workloadKubeconfig := opts.KubeConfigPath
+	workloadKubeconfig := opts.KubeClientOpts.KubeConfigPath
 
 	workloadConfig, err := clientcmd.BuildConfigFromFlags("", workloadKubeconfig)
 	if err != nil {

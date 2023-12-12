@@ -58,6 +58,9 @@ func (p *paginationDefinitions) setup() error {
 		if e.InputTokens == nil || e.OutputTokens == nil {
 			continue
 		}
+		if _, ok := p.Operations[n]; !ok {
+			continue
+		}
 		paginator := e
 
 		switch t := paginator.InputTokens.(type) {
@@ -83,11 +86,7 @@ func (p *paginationDefinitions) setup() error {
 			paginator.OutputTokens = toks
 		}
 
-		if o, ok := p.Operations[n]; ok {
-			o.Paginator = &paginator
-		} else {
-			return fmt.Errorf("unknown operation for paginator, %s", n)
-		}
+		p.Operations[n].Paginator = &paginator
 	}
 
 	return nil

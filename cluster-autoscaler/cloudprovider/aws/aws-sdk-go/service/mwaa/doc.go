@@ -4,29 +4,29 @@
 // requests to AmazonMWAA.
 //
 // This section contains the Amazon Managed Workflows for Apache Airflow (MWAA)
-// API reference documentation. For more information, see What Is Amazon MWAA?
+// API reference documentation. For more information, see What is Amazon MWAA?
 // (https://docs.aws.amazon.com/mwaa/latest/userguide/what-is-mwaa.html).
 //
-//	<p> <b>Endpoints</b> </p> <ul> <li> <p> <code>api.airflow.{region}.amazonaws.com</code>
-//	- This endpoint is used for environment management.</p> <ul> <li> <p>
-//	<a href="https://docs.aws.amazon.com/mwaa/latest/API/API_CreateEnvironment.html">CreateEnvironment</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_DeleteEnvironment.html">DeleteEnvironment</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_GetEnvironment.html">GetEnvironment</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_ListEnvironments.html">ListEnvironments</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_ListTagsForResource.html">ListTagsForResource</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_TagResource.html">TagResource</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_UntagResource.html">UntagResource</a>
-//	</p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_UpdateEnvironment.html">UpdateEnvironment</a>
-//	</p> </li> </ul> </li> <li> <p> <code>env.airflow.{region}.amazonaws.com</code>
-//	- This endpoint is used to operate the Airflow environment.</p> <ul> <li>
-//	<p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_CreateCliToken.html
-//	">CreateCliToken</a> </p> </li> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_CreateWebLoginToken.html">CreateWebLoginToken</a>
-//	</p> </li> </ul> </li> <li> <p> <code>ops.airflow.{region}.amazonaws.com</code>
-//	- This endpoint is used to push environment metrics that track environment
-//	health.</p> <ul> <li> <p> <a href="https://docs.aws.amazon.com/mwaa/latest/API/API_PublishMetrics.html
-//	">PublishMetrics</a> </p> </li> </ul> </li> </ul> <p> <b>Regions</b> </p>
-//	<p>For a list of regions that Amazon MWAA supports, see <a href="https://docs.aws.amazon.com/mwaa/latest/userguide/what-is-mwaa.html#regions-mwaa">Region
-//	availability</a> in the <i>Amazon MWAA User Guide</i>.</p>
+// Endpoints
+//
+//   - api.airflow.{region}.amazonaws.com - This endpoint is used for environment
+//     management. CreateEnvironment (https://docs.aws.amazon.com/mwaa/latest/API/API_CreateEnvironment.html)
+//     DeleteEnvironment (https://docs.aws.amazon.com/mwaa/latest/API/API_DeleteEnvironment.html)
+//     GetEnvironment (https://docs.aws.amazon.com/mwaa/latest/API/API_GetEnvironment.html)
+//     ListEnvironments (https://docs.aws.amazon.com/mwaa/latest/API/API_ListEnvironments.html)
+//     ListTagsForResource (https://docs.aws.amazon.com/mwaa/latest/API/API_ListTagsForResource.html)
+//     TagResource (https://docs.aws.amazon.com/mwaa/latest/API/API_TagResource.html)
+//     UntagResource (https://docs.aws.amazon.com/mwaa/latest/API/API_UntagResource.html)
+//     UpdateEnvironment (https://docs.aws.amazon.com/mwaa/latest/API/API_UpdateEnvironment.html)
+//
+//   - env.airflow.{region}.amazonaws.com - This endpoint is used to operate
+//     the Airflow environment. CreateCliToken (https://docs.aws.amazon.com/mwaa/latest/API/API_CreateCliToken.html)
+//     CreateWebLoginToken (https://docs.aws.amazon.com/mwaa/latest/API/API_CreateWebLoginToken.html)
+//
+// # Regions
+//
+// For a list of supported regions, see Amazon MWAA endpoints and quotas (https://docs.aws.amazon.com/general/latest/gr/mwaa.html)
+// in the Amazon Web Services General Reference.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/mwaa-2020-07-01 for more information on this service.
 //

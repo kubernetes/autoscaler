@@ -39,6 +39,13 @@ const (
 	// If there is already an ongoing account details update under review.
 	ErrCodeConflictException = "ConflictException"
 
+	// ErrCodeInternalServiceErrorException for service response error code
+	// "InternalServiceErrorException".
+	//
+	// The request couldn't be processed because an error occurred with the Amazon
+	// SES API v2.
+	ErrCodeInternalServiceErrorException = "InternalServiceErrorException"
+
 	// ErrCodeInvalidNextTokenException for service response error code
 	// "InvalidNextTokenException".
 	//
@@ -89,6 +96,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"BadRequestException":                newErrorBadRequestException,
 	"ConcurrentModificationException":    newErrorConcurrentModificationException,
 	"ConflictException":                  newErrorConflictException,
+	"InternalServiceErrorException":      newErrorInternalServiceErrorException,
 	"InvalidNextTokenException":          newErrorInvalidNextTokenException,
 	"LimitExceededException":             newErrorLimitExceededException,
 	"MailFromDomainNotVerifiedException": newErrorMailFromDomainNotVerifiedException,

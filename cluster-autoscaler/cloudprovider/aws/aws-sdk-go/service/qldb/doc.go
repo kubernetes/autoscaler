@@ -3,7 +3,7 @@
 // Package qldb provides the client and types for making API
 // requests to Amazon QLDB.
 //
-// # The control plane for Amazon QLDB
+// # The resource management API for Amazon QLDB
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/qldb-2019-01-02 for more information on this service.
 //

@@ -25,7 +25,7 @@ type CEKEntry func(CipherData) (ContentCipher, error)
 //   - AES/GCM
 //   - AES/CBC
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 type DecryptionClient struct {
 	S3Client s3iface.S3API
 	// LoadStrategy is used to load the metadata either from the metadata of the object
@@ -48,7 +48,7 @@ type DecryptionClient struct {
 //		// Custom client options here
 //	}))
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func NewDecryptionClient(prov client.ConfigProvider, options ...func(*DecryptionClient)) *DecryptionClient {
 	s3client := s3.New(prov)
 
@@ -95,14 +95,14 @@ func NewDecryptionClient(prov client.ConfigProvider, options ...func(*Decryption
 //		})
 //		err := req.Send()
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *DecryptionClient) GetObjectRequest(input *s3.GetObjectInput) (*request.Request, *s3.GetObjectOutput) {
 	return getObjectRequest(c.getClientOptions(), input)
 }
 
 // GetObject is a wrapper for GetObjectRequest
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *DecryptionClient) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOutput, error) {
 	return getObject(c.getClientOptions(), input)
 }
@@ -115,7 +115,7 @@ func (c *DecryptionClient) GetObject(input *s3.GetObjectInput) (*s3.GetObjectOut
 // cause a panic. Use the Context to add deadlining, timeouts, etc. In the future
 // this may create sub-contexts for individual underlying requests.
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func (c *DecryptionClient) GetObjectWithContext(ctx aws.Context, input *s3.GetObjectInput, opts ...request.Option) (*s3.GetObjectOutput, error) {
 	return getObjectWithContext(c.getClientOptions(), ctx, input, opts...)
 }

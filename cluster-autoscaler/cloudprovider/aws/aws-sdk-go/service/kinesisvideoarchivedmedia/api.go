@@ -89,8 +89,8 @@ func (c *KinesisVideoArchivedMedia) GetClipRequest(input *GetClipInput) (req *re
 // Amazon CloudWatch metric. For information about using CloudWatch to monitor
 // Kinesis Video Streams, see Monitoring Kinesis Video Streams (http://docs.aws.amazon.com/kinesisvideostreams/latest/dg/monitoring.html).
 // For pricing information, see Amazon Kinesis Video Streams Pricing (https://aws.amazon.com/kinesis/video-streams/pricing/)
-// and AWS Pricing (https://aws.amazon.com/pricing/). Charges for outgoing AWS
-// data apply.
+// and Amazon Web Services Pricing (https://aws.amazon.com/pricing/). Charges
+// for outgoing Amazon Web Services data apply.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -102,8 +102,8 @@ func (c *KinesisVideoArchivedMedia) GetClipRequest(input *GetClipInput) (req *re
 // Returned Error Types:
 //
 //   - ResourceNotFoundException
-//     GetMedia throws this error when Kinesis Video Streams can't find the stream
-//     that you specified.
+//     GetImages will throw this error when Kinesis Video Streams can't find the
+//     stream that you specified.
 //
 //     GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 //     if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested
@@ -249,7 +249,7 @@ func (c *KinesisVideoArchivedMedia) GetDASHStreamingSessionURLRequest(input *Get
 //
 // Don't share or store this token where an unauthorized entity can access it.
 // The token provides access to the content of the stream. Safeguard the token
-// with the same measures that you use with your AWS credentials.
+// with the same measures that you use with your Amazon Web Services credentials.
 //
 // The media that is made available through the manifest consists only of the
 // requested stream, time range, and format. No other media data (such as frames
@@ -298,8 +298,8 @@ func (c *KinesisVideoArchivedMedia) GetDASHStreamingSessionURLRequest(input *Get
 // about using CloudWatch to monitor Kinesis Video Streams, see Monitoring Kinesis
 // Video Streams (http://docs.aws.amazon.com/kinesisvideostreams/latest/dg/monitoring.html).
 // For pricing information, see Amazon Kinesis Video Streams Pricing (https://aws.amazon.com/kinesis/video-streams/pricing/)
-// and AWS Pricing (https://aws.amazon.com/pricing/). Charges for both HLS sessions
-// and outgoing AWS data apply.
+// and Amazon Web Services Pricing (https://aws.amazon.com/pricing/). Charges
+// for both HLS sessions and outgoing Amazon Web Services data apply.
 //
 // For more information about HLS, see HTTP Live Streaming (https://developer.apple.com/streaming/)
 // on the Apple Developer site (https://developer.apple.com).
@@ -311,9 +311,9 @@ func (c *KinesisVideoArchivedMedia) GetDASHStreamingSessionURLRequest(input *Get
 //   - x-amz-ErrorType HTTP header – contains a more specific error type
 //     in addition to what the HTTP status code provides.
 //
-//   - x-amz-RequestId HTTP header – if you want to report an issue to AWS,
-//     the support team can better diagnose the problem if given the Request
-//     Id.
+//   - x-amz-RequestId HTTP header – if you want to report an issue to Amazon
+//     Web Services the support team can better diagnose the problem if given
+//     the Request Id.
 //
 // Both the HTTP status code and the ErrorType header can be utilized to make
 // programmatic decisions about whether errors are retry-able and under what
@@ -333,8 +333,8 @@ func (c *KinesisVideoArchivedMedia) GetDASHStreamingSessionURLRequest(input *Get
 // Returned Error Types:
 //
 //   - ResourceNotFoundException
-//     GetMedia throws this error when Kinesis Video Streams can't find the stream
-//     that you specified.
+//     GetImages will throw this error when Kinesis Video Streams can't find the
+//     stream that you specified.
 //
 //     GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 //     if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested
@@ -446,10 +446,11 @@ func (c *KinesisVideoArchivedMedia) GetHLSStreamingSessionURLRequest(input *GetH
 // An Amazon Kinesis video stream has the following requirements for providing
 // data through HLS:
 //
-//   - The media must contain h.264 or h.265 encoded video and, optionally,
-//     AAC encoded audio. Specifically, the codec ID of track 1 should be V_MPEG/ISO/AVC
-//     (for h.264) or V_MPEG/ISO/HEVC (for h.265). Optionally, the codec ID of
-//     track 2 should be A_AAC.
+//   - For streaming video, the media must contain H.264 or H.265 encoded video
+//     and, optionally, AAC encoded audio. Specifically, the codec ID of track
+//     1 should be V_MPEG/ISO/AVC (for H.264) or V_MPEG/ISO/HEVC (for H.265).
+//     Optionally, the codec ID of track 2 should be A_AAC. For audio only streaming,
+//     the codec ID of track 1 should be A_AAC.
 //
 //   - Data retention must be greater than 0.
 //
@@ -480,7 +481,8 @@ func (c *KinesisVideoArchivedMedia) GetHLSStreamingSessionURLRequest(input *GetH
 //
 // Don't share or store this token where an unauthorized entity could access
 // it. The token provides access to the content of the stream. Safeguard the
-// token with the same measures that you would use with your AWS credentials.
+// token with the same measures that you would use with your Amazon Web Services
+// credentials.
 //
 // The media that is made available through the playlist consists only of the
 // requested stream, time range, and format. No other media data (such as frames
@@ -523,15 +525,18 @@ func (c *KinesisVideoArchivedMedia) GetHLSStreamingSessionURLRequest(input *GetH
 //
 //   - GetMP4MediaFragment: Retrieves MP4 media fragments. These fragments
 //     contain the "moof" and "mdat" MP4 atoms and their child atoms, containing
-//     the encoded fragment's media frames and their timestamps. After the first
-//     media fragment is made available in a streaming session, any fragments
-//     that don't contain the same codec private data cause an error to be returned
-//     when those different media fragments are loaded. Therefore, the codec
-//     private data should not change between fragments in a session. This also
-//     means that the session fails if the fragments in a stream change from
-//     having only video to having both audio and video. Data retrieved with
-//     this action is billable. See Pricing (https://aws.amazon.com/kinesis/video-streams/pricing/)
-//     for details.
+//     the encoded fragment's media frames and their timestamps. For the HLS
+//     streaming session, in-track codec private data (CPD) changes are supported.
+//     After the first media fragment is made available in a streaming session,
+//     fragments can contain CPD changes for each track. Therefore, the fragments
+//     in a session can have a different resolution, bit rate, or other information
+//     in the CPD without interrupting playback. However, any change made in
+//     the track number or track codec format can return an error when those
+//     different media fragments are loaded. For example, streaming will fail
+//     if the fragments in the stream change from having only video to having
+//     both audio and video, or if an AAC audio track is changed to an ALAW audio
+//     track. For each streaming session, only 500 CPD changes are allowed. Data
+//     retrieved with this action is billable. For information, see Pricing (https://aws.amazon.com/kinesis/video-streams/pricing/).
 //
 //   - GetTSFragment: Retrieves MPEG TS fragments containing both initialization
 //     and media data for all tracks in the stream. If the ContainerFormat is
@@ -548,8 +553,8 @@ func (c *KinesisVideoArchivedMedia) GetHLSStreamingSessionURLRequest(input *GetH
 // about using CloudWatch to monitor Kinesis Video Streams, see Monitoring Kinesis
 // Video Streams (http://docs.aws.amazon.com/kinesisvideostreams/latest/dg/monitoring.html).
 // For pricing information, see Amazon Kinesis Video Streams Pricing (https://aws.amazon.com/kinesis/video-streams/pricing/)
-// and AWS Pricing (https://aws.amazon.com/pricing/). Charges for both HLS sessions
-// and outgoing AWS data apply.
+// and Amazon Web Services Pricing (https://aws.amazon.com/pricing/). Charges
+// for both HLS sessions and outgoing Amazon Web Services data apply.
 //
 // For more information about HLS, see HTTP Live Streaming (https://developer.apple.com/streaming/)
 // on the Apple Developer site (https://developer.apple.com).
@@ -561,9 +566,9 @@ func (c *KinesisVideoArchivedMedia) GetHLSStreamingSessionURLRequest(input *GetH
 //   - x-amz-ErrorType HTTP header – contains a more specific error type
 //     in addition to what the HTTP status code provides.
 //
-//   - x-amz-RequestId HTTP header – if you want to report an issue to AWS,
-//     the support team can better diagnose the problem if given the Request
-//     Id.
+//   - x-amz-RequestId HTTP header – if you want to report an issue to Amazon
+//     Web Services, the support team can better diagnose the problem if given
+//     the Request Id.
 //
 // Both the HTTP status code and the ErrorType header can be utilized to make
 // programmatic decisions about whether errors are retry-able and under what
@@ -583,8 +588,8 @@ func (c *KinesisVideoArchivedMedia) GetHLSStreamingSessionURLRequest(input *GetH
 // Returned Error Types:
 //
 //   - ResourceNotFoundException
-//     GetMedia throws this error when Kinesis Video Streams can't find the stream
-//     that you specified.
+//     GetImages will throw this error when Kinesis Video Streams can't find the
+//     stream that you specified.
 //
 //     GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 //     if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested
@@ -706,8 +711,8 @@ func (c *KinesisVideoArchivedMedia) GetImagesRequest(input *GetImagesInput) (req
 // Returned Error Types:
 //
 //   - ResourceNotFoundException
-//     GetMedia throws this error when Kinesis Video Streams can't find the stream
-//     that you specified.
+//     GetImages will throw this error when Kinesis Video Streams can't find the
+//     stream that you specified.
 //
 //     GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 //     if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested
@@ -860,9 +865,9 @@ func (c *KinesisVideoArchivedMedia) GetMediaForFragmentListRequest(input *GetMed
 //   - x-amz-ErrorType HTTP header – contains a more specific error type
 //     in addition to what the HTTP status code provides.
 //
-//   - x-amz-RequestId HTTP header – if you want to report an issue to AWS,
-//     the support team can better diagnose the problem if given the Request
-//     Id.
+//   - x-amz-RequestId HTTP header – if you want to report an issue to Amazon
+//     Web Services, the support team can better diagnose the problem if given
+//     the Request Id.
 //
 // Both the HTTP status code and the ErrorType header can be utilized to make
 // programmatic decisions about whether errors are retry-able and under what
@@ -882,8 +887,8 @@ func (c *KinesisVideoArchivedMedia) GetMediaForFragmentListRequest(input *GetMed
 // Returned Error Types:
 //
 //   - ResourceNotFoundException
-//     GetMedia throws this error when Kinesis Video Streams can't find the stream
-//     that you specified.
+//     GetImages will throw this error when Kinesis Video Streams can't find the
+//     stream that you specified.
 //
 //     GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 //     if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested
@@ -994,9 +999,9 @@ func (c *KinesisVideoArchivedMedia) ListFragmentsRequest(input *ListFragmentsInp
 //   - x-amz-ErrorType HTTP header – contains a more specific error type
 //     in addition to what the HTTP status code provides.
 //
-//   - x-amz-RequestId HTTP header – if you want to report an issue to AWS,
-//     the support team can better diagnose the problem if given the Request
-//     Id.
+//   - x-amz-RequestId HTTP header – if you want to report an issue to Amazon
+//     Web Services, the support team can better diagnose the problem if given
+//     the Request Id.
 //
 // Both the HTTP status code and the ErrorType header can be utilized to make
 // programmatic decisions about whether errors are retry-able and under what
@@ -1016,8 +1021,8 @@ func (c *KinesisVideoArchivedMedia) ListFragmentsRequest(input *ListFragmentsInp
 // Returned Error Types:
 //
 //   - ResourceNotFoundException
-//     GetMedia throws this error when Kinesis Video Streams can't find the stream
-//     that you specified.
+//     GetImages will throw this error when Kinesis Video Streams can't find the
+//     stream that you specified.
 //
 //     GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 //     if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested
@@ -1479,7 +1484,7 @@ type Fragment struct {
 	// The timestamp from the producer corresponding to the fragment.
 	ProducerTimestamp *time.Time `type:"timestamp"`
 
-	// The timestamp from the AWS server corresponding to the fragment.
+	// The timestamp from the Amazon Web Services server corresponding to the fragment.
 	ServerTimestamp *time.Time `type:"timestamp"`
 }
 
@@ -2271,7 +2276,9 @@ func (s *GetHLSStreamingSessionURLOutput) SetHLSStreamingSessionURL(v string) *G
 type GetImagesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The end timestamp for the range of images to be generated.
+	// The end timestamp for the range of images to be generated. If the time range
+	// between StartTimestamp and EndTimestamp is more than 300 seconds above StartTimestamp,
+	// you will receive an IllegalArgumentException.
 	//
 	// EndTimestamp is a required field
 	EndTimestamp *time.Time `type:"timestamp" required:"true"`
@@ -2306,7 +2313,8 @@ type GetImagesInput struct {
 
 	// The maximum number of images to be returned by the API.
 	//
-	// The default limit is 100 images per API response. The additional results
+	// The default limit is 25 images per API response. Providing a MaxResults greater
+	// than this value will result in a page size of 25. Any additional results
 	// will be paginated.
 	MaxResults *int64 `min:"1" type:"long"`
 
@@ -2315,15 +2323,12 @@ type GetImagesInput struct {
 	NextToken *string `min:"1" type:"string"`
 
 	// The time interval in milliseconds (ms) at which the images need to be generated
-	// from the stream. The minimum value that can be provided is 3000 ms. If the
-	// timestamp range is less than the sampling interval, the Image from the startTimestamp
-	// will be returned if available.
+	// from the stream, with a default of 3000 ms. The minimum value that can be
+	// provided is 200 ms. If the timestamp range is less than the sampling interval,
+	// the Image from the startTimestamp will be returned if available.
 	//
-	// The minimum value of 3000 ms is a soft limit. If needed, a lower sampling
-	// frequency can be requested.
-	//
-	// SamplingInterval is a required field
-	SamplingInterval *int64 `min:"3000" type:"integer" required:"true"`
+	// The minimum value of 200 ms is a hard limit.
+	SamplingInterval *int64 `type:"integer"`
 
 	// The starting point from which the images should be generated. This StartTimestamp
 	// must be within an inclusive range of timestamps for an image to be returned.
@@ -2389,12 +2394,6 @@ func (s *GetImagesInput) Validate() error {
 	}
 	if s.NextToken != nil && len(*s.NextToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
-	}
-	if s.SamplingInterval == nil {
-		invalidParams.Add(request.NewErrParamRequired("SamplingInterval"))
-	}
-	if s.SamplingInterval != nil && *s.SamplingInterval < 3000 {
-		invalidParams.Add(request.NewErrParamMinValue("SamplingInterval", 3000))
 	}
 	if s.StartTimestamp == nil {
 		invalidParams.Add(request.NewErrParamRequired("StartTimestamp"))
@@ -2630,7 +2629,7 @@ type GetMediaForFragmentListOutput struct {
 	//    * AWS_KINESISVIDEO_FRAGMENT_NUMBER - The number of the fragment that threw
 	//    the exception
 	//
-	//    * AWS_KINESISVIDEO_EXCEPTION_ERROR_CODE - The integer code of the exception
+	//    * AWS_KINESISVIDEO_EXCEPTION_ERROR_CODE - The integer code of the
 	//
 	//    * AWS_KINESISVIDEO_EXCEPTION_MESSAGE - A text description of the exception
 	Payload io.ReadCloser `type:"blob"`
@@ -3390,8 +3389,8 @@ func (s *NotAuthorizedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// GetMedia throws this error when Kinesis Video Streams can't find the stream
-// that you specified.
+// GetImages will throw this error when Kinesis Video Streams can't find the
+// stream that you specified.
 //
 // GetHLSStreamingSessionURL and GetDASHStreamingSessionURL throw this error
 // if a session with a PlaybackMode of ON_DEMAND or LIVE_REPLAYis requested

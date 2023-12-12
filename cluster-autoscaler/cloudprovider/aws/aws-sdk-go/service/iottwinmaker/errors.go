@@ -38,6 +38,12 @@ const (
 	// An unexpected error has occurred.
 	ErrCodeInternalServerException = "InternalServerException"
 
+	// ErrCodeQueryTimeoutException for service response error code
+	// "QueryTimeoutException".
+	//
+	// The query timeout exception.
+	ErrCodeQueryTimeoutException = "QueryTimeoutException"
+
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
 	//
@@ -75,6 +81,7 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ConnectorFailureException":     newErrorConnectorFailureException,
 	"ConnectorTimeoutException":     newErrorConnectorTimeoutException,
 	"InternalServerException":       newErrorInternalServerException,
+	"QueryTimeoutException":         newErrorQueryTimeoutException,
 	"ResourceNotFoundException":     newErrorResourceNotFoundException,
 	"ServiceQuotaExceededException": newErrorServiceQuotaExceededException,
 	"ThrottlingException":           newErrorThrottlingException,

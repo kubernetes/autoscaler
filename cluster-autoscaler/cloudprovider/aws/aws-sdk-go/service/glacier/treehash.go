@@ -55,25 +55,36 @@ func ComputeHashes(r io.ReadSeeker) Hash {
 //
 // See http://docs.aws.amazon.com/amazonglacier/latest/dev/checksum-calculations.html for more information.
 func ComputeTreeHash(hashes [][]byte) []byte {
-	if hashes == nil || len(hashes) == 0 {
+	hashCount := len(hashes)
+	switch hashCount {
+	case 0:
 		return nil
+	case 1:
+		return hashes[0]
 	}
-
-	for len(hashes) > 1 {
-		tmpHashes := [][]byte{}
-
-		for i := 0; i < len(hashes); i += 2 {
-			if i+1 <= len(hashes)-1 {
-				tmpHash := append(append([]byte{}, hashes[i]...), hashes[i+1]...)
-				tmpSum := sha256.Sum256(tmpHash)
-				tmpHashes = append(tmpHashes, tmpSum[:])
-			} else {
-				tmpHashes = append(tmpHashes, hashes[i])
+	leaves := make([][32]byte, hashCount)
+	for i := range leaves {
+		copy(leaves[i][:], hashes[i])
+	}
+	var (
+		queue = leaves[:0]
+		h256  = sha256.New()
+		buf   [32]byte
+	)
+	for len(leaves) > 1 {
+		for i := 0; i < len(leaves); i += 2 {
+			if i+1 == len(leaves) {
+				queue = append(queue, leaves[i])
+				break
 			}
+			h256.Write(leaves[i][:])
+			h256.Write(leaves[i+1][:])
+			h256.Sum(buf[:0])
+			queue = append(queue, buf)
+			h256.Reset()
 		}
-
-		hashes = tmpHashes
+		leaves = queue
+		queue = queue[:0]
 	}
-
-	return hashes[0]
+	return leaves[0][:]
 }

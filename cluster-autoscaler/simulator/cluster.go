@@ -155,11 +155,6 @@ func (r *RemovalSimulator) SimulateNodeRemoval(
 	}
 	klog.V(2).Infof("Simulating node %s removal", nodeName)
 
-	if _, found := destinationMap[nodeName]; !found {
-		klog.V(2).Infof("nodeInfo for %s not found", nodeName)
-		return nil, &UnremovableNode{Node: nodeInfo.Node(), Reason: UnexpectedError}
-	}
-
 	podsToRemove, daemonSetPods, blockingPod, err := GetPodsToMove(nodeInfo, r.deleteOptions, r.drainabilityRules, r.listers, remainingPdbTracker, timestamp)
 	if err != nil {
 		klog.V(2).Infof("node %s cannot be removed: %v", nodeName, err)

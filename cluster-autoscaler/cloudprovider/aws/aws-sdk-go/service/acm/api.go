@@ -201,6 +201,16 @@ func (c *ACM) DeleteCertificateRequest(input *DeleteCertificateInput) (req *requ
 //     The certificate is in use by another Amazon Web Services service in the caller's
 //     account. Remove the association and try again.
 //
+//   - AccessDeniedException
+//     You do not have access required to perform this action.
+//
+//   - ThrottlingException
+//     The request was denied because it exceeded a quota.
+//
+//   - ConflictException
+//     You are trying to update a resource or configuration that is already being
+//     created or updated. Wait for the previous operation to finish and try again.
+//
 //   - InvalidArnException
 //     The requested Amazon Resource Name (ARN) does not refer to an existing resource.
 //
@@ -270,6 +280,10 @@ func (c *ACM) DescribeCertificateRequest(input *DescribeCertificateInput) (req *
 // DescribeCertificate API operation for AWS Certificate Manager.
 //
 // Returns detailed metadata about the specified ACM certificate.
+//
+// If you have just created a certificate using the RequestCertificate action,
+// there is a delay of several seconds before you can retrieve information about
+// it.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -620,15 +634,14 @@ func (c *ACM) ImportCertificateRequest(input *ImportCertificateInput) (req *requ
 
 // ImportCertificate API operation for AWS Certificate Manager.
 //
-// Imports a certificate into Amazon Web Services Certificate Manager (ACM)
-// to use with services that are integrated with ACM. Note that integrated services
-// (https://docs.aws.amazon.com/acm/latest/userguide/acm-services.html) allow
-// only certificate types and keys they support to be associated with their
-// resources. Further, their support differs depending on whether the certificate
-// is imported into IAM or into ACM. For more information, see the documentation
-// for each service. For more information about importing certificates into
-// ACM, see Importing Certificates (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
-// in the Amazon Web Services Certificate Manager User Guide.
+// Imports a certificate into Certificate Manager (ACM) to use with services
+// that are integrated with ACM. Note that integrated services (https://docs.aws.amazon.com/acm/latest/userguide/acm-services.html)
+// allow only certificate types and keys they support to be associated with
+// their resources. Further, their support differs depending on whether the
+// certificate is imported into IAM or into ACM. For more information, see the
+// documentation for each service. For more information about importing certificates
+// into ACM, see Importing Certificates (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
+// in the Certificate Manager User Guide.
 //
 // ACM does not provide managed renewal (https://docs.aws.amazon.com/acm/latest/userguide/acm-renewal.html)
 // for certificates that you import.
@@ -795,8 +808,13 @@ func (c *ACM) ListCertificatesRequest(input *ListCertificatesInput) (req *reques
 // API operation ListCertificates for usage and error information.
 //
 // Returned Error Types:
+//
 //   - InvalidArgsException
 //     One or more of of request parameters specified is not valid.
+//
+//   - ValidationException
+//     The supplied input failed to satisfy constraints of an Amazon Web Services
+//     service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/acm-2015-12-08/ListCertificates
 func (c *ACM) ListCertificates(input *ListCertificatesInput) (*ListCertificatesOutput, error) {
@@ -1203,9 +1221,9 @@ func (c *ACM) RenewCertificateRequest(input *RenewCertificateInput) (req *reques
 // RenewCertificate API operation for AWS Certificate Manager.
 //
 // Renews an eligible ACM certificate. At this time, only exported private certificates
-// can be renewed with this operation. In order to renew your ACM PCA certificates
-// with ACM, you must first grant the ACM service principal permission to do
-// so (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaPermissions.html).
+// can be renewed with this operation. In order to renew your Amazon Web Services
+// Private CA certificates with ACM, you must first grant the ACM service principal
+// permission to do so (https://docs.aws.amazon.com/privateca/latest/userguide/PcaPermissions.html).
 // For more information, see Testing Managed Renewal (https://docs.aws.amazon.com/acm/latest/userguide/manual-renewal.html)
 // in the ACM User Guide.
 //
@@ -1303,10 +1321,14 @@ func (c *ACM) RequestCertificateRequest(input *RequestCertificateInput) (req *re
 // We recommend that you use DNS validation. ACM issues public certificates
 // after receiving approval from the domain owner.
 //
-// ACM behavior differs from the https://tools.ietf.org/html/rfc6125#appendix-B.2
-// (https://tools.ietf.org/html/rfc6125#appendix-B.2)RFC 6125 specification
-// of the certificate validation process. first checks for a subject alternative
-// name, and, if it finds one, ignores the common name (CN)
+// ACM behavior differs from the RFC 6125 (https://datatracker.ietf.org/doc/html/rfc6125#appendix-B.2)
+// specification of the certificate validation process. ACM first checks for
+// a Subject Alternative Name, and, if it finds one, ignores the common name
+// (CN).
+//
+// After successful completion of the RequestCertificate action, there is a
+// delay of several seconds before you can retrieve information about the new
+// certificate.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1731,8 +1753,8 @@ type CertificateDetail struct {
 	// in the Amazon Web Services General Reference.
 	CertificateArn *string `min:"20" type:"string"`
 
-	// The Amazon Resource Name (ARN) of the ACM PCA private certificate authority
-	// (CA) that issued the certificate. This has the following format:
+	// The Amazon Resource Name (ARN) of the private certificate authority (CA)
+	// that issued the certificate. This has the following format:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
 	CertificateAuthorityArn *string `min:"20" type:"string"`
@@ -1757,11 +1779,11 @@ type CertificateDetail struct {
 	// The reason the certificate request failed. This value exists only when the
 	// certificate status is FAILED. For more information, see Certificate Request
 	// Failed (https://docs.aws.amazon.com/acm/latest/userguide/troubleshooting.html#troubleshooting-failed)
-	// in the Amazon Web Services Certificate Manager User Guide.
+	// in the Certificate Manager User Guide.
 	FailureReason *string `type:"string" enum:"FailureReason"`
 
-	// The date and time at which the certificate was imported. This value exists
-	// only when the certificate type is IMPORTED.
+	// The date and time when the certificate was imported. This value exists only
+	// when the certificate type is IMPORTED.
 	ImportedAt *time.Time `type:"timestamp"`
 
 	// A list of ARNs for the Amazon Web Services resources that are using the certificate.
@@ -1822,6 +1844,15 @@ type CertificateDetail struct {
 	SignatureAlgorithm *string `type:"string"`
 
 	// The status of the certificate.
+	//
+	// A certificate enters status PENDING_VALIDATION upon being requested, unless
+	// it fails for any of the reasons given in the troubleshooting topic Certificate
+	// request fails (https://docs.aws.amazon.com/acm/latest/userguide/troubleshooting-failed.html).
+	// ACM makes repeated attempts to validate a certificate for 72 hours and then
+	// times out. If a certificate shows status FAILED or VALIDATION_TIMED_OUT,
+	// delete the request, correct the issue with DNS validation (https://docs.aws.amazon.com/acm/latest/userguide/dns-validation.html)
+	// or Email validation (https://docs.aws.amazon.com/acm/latest/userguide/email-validation.html),
+	// and try again. If validation succeeds, the certificate enters status ISSUED.
 	Status *string `type:"string" enum:"CertificateStatus"`
 
 	// The name of the entity that is associated with the public key contained in
@@ -1841,7 +1872,7 @@ type CertificateDetail struct {
 	// for imported certificates. For more information about the differences between
 	// certificates that you import and those that ACM provides, see Importing Certificates
 	// (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
-	// in the Amazon Web Services Certificate Manager User Guide.
+	// in the Certificate Manager User Guide.
 	Type *string `type:"string" enum:"CertificateType"`
 }
 
@@ -2069,9 +2100,98 @@ type CertificateSummary struct {
 	// For more information about ARNs, see Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	CertificateArn *string `min:"20" type:"string"`
 
+	// The time at which the certificate was requested.
+	CreatedAt *time.Time `type:"timestamp"`
+
 	// Fully qualified domain name (FQDN), such as www.example.com or example.com,
 	// for the certificate.
 	DomainName *string `min:"1" type:"string"`
+
+	// Indicates whether the certificate has been exported. This value exists only
+	// when the certificate type is PRIVATE.
+	Exported *bool `type:"boolean"`
+
+	// Contains a list of Extended Key Usage X.509 v3 extension objects. Each object
+	// specifies a purpose for which the certificate public key can be used and
+	// consists of a name and an object identifier (OID).
+	ExtendedKeyUsages []*string `type:"list" enum:"ExtendedKeyUsageName"`
+
+	// When called by ListCertificates (https://docs.aws.amazon.com/acm/latestAPIReference/API_ListCertificates.html),
+	// indicates whether the full list of subject alternative names has been included
+	// in the response. If false, the response includes all of the subject alternative
+	// names included in the certificate. If true, the response only includes the
+	// first 100 subject alternative names included in the certificate. To display
+	// the full list of subject alternative names, use DescribeCertificate (https://docs.aws.amazon.com/acm/latestAPIReference/API_DescribeCertificate.html).
+	HasAdditionalSubjectAlternativeNames *bool `type:"boolean"`
+
+	// The date and time when the certificate was imported. This value exists only
+	// when the certificate type is IMPORTED.
+	ImportedAt *time.Time `type:"timestamp"`
+
+	// Indicates whether the certificate is currently in use by any Amazon Web Services
+	// resources.
+	InUse *bool `type:"boolean"`
+
+	// The time at which the certificate was issued. This value exists only when
+	// the certificate type is AMAZON_ISSUED.
+	IssuedAt *time.Time `type:"timestamp"`
+
+	// The algorithm that was used to generate the public-private key pair.
+	KeyAlgorithm *string `type:"string" enum:"KeyAlgorithm"`
+
+	// A list of Key Usage X.509 v3 extension objects. Each object is a string value
+	// that identifies the purpose of the public key contained in the certificate.
+	// Possible extension values include DIGITAL_SIGNATURE, KEY_ENCHIPHERMENT, NON_REPUDIATION,
+	// and more.
+	KeyUsages []*string `type:"list" enum:"KeyUsageName"`
+
+	// The time after which the certificate is not valid.
+	NotAfter *time.Time `type:"timestamp"`
+
+	// The time before which the certificate is not valid.
+	NotBefore *time.Time `type:"timestamp"`
+
+	// Specifies whether the certificate is eligible for renewal. At this time,
+	// only exported private certificates can be renewed with the RenewCertificate
+	// command.
+	RenewalEligibility *string `type:"string" enum:"RenewalEligibility"`
+
+	// The time at which the certificate was revoked. This value exists only when
+	// the certificate status is REVOKED.
+	RevokedAt *time.Time `type:"timestamp"`
+
+	// The status of the certificate.
+	//
+	// A certificate enters status PENDING_VALIDATION upon being requested, unless
+	// it fails for any of the reasons given in the troubleshooting topic Certificate
+	// request fails (https://docs.aws.amazon.com/acm/latest/userguide/troubleshooting-failed.html).
+	// ACM makes repeated attempts to validate a certificate for 72 hours and then
+	// times out. If a certificate shows status FAILED or VALIDATION_TIMED_OUT,
+	// delete the request, correct the issue with DNS validation (https://docs.aws.amazon.com/acm/latest/userguide/dns-validation.html)
+	// or Email validation (https://docs.aws.amazon.com/acm/latest/userguide/email-validation.html),
+	// and try again. If validation succeeds, the certificate enters status ISSUED.
+	Status *string `type:"string" enum:"CertificateStatus"`
+
+	// One or more domain names (subject alternative names) included in the certificate.
+	// This list contains the domain names that are bound to the public key that
+	// is contained in the certificate. The subject alternative names include the
+	// canonical domain name (CN) of the certificate and additional domain names
+	// that can be used to connect to the website.
+	//
+	// When called by ListCertificates (https://docs.aws.amazon.com/acm/latestAPIReference/API_ListCertificates.html),
+	// this parameter will only return the first 100 subject alternative names included
+	// in the certificate. To display the full list of subject alternative names,
+	// use DescribeCertificate (https://docs.aws.amazon.com/acm/latestAPIReference/API_DescribeCertificate.html).
+	SubjectAlternativeNameSummaries []*string `min:"1" type:"list"`
+
+	// The source of the certificate. For certificates provided by ACM, this value
+	// is AMAZON_ISSUED. For certificates that you imported with ImportCertificate,
+	// this value is IMPORTED. ACM does not provide managed renewal (https://docs.aws.amazon.com/acm/latest/userguide/acm-renewal.html)
+	// for imported certificates. For more information about the differences between
+	// certificates that you import and those that ACM provides, see Importing Certificates
+	// (https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html)
+	// in the Certificate Manager User Guide.
+	Type *string `type:"string" enum:"CertificateType"`
 }
 
 // String returns the string representation.
@@ -2098,9 +2218,105 @@ func (s *CertificateSummary) SetCertificateArn(v string) *CertificateSummary {
 	return s
 }
 
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CertificateSummary) SetCreatedAt(v time.Time) *CertificateSummary {
+	s.CreatedAt = &v
+	return s
+}
+
 // SetDomainName sets the DomainName field's value.
 func (s *CertificateSummary) SetDomainName(v string) *CertificateSummary {
 	s.DomainName = &v
+	return s
+}
+
+// SetExported sets the Exported field's value.
+func (s *CertificateSummary) SetExported(v bool) *CertificateSummary {
+	s.Exported = &v
+	return s
+}
+
+// SetExtendedKeyUsages sets the ExtendedKeyUsages field's value.
+func (s *CertificateSummary) SetExtendedKeyUsages(v []*string) *CertificateSummary {
+	s.ExtendedKeyUsages = v
+	return s
+}
+
+// SetHasAdditionalSubjectAlternativeNames sets the HasAdditionalSubjectAlternativeNames field's value.
+func (s *CertificateSummary) SetHasAdditionalSubjectAlternativeNames(v bool) *CertificateSummary {
+	s.HasAdditionalSubjectAlternativeNames = &v
+	return s
+}
+
+// SetImportedAt sets the ImportedAt field's value.
+func (s *CertificateSummary) SetImportedAt(v time.Time) *CertificateSummary {
+	s.ImportedAt = &v
+	return s
+}
+
+// SetInUse sets the InUse field's value.
+func (s *CertificateSummary) SetInUse(v bool) *CertificateSummary {
+	s.InUse = &v
+	return s
+}
+
+// SetIssuedAt sets the IssuedAt field's value.
+func (s *CertificateSummary) SetIssuedAt(v time.Time) *CertificateSummary {
+	s.IssuedAt = &v
+	return s
+}
+
+// SetKeyAlgorithm sets the KeyAlgorithm field's value.
+func (s *CertificateSummary) SetKeyAlgorithm(v string) *CertificateSummary {
+	s.KeyAlgorithm = &v
+	return s
+}
+
+// SetKeyUsages sets the KeyUsages field's value.
+func (s *CertificateSummary) SetKeyUsages(v []*string) *CertificateSummary {
+	s.KeyUsages = v
+	return s
+}
+
+// SetNotAfter sets the NotAfter field's value.
+func (s *CertificateSummary) SetNotAfter(v time.Time) *CertificateSummary {
+	s.NotAfter = &v
+	return s
+}
+
+// SetNotBefore sets the NotBefore field's value.
+func (s *CertificateSummary) SetNotBefore(v time.Time) *CertificateSummary {
+	s.NotBefore = &v
+	return s
+}
+
+// SetRenewalEligibility sets the RenewalEligibility field's value.
+func (s *CertificateSummary) SetRenewalEligibility(v string) *CertificateSummary {
+	s.RenewalEligibility = &v
+	return s
+}
+
+// SetRevokedAt sets the RevokedAt field's value.
+func (s *CertificateSummary) SetRevokedAt(v time.Time) *CertificateSummary {
+	s.RevokedAt = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *CertificateSummary) SetStatus(v string) *CertificateSummary {
+	s.Status = &v
+	return s
+}
+
+// SetSubjectAlternativeNameSummaries sets the SubjectAlternativeNameSummaries field's value.
+func (s *CertificateSummary) SetSubjectAlternativeNameSummaries(v []*string) *CertificateSummary {
+	s.SubjectAlternativeNameSummaries = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CertificateSummary) SetType(v string) *CertificateSummary {
+	s.Type = &v
 	return s
 }
 
@@ -2566,9 +2782,14 @@ type ExportCertificateInput struct {
 	// CertificateArn is a required field
 	CertificateArn *string `min:"20" type:"string" required:"true"`
 
-	// Passphrase to associate with the encrypted exported private key. If you want
-	// to later decrypt the private key, you must have the passphrase. You can use
-	// the following OpenSSL command to decrypt a private key:
+	// Passphrase to associate with the encrypted exported private key.
+	//
+	// When creating your passphrase, you can use any ASCII character except #,
+	// $, or %.
+	//
+	// If you want to later decrypt the private key, you must have the passphrase.
+	// You can use the following OpenSSL command to decrypt a private key. After
+	// entering the command, you are prompted for the passphrase.
 	//
 	// openssl rsa -in encrypted_key.pem -out decrypted_key.pem
 	//
@@ -2764,7 +2985,7 @@ type Filters struct {
 	//
 	// Default filtering returns only RSA_1024 and RSA_2048 certificates that have
 	// at least one domain. To return other certificate types, provide the desired
-	// type signatures in a comma-separated list. For example, "keyTypes": ["RSA_2048,RSA_4096"]
+	// type signatures in a comma-separated list. For example, "keyTypes": ["RSA_2048","RSA_4096"]
 	// returns both RSA_2048 and RSA_4096 certificates.
 	KeyTypes []*string `locationName:"keyTypes" type:"list" enum:"KeyAlgorithm"`
 
@@ -3614,6 +3835,14 @@ type ListCertificatesInput struct {
 	// request after you receive a response with truncated results. Set it to the
 	// value of NextToken from the response you just received.
 	NextToken *string `min:"1" type:"string"`
+
+	// Specifies the field to sort results by. If you specify SortBy, you must also
+	// specify SortOrder.
+	SortBy *string `type:"string" enum:"SortBy"`
+
+	// Specifies the order of sorted results. If you specify SortOrder, you must
+	// also specify SortBy.
+	SortOrder *string `type:"string" enum:"SortOrder"`
 }
 
 // String returns the string representation.
@@ -3671,6 +3900,18 @@ func (s *ListCertificatesInput) SetMaxItems(v int64) *ListCertificatesInput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListCertificatesInput) SetNextToken(v string) *ListCertificatesInput {
 	s.NextToken = &v
+	return s
+}
+
+// SetSortBy sets the SortBy field's value.
+func (s *ListCertificatesInput) SetSortBy(v string) *ListCertificatesInput {
+	s.SortBy = &v
+	return s
+}
+
+// SetSortOrder sets the SortOrder field's value.
+func (s *ListCertificatesInput) SetSortOrder(v string) *ListCertificatesInput {
+	s.SortOrder = &v
 	return s
 }
 
@@ -4147,9 +4388,8 @@ type RequestCertificateInput struct {
 	// that will be used to issue the certificate. If you do not provide an ARN
 	// and you are trying to request a private certificate, ACM will attempt to
 	// issue a public certificate. For more information about private CAs, see the
-	// Amazon Web Services Certificate Manager Private Certificate Authority (PCA)
-	// (https://docs.aws.amazon.com/acm-pca/latest/userguide/PcaWelcome.html) user
-	// guide. The ARN must have the following form:
+	// Amazon Web Services Private Certificate Authority (https://docs.aws.amazon.com/privateca/latest/userguide/PcaWelcome.html)
+	// user guide. The ARN must have the following form:
 	//
 	// arn:aws:acm-pca:region:account:certificate-authority/12345678-1234-1234-1234-123456789012
 	CertificateAuthorityArn *string `min:"20" type:"string"`
@@ -4159,9 +4399,11 @@ type RequestCertificateInput struct {
 	// certificate that protects several sites in the same domain. For example,
 	// *.example.com protects www.example.com, site.example.com, and images.example.com.
 	//
-	// The first domain name you enter cannot exceed 64 octets, including periods.
-	// Each subsequent Subject Alternative Name (SAN), however, can be up to 253
-	// octets in length.
+	// In compliance with RFC 5280 (https://datatracker.ietf.org/doc/html/rfc5280),
+	// the length of the domain name (technically, the Common Name) that you provide
+	// cannot exceed 64 octets (characters), including periods. To add a longer
+	// domain name, specify it in the Subject Alternative Name field, which supports
+	// names up to 253 octets in length.
 	//
 	// DomainName is a required field
 	DomainName *string `min:"1" type:"string" required:"true"`
@@ -4177,6 +4419,19 @@ type RequestCertificateInput struct {
 	// you change the idempotency token for each call, ACM recognizes that you are
 	// requesting multiple certificates.
 	IdempotencyToken *string `min:"1" type:"string"`
+
+	// Specifies the algorithm of the public and private key pair that your certificate
+	// uses to encrypt data. RSA is the default key algorithm for ACM certificates.
+	// Elliptic Curve Digital Signature Algorithm (ECDSA) keys are smaller, offering
+	// security comparable to RSA keys but with greater computing efficiency. However,
+	// ECDSA is not supported by all network clients. Some AWS services may require
+	// RSA keys, or only support ECDSA keys of a particular size, while others allow
+	// the use of either RSA and ECDSA keys to ensure that compatibility is not
+	// broken. Check the requirements for the AWS service where you plan to deploy
+	// your certificate.
+	//
+	// Default: RSA_2048
+	KeyAlgorithm *string `type:"string" enum:"KeyAlgorithm"`
 
 	// Currently, you can use this parameter to specify whether to add the certificate
 	// to a certificate transparency log. Certificate transparency makes it possible
@@ -4310,6 +4565,12 @@ func (s *RequestCertificateInput) SetDomainValidationOptions(v []*DomainValidati
 // SetIdempotencyToken sets the IdempotencyToken field's value.
 func (s *RequestCertificateInput) SetIdempotencyToken(v string) *RequestCertificateInput {
 	s.IdempotencyToken = &v
+	return s
+}
+
+// SetKeyAlgorithm sets the KeyAlgorithm field's value.
+func (s *RequestCertificateInput) SetKeyAlgorithm(v string) *RequestCertificateInput {
+	s.KeyAlgorithm = &v
 	return s
 }
 
@@ -5568,6 +5829,34 @@ func RevocationReason_Values() []string {
 		RevocationReasonRemoveFromCrl,
 		RevocationReasonPrivilegeWithdrawn,
 		RevocationReasonAACompromise,
+	}
+}
+
+const (
+	// SortByCreatedAt is a SortBy enum value
+	SortByCreatedAt = "CREATED_AT"
+)
+
+// SortBy_Values returns all elements of the SortBy enum
+func SortBy_Values() []string {
+	return []string{
+		SortByCreatedAt,
+	}
+}
+
+const (
+	// SortOrderAscending is a SortOrder enum value
+	SortOrderAscending = "ASCENDING"
+
+	// SortOrderDescending is a SortOrder enum value
+	SortOrderDescending = "DESCENDING"
+)
+
+// SortOrder_Values returns all elements of the SortOrder enum
+func SortOrder_Values() []string {
+	return []string{
+		SortOrderAscending,
+		SortOrderDescending,
 	}
 }
 

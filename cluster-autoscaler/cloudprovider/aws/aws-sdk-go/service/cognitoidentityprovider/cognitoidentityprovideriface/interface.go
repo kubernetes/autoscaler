@@ -306,6 +306,10 @@ type CognitoIdentityProviderAPI interface {
 	GetIdentityProviderByIdentifierWithContext(aws.Context, *cognitoidentityprovider.GetIdentityProviderByIdentifierInput, ...request.Option) (*cognitoidentityprovider.GetIdentityProviderByIdentifierOutput, error)
 	GetIdentityProviderByIdentifierRequest(*cognitoidentityprovider.GetIdentityProviderByIdentifierInput) (*request.Request, *cognitoidentityprovider.GetIdentityProviderByIdentifierOutput)
 
+	GetLogDeliveryConfiguration(*cognitoidentityprovider.GetLogDeliveryConfigurationInput) (*cognitoidentityprovider.GetLogDeliveryConfigurationOutput, error)
+	GetLogDeliveryConfigurationWithContext(aws.Context, *cognitoidentityprovider.GetLogDeliveryConfigurationInput, ...request.Option) (*cognitoidentityprovider.GetLogDeliveryConfigurationOutput, error)
+	GetLogDeliveryConfigurationRequest(*cognitoidentityprovider.GetLogDeliveryConfigurationInput) (*request.Request, *cognitoidentityprovider.GetLogDeliveryConfigurationOutput)
+
 	GetSigningCertificate(*cognitoidentityprovider.GetSigningCertificateInput) (*cognitoidentityprovider.GetSigningCertificateOutput, error)
 	GetSigningCertificateWithContext(aws.Context, *cognitoidentityprovider.GetSigningCertificateInput, ...request.Option) (*cognitoidentityprovider.GetSigningCertificateOutput, error)
 	GetSigningCertificateRequest(*cognitoidentityprovider.GetSigningCertificateInput) (*request.Request, *cognitoidentityprovider.GetSigningCertificateOutput)
@@ -406,6 +410,10 @@ type CognitoIdentityProviderAPI interface {
 	RevokeToken(*cognitoidentityprovider.RevokeTokenInput) (*cognitoidentityprovider.RevokeTokenOutput, error)
 	RevokeTokenWithContext(aws.Context, *cognitoidentityprovider.RevokeTokenInput, ...request.Option) (*cognitoidentityprovider.RevokeTokenOutput, error)
 	RevokeTokenRequest(*cognitoidentityprovider.RevokeTokenInput) (*request.Request, *cognitoidentityprovider.RevokeTokenOutput)
+
+	SetLogDeliveryConfiguration(*cognitoidentityprovider.SetLogDeliveryConfigurationInput) (*cognitoidentityprovider.SetLogDeliveryConfigurationOutput, error)
+	SetLogDeliveryConfigurationWithContext(aws.Context, *cognitoidentityprovider.SetLogDeliveryConfigurationInput, ...request.Option) (*cognitoidentityprovider.SetLogDeliveryConfigurationOutput, error)
+	SetLogDeliveryConfigurationRequest(*cognitoidentityprovider.SetLogDeliveryConfigurationInput) (*request.Request, *cognitoidentityprovider.SetLogDeliveryConfigurationOutput)
 
 	SetRiskConfiguration(*cognitoidentityprovider.SetRiskConfigurationInput) (*cognitoidentityprovider.SetRiskConfigurationOutput, error)
 	SetRiskConfigurationWithContext(aws.Context, *cognitoidentityprovider.SetRiskConfigurationInput, ...request.Option) (*cognitoidentityprovider.SetRiskConfigurationOutput, error)

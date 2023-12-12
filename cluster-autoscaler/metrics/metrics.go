@@ -135,12 +135,13 @@ var (
 		}, []string{"node_group_type"},
 	)
 
-	unschedulablePodsCount = k8smetrics.NewGauge(
+	// Unschedulable pod count can be from scheduler-marked-unschedulable pods or not-yet-processed pods (unknown)
+	unschedulablePodsCount = k8smetrics.NewGaugeVec(
 		&k8smetrics.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unschedulable_pods_count",
 			Help:      "Number of unschedulable pods in the cluster.",
-		},
+		}, []string{"type"},
 	)
 
 	maxNodesCount = k8smetrics.NewGauge(
@@ -196,6 +197,14 @@ var (
 			Namespace: caNamespace,
 			Name:      "node_group_max_count",
 			Help:      "Maximum number of nodes in the node group",
+		}, []string{"node_group"},
+	)
+
+	nodesGroupTargetSize = k8smetrics.NewGaugeVec(
+		&k8smetrics.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_group_target_count",
+			Help:      "Target number of nodes in the node group by CA.",
 		}, []string{"node_group"},
 	)
 
@@ -421,6 +430,7 @@ func RegisterAll(emitPerNodeGroupMetrics bool) {
 	if emitPerNodeGroupMetrics {
 		legacyregistry.MustRegister(nodesGroupMinNodes)
 		legacyregistry.MustRegister(nodesGroupMaxNodes)
+		legacyregistry.MustRegister(nodesGroupTargetSize)
 	}
 }
 
@@ -472,8 +482,14 @@ func UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
 }
 
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
-func UpdateUnschedulablePodsCount(podsCount int) {
-	unschedulablePodsCount.Set(float64(podsCount))
+func UpdateUnschedulablePodsCount(uschedulablePodsCount, schedulerUnprocessedCount int) {
+	UpdateUnschedulablePodsCountWithLabel(uschedulablePodsCount, "unschedulable")
+	UpdateUnschedulablePodsCountWithLabel(schedulerUnprocessedCount, "scheduler_unprocessed")
+}
+
+// UpdateUnschedulablePodsCountWithLabel records number of currently unschedulable pods wil label "type" value "label"
+func UpdateUnschedulablePodsCountWithLabel(uschedulablePodsCount int, label string) {
+	unschedulablePodsCount.WithLabelValues(label).Set(float64(uschedulablePodsCount))
 }
 
 // UpdateMaxNodesCount records the current maximum number of nodes being set for all node groups
@@ -511,6 +527,13 @@ func UpdateNodeGroupMin(nodeGroup string, minNodes int) {
 // UpdateNodeGroupMax records the node group maximum allowed number of nodes
 func UpdateNodeGroupMax(nodeGroup string, maxNodes int) {
 	nodesGroupMaxNodes.WithLabelValues(nodeGroup).Set(float64(maxNodes))
+}
+
+// UpdateNodeGroupTargetSize records the node group target size
+func UpdateNodeGroupTargetSize(targetSizes map[string]int) {
+	for nodeGroup, targetSize := range targetSizes {
+		nodesGroupTargetSize.WithLabelValues(nodeGroup).Set(float64(targetSize))
+	}
 }
 
 // RegisterError records any errors preventing Cluster Autoscaler from working.

@@ -64,9 +64,21 @@ type ResilienceHubAPI interface {
 	AddDraftAppVersionResourceMappingsWithContext(aws.Context, *resiliencehub.AddDraftAppVersionResourceMappingsInput, ...request.Option) (*resiliencehub.AddDraftAppVersionResourceMappingsOutput, error)
 	AddDraftAppVersionResourceMappingsRequest(*resiliencehub.AddDraftAppVersionResourceMappingsInput) (*request.Request, *resiliencehub.AddDraftAppVersionResourceMappingsOutput)
 
+	BatchUpdateRecommendationStatus(*resiliencehub.BatchUpdateRecommendationStatusInput) (*resiliencehub.BatchUpdateRecommendationStatusOutput, error)
+	BatchUpdateRecommendationStatusWithContext(aws.Context, *resiliencehub.BatchUpdateRecommendationStatusInput, ...request.Option) (*resiliencehub.BatchUpdateRecommendationStatusOutput, error)
+	BatchUpdateRecommendationStatusRequest(*resiliencehub.BatchUpdateRecommendationStatusInput) (*request.Request, *resiliencehub.BatchUpdateRecommendationStatusOutput)
+
 	CreateApp(*resiliencehub.CreateAppInput) (*resiliencehub.CreateAppOutput, error)
 	CreateAppWithContext(aws.Context, *resiliencehub.CreateAppInput, ...request.Option) (*resiliencehub.CreateAppOutput, error)
 	CreateAppRequest(*resiliencehub.CreateAppInput) (*request.Request, *resiliencehub.CreateAppOutput)
+
+	CreateAppVersionAppComponent(*resiliencehub.CreateAppVersionAppComponentInput) (*resiliencehub.CreateAppVersionAppComponentOutput, error)
+	CreateAppVersionAppComponentWithContext(aws.Context, *resiliencehub.CreateAppVersionAppComponentInput, ...request.Option) (*resiliencehub.CreateAppVersionAppComponentOutput, error)
+	CreateAppVersionAppComponentRequest(*resiliencehub.CreateAppVersionAppComponentInput) (*request.Request, *resiliencehub.CreateAppVersionAppComponentOutput)
+
+	CreateAppVersionResource(*resiliencehub.CreateAppVersionResourceInput) (*resiliencehub.CreateAppVersionResourceOutput, error)
+	CreateAppVersionResourceWithContext(aws.Context, *resiliencehub.CreateAppVersionResourceInput, ...request.Option) (*resiliencehub.CreateAppVersionResourceOutput, error)
+	CreateAppVersionResourceRequest(*resiliencehub.CreateAppVersionResourceInput) (*request.Request, *resiliencehub.CreateAppVersionResourceOutput)
 
 	CreateRecommendationTemplate(*resiliencehub.CreateRecommendationTemplateInput) (*resiliencehub.CreateRecommendationTemplateOutput, error)
 	CreateRecommendationTemplateWithContext(aws.Context, *resiliencehub.CreateRecommendationTemplateInput, ...request.Option) (*resiliencehub.CreateRecommendationTemplateOutput, error)
@@ -84,6 +96,18 @@ type ResilienceHubAPI interface {
 	DeleteAppAssessmentWithContext(aws.Context, *resiliencehub.DeleteAppAssessmentInput, ...request.Option) (*resiliencehub.DeleteAppAssessmentOutput, error)
 	DeleteAppAssessmentRequest(*resiliencehub.DeleteAppAssessmentInput) (*request.Request, *resiliencehub.DeleteAppAssessmentOutput)
 
+	DeleteAppInputSource(*resiliencehub.DeleteAppInputSourceInput) (*resiliencehub.DeleteAppInputSourceOutput, error)
+	DeleteAppInputSourceWithContext(aws.Context, *resiliencehub.DeleteAppInputSourceInput, ...request.Option) (*resiliencehub.DeleteAppInputSourceOutput, error)
+	DeleteAppInputSourceRequest(*resiliencehub.DeleteAppInputSourceInput) (*request.Request, *resiliencehub.DeleteAppInputSourceOutput)
+
+	DeleteAppVersionAppComponent(*resiliencehub.DeleteAppVersionAppComponentInput) (*resiliencehub.DeleteAppVersionAppComponentOutput, error)
+	DeleteAppVersionAppComponentWithContext(aws.Context, *resiliencehub.DeleteAppVersionAppComponentInput, ...request.Option) (*resiliencehub.DeleteAppVersionAppComponentOutput, error)
+	DeleteAppVersionAppComponentRequest(*resiliencehub.DeleteAppVersionAppComponentInput) (*request.Request, *resiliencehub.DeleteAppVersionAppComponentOutput)
+
+	DeleteAppVersionResource(*resiliencehub.DeleteAppVersionResourceInput) (*resiliencehub.DeleteAppVersionResourceOutput, error)
+	DeleteAppVersionResourceWithContext(aws.Context, *resiliencehub.DeleteAppVersionResourceInput, ...request.Option) (*resiliencehub.DeleteAppVersionResourceOutput, error)
+	DeleteAppVersionResourceRequest(*resiliencehub.DeleteAppVersionResourceInput) (*request.Request, *resiliencehub.DeleteAppVersionResourceOutput)
+
 	DeleteRecommendationTemplate(*resiliencehub.DeleteRecommendationTemplateInput) (*resiliencehub.DeleteRecommendationTemplateOutput, error)
 	DeleteRecommendationTemplateWithContext(aws.Context, *resiliencehub.DeleteRecommendationTemplateInput, ...request.Option) (*resiliencehub.DeleteRecommendationTemplateOutput, error)
 	DeleteRecommendationTemplateRequest(*resiliencehub.DeleteRecommendationTemplateInput) (*request.Request, *resiliencehub.DeleteRecommendationTemplateOutput)
@@ -99,6 +123,18 @@ type ResilienceHubAPI interface {
 	DescribeAppAssessment(*resiliencehub.DescribeAppAssessmentInput) (*resiliencehub.DescribeAppAssessmentOutput, error)
 	DescribeAppAssessmentWithContext(aws.Context, *resiliencehub.DescribeAppAssessmentInput, ...request.Option) (*resiliencehub.DescribeAppAssessmentOutput, error)
 	DescribeAppAssessmentRequest(*resiliencehub.DescribeAppAssessmentInput) (*request.Request, *resiliencehub.DescribeAppAssessmentOutput)
+
+	DescribeAppVersion(*resiliencehub.DescribeAppVersionInput) (*resiliencehub.DescribeAppVersionOutput, error)
+	DescribeAppVersionWithContext(aws.Context, *resiliencehub.DescribeAppVersionInput, ...request.Option) (*resiliencehub.DescribeAppVersionOutput, error)
+	DescribeAppVersionRequest(*resiliencehub.DescribeAppVersionInput) (*request.Request, *resiliencehub.DescribeAppVersionOutput)
+
+	DescribeAppVersionAppComponent(*resiliencehub.DescribeAppVersionAppComponentInput) (*resiliencehub.DescribeAppVersionAppComponentOutput, error)
+	DescribeAppVersionAppComponentWithContext(aws.Context, *resiliencehub.DescribeAppVersionAppComponentInput, ...request.Option) (*resiliencehub.DescribeAppVersionAppComponentOutput, error)
+	DescribeAppVersionAppComponentRequest(*resiliencehub.DescribeAppVersionAppComponentInput) (*request.Request, *resiliencehub.DescribeAppVersionAppComponentOutput)
+
+	DescribeAppVersionResource(*resiliencehub.DescribeAppVersionResourceInput) (*resiliencehub.DescribeAppVersionResourceOutput, error)
+	DescribeAppVersionResourceWithContext(aws.Context, *resiliencehub.DescribeAppVersionResourceInput, ...request.Option) (*resiliencehub.DescribeAppVersionResourceOutput, error)
+	DescribeAppVersionResourceRequest(*resiliencehub.DescribeAppVersionResourceInput) (*request.Request, *resiliencehub.DescribeAppVersionResourceOutput)
 
 	DescribeAppVersionResourcesResolutionStatus(*resiliencehub.DescribeAppVersionResourcesResolutionStatusInput) (*resiliencehub.DescribeAppVersionResourcesResolutionStatusOutput, error)
 	DescribeAppVersionResourcesResolutionStatusWithContext(aws.Context, *resiliencehub.DescribeAppVersionResourcesResolutionStatusInput, ...request.Option) (*resiliencehub.DescribeAppVersionResourcesResolutionStatusOutput, error)
@@ -127,6 +163,13 @@ type ResilienceHubAPI interface {
 	ListAlarmRecommendationsPages(*resiliencehub.ListAlarmRecommendationsInput, func(*resiliencehub.ListAlarmRecommendationsOutput, bool) bool) error
 	ListAlarmRecommendationsPagesWithContext(aws.Context, *resiliencehub.ListAlarmRecommendationsInput, func(*resiliencehub.ListAlarmRecommendationsOutput, bool) bool, ...request.Option) error
 
+	ListAppAssessmentComplianceDrifts(*resiliencehub.ListAppAssessmentComplianceDriftsInput) (*resiliencehub.ListAppAssessmentComplianceDriftsOutput, error)
+	ListAppAssessmentComplianceDriftsWithContext(aws.Context, *resiliencehub.ListAppAssessmentComplianceDriftsInput, ...request.Option) (*resiliencehub.ListAppAssessmentComplianceDriftsOutput, error)
+	ListAppAssessmentComplianceDriftsRequest(*resiliencehub.ListAppAssessmentComplianceDriftsInput) (*request.Request, *resiliencehub.ListAppAssessmentComplianceDriftsOutput)
+
+	ListAppAssessmentComplianceDriftsPages(*resiliencehub.ListAppAssessmentComplianceDriftsInput, func(*resiliencehub.ListAppAssessmentComplianceDriftsOutput, bool) bool) error
+	ListAppAssessmentComplianceDriftsPagesWithContext(aws.Context, *resiliencehub.ListAppAssessmentComplianceDriftsInput, func(*resiliencehub.ListAppAssessmentComplianceDriftsOutput, bool) bool, ...request.Option) error
+
 	ListAppAssessments(*resiliencehub.ListAppAssessmentsInput) (*resiliencehub.ListAppAssessmentsOutput, error)
 	ListAppAssessmentsWithContext(aws.Context, *resiliencehub.ListAppAssessmentsInput, ...request.Option) (*resiliencehub.ListAppAssessmentsOutput, error)
 	ListAppAssessmentsRequest(*resiliencehub.ListAppAssessmentsInput) (*request.Request, *resiliencehub.ListAppAssessmentsOutput)
@@ -147,6 +190,20 @@ type ResilienceHubAPI interface {
 
 	ListAppComponentRecommendationsPages(*resiliencehub.ListAppComponentRecommendationsInput, func(*resiliencehub.ListAppComponentRecommendationsOutput, bool) bool) error
 	ListAppComponentRecommendationsPagesWithContext(aws.Context, *resiliencehub.ListAppComponentRecommendationsInput, func(*resiliencehub.ListAppComponentRecommendationsOutput, bool) bool, ...request.Option) error
+
+	ListAppInputSources(*resiliencehub.ListAppInputSourcesInput) (*resiliencehub.ListAppInputSourcesOutput, error)
+	ListAppInputSourcesWithContext(aws.Context, *resiliencehub.ListAppInputSourcesInput, ...request.Option) (*resiliencehub.ListAppInputSourcesOutput, error)
+	ListAppInputSourcesRequest(*resiliencehub.ListAppInputSourcesInput) (*request.Request, *resiliencehub.ListAppInputSourcesOutput)
+
+	ListAppInputSourcesPages(*resiliencehub.ListAppInputSourcesInput, func(*resiliencehub.ListAppInputSourcesOutput, bool) bool) error
+	ListAppInputSourcesPagesWithContext(aws.Context, *resiliencehub.ListAppInputSourcesInput, func(*resiliencehub.ListAppInputSourcesOutput, bool) bool, ...request.Option) error
+
+	ListAppVersionAppComponents(*resiliencehub.ListAppVersionAppComponentsInput) (*resiliencehub.ListAppVersionAppComponentsOutput, error)
+	ListAppVersionAppComponentsWithContext(aws.Context, *resiliencehub.ListAppVersionAppComponentsInput, ...request.Option) (*resiliencehub.ListAppVersionAppComponentsOutput, error)
+	ListAppVersionAppComponentsRequest(*resiliencehub.ListAppVersionAppComponentsInput) (*request.Request, *resiliencehub.ListAppVersionAppComponentsOutput)
+
+	ListAppVersionAppComponentsPages(*resiliencehub.ListAppVersionAppComponentsInput, func(*resiliencehub.ListAppVersionAppComponentsOutput, bool) bool) error
+	ListAppVersionAppComponentsPagesWithContext(aws.Context, *resiliencehub.ListAppVersionAppComponentsInput, func(*resiliencehub.ListAppVersionAppComponentsOutput, bool) bool, ...request.Option) error
 
 	ListAppVersionResourceMappings(*resiliencehub.ListAppVersionResourceMappingsInput) (*resiliencehub.ListAppVersionResourceMappingsOutput, error)
 	ListAppVersionResourceMappingsWithContext(aws.Context, *resiliencehub.ListAppVersionResourceMappingsInput, ...request.Option) (*resiliencehub.ListAppVersionResourceMappingsOutput, error)
@@ -253,6 +310,18 @@ type ResilienceHubAPI interface {
 	UpdateApp(*resiliencehub.UpdateAppInput) (*resiliencehub.UpdateAppOutput, error)
 	UpdateAppWithContext(aws.Context, *resiliencehub.UpdateAppInput, ...request.Option) (*resiliencehub.UpdateAppOutput, error)
 	UpdateAppRequest(*resiliencehub.UpdateAppInput) (*request.Request, *resiliencehub.UpdateAppOutput)
+
+	UpdateAppVersion(*resiliencehub.UpdateAppVersionInput) (*resiliencehub.UpdateAppVersionOutput, error)
+	UpdateAppVersionWithContext(aws.Context, *resiliencehub.UpdateAppVersionInput, ...request.Option) (*resiliencehub.UpdateAppVersionOutput, error)
+	UpdateAppVersionRequest(*resiliencehub.UpdateAppVersionInput) (*request.Request, *resiliencehub.UpdateAppVersionOutput)
+
+	UpdateAppVersionAppComponent(*resiliencehub.UpdateAppVersionAppComponentInput) (*resiliencehub.UpdateAppVersionAppComponentOutput, error)
+	UpdateAppVersionAppComponentWithContext(aws.Context, *resiliencehub.UpdateAppVersionAppComponentInput, ...request.Option) (*resiliencehub.UpdateAppVersionAppComponentOutput, error)
+	UpdateAppVersionAppComponentRequest(*resiliencehub.UpdateAppVersionAppComponentInput) (*request.Request, *resiliencehub.UpdateAppVersionAppComponentOutput)
+
+	UpdateAppVersionResource(*resiliencehub.UpdateAppVersionResourceInput) (*resiliencehub.UpdateAppVersionResourceOutput, error)
+	UpdateAppVersionResourceWithContext(aws.Context, *resiliencehub.UpdateAppVersionResourceInput, ...request.Option) (*resiliencehub.UpdateAppVersionResourceOutput, error)
+	UpdateAppVersionResourceRequest(*resiliencehub.UpdateAppVersionResourceInput) (*request.Request, *resiliencehub.UpdateAppVersionResourceOutput)
 
 	UpdateResiliencyPolicy(*resiliencehub.UpdateResiliencyPolicyInput) (*resiliencehub.UpdateResiliencyPolicyOutput, error)
 	UpdateResiliencyPolicyWithContext(aws.Context, *resiliencehub.UpdateResiliencyPolicyInput, ...request.Option) (*resiliencehub.UpdateResiliencyPolicyOutput, error)

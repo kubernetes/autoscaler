@@ -8,10 +8,25 @@ import (
 
 const (
 
+	// ErrCodeAccessDeniedException for service response error code
+	// "AccessDeniedException".
+	//
+	// You don't have sufficient permissions to perform this action.
+	ErrCodeAccessDeniedException = "AccessDeniedException"
+
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// This operation attempted to create a resource that already exists.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeDataAlreadyAcceptedException for service response error code
 	// "DataAlreadyAcceptedException".
 	//
 	// The event was already logged.
+	//
+	// PutLogEvents actions are now always accepted and never return DataAlreadyAcceptedException
+	// regardless of whether a given batch of log events has already been accepted.
 	ErrCodeDataAlreadyAcceptedException = "DataAlreadyAcceptedException"
 
 	// ErrCodeInvalidOperationException for service response error code
@@ -31,6 +46,9 @@ const (
 	//
 	// The sequence token is not valid. You can get the correct sequence token in
 	// the expectedSequenceToken field in the InvalidSequenceTokenException message.
+	//
+	// PutLogEvents actions are now always accepted and never return InvalidSequenceTokenException
+	// regardless of receiving an invalid sequence token.
 	ErrCodeInvalidSequenceTokenException = "InvalidSequenceTokenException"
 
 	// ErrCodeLimitExceededException for service response error code
@@ -67,21 +85,47 @@ const (
 	// The specified resource does not exist.
 	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
 
+	// ErrCodeServiceQuotaExceededException for service response error code
+	// "ServiceQuotaExceededException".
+	//
+	// This request exceeds a service quota.
+	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
+
 	// ErrCodeServiceUnavailableException for service response error code
 	// "ServiceUnavailableException".
 	//
 	// The service cannot complete the request.
 	ErrCodeServiceUnavailableException = "ServiceUnavailableException"
 
+	// ErrCodeThrottlingException for service response error code
+	// "ThrottlingException".
+	//
+	// The request was throttled because of quota limits.
+	ErrCodeThrottlingException = "ThrottlingException"
+
+	// ErrCodeTooManyTagsException for service response error code
+	// "TooManyTagsException".
+	//
+	// A resource can have no more than 50 tags.
+	ErrCodeTooManyTagsException = "TooManyTagsException"
+
 	// ErrCodeUnrecognizedClientException for service response error code
 	// "UnrecognizedClientException".
 	//
-	// The most likely cause is an invalid Amazon Web Services access key ID or
-	// secret key.
+	// The most likely cause is an Amazon Web Services access key ID or secret key
+	// that's not valid.
 	ErrCodeUnrecognizedClientException = "UnrecognizedClientException"
+
+	// ErrCodeValidationException for service response error code
+	// "ValidationException".
+	//
+	// One of the parameters for the request is not valid.
+	ErrCodeValidationException = "ValidationException"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
+	"AccessDeniedException":          newErrorAccessDeniedException,
+	"ConflictException":              newErrorConflictException,
 	"DataAlreadyAcceptedException":   newErrorDataAlreadyAcceptedException,
 	"InvalidOperationException":      newErrorInvalidOperationException,
 	"InvalidParameterException":      newErrorInvalidParameterException,
@@ -91,6 +135,10 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"OperationAbortedException":      newErrorOperationAbortedException,
 	"ResourceAlreadyExistsException": newErrorResourceAlreadyExistsException,
 	"ResourceNotFoundException":      newErrorResourceNotFoundException,
+	"ServiceQuotaExceededException":  newErrorServiceQuotaExceededException,
 	"ServiceUnavailableException":    newErrorServiceUnavailableException,
+	"ThrottlingException":            newErrorThrottlingException,
+	"TooManyTagsException":           newErrorTooManyTagsException,
 	"UnrecognizedClientException":    newErrorUnrecognizedClientException,
+	"ValidationException":            newErrorValidationException,
 }

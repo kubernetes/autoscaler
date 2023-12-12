@@ -4,8 +4,8 @@
 // requests to Inspector2.
 //
 // Amazon Inspector is a vulnerability discovery service that automates continuous
-// scanning for security vulnerabilities within your Amazon EC2 and Amazon ECR
-// environments.
+// scanning for security vulnerabilities within your Amazon EC2, Amazon ECR,
+// and Amazon Web Services Lambda environments.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/inspector2-2020-06-08 for more information on this service.
 //

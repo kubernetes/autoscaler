@@ -3,8 +3,8 @@
 // Package sfn provides the client and types for making API
 // requests to AWS Step Functions.
 //
-// AWS Step Functions is a service that lets you coordinate the components of
-// distributed applications and microservices using visual workflows.
+// Step Functions is a service that lets you coordinate the components of distributed
+// applications and microservices using visual workflows.
 //
 // You can use Step Functions to build applications from individual components,
 // each of which performs a discrete function, or task, allowing you to scale
@@ -16,11 +16,16 @@
 // diagnose and debug any issues.
 //
 // Step Functions manages operations and underlying infrastructure to ensure
-// your application is available at any scale. You can run tasks on AWS, your
-// own servers, or any system that has access to AWS. You can access and use
-// Step Functions using the console, the AWS SDKs, or an HTTP API. For more
-// information about Step Functions, see the AWS Step Functions Developer Guide
-// (https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html) .
+// your application is available at any scale. You can run tasks on Amazon Web
+// Services, your own servers, or any system that has access to Amazon Web Services.
+// You can access and use Step Functions using the console, the Amazon Web Services
+// SDKs, or an HTTP API. For more information about Step Functions, see the
+// Step Functions Developer Guide (https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html) .
+//
+// If you use the Step Functions API actions using Amazon Web Services SDK integrations,
+// make sure the API actions are in camel case and parameter names are in Pascal
+// case. For example, you could use Step Functions API action startSyncExecution
+// and specify its parameter as StateMachineArn.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/states-2016-11-23 for more information on this service.
 //

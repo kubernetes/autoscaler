@@ -15,6 +15,390 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restxml"
 )
 
+const opAssociateAccessGrantsIdentityCenter = "AssociateAccessGrantsIdentityCenter"
+
+// AssociateAccessGrantsIdentityCenterRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateAccessGrantsIdentityCenter operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateAccessGrantsIdentityCenter for more information on using the AssociateAccessGrantsIdentityCenter
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateAccessGrantsIdentityCenterRequest method.
+//	req, resp := client.AssociateAccessGrantsIdentityCenterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/AssociateAccessGrantsIdentityCenter
+func (c *S3Control) AssociateAccessGrantsIdentityCenterRequest(input *AssociateAccessGrantsIdentityCenterInput) (req *request.Request, output *AssociateAccessGrantsIdentityCenterOutput) {
+	op := &request.Operation{
+		Name:       opAssociateAccessGrantsIdentityCenter,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v20180820/accessgrantsinstance/identitycenter",
+	}
+
+	if input == nil {
+		input = &AssociateAccessGrantsIdentityCenterInput{}
+	}
+
+	output = &AssociateAccessGrantsIdentityCenterOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// AssociateAccessGrantsIdentityCenter API operation for AWS S3 Control.
+//
+// Associate your S3 Access Grants instance with an Amazon Web Services IAM
+// Identity Center instance. Use this action if you want to create access grants
+// for users or groups from your corporate identity directory. First, you must
+// add your corporate identity directory to Amazon Web Services IAM Identity
+// Center. Then, you can associate this IAM Identity Center instance with your
+// S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:AssociateAccessGrantsIdentityCenter permission to use
+// this operation.
+//
+// # Additional Permissions
+//
+// You must also have the following permissions: sso:CreateApplication, sso:PutApplicationGrant,
+// and sso:PutApplicationAuthenticationMethod.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation AssociateAccessGrantsIdentityCenter for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/AssociateAccessGrantsIdentityCenter
+func (c *S3Control) AssociateAccessGrantsIdentityCenter(input *AssociateAccessGrantsIdentityCenterInput) (*AssociateAccessGrantsIdentityCenterOutput, error) {
+	req, out := c.AssociateAccessGrantsIdentityCenterRequest(input)
+	return out, req.Send()
+}
+
+// AssociateAccessGrantsIdentityCenterWithContext is the same as AssociateAccessGrantsIdentityCenter with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateAccessGrantsIdentityCenter for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) AssociateAccessGrantsIdentityCenterWithContext(ctx aws.Context, input *AssociateAccessGrantsIdentityCenterInput, opts ...request.Option) (*AssociateAccessGrantsIdentityCenterOutput, error) {
+	req, out := c.AssociateAccessGrantsIdentityCenterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateAccessGrant = "CreateAccessGrant"
+
+// CreateAccessGrantRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAccessGrant operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAccessGrant for more information on using the CreateAccessGrant
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAccessGrantRequest method.
+//	req, resp := client.CreateAccessGrantRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessGrant
+func (c *S3Control) CreateAccessGrantRequest(input *CreateAccessGrantInput) (req *request.Request, output *CreateAccessGrantOutput) {
+	op := &request.Operation{
+		Name:       opCreateAccessGrant,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v20180820/accessgrantsinstance/grant",
+	}
+
+	if input == nil {
+		input = &CreateAccessGrantInput{}
+	}
+
+	output = &CreateAccessGrantOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// CreateAccessGrant API operation for AWS S3 Control.
+//
+// Creates an access grant that gives a grantee access to your S3 data. The
+// grantee can be an IAM user or role or a directory user, or group. Before
+// you can create a grant, you must have an S3 Access Grants instance in the
+// same Region as the S3 data. You can create an S3 Access Grants instance using
+// the CreateAccessGrantsInstance (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessGrantsInstance.html).
+// You must also have registered at least one S3 data location in your S3 Access
+// Grants instance using CreateAccessGrantsLocation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessGrantsLocation.html).
+//
+// # Permissions
+//
+// You must have the s3:CreateAccessGrant permission to use this operation.
+//
+// # Additional Permissions
+//
+// For any directory identity - sso:DescribeInstance and sso:DescribeApplication
+//
+// For directory users - identitystore:DescribeUser
+//
+// For directory groups - identitystore:DescribeGroup
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation CreateAccessGrant for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessGrant
+func (c *S3Control) CreateAccessGrant(input *CreateAccessGrantInput) (*CreateAccessGrantOutput, error) {
+	req, out := c.CreateAccessGrantRequest(input)
+	return out, req.Send()
+}
+
+// CreateAccessGrantWithContext is the same as CreateAccessGrant with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAccessGrant for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) CreateAccessGrantWithContext(ctx aws.Context, input *CreateAccessGrantInput, opts ...request.Option) (*CreateAccessGrantOutput, error) {
+	req, out := c.CreateAccessGrantRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateAccessGrantsInstance = "CreateAccessGrantsInstance"
+
+// CreateAccessGrantsInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAccessGrantsInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAccessGrantsInstance for more information on using the CreateAccessGrantsInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAccessGrantsInstanceRequest method.
+//	req, resp := client.CreateAccessGrantsInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessGrantsInstance
+func (c *S3Control) CreateAccessGrantsInstanceRequest(input *CreateAccessGrantsInstanceInput) (req *request.Request, output *CreateAccessGrantsInstanceOutput) {
+	op := &request.Operation{
+		Name:       opCreateAccessGrantsInstance,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v20180820/accessgrantsinstance",
+	}
+
+	if input == nil {
+		input = &CreateAccessGrantsInstanceInput{}
+	}
+
+	output = &CreateAccessGrantsInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// CreateAccessGrantsInstance API operation for AWS S3 Control.
+//
+// Creates an S3 Access Grants instance, which serves as a logical grouping
+// for access grants. You can create one S3 Access Grants instance per Region
+// per account.
+//
+// # Permissions
+//
+// You must have the s3:CreateAccessGrantsInstance permission to use this operation.
+//
+// # Additional Permissions
+//
+// To associate an IAM Identity Center instance with your S3 Access Grants instance,
+// you must also have the sso:DescribeInstance, sso:CreateApplication, sso:PutApplicationGrant,
+// and sso:PutApplicationAuthenticationMethod permissions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation CreateAccessGrantsInstance for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessGrantsInstance
+func (c *S3Control) CreateAccessGrantsInstance(input *CreateAccessGrantsInstanceInput) (*CreateAccessGrantsInstanceOutput, error) {
+	req, out := c.CreateAccessGrantsInstanceRequest(input)
+	return out, req.Send()
+}
+
+// CreateAccessGrantsInstanceWithContext is the same as CreateAccessGrantsInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAccessGrantsInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) CreateAccessGrantsInstanceWithContext(ctx aws.Context, input *CreateAccessGrantsInstanceInput, opts ...request.Option) (*CreateAccessGrantsInstanceOutput, error) {
+	req, out := c.CreateAccessGrantsInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateAccessGrantsLocation = "CreateAccessGrantsLocation"
+
+// CreateAccessGrantsLocationRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAccessGrantsLocation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAccessGrantsLocation for more information on using the CreateAccessGrantsLocation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAccessGrantsLocationRequest method.
+//	req, resp := client.CreateAccessGrantsLocationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessGrantsLocation
+func (c *S3Control) CreateAccessGrantsLocationRequest(input *CreateAccessGrantsLocationInput) (req *request.Request, output *CreateAccessGrantsLocationOutput) {
+	op := &request.Operation{
+		Name:       opCreateAccessGrantsLocation,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v20180820/accessgrantsinstance/location",
+	}
+
+	if input == nil {
+		input = &CreateAccessGrantsLocationInput{}
+	}
+
+	output = &CreateAccessGrantsLocationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// CreateAccessGrantsLocation API operation for AWS S3 Control.
+//
+// The S3 data location that you would like to register in your S3 Access Grants
+// instance. Your S3 data must be in the same Region as your S3 Access Grants
+// instance. The location can be one of the following:
+//
+//   - The default S3 location s3://
+//
+//   - A bucket - S3://<bucket-name>
+//
+//   - A bucket and prefix - S3://<bucket-name>/<prefix>
+//
+// When you register a location, you must include the IAM role that has permission
+// to manage the S3 location that you are registering. Give S3 Access Grants
+// permission to assume this role using a policy (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-grants-location.html).
+// S3 Access Grants assumes this role to manage access to the location and to
+// vend temporary credentials to grantees or client applications.
+//
+// # Permissions
+//
+// You must have the s3:CreateAccessGrantsLocation permission to use this operation.
+//
+// # Additional Permissions
+//
+// You must also have the following permission for the specified IAM role: iam:PassRole
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation CreateAccessGrantsLocation for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateAccessGrantsLocation
+func (c *S3Control) CreateAccessGrantsLocation(input *CreateAccessGrantsLocationInput) (*CreateAccessGrantsLocationOutput, error) {
+	req, out := c.CreateAccessGrantsLocationRequest(input)
+	return out, req.Send()
+}
+
+// CreateAccessGrantsLocationWithContext is the same as CreateAccessGrantsLocation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAccessGrantsLocation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) CreateAccessGrantsLocationWithContext(ctx aws.Context, input *CreateAccessGrantsLocationInput, opts ...request.Option) (*CreateAccessGrantsLocationOutput, error) {
+	req, out := c.CreateAccessGrantsLocationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateAccessPoint = "CreateAccessPoint"
 
 // CreateAccessPointRequest generates a "aws/request.Request" representing the
@@ -63,6 +447,8 @@ func (c *S3Control) CreateAccessPointRequest(input *CreateAccessPointInput) (req
 
 // CreateAccessPoint API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Creates an access point and associates it with the specified bucket. For
 // more information, see Managing Data Access with Amazon S3 Access Points (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points.html)
 // in the Amazon S3 User Guide.
@@ -74,11 +460,11 @@ func (c *S3Control) CreateAccessPointRequest(input *CreateAccessPointInput) (req
 // in the Amazon S3 User Guide.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html#API_control_CreateAccessPoint_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_CreateAccessPoint.html#API_control_CreateAccessPoint_Examples)
 // section.
 //
 // The following actions are related to CreateAccessPoint:
@@ -161,6 +547,8 @@ func (c *S3Control) CreateAccessPointForObjectLambdaRequest(input *CreateAccessP
 }
 
 // CreateAccessPointForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Creates an Object Lambda Access Point. For more information, see Transforming
 // objects with Object Lambda Access Points (https://docs.aws.amazon.com/AmazonS3/latest/userguide/transforming-objects.html)
@@ -371,12 +759,18 @@ func (c *S3Control) CreateJobRequest(input *CreateJobInput) (req *request.Reques
 
 // CreateJob API operation for AWS S3 Control.
 //
+// This operation creates an S3 Batch Operations job.
+//
 // You can use S3 Batch Operations to perform large-scale batch actions on Amazon
 // S3 objects. Batch Operations can run a single action on lists of Amazon S3
 // objects that you specify. For more information, see S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html)
 // in the Amazon S3 User Guide.
 //
-// This action creates a S3 Batch Operations job.
+// # Permissions
+//
+// For information about permissions required to use the Batch Operations, see
+// Granting permissions for S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuAndPermissions.html)
+// in the Amazon S3 User Guide.
 //
 // Related actions include:
 //
@@ -478,6 +872,8 @@ func (c *S3Control) CreateMultiRegionAccessPointRequest(input *CreateMultiRegion
 
 // CreateMultiRegionAccessPoint API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Creates a Multi-Region Access Point and associates it with the specified
 // buckets. For more information about creating Multi-Region Access Points,
 // see Creating Multi-Region Access Points (https://docs.aws.amazon.com/AmazonS3/latest/userguide/CreatingMultiRegionAccessPoints.html)
@@ -525,6 +921,451 @@ func (c *S3Control) CreateMultiRegionAccessPoint(input *CreateMultiRegionAccessP
 // for more information on using Contexts.
 func (c *S3Control) CreateMultiRegionAccessPointWithContext(ctx aws.Context, input *CreateMultiRegionAccessPointInput, opts ...request.Option) (*CreateMultiRegionAccessPointOutput, error) {
 	req, out := c.CreateMultiRegionAccessPointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateStorageLensGroup = "CreateStorageLensGroup"
+
+// CreateStorageLensGroupRequest generates a "aws/request.Request" representing the
+// client's request for the CreateStorageLensGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateStorageLensGroup for more information on using the CreateStorageLensGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateStorageLensGroupRequest method.
+//	req, resp := client.CreateStorageLensGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateStorageLensGroup
+func (c *S3Control) CreateStorageLensGroupRequest(input *CreateStorageLensGroupInput) (req *request.Request, output *CreateStorageLensGroupOutput) {
+	op := &request.Operation{
+		Name:       opCreateStorageLensGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v20180820/storagelensgroup",
+	}
+
+	if input == nil {
+		input = &CreateStorageLensGroupInput{}
+	}
+
+	output = &CreateStorageLensGroupOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// CreateStorageLensGroup API operation for AWS S3 Control.
+//
+// Creates a new S3 Storage Lens group and associates it with the specified
+// Amazon Web Services account ID. An S3 Storage Lens group is a custom grouping
+// of objects based on prefix, suffix, object tags, object size, object age,
+// or a combination of these filters. For each Storage Lens group that you’ve
+// created, you can also optionally add Amazon Web Services resource tags. For
+// more information about S3 Storage Lens groups, see Working with S3 Storage
+// Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-lens-groups-overview.html).
+//
+// To use this operation, you must have the permission to perform the s3:CreateStorageLensGroup
+// action. If you’re trying to create a Storage Lens group with Amazon Web
+// Services resource tags, you must also have permission to perform the s3:TagResource
+// action. For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about Storage Lens groups errors, see List of Amazon S3 Storage
+// Lens error codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3LensErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation CreateStorageLensGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/CreateStorageLensGroup
+func (c *S3Control) CreateStorageLensGroup(input *CreateStorageLensGroupInput) (*CreateStorageLensGroupOutput, error) {
+	req, out := c.CreateStorageLensGroupRequest(input)
+	return out, req.Send()
+}
+
+// CreateStorageLensGroupWithContext is the same as CreateStorageLensGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateStorageLensGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) CreateStorageLensGroupWithContext(ctx aws.Context, input *CreateStorageLensGroupInput, opts ...request.Option) (*CreateStorageLensGroupOutput, error) {
+	req, out := c.CreateStorageLensGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAccessGrant = "DeleteAccessGrant"
+
+// DeleteAccessGrantRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAccessGrant operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAccessGrant for more information on using the DeleteAccessGrant
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAccessGrantRequest method.
+//	req, resp := client.DeleteAccessGrantRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrant
+func (c *S3Control) DeleteAccessGrantRequest(input *DeleteAccessGrantInput) (req *request.Request, output *DeleteAccessGrantOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAccessGrant,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/accessgrantsinstance/grant/{id}",
+	}
+
+	if input == nil {
+		input = &DeleteAccessGrantInput{}
+	}
+
+	output = &DeleteAccessGrantOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// DeleteAccessGrant API operation for AWS S3 Control.
+//
+// Deletes the access grant from the S3 Access Grants instance. You cannot undo
+// an access grant deletion and the grantee will no longer have access to the
+// S3 data.
+//
+// # Permissions
+//
+// You must have the s3:DeleteAccessGrant permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DeleteAccessGrant for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrant
+func (c *S3Control) DeleteAccessGrant(input *DeleteAccessGrantInput) (*DeleteAccessGrantOutput, error) {
+	req, out := c.DeleteAccessGrantRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAccessGrantWithContext is the same as DeleteAccessGrant with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAccessGrant for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DeleteAccessGrantWithContext(ctx aws.Context, input *DeleteAccessGrantInput, opts ...request.Option) (*DeleteAccessGrantOutput, error) {
+	req, out := c.DeleteAccessGrantRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAccessGrantsInstance = "DeleteAccessGrantsInstance"
+
+// DeleteAccessGrantsInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAccessGrantsInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAccessGrantsInstance for more information on using the DeleteAccessGrantsInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAccessGrantsInstanceRequest method.
+//	req, resp := client.DeleteAccessGrantsInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrantsInstance
+func (c *S3Control) DeleteAccessGrantsInstanceRequest(input *DeleteAccessGrantsInstanceInput) (req *request.Request, output *DeleteAccessGrantsInstanceOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAccessGrantsInstance,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/accessgrantsinstance",
+	}
+
+	if input == nil {
+		input = &DeleteAccessGrantsInstanceInput{}
+	}
+
+	output = &DeleteAccessGrantsInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// DeleteAccessGrantsInstance API operation for AWS S3 Control.
+//
+// Deletes your S3 Access Grants instance. You must first delete the access
+// grants and locations before S3 Access Grants can delete the instance. See
+// DeleteAccessGrant (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessGrant.html)
+// and DeleteAccessGrantsLocation (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessGrantsLocation.html).
+// If you have associated an IAM Identity Center instance with your S3 Access
+// Grants instance, you must first dissassociate the Identity Center instance
+// from the S3 Access Grants instance before you can delete the S3 Access Grants
+// instance. See AssociateAccessGrantsIdentityCenter (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_AssociateAccessGrantsIdentityCenter.html)
+// and DissociateAccessGrantsIdentityCenter (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DissociateAccessGrantsIdentityCenter.html).
+//
+// # Permissions
+//
+// You must have the s3:DeleteAccessGrantsInstance permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DeleteAccessGrantsInstance for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrantsInstance
+func (c *S3Control) DeleteAccessGrantsInstance(input *DeleteAccessGrantsInstanceInput) (*DeleteAccessGrantsInstanceOutput, error) {
+	req, out := c.DeleteAccessGrantsInstanceRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAccessGrantsInstanceWithContext is the same as DeleteAccessGrantsInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAccessGrantsInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DeleteAccessGrantsInstanceWithContext(ctx aws.Context, input *DeleteAccessGrantsInstanceInput, opts ...request.Option) (*DeleteAccessGrantsInstanceOutput, error) {
+	req, out := c.DeleteAccessGrantsInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAccessGrantsInstanceResourcePolicy = "DeleteAccessGrantsInstanceResourcePolicy"
+
+// DeleteAccessGrantsInstanceResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAccessGrantsInstanceResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAccessGrantsInstanceResourcePolicy for more information on using the DeleteAccessGrantsInstanceResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAccessGrantsInstanceResourcePolicyRequest method.
+//	req, resp := client.DeleteAccessGrantsInstanceResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrantsInstanceResourcePolicy
+func (c *S3Control) DeleteAccessGrantsInstanceResourcePolicyRequest(input *DeleteAccessGrantsInstanceResourcePolicyInput) (req *request.Request, output *DeleteAccessGrantsInstanceResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAccessGrantsInstanceResourcePolicy,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/accessgrantsinstance/resourcepolicy",
+	}
+
+	if input == nil {
+		input = &DeleteAccessGrantsInstanceResourcePolicyInput{}
+	}
+
+	output = &DeleteAccessGrantsInstanceResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// DeleteAccessGrantsInstanceResourcePolicy API operation for AWS S3 Control.
+//
+// Deletes the resource policy of the S3 Access Grants instance. The resource
+// policy is used to manage cross-account access to your S3 Access Grants instance.
+// By deleting the resource policy, you delete any cross-account permissions
+// to your S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:DeleteAccessGrantsInstanceResourcePolicy permission
+// to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DeleteAccessGrantsInstanceResourcePolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrantsInstanceResourcePolicy
+func (c *S3Control) DeleteAccessGrantsInstanceResourcePolicy(input *DeleteAccessGrantsInstanceResourcePolicyInput) (*DeleteAccessGrantsInstanceResourcePolicyOutput, error) {
+	req, out := c.DeleteAccessGrantsInstanceResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAccessGrantsInstanceResourcePolicyWithContext is the same as DeleteAccessGrantsInstanceResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAccessGrantsInstanceResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DeleteAccessGrantsInstanceResourcePolicyWithContext(ctx aws.Context, input *DeleteAccessGrantsInstanceResourcePolicyInput, opts ...request.Option) (*DeleteAccessGrantsInstanceResourcePolicyOutput, error) {
+	req, out := c.DeleteAccessGrantsInstanceResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteAccessGrantsLocation = "DeleteAccessGrantsLocation"
+
+// DeleteAccessGrantsLocationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAccessGrantsLocation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAccessGrantsLocation for more information on using the DeleteAccessGrantsLocation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAccessGrantsLocationRequest method.
+//	req, resp := client.DeleteAccessGrantsLocationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrantsLocation
+func (c *S3Control) DeleteAccessGrantsLocationRequest(input *DeleteAccessGrantsLocationInput) (req *request.Request, output *DeleteAccessGrantsLocationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAccessGrantsLocation,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/accessgrantsinstance/location/{id}",
+	}
+
+	if input == nil {
+		input = &DeleteAccessGrantsLocationInput{}
+	}
+
+	output = &DeleteAccessGrantsLocationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// DeleteAccessGrantsLocation API operation for AWS S3 Control.
+//
+// Deregisters a location from your S3 Access Grants instance. You can only
+// delete a location registration from an S3 Access Grants instance if there
+// are no grants associated with this location. See Delete a grant (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessGrant.html)
+// for information on how to delete grants. You need to have at least one registered
+// location in your S3 Access Grants instance in order to create access grants.
+//
+// # Permissions
+//
+// You must have the s3:DeleteAccessGrantsLocation permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DeleteAccessGrantsLocation for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteAccessGrantsLocation
+func (c *S3Control) DeleteAccessGrantsLocation(input *DeleteAccessGrantsLocationInput) (*DeleteAccessGrantsLocationOutput, error) {
+	req, out := c.DeleteAccessGrantsLocationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAccessGrantsLocationWithContext is the same as DeleteAccessGrantsLocation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAccessGrantsLocation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DeleteAccessGrantsLocationWithContext(ctx aws.Context, input *DeleteAccessGrantsLocationInput, opts ...request.Option) (*DeleteAccessGrantsLocationOutput, error) {
+	req, out := c.DeleteAccessGrantsLocationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -579,14 +1420,16 @@ func (c *S3Control) DeleteAccessPointRequest(input *DeleteAccessPointInput) (req
 
 // DeleteAccessPoint API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Deletes the specified access point.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html#API_control_DeleteAccessPoint_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPoint.html#API_control_DeleteAccessPoint_Examples)
 // section.
 //
 // The following actions are related to DeleteAccessPoint:
@@ -670,6 +1513,8 @@ func (c *S3Control) DeleteAccessPointForObjectLambdaRequest(input *DeleteAccessP
 }
 
 // DeleteAccessPointForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Deletes the specified Object Lambda Access Point.
 //
@@ -758,14 +1603,16 @@ func (c *S3Control) DeleteAccessPointPolicyRequest(input *DeleteAccessPointPolic
 
 // DeleteAccessPointPolicy API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Deletes the access point policy for the specified access point.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicy.html#API_control_DeleteAccessPointPolicy_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteAccessPointPolicy.html#API_control_DeleteAccessPointPolicy_Examples)
 // section.
 //
 // The following actions are related to DeleteAccessPointPolicy:
@@ -847,6 +1694,8 @@ func (c *S3Control) DeleteAccessPointPolicyForObjectLambdaRequest(input *DeleteA
 }
 
 // DeleteAccessPointPolicyForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Removes the resource policy for an Object Lambda Access Point.
 //
@@ -944,11 +1793,11 @@ func (c *S3Control) DeleteBucketRequest(input *DeleteBucketInput) (req *request.
 // in Amazon S3 User Guide.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucket.html#API_control_DeleteBucket_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucket.html#API_control_DeleteBucket_Examples)
 // section.
 //
 // Related Resources
@@ -1049,16 +1898,16 @@ func (c *S3Control) DeleteBucketLifecycleConfigurationRequest(input *DeleteBucke
 // see Using Amazon S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3onOutposts.html)
 // in Amazon S3 User Guide.
 //
-// To use this action, you must have permission to perform the s3-outposts:DeleteLifecycleConfiguration
+// To use this operation, you must have permission to perform the s3-outposts:PutLifecycleConfiguration
 // action. By default, the bucket owner has this permission and the Outposts
 // bucket owner can grant this permission to others.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketLifecycleConfiguration.html#API_control_DeleteBucketLifecycleConfiguration_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketLifecycleConfiguration.html#API_control_DeleteBucketLifecycleConfiguration_Examples)
 // section.
 //
 // For more information about object expiration, see Elements to Describe Lifecycle
@@ -1173,11 +2022,11 @@ func (c *S3Control) DeleteBucketPolicyRequest(input *DeleteBucketPolicyInput) (r
 // User Policies (https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html).
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketPolicy.html#API_control_DeleteBucketPolicy_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketPolicy.html#API_control_DeleteBucketPolicy_Examples)
 // section.
 //
 // The following actions are related to DeleteBucketPolicy:
@@ -1209,6 +2058,122 @@ func (c *S3Control) DeleteBucketPolicy(input *DeleteBucketPolicyInput) (*DeleteB
 // for more information on using Contexts.
 func (c *S3Control) DeleteBucketPolicyWithContext(ctx aws.Context, input *DeleteBucketPolicyInput, opts ...request.Option) (*DeleteBucketPolicyOutput, error) {
 	req, out := c.DeleteBucketPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteBucketReplication = "DeleteBucketReplication"
+
+// DeleteBucketReplicationRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteBucketReplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteBucketReplication for more information on using the DeleteBucketReplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteBucketReplicationRequest method.
+//	req, resp := client.DeleteBucketReplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteBucketReplication
+func (c *S3Control) DeleteBucketReplicationRequest(input *DeleteBucketReplicationInput) (req *request.Request, output *DeleteBucketReplicationOutput) {
+	op := &request.Operation{
+		Name:       opDeleteBucketReplication,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/bucket/{name}/replication",
+	}
+
+	if input == nil {
+		input = &DeleteBucketReplicationInput{}
+	}
+
+	output = &DeleteBucketReplicationOutput{}
+	req = c.newRequest(op, input, output)
+	// update account id or check if provided input for account id member matches
+	// the account id present in ARN
+	req.Handlers.Validate.PushFrontNamed(updateAccountIDWithARNHandler)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// DeleteBucketReplication API operation for AWS S3 Control.
+//
+// This operation deletes an Amazon S3 on Outposts bucket's replication configuration.
+// To delete an S3 bucket's replication configuration, see DeleteBucketReplication
+// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucketReplication.html)
+// in the Amazon S3 API Reference.
+//
+// Deletes the replication configuration from the specified S3 on Outposts bucket.
+//
+// To use this operation, you must have permissions to perform the s3-outposts:PutReplicationConfiguration
+// action. The Outposts bucket owner has this permission by default and can
+// grant it to others. For more information about permissions, see Setting up
+// IAM with S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsIAM.html)
+// and Managing access to S3 on Outposts buckets (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsBucketPolicy.html)
+// in the Amazon S3 User Guide.
+//
+// It can take a while to propagate PUT or DELETE requests for a replication
+// configuration to all S3 on Outposts systems. Therefore, the replication configuration
+// that's returned by a GET request soon after a PUT or DELETE request might
+// return a more recent result than what's on the Outpost. If an Outpost is
+// offline, the delay in updating the replication configuration on that Outpost
+// can be significant.
+//
+// All Amazon S3 on Outposts REST API requests for this action require an additional
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketReplication.html#API_control_DeleteBucketReplication_Examples)
+// section.
+//
+// For information about S3 replication on Outposts configuration, see Replicating
+// objects for S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsReplication.html)
+// in the Amazon S3 User Guide.
+//
+// The following operations are related to DeleteBucketReplication:
+//
+//   - PutBucketReplication (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketReplication.html)
+//
+//   - GetBucketReplication (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketReplication.html)
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DeleteBucketReplication for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteBucketReplication
+func (c *S3Control) DeleteBucketReplication(input *DeleteBucketReplicationInput) (*DeleteBucketReplicationOutput, error) {
+	req, out := c.DeleteBucketReplicationRequest(input)
+	return out, req.Send()
+}
+
+// DeleteBucketReplicationWithContext is the same as DeleteBucketReplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteBucketReplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DeleteBucketReplicationWithContext(ctx aws.Context, input *DeleteBucketReplicationInput, opts ...request.Option) (*DeleteBucketReplicationOutput, error) {
+	req, out := c.DeleteBucketReplicationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1276,11 +2241,11 @@ func (c *S3Control) DeleteBucketTaggingRequest(input *DeleteBucketTaggingInput) 
 // permission to others.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketTagging.html#API_control_DeleteBucketTagging_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketTagging.html#API_control_DeleteBucketTagging_Examples)
 // section.
 //
 // The following actions are related to DeleteBucketTagging:
@@ -1363,10 +2328,13 @@ func (c *S3Control) DeleteJobTaggingRequest(input *DeleteJobTaggingInput) (req *
 
 // DeleteJobTagging API operation for AWS S3 Control.
 //
-// Removes the entire tag set from the specified S3 Batch Operations job. To
-// use this operation, you must have permission to perform the s3:DeleteJobTagging
-// action. For more information, see Controlling access and labeling jobs using
-// tags (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-managing-jobs.html#batch-ops-job-tags)
+// Removes the entire tag set from the specified S3 Batch Operations job.
+//
+// # Permissions
+//
+// To use the DeleteJobTagging operation, you must have permission to perform
+// the s3:DeleteJobTagging action. For more information, see Controlling access
+// and labeling jobs using tags (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-managing-jobs.html#batch-ops-job-tags)
 // in the Amazon S3 User Guide.
 //
 // Related actions include:
@@ -1462,6 +2430,8 @@ func (c *S3Control) DeleteMultiRegionAccessPointRequest(input *DeleteMultiRegion
 }
 
 // DeleteMultiRegionAccessPoint API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Deletes a Multi-Region Access Point. This action does not delete the buckets
 // associated with the Multi-Region Access Point, only the Multi-Region Access
@@ -1560,6 +2530,8 @@ func (c *S3Control) DeletePublicAccessBlockRequest(input *DeletePublicAccessBloc
 
 // DeletePublicAccessBlock API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Removes the PublicAccessBlock configuration for an Amazon Web Services account.
 // For more information, see Using Amazon S3 block public access (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html).
 //
@@ -1642,6 +2614,8 @@ func (c *S3Control) DeleteStorageLensConfigurationRequest(input *DeleteStorageLe
 }
 
 // DeleteStorageLensConfiguration API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Deletes the Amazon S3 Storage Lens configuration. For more information about
 // S3 Storage Lens, see Assessing your storage activity and usage with Amazon
@@ -1727,6 +2701,8 @@ func (c *S3Control) DeleteStorageLensConfigurationTaggingRequest(input *DeleteSt
 
 // DeleteStorageLensConfigurationTagging API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Deletes the Amazon S3 Storage Lens configuration tags. For more information
 // about S3 Storage Lens, see Assessing your storage activity and usage with
 // Amazon S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage_lens.html)
@@ -1760,6 +2736,89 @@ func (c *S3Control) DeleteStorageLensConfigurationTagging(input *DeleteStorageLe
 // for more information on using Contexts.
 func (c *S3Control) DeleteStorageLensConfigurationTaggingWithContext(ctx aws.Context, input *DeleteStorageLensConfigurationTaggingInput, opts ...request.Option) (*DeleteStorageLensConfigurationTaggingOutput, error) {
 	req, out := c.DeleteStorageLensConfigurationTaggingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteStorageLensGroup = "DeleteStorageLensGroup"
+
+// DeleteStorageLensGroupRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteStorageLensGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteStorageLensGroup for more information on using the DeleteStorageLensGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteStorageLensGroupRequest method.
+//	req, resp := client.DeleteStorageLensGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteStorageLensGroup
+func (c *S3Control) DeleteStorageLensGroupRequest(input *DeleteStorageLensGroupInput) (req *request.Request, output *DeleteStorageLensGroupOutput) {
+	op := &request.Operation{
+		Name:       opDeleteStorageLensGroup,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/storagelensgroup/{name}",
+	}
+
+	if input == nil {
+		input = &DeleteStorageLensGroupInput{}
+	}
+
+	output = &DeleteStorageLensGroupOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// DeleteStorageLensGroup API operation for AWS S3 Control.
+//
+// Deletes an existing S3 Storage Lens group.
+//
+// To use this operation, you must have the permission to perform the s3:DeleteStorageLensGroup
+// action. For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about Storage Lens groups errors, see List of Amazon S3 Storage
+// Lens error codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3LensErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DeleteStorageLensGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DeleteStorageLensGroup
+func (c *S3Control) DeleteStorageLensGroup(input *DeleteStorageLensGroupInput) (*DeleteStorageLensGroupOutput, error) {
+	req, out := c.DeleteStorageLensGroupRequest(input)
+	return out, req.Send()
+}
+
+// DeleteStorageLensGroupWithContext is the same as DeleteStorageLensGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteStorageLensGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DeleteStorageLensGroupWithContext(ctx aws.Context, input *DeleteStorageLensGroupInput, opts ...request.Option) (*DeleteStorageLensGroupOutput, error) {
+	req, out := c.DeleteStorageLensGroupRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1813,6 +2872,11 @@ func (c *S3Control) DescribeJobRequest(input *DescribeJobInput) (req *request.Re
 // Retrieves the configuration parameters and status for a Batch Operations
 // job. For more information, see S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html)
 // in the Amazon S3 User Guide.
+//
+// # Permissions
+//
+// To use the DescribeJob operation, you must have permission to perform the
+// s3:DescribeJob action.
 //
 // Related actions include:
 //
@@ -1912,6 +2976,8 @@ func (c *S3Control) DescribeMultiRegionAccessPointOperationRequest(input *Descri
 
 // DescribeMultiRegionAccessPointOperation API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Retrieves the status of an asynchronous request to manage a Multi-Region
 // Access Point. For more information about managing Multi-Region Access Points
 // and how asynchronous requests work, see Managing Multi-Region Access Points
@@ -1951,6 +3017,519 @@ func (c *S3Control) DescribeMultiRegionAccessPointOperation(input *DescribeMulti
 // for more information on using Contexts.
 func (c *S3Control) DescribeMultiRegionAccessPointOperationWithContext(ctx aws.Context, input *DescribeMultiRegionAccessPointOperationInput, opts ...request.Option) (*DescribeMultiRegionAccessPointOperationOutput, error) {
 	req, out := c.DescribeMultiRegionAccessPointOperationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDissociateAccessGrantsIdentityCenter = "DissociateAccessGrantsIdentityCenter"
+
+// DissociateAccessGrantsIdentityCenterRequest generates a "aws/request.Request" representing the
+// client's request for the DissociateAccessGrantsIdentityCenter operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DissociateAccessGrantsIdentityCenter for more information on using the DissociateAccessGrantsIdentityCenter
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DissociateAccessGrantsIdentityCenterRequest method.
+//	req, resp := client.DissociateAccessGrantsIdentityCenterRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DissociateAccessGrantsIdentityCenter
+func (c *S3Control) DissociateAccessGrantsIdentityCenterRequest(input *DissociateAccessGrantsIdentityCenterInput) (req *request.Request, output *DissociateAccessGrantsIdentityCenterOutput) {
+	op := &request.Operation{
+		Name:       opDissociateAccessGrantsIdentityCenter,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/accessgrantsinstance/identitycenter",
+	}
+
+	if input == nil {
+		input = &DissociateAccessGrantsIdentityCenterInput{}
+	}
+
+	output = &DissociateAccessGrantsIdentityCenterOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// DissociateAccessGrantsIdentityCenter API operation for AWS S3 Control.
+//
+// Dissociates the Amazon Web Services IAM Identity Center instance from the
+// S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:DissociateAccessGrantsIdentityCenter permission to use
+// this operation.
+//
+// # Additional Permissions
+//
+// You must have the sso:DeleteApplication permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation DissociateAccessGrantsIdentityCenter for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/DissociateAccessGrantsIdentityCenter
+func (c *S3Control) DissociateAccessGrantsIdentityCenter(input *DissociateAccessGrantsIdentityCenterInput) (*DissociateAccessGrantsIdentityCenterOutput, error) {
+	req, out := c.DissociateAccessGrantsIdentityCenterRequest(input)
+	return out, req.Send()
+}
+
+// DissociateAccessGrantsIdentityCenterWithContext is the same as DissociateAccessGrantsIdentityCenter with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DissociateAccessGrantsIdentityCenter for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) DissociateAccessGrantsIdentityCenterWithContext(ctx aws.Context, input *DissociateAccessGrantsIdentityCenterInput, opts ...request.Option) (*DissociateAccessGrantsIdentityCenterOutput, error) {
+	req, out := c.DissociateAccessGrantsIdentityCenterRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAccessGrant = "GetAccessGrant"
+
+// GetAccessGrantRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccessGrant operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAccessGrant for more information on using the GetAccessGrant
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAccessGrantRequest method.
+//	req, resp := client.GetAccessGrantRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrant
+func (c *S3Control) GetAccessGrantRequest(input *GetAccessGrantInput) (req *request.Request, output *GetAccessGrantOutput) {
+	op := &request.Operation{
+		Name:       opGetAccessGrant,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/grant/{id}",
+	}
+
+	if input == nil {
+		input = &GetAccessGrantInput{}
+	}
+
+	output = &GetAccessGrantOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetAccessGrant API operation for AWS S3 Control.
+//
+// Get the details of an access grant from your S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:GetAccessGrant permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetAccessGrant for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrant
+func (c *S3Control) GetAccessGrant(input *GetAccessGrantInput) (*GetAccessGrantOutput, error) {
+	req, out := c.GetAccessGrantRequest(input)
+	return out, req.Send()
+}
+
+// GetAccessGrantWithContext is the same as GetAccessGrant with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAccessGrant for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetAccessGrantWithContext(ctx aws.Context, input *GetAccessGrantInput, opts ...request.Option) (*GetAccessGrantOutput, error) {
+	req, out := c.GetAccessGrantRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAccessGrantsInstance = "GetAccessGrantsInstance"
+
+// GetAccessGrantsInstanceRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccessGrantsInstance operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAccessGrantsInstance for more information on using the GetAccessGrantsInstance
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAccessGrantsInstanceRequest method.
+//	req, resp := client.GetAccessGrantsInstanceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsInstance
+func (c *S3Control) GetAccessGrantsInstanceRequest(input *GetAccessGrantsInstanceInput) (req *request.Request, output *GetAccessGrantsInstanceOutput) {
+	op := &request.Operation{
+		Name:       opGetAccessGrantsInstance,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance",
+	}
+
+	if input == nil {
+		input = &GetAccessGrantsInstanceInput{}
+	}
+
+	output = &GetAccessGrantsInstanceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetAccessGrantsInstance API operation for AWS S3 Control.
+//
+// Retrieves the S3 Access Grants instance for a Region in your account.
+//
+// # Permissions
+//
+// You must have the s3:GetAccessGrantsInstance permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetAccessGrantsInstance for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsInstance
+func (c *S3Control) GetAccessGrantsInstance(input *GetAccessGrantsInstanceInput) (*GetAccessGrantsInstanceOutput, error) {
+	req, out := c.GetAccessGrantsInstanceRequest(input)
+	return out, req.Send()
+}
+
+// GetAccessGrantsInstanceWithContext is the same as GetAccessGrantsInstance with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAccessGrantsInstance for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetAccessGrantsInstanceWithContext(ctx aws.Context, input *GetAccessGrantsInstanceInput, opts ...request.Option) (*GetAccessGrantsInstanceOutput, error) {
+	req, out := c.GetAccessGrantsInstanceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAccessGrantsInstanceForPrefix = "GetAccessGrantsInstanceForPrefix"
+
+// GetAccessGrantsInstanceForPrefixRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccessGrantsInstanceForPrefix operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAccessGrantsInstanceForPrefix for more information on using the GetAccessGrantsInstanceForPrefix
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAccessGrantsInstanceForPrefixRequest method.
+//	req, resp := client.GetAccessGrantsInstanceForPrefixRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsInstanceForPrefix
+func (c *S3Control) GetAccessGrantsInstanceForPrefixRequest(input *GetAccessGrantsInstanceForPrefixInput) (req *request.Request, output *GetAccessGrantsInstanceForPrefixOutput) {
+	op := &request.Operation{
+		Name:       opGetAccessGrantsInstanceForPrefix,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/prefix",
+	}
+
+	if input == nil {
+		input = &GetAccessGrantsInstanceForPrefixInput{}
+	}
+
+	output = &GetAccessGrantsInstanceForPrefixOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetAccessGrantsInstanceForPrefix API operation for AWS S3 Control.
+//
+// Retrieve the S3 Access Grants instance that contains a particular prefix.
+//
+// # Permissions
+//
+// You must have the s3:GetAccessGrantsInstanceForPrefix permission for the
+// caller account to use this operation.
+//
+// # Additional Permissions
+//
+// The prefix owner account must grant you the following permissions to their
+// S3 Access Grants instance: s3:GetAccessGrantsInstanceForPrefix.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetAccessGrantsInstanceForPrefix for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsInstanceForPrefix
+func (c *S3Control) GetAccessGrantsInstanceForPrefix(input *GetAccessGrantsInstanceForPrefixInput) (*GetAccessGrantsInstanceForPrefixOutput, error) {
+	req, out := c.GetAccessGrantsInstanceForPrefixRequest(input)
+	return out, req.Send()
+}
+
+// GetAccessGrantsInstanceForPrefixWithContext is the same as GetAccessGrantsInstanceForPrefix with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAccessGrantsInstanceForPrefix for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetAccessGrantsInstanceForPrefixWithContext(ctx aws.Context, input *GetAccessGrantsInstanceForPrefixInput, opts ...request.Option) (*GetAccessGrantsInstanceForPrefixOutput, error) {
+	req, out := c.GetAccessGrantsInstanceForPrefixRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAccessGrantsInstanceResourcePolicy = "GetAccessGrantsInstanceResourcePolicy"
+
+// GetAccessGrantsInstanceResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccessGrantsInstanceResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAccessGrantsInstanceResourcePolicy for more information on using the GetAccessGrantsInstanceResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAccessGrantsInstanceResourcePolicyRequest method.
+//	req, resp := client.GetAccessGrantsInstanceResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsInstanceResourcePolicy
+func (c *S3Control) GetAccessGrantsInstanceResourcePolicyRequest(input *GetAccessGrantsInstanceResourcePolicyInput) (req *request.Request, output *GetAccessGrantsInstanceResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opGetAccessGrantsInstanceResourcePolicy,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/resourcepolicy",
+	}
+
+	if input == nil {
+		input = &GetAccessGrantsInstanceResourcePolicyInput{}
+	}
+
+	output = &GetAccessGrantsInstanceResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetAccessGrantsInstanceResourcePolicy API operation for AWS S3 Control.
+//
+// Returns the resource policy of the S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:GetAccessGrantsInstanceResourcePolicy permission to
+// use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetAccessGrantsInstanceResourcePolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsInstanceResourcePolicy
+func (c *S3Control) GetAccessGrantsInstanceResourcePolicy(input *GetAccessGrantsInstanceResourcePolicyInput) (*GetAccessGrantsInstanceResourcePolicyOutput, error) {
+	req, out := c.GetAccessGrantsInstanceResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// GetAccessGrantsInstanceResourcePolicyWithContext is the same as GetAccessGrantsInstanceResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAccessGrantsInstanceResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetAccessGrantsInstanceResourcePolicyWithContext(ctx aws.Context, input *GetAccessGrantsInstanceResourcePolicyInput, opts ...request.Option) (*GetAccessGrantsInstanceResourcePolicyOutput, error) {
+	req, out := c.GetAccessGrantsInstanceResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetAccessGrantsLocation = "GetAccessGrantsLocation"
+
+// GetAccessGrantsLocationRequest generates a "aws/request.Request" representing the
+// client's request for the GetAccessGrantsLocation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetAccessGrantsLocation for more information on using the GetAccessGrantsLocation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetAccessGrantsLocationRequest method.
+//	req, resp := client.GetAccessGrantsLocationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsLocation
+func (c *S3Control) GetAccessGrantsLocationRequest(input *GetAccessGrantsLocationInput) (req *request.Request, output *GetAccessGrantsLocationOutput) {
+	op := &request.Operation{
+		Name:       opGetAccessGrantsLocation,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/location/{id}",
+	}
+
+	if input == nil {
+		input = &GetAccessGrantsLocationInput{}
+	}
+
+	output = &GetAccessGrantsLocationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetAccessGrantsLocation API operation for AWS S3 Control.
+//
+// Retrieves the details of a particular location registered in your S3 Access
+// Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:GetAccessGrantsLocation permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetAccessGrantsLocation for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetAccessGrantsLocation
+func (c *S3Control) GetAccessGrantsLocation(input *GetAccessGrantsLocationInput) (*GetAccessGrantsLocationOutput, error) {
+	req, out := c.GetAccessGrantsLocationRequest(input)
+	return out, req.Send()
+}
+
+// GetAccessGrantsLocationWithContext is the same as GetAccessGrantsLocation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetAccessGrantsLocation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetAccessGrantsLocationWithContext(ctx aws.Context, input *GetAccessGrantsLocationInput, opts ...request.Option) (*GetAccessGrantsLocationOutput, error) {
+	req, out := c.GetAccessGrantsLocationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2004,14 +3583,16 @@ func (c *S3Control) GetAccessPointRequest(input *GetAccessPointInput) (req *requ
 
 // GetAccessPoint API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Returns configuration information about the specified access point.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html#API_control_GetAccessPoint_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html#API_control_GetAccessPoint_Examples)
 // section.
 //
 // The following actions are related to GetAccessPoint:
@@ -2095,6 +3676,8 @@ func (c *S3Control) GetAccessPointConfigurationForObjectLambdaRequest(input *Get
 
 // GetAccessPointConfigurationForObjectLambda API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Returns configuration for an Object Lambda Access Point.
 //
 // The following actions are related to GetAccessPointConfigurationForObjectLambda:
@@ -2173,6 +3756,8 @@ func (c *S3Control) GetAccessPointForObjectLambdaRequest(input *GetAccessPointFo
 }
 
 // GetAccessPointForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Returns configuration information about the specified Object Lambda Access
 // Point
@@ -2261,6 +3846,8 @@ func (c *S3Control) GetAccessPointPolicyRequest(input *GetAccessPointPolicyInput
 
 // GetAccessPointPolicy API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Returns the access point policy associated with the specified access point.
 //
 // The following actions are related to GetAccessPointPolicy:
@@ -2341,6 +3928,8 @@ func (c *S3Control) GetAccessPointPolicyForObjectLambdaRequest(input *GetAccessP
 }
 
 // GetAccessPointPolicyForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Returns the resource policy for an Object Lambda Access Point.
 //
@@ -2423,6 +4012,8 @@ func (c *S3Control) GetAccessPointPolicyStatusRequest(input *GetAccessPointPolic
 
 // GetAccessPointPolicyStatus API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Indicates whether the specified access point currently has a policy that
 // allows public access. For more information about public access through access
 // points, see Managing Data Access with Amazon S3 access points (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-points.html)
@@ -2500,6 +4091,8 @@ func (c *S3Control) GetAccessPointPolicyStatusForObjectLambdaRequest(input *GetA
 }
 
 // GetAccessPointPolicyStatusForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Returns the status of the resource policy associated with an Object Lambda
 // Access Point.
@@ -2598,11 +4191,11 @@ func (c *S3Control) GetBucketRequest(input *GetBucketInput) (req *request.Reques
 // The following actions are related to GetBucket for Amazon S3 on Outposts:
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html#API_control_GetBucket_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucket.html#API_control_GetBucket_Examples)
 // section.
 //
 //   - PutObject (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html)
@@ -2705,11 +4298,11 @@ func (c *S3Control) GetBucketLifecycleConfigurationRequest(input *GetBucketLifec
 // and Managing Access Permissions to Your Amazon S3 Resources (https://docs.aws.amazon.com/AmazonS3/latest/userguide/s3-access-control.html).
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html#API_control_GetBucketLifecycleConfiguration_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html#API_control_GetBucketLifecycleConfiguration_Examples)
 // section.
 //
 // GetBucketLifecycleConfiguration has the following special error:
@@ -2826,11 +4419,11 @@ func (c *S3Control) GetBucketPolicyRequest(input *GetBucketPolicyInput) (req *re
 // User Policies (https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html).
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketPolicy.html#API_control_GetBucketPolicy_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketPolicy.html#API_control_GetBucketPolicy_Examples)
 // section.
 //
 // The following actions are related to GetBucketPolicy:
@@ -2864,6 +4457,129 @@ func (c *S3Control) GetBucketPolicy(input *GetBucketPolicyInput) (*GetBucketPoli
 // for more information on using Contexts.
 func (c *S3Control) GetBucketPolicyWithContext(ctx aws.Context, input *GetBucketPolicyInput, opts ...request.Option) (*GetBucketPolicyOutput, error) {
 	req, out := c.GetBucketPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetBucketReplication = "GetBucketReplication"
+
+// GetBucketReplicationRequest generates a "aws/request.Request" representing the
+// client's request for the GetBucketReplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetBucketReplication for more information on using the GetBucketReplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetBucketReplicationRequest method.
+//	req, resp := client.GetBucketReplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketReplication
+func (c *S3Control) GetBucketReplicationRequest(input *GetBucketReplicationInput) (req *request.Request, output *GetBucketReplicationOutput) {
+	op := &request.Operation{
+		Name:       opGetBucketReplication,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/bucket/{name}/replication",
+	}
+
+	if input == nil {
+		input = &GetBucketReplicationInput{}
+	}
+
+	output = &GetBucketReplicationOutput{}
+	req = c.newRequest(op, input, output)
+	// update account id or check if provided input for account id member matches
+	// the account id present in ARN
+	req.Handlers.Validate.PushFrontNamed(updateAccountIDWithARNHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// GetBucketReplication API operation for AWS S3 Control.
+//
+// This operation gets an Amazon S3 on Outposts bucket's replication configuration.
+// To get an S3 bucket's replication configuration, see GetBucketReplication
+// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketReplication.html)
+// in the Amazon S3 API Reference.
+//
+// Returns the replication configuration of an S3 on Outposts bucket. For more
+// information about S3 on Outposts, see Using Amazon S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3onOutposts.html)
+// in the Amazon S3 User Guide. For information about S3 replication on Outposts
+// configuration, see Replicating objects for S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsReplication.html)
+// in the Amazon S3 User Guide.
+//
+// It can take a while to propagate PUT or DELETE requests for a replication
+// configuration to all S3 on Outposts systems. Therefore, the replication configuration
+// that's returned by a GET request soon after a PUT or DELETE request might
+// return a more recent result than what's on the Outpost. If an Outpost is
+// offline, the delay in updating the replication configuration on that Outpost
+// can be significant.
+//
+// This action requires permissions for the s3-outposts:GetReplicationConfiguration
+// action. The Outposts bucket owner has this permission by default and can
+// grant it to others. For more information about permissions, see Setting up
+// IAM with S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsIAM.html)
+// and Managing access to S3 on Outposts bucket (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsBucketPolicy.html)
+// in the Amazon S3 User Guide.
+//
+// All Amazon S3 on Outposts REST API requests for this action require an additional
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketReplication.html#API_control_GetBucketReplication_Examples)
+// section.
+//
+// If you include the Filter element in a replication configuration, you must
+// also include the DeleteMarkerReplication, Status, and Priority elements.
+// The response also returns those elements.
+//
+// For information about S3 on Outposts replication failure reasons, see Replication
+// failure reasons (https://docs.aws.amazon.com/AmazonS3/latest/userguide/outposts-replication-eventbridge.html#outposts-replication-failure-codes)
+// in the Amazon S3 User Guide.
+//
+// The following operations are related to GetBucketReplication:
+//
+//   - PutBucketReplication (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketReplication.html)
+//
+//   - DeleteBucketReplication (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketReplication.html)
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetBucketReplication for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketReplication
+func (c *S3Control) GetBucketReplication(input *GetBucketReplicationInput) (*GetBucketReplicationOutput, error) {
+	req, out := c.GetBucketReplicationRequest(input)
+	return out, req.Send()
+}
+
+// GetBucketReplicationWithContext is the same as GetBucketReplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetBucketReplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetBucketReplicationWithContext(ctx aws.Context, input *GetBucketReplicationInput, opts ...request.Option) (*GetBucketReplicationOutput, error) {
+	req, out := c.GetBucketReplicationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2935,11 +4651,11 @@ func (c *S3Control) GetBucketTaggingRequest(input *GetBucketTaggingInput) (req *
 //     with the bucket.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketTagging.html#API_control_GetBucketTagging_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketTagging.html#API_control_GetBucketTagging_Examples)
 // section.
 //
 // The following actions are related to GetBucketTagging:
@@ -2971,6 +4687,206 @@ func (c *S3Control) GetBucketTagging(input *GetBucketTaggingInput) (*GetBucketTa
 // for more information on using Contexts.
 func (c *S3Control) GetBucketTaggingWithContext(ctx aws.Context, input *GetBucketTaggingInput, opts ...request.Option) (*GetBucketTaggingOutput, error) {
 	req, out := c.GetBucketTaggingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetBucketVersioning = "GetBucketVersioning"
+
+// GetBucketVersioningRequest generates a "aws/request.Request" representing the
+// client's request for the GetBucketVersioning operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetBucketVersioning for more information on using the GetBucketVersioning
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetBucketVersioningRequest method.
+//	req, resp := client.GetBucketVersioningRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketVersioning
+func (c *S3Control) GetBucketVersioningRequest(input *GetBucketVersioningInput) (req *request.Request, output *GetBucketVersioningOutput) {
+	op := &request.Operation{
+		Name:       opGetBucketVersioning,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/bucket/{name}/versioning",
+	}
+
+	if input == nil {
+		input = &GetBucketVersioningInput{}
+	}
+
+	output = &GetBucketVersioningOutput{}
+	req = c.newRequest(op, input, output)
+	// update account id or check if provided input for account id member matches
+	// the account id present in ARN
+	req.Handlers.Validate.PushFrontNamed(updateAccountIDWithARNHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// GetBucketVersioning API operation for AWS S3 Control.
+//
+// This operation returns the versioning state for S3 on Outposts buckets only.
+// To return the versioning state for an S3 bucket, see GetBucketVersioning
+// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketVersioning.html)
+// in the Amazon S3 API Reference.
+//
+// Returns the versioning state for an S3 on Outposts bucket. With S3 Versioning,
+// you can save multiple distinct copies of your objects and recover from unintended
+// user actions and application failures.
+//
+// If you've never set versioning on your bucket, it has no versioning state.
+// In that case, the GetBucketVersioning request does not return a versioning
+// state value.
+//
+// For more information about versioning, see Versioning (https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html)
+// in the Amazon S3 User Guide.
+//
+// All Amazon S3 on Outposts REST API requests for this action require an additional
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketVersioning.html#API_control_GetBucketVersioning_Examples)
+// section.
+//
+// The following operations are related to GetBucketVersioning for S3 on Outposts.
+//
+//   - PutBucketVersioning (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketVersioning.html)
+//
+//   - PutBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html)
+//
+//   - GetBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html)
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetBucketVersioning for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetBucketVersioning
+func (c *S3Control) GetBucketVersioning(input *GetBucketVersioningInput) (*GetBucketVersioningOutput, error) {
+	req, out := c.GetBucketVersioningRequest(input)
+	return out, req.Send()
+}
+
+// GetBucketVersioningWithContext is the same as GetBucketVersioning with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetBucketVersioning for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetBucketVersioningWithContext(ctx aws.Context, input *GetBucketVersioningInput, opts ...request.Option) (*GetBucketVersioningOutput, error) {
+	req, out := c.GetBucketVersioningRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetDataAccess = "GetDataAccess"
+
+// GetDataAccessRequest generates a "aws/request.Request" representing the
+// client's request for the GetDataAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetDataAccess for more information on using the GetDataAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetDataAccessRequest method.
+//	req, resp := client.GetDataAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetDataAccess
+func (c *S3Control) GetDataAccessRequest(input *GetDataAccessInput) (req *request.Request, output *GetDataAccessOutput) {
+	op := &request.Operation{
+		Name:       opGetDataAccess,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/dataaccess",
+	}
+
+	if input == nil {
+		input = &GetDataAccessInput{}
+	}
+
+	output = &GetDataAccessOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetDataAccess API operation for AWS S3 Control.
+//
+// Returns a temporary access credential from S3 Access Grants to the grantee
+// or client application. The temporary credential (https://docs.aws.amazon.com/STS/latest/APIReference/API_Credentials.html)
+// is an Amazon Web Services STS token that grants them access to the S3 data.
+//
+// # Permissions
+//
+// You must have the s3:GetDataAccess permission to use this operation.
+//
+// # Additional Permissions
+//
+// The IAM role that S3 Access Grants assumes must have the following permissions
+// specified in the trust policy when registering the location: sts:AssumeRole,
+// for directory users or groups sts:SetContext, and for IAM users or roles
+// sts:SourceIdentity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetDataAccess for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetDataAccess
+func (c *S3Control) GetDataAccess(input *GetDataAccessInput) (*GetDataAccessOutput, error) {
+	req, out := c.GetDataAccessRequest(input)
+	return out, req.Send()
+}
+
+// GetDataAccessWithContext is the same as GetDataAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetDataAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetDataAccessWithContext(ctx aws.Context, input *GetDataAccessInput, opts ...request.Option) (*GetDataAccessOutput, error) {
+	req, out := c.GetDataAccessRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3021,9 +4937,13 @@ func (c *S3Control) GetJobTaggingRequest(input *GetJobTaggingInput) (req *reques
 
 // GetJobTagging API operation for AWS S3 Control.
 //
-// Returns the tags on an S3 Batch Operations job. To use this operation, you
-// must have permission to perform the s3:GetJobTagging action. For more information,
-// see Controlling access and labeling jobs using tags (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-managing-jobs.html#batch-ops-job-tags)
+// Returns the tags on an S3 Batch Operations job.
+//
+// # Permissions
+//
+// To use the GetJobTagging operation, you must have permission to perform the
+// s3:GetJobTagging action. For more information, see Controlling access and
+// labeling jobs using tags (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-managing-jobs.html#batch-ops-job-tags)
 // in the Amazon S3 User Guide.
 //
 // Related actions include:
@@ -3100,7 +5020,7 @@ func (c *S3Control) GetMultiRegionAccessPointRequest(input *GetMultiRegionAccess
 	op := &request.Operation{
 		Name:       opGetMultiRegionAccessPoint,
 		HTTPMethod: "GET",
-		HTTPPath:   "/v20180820/mrap/instances/{name}",
+		HTTPPath:   "/v20180820/mrap/instances/{name+}",
 	}
 
 	if input == nil {
@@ -3119,6 +5039,8 @@ func (c *S3Control) GetMultiRegionAccessPointRequest(input *GetMultiRegionAccess
 }
 
 // GetMultiRegionAccessPoint API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Returns configuration information about the specified Multi-Region Access
 // Point.
@@ -3195,7 +5117,7 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyRequest(input *GetMultiRegion
 	op := &request.Operation{
 		Name:       opGetMultiRegionAccessPointPolicy,
 		HTTPMethod: "GET",
-		HTTPPath:   "/v20180820/mrap/instances/{name}/policy",
+		HTTPPath:   "/v20180820/mrap/instances/{name+}/policy",
 	}
 
 	if input == nil {
@@ -3214,6 +5136,8 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyRequest(input *GetMultiRegion
 }
 
 // GetMultiRegionAccessPointPolicy API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Returns the access control policy of the specified Multi-Region Access Point.
 //
@@ -3285,7 +5209,7 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyStatusRequest(input *GetMulti
 	op := &request.Operation{
 		Name:       opGetMultiRegionAccessPointPolicyStatus,
 		HTTPMethod: "GET",
-		HTTPPath:   "/v20180820/mrap/instances/{name}/policystatus",
+		HTTPPath:   "/v20180820/mrap/instances/{name+}/policystatus",
 	}
 
 	if input == nil {
@@ -3304,6 +5228,8 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyStatusRequest(input *GetMulti
 }
 
 // GetMultiRegionAccessPointPolicyStatus API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Indicates whether the specified Multi-Region Access Point has an access control
 // policy that allows public access.
@@ -3342,6 +5268,104 @@ func (c *S3Control) GetMultiRegionAccessPointPolicyStatus(input *GetMultiRegionA
 // for more information on using Contexts.
 func (c *S3Control) GetMultiRegionAccessPointPolicyStatusWithContext(ctx aws.Context, input *GetMultiRegionAccessPointPolicyStatusInput, opts ...request.Option) (*GetMultiRegionAccessPointPolicyStatusOutput, error) {
 	req, out := c.GetMultiRegionAccessPointPolicyStatusRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetMultiRegionAccessPointRoutes = "GetMultiRegionAccessPointRoutes"
+
+// GetMultiRegionAccessPointRoutesRequest generates a "aws/request.Request" representing the
+// client's request for the GetMultiRegionAccessPointRoutes operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetMultiRegionAccessPointRoutes for more information on using the GetMultiRegionAccessPointRoutes
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetMultiRegionAccessPointRoutesRequest method.
+//	req, resp := client.GetMultiRegionAccessPointRoutesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetMultiRegionAccessPointRoutes
+func (c *S3Control) GetMultiRegionAccessPointRoutesRequest(input *GetMultiRegionAccessPointRoutesInput) (req *request.Request, output *GetMultiRegionAccessPointRoutesOutput) {
+	op := &request.Operation{
+		Name:       opGetMultiRegionAccessPointRoutes,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/mrap/instances/{mrap+}/routes",
+	}
+
+	if input == nil {
+		input = &GetMultiRegionAccessPointRoutesInput{}
+	}
+
+	output = &GetMultiRegionAccessPointRoutesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// GetMultiRegionAccessPointRoutes API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
+//
+// Returns the routing configuration for a Multi-Region Access Point, indicating
+// which Regions are active or passive.
+//
+// To obtain routing control changes and failover requests, use the Amazon S3
+// failover control infrastructure endpoints in these five Amazon Web Services
+// Regions:
+//
+//   - us-east-1
+//
+//   - us-west-2
+//
+//   - ap-southeast-2
+//
+//   - ap-northeast-1
+//
+//   - eu-west-1
+//
+// Your Amazon S3 bucket does not need to be in these five Regions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetMultiRegionAccessPointRoutes for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetMultiRegionAccessPointRoutes
+func (c *S3Control) GetMultiRegionAccessPointRoutes(input *GetMultiRegionAccessPointRoutesInput) (*GetMultiRegionAccessPointRoutesOutput, error) {
+	req, out := c.GetMultiRegionAccessPointRoutesRequest(input)
+	return out, req.Send()
+}
+
+// GetMultiRegionAccessPointRoutesWithContext is the same as GetMultiRegionAccessPointRoutes with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetMultiRegionAccessPointRoutes for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetMultiRegionAccessPointRoutesWithContext(ctx aws.Context, input *GetMultiRegionAccessPointRoutesInput, opts ...request.Option) (*GetMultiRegionAccessPointRoutesOutput, error) {
+	req, out := c.GetMultiRegionAccessPointRoutesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3391,6 +5415,8 @@ func (c *S3Control) GetPublicAccessBlockRequest(input *GetPublicAccessBlockInput
 }
 
 // GetPublicAccessBlock API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Retrieves the PublicAccessBlock configuration for an Amazon Web Services
 // account. For more information, see Using Amazon S3 block public access (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html).
@@ -3480,8 +5506,12 @@ func (c *S3Control) GetStorageLensConfigurationRequest(input *GetStorageLensConf
 
 // GetStorageLensConfiguration API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Gets the Amazon S3 Storage Lens configuration. For more information, see
 // Assessing your storage activity and usage with Amazon S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
 // in the Amazon S3 User Guide.
 //
 // To use this action, you must have permission to perform the s3:GetStorageLensConfiguration
@@ -3562,6 +5592,8 @@ func (c *S3Control) GetStorageLensConfigurationTaggingRequest(input *GetStorageL
 
 // GetStorageLensConfigurationTagging API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Gets the tags of Amazon S3 Storage Lens configuration. For more information
 // about S3 Storage Lens, see Assessing your storage activity and usage with
 // Amazon S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage_lens.html)
@@ -3598,6 +5630,510 @@ func (c *S3Control) GetStorageLensConfigurationTaggingWithContext(ctx aws.Contex
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+const opGetStorageLensGroup = "GetStorageLensGroup"
+
+// GetStorageLensGroupRequest generates a "aws/request.Request" representing the
+// client's request for the GetStorageLensGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetStorageLensGroup for more information on using the GetStorageLensGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetStorageLensGroupRequest method.
+//	req, resp := client.GetStorageLensGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetStorageLensGroup
+func (c *S3Control) GetStorageLensGroupRequest(input *GetStorageLensGroupInput) (req *request.Request, output *GetStorageLensGroupOutput) {
+	op := &request.Operation{
+		Name:       opGetStorageLensGroup,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/storagelensgroup/{name}",
+	}
+
+	if input == nil {
+		input = &GetStorageLensGroupInput{}
+	}
+
+	output = &GetStorageLensGroupOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// GetStorageLensGroup API operation for AWS S3 Control.
+//
+// Retrieves the Storage Lens group configuration details.
+//
+// To use this operation, you must have the permission to perform the s3:GetStorageLensGroup
+// action. For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about Storage Lens groups errors, see List of Amazon S3 Storage
+// Lens error codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3LensErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation GetStorageLensGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/GetStorageLensGroup
+func (c *S3Control) GetStorageLensGroup(input *GetStorageLensGroupInput) (*GetStorageLensGroupOutput, error) {
+	req, out := c.GetStorageLensGroupRequest(input)
+	return out, req.Send()
+}
+
+// GetStorageLensGroupWithContext is the same as GetStorageLensGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetStorageLensGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) GetStorageLensGroupWithContext(ctx aws.Context, input *GetStorageLensGroupInput, opts ...request.Option) (*GetStorageLensGroupOutput, error) {
+	req, out := c.GetStorageLensGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListAccessGrants = "ListAccessGrants"
+
+// ListAccessGrantsRequest generates a "aws/request.Request" representing the
+// client's request for the ListAccessGrants operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAccessGrants for more information on using the ListAccessGrants
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAccessGrantsRequest method.
+//	req, resp := client.ListAccessGrantsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessGrants
+func (c *S3Control) ListAccessGrantsRequest(input *ListAccessGrantsInput) (req *request.Request, output *ListAccessGrantsOutput) {
+	op := &request.Operation{
+		Name:       opListAccessGrants,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/grants",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAccessGrantsInput{}
+	}
+
+	output = &ListAccessGrantsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// ListAccessGrants API operation for AWS S3 Control.
+//
+// Returns the list of access grants in your S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:ListAccessGrants permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation ListAccessGrants for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessGrants
+func (c *S3Control) ListAccessGrants(input *ListAccessGrantsInput) (*ListAccessGrantsOutput, error) {
+	req, out := c.ListAccessGrantsRequest(input)
+	return out, req.Send()
+}
+
+// ListAccessGrantsWithContext is the same as ListAccessGrants with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAccessGrants for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListAccessGrantsWithContext(ctx aws.Context, input *ListAccessGrantsInput, opts ...request.Option) (*ListAccessGrantsOutput, error) {
+	req, out := c.ListAccessGrantsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAccessGrantsPages iterates over the pages of a ListAccessGrants operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAccessGrants method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAccessGrants operation.
+//	pageNum := 0
+//	err := client.ListAccessGrantsPages(params,
+//	    func(page *s3control.ListAccessGrantsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *S3Control) ListAccessGrantsPages(input *ListAccessGrantsInput, fn func(*ListAccessGrantsOutput, bool) bool) error {
+	return c.ListAccessGrantsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAccessGrantsPagesWithContext same as ListAccessGrantsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListAccessGrantsPagesWithContext(ctx aws.Context, input *ListAccessGrantsInput, fn func(*ListAccessGrantsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAccessGrantsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAccessGrantsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAccessGrantsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListAccessGrantsInstances = "ListAccessGrantsInstances"
+
+// ListAccessGrantsInstancesRequest generates a "aws/request.Request" representing the
+// client's request for the ListAccessGrantsInstances operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAccessGrantsInstances for more information on using the ListAccessGrantsInstances
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAccessGrantsInstancesRequest method.
+//	req, resp := client.ListAccessGrantsInstancesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessGrantsInstances
+func (c *S3Control) ListAccessGrantsInstancesRequest(input *ListAccessGrantsInstancesInput) (req *request.Request, output *ListAccessGrantsInstancesOutput) {
+	op := &request.Operation{
+		Name:       opListAccessGrantsInstances,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstances",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAccessGrantsInstancesInput{}
+	}
+
+	output = &ListAccessGrantsInstancesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// ListAccessGrantsInstances API operation for AWS S3 Control.
+//
+// Returns a list of S3 Access Grants instances. An S3 Access Grants instance
+// serves as a logical grouping for your individual access grants. You can only
+// have one S3 Access Grants instance per Region per account.
+//
+// # Permissions
+//
+// You must have the s3:ListAccessGrantsInstances permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation ListAccessGrantsInstances for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessGrantsInstances
+func (c *S3Control) ListAccessGrantsInstances(input *ListAccessGrantsInstancesInput) (*ListAccessGrantsInstancesOutput, error) {
+	req, out := c.ListAccessGrantsInstancesRequest(input)
+	return out, req.Send()
+}
+
+// ListAccessGrantsInstancesWithContext is the same as ListAccessGrantsInstances with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAccessGrantsInstances for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListAccessGrantsInstancesWithContext(ctx aws.Context, input *ListAccessGrantsInstancesInput, opts ...request.Option) (*ListAccessGrantsInstancesOutput, error) {
+	req, out := c.ListAccessGrantsInstancesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAccessGrantsInstancesPages iterates over the pages of a ListAccessGrantsInstances operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAccessGrantsInstances method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAccessGrantsInstances operation.
+//	pageNum := 0
+//	err := client.ListAccessGrantsInstancesPages(params,
+//	    func(page *s3control.ListAccessGrantsInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *S3Control) ListAccessGrantsInstancesPages(input *ListAccessGrantsInstancesInput, fn func(*ListAccessGrantsInstancesOutput, bool) bool) error {
+	return c.ListAccessGrantsInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAccessGrantsInstancesPagesWithContext same as ListAccessGrantsInstancesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListAccessGrantsInstancesPagesWithContext(ctx aws.Context, input *ListAccessGrantsInstancesInput, fn func(*ListAccessGrantsInstancesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAccessGrantsInstancesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAccessGrantsInstancesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAccessGrantsInstancesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListAccessGrantsLocations = "ListAccessGrantsLocations"
+
+// ListAccessGrantsLocationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListAccessGrantsLocations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAccessGrantsLocations for more information on using the ListAccessGrantsLocations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAccessGrantsLocationsRequest method.
+//	req, resp := client.ListAccessGrantsLocationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessGrantsLocations
+func (c *S3Control) ListAccessGrantsLocationsRequest(input *ListAccessGrantsLocationsInput) (req *request.Request, output *ListAccessGrantsLocationsOutput) {
+	op := &request.Operation{
+		Name:       opListAccessGrantsLocations,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/accessgrantsinstance/locations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAccessGrantsLocationsInput{}
+	}
+
+	output = &ListAccessGrantsLocationsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// ListAccessGrantsLocations API operation for AWS S3 Control.
+//
+// Returns a list of the locations registered in your S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:ListAccessGrantsLocations permission to use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation ListAccessGrantsLocations for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListAccessGrantsLocations
+func (c *S3Control) ListAccessGrantsLocations(input *ListAccessGrantsLocationsInput) (*ListAccessGrantsLocationsOutput, error) {
+	req, out := c.ListAccessGrantsLocationsRequest(input)
+	return out, req.Send()
+}
+
+// ListAccessGrantsLocationsWithContext is the same as ListAccessGrantsLocations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAccessGrantsLocations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListAccessGrantsLocationsWithContext(ctx aws.Context, input *ListAccessGrantsLocationsInput, opts ...request.Option) (*ListAccessGrantsLocationsOutput, error) {
+	req, out := c.ListAccessGrantsLocationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAccessGrantsLocationsPages iterates over the pages of a ListAccessGrantsLocations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAccessGrantsLocations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAccessGrantsLocations operation.
+//	pageNum := 0
+//	err := client.ListAccessGrantsLocationsPages(params,
+//	    func(page *s3control.ListAccessGrantsLocationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *S3Control) ListAccessGrantsLocationsPages(input *ListAccessGrantsLocationsInput, fn func(*ListAccessGrantsLocationsOutput, bool) bool) error {
+	return c.ListAccessGrantsLocationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAccessGrantsLocationsPagesWithContext same as ListAccessGrantsLocationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListAccessGrantsLocationsPagesWithContext(ctx aws.Context, input *ListAccessGrantsLocationsInput, fn func(*ListAccessGrantsLocationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAccessGrantsLocationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAccessGrantsLocationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAccessGrantsLocationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
 }
 
 const opListAccessPoints = "ListAccessPoints"
@@ -3654,18 +6190,21 @@ func (c *S3Control) ListAccessPointsRequest(input *ListAccessPointsInput) (req *
 
 // ListAccessPoints API operation for AWS S3 Control.
 //
-// Returns a list of the access points currently associated with the specified
-// bucket. You can retrieve up to 1000 access points per call. If the specified
-// bucket has more than 1,000 access points (or the number specified in maxResults,
-// whichever is less), the response will include a continuation token that you
-// can use to list the additional access points.
+// This operation is not supported by directory buckets.
+//
+// Returns a list of the access points that are owned by the current account
+// that's associated with the specified bucket. You can retrieve up to 1000
+// access points per call. If the specified bucket has more than 1,000 access
+// points (or the number specified in maxResults, whichever is less), the response
+// will include a continuation token that you can use to list the additional
+// access points.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html#API_control_GetAccessPoint_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetAccessPoint.html#API_control_GetAccessPoint_Examples)
 // section.
 //
 // The following actions are related to ListAccessPoints:
@@ -3805,6 +6344,8 @@ func (c *S3Control) ListAccessPointsForObjectLambdaRequest(input *ListAccessPoin
 }
 
 // ListAccessPointsForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Returns some or all (up to 1,000) access points associated with the Object
 // Lambda Access Point per call. If there are more access points than what can
@@ -3949,10 +6490,15 @@ func (c *S3Control) ListJobsRequest(input *ListJobsInput) (req *request.Request,
 
 // ListJobs API operation for AWS S3 Control.
 //
-// Lists current S3 Batch Operations jobs and jobs that have ended within the
-// last 30 days for the Amazon Web Services account making the request. For
-// more information, see S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html)
+// Lists current S3 Batch Operations jobs as well as the jobs that have ended
+// within the last 30 days for the Amazon Web Services account making the request.
+// For more information, see S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html)
 // in the Amazon S3 User Guide.
+//
+// # Permissions
+//
+// To use the ListJobs operation, you must have permission to perform the s3:ListJobs
+// action.
 //
 // Related actions include:
 //
@@ -4107,6 +6653,8 @@ func (c *S3Control) ListMultiRegionAccessPointsRequest(input *ListMultiRegionAcc
 
 // ListMultiRegionAccessPoints API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Returns a list of the Multi-Region Access Points currently associated with
 // the specified Amazon Web Services account. Each call can return up to 100
 // Multi-Region Access Points, the maximum number of Multi-Region Access Points
@@ -4257,6 +6805,8 @@ func (c *S3Control) ListRegionalBucketsRequest(input *ListRegionalBucketsInput) 
 
 // ListRegionalBuckets API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Returns a list of all Outposts buckets in an Outpost that are owned by the
 // authenticated sender of the request. For more information, see Using Amazon
 // S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3onOutposts.html)
@@ -4397,6 +6947,8 @@ func (c *S3Control) ListStorageLensConfigurationsRequest(input *ListStorageLensC
 
 // ListStorageLensConfigurations API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Gets a list of Amazon S3 Storage Lens configurations. For more information
 // about S3 Storage Lens, see Assessing your storage activity and usage with
 // Amazon S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage_lens.html)
@@ -4486,6 +7038,322 @@ func (c *S3Control) ListStorageLensConfigurationsPagesWithContext(ctx aws.Contex
 	return p.Err()
 }
 
+const opListStorageLensGroups = "ListStorageLensGroups"
+
+// ListStorageLensGroupsRequest generates a "aws/request.Request" representing the
+// client's request for the ListStorageLensGroups operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListStorageLensGroups for more information on using the ListStorageLensGroups
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListStorageLensGroupsRequest method.
+//	req, resp := client.ListStorageLensGroupsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListStorageLensGroups
+func (c *S3Control) ListStorageLensGroupsRequest(input *ListStorageLensGroupsInput) (req *request.Request, output *ListStorageLensGroupsOutput) {
+	op := &request.Operation{
+		Name:       opListStorageLensGroups,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/storagelensgroup",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListStorageLensGroupsInput{}
+	}
+
+	output = &ListStorageLensGroupsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// ListStorageLensGroups API operation for AWS S3 Control.
+//
+// Lists all the Storage Lens groups in the specified home Region.
+//
+// To use this operation, you must have the permission to perform the s3:ListStorageLensGroups
+// action. For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about Storage Lens groups errors, see List of Amazon S3 Storage
+// Lens error codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3LensErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation ListStorageLensGroups for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListStorageLensGroups
+func (c *S3Control) ListStorageLensGroups(input *ListStorageLensGroupsInput) (*ListStorageLensGroupsOutput, error) {
+	req, out := c.ListStorageLensGroupsRequest(input)
+	return out, req.Send()
+}
+
+// ListStorageLensGroupsWithContext is the same as ListStorageLensGroups with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListStorageLensGroups for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListStorageLensGroupsWithContext(ctx aws.Context, input *ListStorageLensGroupsInput, opts ...request.Option) (*ListStorageLensGroupsOutput, error) {
+	req, out := c.ListStorageLensGroupsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListStorageLensGroupsPages iterates over the pages of a ListStorageLensGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListStorageLensGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListStorageLensGroups operation.
+//	pageNum := 0
+//	err := client.ListStorageLensGroupsPages(params,
+//	    func(page *s3control.ListStorageLensGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *S3Control) ListStorageLensGroupsPages(input *ListStorageLensGroupsInput, fn func(*ListStorageLensGroupsOutput, bool) bool) error {
+	return c.ListStorageLensGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListStorageLensGroupsPagesWithContext same as ListStorageLensGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListStorageLensGroupsPagesWithContext(ctx aws.Context, input *ListStorageLensGroupsInput, fn func(*ListStorageLensGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListStorageLensGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListStorageLensGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListStorageLensGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListTagsForResource = "ListTagsForResource"
+
+// ListTagsForResourceRequest generates a "aws/request.Request" representing the
+// client's request for the ListTagsForResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListTagsForResource for more information on using the ListTagsForResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListTagsForResource
+func (c *S3Control) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
+	op := &request.Operation{
+		Name:       opListTagsForResource,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v20180820/tags/{resourceArn+}",
+	}
+
+	if input == nil {
+		input = &ListTagsForResourceInput{}
+	}
+
+	output = &ListTagsForResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// ListTagsForResource API operation for AWS S3 Control.
+//
+// This operation allows you to list all the Amazon Web Services resource tags
+// for a specified resource. Each tag is a label consisting of a user-defined
+// key and value. Tags can help you manage, identify, organize, search for,
+// and filter resources.
+//
+// # Permissions
+//
+// You must have the s3:ListTagsForResource permission to use this operation.
+//
+// This operation is only supported for S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-lens-groups.html)
+// and for S3 Access Grants (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-grants-tagging.html).
+// The tagged resource can be an S3 Storage Lens group or S3 Access Grants instance,
+// registered location, or grant.
+//
+// For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about S3 Tagging errors, see List of Amazon S3 Tagging error
+// codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3TaggingErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation ListTagsForResource for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/ListTagsForResource
+func (c *S3Control) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	return out, req.Send()
+}
+
+// ListTagsForResourceWithContext is the same as ListTagsForResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListTagsForResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) ListTagsForResourceWithContext(ctx aws.Context, input *ListTagsForResourceInput, opts ...request.Option) (*ListTagsForResourceOutput, error) {
+	req, out := c.ListTagsForResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutAccessGrantsInstanceResourcePolicy = "PutAccessGrantsInstanceResourcePolicy"
+
+// PutAccessGrantsInstanceResourcePolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PutAccessGrantsInstanceResourcePolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutAccessGrantsInstanceResourcePolicy for more information on using the PutAccessGrantsInstanceResourcePolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutAccessGrantsInstanceResourcePolicyRequest method.
+//	req, resp := client.PutAccessGrantsInstanceResourcePolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutAccessGrantsInstanceResourcePolicy
+func (c *S3Control) PutAccessGrantsInstanceResourcePolicyRequest(input *PutAccessGrantsInstanceResourcePolicyInput) (req *request.Request, output *PutAccessGrantsInstanceResourcePolicyOutput) {
+	op := &request.Operation{
+		Name:       opPutAccessGrantsInstanceResourcePolicy,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v20180820/accessgrantsinstance/resourcepolicy",
+	}
+
+	if input == nil {
+		input = &PutAccessGrantsInstanceResourcePolicyInput{}
+	}
+
+	output = &PutAccessGrantsInstanceResourcePolicyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// PutAccessGrantsInstanceResourcePolicy API operation for AWS S3 Control.
+//
+// Updates the resource policy of the S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:PutAccessGrantsInstanceResourcePolicy permission to
+// use this operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation PutAccessGrantsInstanceResourcePolicy for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutAccessGrantsInstanceResourcePolicy
+func (c *S3Control) PutAccessGrantsInstanceResourcePolicy(input *PutAccessGrantsInstanceResourcePolicyInput) (*PutAccessGrantsInstanceResourcePolicyOutput, error) {
+	req, out := c.PutAccessGrantsInstanceResourcePolicyRequest(input)
+	return out, req.Send()
+}
+
+// PutAccessGrantsInstanceResourcePolicyWithContext is the same as PutAccessGrantsInstanceResourcePolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutAccessGrantsInstanceResourcePolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) PutAccessGrantsInstanceResourcePolicyWithContext(ctx aws.Context, input *PutAccessGrantsInstanceResourcePolicyInput, opts ...request.Option) (*PutAccessGrantsInstanceResourcePolicyOutput, error) {
+	req, out := c.PutAccessGrantsInstanceResourcePolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPutAccessPointConfigurationForObjectLambda = "PutAccessPointConfigurationForObjectLambda"
 
 // PutAccessPointConfigurationForObjectLambdaRequest generates a "aws/request.Request" representing the
@@ -4531,6 +7399,8 @@ func (c *S3Control) PutAccessPointConfigurationForObjectLambdaRequest(input *Put
 }
 
 // PutAccessPointConfigurationForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Replaces configuration for an Object Lambda Access Point.
 //
@@ -4615,16 +7485,18 @@ func (c *S3Control) PutAccessPointPolicyRequest(input *PutAccessPointPolicyInput
 
 // PutAccessPointPolicy API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Associates an access policy with the specified access point. Each access
 // point can have only one policy, so a request made to this API replaces any
 // existing policy associated with the specified access point.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html#API_control_PutAccessPointPolicy_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutAccessPointPolicy.html#API_control_PutAccessPointPolicy_Examples)
 // section.
 //
 // The following actions are related to PutAccessPointPolicy:
@@ -4706,6 +7578,8 @@ func (c *S3Control) PutAccessPointPolicyForObjectLambdaRequest(input *PutAccessP
 }
 
 // PutAccessPointPolicyForObjectLambda API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
 //
 // Creates or replaces resource policy for an Object Lambda Access Point. For
 // an example policy, see Creating Object Lambda Access Points (https://docs.aws.amazon.com/AmazonS3/latest/userguide/olap-create.html#olap-create-cli)
@@ -4809,11 +7683,11 @@ func (c *S3Control) PutBucketLifecycleConfigurationRequest(input *PutBucketLifec
 // and abort incomplete multipart uploads.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html#API_control_PutBucketLifecycleConfiguration_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html#API_control_PutBucketLifecycleConfiguration_Examples)
 // section.
 //
 // The following actions are related to PutBucketLifecycleConfiguration:
@@ -4929,11 +7803,11 @@ func (c *S3Control) PutBucketPolicyRequest(input *PutBucketPolicyInput) (req *re
 // User Policies (https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html).
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketPolicy.html#API_control_PutBucketPolicy_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketPolicy.html#API_control_PutBucketPolicy_Examples)
 // section.
 //
 // The following actions are related to PutBucketPolicy:
@@ -4965,6 +7839,169 @@ func (c *S3Control) PutBucketPolicy(input *PutBucketPolicyInput) (*PutBucketPoli
 // for more information on using Contexts.
 func (c *S3Control) PutBucketPolicyWithContext(ctx aws.Context, input *PutBucketPolicyInput, opts ...request.Option) (*PutBucketPolicyOutput, error) {
 	req, out := c.PutBucketPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutBucketReplication = "PutBucketReplication"
+
+// PutBucketReplicationRequest generates a "aws/request.Request" representing the
+// client's request for the PutBucketReplication operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutBucketReplication for more information on using the PutBucketReplication
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutBucketReplicationRequest method.
+//	req, resp := client.PutBucketReplicationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketReplication
+func (c *S3Control) PutBucketReplicationRequest(input *PutBucketReplicationInput) (req *request.Request, output *PutBucketReplicationOutput) {
+	op := &request.Operation{
+		Name:       opPutBucketReplication,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v20180820/bucket/{name}/replication",
+	}
+
+	if input == nil {
+		input = &PutBucketReplicationInput{}
+	}
+
+	output = &PutBucketReplicationOutput{}
+	req = c.newRequest(op, input, output)
+	// update account id or check if provided input for account id member matches
+	// the account id present in ARN
+	req.Handlers.Validate.PushFrontNamed(updateAccountIDWithARNHandler)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// PutBucketReplication API operation for AWS S3 Control.
+//
+// This action creates an Amazon S3 on Outposts bucket's replication configuration.
+// To create an S3 bucket's replication configuration, see PutBucketReplication
+// (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketReplication.html)
+// in the Amazon S3 API Reference.
+//
+// Creates a replication configuration or replaces an existing one. For information
+// about S3 replication on Outposts configuration, see Replicating objects for
+// S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsReplication.html)
+// in the Amazon S3 User Guide.
+//
+// It can take a while to propagate PUT or DELETE requests for a replication
+// configuration to all S3 on Outposts systems. Therefore, the replication configuration
+// that's returned by a GET request soon after a PUT or DELETE request might
+// return a more recent result than what's on the Outpost. If an Outpost is
+// offline, the delay in updating the replication configuration on that Outpost
+// can be significant.
+//
+// Specify the replication configuration in the request body. In the replication
+// configuration, you provide the following information:
+//
+//   - The name of the destination bucket or buckets where you want S3 on Outposts
+//     to replicate objects
+//
+//   - The Identity and Access Management (IAM) role that S3 on Outposts can
+//     assume to replicate objects on your behalf
+//
+//   - Other relevant information, such as replication rules
+//
+// A replication configuration must include at least one rule and can contain
+// a maximum of 100. Each rule identifies a subset of objects to replicate by
+// filtering the objects in the source Outposts bucket. To choose additional
+// subsets of objects to replicate, add a rule for each subset.
+//
+// To specify a subset of the objects in the source Outposts bucket to apply
+// a replication rule to, add the Filter element as a child of the Rule element.
+// You can filter objects based on an object key prefix, one or more object
+// tags, or both. When you add the Filter element in the configuration, you
+// must also add the following elements: DeleteMarkerReplication, Status, and
+// Priority.
+//
+// Using PutBucketReplication on Outposts requires that both the source and
+// destination buckets must have versioning enabled. For information about enabling
+// versioning on a bucket, see Managing S3 Versioning for your S3 on Outposts
+// bucket (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsManagingVersioning.html).
+//
+// For information about S3 on Outposts replication failure reasons, see Replication
+// failure reasons (https://docs.aws.amazon.com/AmazonS3/latest/userguide/outposts-replication-eventbridge.html#outposts-replication-failure-codes)
+// in the Amazon S3 User Guide.
+//
+// # Handling Replication of Encrypted Objects
+//
+// Outposts buckets are encrypted at all times. All the objects in the source
+// Outposts bucket are encrypted and can be replicated. Also, all the replicas
+// in the destination Outposts bucket are encrypted with the same encryption
+// key as the objects in the source Outposts bucket.
+//
+// # Permissions
+//
+// To create a PutBucketReplication request, you must have s3-outposts:PutReplicationConfiguration
+// permissions for the bucket. The Outposts bucket owner has this permission
+// by default and can grant it to others. For more information about permissions,
+// see Setting up IAM with S3 on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsIAM.html)
+// and Managing access to S3 on Outposts buckets (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsBucketPolicy.html).
+//
+// To perform this operation, the user or role must also have the iam:CreateRole
+// and iam:PassRole permissions. For more information, see Granting a user permissions
+// to pass a role to an Amazon Web Services service (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html).
+//
+// All Amazon S3 on Outposts REST API requests for this action require an additional
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketReplication.html#API_control_PutBucketReplication_Examples)
+// section.
+//
+// The following operations are related to PutBucketReplication:
+//
+//   - GetBucketReplication (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketReplication.html)
+//
+//   - DeleteBucketReplication (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_DeleteBucketReplication.html)
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation PutBucketReplication for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketReplication
+func (c *S3Control) PutBucketReplication(input *PutBucketReplicationInput) (*PutBucketReplicationOutput, error) {
+	req, out := c.PutBucketReplicationRequest(input)
+	return out, req.Send()
+}
+
+// PutBucketReplicationWithContext is the same as PutBucketReplication with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutBucketReplication for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) PutBucketReplicationWithContext(ctx aws.Context, input *PutBucketReplicationInput, opts ...request.Option) (*PutBucketReplicationOutput, error) {
+	req, out := c.PutBucketReplicationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5068,11 +8105,11 @@ func (c *S3Control) PutBucketTaggingRequest(input *PutBucketTaggingInput) (req *
 //     the provided tag to the bucket.
 //
 // All Amazon S3 on Outposts REST API requests for this action require an additional
-// parameter of x-amz-outpost-id to be passed with the request and an S3 on
-// Outposts endpoint hostname prefix instead of s3-control. For an example of
-// the request syntax for Amazon S3 on Outposts that uses the S3 on Outposts
-// endpoint hostname prefix and the x-amz-outpost-id derived using the access
-// point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketTagging.html#API_control_PutBucketTagging_Examples)
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketTagging.html#API_control_PutBucketTagging_Examples)
 // section.
 //
 // The following actions are related to PutBucketTagging:
@@ -5104,6 +8141,138 @@ func (c *S3Control) PutBucketTagging(input *PutBucketTaggingInput) (*PutBucketTa
 // for more information on using Contexts.
 func (c *S3Control) PutBucketTaggingWithContext(ctx aws.Context, input *PutBucketTaggingInput, opts ...request.Option) (*PutBucketTaggingOutput, error) {
 	req, out := c.PutBucketTaggingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutBucketVersioning = "PutBucketVersioning"
+
+// PutBucketVersioningRequest generates a "aws/request.Request" representing the
+// client's request for the PutBucketVersioning operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutBucketVersioning for more information on using the PutBucketVersioning
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutBucketVersioningRequest method.
+//	req, resp := client.PutBucketVersioningRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketVersioning
+func (c *S3Control) PutBucketVersioningRequest(input *PutBucketVersioningInput) (req *request.Request, output *PutBucketVersioningOutput) {
+	op := &request.Operation{
+		Name:       opPutBucketVersioning,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v20180820/bucket/{name}/versioning",
+	}
+
+	if input == nil {
+		input = &PutBucketVersioningInput{}
+	}
+
+	output = &PutBucketVersioningOutput{}
+	req = c.newRequest(op, input, output)
+	// update account id or check if provided input for account id member matches
+	// the account id present in ARN
+	req.Handlers.Validate.PushFrontNamed(updateAccountIDWithARNHandler)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// PutBucketVersioning API operation for AWS S3 Control.
+//
+// This operation sets the versioning state for S3 on Outposts buckets only.
+// To set the versioning state for an S3 bucket, see PutBucketVersioning (https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutBucketVersioning.html)
+// in the Amazon S3 API Reference.
+//
+// Sets the versioning state for an S3 on Outposts bucket. With S3 Versioning,
+// you can save multiple distinct copies of your objects and recover from unintended
+// user actions and application failures.
+//
+// You can set the versioning state to one of the following:
+//
+//   - Enabled - Enables versioning for the objects in the bucket. All objects
+//     added to the bucket receive a unique version ID.
+//
+//   - Suspended - Suspends versioning for the objects in the bucket. All objects
+//     added to the bucket receive the version ID null.
+//
+// If you've never set versioning on your bucket, it has no versioning state.
+// In that case, a GetBucketVersioning (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketVersioning.html)
+// request does not return a versioning state value.
+//
+// When you enable S3 Versioning, for each object in your bucket, you have a
+// current version and zero or more noncurrent versions. You can configure your
+// bucket S3 Lifecycle rules to expire noncurrent versions after a specified
+// time period. For more information, see Creating and managing a lifecycle
+// configuration for your S3 on Outposts bucket (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsLifecycleManaging.html)
+// in the Amazon S3 User Guide.
+//
+// If you have an object expiration lifecycle configuration in your non-versioned
+// bucket and you want to maintain the same permanent delete behavior when you
+// enable versioning, you must add a noncurrent expiration policy. The noncurrent
+// expiration lifecycle configuration will manage the deletes of the noncurrent
+// object versions in the version-enabled bucket. For more information, see
+// Versioning (https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html)
+// in the Amazon S3 User Guide.
+//
+// All Amazon S3 on Outposts REST API requests for this action require an additional
+// parameter of x-amz-outpost-id to be passed with the request. In addition,
+// you must use an S3 on Outposts endpoint hostname prefix instead of s3-control.
+// For an example of the request syntax for Amazon S3 on Outposts that uses
+// the S3 on Outposts endpoint hostname prefix and the x-amz-outpost-id derived
+// by using the access point ARN, see the Examples (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketVersioning.html#API_control_PutBucketVersioning_Examples)
+// section.
+//
+// The following operations are related to PutBucketVersioning for S3 on Outposts.
+//
+//   - GetBucketVersioning (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketVersioning.html)
+//
+//   - PutBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketLifecycleConfiguration.html)
+//
+//   - GetBucketLifecycleConfiguration (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetBucketLifecycleConfiguration.html)
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation PutBucketVersioning for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/PutBucketVersioning
+func (c *S3Control) PutBucketVersioning(input *PutBucketVersioningInput) (*PutBucketVersioningOutput, error) {
+	req, out := c.PutBucketVersioningRequest(input)
+	return out, req.Send()
+}
+
+// PutBucketVersioningWithContext is the same as PutBucketVersioning with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutBucketVersioning for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) PutBucketVersioningWithContext(ctx aws.Context, input *PutBucketVersioningInput, opts ...request.Option) (*PutBucketVersioningOutput, error) {
+	req, out := c.PutBucketVersioningRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5162,7 +8331,7 @@ func (c *S3Control) PutJobTaggingRequest(input *PutJobTaggingInput) (req *reques
 // associated with the job. To modify the existing tag set, you can either replace
 // the existing tag set entirely, or make changes within the existing tag set
 // by retrieving the existing tag set using GetJobTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_GetJobTagging.html),
-// modify that tag set, and use this action to replace the tag set with the
+// modify that tag set, and use this operation to replace the tag set with the
 // one you modified. For more information, see Controlling access and labeling
 // jobs using tags (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-managing-jobs.html#batch-ops-job-tags)
 // in the Amazon S3 User Guide.
@@ -5186,8 +8355,10 @@ func (c *S3Control) PutJobTaggingRequest(input *PutJobTaggingInput) (req *reques
 //     Restrictions (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/allocation-tag-restrictions.html)
 //     in the Billing and Cost Management User Guide.
 //
-// To use this action, you must have permission to perform the s3:PutJobTagging
-// action.
+// # Permissions
+//
+// To use the PutJobTagging operation, you must have permission to perform the
+// s3:PutJobTagging action.
 //
 // Related actions include:
 //
@@ -5286,6 +8457,8 @@ func (c *S3Control) PutMultiRegionAccessPointPolicyRequest(input *PutMultiRegion
 
 // PutMultiRegionAccessPointPolicy API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Associates an access control policy with the specified Multi-Region Access
 // Point. Each Multi-Region Access Point can have only one policy, so a request
 // made to this action replaces any existing policy that is associated with
@@ -5376,8 +8549,10 @@ func (c *S3Control) PutPublicAccessBlockRequest(input *PutPublicAccessBlockInput
 
 // PutPublicAccessBlock API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Creates or modifies the PublicAccessBlock configuration for an Amazon Web
-// Services account. For this operation, users must have the s3:PutBucketPublicAccessBlock
+// Services account. For this operation, users must have the s3:PutAccountPublicAccessBlock
 // permission. For more information, see Using Amazon S3 block public access
 // (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html).
 //
@@ -5461,8 +8636,12 @@ func (c *S3Control) PutStorageLensConfigurationRequest(input *PutStorageLensConf
 
 // PutStorageLensConfiguration API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Puts an Amazon S3 Storage Lens configuration. For more information about
 // S3 Storage Lens, see Working with Amazon S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
 // in the Amazon S3 User Guide.
 //
 // To use this action, you must have permission to perform the s3:PutStorageLensConfiguration
@@ -5544,6 +8723,8 @@ func (c *S3Control) PutStorageLensConfigurationTaggingRequest(input *PutStorageL
 
 // PutStorageLensConfigurationTagging API operation for AWS S3 Control.
 //
+// This operation is not supported by directory buckets.
+//
 // Put or replace tags on an existing Amazon S3 Storage Lens configuration.
 // For more information about S3 Storage Lens, see Assessing your storage activity
 // and usage with Amazon S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/dev/storage_lens.html)
@@ -5577,6 +8758,392 @@ func (c *S3Control) PutStorageLensConfigurationTagging(input *PutStorageLensConf
 // for more information on using Contexts.
 func (c *S3Control) PutStorageLensConfigurationTaggingWithContext(ctx aws.Context, input *PutStorageLensConfigurationTaggingInput, opts ...request.Option) (*PutStorageLensConfigurationTaggingOutput, error) {
 	req, out := c.PutStorageLensConfigurationTaggingRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opSubmitMultiRegionAccessPointRoutes = "SubmitMultiRegionAccessPointRoutes"
+
+// SubmitMultiRegionAccessPointRoutesRequest generates a "aws/request.Request" representing the
+// client's request for the SubmitMultiRegionAccessPointRoutes operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SubmitMultiRegionAccessPointRoutes for more information on using the SubmitMultiRegionAccessPointRoutes
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SubmitMultiRegionAccessPointRoutesRequest method.
+//	req, resp := client.SubmitMultiRegionAccessPointRoutesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/SubmitMultiRegionAccessPointRoutes
+func (c *S3Control) SubmitMultiRegionAccessPointRoutesRequest(input *SubmitMultiRegionAccessPointRoutesInput) (req *request.Request, output *SubmitMultiRegionAccessPointRoutesOutput) {
+	op := &request.Operation{
+		Name:       opSubmitMultiRegionAccessPointRoutes,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/v20180820/mrap/instances/{mrap+}/routes",
+	}
+
+	if input == nil {
+		input = &SubmitMultiRegionAccessPointRoutesInput{}
+	}
+
+	output = &SubmitMultiRegionAccessPointRoutesOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// SubmitMultiRegionAccessPointRoutes API operation for AWS S3 Control.
+//
+// This operation is not supported by directory buckets.
+//
+// Submits an updated route configuration for a Multi-Region Access Point. This
+// API operation updates the routing status for the specified Regions from active
+// to passive, or from passive to active. A value of 0 indicates a passive status,
+// which means that traffic won't be routed to the specified Region. A value
+// of 100 indicates an active status, which means that traffic will be routed
+// to the specified Region. At least one Region must be active at all times.
+//
+// When the routing configuration is changed, any in-progress operations (uploads,
+// copies, deletes, and so on) to formerly active Regions will continue to run
+// to their final completion state (success or failure). The routing configurations
+// of any Regions that aren’t specified remain unchanged.
+//
+// Updated routing configurations might not be immediately applied. It can take
+// up to 2 minutes for your changes to take effect.
+//
+// To submit routing control changes and failover requests, use the Amazon S3
+// failover control infrastructure endpoints in these five Amazon Web Services
+// Regions:
+//
+//   - us-east-1
+//
+//   - us-west-2
+//
+//   - ap-southeast-2
+//
+//   - ap-northeast-1
+//
+//   - eu-west-1
+//
+// Your Amazon S3 bucket does not need to be in these five Regions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation SubmitMultiRegionAccessPointRoutes for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/SubmitMultiRegionAccessPointRoutes
+func (c *S3Control) SubmitMultiRegionAccessPointRoutes(input *SubmitMultiRegionAccessPointRoutesInput) (*SubmitMultiRegionAccessPointRoutesOutput, error) {
+	req, out := c.SubmitMultiRegionAccessPointRoutesRequest(input)
+	return out, req.Send()
+}
+
+// SubmitMultiRegionAccessPointRoutesWithContext is the same as SubmitMultiRegionAccessPointRoutes with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SubmitMultiRegionAccessPointRoutes for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) SubmitMultiRegionAccessPointRoutesWithContext(ctx aws.Context, input *SubmitMultiRegionAccessPointRoutesInput, opts ...request.Option) (*SubmitMultiRegionAccessPointRoutesOutput, error) {
+	req, out := c.SubmitMultiRegionAccessPointRoutesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opTagResource = "TagResource"
+
+// TagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the TagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TagResource for more information on using the TagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/TagResource
+func (c *S3Control) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
+	op := &request.Operation{
+		Name:       opTagResource,
+		HTTPMethod: "POST",
+		HTTPPath:   "/v20180820/tags/{resourceArn+}",
+	}
+
+	if input == nil {
+		input = &TagResourceInput{}
+	}
+
+	output = &TagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// TagResource API operation for AWS S3 Control.
+//
+// Creates a new Amazon Web Services resource tag or updates an existing resource
+// tag. Each tag is a label consisting of a user-defined key and value. Tags
+// can help you manage, identify, organize, search for, and filter resources.
+// You can add up to 50 Amazon Web Services resource tags for each S3 resource.
+//
+// This operation is only supported for S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-lens-groups.html)
+// and for S3 Access Grants (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-grants-tagging.html).
+// The tagged resource can be an S3 Storage Lens group or S3 Access Grants instance,
+// registered location, or grant.
+//
+// # Permissions
+//
+// You must have the s3:TagResource permission to use this operation.
+//
+// For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about S3 Tagging errors, see List of Amazon S3 Tagging error
+// codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3TaggingErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation TagResource for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/TagResource
+func (c *S3Control) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	return out, req.Send()
+}
+
+// TagResourceWithContext is the same as TagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
+	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUntagResource = "UntagResource"
+
+// UntagResourceRequest generates a "aws/request.Request" representing the
+// client's request for the UntagResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UntagResource for more information on using the UntagResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UntagResource
+func (c *S3Control) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
+	op := &request.Operation{
+		Name:       opUntagResource,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/v20180820/tags/{resourceArn+}",
+	}
+
+	if input == nil {
+		input = &UntagResourceInput{}
+	}
+
+	output = &UntagResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// UntagResource API operation for AWS S3 Control.
+//
+// This operation removes the specified Amazon Web Services resource tags from
+// an S3 resource. Each tag is a label consisting of a user-defined key and
+// value. Tags can help you manage, identify, organize, search for, and filter
+// resources.
+//
+// This operation is only supported for S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-lens-groups.html)
+// and for S3 Access Grants (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-grants-tagging.html).
+// The tagged resource can be an S3 Storage Lens group or S3 Access Grants instance,
+// registered location, or grant.
+//
+// # Permissions
+//
+// You must have the s3:UntagResource permission to use this operation.
+//
+// For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about S3 Tagging errors, see List of Amazon S3 Tagging error
+// codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3TaggingErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation UntagResource for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UntagResource
+func (c *S3Control) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	return out, req.Send()
+}
+
+// UntagResourceWithContext is the same as UntagResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UntagResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) UntagResourceWithContext(ctx aws.Context, input *UntagResourceInput, opts ...request.Option) (*UntagResourceOutput, error) {
+	req, out := c.UntagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateAccessGrantsLocation = "UpdateAccessGrantsLocation"
+
+// UpdateAccessGrantsLocationRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAccessGrantsLocation operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAccessGrantsLocation for more information on using the UpdateAccessGrantsLocation
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAccessGrantsLocationRequest method.
+//	req, resp := client.UpdateAccessGrantsLocationRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateAccessGrantsLocation
+func (c *S3Control) UpdateAccessGrantsLocationRequest(input *UpdateAccessGrantsLocationInput) (req *request.Request, output *UpdateAccessGrantsLocationOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAccessGrantsLocation,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v20180820/accessgrantsinstance/location/{id}",
+	}
+
+	if input == nil {
+		input = &UpdateAccessGrantsLocationInput{}
+	}
+
+	output = &UpdateAccessGrantsLocationOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	req.Handlers.Build.PushBackNamed(request.NamedHandler{
+		Name: "contentMd5Handler",
+		Fn:   checksum.AddBodyContentMD5Handler,
+	})
+	return
+}
+
+// UpdateAccessGrantsLocation API operation for AWS S3 Control.
+//
+// Updates the IAM role of a registered location in your S3 Access Grants instance.
+//
+// # Permissions
+//
+// You must have the s3:UpdateAccessGrantsLocation permission to use this operation.
+//
+// # Additional Permissions
+//
+// You must also have the following permission: iam:PassRole
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation UpdateAccessGrantsLocation for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateAccessGrantsLocation
+func (c *S3Control) UpdateAccessGrantsLocation(input *UpdateAccessGrantsLocationInput) (*UpdateAccessGrantsLocationOutput, error) {
+	req, out := c.UpdateAccessGrantsLocationRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAccessGrantsLocationWithContext is the same as UpdateAccessGrantsLocation with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAccessGrantsLocation for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) UpdateAccessGrantsLocationWithContext(ctx aws.Context, input *UpdateAccessGrantsLocationInput, opts ...request.Option) (*UpdateAccessGrantsLocationOutput, error) {
+	req, out := c.UpdateAccessGrantsLocationRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5630,6 +9197,11 @@ func (c *S3Control) UpdateJobPriorityRequest(input *UpdateJobPriorityInput) (req
 // Updates an existing S3 Batch Operations job's priority. For more information,
 // see S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html)
 // in the Amazon S3 User Guide.
+//
+// # Permissions
+//
+// To use the UpdateJobPriority operation, you must have permission to perform
+// the s3:UpdateJobPriority action.
 //
 // Related actions include:
 //
@@ -5725,10 +9297,15 @@ func (c *S3Control) UpdateJobStatusRequest(input *UpdateJobStatusInput) (req *re
 
 // UpdateJobStatus API operation for AWS S3 Control.
 //
-// Updates the status for the specified job. Use this action to confirm that
+// Updates the status for the specified job. Use this operation to confirm that
 // you want to run a job or to cancel an existing job. For more information,
 // see S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/userguide/batch-ops.html)
 // in the Amazon S3 User Guide.
+//
+// # Permissions
+//
+// To use the UpdateJobStatus operation, you must have permission to perform
+// the s3:UpdateJobStatus action.
 //
 // Related actions include:
 //
@@ -5781,6 +9358,89 @@ func (c *S3Control) UpdateJobStatusWithContext(ctx aws.Context, input *UpdateJob
 	return out, req.Send()
 }
 
+const opUpdateStorageLensGroup = "UpdateStorageLensGroup"
+
+// UpdateStorageLensGroupRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateStorageLensGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateStorageLensGroup for more information on using the UpdateStorageLensGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateStorageLensGroupRequest method.
+//	req, resp := client.UpdateStorageLensGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateStorageLensGroup
+func (c *S3Control) UpdateStorageLensGroupRequest(input *UpdateStorageLensGroupInput) (req *request.Request, output *UpdateStorageLensGroupOutput) {
+	op := &request.Operation{
+		Name:       opUpdateStorageLensGroup,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/v20180820/storagelensgroup/{name}",
+	}
+
+	if input == nil {
+		input = &UpdateStorageLensGroupInput{}
+	}
+
+	output = &UpdateStorageLensGroupOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restxml.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	req.Handlers.Build.PushBackNamed(protocol.NewHostPrefixHandler("{AccountId}.", input.hostLabels))
+	req.Handlers.Build.PushBackNamed(protocol.ValidateEndpointHostHandler)
+	return
+}
+
+// UpdateStorageLensGroup API operation for AWS S3 Control.
+//
+// Updates the existing Storage Lens group.
+//
+// To use this operation, you must have the permission to perform the s3:UpdateStorageLensGroup
+// action. For more information about the required Storage Lens Groups permissions,
+// see Setting account permissions to use S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_iam_permissions.html#storage_lens_groups_permissions).
+//
+// For information about Storage Lens groups errors, see List of Amazon S3 Storage
+// Lens error codes (https://docs.aws.amazon.com/AmazonS3/latest/API/ErrorResponses.html#S3LensErrorCodeList).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS S3 Control's
+// API operation UpdateStorageLensGroup for usage and error information.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3control-2018-08-20/UpdateStorageLensGroup
+func (c *S3Control) UpdateStorageLensGroup(input *UpdateStorageLensGroupInput) (*UpdateStorageLensGroupOutput, error) {
+	req, out := c.UpdateStorageLensGroupRequest(input)
+	return out, req.Send()
+}
+
+// UpdateStorageLensGroupWithContext is the same as UpdateStorageLensGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateStorageLensGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Control) UpdateStorageLensGroupWithContext(ctx aws.Context, input *UpdateStorageLensGroupInput, opts ...request.Option) (*UpdateStorageLensGroupOutput, error) {
+	req, out := c.UpdateStorageLensGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 // The container for abort incomplete multipart upload
 type AbortIncompleteMultipartUpload struct {
 	_ struct{} `type:"structure"`
@@ -5814,6 +9474,114 @@ func (s *AbortIncompleteMultipartUpload) SetDaysAfterInitiation(v int64) *AbortI
 	return s
 }
 
+// A container for information about access control for replicas.
+//
+// This is not supported by Amazon S3 on Outposts buckets.
+type AccessControlTranslation struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the replica ownership.
+	//
+	// Owner is a required field
+	Owner *string `type:"string" required:"true" enum:"OwnerOverride"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessControlTranslation) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessControlTranslation) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AccessControlTranslation) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AccessControlTranslation"}
+	if s.Owner == nil {
+		invalidParams.Add(request.NewErrParamRequired("Owner"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetOwner sets the Owner field's value.
+func (s *AccessControlTranslation) SetOwner(v string) *AccessControlTranslation {
+	s.Owner = &v
+	return s
+}
+
+// The configuration options of the S3 Access Grants location. It contains the
+// S3SubPrefix field. The grant scope, the data to which you are granting access,
+// is the result of appending the Subprefix field to the scope of the registered
+// location.
+type AccessGrantsLocationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The S3SubPrefix is appended to the location scope creating the grant scope.
+	// Use this field to narrow the scope of the grant to a subset of the location
+	// scope. This field is required if the location scope is the default location
+	// s3:// because you cannot create a grant for all of your S3 data in the Region
+	// and must narrow the scope. For example, if the location scope is the default
+	// location s3://, the S3SubPrefx can be a <bucket-name>/*, so the full grant
+	// scope path would be s3://<bucket-name>/*. Or the S3SubPrefx can be <bucket-name>/<prefix-name>*,
+	// so the full grant scope path would be or s3://<bucket-name>/<prefix-name>*.
+	//
+	// If the S3SubPrefix includes a prefix, append the wildcard character * after
+	// the prefix to indicate that you want to include all object key names in the
+	// bucket that start with that prefix.
+	S3SubPrefix *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessGrantsLocationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AccessGrantsLocationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AccessGrantsLocationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AccessGrantsLocationConfiguration"}
+	if s.S3SubPrefix != nil && len(*s.S3SubPrefix) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("S3SubPrefix", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetS3SubPrefix sets the S3SubPrefix field's value.
+func (s *AccessGrantsLocationConfiguration) SetS3SubPrefix(v string) *AccessGrantsLocationConfiguration {
+	s.S3SubPrefix = &v
+	return s
+}
+
 // An access point used to access a bucket.
 type AccessPoint struct {
 	_ struct{} `type:"structure"`
@@ -5828,6 +9596,10 @@ type AccessPoint struct {
 	//
 	// Bucket is a required field
 	Bucket *string `min:"3" type:"string" required:"true"`
+
+	// The Amazon Web Services account ID associated with the S3 bucket associated
+	// with this access point.
+	BucketAccountId *string `type:"string"`
 
 	// The name of this access point.
 	//
@@ -5887,6 +9659,12 @@ func (s *AccessPoint) SetBucket(v string) *AccessPoint {
 	return s
 }
 
+// SetBucketAccountId sets the BucketAccountId field's value.
+func (s *AccessPoint) SetBucketAccountId(v string) *AccessPoint {
+	s.BucketAccountId = &v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *AccessPoint) SetName(v string) *AccessPoint {
 	s.Name = &v
@@ -5905,17 +9683,35 @@ func (s *AccessPoint) SetVpcConfiguration(v *VpcConfiguration) *AccessPoint {
 	return s
 }
 
-// A container for the account level Amazon S3 Storage Lens configuration.
+// A container element for the account-level Amazon S3 Storage Lens configuration.
+//
+// For more information about S3 Storage Lens, see Assessing your storage activity
+// and usage with S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
+// in the Amazon S3 User Guide.
 type AccountLevel struct {
 	_ struct{} `type:"structure"`
 
-	// A container for the S3 Storage Lens activity metrics.
+	// A container element for S3 Storage Lens activity metrics.
 	ActivityMetrics *ActivityMetrics `type:"structure"`
 
-	// A container for the S3 Storage Lens bucket-level configuration.
+	// A container element for S3 Storage Lens advanced cost-optimization metrics.
+	AdvancedCostOptimizationMetrics *AdvancedCostOptimizationMetrics `type:"structure"`
+
+	// A container element for S3 Storage Lens advanced data-protection metrics.
+	AdvancedDataProtectionMetrics *AdvancedDataProtectionMetrics `type:"structure"`
+
+	// A container element for the S3 Storage Lens bucket-level configuration.
 	//
 	// BucketLevel is a required field
 	BucketLevel *BucketLevel `type:"structure" required:"true"`
+
+	// A container element for detailed status code metrics.
+	DetailedStatusCodesMetrics *DetailedStatusCodesMetrics `type:"structure"`
+
+	// A container element for S3 Storage Lens groups metrics.
+	StorageLensGroupLevel *StorageLensGroupLevel `type:"structure"`
 }
 
 // String returns the string representation.
@@ -5960,17 +9756,50 @@ func (s *AccountLevel) SetActivityMetrics(v *ActivityMetrics) *AccountLevel {
 	return s
 }
 
+// SetAdvancedCostOptimizationMetrics sets the AdvancedCostOptimizationMetrics field's value.
+func (s *AccountLevel) SetAdvancedCostOptimizationMetrics(v *AdvancedCostOptimizationMetrics) *AccountLevel {
+	s.AdvancedCostOptimizationMetrics = v
+	return s
+}
+
+// SetAdvancedDataProtectionMetrics sets the AdvancedDataProtectionMetrics field's value.
+func (s *AccountLevel) SetAdvancedDataProtectionMetrics(v *AdvancedDataProtectionMetrics) *AccountLevel {
+	s.AdvancedDataProtectionMetrics = v
+	return s
+}
+
 // SetBucketLevel sets the BucketLevel field's value.
 func (s *AccountLevel) SetBucketLevel(v *BucketLevel) *AccountLevel {
 	s.BucketLevel = v
 	return s
 }
 
-// A container for the activity metrics.
+// SetDetailedStatusCodesMetrics sets the DetailedStatusCodesMetrics field's value.
+func (s *AccountLevel) SetDetailedStatusCodesMetrics(v *DetailedStatusCodesMetrics) *AccountLevel {
+	s.DetailedStatusCodesMetrics = v
+	return s
+}
+
+// SetStorageLensGroupLevel sets the StorageLensGroupLevel field's value.
+func (s *AccountLevel) SetStorageLensGroupLevel(v *StorageLensGroupLevel) *AccountLevel {
+	s.StorageLensGroupLevel = v
+	return s
+}
+
+// The container element for Amazon S3 Storage Lens activity metrics. Activity
+// metrics show details about how your storage is requested, such as requests
+// (for example, All requests, Get requests, Put requests), bytes uploaded or
+// downloaded, and errors.
+//
+// For more information about S3 Storage Lens, see Assessing your storage activity
+// and usage with S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
+// in the Amazon S3 User Guide.
 type ActivityMetrics struct {
 	_ struct{} `type:"structure"`
 
-	// A container for whether the activity metrics are enabled.
+	// A container that indicates whether activity metrics are enabled.
 	IsEnabled *bool `type:"boolean"`
 }
 
@@ -5998,6 +9827,188 @@ func (s *ActivityMetrics) SetIsEnabled(v bool) *ActivityMetrics {
 	return s
 }
 
+// The container element for Amazon S3 Storage Lens advanced cost-optimization
+// metrics. Advanced cost-optimization metrics provide insights that you can
+// use to manage and optimize your storage costs, for example, lifecycle rule
+// counts for transitions, expirations, and incomplete multipart uploads.
+//
+// For more information about S3 Storage Lens, see Assessing your storage activity
+// and usage with S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
+// in the Amazon S3 User Guide.
+type AdvancedCostOptimizationMetrics struct {
+	_ struct{} `type:"structure"`
+
+	// A container that indicates whether advanced cost-optimization metrics are
+	// enabled.
+	IsEnabled *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdvancedCostOptimizationMetrics) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdvancedCostOptimizationMetrics) GoString() string {
+	return s.String()
+}
+
+// SetIsEnabled sets the IsEnabled field's value.
+func (s *AdvancedCostOptimizationMetrics) SetIsEnabled(v bool) *AdvancedCostOptimizationMetrics {
+	s.IsEnabled = &v
+	return s
+}
+
+// The container element for Amazon S3 Storage Lens advanced data-protection
+// metrics. Advanced data-protection metrics provide insights that you can use
+// to perform audits and protect your data, for example replication rule counts
+// within and across Regions.
+//
+// For more information about S3 Storage Lens, see Assessing your storage activity
+// and usage with S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
+// in the Amazon S3 User Guide.
+type AdvancedDataProtectionMetrics struct {
+	_ struct{} `type:"structure"`
+
+	// A container that indicates whether advanced data-protection metrics are enabled.
+	IsEnabled *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdvancedDataProtectionMetrics) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AdvancedDataProtectionMetrics) GoString() string {
+	return s.String()
+}
+
+// SetIsEnabled sets the IsEnabled field's value.
+func (s *AdvancedDataProtectionMetrics) SetIsEnabled(v bool) *AdvancedDataProtectionMetrics {
+	s.IsEnabled = &v
+	return s
+}
+
+type AssociateAccessGrantsIdentityCenterInput struct {
+	_ struct{} `locationName:"AssociateAccessGrantsIdentityCenterRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the Amazon Web Services IAM Identity Center
+	// instance that you are associating with your S3 Access Grants instance. An
+	// IAM Identity Center instance is your corporate identity directory that you
+	// added to the IAM Identity Center. You can use the ListInstances (https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_ListInstances.html)
+	// API operation to retrieve a list of your Identity Center instances and their
+	// ARNs.
+	//
+	// IdentityCenterArn is a required field
+	IdentityCenterArn *string `min:"10" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAccessGrantsIdentityCenterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAccessGrantsIdentityCenterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateAccessGrantsIdentityCenterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateAccessGrantsIdentityCenterInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.IdentityCenterArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IdentityCenterArn"))
+	}
+	if s.IdentityCenterArn != nil && len(*s.IdentityCenterArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("IdentityCenterArn", 10))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *AssociateAccessGrantsIdentityCenterInput) SetAccountId(v string) *AssociateAccessGrantsIdentityCenterInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetIdentityCenterArn sets the IdentityCenterArn field's value.
+func (s *AssociateAccessGrantsIdentityCenterInput) SetIdentityCenterArn(v string) *AssociateAccessGrantsIdentityCenterInput {
+	s.IdentityCenterArn = &v
+	return s
+}
+
+func (s *AssociateAccessGrantsIdentityCenterInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type AssociateAccessGrantsIdentityCenterOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAccessGrantsIdentityCenterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateAccessGrantsIdentityCenterOutput) GoString() string {
+	return s.String()
+}
+
 // Error details for the failed asynchronous operation.
 type AsyncErrorDetails struct {
 	_ struct{} `type:"structure"`
@@ -6005,7 +10016,7 @@ type AsyncErrorDetails struct {
 	// A string that uniquely identifies the error condition.
 	Code *string `type:"string"`
 
-	// A generic descritpion of the error condition in English.
+	// A generic description of the error condition in English.
 	Message *string `type:"string"`
 
 	// The ID of the request associated with the error.
@@ -6290,14 +10301,30 @@ func (s *AwsLambdaTransformation) SetFunctionPayload(v string) *AwsLambdaTransfo
 	return s
 }
 
-// A container for the bucket-level configuration.
+// A container for the bucket-level configuration for Amazon S3 Storage Lens.
+//
+// For more information about S3 Storage Lens, see Assessing your storage activity
+// and usage with S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens.html)
+// in the Amazon S3 User Guide.
 type BucketLevel struct {
 	_ struct{} `type:"structure"`
 
-	// A container for the bucket-level activity metrics for Amazon S3 Storage Lens
+	// A container for the bucket-level activity metrics for S3 Storage Lens.
 	ActivityMetrics *ActivityMetrics `type:"structure"`
 
-	// A container for the bucket-level prefix-level metrics for S3 Storage Lens
+	// A container for bucket-level advanced cost-optimization metrics for S3 Storage
+	// Lens.
+	AdvancedCostOptimizationMetrics *AdvancedCostOptimizationMetrics `type:"structure"`
+
+	// A container for bucket-level advanced data-protection metrics for S3 Storage
+	// Lens.
+	AdvancedDataProtectionMetrics *AdvancedDataProtectionMetrics `type:"structure"`
+
+	// A container for bucket-level detailed status code metrics for S3 Storage
+	// Lens.
+	DetailedStatusCodesMetrics *DetailedStatusCodesMetrics `type:"structure"`
+
+	// A container for the prefix-level metrics for S3 Storage Lens.
 	PrefixLevel *PrefixLevel `type:"structure"`
 }
 
@@ -6337,6 +10364,24 @@ func (s *BucketLevel) Validate() error {
 // SetActivityMetrics sets the ActivityMetrics field's value.
 func (s *BucketLevel) SetActivityMetrics(v *ActivityMetrics) *BucketLevel {
 	s.ActivityMetrics = v
+	return s
+}
+
+// SetAdvancedCostOptimizationMetrics sets the AdvancedCostOptimizationMetrics field's value.
+func (s *BucketLevel) SetAdvancedCostOptimizationMetrics(v *AdvancedCostOptimizationMetrics) *BucketLevel {
+	s.AdvancedCostOptimizationMetrics = v
+	return s
+}
+
+// SetAdvancedDataProtectionMetrics sets the AdvancedDataProtectionMetrics field's value.
+func (s *BucketLevel) SetAdvancedDataProtectionMetrics(v *AdvancedDataProtectionMetrics) *BucketLevel {
+	s.AdvancedDataProtectionMetrics = v
+	return s
+}
+
+// SetDetailedStatusCodesMetrics sets the DetailedStatusCodesMetrics field's value.
+func (s *BucketLevel) SetDetailedStatusCodesMetrics(v *DetailedStatusCodesMetrics) *BucketLevel {
+	s.DetailedStatusCodesMetrics = v
 	return s
 }
 
@@ -6397,6 +10442,666 @@ func (s *CloudWatchMetrics) Validate() error {
 // SetIsEnabled sets the IsEnabled field's value.
 func (s *CloudWatchMetrics) SetIsEnabled(v bool) *CloudWatchMetrics {
 	s.IsEnabled = &v
+	return s
+}
+
+type CreateAccessGrantInput struct {
+	_ struct{} `locationName:"CreateAccessGrantRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The configuration options of the grant location. The grant location is the
+	// S3 path to the data to which you are granting access. It contains the S3SubPrefix
+	// field. The grant scope is the result of appending the subprefix to the location
+	// scope of the registered location.
+	AccessGrantsLocationConfiguration *AccessGrantsLocationConfiguration `type:"structure"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	//
+	// If you are passing the default location, you cannot create an access grant
+	// for the entire default location. You must also specify a bucket or a bucket
+	// and prefix in the Subprefix field.
+	//
+	// AccessGrantsLocationId is a required field
+	AccessGrantsLocationId *string `min:"1" type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of an Amazon Web Services IAM Identity Center
+	// application associated with your Identity Center instance. If an application
+	// ARN is included in the request to create an access grant, the grantee can
+	// only access the S3 data through this application.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The user, group, or role to which you are granting access. You can grant
+	// access to an IAM user or role. If you have added your corporate directory
+	// to Amazon Web Services IAM Identity Center and associated your Identity Center
+	// instance with your S3 Access Grants instance, the grantee can also be a corporate
+	// directory user or group.
+	//
+	// Grantee is a required field
+	Grantee *Grantee `type:"structure" required:"true"`
+
+	// The type of access that you are granting to your S3 data, which can be set
+	// to one of the following values:
+	//
+	//    * READ – Grant read-only access to the S3 data.
+	//
+	//    * WRITE – Grant write-only access to the S3 data.
+	//
+	//    * READWRITE – Grant both read and write access to the S3 data.
+	//
+	// Permission is a required field
+	Permission *string `type:"string" required:"true" enum:"Permission"`
+
+	// The type of S3SubPrefix. The only possible value is Object. Pass this value
+	// if the access grant scope is an object. Do not pass this value if the access
+	// grant scope is a bucket or a bucket and a prefix.
+	S3PrefixType *string `type:"string" enum:"S3PrefixType"`
+
+	// The Amazon Web Services resource tags that you are adding to the access grant.
+	// Each tag is a label consisting of a user-defined key and value. Tags can
+	// help you manage, identify, organize, search for, and filter resources.
+	Tags []*Tag `locationNameList:"Tag" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAccessGrantInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAccessGrantInput"}
+	if s.AccessGrantsLocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessGrantsLocationId"))
+	}
+	if s.AccessGrantsLocationId != nil && len(*s.AccessGrantsLocationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessGrantsLocationId", 1))
+	}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.Grantee == nil {
+		invalidParams.Add(request.NewErrParamRequired("Grantee"))
+	}
+	if s.Permission == nil {
+		invalidParams.Add(request.NewErrParamRequired("Permission"))
+	}
+	if s.AccessGrantsLocationConfiguration != nil {
+		if err := s.AccessGrantsLocationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("AccessGrantsLocationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessGrantsLocationConfiguration sets the AccessGrantsLocationConfiguration field's value.
+func (s *CreateAccessGrantInput) SetAccessGrantsLocationConfiguration(v *AccessGrantsLocationConfiguration) *CreateAccessGrantInput {
+	s.AccessGrantsLocationConfiguration = v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *CreateAccessGrantInput) SetAccessGrantsLocationId(v string) *CreateAccessGrantInput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *CreateAccessGrantInput) SetAccountId(v string) *CreateAccessGrantInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *CreateAccessGrantInput) SetApplicationArn(v string) *CreateAccessGrantInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetGrantee sets the Grantee field's value.
+func (s *CreateAccessGrantInput) SetGrantee(v *Grantee) *CreateAccessGrantInput {
+	s.Grantee = v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *CreateAccessGrantInput) SetPermission(v string) *CreateAccessGrantInput {
+	s.Permission = &v
+	return s
+}
+
+// SetS3PrefixType sets the S3PrefixType field's value.
+func (s *CreateAccessGrantInput) SetS3PrefixType(v string) *CreateAccessGrantInput {
+	s.S3PrefixType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAccessGrantInput) SetTags(v []*Tag) *CreateAccessGrantInput {
+	s.Tags = v
+	return s
+}
+
+func (s *CreateAccessGrantInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type CreateAccessGrantOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the access grant.
+	AccessGrantArn *string `min:"1" type:"string"`
+
+	// The ID of the access grant. S3 Access Grants auto-generates this ID when
+	// you create the access grant.
+	AccessGrantId *string `min:"1" type:"string"`
+
+	// The configuration options of the grant location. The grant location is the
+	// S3 path to the data to which you are granting access.
+	AccessGrantsLocationConfiguration *AccessGrantsLocationConfiguration `type:"structure"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an Amazon Web Services IAM Identity Center
+	// application associated with your Identity Center instance. If the grant includes
+	// an application ARN, the grantee can only access the S3 data through this
+	// application.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The date and time when you created the access grant.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The S3 path of the data to which you are granting access. It is the result
+	// of appending the Subprefix to the location scope.
+	GrantScope *string `min:"1" type:"string"`
+
+	// The user, group, or role to which you are granting access. You can grant
+	// access to an IAM user or role. If you have added your corporate directory
+	// to Amazon Web Services IAM Identity Center and associated your Identity Center
+	// instance with your S3 Access Grants instance, the grantee can also be a corporate
+	// directory user or group.
+	Grantee *Grantee `type:"structure"`
+
+	// The type of access that you are granting to your S3 data, which can be set
+	// to one of the following values:
+	//
+	//    * READ – Grant read-only access to the S3 data.
+	//
+	//    * WRITE – Grant write-only access to the S3 data.
+	//
+	//    * READWRITE – Grant both read and write access to the S3 data.
+	Permission *string `type:"string" enum:"Permission"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantArn sets the AccessGrantArn field's value.
+func (s *CreateAccessGrantOutput) SetAccessGrantArn(v string) *CreateAccessGrantOutput {
+	s.AccessGrantArn = &v
+	return s
+}
+
+// SetAccessGrantId sets the AccessGrantId field's value.
+func (s *CreateAccessGrantOutput) SetAccessGrantId(v string) *CreateAccessGrantOutput {
+	s.AccessGrantId = &v
+	return s
+}
+
+// SetAccessGrantsLocationConfiguration sets the AccessGrantsLocationConfiguration field's value.
+func (s *CreateAccessGrantOutput) SetAccessGrantsLocationConfiguration(v *AccessGrantsLocationConfiguration) *CreateAccessGrantOutput {
+	s.AccessGrantsLocationConfiguration = v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *CreateAccessGrantOutput) SetAccessGrantsLocationId(v string) *CreateAccessGrantOutput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *CreateAccessGrantOutput) SetApplicationArn(v string) *CreateAccessGrantOutput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CreateAccessGrantOutput) SetCreatedAt(v time.Time) *CreateAccessGrantOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetGrantScope sets the GrantScope field's value.
+func (s *CreateAccessGrantOutput) SetGrantScope(v string) *CreateAccessGrantOutput {
+	s.GrantScope = &v
+	return s
+}
+
+// SetGrantee sets the Grantee field's value.
+func (s *CreateAccessGrantOutput) SetGrantee(v *Grantee) *CreateAccessGrantOutput {
+	s.Grantee = v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *CreateAccessGrantOutput) SetPermission(v string) *CreateAccessGrantOutput {
+	s.Permission = &v
+	return s
+}
+
+type CreateAccessGrantsInstanceInput struct {
+	_ struct{} `locationName:"CreateAccessGrantsInstanceRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// If you would like to associate your S3 Access Grants instance with an Amazon
+	// Web Services IAM Identity Center instance, use this field to pass the Amazon
+	// Resource Name (ARN) of the Amazon Web Services IAM Identity Center instance
+	// that you are associating with your S3 Access Grants instance. An IAM Identity
+	// Center instance is your corporate identity directory that you added to the
+	// IAM Identity Center. You can use the ListInstances (https://docs.aws.amazon.com/singlesignon/latest/APIReference/API_ListInstances.html)
+	// API operation to retrieve a list of your Identity Center instances and their
+	// ARNs.
+	IdentityCenterArn *string `min:"10" type:"string"`
+
+	// The Amazon Web Services resource tags that you are adding to the S3 Access
+	// Grants instance. Each tag is a label consisting of a user-defined key and
+	// value. Tags can help you manage, identify, organize, search for, and filter
+	// resources.
+	Tags []*Tag `locationNameList:"Tag" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAccessGrantsInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAccessGrantsInstanceInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.IdentityCenterArn != nil && len(*s.IdentityCenterArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("IdentityCenterArn", 10))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *CreateAccessGrantsInstanceInput) SetAccountId(v string) *CreateAccessGrantsInstanceInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetIdentityCenterArn sets the IdentityCenterArn field's value.
+func (s *CreateAccessGrantsInstanceInput) SetIdentityCenterArn(v string) *CreateAccessGrantsInstanceInput {
+	s.IdentityCenterArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAccessGrantsInstanceInput) SetTags(v []*Tag) *CreateAccessGrantsInstanceInput {
+	s.Tags = v
+	return s
+}
+
+func (s *CreateAccessGrantsInstanceInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type CreateAccessGrantsInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the S3 Access Grants instance.
+	AccessGrantsInstanceArn *string `min:"1" type:"string"`
+
+	// The ID of the S3 Access Grants instance. The ID is default. You can have
+	// one S3 Access Grants instance per Region per account.
+	AccessGrantsInstanceId *string `min:"1" type:"string"`
+
+	// The date and time when you created the S3 Access Grants instance.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// If you associated your S3 Access Grants instance with an Amazon Web Services
+	// IAM Identity Center instance, this field returns the Amazon Resource Name
+	// (ARN) of the IAM Identity Center instance application; a subresource of the
+	// original Identity Center instance passed in the request. S3 Access Grants
+	// creates this Identity Center application for this specific S3 Access Grants
+	// instance.
+	IdentityCenterArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsInstanceArn sets the AccessGrantsInstanceArn field's value.
+func (s *CreateAccessGrantsInstanceOutput) SetAccessGrantsInstanceArn(v string) *CreateAccessGrantsInstanceOutput {
+	s.AccessGrantsInstanceArn = &v
+	return s
+}
+
+// SetAccessGrantsInstanceId sets the AccessGrantsInstanceId field's value.
+func (s *CreateAccessGrantsInstanceOutput) SetAccessGrantsInstanceId(v string) *CreateAccessGrantsInstanceOutput {
+	s.AccessGrantsInstanceId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CreateAccessGrantsInstanceOutput) SetCreatedAt(v time.Time) *CreateAccessGrantsInstanceOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIdentityCenterArn sets the IdentityCenterArn field's value.
+func (s *CreateAccessGrantsInstanceOutput) SetIdentityCenterArn(v string) *CreateAccessGrantsInstanceOutput {
+	s.IdentityCenterArn = &v
+	return s
+}
+
+type CreateAccessGrantsLocationInput struct {
+	_ struct{} `locationName:"CreateAccessGrantsLocationRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the IAM role for the registered location.
+	// S3 Access Grants assumes this role to manage access to the registered location.
+	//
+	// IAMRoleArn is a required field
+	IAMRoleArn *string `min:"1" type:"string" required:"true"`
+
+	// The S3 path to the location that you are registering. The location scope
+	// can be the default S3 location s3://, the S3 path to a bucket s3://<bucket>,
+	// or the S3 path to a bucket and prefix s3://<bucket>/<prefix>. A prefix in
+	// S3 is a string of characters at the beginning of an object key name used
+	// to organize the objects that you store in your S3 buckets. For example, object
+	// key names that start with the engineering/ prefix or object key names that
+	// start with the marketing/campaigns/ prefix.
+	//
+	// LocationScope is a required field
+	LocationScope *string `min:"1" type:"string" required:"true"`
+
+	// The Amazon Web Services resource tags that you are adding to the S3 Access
+	// Grants location. Each tag is a label consisting of a user-defined key and
+	// value. Tags can help you manage, identify, organize, search for, and filter
+	// resources.
+	Tags []*Tag `locationNameList:"Tag" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsLocationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsLocationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAccessGrantsLocationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAccessGrantsLocationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.IAMRoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IAMRoleArn"))
+	}
+	if s.IAMRoleArn != nil && len(*s.IAMRoleArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IAMRoleArn", 1))
+	}
+	if s.LocationScope == nil {
+		invalidParams.Add(request.NewErrParamRequired("LocationScope"))
+	}
+	if s.LocationScope != nil && len(*s.LocationScope) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LocationScope", 1))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *CreateAccessGrantsLocationInput) SetAccountId(v string) *CreateAccessGrantsLocationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetIAMRoleArn sets the IAMRoleArn field's value.
+func (s *CreateAccessGrantsLocationInput) SetIAMRoleArn(v string) *CreateAccessGrantsLocationInput {
+	s.IAMRoleArn = &v
+	return s
+}
+
+// SetLocationScope sets the LocationScope field's value.
+func (s *CreateAccessGrantsLocationInput) SetLocationScope(v string) *CreateAccessGrantsLocationInput {
+	s.LocationScope = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAccessGrantsLocationInput) SetTags(v []*Tag) *CreateAccessGrantsLocationInput {
+	s.Tags = v
+	return s
+}
+
+func (s *CreateAccessGrantsLocationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type CreateAccessGrantsLocationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the location you are registering.
+	AccessGrantsLocationArn *string `min:"1" type:"string"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The date and time when you registered the location.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The Amazon Resource Name (ARN) of the IAM role for the registered location.
+	// S3 Access Grants assumes this role to manage access to the registered location.
+	IAMRoleArn *string `min:"1" type:"string"`
+
+	// The S3 URI path to the location that you are registering. The location scope
+	// can be the default S3 location s3://, the S3 path to a bucket, or the S3
+	// path to a bucket and prefix. A prefix in S3 is a string of characters at
+	// the beginning of an object key name used to organize the objects that you
+	// store in your S3 buckets. For example, object key names that start with the
+	// engineering/ prefix or object key names that start with the marketing/campaigns/
+	// prefix.
+	LocationScope *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsLocationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAccessGrantsLocationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsLocationArn sets the AccessGrantsLocationArn field's value.
+func (s *CreateAccessGrantsLocationOutput) SetAccessGrantsLocationArn(v string) *CreateAccessGrantsLocationOutput {
+	s.AccessGrantsLocationArn = &v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *CreateAccessGrantsLocationOutput) SetAccessGrantsLocationId(v string) *CreateAccessGrantsLocationOutput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CreateAccessGrantsLocationOutput) SetCreatedAt(v time.Time) *CreateAccessGrantsLocationOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIAMRoleArn sets the IAMRoleArn field's value.
+func (s *CreateAccessGrantsLocationOutput) SetIAMRoleArn(v string) *CreateAccessGrantsLocationOutput {
+	s.IAMRoleArn = &v
+	return s
+}
+
+// SetLocationScope sets the LocationScope field's value.
+func (s *CreateAccessGrantsLocationOutput) SetLocationScope(v string) *CreateAccessGrantsLocationOutput {
+	s.LocationScope = &v
 	return s
 }
 
@@ -6495,6 +11200,9 @@ func (s *CreateAccessPointForObjectLambdaInput) hostLabels() map[string]string {
 type CreateAccessPointForObjectLambdaOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The alias of the Object Lambda Access Point.
+	Alias *ObjectLambdaAccessPointAlias `type:"structure"`
+
 	// Specifies the ARN for the Object Lambda Access Point.
 	ObjectLambdaAccessPointArn *string `min:"1" type:"string"`
 }
@@ -6517,6 +11225,12 @@ func (s CreateAccessPointForObjectLambdaOutput) GoString() string {
 	return s.String()
 }
 
+// SetAlias sets the Alias field's value.
+func (s *CreateAccessPointForObjectLambdaOutput) SetAlias(v *ObjectLambdaAccessPointAlias) *CreateAccessPointForObjectLambdaOutput {
+	s.Alias = v
+	return s
+}
+
 // SetObjectLambdaAccessPointArn sets the ObjectLambdaAccessPointArn field's value.
 func (s *CreateAccessPointForObjectLambdaOutput) SetObjectLambdaAccessPointArn(v string) *CreateAccessPointForObjectLambdaOutput {
 	s.ObjectLambdaAccessPointArn = &v
@@ -6526,8 +11240,8 @@ func (s *CreateAccessPointForObjectLambdaOutput) SetObjectLambdaAccessPointArn(v
 type CreateAccessPointInput struct {
 	_ struct{} `locationName:"CreateAccessPointRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
 
-	// The Amazon Web Services account ID for the owner of the bucket for which
-	// you want to create an access point.
+	// The Amazon Web Services account ID for the account that owns the specified
+	// access point.
 	//
 	// AccountId is a required field
 	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
@@ -6540,12 +11254,16 @@ type CreateAccessPointInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
 	// Bucket is a required field
 	Bucket *string `min:"3" type:"string" required:"true"`
+
+	// The Amazon Web Services account ID associated with the S3 bucket associated
+	// with this access point.
+	BucketAccountId *string `type:"string"`
 
 	// The name you want to assign to this access point.
 	//
@@ -6626,6 +11344,12 @@ func (s *CreateAccessPointInput) SetBucket(v string) *CreateAccessPointInput {
 	return s
 }
 
+// SetBucketAccountId sets the BucketAccountId field's value.
+func (s *CreateAccessPointInput) SetBucketAccountId(v string) *CreateAccessPointInput {
+	s.BucketAccountId = &v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *CreateAccessPointInput) SetName(v string) *CreateAccessPointInput {
 	s.Name = &v
@@ -6686,6 +11410,20 @@ func (s CreateAccessPointInput) updateAccountID(accountId string) (interface{}, 
 		s.AccountId = aws.String(accountId)
 		return &s, nil
 	} else if *s.AccountId != accountId {
+		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
+	}
+	return nil, nil
+}
+
+// updateBucketAccountId returns a pointer to a modified copy of input,
+// if account id is not provided, we update the account id in modified input
+// if account id is provided, but doesn't match with the one in ARN, we throw an error
+// if account id is not updated, we return nil. Note that original input is not modified.
+func (s CreateAccessPointInput) updateBucketAccountId(accountId string) (interface{}, error) {
+	if s.BucketAccountId == nil {
+		s.BucketAccountId = aws.String(accountId)
+		return &s, nil
+	} else if *s.BucketAccountId != accountId {
 		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
 	}
 	return nil, nil
@@ -6822,7 +11560,7 @@ type CreateBucketInput struct {
 
 	// The ID of the Outposts where the bucket is being created.
 	//
-	// This is required by Amazon S3 on Outposts buckets.
+	// This ID is required by Amazon S3 on Outposts buckets.
 	OutpostId *string `location:"header" locationName:"x-amz-outpost-id" min:"1" type:"string"`
 }
 
@@ -6948,7 +11686,7 @@ type CreateBucketOutput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	BucketArn *string `min:"4" type:"string"`
@@ -7336,7 +12074,7 @@ type CreateMultiRegionAccessPointInput_ struct {
 	// see The Meaning of "Public" (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html#access-control-block-public-access-policy-status)
 	// in the Amazon S3 User Guide.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This data type is not supported for Amazon S3 on Outposts.
 	PublicAccessBlock *PublicAccessBlockConfiguration `type:"structure"`
 
 	// The buckets in different Regions that are associated with the Multi-Region
@@ -7441,6 +12179,545 @@ func (s *CreateMultiRegionAccessPointOutput) SetRequestTokenARN(v string) *Creat
 	return s
 }
 
+type CreateStorageLensGroupInput struct {
+	_ struct{} `locationName:"CreateStorageLensGroupRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The Amazon Web Services account ID that the Storage Lens group is created
+	// from and associated with.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Storage Lens group configuration.
+	//
+	// StorageLensGroup is a required field
+	StorageLensGroup *StorageLensGroup `type:"structure" required:"true"`
+
+	// The Amazon Web Services resource tags that you're adding to your Storage
+	// Lens group. This parameter is optional.
+	Tags []*Tag `locationNameList:"Tag" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateStorageLensGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateStorageLensGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateStorageLensGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateStorageLensGroupInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.StorageLensGroup == nil {
+		invalidParams.Add(request.NewErrParamRequired("StorageLensGroup"))
+	}
+	if s.StorageLensGroup != nil {
+		if err := s.StorageLensGroup.Validate(); err != nil {
+			invalidParams.AddNested("StorageLensGroup", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *CreateStorageLensGroupInput) SetAccountId(v string) *CreateStorageLensGroupInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetStorageLensGroup sets the StorageLensGroup field's value.
+func (s *CreateStorageLensGroupInput) SetStorageLensGroup(v *StorageLensGroup) *CreateStorageLensGroupInput {
+	s.StorageLensGroup = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateStorageLensGroupInput) SetTags(v []*Tag) *CreateStorageLensGroupInput {
+	s.Tags = v
+	return s
+}
+
+func (s *CreateStorageLensGroupInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type CreateStorageLensGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateStorageLensGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateStorageLensGroupOutput) GoString() string {
+	return s.String()
+}
+
+// The Amazon Web Services Security Token Service temporary credential that
+// S3 Access Grants vends to grantees and client applications.
+type Credentials struct {
+	_ struct{} `type:"structure" sensitive:"true"`
+
+	// The unique access key ID of the Amazon Web Services STS temporary credential
+	// that S3 Access Grants vends to grantees and client applications.
+	//
+	// AccessKeyId is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Credentials's
+	// String and GoString methods.
+	AccessKeyId *string `type:"string" sensitive:"true"`
+
+	// The expiration date and time of the temporary credential that S3 Access Grants
+	// vends to grantees and client applications.
+	Expiration *time.Time `type:"timestamp"`
+
+	// The secret access key of the Amazon Web Services STS temporary credential
+	// that S3 Access Grants vends to grantees and client applications.
+	//
+	// SecretAccessKey is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Credentials's
+	// String and GoString methods.
+	SecretAccessKey *string `type:"string" sensitive:"true"`
+
+	// The Amazon Web Services STS temporary credential that S3 Access Grants vends
+	// to grantees and client applications.
+	//
+	// SessionToken is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by Credentials's
+	// String and GoString methods.
+	SessionToken *string `type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Credentials) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Credentials) GoString() string {
+	return s.String()
+}
+
+// SetAccessKeyId sets the AccessKeyId field's value.
+func (s *Credentials) SetAccessKeyId(v string) *Credentials {
+	s.AccessKeyId = &v
+	return s
+}
+
+// SetExpiration sets the Expiration field's value.
+func (s *Credentials) SetExpiration(v time.Time) *Credentials {
+	s.Expiration = &v
+	return s
+}
+
+// SetSecretAccessKey sets the SecretAccessKey field's value.
+func (s *Credentials) SetSecretAccessKey(v string) *Credentials {
+	s.SecretAccessKey = &v
+	return s
+}
+
+// SetSessionToken sets the SessionToken field's value.
+func (s *Credentials) SetSessionToken(v string) *Credentials {
+	s.SessionToken = &v
+	return s
+}
+
+type DeleteAccessGrantInput struct {
+	_ struct{} `locationName:"DeleteAccessGrantRequest" type:"structure"`
+
+	// The ID of the access grant. S3 Access Grants auto-generates this ID when
+	// you create the access grant.
+	//
+	// AccessGrantId is a required field
+	AccessGrantId *string `location:"uri" locationName:"id" min:"1" type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAccessGrantInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAccessGrantInput"}
+	if s.AccessGrantId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessGrantId"))
+	}
+	if s.AccessGrantId != nil && len(*s.AccessGrantId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessGrantId", 1))
+	}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessGrantId sets the AccessGrantId field's value.
+func (s *DeleteAccessGrantInput) SetAccessGrantId(v string) *DeleteAccessGrantInput {
+	s.AccessGrantId = &v
+	return s
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteAccessGrantInput) SetAccountId(v string) *DeleteAccessGrantInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *DeleteAccessGrantInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type DeleteAccessGrantOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteAccessGrantsInstanceInput struct {
+	_ struct{} `locationName:"DeleteAccessGrantsInstanceRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAccessGrantsInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAccessGrantsInstanceInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteAccessGrantsInstanceInput) SetAccountId(v string) *DeleteAccessGrantsInstanceInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *DeleteAccessGrantsInstanceInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type DeleteAccessGrantsInstanceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteAccessGrantsInstanceResourcePolicyInput struct {
+	_ struct{} `locationName:"DeleteAccessGrantsInstanceResourcePolicyRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAccessGrantsInstanceResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAccessGrantsInstanceResourcePolicyInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteAccessGrantsInstanceResourcePolicyInput) SetAccountId(v string) *DeleteAccessGrantsInstanceResourcePolicyInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *DeleteAccessGrantsInstanceResourcePolicyInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type DeleteAccessGrantsInstanceResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsInstanceResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteAccessGrantsLocationInput struct {
+	_ struct{} `locationName:"DeleteAccessGrantsLocationRequest" type:"structure"`
+
+	// The ID of the registered location that you are deregistering from your S3
+	// Access Grants instance. S3 Access Grants assigned this ID when you registered
+	// the location. S3 Access Grants assigns the ID default to the default location
+	// s3:// and assigns an auto-generated ID to other locations that you register.
+	//
+	// AccessGrantsLocationId is a required field
+	AccessGrantsLocationId *string `location:"uri" locationName:"id" min:"1" type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsLocationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsLocationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAccessGrantsLocationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAccessGrantsLocationInput"}
+	if s.AccessGrantsLocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessGrantsLocationId"))
+	}
+	if s.AccessGrantsLocationId != nil && len(*s.AccessGrantsLocationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessGrantsLocationId", 1))
+	}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *DeleteAccessGrantsLocationInput) SetAccessGrantsLocationId(v string) *DeleteAccessGrantsLocationInput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteAccessGrantsLocationInput) SetAccountId(v string) *DeleteAccessGrantsLocationInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *DeleteAccessGrantsLocationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type DeleteAccessGrantsLocationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsLocationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAccessGrantsLocationOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteAccessPointForObjectLambdaInput struct {
 	_ struct{} `locationName:"DeleteAccessPointForObjectLambdaRequest" type:"structure"`
 
@@ -7539,7 +12816,8 @@ func (s DeleteAccessPointForObjectLambdaOutput) GoString() string {
 type DeleteAccessPointInput struct {
 	_ struct{} `locationName:"DeleteAccessPointRequest" type:"structure"`
 
-	// The account ID for the account that owns the specified access point.
+	// The Amazon Web Services account ID for the account that owns the specified
+	// access point.
 	//
 	// AccountId is a required field
 	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
@@ -7552,7 +12830,7 @@ type DeleteAccessPointInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the access point accessed in the
 	// format arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/accesspoint/<my-accesspoint-name>.
-	// For example, to access the access point reports-ap through outpost my-outpost
+	// For example, to access the access point reports-ap through Outpost my-outpost
 	// owned by account 123456789012 in Region us-west-2, use the URL encoding of
 	// arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/accesspoint/reports-ap.
 	// The value must be URL encoded.
@@ -7794,7 +13072,7 @@ type DeleteAccessPointPolicyInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the access point accessed in the
 	// format arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/accesspoint/<my-accesspoint-name>.
-	// For example, to access the access point reports-ap through outpost my-outpost
+	// For example, to access the access point reports-ap through Outpost my-outpost
 	// owned by account 123456789012 in Region us-west-2, use the URL encoding of
 	// arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/accesspoint/reports-ap.
 	// The value must be URL encoded.
@@ -7940,7 +13218,7 @@ type DeleteBucketInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -8063,7 +13341,7 @@ type DeleteBucketLifecycleConfigurationInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -8230,7 +13508,7 @@ type DeleteBucketPolicyInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -8359,6 +13637,153 @@ func (s DeleteBucketPolicyOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteBucketReplicationInput struct {
+	_ struct{} `locationName:"DeleteBucketReplicationRequest" type:"structure"`
+
+	// The Amazon Web Services account ID of the Outposts bucket to delete the replication
+	// configuration for.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// Specifies the S3 on Outposts bucket to delete the replication configuration
+	// for.
+	//
+	// For using this parameter with Amazon S3 on Outposts with the REST API, you
+	// must specify the name and the x-amz-outpost-id as well.
+	//
+	// For using this parameter with S3 on Outposts with the Amazon Web Services
+	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
+	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
+	// For example, to access the bucket reports through Outpost my-outpost owned
+	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
+	// The value must be URL encoded.
+	//
+	// Bucket is a required field
+	Bucket *string `location:"uri" locationName:"name" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBucketReplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBucketReplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteBucketReplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteBucketReplicationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteBucketReplicationInput) SetAccountId(v string) *DeleteBucketReplicationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *DeleteBucketReplicationInput) SetBucket(v string) *DeleteBucketReplicationInput {
+	s.Bucket = &v
+	return s
+}
+
+func (s *DeleteBucketReplicationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+func (s *DeleteBucketReplicationInput) getEndpointARN() (arn.Resource, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	return parseEndpointARN(*s.Bucket)
+}
+
+func (s *DeleteBucketReplicationInput) hasEndpointARN() bool {
+	if s.Bucket == nil {
+		return false
+	}
+	return arn.IsARN(*s.Bucket)
+}
+
+// updateArnableField updates the value of the input field that
+// takes an ARN as an input. This method is useful to backfill
+// the parsed resource name from ARN into the input member.
+// It returns a pointer to a modified copy of input and an error.
+// Note that original input is not modified.
+func (s DeleteBucketReplicationInput) updateArnableField(v string) (interface{}, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	s.Bucket = aws.String(v)
+	return &s, nil
+}
+
+// updateAccountID returns a pointer to a modified copy of input,
+// if account id is not provided, we update the account id in modified input
+// if account id is provided, but doesn't match with the one in ARN, we throw an error
+// if account id is not updated, we return nil. Note that original input is not modified.
+func (s DeleteBucketReplicationInput) updateAccountID(accountId string) (interface{}, error) {
+	if s.AccountId == nil {
+		s.AccountId = aws.String(accountId)
+		return &s, nil
+	} else if *s.AccountId != accountId {
+		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
+	}
+	return nil, nil
+}
+
+type DeleteBucketReplicationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBucketReplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteBucketReplicationOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteBucketTaggingInput struct {
 	_ struct{} `locationName:"DeleteBucketTaggingRequest" type:"structure"`
 
@@ -8375,7 +13800,7 @@ type DeleteBucketTaggingInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -8597,6 +14022,62 @@ func (s DeleteJobTaggingOutput) String() string {
 // value will be replaced with "sensitive".
 func (s DeleteJobTaggingOutput) GoString() string {
 	return s.String()
+}
+
+// Specifies whether S3 on Outposts replicates delete markers. If you specify
+// a Filter element in your replication configuration, you must also include
+// a DeleteMarkerReplication element. If your Filter includes a Tag element,
+// the DeleteMarkerReplication element's Status child element must be set to
+// Disabled, because S3 on Outposts does not support replicating delete markers
+// for tag-based rules.
+//
+// For more information about delete marker replication, see How delete operations
+// affect replication (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsReplication.html#outposts-replication-what-is-replicated)
+// in the Amazon S3 User Guide.
+type DeleteMarkerReplication struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates whether to replicate delete markers.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"DeleteMarkerReplicationStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteMarkerReplication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteMarkerReplication) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteMarkerReplication) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteMarkerReplication"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStatus sets the Status field's value.
+func (s *DeleteMarkerReplication) SetStatus(v string) *DeleteMarkerReplication {
+	s.Status = &v
+	return s
 }
 
 type DeleteMultiRegionAccessPointInput struct {
@@ -9032,6 +14513,101 @@ func (s DeleteStorageLensConfigurationTaggingOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteStorageLensGroupInput struct {
+	_ struct{} `locationName:"DeleteStorageLensGroupRequest" type:"structure"`
+
+	// The Amazon Web Services account ID used to create the Storage Lens group
+	// that you're trying to delete.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The name of the Storage Lens group that you're trying to delete.
+	//
+	// Name is a required field
+	Name *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteStorageLensGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteStorageLensGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteStorageLensGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteStorageLensGroupInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DeleteStorageLensGroupInput) SetAccountId(v string) *DeleteStorageLensGroupInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *DeleteStorageLensGroupInput) SetName(v string) *DeleteStorageLensGroupInput {
+	s.Name = &v
+	return s
+}
+
+func (s *DeleteStorageLensGroupInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type DeleteStorageLensGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteStorageLensGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteStorageLensGroupOutput) GoString() string {
+	return s.String()
+}
+
 type DescribeJobInput struct {
 	_ struct{} `locationName:"DescribeJobRequest" type:"structure"`
 
@@ -9244,6 +14820,300 @@ func (s *DescribeMultiRegionAccessPointOperationOutput) SetAsyncOperation(v *Asy
 	return s
 }
 
+// Specifies information about the replication destination bucket and its settings
+// for an S3 on Outposts replication configuration.
+type Destination struct {
+	_ struct{} `type:"structure"`
+
+	// Specify this property only in a cross-account scenario (where the source
+	// and destination bucket owners are not the same), and you want to change replica
+	// ownership to the Amazon Web Services account that owns the destination bucket.
+	// If this property is not specified in the replication configuration, the replicas
+	// are owned by same Amazon Web Services account that owns the source object.
+	//
+	// This is not supported by Amazon S3 on Outposts buckets.
+	AccessControlTranslation *AccessControlTranslation `type:"structure"`
+
+	// The destination bucket owner's account ID.
+	Account *string `type:"string"`
+
+	// The Amazon Resource Name (ARN) of the access point for the destination bucket
+	// where you want S3 on Outposts to store the replication results.
+	//
+	// Bucket is a required field
+	Bucket *string `type:"string" required:"true"`
+
+	// A container that provides information about encryption. If SourceSelectionCriteria
+	// is specified, you must specify this element.
+	//
+	// This is not supported by Amazon S3 on Outposts buckets.
+	EncryptionConfiguration *EncryptionConfiguration `type:"structure"`
+
+	// A container that specifies replication metrics-related settings.
+	Metrics *Metrics `type:"structure"`
+
+	// A container that specifies S3 Replication Time Control (S3 RTC) settings,
+	// including whether S3 RTC is enabled and the time when all objects and operations
+	// on objects must be replicated. Must be specified together with a Metrics
+	// block.
+	//
+	// This is not supported by Amazon S3 on Outposts buckets.
+	ReplicationTime *ReplicationTime `type:"structure"`
+
+	// The storage class to use when replicating objects. All objects stored on
+	// S3 on Outposts are stored in the OUTPOSTS storage class. S3 on Outposts uses
+	// the OUTPOSTS storage class to create the object replicas.
+	//
+	// Values other than OUTPOSTS aren't supported by Amazon S3 on Outposts.
+	StorageClass *string `type:"string" enum:"ReplicationStorageClass"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Destination) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Destination) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Destination) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Destination"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.AccessControlTranslation != nil {
+		if err := s.AccessControlTranslation.Validate(); err != nil {
+			invalidParams.AddNested("AccessControlTranslation", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Metrics != nil {
+		if err := s.Metrics.Validate(); err != nil {
+			invalidParams.AddNested("Metrics", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ReplicationTime != nil {
+		if err := s.ReplicationTime.Validate(); err != nil {
+			invalidParams.AddNested("ReplicationTime", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessControlTranslation sets the AccessControlTranslation field's value.
+func (s *Destination) SetAccessControlTranslation(v *AccessControlTranslation) *Destination {
+	s.AccessControlTranslation = v
+	return s
+}
+
+// SetAccount sets the Account field's value.
+func (s *Destination) SetAccount(v string) *Destination {
+	s.Account = &v
+	return s
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *Destination) SetBucket(v string) *Destination {
+	s.Bucket = &v
+	return s
+}
+
+// SetEncryptionConfiguration sets the EncryptionConfiguration field's value.
+func (s *Destination) SetEncryptionConfiguration(v *EncryptionConfiguration) *Destination {
+	s.EncryptionConfiguration = v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *Destination) SetMetrics(v *Metrics) *Destination {
+	s.Metrics = v
+	return s
+}
+
+// SetReplicationTime sets the ReplicationTime field's value.
+func (s *Destination) SetReplicationTime(v *ReplicationTime) *Destination {
+	s.ReplicationTime = v
+	return s
+}
+
+// SetStorageClass sets the StorageClass field's value.
+func (s *Destination) SetStorageClass(v string) *Destination {
+	s.StorageClass = &v
+	return s
+}
+
+// The container element for Amazon S3 Storage Lens detailed status code metrics.
+// Detailed status code metrics generate metrics for HTTP status codes, such
+// as 200 OK, 403 Forbidden, 503 Service Unavailable and others.
+//
+// For more information about S3 Storage Lens, see Assessing your storage activity
+// and usage with S3 Storage Lens (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens.html)
+// in the Amazon S3 User Guide. For a complete list of S3 Storage Lens metrics,
+// see S3 Storage Lens metrics glossary (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage_lens_metrics_glossary.html)
+// in the Amazon S3 User Guide.
+type DetailedStatusCodesMetrics struct {
+	_ struct{} `type:"structure"`
+
+	// A container that indicates whether detailed status code metrics are enabled.
+	IsEnabled *bool `type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetailedStatusCodesMetrics) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DetailedStatusCodesMetrics) GoString() string {
+	return s.String()
+}
+
+// SetIsEnabled sets the IsEnabled field's value.
+func (s *DetailedStatusCodesMetrics) SetIsEnabled(v bool) *DetailedStatusCodesMetrics {
+	s.IsEnabled = &v
+	return s
+}
+
+type DissociateAccessGrantsIdentityCenterInput struct {
+	_ struct{} `locationName:"DissociateAccessGrantsIdentityCenterRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DissociateAccessGrantsIdentityCenterInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DissociateAccessGrantsIdentityCenterInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DissociateAccessGrantsIdentityCenterInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DissociateAccessGrantsIdentityCenterInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *DissociateAccessGrantsIdentityCenterInput) SetAccountId(v string) *DissociateAccessGrantsIdentityCenterInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *DissociateAccessGrantsIdentityCenterInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type DissociateAccessGrantsIdentityCenterOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DissociateAccessGrantsIdentityCenterOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DissociateAccessGrantsIdentityCenterOutput) GoString() string {
+	return s.String()
+}
+
+// Specifies encryption-related information for an Amazon S3 bucket that is
+// a destination for replicated objects.
+//
+// This is not supported by Amazon S3 on Outposts buckets.
+type EncryptionConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the ID of the customer managed KMS key that's stored in Key Management
+	// Service (KMS) for the destination bucket. This ID is either the Amazon Resource
+	// Name (ARN) for the KMS key or the alias ARN for the KMS key. Amazon S3 uses
+	// this KMS key to encrypt replica objects. Amazon S3 supports only symmetric
+	// encryption KMS keys. For more information, see Symmetric encryption KMS keys
+	// (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#symmetric-cmks)
+	// in the Amazon Web Services Key Management Service Developer Guide.
+	ReplicaKmsKeyID *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EncryptionConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EncryptionConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetReplicaKmsKeyID sets the ReplicaKmsKeyID field's value.
+func (s *EncryptionConfiguration) SetReplicaKmsKeyID(v string) *EncryptionConfiguration {
+	s.ReplicaKmsKeyID = &v
+	return s
+}
+
 // The last established access control policy for a Multi-Region Access Point.
 //
 // When you update the policy, the update is first listed as the proposed policy.
@@ -9322,6 +15192,55 @@ func (s *Exclude) SetRegions(v []*string) *Exclude {
 	return s
 }
 
+// An optional configuration to replicate existing source bucket objects.
+//
+// This is not supported by Amazon S3 on Outposts buckets.
+type ExistingObjectReplication struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether Amazon S3 replicates existing source bucket objects.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"ExistingObjectReplicationStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExistingObjectReplication) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExistingObjectReplication) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExistingObjectReplication) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExistingObjectReplication"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStatus sets the Status field's value.
+func (s *ExistingObjectReplication) SetStatus(v string) *ExistingObjectReplication {
+	s.Status = &v
+	return s
+}
+
 // The encryption configuration to use when storing the generated manifest.
 type GeneratedManifestEncryption struct {
 	_ struct{} `type:"structure"`
@@ -9376,6 +15295,690 @@ func (s *GeneratedManifestEncryption) SetSSEKMS(v *SSEKMSEncryption) *GeneratedM
 // SetSSES3 sets the SSES3 field's value.
 func (s *GeneratedManifestEncryption) SetSSES3(v *SSES3Encryption) *GeneratedManifestEncryption {
 	s.SSES3 = v
+	return s
+}
+
+type GetAccessGrantInput struct {
+	_ struct{} `locationName:"GetAccessGrantRequest" type:"structure"`
+
+	// The ID of the access grant. S3 Access Grants auto-generates this ID when
+	// you create the access grant.
+	//
+	// AccessGrantId is a required field
+	AccessGrantId *string `location:"uri" locationName:"id" min:"1" type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAccessGrantInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAccessGrantInput"}
+	if s.AccessGrantId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessGrantId"))
+	}
+	if s.AccessGrantId != nil && len(*s.AccessGrantId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessGrantId", 1))
+	}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessGrantId sets the AccessGrantId field's value.
+func (s *GetAccessGrantInput) SetAccessGrantId(v string) *GetAccessGrantInput {
+	s.AccessGrantId = &v
+	return s
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetAccessGrantInput) SetAccountId(v string) *GetAccessGrantInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *GetAccessGrantInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetAccessGrantOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the access grant.
+	AccessGrantArn *string `min:"1" type:"string"`
+
+	// The ID of the access grant. S3 Access Grants auto-generates this ID when
+	// you create the access grant.
+	AccessGrantId *string `min:"1" type:"string"`
+
+	// The configuration options of the grant location. The grant location is the
+	// S3 path to the data to which you are granting access.
+	AccessGrantsLocationConfiguration *AccessGrantsLocationConfiguration `type:"structure"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an Amazon Web Services IAM Identity Center
+	// application associated with your Identity Center instance. If the grant includes
+	// an application ARN, the grantee can only access the S3 data through this
+	// application.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The date and time when you created the access grant.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The S3 path of the data to which you are granting access. It is the result
+	// of appending the Subprefix to the location scope.
+	GrantScope *string `min:"1" type:"string"`
+
+	// The user, group, or role to which you are granting access. You can grant
+	// access to an IAM user or role. If you have added a corporate directory to
+	// Amazon Web Services IAM Identity Center and associated this Identity Center
+	// instance with the S3 Access Grants instance, the grantee can also be a corporate
+	// directory user or group.
+	Grantee *Grantee `type:"structure"`
+
+	// The type of permission that was granted in the access grant. Can be one of
+	// the following values:
+	//
+	//    * READ – Grant read-only access to the S3 data.
+	//
+	//    * WRITE – Grant write-only access to the S3 data.
+	//
+	//    * READWRITE – Grant both read and write access to the S3 data.
+	Permission *string `type:"string" enum:"Permission"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantArn sets the AccessGrantArn field's value.
+func (s *GetAccessGrantOutput) SetAccessGrantArn(v string) *GetAccessGrantOutput {
+	s.AccessGrantArn = &v
+	return s
+}
+
+// SetAccessGrantId sets the AccessGrantId field's value.
+func (s *GetAccessGrantOutput) SetAccessGrantId(v string) *GetAccessGrantOutput {
+	s.AccessGrantId = &v
+	return s
+}
+
+// SetAccessGrantsLocationConfiguration sets the AccessGrantsLocationConfiguration field's value.
+func (s *GetAccessGrantOutput) SetAccessGrantsLocationConfiguration(v *AccessGrantsLocationConfiguration) *GetAccessGrantOutput {
+	s.AccessGrantsLocationConfiguration = v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *GetAccessGrantOutput) SetAccessGrantsLocationId(v string) *GetAccessGrantOutput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *GetAccessGrantOutput) SetApplicationArn(v string) *GetAccessGrantOutput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetAccessGrantOutput) SetCreatedAt(v time.Time) *GetAccessGrantOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetGrantScope sets the GrantScope field's value.
+func (s *GetAccessGrantOutput) SetGrantScope(v string) *GetAccessGrantOutput {
+	s.GrantScope = &v
+	return s
+}
+
+// SetGrantee sets the Grantee field's value.
+func (s *GetAccessGrantOutput) SetGrantee(v *Grantee) *GetAccessGrantOutput {
+	s.Grantee = v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *GetAccessGrantOutput) SetPermission(v string) *GetAccessGrantOutput {
+	s.Permission = &v
+	return s
+}
+
+type GetAccessGrantsInstanceForPrefixInput struct {
+	_ struct{} `locationName:"GetAccessGrantsInstanceForPrefixRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The S3 prefix of the access grants that you would like to retrieve.
+	//
+	// S3Prefix is a required field
+	S3Prefix *string `location:"querystring" locationName:"s3prefix" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceForPrefixInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceForPrefixInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAccessGrantsInstanceForPrefixInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAccessGrantsInstanceForPrefixInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.S3Prefix == nil {
+		invalidParams.Add(request.NewErrParamRequired("S3Prefix"))
+	}
+	if s.S3Prefix != nil && len(*s.S3Prefix) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("S3Prefix", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetAccessGrantsInstanceForPrefixInput) SetAccountId(v string) *GetAccessGrantsInstanceForPrefixInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetS3Prefix sets the S3Prefix field's value.
+func (s *GetAccessGrantsInstanceForPrefixInput) SetS3Prefix(v string) *GetAccessGrantsInstanceForPrefixInput {
+	s.S3Prefix = &v
+	return s
+}
+
+func (s *GetAccessGrantsInstanceForPrefixInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetAccessGrantsInstanceForPrefixOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the S3 Access Grants instance.
+	AccessGrantsInstanceArn *string `min:"1" type:"string"`
+
+	// The ID of the S3 Access Grants instance. The ID is default. You can have
+	// one S3 Access Grants instance per Region per account.
+	AccessGrantsInstanceId *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceForPrefixOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceForPrefixOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsInstanceArn sets the AccessGrantsInstanceArn field's value.
+func (s *GetAccessGrantsInstanceForPrefixOutput) SetAccessGrantsInstanceArn(v string) *GetAccessGrantsInstanceForPrefixOutput {
+	s.AccessGrantsInstanceArn = &v
+	return s
+}
+
+// SetAccessGrantsInstanceId sets the AccessGrantsInstanceId field's value.
+func (s *GetAccessGrantsInstanceForPrefixOutput) SetAccessGrantsInstanceId(v string) *GetAccessGrantsInstanceForPrefixOutput {
+	s.AccessGrantsInstanceId = &v
+	return s
+}
+
+type GetAccessGrantsInstanceInput struct {
+	_ struct{} `locationName:"GetAccessGrantsInstanceRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAccessGrantsInstanceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAccessGrantsInstanceInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetAccessGrantsInstanceInput) SetAccountId(v string) *GetAccessGrantsInstanceInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *GetAccessGrantsInstanceInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetAccessGrantsInstanceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the S3 Access Grants instance.
+	AccessGrantsInstanceArn *string `min:"1" type:"string"`
+
+	// The ID of the S3 Access Grants instance. The ID is default. You can have
+	// one S3 Access Grants instance per Region per account.
+	AccessGrantsInstanceId *string `min:"1" type:"string"`
+
+	// The date and time when you created the S3 Access Grants instance.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// If you associated your S3 Access Grants instance with an Amazon Web Services
+	// IAM Identity Center instance, this field returns the Amazon Resource Name
+	// (ARN) of the Amazon Web Services IAM Identity Center instance application;
+	// a subresource of the original Identity Center instance. S3 Access Grants
+	// creates this Identity Center application for the specific S3 Access Grants
+	// instance.
+	IdentityCenterArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsInstanceArn sets the AccessGrantsInstanceArn field's value.
+func (s *GetAccessGrantsInstanceOutput) SetAccessGrantsInstanceArn(v string) *GetAccessGrantsInstanceOutput {
+	s.AccessGrantsInstanceArn = &v
+	return s
+}
+
+// SetAccessGrantsInstanceId sets the AccessGrantsInstanceId field's value.
+func (s *GetAccessGrantsInstanceOutput) SetAccessGrantsInstanceId(v string) *GetAccessGrantsInstanceOutput {
+	s.AccessGrantsInstanceId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetAccessGrantsInstanceOutput) SetCreatedAt(v time.Time) *GetAccessGrantsInstanceOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIdentityCenterArn sets the IdentityCenterArn field's value.
+func (s *GetAccessGrantsInstanceOutput) SetIdentityCenterArn(v string) *GetAccessGrantsInstanceOutput {
+	s.IdentityCenterArn = &v
+	return s
+}
+
+type GetAccessGrantsInstanceResourcePolicyInput struct {
+	_ struct{} `locationName:"GetAccessGrantsInstanceResourcePolicyRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAccessGrantsInstanceResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAccessGrantsInstanceResourcePolicyInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetAccessGrantsInstanceResourcePolicyInput) SetAccountId(v string) *GetAccessGrantsInstanceResourcePolicyInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *GetAccessGrantsInstanceResourcePolicyInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetAccessGrantsInstanceResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when you created the S3 Access Grants instance resource
+	// policy.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The Organization of the resource policy of the S3 Access Grants instance.
+	Organization *string `min:"12" type:"string"`
+
+	// The resource policy of the S3 Access Grants instance.
+	Policy *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsInstanceResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetAccessGrantsInstanceResourcePolicyOutput) SetCreatedAt(v time.Time) *GetAccessGrantsInstanceResourcePolicyOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetOrganization sets the Organization field's value.
+func (s *GetAccessGrantsInstanceResourcePolicyOutput) SetOrganization(v string) *GetAccessGrantsInstanceResourcePolicyOutput {
+	s.Organization = &v
+	return s
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *GetAccessGrantsInstanceResourcePolicyOutput) SetPolicy(v string) *GetAccessGrantsInstanceResourcePolicyOutput {
+	s.Policy = &v
+	return s
+}
+
+type GetAccessGrantsLocationInput struct {
+	_ struct{} `locationName:"GetAccessGrantsLocationRequest" type:"structure"`
+
+	// The ID of the registered location that you are retrieving. S3 Access Grants
+	// assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	//
+	// AccessGrantsLocationId is a required field
+	AccessGrantsLocationId *string `location:"uri" locationName:"id" min:"1" type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsLocationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsLocationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetAccessGrantsLocationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetAccessGrantsLocationInput"}
+	if s.AccessGrantsLocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessGrantsLocationId"))
+	}
+	if s.AccessGrantsLocationId != nil && len(*s.AccessGrantsLocationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessGrantsLocationId", 1))
+	}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *GetAccessGrantsLocationInput) SetAccessGrantsLocationId(v string) *GetAccessGrantsLocationInput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetAccessGrantsLocationInput) SetAccountId(v string) *GetAccessGrantsLocationInput {
+	s.AccountId = &v
+	return s
+}
+
+func (s *GetAccessGrantsLocationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetAccessGrantsLocationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the registered location.
+	AccessGrantsLocationArn *string `min:"1" type:"string"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The date and time when you registered the location.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The Amazon Resource Name (ARN) of the IAM role for the registered location.
+	// S3 Access Grants assumes this role to manage access to the registered location.
+	IAMRoleArn *string `min:"1" type:"string"`
+
+	// The S3 URI path to the registered location. The location scope can be the
+	// default S3 location s3://, the S3 path to a bucket, or the S3 path to a bucket
+	// and prefix. A prefix in S3 is a string of characters at the beginning of
+	// an object key name used to organize the objects that you store in your S3
+	// buckets. For example, object key names that start with the engineering/ prefix
+	// or object key names that start with the marketing/campaigns/ prefix.
+	LocationScope *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsLocationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetAccessGrantsLocationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsLocationArn sets the AccessGrantsLocationArn field's value.
+func (s *GetAccessGrantsLocationOutput) SetAccessGrantsLocationArn(v string) *GetAccessGrantsLocationOutput {
+	s.AccessGrantsLocationArn = &v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *GetAccessGrantsLocationOutput) SetAccessGrantsLocationId(v string) *GetAccessGrantsLocationOutput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *GetAccessGrantsLocationOutput) SetCreatedAt(v time.Time) *GetAccessGrantsLocationOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIAMRoleArn sets the IAMRoleArn field's value.
+func (s *GetAccessGrantsLocationOutput) SetIAMRoleArn(v string) *GetAccessGrantsLocationOutput {
+	s.IAMRoleArn = &v
+	return s
+}
+
+// SetLocationScope sets the LocationScope field's value.
+func (s *GetAccessGrantsLocationOutput) SetLocationScope(v string) *GetAccessGrantsLocationOutput {
+	s.LocationScope = &v
 	return s
 }
 
@@ -9560,6 +16163,9 @@ func (s *GetAccessPointForObjectLambdaInput) hostLabels() map[string]string {
 type GetAccessPointForObjectLambdaOutput struct {
 	_ struct{} `type:"structure"`
 
+	// The alias of the Object Lambda Access Point.
+	Alias *ObjectLambdaAccessPointAlias `type:"structure"`
+
 	// The date and time when the specified Object Lambda Access Point was created.
 	CreationDate *time.Time `type:"timestamp"`
 
@@ -9589,6 +16195,12 @@ func (s GetAccessPointForObjectLambdaOutput) GoString() string {
 	return s.String()
 }
 
+// SetAlias sets the Alias field's value.
+func (s *GetAccessPointForObjectLambdaOutput) SetAlias(v *ObjectLambdaAccessPointAlias) *GetAccessPointForObjectLambdaOutput {
+	s.Alias = v
+	return s
+}
+
 // SetCreationDate sets the CreationDate field's value.
 func (s *GetAccessPointForObjectLambdaOutput) SetCreationDate(v time.Time) *GetAccessPointForObjectLambdaOutput {
 	s.CreationDate = &v
@@ -9610,7 +16222,8 @@ func (s *GetAccessPointForObjectLambdaOutput) SetPublicAccessBlockConfiguration(
 type GetAccessPointInput struct {
 	_ struct{} `locationName:"GetAccessPointRequest" type:"structure"`
 
-	// The account ID for the account that owns the specified access point.
+	// The Amazon Web Services account ID for the account that owns the specified
+	// access point.
 	//
 	// AccountId is a required field
 	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
@@ -9624,7 +16237,7 @@ type GetAccessPointInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the access point accessed in the
 	// format arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/accesspoint/<my-accesspoint-name>.
-	// For example, to access the access point reports-ap through outpost my-outpost
+	// For example, to access the access point reports-ap through Outpost my-outpost
 	// owned by account 123456789012 in Region us-west-2, use the URL encoding of
 	// arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/accesspoint/reports-ap.
 	// The value must be URL encoded.
@@ -9744,6 +16357,10 @@ type GetAccessPointOutput struct {
 	// The name of the bucket associated with the specified access point.
 	Bucket *string `min:"3" type:"string"`
 
+	// The Amazon Web Services account ID associated with the S3 bucket associated
+	// with this access point.
+	BucketAccountId *string `type:"string"`
+
 	// The date and time when the specified access point was created.
 	CreationDate *time.Time `type:"timestamp"`
 
@@ -9768,7 +16385,7 @@ type GetAccessPointOutput struct {
 	// see The Meaning of "Public" (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html#access-control-block-public-access-policy-status)
 	// in the Amazon S3 User Guide.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This data type is not supported for Amazon S3 on Outposts.
 	PublicAccessBlockConfiguration *PublicAccessBlockConfiguration `type:"structure"`
 
 	// Contains the virtual private cloud (VPC) configuration for the specified
@@ -9812,6 +16429,12 @@ func (s *GetAccessPointOutput) SetAlias(v string) *GetAccessPointOutput {
 // SetBucket sets the Bucket field's value.
 func (s *GetAccessPointOutput) SetBucket(v string) *GetAccessPointOutput {
 	s.Bucket = &v
+	return s
+}
+
+// SetBucketAccountId sets the BucketAccountId field's value.
+func (s *GetAccessPointOutput) SetBucketAccountId(v string) *GetAccessPointOutput {
+	s.BucketAccountId = &v
 	return s
 }
 
@@ -9971,7 +16594,7 @@ type GetAccessPointPolicyInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the access point accessed in the
 	// format arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/accesspoint/<my-accesspoint-name>.
-	// For example, to access the access point reports-ap through outpost my-outpost
+	// For example, to access the access point reports-ap through Outpost my-outpost
 	// owned by account 123456789012 in Region us-west-2, use the URL encoding of
 	// arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/accesspoint/reports-ap.
 	// The value must be URL encoded.
@@ -10336,7 +16959,7 @@ type GetBucketInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -10459,7 +17082,7 @@ type GetBucketLifecycleConfigurationInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -10661,7 +17284,7 @@ type GetBucketPolicyInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -10799,6 +17422,162 @@ func (s *GetBucketPolicyOutput) SetPolicy(v string) *GetBucketPolicyOutput {
 	return s
 }
 
+type GetBucketReplicationInput struct {
+	_ struct{} `locationName:"GetBucketReplicationRequest" type:"structure"`
+
+	// The Amazon Web Services account ID of the Outposts bucket.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// Specifies the bucket to get the replication information for.
+	//
+	// For using this parameter with Amazon S3 on Outposts with the REST API, you
+	// must specify the name and the x-amz-outpost-id as well.
+	//
+	// For using this parameter with S3 on Outposts with the Amazon Web Services
+	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
+	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
+	// For example, to access the bucket reports through Outpost my-outpost owned
+	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
+	// The value must be URL encoded.
+	//
+	// Bucket is a required field
+	Bucket *string `location:"uri" locationName:"name" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketReplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketReplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketReplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketReplicationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetBucketReplicationInput) SetAccountId(v string) *GetBucketReplicationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *GetBucketReplicationInput) SetBucket(v string) *GetBucketReplicationInput {
+	s.Bucket = &v
+	return s
+}
+
+func (s *GetBucketReplicationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+func (s *GetBucketReplicationInput) getEndpointARN() (arn.Resource, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	return parseEndpointARN(*s.Bucket)
+}
+
+func (s *GetBucketReplicationInput) hasEndpointARN() bool {
+	if s.Bucket == nil {
+		return false
+	}
+	return arn.IsARN(*s.Bucket)
+}
+
+// updateArnableField updates the value of the input field that
+// takes an ARN as an input. This method is useful to backfill
+// the parsed resource name from ARN into the input member.
+// It returns a pointer to a modified copy of input and an error.
+// Note that original input is not modified.
+func (s GetBucketReplicationInput) updateArnableField(v string) (interface{}, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	s.Bucket = aws.String(v)
+	return &s, nil
+}
+
+// updateAccountID returns a pointer to a modified copy of input,
+// if account id is not provided, we update the account id in modified input
+// if account id is provided, but doesn't match with the one in ARN, we throw an error
+// if account id is not updated, we return nil. Note that original input is not modified.
+func (s GetBucketReplicationInput) updateAccountID(accountId string) (interface{}, error) {
+	if s.AccountId == nil {
+		s.AccountId = aws.String(accountId)
+		return &s, nil
+	} else if *s.AccountId != accountId {
+		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
+	}
+	return nil, nil
+}
+
+type GetBucketReplicationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container for one or more replication rules. A replication configuration
+	// must have at least one rule and you can add up to 100 rules. The maximum
+	// size of a replication configuration is 128 KB.
+	ReplicationConfiguration *ReplicationConfiguration `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketReplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketReplicationOutput) GoString() string {
+	return s.String()
+}
+
+// SetReplicationConfiguration sets the ReplicationConfiguration field's value.
+func (s *GetBucketReplicationOutput) SetReplicationConfiguration(v *ReplicationConfiguration) *GetBucketReplicationOutput {
+	s.ReplicationConfiguration = v
+	return s
+}
+
 type GetBucketTaggingInput struct {
 	_ struct{} `locationName:"GetBucketTaggingRequest" type:"structure"`
 
@@ -10815,7 +17594,7 @@ type GetBucketTaggingInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -10952,6 +17731,346 @@ func (s GetBucketTaggingOutput) GoString() string {
 // SetTagSet sets the TagSet field's value.
 func (s *GetBucketTaggingOutput) SetTagSet(v []*S3Tag) *GetBucketTaggingOutput {
 	s.TagSet = v
+	return s
+}
+
+type GetBucketVersioningInput struct {
+	_ struct{} `locationName:"GetBucketVersioningRequest" type:"structure"`
+
+	// The Amazon Web Services account ID of the S3 on Outposts bucket.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The S3 on Outposts bucket to return the versioning state for.
+	//
+	// Bucket is a required field
+	Bucket *string `location:"uri" locationName:"name" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketVersioningInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketVersioningInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetBucketVersioningInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetBucketVersioningInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetBucketVersioningInput) SetAccountId(v string) *GetBucketVersioningInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *GetBucketVersioningInput) SetBucket(v string) *GetBucketVersioningInput {
+	s.Bucket = &v
+	return s
+}
+
+func (s *GetBucketVersioningInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+func (s *GetBucketVersioningInput) getEndpointARN() (arn.Resource, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	return parseEndpointARN(*s.Bucket)
+}
+
+func (s *GetBucketVersioningInput) hasEndpointARN() bool {
+	if s.Bucket == nil {
+		return false
+	}
+	return arn.IsARN(*s.Bucket)
+}
+
+// updateArnableField updates the value of the input field that
+// takes an ARN as an input. This method is useful to backfill
+// the parsed resource name from ARN into the input member.
+// It returns a pointer to a modified copy of input and an error.
+// Note that original input is not modified.
+func (s GetBucketVersioningInput) updateArnableField(v string) (interface{}, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	s.Bucket = aws.String(v)
+	return &s, nil
+}
+
+// updateAccountID returns a pointer to a modified copy of input,
+// if account id is not provided, we update the account id in modified input
+// if account id is provided, but doesn't match with the one in ARN, we throw an error
+// if account id is not updated, we return nil. Note that original input is not modified.
+func (s GetBucketVersioningInput) updateAccountID(accountId string) (interface{}, error) {
+	if s.AccountId == nil {
+		s.AccountId = aws.String(accountId)
+		return &s, nil
+	} else if *s.AccountId != accountId {
+		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
+	}
+	return nil, nil
+}
+
+type GetBucketVersioningOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether MFA delete is enabled in the bucket versioning configuration.
+	// This element is returned only if the bucket has been configured with MFA
+	// delete. If MFA delete has never been configured for the bucket, this element
+	// is not returned.
+	MFADelete *string `locationName:"MfaDelete" type:"string" enum:"MFADeleteStatus"`
+
+	// The versioning state of the S3 on Outposts bucket.
+	Status *string `type:"string" enum:"BucketVersioningStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketVersioningOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetBucketVersioningOutput) GoString() string {
+	return s.String()
+}
+
+// SetMFADelete sets the MFADelete field's value.
+func (s *GetBucketVersioningOutput) SetMFADelete(v string) *GetBucketVersioningOutput {
+	s.MFADelete = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *GetBucketVersioningOutput) SetStatus(v string) *GetBucketVersioningOutput {
+	s.Status = &v
+	return s
+}
+
+type GetDataAccessInput struct {
+	_ struct{} `locationName:"GetDataAccessRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The session duration, in seconds, of the temporary access credential that
+	// S3 Access Grants vends to the grantee or client application. The default
+	// value is 1 hour, but the grantee can specify a range from 900 seconds (15
+	// minutes) up to 43200 seconds (12 hours). If the grantee requests a value
+	// higher than this maximum, the operation fails.
+	DurationSeconds *int64 `location:"querystring" locationName:"durationSeconds" min:"900" type:"integer"`
+
+	// The type of permission granted to your S3 data, which can be set to one of
+	// the following values:
+	//
+	//    * READ – Grant read-only access to the S3 data.
+	//
+	//    * WRITE – Grant write-only access to the S3 data.
+	//
+	//    * READWRITE – Grant both read and write access to the S3 data.
+	//
+	// Permission is a required field
+	Permission *string `location:"querystring" locationName:"permission" type:"string" required:"true" enum:"Permission"`
+
+	// The scope of the temporary access credential that S3 Access Grants vends
+	// to the grantee or client application.
+	//
+	//    * Default – The scope of the returned temporary access token is the
+	//    scope of the grant that is closest to the target scope.
+	//
+	//    * Minimal – The scope of the returned temporary access token is the
+	//    same as the requested target scope as long as the requested scope is the
+	//    same as or a subset of the grant scope.
+	Privilege *string `location:"querystring" locationName:"privilege" type:"string" enum:"Privilege"`
+
+	// The S3 URI path of the data to which you are requesting temporary access
+	// credentials. If the requesting account has an access grant for this data,
+	// S3 Access Grants vends temporary access credentials in the response.
+	//
+	// Target is a required field
+	Target *string `location:"querystring" locationName:"target" min:"1" type:"string" required:"true"`
+
+	// The type of Target. The only possible value is Object. Pass this value if
+	// the target data that you would like to access is a path to an object. Do
+	// not pass this value if the target data is a bucket or a bucket and a prefix.
+	TargetType *string `location:"querystring" locationName:"targetType" type:"string" enum:"S3PrefixType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDataAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDataAccessInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.DurationSeconds != nil && *s.DurationSeconds < 900 {
+		invalidParams.Add(request.NewErrParamMinValue("DurationSeconds", 900))
+	}
+	if s.Permission == nil {
+		invalidParams.Add(request.NewErrParamRequired("Permission"))
+	}
+	if s.Target == nil {
+		invalidParams.Add(request.NewErrParamRequired("Target"))
+	}
+	if s.Target != nil && len(*s.Target) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Target", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetDataAccessInput) SetAccountId(v string) *GetDataAccessInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetDurationSeconds sets the DurationSeconds field's value.
+func (s *GetDataAccessInput) SetDurationSeconds(v int64) *GetDataAccessInput {
+	s.DurationSeconds = &v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *GetDataAccessInput) SetPermission(v string) *GetDataAccessInput {
+	s.Permission = &v
+	return s
+}
+
+// SetPrivilege sets the Privilege field's value.
+func (s *GetDataAccessInput) SetPrivilege(v string) *GetDataAccessInput {
+	s.Privilege = &v
+	return s
+}
+
+// SetTarget sets the Target field's value.
+func (s *GetDataAccessInput) SetTarget(v string) *GetDataAccessInput {
+	s.Target = &v
+	return s
+}
+
+// SetTargetType sets the TargetType field's value.
+func (s *GetDataAccessInput) SetTargetType(v string) *GetDataAccessInput {
+	s.TargetType = &v
+	return s
+}
+
+func (s *GetDataAccessInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetDataAccessOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The temporary credential token that S3 Access Grants vends.
+	//
+	// Credentials is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by GetDataAccessOutput's
+	// String and GoString methods.
+	Credentials *Credentials `type:"structure" sensitive:"true"`
+
+	// The S3 URI path of the data to which you are being granted temporary access
+	// credentials.
+	MatchedGrantTarget *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDataAccessOutput) GoString() string {
+	return s.String()
+}
+
+// SetCredentials sets the Credentials field's value.
+func (s *GetDataAccessOutput) SetCredentials(v *Credentials) *GetDataAccessOutput {
+	s.Credentials = v
+	return s
+}
+
+// SetMatchedGrantTarget sets the MatchedGrantTarget field's value.
+func (s *GetDataAccessOutput) SetMatchedGrantTarget(v string) *GetDataAccessOutput {
+	s.MatchedGrantTarget = &v
 	return s
 }
 
@@ -11388,6 +18507,120 @@ func (s *GetMultiRegionAccessPointPolicyStatusOutput) SetEstablished(v *PolicySt
 	return s
 }
 
+type GetMultiRegionAccessPointRoutesInput struct {
+	_ struct{} `locationName:"GetMultiRegionAccessPointRoutesRequest" type:"structure"`
+
+	// The Amazon Web Services account ID for the owner of the Multi-Region Access
+	// Point.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Multi-Region Access Point ARN.
+	//
+	// Mrap is a required field
+	Mrap *string `location:"uri" locationName:"mrap" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMultiRegionAccessPointRoutesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMultiRegionAccessPointRoutesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetMultiRegionAccessPointRoutesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetMultiRegionAccessPointRoutesInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Mrap == nil {
+		invalidParams.Add(request.NewErrParamRequired("Mrap"))
+	}
+	if s.Mrap != nil && len(*s.Mrap) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Mrap", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetMultiRegionAccessPointRoutesInput) SetAccountId(v string) *GetMultiRegionAccessPointRoutesInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetMrap sets the Mrap field's value.
+func (s *GetMultiRegionAccessPointRoutesInput) SetMrap(v string) *GetMultiRegionAccessPointRoutesInput {
+	s.Mrap = &v
+	return s
+}
+
+func (s *GetMultiRegionAccessPointRoutesInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetMultiRegionAccessPointRoutesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Multi-Region Access Point ARN.
+	Mrap *string `type:"string"`
+
+	// The different routes that make up the route configuration. Active routes
+	// return a value of 100, and passive routes return a value of 0.
+	Routes []*MultiRegionAccessPointRoute `locationNameList:"Route" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMultiRegionAccessPointRoutesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetMultiRegionAccessPointRoutesOutput) GoString() string {
+	return s.String()
+}
+
+// SetMrap sets the Mrap field's value.
+func (s *GetMultiRegionAccessPointRoutesOutput) SetMrap(v string) *GetMultiRegionAccessPointRoutesOutput {
+	s.Mrap = &v
+	return s
+}
+
+// SetRoutes sets the Routes field's value.
+func (s *GetMultiRegionAccessPointRoutesOutput) SetRoutes(v []*MultiRegionAccessPointRoute) *GetMultiRegionAccessPointRoutesOutput {
+	s.Routes = v
+	return s
+}
+
 type GetPublicAccessBlockInput struct {
 	_ struct{} `locationName:"GetPublicAccessBlockRequest" type:"structure"`
 
@@ -11679,6 +18912,175 @@ func (s GetStorageLensConfigurationTaggingOutput) GoString() string {
 // SetTags sets the Tags field's value.
 func (s *GetStorageLensConfigurationTaggingOutput) SetTags(v []*StorageLensTag) *GetStorageLensConfigurationTaggingOutput {
 	s.Tags = v
+	return s
+}
+
+type GetStorageLensGroupInput struct {
+	_ struct{} `locationName:"GetStorageLensGroupRequest" type:"structure"`
+
+	// The Amazon Web Services account ID associated with the Storage Lens group
+	// that you're trying to retrieve the details for.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The name of the Storage Lens group that you're trying to retrieve the configuration
+	// details for.
+	//
+	// Name is a required field
+	Name *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetStorageLensGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetStorageLensGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetStorageLensGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetStorageLensGroupInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *GetStorageLensGroupInput) SetAccountId(v string) *GetStorageLensGroupInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GetStorageLensGroupInput) SetName(v string) *GetStorageLensGroupInput {
+	s.Name = &v
+	return s
+}
+
+func (s *GetStorageLensGroupInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type GetStorageLensGroupOutput struct {
+	_ struct{} `type:"structure" payload:"StorageLensGroup"`
+
+	// The name of the Storage Lens group that you're trying to retrieve the configuration
+	// details for.
+	StorageLensGroup *StorageLensGroup `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetStorageLensGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetStorageLensGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetStorageLensGroup sets the StorageLensGroup field's value.
+func (s *GetStorageLensGroupOutput) SetStorageLensGroup(v *StorageLensGroup) *GetStorageLensGroupOutput {
+	s.StorageLensGroup = v
+	return s
+}
+
+// The user, group, or role to which you are granting access. You can grant
+// access to an IAM user or role. If you have added your corporate directory
+// to Amazon Web Services IAM Identity Center and associated your Identity Center
+// instance with your S3 Access Grants instance, the grantee can also be a corporate
+// directory user or group.
+type Grantee struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier of the Grantee. If the grantee type is IAM, the identifier
+	// is the IAM Amazon Resource Name (ARN) of the user or role. If the grantee
+	// type is a directory user or group, the identifier is 128-bit universally
+	// unique identifier (UUID) in the format a1b2c3d4-5678-90ab-cdef-EXAMPLE11111.
+	// You can obtain this UUID from your Amazon Web Services IAM Identity Center
+	// instance.
+	GranteeIdentifier *string `type:"string"`
+
+	// The type of the grantee to which access has been granted. It can be one of
+	// the following values:
+	//
+	//    * IAM - An IAM user or role.
+	//
+	//    * DIRECTORY_USER - Your corporate directory user. You can use this option
+	//    if you have added your corporate identity directory to IAM Identity Center
+	//    and associated the IAM Identity Center instance with your S3 Access Grants
+	//    instance.
+	//
+	//    * DIRECTORY_GROUP - Your corporate directory group. You can use this option
+	//    if you have added your corporate identity directory to IAM Identity Center
+	//    and associated the IAM Identity Center instance with your S3 Access Grants
+	//    instance.
+	GranteeType *string `type:"string" enum:"GranteeType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Grantee) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Grantee) GoString() string {
+	return s.String()
+}
+
+// SetGranteeIdentifier sets the GranteeIdentifier field's value.
+func (s *Grantee) SetGranteeIdentifier(v string) *Grantee {
+	s.GranteeIdentifier = &v
+	return s
+}
+
+// SetGranteeType sets the GranteeType field's value.
+func (s *Grantee) SetGranteeType(v string) *Grantee {
+	s.GranteeType = &v
 	return s
 }
 
@@ -12078,6 +19480,8 @@ type JobManifest struct {
 	_ struct{} `type:"structure"`
 
 	// Contains the information required to locate the specified job's manifest.
+	// Manifests can't be imported from directory buckets. For more information,
+	// see Directory buckets (https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-overview.html).
 	//
 	// Location is a required field
 	Location *JobManifestLocation `type:"structure" required:"true"`
@@ -12196,21 +19600,38 @@ func (s *JobManifestGenerator) SetS3JobManifestGenerator(v *S3JobManifestGenerat
 type JobManifestGeneratorFilter struct {
 	_ struct{} `type:"structure"`
 
-	// If provided, the generated manifest should include only source bucket objects
-	// that were created after this time.
+	// If provided, the generated manifest includes only source bucket objects that
+	// were created after this time.
 	CreatedAfter *time.Time `type:"timestamp"`
 
-	// If provided, the generated manifest should include only source bucket objects
-	// that were created before this time.
+	// If provided, the generated manifest includes only source bucket objects that
+	// were created before this time.
 	CreatedBefore *time.Time `type:"timestamp"`
 
 	// Include objects in the generated manifest only if they are eligible for replication
 	// according to the Replication configuration on the source bucket.
 	EligibleForReplication *bool `type:"boolean"`
 
-	// If provided, the generated manifest should include only source bucket objects
-	// that have one of the specified Replication statuses.
+	// If provided, the generated manifest includes only source bucket objects whose
+	// object keys match the string constraints specified for MatchAnyPrefix, MatchAnySuffix,
+	// and MatchAnySubstring.
+	KeyNameConstraint *KeyNameConstraint `type:"structure"`
+
+	// If provided, the generated manifest includes only source bucket objects that
+	// are stored with the specified storage class.
+	MatchAnyStorageClass []*string `type:"list" enum:"S3StorageClass"`
+
+	// If provided, the generated manifest includes only source bucket objects that
+	// have one of the specified Replication statuses.
 	ObjectReplicationStatuses []*string `type:"list" enum:"ReplicationStatus"`
+
+	// If provided, the generated manifest includes only source bucket objects whose
+	// file size is greater than the specified number of bytes.
+	ObjectSizeGreaterThanBytes *int64 `type:"long"`
+
+	// If provided, the generated manifest includes only source bucket objects whose
+	// file size is less than the specified number of bytes.
+	ObjectSizeLessThanBytes *int64 `type:"long"`
 }
 
 // String returns the string representation.
@@ -12249,13 +19670,39 @@ func (s *JobManifestGeneratorFilter) SetEligibleForReplication(v bool) *JobManif
 	return s
 }
 
+// SetKeyNameConstraint sets the KeyNameConstraint field's value.
+func (s *JobManifestGeneratorFilter) SetKeyNameConstraint(v *KeyNameConstraint) *JobManifestGeneratorFilter {
+	s.KeyNameConstraint = v
+	return s
+}
+
+// SetMatchAnyStorageClass sets the MatchAnyStorageClass field's value.
+func (s *JobManifestGeneratorFilter) SetMatchAnyStorageClass(v []*string) *JobManifestGeneratorFilter {
+	s.MatchAnyStorageClass = v
+	return s
+}
+
 // SetObjectReplicationStatuses sets the ObjectReplicationStatuses field's value.
 func (s *JobManifestGeneratorFilter) SetObjectReplicationStatuses(v []*string) *JobManifestGeneratorFilter {
 	s.ObjectReplicationStatuses = v
 	return s
 }
 
-// Contains the information required to locate a manifest object.
+// SetObjectSizeGreaterThanBytes sets the ObjectSizeGreaterThanBytes field's value.
+func (s *JobManifestGeneratorFilter) SetObjectSizeGreaterThanBytes(v int64) *JobManifestGeneratorFilter {
+	s.ObjectSizeGreaterThanBytes = &v
+	return s
+}
+
+// SetObjectSizeLessThanBytes sets the ObjectSizeLessThanBytes field's value.
+func (s *JobManifestGeneratorFilter) SetObjectSizeLessThanBytes(v int64) *JobManifestGeneratorFilter {
+	s.ObjectSizeLessThanBytes = &v
+	return s
+}
+
+// Contains the information required to locate a manifest object. Manifests
+// can't be imported from directory buckets. For more information, see Directory
+// buckets (https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-overview.html).
 type JobManifestLocation struct {
 	_ struct{} `type:"structure"`
 
@@ -12266,9 +19713,10 @@ type JobManifestLocation struct {
 
 	// The Amazon Resource Name (ARN) for a manifest object.
 	//
-	// Replacement must be made for object keys containing special characters (such
-	// as carriage returns) when using XML requests. For more information, see XML
-	// related object key constraints (https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints).
+	// When you're using XML requests, you must replace special characters (such
+	// as carriage returns) in object keys with their equivalent XML entity codes.
+	// For more information, see XML-related object key constraints (https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints)
+	// in the Amazon S3 User Guide.
 	//
 	// ObjectArn is a required field
 	ObjectArn *string `min:"1" type:"string" required:"true"`
@@ -12409,14 +19857,20 @@ type JobOperation struct {
 
 	// Directs the specified job to execute a DELETE Object tagging call on every
 	// object in the manifest.
+	//
+	// This functionality is not supported by directory buckets.
 	S3DeleteObjectTagging *S3DeleteObjectTaggingOperation `type:"structure"`
 
 	// Directs the specified job to initiate restore requests for every archived
 	// object in the manifest.
+	//
+	// This functionality is not supported by directory buckets.
 	S3InitiateRestoreObject *S3InitiateRestoreObjectOperation `type:"structure"`
 
-	// Directs the specified job to run a PUT Object acl call on every object in
-	// the manifest.
+	// Directs the specified job to run a PutObjectAcl call on every object in the
+	// manifest.
+	//
+	// This functionality is not supported by directory buckets.
 	S3PutObjectAcl *S3SetObjectAclOperation `type:"structure"`
 
 	// Directs the specified job to run a PUT Copy object call on every object in
@@ -12424,25 +19878,33 @@ type JobOperation struct {
 	S3PutObjectCopy *S3CopyObjectOperation `type:"structure"`
 
 	// Contains the configuration for an S3 Object Lock legal hold operation that
-	// an S3 Batch Operations job passes every object to the underlying PutObjectLegalHold
-	// API. For more information, see Using S3 Object Lock legal hold with S3 Batch
-	// Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-legal-hold.html)
+	// an S3 Batch Operations job passes to every object to the underlying PutObjectLegalHold
+	// API operation. For more information, see Using S3 Object Lock legal hold
+	// with S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-legal-hold.html)
 	// in the Amazon S3 User Guide.
+	//
+	// This functionality is not supported by directory buckets.
 	S3PutObjectLegalHold *S3SetObjectLegalHoldOperation `type:"structure"`
 
 	// Contains the configuration parameters for the Object Lock retention action
 	// for an S3 Batch Operations job. Batch Operations passes every object to the
-	// underlying PutObjectRetention API. For more information, see Using S3 Object
-	// Lock retention with S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-retention-date.html)
+	// underlying PutObjectRetention API operation. For more information, see Using
+	// S3 Object Lock retention with S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-retention-date.html)
 	// in the Amazon S3 User Guide.
+	//
+	// This functionality is not supported by directory buckets.
 	S3PutObjectRetention *S3SetObjectRetentionOperation `type:"structure"`
 
 	// Directs the specified job to run a PUT Object tagging call on every object
 	// in the manifest.
+	//
+	// This functionality is not supported by directory buckets.
 	S3PutObjectTagging *S3SetObjectTaggingOperation `type:"structure"`
 
 	// Directs the specified job to invoke ReplicateObject on every object in the
 	// job's manifest.
+	//
+	// This functionality is not supported by directory buckets.
 	S3ReplicateObject *S3ReplicateObjectOperation `type:"structure"`
 }
 
@@ -12621,6 +20083,9 @@ type JobReport struct {
 
 	// The Amazon Resource Name (ARN) for the bucket where specified job-completion
 	// report will be stored.
+	//
+	// Directory buckets - Directory buckets aren't supported as a location for
+	// Batch Operations to store job completion reports.
 	Bucket *string `min:"1" type:"string"`
 
 	// Indicates whether the specified job will generate a job-completion report.
@@ -12740,6 +20205,61 @@ func (s *JobTimers) SetElapsedTimeInActiveSeconds(v int64) *JobTimers {
 	return s
 }
 
+// If provided, the generated manifest includes only source bucket objects whose
+// object keys match the string constraints specified for MatchAnyPrefix, MatchAnySuffix,
+// and MatchAnySubstring.
+type KeyNameConstraint struct {
+	_ struct{} `type:"structure"`
+
+	// If provided, the generated manifest includes objects where the specified
+	// string appears at the start of the object key string.
+	MatchAnyPrefix []*string `type:"list"`
+
+	// If provided, the generated manifest includes objects where the specified
+	// string appears anywhere within the object key string.
+	MatchAnySubstring []*string `type:"list"`
+
+	// If provided, the generated manifest includes objects where the specified
+	// string appears at the end of the object key string.
+	MatchAnySuffix []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KeyNameConstraint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s KeyNameConstraint) GoString() string {
+	return s.String()
+}
+
+// SetMatchAnyPrefix sets the MatchAnyPrefix field's value.
+func (s *KeyNameConstraint) SetMatchAnyPrefix(v []*string) *KeyNameConstraint {
+	s.MatchAnyPrefix = v
+	return s
+}
+
+// SetMatchAnySubstring sets the MatchAnySubstring field's value.
+func (s *KeyNameConstraint) SetMatchAnySubstring(v []*string) *KeyNameConstraint {
+	s.MatchAnySubstring = v
+	return s
+}
+
+// SetMatchAnySuffix sets the MatchAnySuffix field's value.
+func (s *KeyNameConstraint) SetMatchAnySuffix(v []*string) *KeyNameConstraint {
+	s.MatchAnySuffix = v
+	return s
+}
+
 // Contains the configuration parameters for a Lambda Invoke operation.
 type LambdaInvokeOperation struct {
 	_ struct{} `type:"structure"`
@@ -12747,6 +20267,31 @@ type LambdaInvokeOperation struct {
 	// The Amazon Resource Name (ARN) for the Lambda function that the specified
 	// job will invoke on every object in the manifest.
 	FunctionArn *string `min:"1" type:"string"`
+
+	// Specifies the schema version for the payload that Batch Operations sends
+	// when invoking an Lambda function. Version 1.0 is the default. Version 2.0
+	// is required when you use Batch Operations to invoke Lambda functions that
+	// act on directory buckets, or if you need to specify UserArguments. For more
+	// information, see Using Lambda with Amazon S3 Batch Operations and Amazon
+	// S3 Express One Zone (https://aws.amazon.com/blogs/storage/using-lambda-with-s3-batch-operations-and-s3-express-one-zone/)
+	// in the Amazon Web Services Storage Blog.
+	//
+	// Ensure that your Lambda function code expects InvocationSchemaVersion 2.0
+	// and uses bucket name rather than bucket ARN. If the InvocationSchemaVersion
+	// does not match what your Lambda function expects, your function might not
+	// work as expected.
+	//
+	// Directory buckets - To initiate Amazon Web Services Lambda function to perform
+	// custom actions on objects in directory buckets, you must specify 2.0.
+	InvocationSchemaVersion *string `min:"1" type:"string"`
+
+	// Key-value pairs that are passed in the payload that Batch Operations sends
+	// when invoking an Lambda function. You must specify InvocationSchemaVersion
+	// 2.0 for LambdaInvoke operations that include UserArguments. For more information,
+	// see Using Lambda with Amazon S3 Batch Operations and Amazon S3 Express One
+	// Zone (https://aws.amazon.com/blogs/storage/using-lambda-with-s3-batch-operations-and-s3-express-one-zone/)
+	// in the Amazon Web Services Storage Blog.
+	UserArguments map[string]*string `min:"1" type:"map"`
 }
 
 // String returns the string representation.
@@ -12773,6 +20318,12 @@ func (s *LambdaInvokeOperation) Validate() error {
 	if s.FunctionArn != nil && len(*s.FunctionArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("FunctionArn", 1))
 	}
+	if s.InvocationSchemaVersion != nil && len(*s.InvocationSchemaVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InvocationSchemaVersion", 1))
+	}
+	if s.UserArguments != nil && len(s.UserArguments) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UserArguments", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -12783,6 +20334,18 @@ func (s *LambdaInvokeOperation) Validate() error {
 // SetFunctionArn sets the FunctionArn field's value.
 func (s *LambdaInvokeOperation) SetFunctionArn(v string) *LambdaInvokeOperation {
 	s.FunctionArn = &v
+	return s
+}
+
+// SetInvocationSchemaVersion sets the InvocationSchemaVersion field's value.
+func (s *LambdaInvokeOperation) SetInvocationSchemaVersion(v string) *LambdaInvokeOperation {
+	s.InvocationSchemaVersion = &v
+	return s
+}
+
+// SetUserArguments sets the UserArguments field's value.
+func (s *LambdaInvokeOperation) SetUserArguments(v map[string]*string) *LambdaInvokeOperation {
+	s.UserArguments = v
 	return s
 }
 
@@ -12900,7 +20463,7 @@ type LifecycleRule struct {
 	// Specifies the days since the initiation of an incomplete multipart upload
 	// that Amazon S3 waits before permanently removing all parts of the upload.
 	// For more information, see Aborting Incomplete Multipart Uploads Using a Bucket
-	// Lifecycle Policy (https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuoverview.html#mpu-abort-incomplete-mpu-lifecycle-config)
+	// Lifecycle Configuration (https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuoverview.html#mpu-abort-incomplete-mpu-lifecycle-config)
 	// in the Amazon S3 User Guide.
 	AbortIncompleteMultipartUpload *AbortIncompleteMultipartUpload `type:"structure"`
 
@@ -12915,8 +20478,6 @@ type LifecycleRule struct {
 	ID *string `type:"string"`
 
 	// The noncurrent version expiration of the lifecycle rule.
-	//
-	// This is not supported by Amazon S3 on Outposts buckets.
 	NoncurrentVersionExpiration *NoncurrentVersionExpiration `type:"structure"`
 
 	// Specifies the transition rule for the lifecycle rule that describes when
@@ -13028,6 +20589,12 @@ func (s *LifecycleRule) SetTransitions(v []*Transition) *LifecycleRule {
 type LifecycleRuleAndOperator struct {
 	_ struct{} `type:"structure"`
 
+	// Minimum object size to which the rule applies.
+	ObjectSizeGreaterThan *int64 `type:"long"`
+
+	// Maximum object size to which the rule applies.
+	ObjectSizeLessThan *int64 `type:"long"`
+
 	// Prefix identifying one or more objects to which the rule applies.
 	Prefix *string `type:"string"`
 
@@ -13074,6 +20641,18 @@ func (s *LifecycleRuleAndOperator) Validate() error {
 	return nil
 }
 
+// SetObjectSizeGreaterThan sets the ObjectSizeGreaterThan field's value.
+func (s *LifecycleRuleAndOperator) SetObjectSizeGreaterThan(v int64) *LifecycleRuleAndOperator {
+	s.ObjectSizeGreaterThan = &v
+	return s
+}
+
+// SetObjectSizeLessThan sets the ObjectSizeLessThan field's value.
+func (s *LifecycleRuleAndOperator) SetObjectSizeLessThan(v int64) *LifecycleRuleAndOperator {
+	s.ObjectSizeLessThan = &v
+	return s
+}
+
 // SetPrefix sets the Prefix field's value.
 func (s *LifecycleRuleAndOperator) SetPrefix(v string) *LifecycleRuleAndOperator {
 	s.Prefix = &v
@@ -13093,13 +20672,21 @@ type LifecycleRuleFilter struct {
 	// The container for the AND condition for the lifecycle rule.
 	And *LifecycleRuleAndOperator `type:"structure"`
 
+	// Minimum object size to which the rule applies.
+	ObjectSizeGreaterThan *int64 `type:"long"`
+
+	// Maximum object size to which the rule applies.
+	ObjectSizeLessThan *int64 `type:"long"`
+
 	// Prefix identifying one or more objects to which the rule applies.
 	//
-	// Replacement must be made for object keys containing special characters (such
-	// as carriage returns) when using XML requests. For more information, see XML
-	// related object key constraints (https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints).
+	// When you're using XML requests, you must replace special characters (such
+	// as carriage returns) in object keys with their equivalent XML entity codes.
+	// For more information, see XML-related object key constraints (https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints)
+	// in the Amazon S3 User Guide.
 	Prefix *string `type:"string"`
 
+	// A container for a key-value name pair.
 	Tag *S3Tag `type:"structure"`
 }
 
@@ -13147,6 +20734,18 @@ func (s *LifecycleRuleFilter) SetAnd(v *LifecycleRuleAndOperator) *LifecycleRule
 	return s
 }
 
+// SetObjectSizeGreaterThan sets the ObjectSizeGreaterThan field's value.
+func (s *LifecycleRuleFilter) SetObjectSizeGreaterThan(v int64) *LifecycleRuleFilter {
+	s.ObjectSizeGreaterThan = &v
+	return s
+}
+
+// SetObjectSizeLessThan sets the ObjectSizeLessThan field's value.
+func (s *LifecycleRuleFilter) SetObjectSizeLessThan(v int64) *LifecycleRuleFilter {
+	s.ObjectSizeLessThan = &v
+	return s
+}
+
 // SetPrefix sets the Prefix field's value.
 func (s *LifecycleRuleFilter) SetPrefix(v string) *LifecycleRuleFilter {
 	s.Prefix = &v
@@ -13156,6 +20755,727 @@ func (s *LifecycleRuleFilter) SetPrefix(v string) *LifecycleRuleFilter {
 // SetTag sets the Tag field's value.
 func (s *LifecycleRuleFilter) SetTag(v *S3Tag) *LifecycleRuleFilter {
 	s.Tag = v
+	return s
+}
+
+// Information about the access grant.
+type ListAccessGrantEntry struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the access grant.
+	AccessGrantArn *string `min:"1" type:"string"`
+
+	// The ID of the access grant. S3 Access Grants auto-generates this ID when
+	// you create the access grant.
+	AccessGrantId *string `min:"1" type:"string"`
+
+	// The configuration options of the grant location. The grant location is the
+	// S3 path to the data to which you are granting access.
+	AccessGrantsLocationConfiguration *AccessGrantsLocationConfiguration `type:"structure"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of an Amazon Web Services IAM Identity Center
+	// application associated with your Identity Center instance. If the grant includes
+	// an application ARN, the grantee can only access the S3 data through this
+	// application.
+	ApplicationArn *string `min:"10" type:"string"`
+
+	// The date and time when you created the S3 Access Grants instance.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The S3 path of the data to which you are granting access. It is the result
+	// of appending the Subprefix to the location scope.
+	GrantScope *string `min:"1" type:"string"`
+
+	// The user, group, or role to which you are granting access. You can grant
+	// access to an IAM user or role. If you have added your corporate directory
+	// to Amazon Web Services IAM Identity Center and associated your Identity Center
+	// instance with your S3 Access Grants instance, the grantee can also be a corporate
+	// directory user or group.
+	Grantee *Grantee `type:"structure"`
+
+	// The type of access granted to your S3 data, which can be set to one of the
+	// following values:
+	//
+	//    * READ – Grant read-only access to the S3 data.
+	//
+	//    * WRITE – Grant write-only access to the S3 data.
+	//
+	//    * READWRITE – Grant both read and write access to the S3 data.
+	Permission *string `type:"string" enum:"Permission"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantEntry) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantArn sets the AccessGrantArn field's value.
+func (s *ListAccessGrantEntry) SetAccessGrantArn(v string) *ListAccessGrantEntry {
+	s.AccessGrantArn = &v
+	return s
+}
+
+// SetAccessGrantId sets the AccessGrantId field's value.
+func (s *ListAccessGrantEntry) SetAccessGrantId(v string) *ListAccessGrantEntry {
+	s.AccessGrantId = &v
+	return s
+}
+
+// SetAccessGrantsLocationConfiguration sets the AccessGrantsLocationConfiguration field's value.
+func (s *ListAccessGrantEntry) SetAccessGrantsLocationConfiguration(v *AccessGrantsLocationConfiguration) *ListAccessGrantEntry {
+	s.AccessGrantsLocationConfiguration = v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *ListAccessGrantEntry) SetAccessGrantsLocationId(v string) *ListAccessGrantEntry {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListAccessGrantEntry) SetApplicationArn(v string) *ListAccessGrantEntry {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ListAccessGrantEntry) SetCreatedAt(v time.Time) *ListAccessGrantEntry {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetGrantScope sets the GrantScope field's value.
+func (s *ListAccessGrantEntry) SetGrantScope(v string) *ListAccessGrantEntry {
+	s.GrantScope = &v
+	return s
+}
+
+// SetGrantee sets the Grantee field's value.
+func (s *ListAccessGrantEntry) SetGrantee(v *Grantee) *ListAccessGrantEntry {
+	s.Grantee = v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *ListAccessGrantEntry) SetPermission(v string) *ListAccessGrantEntry {
+	s.Permission = &v
+	return s
+}
+
+type ListAccessGrantsInput struct {
+	_ struct{} `locationName:"ListAccessGrantsRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of an Amazon Web Services IAM Identity Center
+	// application associated with your Identity Center instance. If the grant includes
+	// an application ARN, the grantee can only access the S3 data through this
+	// application.
+	ApplicationArn *string `location:"querystring" locationName:"application_arn" min:"10" type:"string"`
+
+	// The S3 path of the data to which you are granting access. It is the result
+	// of appending the Subprefix to the location scope.
+	GrantScope *string `location:"querystring" locationName:"grantscope" min:"1" type:"string"`
+
+	// The unique identifer of the Grantee. If the grantee type is IAM, the identifier
+	// is the IAM Amazon Resource Name (ARN) of the user or role. If the grantee
+	// type is a directory user or group, the identifier is 128-bit universally
+	// unique identifier (UUID) in the format a1b2c3d4-5678-90ab-cdef-EXAMPLE11111.
+	// You can obtain this UUID from your Amazon Web Services IAM Identity Center
+	// instance.
+	GranteeIdentifier *string `location:"querystring" locationName:"granteeidentifier" type:"string"`
+
+	// The type of the grantee to which access has been granted. It can be one of
+	// the following values:
+	//
+	//    * IAM - An IAM user or role.
+	//
+	//    * DIRECTORY_USER - Your corporate directory user. You can use this option
+	//    if you have added your corporate identity directory to IAM Identity Center
+	//    and associated the IAM Identity Center instance with your S3 Access Grants
+	//    instance.
+	//
+	//    * DIRECTORY_GROUP - Your corporate directory group. You can use this option
+	//    if you have added your corporate identity directory to IAM Identity Center
+	//    and associated the IAM Identity Center instance with your S3 Access Grants
+	//    instance.
+	GranteeType *string `location:"querystring" locationName:"granteetype" type:"string" enum:"GranteeType"`
+
+	// The maximum number of access grants that you would like returned in the List
+	// Access Grants response. If the results include the pagination token NextToken,
+	// make another call using the NextToken to determine if there are more results.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" type:"integer"`
+
+	// A pagination token to request the next page of results. Pass this value into
+	// a subsequent List Access Grants request in order to retrieve the next page
+	// of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+
+	// The type of permission granted to your S3 data, which can be set to one of
+	// the following values:
+	//
+	//    * READ – Grant read-only access to the S3 data.
+	//
+	//    * WRITE – Grant write-only access to the S3 data.
+	//
+	//    * READWRITE – Grant both read and write access to the S3 data.
+	Permission *string `location:"querystring" locationName:"permission" type:"string" enum:"Permission"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAccessGrantsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAccessGrantsInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.ApplicationArn != nil && len(*s.ApplicationArn) < 10 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationArn", 10))
+	}
+	if s.GrantScope != nil && len(*s.GrantScope) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GrantScope", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ListAccessGrantsInput) SetAccountId(v string) *ListAccessGrantsInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetApplicationArn sets the ApplicationArn field's value.
+func (s *ListAccessGrantsInput) SetApplicationArn(v string) *ListAccessGrantsInput {
+	s.ApplicationArn = &v
+	return s
+}
+
+// SetGrantScope sets the GrantScope field's value.
+func (s *ListAccessGrantsInput) SetGrantScope(v string) *ListAccessGrantsInput {
+	s.GrantScope = &v
+	return s
+}
+
+// SetGranteeIdentifier sets the GranteeIdentifier field's value.
+func (s *ListAccessGrantsInput) SetGranteeIdentifier(v string) *ListAccessGrantsInput {
+	s.GranteeIdentifier = &v
+	return s
+}
+
+// SetGranteeType sets the GranteeType field's value.
+func (s *ListAccessGrantsInput) SetGranteeType(v string) *ListAccessGrantsInput {
+	s.GranteeType = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAccessGrantsInput) SetMaxResults(v int64) *ListAccessGrantsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccessGrantsInput) SetNextToken(v string) *ListAccessGrantsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *ListAccessGrantsInput) SetPermission(v string) *ListAccessGrantsInput {
+	s.Permission = &v
+	return s
+}
+
+func (s *ListAccessGrantsInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+// Information about the S3 Access Grants instance.
+type ListAccessGrantsInstanceEntry struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the S3 Access Grants instance.
+	AccessGrantsInstanceArn *string `min:"1" type:"string"`
+
+	// The ID of the S3 Access Grants instance. The ID is default. You can have
+	// one S3 Access Grants instance per Region per account.
+	AccessGrantsInstanceId *string `min:"1" type:"string"`
+
+	// The date and time when you created the S3 Access Grants instance.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// If you associated your S3 Access Grants instance with an Amazon Web Services
+	// IAM Identity Center instance, this field returns the Amazon Resource Name
+	// (ARN) of the IAM Identity Center instance application; a subresource of the
+	// original Identity Center instance. S3 Access Grants creates this Identity
+	// Center application for the specific S3 Access Grants instance.
+	IdentityCenterArn *string `min:"10" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInstanceEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInstanceEntry) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsInstanceArn sets the AccessGrantsInstanceArn field's value.
+func (s *ListAccessGrantsInstanceEntry) SetAccessGrantsInstanceArn(v string) *ListAccessGrantsInstanceEntry {
+	s.AccessGrantsInstanceArn = &v
+	return s
+}
+
+// SetAccessGrantsInstanceId sets the AccessGrantsInstanceId field's value.
+func (s *ListAccessGrantsInstanceEntry) SetAccessGrantsInstanceId(v string) *ListAccessGrantsInstanceEntry {
+	s.AccessGrantsInstanceId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ListAccessGrantsInstanceEntry) SetCreatedAt(v time.Time) *ListAccessGrantsInstanceEntry {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIdentityCenterArn sets the IdentityCenterArn field's value.
+func (s *ListAccessGrantsInstanceEntry) SetIdentityCenterArn(v string) *ListAccessGrantsInstanceEntry {
+	s.IdentityCenterArn = &v
+	return s
+}
+
+type ListAccessGrantsInstancesInput struct {
+	_ struct{} `locationName:"ListAccessGrantsInstancesRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The maximum number of access grants that you would like returned in the List
+	// Access Grants response. If the results include the pagination token NextToken,
+	// make another call using the NextToken to determine if there are more results.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" type:"integer"`
+
+	// A pagination token to request the next page of results. Pass this value into
+	// a subsequent List Access Grants Instances request in order to retrieve the
+	// next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInstancesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInstancesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAccessGrantsInstancesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAccessGrantsInstancesInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ListAccessGrantsInstancesInput) SetAccountId(v string) *ListAccessGrantsInstancesInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAccessGrantsInstancesInput) SetMaxResults(v int64) *ListAccessGrantsInstancesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccessGrantsInstancesInput) SetNextToken(v string) *ListAccessGrantsInstancesInput {
+	s.NextToken = &v
+	return s
+}
+
+func (s *ListAccessGrantsInstancesInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type ListAccessGrantsInstancesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container for a list of S3 Access Grants instances.
+	AccessGrantsInstancesList []*ListAccessGrantsInstanceEntry `locationNameList:"AccessGrantsInstance" type:"list"`
+
+	// A pagination token to request the next page of results. Pass this value into
+	// a subsequent List Access Grants Instances request in order to retrieve the
+	// next page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInstancesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsInstancesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsInstancesList sets the AccessGrantsInstancesList field's value.
+func (s *ListAccessGrantsInstancesOutput) SetAccessGrantsInstancesList(v []*ListAccessGrantsInstanceEntry) *ListAccessGrantsInstancesOutput {
+	s.AccessGrantsInstancesList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccessGrantsInstancesOutput) SetNextToken(v string) *ListAccessGrantsInstancesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// A container for information about the registered location.
+type ListAccessGrantsLocationsEntry struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the registered location.
+	AccessGrantsLocationArn *string `min:"1" type:"string"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The date and time when you registered the location.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The Amazon Resource Name (ARN) of the IAM role for the registered location.
+	// S3 Access Grants assumes this role to manage access to the registered location.
+	IAMRoleArn *string `min:"1" type:"string"`
+
+	// The S3 path to the location that you are registering. The location scope
+	// can be the default S3 location s3://, the S3 path to a bucket s3://<bucket>,
+	// or the S3 path to a bucket and prefix s3://<bucket>/<prefix>. A prefix in
+	// S3 is a string of characters at the beginning of an object key name used
+	// to organize the objects that you store in your S3 buckets. For example, object
+	// key names that start with the engineering/ prefix or object key names that
+	// start with the marketing/campaigns/ prefix.
+	LocationScope *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsLocationsEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsLocationsEntry) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsLocationArn sets the AccessGrantsLocationArn field's value.
+func (s *ListAccessGrantsLocationsEntry) SetAccessGrantsLocationArn(v string) *ListAccessGrantsLocationsEntry {
+	s.AccessGrantsLocationArn = &v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *ListAccessGrantsLocationsEntry) SetAccessGrantsLocationId(v string) *ListAccessGrantsLocationsEntry {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ListAccessGrantsLocationsEntry) SetCreatedAt(v time.Time) *ListAccessGrantsLocationsEntry {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIAMRoleArn sets the IAMRoleArn field's value.
+func (s *ListAccessGrantsLocationsEntry) SetIAMRoleArn(v string) *ListAccessGrantsLocationsEntry {
+	s.IAMRoleArn = &v
+	return s
+}
+
+// SetLocationScope sets the LocationScope field's value.
+func (s *ListAccessGrantsLocationsEntry) SetLocationScope(v string) *ListAccessGrantsLocationsEntry {
+	s.LocationScope = &v
+	return s
+}
+
+type ListAccessGrantsLocationsInput struct {
+	_ struct{} `locationName:"ListAccessGrantsLocationsRequest" type:"structure"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The S3 path to the location that you are registering. The location scope
+	// can be the default S3 location s3://, the S3 path to a bucket s3://<bucket>,
+	// or the S3 path to a bucket and prefix s3://<bucket>/<prefix>. A prefix in
+	// S3 is a string of characters at the beginning of an object key name used
+	// to organize the objects that you store in your S3 buckets. For example, object
+	// key names that start with the engineering/ prefix or object key names that
+	// start with the marketing/campaigns/ prefix.
+	LocationScope *string `location:"querystring" locationName:"locationscope" min:"1" type:"string"`
+
+	// The maximum number of access grants that you would like returned in the List
+	// Access Grants response. If the results include the pagination token NextToken,
+	// make another call using the NextToken to determine if there are more results.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" type:"integer"`
+
+	// A pagination token to request the next page of results. Pass this value into
+	// a subsequent List Access Grants Locations request in order to retrieve the
+	// next page of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsLocationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsLocationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAccessGrantsLocationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAccessGrantsLocationsInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.LocationScope != nil && len(*s.LocationScope) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("LocationScope", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ListAccessGrantsLocationsInput) SetAccountId(v string) *ListAccessGrantsLocationsInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetLocationScope sets the LocationScope field's value.
+func (s *ListAccessGrantsLocationsInput) SetLocationScope(v string) *ListAccessGrantsLocationsInput {
+	s.LocationScope = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAccessGrantsLocationsInput) SetMaxResults(v int64) *ListAccessGrantsLocationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccessGrantsLocationsInput) SetNextToken(v string) *ListAccessGrantsLocationsInput {
+	s.NextToken = &v
+	return s
+}
+
+func (s *ListAccessGrantsLocationsInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type ListAccessGrantsLocationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container for a list of registered locations in an S3 Access Grants instance.
+	AccessGrantsLocationsList []*ListAccessGrantsLocationsEntry `locationNameList:"AccessGrantsLocation" type:"list"`
+
+	// A pagination token to request the next page of results. Pass this value into
+	// a subsequent List Access Grants Locations request in order to retrieve the
+	// next page of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsLocationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsLocationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsLocationsList sets the AccessGrantsLocationsList field's value.
+func (s *ListAccessGrantsLocationsOutput) SetAccessGrantsLocationsList(v []*ListAccessGrantsLocationsEntry) *ListAccessGrantsLocationsOutput {
+	s.AccessGrantsLocationsList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccessGrantsLocationsOutput) SetNextToken(v string) *ListAccessGrantsLocationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListAccessGrantsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A container for a list of grants in an S3 Access Grants instance.
+	AccessGrantsList []*ListAccessGrantEntry `locationNameList:"AccessGrant" type:"list"`
+
+	// A pagination token to request the next page of results. Pass this value into
+	// a subsequent List Access Grants request in order to retrieve the next page
+	// of results.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAccessGrantsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsList sets the AccessGrantsList field's value.
+func (s *ListAccessGrantsOutput) SetAccessGrantsList(v []*ListAccessGrantEntry) *ListAccessGrantsOutput {
+	s.AccessGrantsList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAccessGrantsOutput) SetNextToken(v string) *ListAccessGrantsOutput {
+	s.NextToken = &v
 	return s
 }
 
@@ -13287,8 +21607,8 @@ func (s *ListAccessPointsForObjectLambdaOutput) SetObjectLambdaAccessPointList(v
 type ListAccessPointsInput struct {
 	_ struct{} `locationName:"ListAccessPointsRequest" type:"structure"`
 
-	// The Amazon Web Services account ID for owner of the bucket whose access points
-	// you want to list.
+	// The Amazon Web Services account ID for the account that owns the specified
+	// access points.
 	//
 	// AccountId is a required field
 	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
@@ -13301,7 +21621,7 @@ type ListAccessPointsInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	Bucket *string `location:"querystring" locationName:"bucket" min:"3" type:"string"`
@@ -13737,9 +22057,9 @@ type ListRegionalBucketsInput struct {
 
 	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
 
-	// The ID of the Outposts.
+	// The ID of the Outposts resource.
 	//
-	// This is required by Amazon S3 on Outposts buckets.
+	// This ID is required by Amazon S3 on Outposts buckets.
 	OutpostId *string `location:"header" locationName:"x-amz-outpost-id" min:"1" type:"string"`
 }
 
@@ -14043,6 +22363,425 @@ func (s *ListStorageLensConfigurationsOutput) SetStorageLensConfigurationList(v 
 	return s
 }
 
+// Each entry contains a Storage Lens group that exists in the specified home
+// Region.
+type ListStorageLensGroupEntry struct {
+	_ struct{} `type:"structure"`
+
+	// Contains the Amazon Web Services Region where the Storage Lens group was
+	// created.
+	//
+	// HomeRegion is a required field
+	HomeRegion *string `min:"5" type:"string" required:"true"`
+
+	// Contains the name of the Storage Lens group that exists in the specified
+	// home Region.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Contains the Amazon Resource Name (ARN) of the Storage Lens group. This property
+	// is read-only.
+	//
+	// StorageLensGroupArn is a required field
+	StorageLensGroupArn *string `min:"4" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListStorageLensGroupEntry) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListStorageLensGroupEntry) GoString() string {
+	return s.String()
+}
+
+// SetHomeRegion sets the HomeRegion field's value.
+func (s *ListStorageLensGroupEntry) SetHomeRegion(v string) *ListStorageLensGroupEntry {
+	s.HomeRegion = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ListStorageLensGroupEntry) SetName(v string) *ListStorageLensGroupEntry {
+	s.Name = &v
+	return s
+}
+
+// SetStorageLensGroupArn sets the StorageLensGroupArn field's value.
+func (s *ListStorageLensGroupEntry) SetStorageLensGroupArn(v string) *ListStorageLensGroupEntry {
+	s.StorageLensGroupArn = &v
+	return s
+}
+
+type ListStorageLensGroupsInput struct {
+	_ struct{} `locationName:"ListStorageLensGroupsRequest" type:"structure"`
+
+	// The Amazon Web Services account ID that owns the Storage Lens groups.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The token for the next set of results, or null if there are no more results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListStorageLensGroupsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListStorageLensGroupsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListStorageLensGroupsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListStorageLensGroupsInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ListStorageLensGroupsInput) SetAccountId(v string) *ListStorageLensGroupsInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListStorageLensGroupsInput) SetNextToken(v string) *ListStorageLensGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
+func (s *ListStorageLensGroupsInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type ListStorageLensGroupsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If NextToken is returned, there are more Storage Lens groups results available.
+	// The value of NextToken is a unique pagination token for each page. Make the
+	// call again using the returned token to retrieve the next page. Keep all other
+	// arguments unchanged. Each pagination token expires after 24 hours.
+	NextToken *string `type:"string"`
+
+	// The list of Storage Lens groups that exist in the specified home Region.
+	StorageLensGroupList []*ListStorageLensGroupEntry `locationNameList:"StorageLensGroup" type:"list" flattened:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListStorageLensGroupsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListStorageLensGroupsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListStorageLensGroupsOutput) SetNextToken(v string) *ListStorageLensGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStorageLensGroupList sets the StorageLensGroupList field's value.
+func (s *ListStorageLensGroupsOutput) SetStorageLensGroupList(v []*ListStorageLensGroupEntry) *ListStorageLensGroupsOutput {
+	s.StorageLensGroupList = v
+	return s
+}
+
+type ListTagsForResourceInput struct {
+	_ struct{} `locationName:"ListTagsForResourceRequest" type:"structure"`
+
+	// The Amazon Web Services account ID of the resource owner.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the S3 resource that you want to list the
+	// tags for. The tagged resource can be an S3 Storage Lens group or S3 Access
+	// Grants instance, registered location, or grant.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListTagsForResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListTagsForResourceInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *ListTagsForResourceInput) SetAccountId(v string) *ListTagsForResourceInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+func (s *ListTagsForResourceInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type ListTagsForResourceOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Web Services resource tags that are associated with the resource.
+	Tags []*Tag `locationNameList:"Tag" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListTagsForResourceOutput) GoString() string {
+	return s.String()
+}
+
+// SetTags sets the Tags field's value.
+func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
+	s.Tags = v
+	return s
+}
+
+// A filter condition that specifies the object age range of included objects
+// in days. Only integers are supported.
+type MatchObjectAge struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the maximum object age in days. Must be a positive whole number,
+	// greater than the minimum object age and less than or equal to 2,147,483,647.
+	DaysGreaterThan *int64 `type:"integer"`
+
+	// Specifies the minimum object age in days. The value must be a positive whole
+	// number, greater than 0 and less than or equal to 2,147,483,647.
+	DaysLessThan *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MatchObjectAge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MatchObjectAge) GoString() string {
+	return s.String()
+}
+
+// SetDaysGreaterThan sets the DaysGreaterThan field's value.
+func (s *MatchObjectAge) SetDaysGreaterThan(v int64) *MatchObjectAge {
+	s.DaysGreaterThan = &v
+	return s
+}
+
+// SetDaysLessThan sets the DaysLessThan field's value.
+func (s *MatchObjectAge) SetDaysLessThan(v int64) *MatchObjectAge {
+	s.DaysLessThan = &v
+	return s
+}
+
+// A filter condition that specifies the object size range of included objects
+// in bytes. Only integers are supported.
+type MatchObjectSize struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the minimum object size in Bytes. The value must be a positive
+	// number, greater than 0 and less than 5 TB.
+	BytesGreaterThan *int64 `type:"long"`
+
+	// Specifies the maximum object size in Bytes. The value must be a positive
+	// number, greater than the minimum object size and less than 5 TB.
+	BytesLessThan *int64 `type:"long"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MatchObjectSize) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MatchObjectSize) GoString() string {
+	return s.String()
+}
+
+// SetBytesGreaterThan sets the BytesGreaterThan field's value.
+func (s *MatchObjectSize) SetBytesGreaterThan(v int64) *MatchObjectSize {
+	s.BytesGreaterThan = &v
+	return s
+}
+
+// SetBytesLessThan sets the BytesLessThan field's value.
+func (s *MatchObjectSize) SetBytesLessThan(v int64) *MatchObjectSize {
+	s.BytesLessThan = &v
+	return s
+}
+
+// A container that specifies replication metrics-related settings.
+type Metrics struct {
+	_ struct{} `type:"structure"`
+
+	// A container that specifies the time threshold for emitting the s3:Replication:OperationMissedThreshold
+	// event.
+	//
+	// This is not supported by Amazon S3 on Outposts buckets.
+	EventThreshold *ReplicationTimeValue `type:"structure"`
+
+	// Specifies whether replication metrics are enabled.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"MetricsStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Metrics) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Metrics) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Metrics) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Metrics"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEventThreshold sets the EventThreshold field's value.
+func (s *Metrics) SetEventThreshold(v *ReplicationTimeValue) *Metrics {
+	s.EventThreshold = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *Metrics) SetStatus(v string) *Metrics {
+	s.Status = &v
+	return s
+}
+
 // The Multi-Region Access Point access control policy.
 //
 // When you update the policy, the update is first listed as the proposed policy.
@@ -14152,7 +22891,7 @@ type MultiRegionAccessPointReport struct {
 	// see The Meaning of "Public" (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html#access-control-block-public-access-policy-status)
 	// in the Amazon S3 User Guide.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This data type is not supported for Amazon S3 on Outposts.
 	PublicAccessBlock *PublicAccessBlockConfiguration `type:"structure"`
 
 	// A collection of the Regions and buckets associated with the Multi-Region
@@ -14162,7 +22901,7 @@ type MultiRegionAccessPointReport struct {
 	// The current status of the Multi-Region Access Point.
 	//
 	// CREATING and DELETING are temporary states that exist while the request is
-	// propogating and being completed. If a Multi-Region Access Point has a status
+	// propagating and being completed. If a Multi-Region Access Point has a status
 	// of PARTIALLY_CREATED, you can retry creation or send a request to delete
 	// the Multi-Region Access Point. If a Multi-Region Access Point has a status
 	// of PARTIALLY_DELETED, you can retry a delete request to finish the deletion
@@ -14224,6 +22963,103 @@ func (s *MultiRegionAccessPointReport) SetStatus(v string) *MultiRegionAccessPoi
 	return s
 }
 
+// A structure for a Multi-Region Access Point that indicates where Amazon S3
+// traffic can be routed. Routes can be either active or passive. Active routes
+// can process Amazon S3 requests through the Multi-Region Access Point, but
+// passive routes are not eligible to process Amazon S3 requests.
+//
+// Each route contains the Amazon S3 bucket name and the Amazon Web Services
+// Region that the bucket is located in. The route also includes the TrafficDialPercentage
+// value, which shows whether the bucket and Region are active (indicated by
+// a value of 100) or passive (indicated by a value of 0).
+type MultiRegionAccessPointRoute struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the Amazon S3 bucket for which you'll submit a routing configuration
+	// change. Either the Bucket or the Region value must be provided. If both are
+	// provided, the bucket must be in the specified Region.
+	Bucket *string `min:"3" type:"string"`
+
+	// The Amazon Web Services Region to which you'll be submitting a routing configuration
+	// change. Either the Bucket or the Region value must be provided. If both are
+	// provided, the bucket must be in the specified Region.
+	Region *string `min:"1" type:"string"`
+
+	// The traffic state for the specified bucket or Amazon Web Services Region.
+	//
+	// A value of 0 indicates a passive state, which means that no new traffic will
+	// be routed to the Region.
+	//
+	// A value of 100 indicates an active state, which means that traffic will be
+	// routed to the specified Region.
+	//
+	// When the routing configuration for a Region is changed from active to passive,
+	// any in-progress operations (uploads, copies, deletes, and so on) to the formerly
+	// active Region will continue to run to until a final success or failure status
+	// is reached.
+	//
+	// If all Regions in the routing configuration are designated as passive, you'll
+	// receive an InvalidRequest error.
+	//
+	// TrafficDialPercentage is a required field
+	TrafficDialPercentage *int64 `type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MultiRegionAccessPointRoute) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MultiRegionAccessPointRoute) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MultiRegionAccessPointRoute) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MultiRegionAccessPointRoute"}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+	if s.Region != nil && len(*s.Region) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Region", 1))
+	}
+	if s.TrafficDialPercentage == nil {
+		invalidParams.Add(request.NewErrParamRequired("TrafficDialPercentage"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *MultiRegionAccessPointRoute) SetBucket(v string) *MultiRegionAccessPointRoute {
+	s.Bucket = &v
+	return s
+}
+
+// SetRegion sets the Region field's value.
+func (s *MultiRegionAccessPointRoute) SetRegion(v string) *MultiRegionAccessPointRoute {
+	s.Region = &v
+	return s
+}
+
+// SetTrafficDialPercentage sets the TrafficDialPercentage field's value.
+func (s *MultiRegionAccessPointRoute) SetTrafficDialPercentage(v int64) *MultiRegionAccessPointRoute {
+	s.TrafficDialPercentage = &v
+	return s
+}
+
 // The Multi-Region Access Point details that are returned when querying about
 // an asynchronous request.
 type MultiRegionAccessPointsAsyncResponse struct {
@@ -14262,6 +23098,13 @@ func (s *MultiRegionAccessPointsAsyncResponse) SetRegions(v []*MultiRegionAccess
 type NoncurrentVersionExpiration struct {
 	_ struct{} `type:"structure"`
 
+	// Specifies how many noncurrent versions S3 on Outposts will retain. If there
+	// are this many more recent noncurrent versions, S3 on Outposts will take the
+	// associated action. For more information about noncurrent versions, see Lifecycle
+	// configuration elements (https://docs.aws.amazon.com/AmazonS3/latest/userguide/intro-lifecycle-rules.html)
+	// in the Amazon S3 User Guide.
+	NewerNoncurrentVersions *int64 `type:"integer"`
+
 	// Specifies the number of days an object is noncurrent before Amazon S3 can
 	// perform the associated action. For information about the noncurrent days
 	// calculations, see How Amazon S3 Calculates When an Object Became Noncurrent
@@ -14286,6 +23129,12 @@ func (s NoncurrentVersionExpiration) String() string {
 // value will be replaced with "sensitive".
 func (s NoncurrentVersionExpiration) GoString() string {
 	return s.String()
+}
+
+// SetNewerNoncurrentVersions sets the NewerNoncurrentVersions field's value.
+func (s *NoncurrentVersionExpiration) SetNewerNoncurrentVersions(v int64) *NoncurrentVersionExpiration {
+	s.NewerNoncurrentVersions = &v
+	return s
 }
 
 // SetNoncurrentDays sets the NoncurrentDays field's value.
@@ -14344,6 +23193,9 @@ func (s *NoncurrentVersionTransition) SetStorageClass(v string) *NoncurrentVersi
 type ObjectLambdaAccessPoint struct {
 	_ struct{} `type:"structure"`
 
+	// The alias of the Object Lambda Access Point.
+	Alias *ObjectLambdaAccessPointAlias `type:"structure"`
+
 	// The name of the Object Lambda Access Point.
 	//
 	// Name is a required field
@@ -14371,6 +23223,12 @@ func (s ObjectLambdaAccessPoint) GoString() string {
 	return s.String()
 }
 
+// SetAlias sets the Alias field's value.
+func (s *ObjectLambdaAccessPoint) SetAlias(v *ObjectLambdaAccessPointAlias) *ObjectLambdaAccessPoint {
+	s.Alias = v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *ObjectLambdaAccessPoint) SetName(v string) *ObjectLambdaAccessPoint {
 	s.Name = &v
@@ -14383,11 +23241,58 @@ func (s *ObjectLambdaAccessPoint) SetObjectLambdaAccessPointArn(v string) *Objec
 	return s
 }
 
+// The alias of an Object Lambda Access Point. For more information, see How
+// to use a bucket-style alias for your S3 bucket Object Lambda Access Point
+// (https://docs.aws.amazon.com/AmazonS3/latest/userguide/olap-use.html#ol-access-points-alias).
+type ObjectLambdaAccessPointAlias struct {
+	_ struct{} `type:"structure"`
+
+	// The status of the Object Lambda Access Point alias. If the status is PROVISIONING,
+	// the Object Lambda Access Point is provisioning the alias and the alias is
+	// not ready for use yet. If the status is READY, the Object Lambda Access Point
+	// alias is successfully provisioned and ready for use.
+	Status *string `min:"2" type:"string" enum:"ObjectLambdaAccessPointAliasStatus"`
+
+	// The alias value of the Object Lambda Access Point.
+	Value *string `min:"3" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ObjectLambdaAccessPointAlias) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ObjectLambdaAccessPointAlias) GoString() string {
+	return s.String()
+}
+
+// SetStatus sets the Status field's value.
+func (s *ObjectLambdaAccessPointAlias) SetStatus(v string) *ObjectLambdaAccessPointAlias {
+	s.Status = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *ObjectLambdaAccessPointAlias) SetValue(v string) *ObjectLambdaAccessPointAlias {
+	s.Value = &v
+	return s
+}
+
 // A configuration used when creating an Object Lambda Access Point.
 type ObjectLambdaConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// A container for allowed features. Valid inputs are GetObject-Range and GetObject-PartNumber.
+	// A container for allowed features. Valid inputs are GetObject-Range, GetObject-PartNumber,
+	// HeadObject-Range, and HeadObject-PartNumber.
 	AllowedFeatures []*string `locationNameList:"AllowedFeature" type:"list" enum:"ObjectLambdaAllowedFeature"`
 
 	// A container for whether the CloudWatch metrics configuration is enabled.
@@ -14528,7 +23433,7 @@ type ObjectLambdaTransformationConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// A container for the action of an Object Lambda Access Point configuration.
-	// Valid input is GetObject.
+	// Valid inputs are GetObject, ListObjects, HeadObject, and ListObjectsV2.
 	//
 	// Actions is a required field
 	Actions []*string `locationNameList:"Action" type:"list" required:"true" enum:"ObjectLambdaTransformationConfigurationAction"`
@@ -14775,7 +23680,7 @@ func (s *ProposedMultiRegionAccessPointPolicy) SetPolicy(v string) *ProposedMult
 // see The Meaning of "Public" (https://docs.aws.amazon.com/AmazonS3/latest/dev/access-control-block-public-access.html#access-control-block-public-access-policy-status)
 // in the Amazon S3 User Guide.
 //
-// This is not supported for Amazon S3 on Outposts.
+// This data type is not supported for Amazon S3 on Outposts.
 type PublicAccessBlockConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -14783,8 +23688,7 @@ type PublicAccessBlockConfiguration struct {
 	// for buckets in this account. Setting this element to TRUE causes the following
 	// behavior:
 	//
-	//    * PUT Bucket acl and PUT Object acl calls fail if the specified ACL is
-	//    public.
+	//    * PutBucketAcl and PutObjectAcl calls fail if the specified ACL is public.
 	//
 	//    * PUT Object calls fail if the request includes a public ACL.
 	//
@@ -14792,7 +23696,7 @@ type PublicAccessBlockConfiguration struct {
 	//
 	// Enabling this setting doesn't affect existing policies or ACLs.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This property is not supported for Amazon S3 on Outposts.
 	BlockPublicAcls *bool `locationName:"BlockPublicAcls" type:"boolean"`
 
 	// Specifies whether Amazon S3 should block public bucket policies for buckets
@@ -14801,7 +23705,7 @@ type PublicAccessBlockConfiguration struct {
 	//
 	// Enabling this setting doesn't affect existing bucket policies.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This property is not supported for Amazon S3 on Outposts.
 	BlockPublicPolicy *bool `locationName:"BlockPublicPolicy" type:"boolean"`
 
 	// Specifies whether Amazon S3 should ignore public ACLs for buckets in this
@@ -14811,7 +23715,7 @@ type PublicAccessBlockConfiguration struct {
 	// Enabling this setting doesn't affect the persistence of any existing ACLs
 	// and doesn't prevent new public ACLs from being set.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This property is not supported for Amazon S3 on Outposts.
 	IgnorePublicAcls *bool `locationName:"IgnorePublicAcls" type:"boolean"`
 
 	// Specifies whether Amazon S3 should restrict public bucket policies for buckets
@@ -14823,7 +23727,7 @@ type PublicAccessBlockConfiguration struct {
 	// that public and cross-account access within any public bucket policy, including
 	// non-public delegation to specific accounts, is blocked.
 	//
-	// This is not supported for Amazon S3 on Outposts.
+	// This property is not supported for Amazon S3 on Outposts.
 	RestrictPublicBuckets *bool `locationName:"RestrictPublicBuckets" type:"boolean"`
 }
 
@@ -14866,6 +23770,140 @@ func (s *PublicAccessBlockConfiguration) SetIgnorePublicAcls(v bool) *PublicAcce
 // SetRestrictPublicBuckets sets the RestrictPublicBuckets field's value.
 func (s *PublicAccessBlockConfiguration) SetRestrictPublicBuckets(v bool) *PublicAccessBlockConfiguration {
 	s.RestrictPublicBuckets = &v
+	return s
+}
+
+type PutAccessGrantsInstanceResourcePolicyInput struct {
+	_ struct{} `locationName:"PutAccessGrantsInstanceResourcePolicyRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Organization of the resource policy of the S3 Access Grants instance.
+	Organization *string `min:"12" type:"string"`
+
+	// The resource policy of the S3 Access Grants instance that you are updating.
+	//
+	// Policy is a required field
+	Policy *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAccessGrantsInstanceResourcePolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAccessGrantsInstanceResourcePolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutAccessGrantsInstanceResourcePolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutAccessGrantsInstanceResourcePolicyInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Organization != nil && len(*s.Organization) < 12 {
+		invalidParams.Add(request.NewErrParamMinLen("Organization", 12))
+	}
+	if s.Policy == nil {
+		invalidParams.Add(request.NewErrParamRequired("Policy"))
+	}
+	if s.Policy != nil && len(*s.Policy) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Policy", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *PutAccessGrantsInstanceResourcePolicyInput) SetAccountId(v string) *PutAccessGrantsInstanceResourcePolicyInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetOrganization sets the Organization field's value.
+func (s *PutAccessGrantsInstanceResourcePolicyInput) SetOrganization(v string) *PutAccessGrantsInstanceResourcePolicyInput {
+	s.Organization = &v
+	return s
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *PutAccessGrantsInstanceResourcePolicyInput) SetPolicy(v string) *PutAccessGrantsInstanceResourcePolicyInput {
+	s.Policy = &v
+	return s
+}
+
+func (s *PutAccessGrantsInstanceResourcePolicyInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type PutAccessGrantsInstanceResourcePolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when you created the S3 Access Grants instance resource
+	// policy.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The Organization of the resource policy of the S3 Access Grants instance.
+	Organization *string `min:"12" type:"string"`
+
+	// The updated resource policy of the S3 Access Grants instance.
+	Policy *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAccessGrantsInstanceResourcePolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAccessGrantsInstanceResourcePolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *PutAccessGrantsInstanceResourcePolicyOutput) SetCreatedAt(v time.Time) *PutAccessGrantsInstanceResourcePolicyOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetOrganization sets the Organization field's value.
+func (s *PutAccessGrantsInstanceResourcePolicyOutput) SetOrganization(v string) *PutAccessGrantsInstanceResourcePolicyOutput {
+	s.Organization = &v
+	return s
+}
+
+// SetPolicy sets the Policy field's value.
+func (s *PutAccessGrantsInstanceResourcePolicyOutput) SetPolicy(v string) *PutAccessGrantsInstanceResourcePolicyOutput {
+	s.Policy = &v
 	return s
 }
 
@@ -15110,7 +24148,7 @@ type PutAccessPointPolicyInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the access point accessed in the
 	// format arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/accesspoint/<my-accesspoint-name>.
-	// For example, to access the access point reports-ap through outpost my-outpost
+	// For example, to access the access point reports-ap through Outpost my-outpost
 	// owned by account 123456789012 in Region us-west-2, use the URL encoding of
 	// arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/accesspoint/reports-ap.
 	// The value must be URL encoded.
@@ -15422,7 +24460,7 @@ type PutBucketPolicyInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -15577,6 +24615,172 @@ func (s PutBucketPolicyOutput) GoString() string {
 	return s.String()
 }
 
+type PutBucketReplicationInput struct {
+	_ struct{} `locationName:"PutBucketReplicationRequest" type:"structure" payload:"ReplicationConfiguration"`
+
+	// The Amazon Web Services account ID of the Outposts bucket.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// Specifies the S3 on Outposts bucket to set the configuration for.
+	//
+	// For using this parameter with Amazon S3 on Outposts with the REST API, you
+	// must specify the name and the x-amz-outpost-id as well.
+	//
+	// For using this parameter with S3 on Outposts with the Amazon Web Services
+	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
+	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
+	// For example, to access the bucket reports through Outpost my-outpost owned
+	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
+	// The value must be URL encoded.
+	//
+	// Bucket is a required field
+	Bucket *string `location:"uri" locationName:"name" min:"3" type:"string" required:"true"`
+
+	// A container for one or more replication rules. A replication configuration
+	// must have at least one rule and you can add up to 100 rules. The maximum
+	// size of a replication configuration is 128 KB.
+	//
+	// ReplicationConfiguration is a required field
+	ReplicationConfiguration *ReplicationConfiguration `locationName:"ReplicationConfiguration" type:"structure" required:"true" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketReplicationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketReplicationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketReplicationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketReplicationInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+	if s.ReplicationConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReplicationConfiguration"))
+	}
+	if s.ReplicationConfiguration != nil {
+		if err := s.ReplicationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ReplicationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *PutBucketReplicationInput) SetAccountId(v string) *PutBucketReplicationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *PutBucketReplicationInput) SetBucket(v string) *PutBucketReplicationInput {
+	s.Bucket = &v
+	return s
+}
+
+// SetReplicationConfiguration sets the ReplicationConfiguration field's value.
+func (s *PutBucketReplicationInput) SetReplicationConfiguration(v *ReplicationConfiguration) *PutBucketReplicationInput {
+	s.ReplicationConfiguration = v
+	return s
+}
+
+func (s *PutBucketReplicationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+func (s *PutBucketReplicationInput) getEndpointARN() (arn.Resource, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	return parseEndpointARN(*s.Bucket)
+}
+
+func (s *PutBucketReplicationInput) hasEndpointARN() bool {
+	if s.Bucket == nil {
+		return false
+	}
+	return arn.IsARN(*s.Bucket)
+}
+
+// updateArnableField updates the value of the input field that
+// takes an ARN as an input. This method is useful to backfill
+// the parsed resource name from ARN into the input member.
+// It returns a pointer to a modified copy of input and an error.
+// Note that original input is not modified.
+func (s PutBucketReplicationInput) updateArnableField(v string) (interface{}, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	s.Bucket = aws.String(v)
+	return &s, nil
+}
+
+// updateAccountID returns a pointer to a modified copy of input,
+// if account id is not provided, we update the account id in modified input
+// if account id is provided, but doesn't match with the one in ARN, we throw an error
+// if account id is not updated, we return nil. Note that original input is not modified.
+func (s PutBucketReplicationInput) updateAccountID(accountId string) (interface{}, error) {
+	if s.AccountId == nil {
+		s.AccountId = aws.String(accountId)
+		return &s, nil
+	} else if *s.AccountId != accountId {
+		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
+	}
+	return nil, nil
+}
+
+type PutBucketReplicationOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketReplicationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketReplicationOutput) GoString() string {
+	return s.String()
+}
+
 type PutBucketTaggingInput struct {
 	_ struct{} `locationName:"PutBucketTaggingRequest" type:"structure" payload:"Tagging"`
 
@@ -15593,7 +24797,7 @@ type PutBucketTaggingInput struct {
 	// For using this parameter with S3 on Outposts with the Amazon Web Services
 	// SDK and CLI, you must specify the ARN of the bucket accessed in the format
 	// arn:aws:s3-outposts:<Region>:<account-id>:outpost/<outpost-id>/bucket/<my-bucket-name>.
-	// For example, to access the bucket reports through outpost my-outpost owned
+	// For example, to access the bucket reports through Outpost my-outpost owned
 	// by account 123456789012 in Region us-west-2, use the URL encoding of arn:aws:s3-outposts:us-west-2:123456789012:outpost/my-outpost/bucket/reports.
 	// The value must be URL encoded.
 	//
@@ -15736,6 +24940,165 @@ func (s PutBucketTaggingOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s PutBucketTaggingOutput) GoString() string {
+	return s.String()
+}
+
+type PutBucketVersioningInput struct {
+	_ struct{} `locationName:"PutBucketVersioningRequest" type:"structure" payload:"VersioningConfiguration"`
+
+	// The Amazon Web Services account ID of the S3 on Outposts bucket.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The S3 on Outposts bucket to set the versioning state for.
+	//
+	// Bucket is a required field
+	Bucket *string `location:"uri" locationName:"name" min:"3" type:"string" required:"true"`
+
+	// The concatenation of the authentication device's serial number, a space,
+	// and the value that is displayed on your authentication device.
+	MFA *string `location:"header" locationName:"x-amz-mfa" type:"string"`
+
+	// The root-level tag for the VersioningConfiguration parameters.
+	//
+	// VersioningConfiguration is a required field
+	VersioningConfiguration *VersioningConfiguration `locationName:"VersioningConfiguration" type:"structure" required:"true" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketVersioningInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketVersioningInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutBucketVersioningInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutBucketVersioningInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Bucket != nil && len(*s.Bucket) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("Bucket", 3))
+	}
+	if s.VersioningConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("VersioningConfiguration"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *PutBucketVersioningInput) SetAccountId(v string) *PutBucketVersioningInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *PutBucketVersioningInput) SetBucket(v string) *PutBucketVersioningInput {
+	s.Bucket = &v
+	return s
+}
+
+// SetMFA sets the MFA field's value.
+func (s *PutBucketVersioningInput) SetMFA(v string) *PutBucketVersioningInput {
+	s.MFA = &v
+	return s
+}
+
+// SetVersioningConfiguration sets the VersioningConfiguration field's value.
+func (s *PutBucketVersioningInput) SetVersioningConfiguration(v *VersioningConfiguration) *PutBucketVersioningInput {
+	s.VersioningConfiguration = v
+	return s
+}
+
+func (s *PutBucketVersioningInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+func (s *PutBucketVersioningInput) getEndpointARN() (arn.Resource, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	return parseEndpointARN(*s.Bucket)
+}
+
+func (s *PutBucketVersioningInput) hasEndpointARN() bool {
+	if s.Bucket == nil {
+		return false
+	}
+	return arn.IsARN(*s.Bucket)
+}
+
+// updateArnableField updates the value of the input field that
+// takes an ARN as an input. This method is useful to backfill
+// the parsed resource name from ARN into the input member.
+// It returns a pointer to a modified copy of input and an error.
+// Note that original input is not modified.
+func (s PutBucketVersioningInput) updateArnableField(v string) (interface{}, error) {
+	if s.Bucket == nil {
+		return nil, fmt.Errorf("member Bucket is nil")
+	}
+	s.Bucket = aws.String(v)
+	return &s, nil
+}
+
+// updateAccountID returns a pointer to a modified copy of input,
+// if account id is not provided, we update the account id in modified input
+// if account id is provided, but doesn't match with the one in ARN, we throw an error
+// if account id is not updated, we return nil. Note that original input is not modified.
+func (s PutBucketVersioningInput) updateAccountID(accountId string) (interface{}, error) {
+	if s.AccountId == nil {
+		s.AccountId = aws.String(accountId)
+		return &s, nil
+	} else if *s.AccountId != accountId {
+		return &s, fmt.Errorf("Account ID mismatch, the Account ID cannot be specified in an ARN and in the accountId field")
+	}
+	return nil, nil
+}
+
+type PutBucketVersioningOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketVersioningOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutBucketVersioningOutput) GoString() string {
 	return s.String()
 }
 
@@ -16396,6 +25759,10 @@ type Region struct {
 	//
 	// Bucket is a required field
 	Bucket *string `min:"3" type:"string" required:"true"`
+
+	// The Amazon Web Services account ID that owns the Amazon S3 bucket that's
+	// associated with this Multi-Region Access Point.
+	BucketAccountId *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -16438,6 +25805,12 @@ func (s *Region) SetBucket(v string) *Region {
 	return s
 }
 
+// SetBucketAccountId sets the BucketAccountId field's value.
+func (s *Region) SetBucketAccountId(v string) *Region {
+	s.BucketAccountId = &v
+	return s
+}
+
 // A combination of a bucket and Region that's part of a Multi-Region Access
 // Point.
 type RegionReport struct {
@@ -16445,6 +25818,10 @@ type RegionReport struct {
 
 	// The name of the bucket.
 	Bucket *string `min:"3" type:"string"`
+
+	// The Amazon Web Services account ID that owns the Amazon S3 bucket that's
+	// associated with this Multi-Region Access Point.
+	BucketAccountId *string `type:"string"`
 
 	// The name of the Region.
 	Region *string `min:"1" type:"string"`
@@ -16471,6 +25848,12 @@ func (s RegionReport) GoString() string {
 // SetBucket sets the Bucket field's value.
 func (s *RegionReport) SetBucket(v string) *RegionReport {
 	s.Bucket = &v
+	return s
+}
+
+// SetBucketAccountId sets the BucketAccountId field's value.
+func (s *RegionReport) SetBucketAccountId(v string) *RegionReport {
+	s.BucketAccountId = &v
 	return s
 }
 
@@ -16547,6 +25930,604 @@ func (s *RegionalBucket) SetOutpostId(v string) *RegionalBucket {
 // SetPublicAccessBlockEnabled sets the PublicAccessBlockEnabled field's value.
 func (s *RegionalBucket) SetPublicAccessBlockEnabled(v bool) *RegionalBucket {
 	s.PublicAccessBlockEnabled = &v
+	return s
+}
+
+// A filter that you can use to specify whether replica modification sync is
+// enabled. S3 on Outposts replica modification sync can help you keep object
+// metadata synchronized between replicas and source objects. By default, S3
+// on Outposts replicates metadata from the source objects to the replicas only.
+// When replica modification sync is enabled, S3 on Outposts replicates metadata
+// changes made to the replica copies back to the source object, making the
+// replication bidirectional.
+//
+// To replicate object metadata modifications on replicas, you can specify this
+// element and set the Status of this element to Enabled.
+//
+// You must enable replica modification sync on the source and destination buckets
+// to replicate replica metadata changes between the source and the replicas.
+type ReplicaModifications struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether S3 on Outposts replicates modifications to object metadata
+	// on replicas.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"ReplicaModificationsStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicaModifications) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicaModifications) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicaModifications) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicaModifications"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStatus sets the Status field's value.
+func (s *ReplicaModifications) SetStatus(v string) *ReplicaModifications {
+	s.Status = &v
+	return s
+}
+
+// A container for one or more replication rules. A replication configuration
+// must have at least one rule and you can add up to 100 rules. The maximum
+// size of a replication configuration is 128 KB.
+type ReplicationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Identity and Access Management (IAM)
+	// role that S3 on Outposts assumes when replicating objects. For information
+	// about S3 replication on Outposts configuration, see Setting up replication
+	// (https://docs.aws.amazon.com/AmazonS3/latest/userguide/outposts-replication-how-setup.html)
+	// in the Amazon S3 User Guide.
+	//
+	// Role is a required field
+	Role *string `type:"string" required:"true"`
+
+	// A container for one or more replication rules. A replication configuration
+	// must have at least one rule and can contain an array of 100 rules at the
+	// most.
+	//
+	// Rules is a required field
+	Rules []*ReplicationRule `locationNameList:"Rule" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationConfiguration"}
+	if s.Role == nil {
+		invalidParams.Add(request.NewErrParamRequired("Role"))
+	}
+	if s.Rules == nil {
+		invalidParams.Add(request.NewErrParamRequired("Rules"))
+	}
+	if s.Rules != nil {
+		for i, v := range s.Rules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Rules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetRole sets the Role field's value.
+func (s *ReplicationConfiguration) SetRole(v string) *ReplicationConfiguration {
+	s.Role = &v
+	return s
+}
+
+// SetRules sets the Rules field's value.
+func (s *ReplicationConfiguration) SetRules(v []*ReplicationRule) *ReplicationConfiguration {
+	s.Rules = v
+	return s
+}
+
+// Specifies which S3 on Outposts objects to replicate and where to store the
+// replicas.
+type ReplicationRule struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the access point for the source Outposts
+	// bucket that you want S3 on Outposts to replicate the objects from.
+	//
+	// Bucket is a required field
+	Bucket *string `type:"string" required:"true"`
+
+	// Specifies whether S3 on Outposts replicates delete markers. If you specify
+	// a Filter element in your replication configuration, you must also include
+	// a DeleteMarkerReplication element. If your Filter includes a Tag element,
+	// the DeleteMarkerReplication element's Status child element must be set to
+	// Disabled, because S3 on Outposts doesn't support replicating delete markers
+	// for tag-based rules.
+	//
+	// For more information about delete marker replication, see How delete operations
+	// affect replication (https://docs.aws.amazon.com/AmazonS3/latest/userguide/S3OutpostsReplication.html#outposts-replication-what-is-replicated)
+	// in the Amazon S3 User Guide.
+	DeleteMarkerReplication *DeleteMarkerReplication `type:"structure"`
+
+	// A container for information about the replication destination and its configurations.
+	//
+	// Destination is a required field
+	Destination *Destination `type:"structure" required:"true"`
+
+	// An optional configuration to replicate existing source bucket objects.
+	//
+	// This is not supported by Amazon S3 on Outposts buckets.
+	ExistingObjectReplication *ExistingObjectReplication `type:"structure"`
+
+	// A filter that identifies the subset of objects to which the replication rule
+	// applies. A Filter element must specify exactly one Prefix, Tag, or And child
+	// element.
+	Filter *ReplicationRuleFilter `type:"structure"`
+
+	// A unique identifier for the rule. The maximum value is 255 characters.
+	ID *string `type:"string"`
+
+	// An object key name prefix that identifies the object or objects to which
+	// the rule applies. The maximum prefix length is 1,024 characters. To include
+	// all objects in an Outposts bucket, specify an empty string.
+	//
+	// When you're using XML requests, you must replace special characters (such
+	// as carriage returns) in object keys with their equivalent XML entity codes.
+	// For more information, see XML-related object key constraints (https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints)
+	// in the Amazon S3 User Guide.
+	//
+	// Deprecated: Prefix has been deprecated
+	Prefix *string `deprecated:"true" type:"string"`
+
+	// The priority indicates which rule has precedence whenever two or more replication
+	// rules conflict. S3 on Outposts attempts to replicate objects according to
+	// all replication rules. However, if there are two or more rules with the same
+	// destination Outposts bucket, then objects will be replicated according to
+	// the rule with the highest priority. The higher the number, the higher the
+	// priority.
+	//
+	// For more information, see Creating replication rules on Outposts (https://docs.aws.amazon.com/AmazonS3/latest/userguide/replication-between-outposts.html)
+	// in the Amazon S3 User Guide.
+	Priority *int64 `type:"integer"`
+
+	// A container that describes additional filters for identifying the source
+	// Outposts objects that you want to replicate. You can choose to enable or
+	// disable the replication of these objects.
+	SourceSelectionCriteria *SourceSelectionCriteria `type:"structure"`
+
+	// Specifies whether the rule is enabled.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"ReplicationRuleStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationRule) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationRule"}
+	if s.Bucket == nil {
+		invalidParams.Add(request.NewErrParamRequired("Bucket"))
+	}
+	if s.Destination == nil {
+		invalidParams.Add(request.NewErrParamRequired("Destination"))
+	}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+	if s.DeleteMarkerReplication != nil {
+		if err := s.DeleteMarkerReplication.Validate(); err != nil {
+			invalidParams.AddNested("DeleteMarkerReplication", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Destination != nil {
+		if err := s.Destination.Validate(); err != nil {
+			invalidParams.AddNested("Destination", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ExistingObjectReplication != nil {
+		if err := s.ExistingObjectReplication.Validate(); err != nil {
+			invalidParams.AddNested("ExistingObjectReplication", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.SourceSelectionCriteria != nil {
+		if err := s.SourceSelectionCriteria.Validate(); err != nil {
+			invalidParams.AddNested("SourceSelectionCriteria", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBucket sets the Bucket field's value.
+func (s *ReplicationRule) SetBucket(v string) *ReplicationRule {
+	s.Bucket = &v
+	return s
+}
+
+// SetDeleteMarkerReplication sets the DeleteMarkerReplication field's value.
+func (s *ReplicationRule) SetDeleteMarkerReplication(v *DeleteMarkerReplication) *ReplicationRule {
+	s.DeleteMarkerReplication = v
+	return s
+}
+
+// SetDestination sets the Destination field's value.
+func (s *ReplicationRule) SetDestination(v *Destination) *ReplicationRule {
+	s.Destination = v
+	return s
+}
+
+// SetExistingObjectReplication sets the ExistingObjectReplication field's value.
+func (s *ReplicationRule) SetExistingObjectReplication(v *ExistingObjectReplication) *ReplicationRule {
+	s.ExistingObjectReplication = v
+	return s
+}
+
+// SetFilter sets the Filter field's value.
+func (s *ReplicationRule) SetFilter(v *ReplicationRuleFilter) *ReplicationRule {
+	s.Filter = v
+	return s
+}
+
+// SetID sets the ID field's value.
+func (s *ReplicationRule) SetID(v string) *ReplicationRule {
+	s.ID = &v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *ReplicationRule) SetPrefix(v string) *ReplicationRule {
+	s.Prefix = &v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *ReplicationRule) SetPriority(v int64) *ReplicationRule {
+	s.Priority = &v
+	return s
+}
+
+// SetSourceSelectionCriteria sets the SourceSelectionCriteria field's value.
+func (s *ReplicationRule) SetSourceSelectionCriteria(v *SourceSelectionCriteria) *ReplicationRule {
+	s.SourceSelectionCriteria = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ReplicationRule) SetStatus(v string) *ReplicationRule {
+	s.Status = &v
+	return s
+}
+
+// A container for specifying rule filters. The filters determine the subset
+// of objects to which the rule applies. This element is required only if you
+// specify more than one filter.
+//
+// For example:
+//
+//   - If you specify both a Prefix and a Tag filter, wrap these filters in
+//     an And element.
+//
+//   - If you specify a filter based on multiple tags, wrap the Tag elements
+//     in an And element.
+type ReplicationRuleAndOperator struct {
+	_ struct{} `type:"structure"`
+
+	// An object key name prefix that identifies the subset of objects that the
+	// rule applies to.
+	Prefix *string `type:"string"`
+
+	// An array of tags that contain key and value pairs.
+	Tags []*S3Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationRuleAndOperator) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationRuleAndOperator) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationRuleAndOperator) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationRuleAndOperator"}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *ReplicationRuleAndOperator) SetPrefix(v string) *ReplicationRuleAndOperator {
+	s.Prefix = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ReplicationRuleAndOperator) SetTags(v []*S3Tag) *ReplicationRuleAndOperator {
+	s.Tags = v
+	return s
+}
+
+// A filter that identifies the subset of objects to which the replication rule
+// applies. A Filter element must specify exactly one Prefix, Tag, or And child
+// element.
+type ReplicationRuleFilter struct {
+	_ struct{} `type:"structure"`
+
+	// A container for specifying rule filters. The filters determine the subset
+	// of objects that the rule applies to. This element is required only if you
+	// specify more than one filter. For example:
+	//
+	//    * If you specify both a Prefix and a Tag filter, wrap these filters in
+	//    an And element.
+	//
+	//    * If you specify a filter based on multiple tags, wrap the Tag elements
+	//    in an And element.
+	And *ReplicationRuleAndOperator `type:"structure"`
+
+	// An object key name prefix that identifies the subset of objects that the
+	// rule applies to.
+	//
+	// When you're using XML requests, you must replace special characters (such
+	// as carriage returns) in object keys with their equivalent XML entity codes.
+	// For more information, see XML-related object key constraints (https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html#object-key-xml-related-constraints)
+	// in the Amazon S3 User Guide.
+	Prefix *string `type:"string"`
+
+	// A container for a key-value name pair.
+	Tag *S3Tag `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationRuleFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationRuleFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationRuleFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationRuleFilter"}
+	if s.And != nil {
+		if err := s.And.Validate(); err != nil {
+			invalidParams.AddNested("And", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tag != nil {
+		if err := s.Tag.Validate(); err != nil {
+			invalidParams.AddNested("Tag", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAnd sets the And field's value.
+func (s *ReplicationRuleFilter) SetAnd(v *ReplicationRuleAndOperator) *ReplicationRuleFilter {
+	s.And = v
+	return s
+}
+
+// SetPrefix sets the Prefix field's value.
+func (s *ReplicationRuleFilter) SetPrefix(v string) *ReplicationRuleFilter {
+	s.Prefix = &v
+	return s
+}
+
+// SetTag sets the Tag field's value.
+func (s *ReplicationRuleFilter) SetTag(v *S3Tag) *ReplicationRuleFilter {
+	s.Tag = v
+	return s
+}
+
+// A container that specifies S3 Replication Time Control (S3 RTC) related information,
+// including whether S3 RTC is enabled and the time when all objects and operations
+// on objects must be replicated.
+//
+// This is not supported by Amazon S3 on Outposts buckets.
+type ReplicationTime struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether S3 Replication Time Control (S3 RTC) is enabled.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"ReplicationTimeStatus"`
+
+	// A container that specifies the time by which replication should be complete
+	// for all objects and operations on objects.
+	//
+	// Time is a required field
+	Time *ReplicationTimeValue `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationTime) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationTime) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplicationTime) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplicationTime"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+	if s.Time == nil {
+		invalidParams.Add(request.NewErrParamRequired("Time"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStatus sets the Status field's value.
+func (s *ReplicationTime) SetStatus(v string) *ReplicationTime {
+	s.Status = &v
+	return s
+}
+
+// SetTime sets the Time field's value.
+func (s *ReplicationTime) SetTime(v *ReplicationTimeValue) *ReplicationTime {
+	s.Time = v
+	return s
+}
+
+// A container that specifies the time value for S3 Replication Time Control
+// (S3 RTC). This value is also used for the replication metrics EventThreshold
+// element.
+//
+// This is not supported by Amazon S3 on Outposts buckets.
+type ReplicationTimeValue struct {
+	_ struct{} `type:"structure"`
+
+	// Contains an integer that specifies the time period in minutes.
+	//
+	// Valid value: 15
+	Minutes *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationTimeValue) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplicationTimeValue) GoString() string {
+	return s.String()
+}
+
+// SetMinutes sets the Minutes field's value.
+func (s *ReplicationTimeValue) SetMinutes(v int64) *ReplicationTimeValue {
+	s.Minutes = &v
 	return s
 }
 
@@ -16786,12 +26767,14 @@ func (s *S3BucketDestination) SetPrefix(v string) *S3BucketDestination {
 }
 
 // Contains the configuration parameters for a PUT Copy object operation. S3
-// Batch Operations passes every object to the underlying PUT Copy object API.
-// For more information about the parameters for this operation, see PUT Object
-// - Copy (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html).
+// Batch Operations passes every object to the underlying CopyObject API operation.
+// For more information about the parameters for this operation, see CopyObject
+// (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectCOPY.html).
 type S3CopyObjectOperation struct {
 	_ struct{} `type:"structure"`
 
+	//
+	// This functionality is not supported by directory buckets.
 	AccessControlGrants []*S3Grant `type:"list"`
 
 	// Specifies whether Amazon S3 should use an S3 Bucket Key for object encryption
@@ -16801,12 +26784,16 @@ type S3CopyObjectOperation struct {
 	//
 	// Specifying this header with an object action doesn’t affect bucket-level
 	// settings for S3 Bucket Key.
+	//
+	// This functionality is not supported by directory buckets.
 	BucketKeyEnabled *bool `type:"boolean"`
 
+	//
+	// This functionality is not supported by directory buckets.
 	CannedAccessControlList *string `type:"string" enum:"S3CannedAccessControlList"`
 
-	// Indicates the algorithm you want Amazon S3 to use to create the checksum.
-	// For more information see Checking object integrity (https://docs.aws.amazon.com/AmazonS3/latest/userguide/CheckingObjectIntegrity.xml)
+	// Indicates the algorithm that you want Amazon S3 to use to create the checksum.
+	// For more information, see Checking object integrity (https://docs.aws.amazon.com/AmazonS3/latest/userguide/checking-object-integrity.html)
 	// in the Amazon S3 User Guide.
 	ChecksumAlgorithm *string `type:"string" enum:"S3ChecksumAlgorithm"`
 
@@ -16819,37 +26806,69 @@ type S3CopyObjectOperation struct {
 	// no tags. Otherwise, Amazon S3 assigns the supplied tags to the new objects.
 	NewObjectMetadata *S3ObjectMetadata `type:"structure"`
 
+	// Specifies a list of tags to add to the destination objects after they are
+	// copied. If NewObjectTagging is not specified, the tags of the source objects
+	// are copied to destination objects by default.
+	//
+	// Directory buckets - Tags aren't supported by directory buckets. If your source
+	// objects have tags and your destination bucket is a directory bucket, specify
+	// an empty tag set in the NewObjectTagging field to prevent copying the source
+	// object tags to the directory bucket.
 	NewObjectTagging []*S3Tag `type:"list"`
 
 	// The legal hold status to be applied to all objects in the Batch Operations
 	// job.
+	//
+	// This functionality is not supported by directory buckets.
 	ObjectLockLegalHoldStatus *string `type:"string" enum:"S3ObjectLockLegalHoldStatus"`
 
 	// The retention mode to be applied to all objects in the Batch Operations job.
+	//
+	// This functionality is not supported by directory buckets.
 	ObjectLockMode *string `type:"string" enum:"S3ObjectLockMode"`
 
 	// The date when the applied object retention configuration expires on all objects
 	// in the Batch Operations job.
+	//
+	// This functionality is not supported by directory buckets.
 	ObjectLockRetainUntilDate *time.Time `type:"timestamp"`
 
-	// Specifies an optional metadata property for website redirects, x-amz-website-redirect-location.
-	// Allows webpage redirects if the object is accessed through a website endpoint.
+	// If the destination bucket is configured as a website, specifies an optional
+	// metadata property for website redirects, x-amz-website-redirect-location.
+	// Allows webpage redirects if the object copy is accessed through a website
+	// endpoint.
+	//
+	// This functionality is not supported by directory buckets.
 	RedirectLocation *string `min:"1" type:"string"`
 
+	//
+	// This functionality is not supported by directory buckets.
 	RequesterPays *bool `type:"boolean"`
 
+	//
+	// This functionality is not supported by directory buckets.
 	SSEAwsKmsKeyId *string `min:"1" type:"string"`
 
+	// Specify the storage class for the destination objects in a Copy operation.
+	//
+	// Directory buckets - This functionality is not supported by directory buckets.
 	StorageClass *string `type:"string" enum:"S3StorageClass"`
 
-	// Specifies the folder prefix into which you would like the objects to be copied.
+	// Specifies the folder prefix that you want the objects to be copied into.
 	// For example, to copy objects into a folder named Folder1 in the destination
-	// bucket, set the TargetKeyPrefix to Folder1.
+	// bucket, set the TargetKeyPrefix property to Folder1.
 	TargetKeyPrefix *string `min:"1" type:"string"`
 
-	// Specifies the destination bucket ARN for the batch copy operation. For example,
-	// to copy objects to a bucket named "destinationBucket", set the TargetResource
-	// to "arn:aws:s3:::destinationBucket".
+	// Specifies the destination bucket Amazon Resource Name (ARN) for the batch
+	// copy operation.
+	//
+	//    * General purpose buckets - For example, to copy objects to a general
+	//    purpose bucket named destinationBucket, set the TargetResource property
+	//    to arn:aws:s3:::destinationBucket.
+	//
+	//    * Directory buckets - For example, to copy objects to a directory bucket
+	//    named destinationBucket in the Availability Zone; identified by the AZ
+	//    ID usw2-az2, set the TargetResource property to arn:aws:s3express:region:account_id:/bucket/destination_bucket_base_name--usw2-az2--x-s3.
 	TargetResource *string `min:"1" type:"string"`
 
 	UnModifiedSinceConstraint *time.Time `type:"timestamp"`
@@ -17028,9 +27047,9 @@ func (s *S3CopyObjectOperation) SetUnModifiedSinceConstraint(v time.Time) *S3Cop
 	return s
 }
 
-// Contains no configuration parameters because the DELETE Object tagging API
-// only accepts the bucket name and key name as parameters, which are defined
-// in the job's manifest.
+// Contains no configuration parameters because the DELETE Object tagging (DeleteObjectTagging)
+// API operation accepts only the bucket name and key name as parameters, which
+// are defined in the job's manifest.
 type S3DeleteObjectTaggingOperation struct {
 	_ struct{} `type:"structure"`
 }
@@ -17062,7 +27081,9 @@ type S3GeneratedManifestDescriptor struct {
 	// The format of the generated manifest.
 	Format *string `type:"string" enum:"GeneratedManifestFormat"`
 
-	// Contains the information required to locate a manifest object.
+	// Contains the information required to locate a manifest object. Manifests
+	// can't be imported from directory buckets. For more information, see Directory
+	// buckets (https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-overview.html).
 	Location *JobManifestLocation `type:"structure"`
 }
 
@@ -17211,9 +27232,9 @@ func (s *S3Grantee) SetTypeIdentifier(v string) *S3Grantee {
 	return s
 }
 
-// Contains the configuration parameters for an S3 Initiate Restore Object job.
-// S3 Batch Operations passes every object to the underlying POST Object restore
-// API. For more information about the parameters for this operation, see RestoreObject
+// Contains the configuration parameters for a POST Object restore job. S3 Batch
+// Operations passes every object to the underlying RestoreObject API operation.
+// For more information about the parameters for this operation, see RestoreObject
 // (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPOSTrestore.html#RESTObjectPOSTrestore-restore-request).
 type S3InitiateRestoreObjectOperation struct {
 	_ struct{} `type:"structure"`
@@ -17285,15 +27306,20 @@ type S3JobManifestGenerator struct {
 	// Services account ID must match this value, else the job fails.
 	ExpectedBucketOwner *string `type:"string"`
 
-	// Specifies rules the S3JobManifestGenerator should use to use to decide whether
-	// an object in the source bucket should or should not be included in the generated
+	// Specifies rules the S3JobManifestGenerator should use to decide whether an
+	// object in the source bucket should or should not be included in the generated
 	// job manifest.
 	Filter *JobManifestGeneratorFilter `type:"structure"`
 
-	// Specifies the location the generated manifest will be written to.
+	// Specifies the location the generated manifest will be written to. Manifests
+	// can't be written to directory buckets. For more information, see Directory
+	// buckets (https://docs.aws.amazon.com/AmazonS3/latest/userguide/directory-buckets-overview.html).
 	ManifestOutputLocation *S3ManifestOutputLocation `type:"structure"`
 
 	// The source bucket used by the ManifestGenerator.
+	//
+	// Directory buckets - Directory buckets aren't supported as the source buckets
+	// used by S3JobManifestGenerator to generate the job manifest.
 	//
 	// SourceBucket is a required field
 	SourceBucket *string `min:"1" type:"string" required:"true"`
@@ -17376,6 +27402,9 @@ type S3ManifestOutputLocation struct {
 	_ struct{} `type:"structure"`
 
 	// The bucket ARN the generated manifest should be written to.
+	//
+	// Directory buckets - Directory buckets aren't supported as the buckets to
+	// store the generated manifest.
 	//
 	// Bucket is a required field
 	Bucket *string `min:"1" type:"string" required:"true"`
@@ -17531,16 +27560,22 @@ type S3ObjectMetadata struct {
 
 	ContentLanguage *string `min:"1" type:"string"`
 
+	// This member has been deprecated.
 	ContentLength *int64 `type:"long"`
 
+	// This member has been deprecated.
 	ContentMD5 *string `min:"1" type:"string"`
 
 	ContentType *string `min:"1" type:"string"`
 
 	HttpExpiresDate *time.Time `type:"timestamp"`
 
+	// This member has been deprecated.
 	RequesterCharged *bool `type:"boolean"`
 
+	//
+	// For directory buckets, only the server-side encryption with Amazon S3 managed
+	// keys (SSE-S3) (AES256) is supported.
 	SSEAlgorithm *string `type:"string" enum:"S3SSEAlgorithm"`
 
 	UserMetadata map[string]*string `type:"map"`
@@ -17784,10 +27819,10 @@ func (s *S3Retention) SetRetainUntilDate(v time.Time) *S3Retention {
 	return s
 }
 
-// Contains the configuration parameters for a Set Object ACL operation. S3
-// Batch Operations passes every object to the underlying PUT Object acl API.
-// For more information about the parameters for this operation, see PUT Object
-// acl (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUTacl.html).
+// Contains the configuration parameters for a PUT Object ACL operation. S3
+// Batch Operations passes every object to the underlying PutObjectAcl API operation.
+// For more information about the parameters for this operation, see PutObjectAcl
+// (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUTacl.html).
 type S3SetObjectAclOperation struct {
 	_ struct{} `type:"structure"`
 
@@ -17834,10 +27869,12 @@ func (s *S3SetObjectAclOperation) SetAccessControlPolicy(v *S3AccessControlPolic
 }
 
 // Contains the configuration for an S3 Object Lock legal hold operation that
-// an S3 Batch Operations job passes every object to the underlying PutObjectLegalHold
-// API. For more information, see Using S3 Object Lock legal hold with S3 Batch
-// Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-legal-hold.html)
+// an S3 Batch Operations job passes to every object to the underlying PutObjectLegalHold
+// API operation. For more information, see Using S3 Object Lock legal hold
+// with S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-legal-hold.html)
 // in the Amazon S3 User Guide.
+//
+// This functionality is not supported by directory buckets.
 type S3SetObjectLegalHoldOperation struct {
 	_ struct{} `type:"structure"`
 
@@ -17892,9 +27929,11 @@ func (s *S3SetObjectLegalHoldOperation) SetLegalHold(v *S3ObjectLockLegalHold) *
 
 // Contains the configuration parameters for the Object Lock retention action
 // for an S3 Batch Operations job. Batch Operations passes every object to the
-// underlying PutObjectRetention API. For more information, see Using S3 Object
-// Lock retention with S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-retention-date.html)
+// underlying PutObjectRetention API operation. For more information, see Using
+// S3 Object Lock retention with S3 Batch Operations (https://docs.aws.amazon.com/AmazonS3/latest/dev/batch-ops-retention-date.html)
 // in the Amazon S3 User Guide.
+//
+// This functionality is not supported by directory buckets.
 type S3SetObjectRetentionOperation struct {
 	_ struct{} `type:"structure"`
 
@@ -17954,10 +27993,10 @@ func (s *S3SetObjectRetentionOperation) SetRetention(v *S3Retention) *S3SetObjec
 	return s
 }
 
-// Contains the configuration parameters for a Set Object Tagging operation.
-// S3 Batch Operations passes every object to the underlying PUT Object tagging
-// API. For more information about the parameters for this operation, see PUT
-// Object tagging (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUTtagging.html).
+// Contains the configuration parameters for a PUT Object Tagging operation.
+// S3 Batch Operations passes every object to the underlying PutObjectTagging
+// API operation. For more information about the parameters for this operation,
+// see PutObjectTagging (https://docs.aws.amazon.com/AmazonS3/latest/API/RESTObjectPUTtagging.html).
 type S3SetObjectTaggingOperation struct {
 	_ struct{} `type:"structure"`
 
@@ -18008,12 +28047,17 @@ func (s *S3SetObjectTaggingOperation) SetTagSet(v []*S3Tag) *S3SetObjectTaggingO
 	return s
 }
 
+// A container for a key-value name pair.
 type S3Tag struct {
 	_ struct{} `type:"structure"`
 
+	// Key of the tag
+	//
 	// Key is a required field
 	Key *string `min:"1" type:"string" required:"true"`
 
+	// Value of the tag
+	//
 	// Value is a required field
 	Value *string `type:"string" required:"true"`
 }
@@ -18119,8 +28163,8 @@ type SSEKMSEncryption struct {
 	_ struct{} `locationName:"SSE-KMS" type:"structure"`
 
 	// Specifies the ID of the Amazon Web Services Key Management Service (Amazon
-	// Web Services KMS) symmetric customer managed key to use for encrypting generated
-	// manifest objects.
+	// Web Services KMS) symmetric encryption customer managed key to use for encrypting
+	// generated manifest objects.
 	//
 	// KeyId is a required field
 	KeyId *string `min:"1" type:"string" required:"true"`
@@ -18275,6 +28319,137 @@ func (s *SelectionCriteria) SetMaxDepth(v int64) *SelectionCriteria {
 // SetMinStorageBytesPercentage sets the MinStorageBytesPercentage field's value.
 func (s *SelectionCriteria) SetMinStorageBytesPercentage(v float64) *SelectionCriteria {
 	s.MinStorageBytesPercentage = &v
+	return s
+}
+
+// A container that describes additional filters for identifying the source
+// objects that you want to replicate. You can choose to enable or disable the
+// replication of these objects.
+type SourceSelectionCriteria struct {
+	_ struct{} `type:"structure"`
+
+	// A filter that you can use to specify whether replica modification sync is
+	// enabled. S3 on Outposts replica modification sync can help you keep object
+	// metadata synchronized between replicas and source objects. By default, S3
+	// on Outposts replicates metadata from the source objects to the replicas only.
+	// When replica modification sync is enabled, S3 on Outposts replicates metadata
+	// changes made to the replica copies back to the source object, making the
+	// replication bidirectional.
+	//
+	// To replicate object metadata modifications on replicas, you can specify this
+	// element and set the Status of this element to Enabled.
+	//
+	// You must enable replica modification sync on the source and destination buckets
+	// to replicate replica metadata changes between the source and the replicas.
+	ReplicaModifications *ReplicaModifications `type:"structure"`
+
+	// A filter that you can use to select Amazon S3 objects that are encrypted
+	// with server-side encryption by using Key Management Service (KMS) keys. If
+	// you include SourceSelectionCriteria in the replication configuration, this
+	// element is required.
+	//
+	// This is not supported by Amazon S3 on Outposts buckets.
+	SseKmsEncryptedObjects *SseKmsEncryptedObjects `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SourceSelectionCriteria) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SourceSelectionCriteria) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SourceSelectionCriteria) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SourceSelectionCriteria"}
+	if s.ReplicaModifications != nil {
+		if err := s.ReplicaModifications.Validate(); err != nil {
+			invalidParams.AddNested("ReplicaModifications", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.SseKmsEncryptedObjects != nil {
+		if err := s.SseKmsEncryptedObjects.Validate(); err != nil {
+			invalidParams.AddNested("SseKmsEncryptedObjects", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetReplicaModifications sets the ReplicaModifications field's value.
+func (s *SourceSelectionCriteria) SetReplicaModifications(v *ReplicaModifications) *SourceSelectionCriteria {
+	s.ReplicaModifications = v
+	return s
+}
+
+// SetSseKmsEncryptedObjects sets the SseKmsEncryptedObjects field's value.
+func (s *SourceSelectionCriteria) SetSseKmsEncryptedObjects(v *SseKmsEncryptedObjects) *SourceSelectionCriteria {
+	s.SseKmsEncryptedObjects = v
+	return s
+}
+
+// A container for filter information that you can use to select S3 objects
+// that are encrypted with Key Management Service (KMS).
+//
+// This is not supported by Amazon S3 on Outposts buckets.
+type SseKmsEncryptedObjects struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether Amazon S3 replicates objects that are created with server-side
+	// encryption by using an KMS key stored in Key Management Service.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"SseKmsEncryptedObjectsStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SseKmsEncryptedObjects) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SseKmsEncryptedObjects) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SseKmsEncryptedObjects) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SseKmsEncryptedObjects"}
+	if s.Status == nil {
+		invalidParams.Add(request.NewErrParamRequired("Status"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStatus sets the Status field's value.
+func (s *SseKmsEncryptedObjects) SetStatus(v string) *SseKmsEncryptedObjects {
+	s.Status = &v
 	return s
 }
 
@@ -18597,6 +28772,485 @@ func (s *StorageLensDataExportEncryption) SetSSES3(v *SSES3) *StorageLensDataExp
 	return s
 }
 
+// A custom grouping of objects that include filters for prefixes, suffixes,
+// object tags, object size, or object age. You can create an S3 Storage Lens
+// group that includes a single filter or multiple filter conditions. To specify
+// multiple filter conditions, you use AND or OR logical operators.
+type StorageLensGroup struct {
+	_ struct{} `type:"structure"`
+
+	// Sets the criteria for the Storage Lens group data that is displayed. For
+	// multiple filter conditions, the AND or OR logical operator is used.
+	//
+	// Filter is a required field
+	Filter *StorageLensGroupFilter `type:"structure" required:"true"`
+
+	// Contains the name of the Storage Lens group.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// Contains the Amazon Resource Name (ARN) of the Storage Lens group. This property
+	// is read-only.
+	StorageLensGroupArn *string `min:"4" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroup) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroup) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StorageLensGroup) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StorageLensGroup"}
+	if s.Filter == nil {
+		invalidParams.Add(request.NewErrParamRequired("Filter"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.StorageLensGroupArn != nil && len(*s.StorageLensGroupArn) < 4 {
+		invalidParams.Add(request.NewErrParamMinLen("StorageLensGroupArn", 4))
+	}
+	if s.Filter != nil {
+		if err := s.Filter.Validate(); err != nil {
+			invalidParams.AddNested("Filter", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilter sets the Filter field's value.
+func (s *StorageLensGroup) SetFilter(v *StorageLensGroupFilter) *StorageLensGroup {
+	s.Filter = v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *StorageLensGroup) SetName(v string) *StorageLensGroup {
+	s.Name = &v
+	return s
+}
+
+// SetStorageLensGroupArn sets the StorageLensGroupArn field's value.
+func (s *StorageLensGroup) SetStorageLensGroupArn(v string) *StorageLensGroup {
+	s.StorageLensGroupArn = &v
+	return s
+}
+
+// A logical operator that allows multiple filter conditions to be joined for
+// more complex comparisons of Storage Lens group data.
+type StorageLensGroupAndOperator struct {
+	_ struct{} `type:"structure"`
+
+	// Contains a list of prefixes. At least one prefix must be specified. Up to
+	// 10 prefixes are allowed.
+	MatchAnyPrefix []*string `locationNameList:"Prefix" type:"list"`
+
+	// Contains a list of suffixes. At least one suffix must be specified. Up to
+	// 10 suffixes are allowed.
+	MatchAnySuffix []*string `locationNameList:"Suffix" type:"list"`
+
+	// Contains the list of object tags. At least one object tag must be specified.
+	// Up to 10 object tags are allowed.
+	MatchAnyTag []*S3Tag `locationNameList:"Tag" type:"list"`
+
+	// Contains DaysGreaterThan and DaysLessThan to define the object age range
+	// (minimum and maximum number of days).
+	MatchObjectAge *MatchObjectAge `type:"structure"`
+
+	// Contains BytesGreaterThan and BytesLessThan to define the object size range
+	// (minimum and maximum number of Bytes).
+	MatchObjectSize *MatchObjectSize `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupAndOperator) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupAndOperator) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StorageLensGroupAndOperator) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StorageLensGroupAndOperator"}
+	if s.MatchAnyTag != nil {
+		for i, v := range s.MatchAnyTag {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MatchAnyTag", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMatchAnyPrefix sets the MatchAnyPrefix field's value.
+func (s *StorageLensGroupAndOperator) SetMatchAnyPrefix(v []*string) *StorageLensGroupAndOperator {
+	s.MatchAnyPrefix = v
+	return s
+}
+
+// SetMatchAnySuffix sets the MatchAnySuffix field's value.
+func (s *StorageLensGroupAndOperator) SetMatchAnySuffix(v []*string) *StorageLensGroupAndOperator {
+	s.MatchAnySuffix = v
+	return s
+}
+
+// SetMatchAnyTag sets the MatchAnyTag field's value.
+func (s *StorageLensGroupAndOperator) SetMatchAnyTag(v []*S3Tag) *StorageLensGroupAndOperator {
+	s.MatchAnyTag = v
+	return s
+}
+
+// SetMatchObjectAge sets the MatchObjectAge field's value.
+func (s *StorageLensGroupAndOperator) SetMatchObjectAge(v *MatchObjectAge) *StorageLensGroupAndOperator {
+	s.MatchObjectAge = v
+	return s
+}
+
+// SetMatchObjectSize sets the MatchObjectSize field's value.
+func (s *StorageLensGroupAndOperator) SetMatchObjectSize(v *MatchObjectSize) *StorageLensGroupAndOperator {
+	s.MatchObjectSize = v
+	return s
+}
+
+// The filter element sets the criteria for the Storage Lens group data that
+// is displayed. For multiple filter conditions, the AND or OR logical operator
+// is used.
+type StorageLensGroupFilter struct {
+	_ struct{} `type:"structure"`
+
+	// A logical operator that allows multiple filter conditions to be joined for
+	// more complex comparisons of Storage Lens group data. Objects must match all
+	// of the listed filter conditions that are joined by the And logical operator.
+	// Only one of each filter condition is allowed.
+	And *StorageLensGroupAndOperator `type:"structure"`
+
+	// Contains a list of prefixes. At least one prefix must be specified. Up to
+	// 10 prefixes are allowed.
+	MatchAnyPrefix []*string `locationNameList:"Prefix" type:"list"`
+
+	// Contains a list of suffixes. At least one suffix must be specified. Up to
+	// 10 suffixes are allowed.
+	MatchAnySuffix []*string `locationNameList:"Suffix" type:"list"`
+
+	// Contains the list of S3 object tags. At least one object tag must be specified.
+	// Up to 10 object tags are allowed.
+	MatchAnyTag []*S3Tag `locationNameList:"Tag" type:"list"`
+
+	// Contains DaysGreaterThan and DaysLessThan to define the object age range
+	// (minimum and maximum number of days).
+	MatchObjectAge *MatchObjectAge `type:"structure"`
+
+	// Contains BytesGreaterThan and BytesLessThan to define the object size range
+	// (minimum and maximum number of Bytes).
+	MatchObjectSize *MatchObjectSize `type:"structure"`
+
+	// A single logical operator that allows multiple filter conditions to be joined.
+	// Objects can match any of the listed filter conditions, which are joined by
+	// the Or logical operator. Only one of each filter condition is allowed.
+	Or *StorageLensGroupOrOperator `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupFilter) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupFilter) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StorageLensGroupFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StorageLensGroupFilter"}
+	if s.And != nil {
+		if err := s.And.Validate(); err != nil {
+			invalidParams.AddNested("And", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.MatchAnyTag != nil {
+		for i, v := range s.MatchAnyTag {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MatchAnyTag", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Or != nil {
+		if err := s.Or.Validate(); err != nil {
+			invalidParams.AddNested("Or", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAnd sets the And field's value.
+func (s *StorageLensGroupFilter) SetAnd(v *StorageLensGroupAndOperator) *StorageLensGroupFilter {
+	s.And = v
+	return s
+}
+
+// SetMatchAnyPrefix sets the MatchAnyPrefix field's value.
+func (s *StorageLensGroupFilter) SetMatchAnyPrefix(v []*string) *StorageLensGroupFilter {
+	s.MatchAnyPrefix = v
+	return s
+}
+
+// SetMatchAnySuffix sets the MatchAnySuffix field's value.
+func (s *StorageLensGroupFilter) SetMatchAnySuffix(v []*string) *StorageLensGroupFilter {
+	s.MatchAnySuffix = v
+	return s
+}
+
+// SetMatchAnyTag sets the MatchAnyTag field's value.
+func (s *StorageLensGroupFilter) SetMatchAnyTag(v []*S3Tag) *StorageLensGroupFilter {
+	s.MatchAnyTag = v
+	return s
+}
+
+// SetMatchObjectAge sets the MatchObjectAge field's value.
+func (s *StorageLensGroupFilter) SetMatchObjectAge(v *MatchObjectAge) *StorageLensGroupFilter {
+	s.MatchObjectAge = v
+	return s
+}
+
+// SetMatchObjectSize sets the MatchObjectSize field's value.
+func (s *StorageLensGroupFilter) SetMatchObjectSize(v *MatchObjectSize) *StorageLensGroupFilter {
+	s.MatchObjectSize = v
+	return s
+}
+
+// SetOr sets the Or field's value.
+func (s *StorageLensGroupFilter) SetOr(v *StorageLensGroupOrOperator) *StorageLensGroupFilter {
+	s.Or = v
+	return s
+}
+
+// Specifies the Storage Lens groups to include in the Storage Lens group aggregation.
+type StorageLensGroupLevel struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates which Storage Lens group ARNs to include or exclude in the Storage
+	// Lens group aggregation. If this value is left null, then all Storage Lens
+	// groups are selected.
+	SelectionCriteria *StorageLensGroupLevelSelectionCriteria `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupLevel) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupLevel) GoString() string {
+	return s.String()
+}
+
+// SetSelectionCriteria sets the SelectionCriteria field's value.
+func (s *StorageLensGroupLevel) SetSelectionCriteria(v *StorageLensGroupLevelSelectionCriteria) *StorageLensGroupLevel {
+	s.SelectionCriteria = v
+	return s
+}
+
+// Indicates which Storage Lens group ARNs to include or exclude in the Storage
+// Lens group aggregation. You can only attach Storage Lens groups to your Storage
+// Lens dashboard if they're included in your Storage Lens group aggregation.
+// If this value is left null, then all Storage Lens groups are selected.
+type StorageLensGroupLevelSelectionCriteria struct {
+	_ struct{} `type:"structure"`
+
+	// Indicates which Storage Lens group ARNs to exclude from the Storage Lens
+	// group aggregation.
+	Exclude []*string `locationNameList:"Arn" type:"list"`
+
+	// Indicates which Storage Lens group ARNs to include in the Storage Lens group
+	// aggregation.
+	Include []*string `locationNameList:"Arn" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupLevelSelectionCriteria) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupLevelSelectionCriteria) GoString() string {
+	return s.String()
+}
+
+// SetExclude sets the Exclude field's value.
+func (s *StorageLensGroupLevelSelectionCriteria) SetExclude(v []*string) *StorageLensGroupLevelSelectionCriteria {
+	s.Exclude = v
+	return s
+}
+
+// SetInclude sets the Include field's value.
+func (s *StorageLensGroupLevelSelectionCriteria) SetInclude(v []*string) *StorageLensGroupLevelSelectionCriteria {
+	s.Include = v
+	return s
+}
+
+// A container element for specifying Or rule conditions. The rule conditions
+// determine the subset of objects to which the Or rule applies. Objects can
+// match any of the listed filter conditions, which are joined by the Or logical
+// operator. Only one of each filter condition is allowed.
+type StorageLensGroupOrOperator struct {
+	_ struct{} `type:"structure"`
+
+	// Filters objects that match any of the specified prefixes.
+	MatchAnyPrefix []*string `locationNameList:"Prefix" type:"list"`
+
+	// Filters objects that match any of the specified suffixes.
+	MatchAnySuffix []*string `locationNameList:"Suffix" type:"list"`
+
+	// Filters objects that match any of the specified S3 object tags.
+	MatchAnyTag []*S3Tag `locationNameList:"Tag" type:"list"`
+
+	// Filters objects that match the specified object age range.
+	MatchObjectAge *MatchObjectAge `type:"structure"`
+
+	// Filters objects that match the specified object size range.
+	MatchObjectSize *MatchObjectSize `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupOrOperator) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StorageLensGroupOrOperator) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StorageLensGroupOrOperator) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StorageLensGroupOrOperator"}
+	if s.MatchAnyTag != nil {
+		for i, v := range s.MatchAnyTag {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "MatchAnyTag", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMatchAnyPrefix sets the MatchAnyPrefix field's value.
+func (s *StorageLensGroupOrOperator) SetMatchAnyPrefix(v []*string) *StorageLensGroupOrOperator {
+	s.MatchAnyPrefix = v
+	return s
+}
+
+// SetMatchAnySuffix sets the MatchAnySuffix field's value.
+func (s *StorageLensGroupOrOperator) SetMatchAnySuffix(v []*string) *StorageLensGroupOrOperator {
+	s.MatchAnySuffix = v
+	return s
+}
+
+// SetMatchAnyTag sets the MatchAnyTag field's value.
+func (s *StorageLensGroupOrOperator) SetMatchAnyTag(v []*S3Tag) *StorageLensGroupOrOperator {
+	s.MatchAnyTag = v
+	return s
+}
+
+// SetMatchObjectAge sets the MatchObjectAge field's value.
+func (s *StorageLensGroupOrOperator) SetMatchObjectAge(v *MatchObjectAge) *StorageLensGroupOrOperator {
+	s.MatchObjectAge = v
+	return s
+}
+
+// SetMatchObjectSize sets the MatchObjectSize field's value.
+func (s *StorageLensGroupOrOperator) SetMatchObjectSize(v *MatchObjectSize) *StorageLensGroupOrOperator {
+	s.MatchObjectSize = v
+	return s
+}
+
 type StorageLensTag struct {
 	_ struct{} `type:"structure"`
 
@@ -18654,6 +29308,323 @@ func (s *StorageLensTag) SetKey(v string) *StorageLensTag {
 func (s *StorageLensTag) SetValue(v string) *StorageLensTag {
 	s.Value = &v
 	return s
+}
+
+type SubmitMultiRegionAccessPointRoutesInput struct {
+	_ struct{} `locationName:"SubmitMultiRegionAccessPointRoutesRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The Amazon Web Services account ID for the owner of the Multi-Region Access
+	// Point.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Multi-Region Access Point ARN.
+	//
+	// Mrap is a required field
+	Mrap *string `location:"uri" locationName:"mrap" type:"string" required:"true"`
+
+	// The different routes that make up the new route configuration. Active routes
+	// return a value of 100, and passive routes return a value of 0.
+	//
+	// RouteUpdates is a required field
+	RouteUpdates []*MultiRegionAccessPointRoute `locationNameList:"Route" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SubmitMultiRegionAccessPointRoutesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SubmitMultiRegionAccessPointRoutesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SubmitMultiRegionAccessPointRoutesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SubmitMultiRegionAccessPointRoutesInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Mrap == nil {
+		invalidParams.Add(request.NewErrParamRequired("Mrap"))
+	}
+	if s.Mrap != nil && len(*s.Mrap) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Mrap", 1))
+	}
+	if s.RouteUpdates == nil {
+		invalidParams.Add(request.NewErrParamRequired("RouteUpdates"))
+	}
+	if s.RouteUpdates != nil {
+		for i, v := range s.RouteUpdates {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "RouteUpdates", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *SubmitMultiRegionAccessPointRoutesInput) SetAccountId(v string) *SubmitMultiRegionAccessPointRoutesInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetMrap sets the Mrap field's value.
+func (s *SubmitMultiRegionAccessPointRoutesInput) SetMrap(v string) *SubmitMultiRegionAccessPointRoutesInput {
+	s.Mrap = &v
+	return s
+}
+
+// SetRouteUpdates sets the RouteUpdates field's value.
+func (s *SubmitMultiRegionAccessPointRoutesInput) SetRouteUpdates(v []*MultiRegionAccessPointRoute) *SubmitMultiRegionAccessPointRoutesInput {
+	s.RouteUpdates = v
+	return s
+}
+
+func (s *SubmitMultiRegionAccessPointRoutesInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type SubmitMultiRegionAccessPointRoutesOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SubmitMultiRegionAccessPointRoutesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SubmitMultiRegionAccessPointRoutesOutput) GoString() string {
+	return s.String()
+}
+
+// An Amazon Web Services resource tag that's associated with your S3 resource.
+// You can add tags to new objects when you upload them, or you can add object
+// tags to existing objects.
+//
+// This operation is only supported for S3 Storage Lens groups (https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-lens-groups.html)
+// and for S3 Access Grants (https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-grants-tagging.html).
+// The tagged resource can be an S3 Storage Lens group or S3 Access Grants instance,
+// registered location, or grant.
+type Tag struct {
+	_ struct{} `type:"structure"`
+
+	// The key of the key-value pair of a tag added to your Amazon Web Services
+	// resource. A tag key can be up to 128 Unicode characters in length and is
+	// case-sensitive. System created tags that begin with aws: aren’t supported.
+	//
+	// Key is a required field
+	Key *string `min:"1" type:"string" required:"true"`
+
+	// The value of the key-value pair of a tag added to your Amazon Web Services
+	// resource. A tag value can be up to 256 Unicode characters in length and is
+	// case-sensitive.
+	//
+	// Value is a required field
+	Value *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Tag) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Tag) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Tag"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *Tag) SetKey(v string) *Tag {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *Tag) SetValue(v string) *Tag {
+	s.Value = &v
+	return s
+}
+
+type TagResourceInput struct {
+	_ struct{} `locationName:"TagResourceRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The Amazon Web Services account ID that created the S3 resource that you're
+	// trying to add tags to or the requester's account ID.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the S3 resource that you're trying to add
+	// tags to. The tagged resource can be an S3 Storage Lens group or S3 Access
+	// Grants instance, registered location, or grant.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
+
+	// The Amazon Web Services resource tags that you want to add to the specified
+	// S3 resource.
+	//
+	// Tags is a required field
+	Tags []*Tag `locationNameList:"Tag" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+	if s.Tags == nil {
+		invalidParams.Add(request.NewErrParamRequired("Tags"))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *TagResourceInput) SetAccountId(v string) *TagResourceInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *TagResourceInput) SetResourceArn(v string) *TagResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *TagResourceInput) SetTags(v []*Tag) *TagResourceInput {
+	s.Tags = v
+	return s
+}
+
+func (s *TagResourceInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type TagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TagResourceOutput) GoString() string {
+	return s.String()
 }
 
 type Tagging struct {
@@ -18764,6 +29735,293 @@ func (s *Transition) SetDays(v int64) *Transition {
 // SetStorageClass sets the StorageClass field's value.
 func (s *Transition) SetStorageClass(v string) *Transition {
 	s.StorageClass = &v
+	return s
+}
+
+type UntagResourceInput struct {
+	_ struct{} `locationName:"UntagResourceRequest" type:"structure"`
+
+	// The Amazon Web Services account ID that owns the resource that you're trying
+	// to remove the tags from.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the S3 resource that you're trying to remove
+	// the tags from.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"uri" locationName:"resourceArn" type:"string" required:"true"`
+
+	// The array of tag key-value pairs that you're trying to remove from of the
+	// S3 resource.
+	//
+	// TagKeys is a required field
+	TagKeys []*string `location:"querystring" locationName:"tagKeys" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UntagResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+	if s.TagKeys == nil {
+		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UntagResourceInput) SetAccountId(v string) *UntagResourceInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *UntagResourceInput) SetResourceArn(v string) *UntagResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+// SetTagKeys sets the TagKeys field's value.
+func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
+	s.TagKeys = v
+	return s
+}
+
+func (s *UntagResourceInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type UntagResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UntagResourceOutput) GoString() string {
+	return s.String()
+}
+
+type UpdateAccessGrantsLocationInput struct {
+	_ struct{} `locationName:"UpdateAccessGrantsLocationRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The ID of the registered location that you are updating. S3 Access Grants
+	// assigns this ID when you register the location. S3 Access Grants assigns
+	// the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	//
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigned this ID when you registered the location. S3 Access Grants
+	// assigns the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	//
+	// If you are passing the default location, you cannot create an access grant
+	// for the entire default location. You must also specify a bucket or a bucket
+	// and prefix in the Subprefix field.
+	//
+	// AccessGrantsLocationId is a required field
+	AccessGrantsLocationId *string `location:"uri" locationName:"id" min:"1" type:"string" required:"true"`
+
+	// The ID of the Amazon Web Services account that is making this request.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the IAM role for the registered location.
+	// S3 Access Grants assumes this role to manage access to the registered location.
+	//
+	// IAMRoleArn is a required field
+	IAMRoleArn *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccessGrantsLocationInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccessGrantsLocationInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateAccessGrantsLocationInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateAccessGrantsLocationInput"}
+	if s.AccessGrantsLocationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccessGrantsLocationId"))
+	}
+	if s.AccessGrantsLocationId != nil && len(*s.AccessGrantsLocationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccessGrantsLocationId", 1))
+	}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.IAMRoleArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IAMRoleArn"))
+	}
+	if s.IAMRoleArn != nil && len(*s.IAMRoleArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IAMRoleArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *UpdateAccessGrantsLocationInput) SetAccessGrantsLocationId(v string) *UpdateAccessGrantsLocationInput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UpdateAccessGrantsLocationInput) SetAccountId(v string) *UpdateAccessGrantsLocationInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetIAMRoleArn sets the IAMRoleArn field's value.
+func (s *UpdateAccessGrantsLocationInput) SetIAMRoleArn(v string) *UpdateAccessGrantsLocationInput {
+	s.IAMRoleArn = &v
+	return s
+}
+
+func (s *UpdateAccessGrantsLocationInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type UpdateAccessGrantsLocationOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the registered location that you are updating.
+	AccessGrantsLocationArn *string `min:"1" type:"string"`
+
+	// The ID of the registered location to which you are granting access. S3 Access
+	// Grants assigned this ID when you registered the location. S3 Access Grants
+	// assigns the ID default to the default location s3:// and assigns an auto-generated
+	// ID to other locations that you register.
+	AccessGrantsLocationId *string `min:"1" type:"string"`
+
+	// The date and time when you registered the location.
+	CreatedAt *time.Time `type:"timestamp"`
+
+	// The Amazon Resource Name (ARN) of the IAM role of the registered location.
+	// S3 Access Grants assumes this role to manage access to the registered location.
+	IAMRoleArn *string `min:"1" type:"string"`
+
+	// The S3 URI path of the location that you are updating. You cannot update
+	// the scope of the registered location. The location scope can be the default
+	// S3 location s3://, the S3 path to a bucket s3://<bucket>, or the S3 path
+	// to a bucket and prefix s3://<bucket>/<prefix>.
+	LocationScope *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccessGrantsLocationOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAccessGrantsLocationOutput) GoString() string {
+	return s.String()
+}
+
+// SetAccessGrantsLocationArn sets the AccessGrantsLocationArn field's value.
+func (s *UpdateAccessGrantsLocationOutput) SetAccessGrantsLocationArn(v string) *UpdateAccessGrantsLocationOutput {
+	s.AccessGrantsLocationArn = &v
+	return s
+}
+
+// SetAccessGrantsLocationId sets the AccessGrantsLocationId field's value.
+func (s *UpdateAccessGrantsLocationOutput) SetAccessGrantsLocationId(v string) *UpdateAccessGrantsLocationOutput {
+	s.AccessGrantsLocationId = &v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *UpdateAccessGrantsLocationOutput) SetCreatedAt(v time.Time) *UpdateAccessGrantsLocationOutput {
+	s.CreatedAt = &v
+	return s
+}
+
+// SetIAMRoleArn sets the IAMRoleArn field's value.
+func (s *UpdateAccessGrantsLocationOutput) SetIAMRoleArn(v string) *UpdateAccessGrantsLocationOutput {
+	s.IAMRoleArn = &v
+	return s
+}
+
+// SetLocationScope sets the LocationScope field's value.
+func (s *UpdateAccessGrantsLocationOutput) SetLocationScope(v string) *UpdateAccessGrantsLocationOutput {
+	s.LocationScope = &v
 	return s
 }
 
@@ -19047,6 +30305,162 @@ func (s *UpdateJobStatusOutput) SetStatusUpdateReason(v string) *UpdateJobStatus
 	return s
 }
 
+type UpdateStorageLensGroupInput struct {
+	_ struct{} `locationName:"UpdateStorageLensGroupRequest" type:"structure" xmlURI:"http://awss3control.amazonaws.com/doc/2018-08-20/"`
+
+	// The Amazon Web Services account ID of the Storage Lens group owner.
+	//
+	// AccountId is a required field
+	AccountId *string `location:"header" locationName:"x-amz-account-id" type:"string" required:"true"`
+
+	// The name of the Storage Lens group that you want to update.
+	//
+	// Name is a required field
+	Name *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The JSON file that contains the Storage Lens group configuration.
+	//
+	// StorageLensGroup is a required field
+	StorageLensGroup *StorageLensGroup `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageLensGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageLensGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateStorageLensGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateStorageLensGroupInput"}
+	if s.AccountId == nil {
+		invalidParams.Add(request.NewErrParamRequired("AccountId"))
+	}
+	if s.AccountId != nil && len(*s.AccountId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("AccountId", 1))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.StorageLensGroup == nil {
+		invalidParams.Add(request.NewErrParamRequired("StorageLensGroup"))
+	}
+	if s.StorageLensGroup != nil {
+		if err := s.StorageLensGroup.Validate(); err != nil {
+			invalidParams.AddNested("StorageLensGroup", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccountId sets the AccountId field's value.
+func (s *UpdateStorageLensGroupInput) SetAccountId(v string) *UpdateStorageLensGroupInput {
+	s.AccountId = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateStorageLensGroupInput) SetName(v string) *UpdateStorageLensGroupInput {
+	s.Name = &v
+	return s
+}
+
+// SetStorageLensGroup sets the StorageLensGroup field's value.
+func (s *UpdateStorageLensGroupInput) SetStorageLensGroup(v *StorageLensGroup) *UpdateStorageLensGroupInput {
+	s.StorageLensGroup = v
+	return s
+}
+
+func (s *UpdateStorageLensGroupInput) hostLabels() map[string]string {
+	return map[string]string{
+		"AccountId": aws.StringValue(s.AccountId),
+	}
+}
+
+type UpdateStorageLensGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageLensGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateStorageLensGroupOutput) GoString() string {
+	return s.String()
+}
+
+// Describes the versioning state of an Amazon S3 on Outposts bucket. For more
+// information, see PutBucketVersioning (https://docs.aws.amazon.com/AmazonS3/latest/API/API_control_PutBucketVersioning.html).
+type VersioningConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies whether MFA delete is enabled or disabled in the bucket versioning
+	// configuration for the S3 on Outposts bucket.
+	MFADelete *string `locationName:"MfaDelete" type:"string" enum:"MFADelete"`
+
+	// Sets the versioning state of the S3 on Outposts bucket.
+	Status *string `type:"string" enum:"BucketVersioningStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VersioningConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VersioningConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetMFADelete sets the MFADelete field's value.
+func (s *VersioningConfiguration) SetMFADelete(v string) *VersioningConfiguration {
+	s.MFADelete = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VersioningConfiguration) SetStatus(v string) *VersioningConfiguration {
+	s.Status = &v
+	return s
+}
+
 // The virtual private cloud (VPC) configuration for an access point.
 type VpcConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -19195,6 +30609,54 @@ func BucketLocationConstraint_Values() []string {
 }
 
 const (
+	// BucketVersioningStatusEnabled is a BucketVersioningStatus enum value
+	BucketVersioningStatusEnabled = "Enabled"
+
+	// BucketVersioningStatusSuspended is a BucketVersioningStatus enum value
+	BucketVersioningStatusSuspended = "Suspended"
+)
+
+// BucketVersioningStatus_Values returns all elements of the BucketVersioningStatus enum
+func BucketVersioningStatus_Values() []string {
+	return []string{
+		BucketVersioningStatusEnabled,
+		BucketVersioningStatusSuspended,
+	}
+}
+
+const (
+	// DeleteMarkerReplicationStatusEnabled is a DeleteMarkerReplicationStatus enum value
+	DeleteMarkerReplicationStatusEnabled = "Enabled"
+
+	// DeleteMarkerReplicationStatusDisabled is a DeleteMarkerReplicationStatus enum value
+	DeleteMarkerReplicationStatusDisabled = "Disabled"
+)
+
+// DeleteMarkerReplicationStatus_Values returns all elements of the DeleteMarkerReplicationStatus enum
+func DeleteMarkerReplicationStatus_Values() []string {
+	return []string{
+		DeleteMarkerReplicationStatusEnabled,
+		DeleteMarkerReplicationStatusDisabled,
+	}
+}
+
+const (
+	// ExistingObjectReplicationStatusEnabled is a ExistingObjectReplicationStatus enum value
+	ExistingObjectReplicationStatusEnabled = "Enabled"
+
+	// ExistingObjectReplicationStatusDisabled is a ExistingObjectReplicationStatus enum value
+	ExistingObjectReplicationStatusDisabled = "Disabled"
+)
+
+// ExistingObjectReplicationStatus_Values returns all elements of the ExistingObjectReplicationStatus enum
+func ExistingObjectReplicationStatus_Values() []string {
+	return []string{
+		ExistingObjectReplicationStatusEnabled,
+		ExistingObjectReplicationStatusDisabled,
+	}
+}
+
+const (
 	// ExpirationStatusEnabled is a ExpirationStatus enum value
 	ExpirationStatusEnabled = "Enabled"
 
@@ -19235,6 +30697,26 @@ const (
 func GeneratedManifestFormat_Values() []string {
 	return []string{
 		GeneratedManifestFormatS3inventoryReportCsv20211130,
+	}
+}
+
+const (
+	// GranteeTypeDirectoryUser is a GranteeType enum value
+	GranteeTypeDirectoryUser = "DIRECTORY_USER"
+
+	// GranteeTypeDirectoryGroup is a GranteeType enum value
+	GranteeTypeDirectoryGroup = "DIRECTORY_GROUP"
+
+	// GranteeTypeIam is a GranteeType enum value
+	GranteeTypeIam = "IAM"
+)
+
+// GranteeType_Values returns all elements of the GranteeType enum
+func GranteeType_Values() []string {
+	return []string{
+		GranteeTypeDirectoryUser,
+		GranteeTypeDirectoryGroup,
+		GranteeTypeIam,
 	}
 }
 
@@ -19367,6 +30849,54 @@ func JobStatus_Values() []string {
 }
 
 const (
+	// MFADeleteEnabled is a MFADelete enum value
+	MFADeleteEnabled = "Enabled"
+
+	// MFADeleteDisabled is a MFADelete enum value
+	MFADeleteDisabled = "Disabled"
+)
+
+// MFADelete_Values returns all elements of the MFADelete enum
+func MFADelete_Values() []string {
+	return []string{
+		MFADeleteEnabled,
+		MFADeleteDisabled,
+	}
+}
+
+const (
+	// MFADeleteStatusEnabled is a MFADeleteStatus enum value
+	MFADeleteStatusEnabled = "Enabled"
+
+	// MFADeleteStatusDisabled is a MFADeleteStatus enum value
+	MFADeleteStatusDisabled = "Disabled"
+)
+
+// MFADeleteStatus_Values returns all elements of the MFADeleteStatus enum
+func MFADeleteStatus_Values() []string {
+	return []string{
+		MFADeleteStatusEnabled,
+		MFADeleteStatusDisabled,
+	}
+}
+
+const (
+	// MetricsStatusEnabled is a MetricsStatus enum value
+	MetricsStatusEnabled = "Enabled"
+
+	// MetricsStatusDisabled is a MetricsStatus enum value
+	MetricsStatusDisabled = "Disabled"
+)
+
+// MetricsStatus_Values returns all elements of the MetricsStatus enum
+func MetricsStatus_Values() []string {
+	return []string{
+		MetricsStatusEnabled,
+		MetricsStatusDisabled,
+	}
+}
+
+const (
 	// MultiRegionAccessPointStatusReady is a MultiRegionAccessPointStatus enum value
 	MultiRegionAccessPointStatusReady = "READY"
 
@@ -19415,11 +30945,33 @@ func NetworkOrigin_Values() []string {
 }
 
 const (
+	// ObjectLambdaAccessPointAliasStatusProvisioning is a ObjectLambdaAccessPointAliasStatus enum value
+	ObjectLambdaAccessPointAliasStatusProvisioning = "PROVISIONING"
+
+	// ObjectLambdaAccessPointAliasStatusReady is a ObjectLambdaAccessPointAliasStatus enum value
+	ObjectLambdaAccessPointAliasStatusReady = "READY"
+)
+
+// ObjectLambdaAccessPointAliasStatus_Values returns all elements of the ObjectLambdaAccessPointAliasStatus enum
+func ObjectLambdaAccessPointAliasStatus_Values() []string {
+	return []string{
+		ObjectLambdaAccessPointAliasStatusProvisioning,
+		ObjectLambdaAccessPointAliasStatusReady,
+	}
+}
+
+const (
 	// ObjectLambdaAllowedFeatureGetObjectRange is a ObjectLambdaAllowedFeature enum value
 	ObjectLambdaAllowedFeatureGetObjectRange = "GetObject-Range"
 
 	// ObjectLambdaAllowedFeatureGetObjectPartNumber is a ObjectLambdaAllowedFeature enum value
 	ObjectLambdaAllowedFeatureGetObjectPartNumber = "GetObject-PartNumber"
+
+	// ObjectLambdaAllowedFeatureHeadObjectRange is a ObjectLambdaAllowedFeature enum value
+	ObjectLambdaAllowedFeatureHeadObjectRange = "HeadObject-Range"
+
+	// ObjectLambdaAllowedFeatureHeadObjectPartNumber is a ObjectLambdaAllowedFeature enum value
+	ObjectLambdaAllowedFeatureHeadObjectPartNumber = "HeadObject-PartNumber"
 )
 
 // ObjectLambdaAllowedFeature_Values returns all elements of the ObjectLambdaAllowedFeature enum
@@ -19427,18 +30979,32 @@ func ObjectLambdaAllowedFeature_Values() []string {
 	return []string{
 		ObjectLambdaAllowedFeatureGetObjectRange,
 		ObjectLambdaAllowedFeatureGetObjectPartNumber,
+		ObjectLambdaAllowedFeatureHeadObjectRange,
+		ObjectLambdaAllowedFeatureHeadObjectPartNumber,
 	}
 }
 
 const (
 	// ObjectLambdaTransformationConfigurationActionGetObject is a ObjectLambdaTransformationConfigurationAction enum value
 	ObjectLambdaTransformationConfigurationActionGetObject = "GetObject"
+
+	// ObjectLambdaTransformationConfigurationActionHeadObject is a ObjectLambdaTransformationConfigurationAction enum value
+	ObjectLambdaTransformationConfigurationActionHeadObject = "HeadObject"
+
+	// ObjectLambdaTransformationConfigurationActionListObjects is a ObjectLambdaTransformationConfigurationAction enum value
+	ObjectLambdaTransformationConfigurationActionListObjects = "ListObjects"
+
+	// ObjectLambdaTransformationConfigurationActionListObjectsV2 is a ObjectLambdaTransformationConfigurationAction enum value
+	ObjectLambdaTransformationConfigurationActionListObjectsV2 = "ListObjectsV2"
 )
 
 // ObjectLambdaTransformationConfigurationAction_Values returns all elements of the ObjectLambdaTransformationConfigurationAction enum
 func ObjectLambdaTransformationConfigurationAction_Values() []string {
 	return []string{
 		ObjectLambdaTransformationConfigurationActionGetObject,
+		ObjectLambdaTransformationConfigurationActionHeadObject,
+		ObjectLambdaTransformationConfigurationActionListObjects,
+		ObjectLambdaTransformationConfigurationActionListObjectsV2,
 	}
 }
 
@@ -19499,6 +31065,86 @@ func OutputSchemaVersion_Values() []string {
 }
 
 const (
+	// OwnerOverrideDestination is a OwnerOverride enum value
+	OwnerOverrideDestination = "Destination"
+)
+
+// OwnerOverride_Values returns all elements of the OwnerOverride enum
+func OwnerOverride_Values() []string {
+	return []string{
+		OwnerOverrideDestination,
+	}
+}
+
+const (
+	// PermissionRead is a Permission enum value
+	PermissionRead = "READ"
+
+	// PermissionWrite is a Permission enum value
+	PermissionWrite = "WRITE"
+
+	// PermissionReadwrite is a Permission enum value
+	PermissionReadwrite = "READWRITE"
+)
+
+// Permission_Values returns all elements of the Permission enum
+func Permission_Values() []string {
+	return []string{
+		PermissionRead,
+		PermissionWrite,
+		PermissionReadwrite,
+	}
+}
+
+const (
+	// PrivilegeMinimal is a Privilege enum value
+	PrivilegeMinimal = "Minimal"
+
+	// PrivilegeDefault is a Privilege enum value
+	PrivilegeDefault = "Default"
+)
+
+// Privilege_Values returns all elements of the Privilege enum
+func Privilege_Values() []string {
+	return []string{
+		PrivilegeMinimal,
+		PrivilegeDefault,
+	}
+}
+
+const (
+	// ReplicaModificationsStatusEnabled is a ReplicaModificationsStatus enum value
+	ReplicaModificationsStatusEnabled = "Enabled"
+
+	// ReplicaModificationsStatusDisabled is a ReplicaModificationsStatus enum value
+	ReplicaModificationsStatusDisabled = "Disabled"
+)
+
+// ReplicaModificationsStatus_Values returns all elements of the ReplicaModificationsStatus enum
+func ReplicaModificationsStatus_Values() []string {
+	return []string{
+		ReplicaModificationsStatusEnabled,
+		ReplicaModificationsStatusDisabled,
+	}
+}
+
+const (
+	// ReplicationRuleStatusEnabled is a ReplicationRuleStatus enum value
+	ReplicationRuleStatusEnabled = "Enabled"
+
+	// ReplicationRuleStatusDisabled is a ReplicationRuleStatus enum value
+	ReplicationRuleStatusDisabled = "Disabled"
+)
+
+// ReplicationRuleStatus_Values returns all elements of the ReplicationRuleStatus enum
+func ReplicationRuleStatus_Values() []string {
+	return []string{
+		ReplicationRuleStatusEnabled,
+		ReplicationRuleStatusDisabled,
+	}
+}
+
+const (
 	// ReplicationStatusCompleted is a ReplicationStatus enum value
 	ReplicationStatusCompleted = "COMPLETED"
 
@@ -19519,6 +31165,66 @@ func ReplicationStatus_Values() []string {
 		ReplicationStatusFailed,
 		ReplicationStatusReplica,
 		ReplicationStatusNone,
+	}
+}
+
+const (
+	// ReplicationStorageClassStandard is a ReplicationStorageClass enum value
+	ReplicationStorageClassStandard = "STANDARD"
+
+	// ReplicationStorageClassReducedRedundancy is a ReplicationStorageClass enum value
+	ReplicationStorageClassReducedRedundancy = "REDUCED_REDUNDANCY"
+
+	// ReplicationStorageClassStandardIa is a ReplicationStorageClass enum value
+	ReplicationStorageClassStandardIa = "STANDARD_IA"
+
+	// ReplicationStorageClassOnezoneIa is a ReplicationStorageClass enum value
+	ReplicationStorageClassOnezoneIa = "ONEZONE_IA"
+
+	// ReplicationStorageClassIntelligentTiering is a ReplicationStorageClass enum value
+	ReplicationStorageClassIntelligentTiering = "INTELLIGENT_TIERING"
+
+	// ReplicationStorageClassGlacier is a ReplicationStorageClass enum value
+	ReplicationStorageClassGlacier = "GLACIER"
+
+	// ReplicationStorageClassDeepArchive is a ReplicationStorageClass enum value
+	ReplicationStorageClassDeepArchive = "DEEP_ARCHIVE"
+
+	// ReplicationStorageClassOutposts is a ReplicationStorageClass enum value
+	ReplicationStorageClassOutposts = "OUTPOSTS"
+
+	// ReplicationStorageClassGlacierIr is a ReplicationStorageClass enum value
+	ReplicationStorageClassGlacierIr = "GLACIER_IR"
+)
+
+// ReplicationStorageClass_Values returns all elements of the ReplicationStorageClass enum
+func ReplicationStorageClass_Values() []string {
+	return []string{
+		ReplicationStorageClassStandard,
+		ReplicationStorageClassReducedRedundancy,
+		ReplicationStorageClassStandardIa,
+		ReplicationStorageClassOnezoneIa,
+		ReplicationStorageClassIntelligentTiering,
+		ReplicationStorageClassGlacier,
+		ReplicationStorageClassDeepArchive,
+		ReplicationStorageClassOutposts,
+		ReplicationStorageClassGlacierIr,
+	}
+}
+
+const (
+	// ReplicationTimeStatusEnabled is a ReplicationTimeStatus enum value
+	ReplicationTimeStatusEnabled = "Enabled"
+
+	// ReplicationTimeStatusDisabled is a ReplicationTimeStatus enum value
+	ReplicationTimeStatusDisabled = "Disabled"
+)
+
+// ReplicationTimeStatus_Values returns all elements of the ReplicationTimeStatus enum
+func ReplicationTimeStatus_Values() []string {
+	return []string{
+		ReplicationTimeStatusEnabled,
+		ReplicationTimeStatusDisabled,
 	}
 }
 
@@ -19727,6 +31433,18 @@ func S3Permission_Values() []string {
 }
 
 const (
+	// S3PrefixTypeObject is a S3PrefixType enum value
+	S3PrefixTypeObject = "Object"
+)
+
+// S3PrefixType_Values returns all elements of the S3PrefixType enum
+func S3PrefixType_Values() []string {
+	return []string{
+		S3PrefixTypeObject,
+	}
+}
+
+const (
 	// S3SSEAlgorithmAes256 is a S3SSEAlgorithm enum value
 	S3SSEAlgorithmAes256 = "AES256"
 
@@ -19775,6 +31493,22 @@ func S3StorageClass_Values() []string {
 		S3StorageClassIntelligentTiering,
 		S3StorageClassDeepArchive,
 		S3StorageClassGlacierIr,
+	}
+}
+
+const (
+	// SseKmsEncryptedObjectsStatusEnabled is a SseKmsEncryptedObjectsStatus enum value
+	SseKmsEncryptedObjectsStatusEnabled = "Enabled"
+
+	// SseKmsEncryptedObjectsStatusDisabled is a SseKmsEncryptedObjectsStatus enum value
+	SseKmsEncryptedObjectsStatusDisabled = "Disabled"
+)
+
+// SseKmsEncryptedObjectsStatus_Values returns all elements of the SseKmsEncryptedObjectsStatus enum
+func SseKmsEncryptedObjectsStatus_Values() []string {
+	return []string{
+		SseKmsEncryptedObjectsStatusEnabled,
+		SseKmsEncryptedObjectsStatusDisabled,
 	}
 }
 

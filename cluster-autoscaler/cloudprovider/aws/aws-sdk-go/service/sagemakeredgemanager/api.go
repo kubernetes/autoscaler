@@ -13,6 +13,85 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+const opGetDeployments = "GetDeployments"
+
+// GetDeploymentsRequest generates a "aws/request.Request" representing the
+// client's request for the GetDeployments operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetDeployments for more information on using the GetDeployments
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetDeploymentsRequest method.
+//	req, resp := client.GetDeploymentsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/GetDeployments
+func (c *SagemakerEdgeManager) GetDeploymentsRequest(input *GetDeploymentsInput) (req *request.Request, output *GetDeploymentsOutput) {
+	op := &request.Operation{
+		Name:       opGetDeployments,
+		HTTPMethod: "POST",
+		HTTPPath:   "/GetDeployments",
+	}
+
+	if input == nil {
+		input = &GetDeploymentsInput{}
+	}
+
+	output = &GetDeploymentsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetDeployments API operation for Amazon Sagemaker Edge Manager.
+//
+// Use to get the active deployments from a device.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Sagemaker Edge Manager's
+// API operation GetDeployments for usage and error information.
+//
+// Returned Error Types:
+//   - InternalServiceException
+//     An internal failure occurred. Try your request again. If the problem persists,
+//     contact Amazon Web Services customer support.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/GetDeployments
+func (c *SagemakerEdgeManager) GetDeployments(input *GetDeploymentsInput) (*GetDeploymentsOutput, error) {
+	req, out := c.GetDeploymentsRequest(input)
+	return out, req.Send()
+}
+
+// GetDeploymentsWithContext is the same as GetDeployments with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetDeployments for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *SagemakerEdgeManager) GetDeploymentsWithContext(ctx aws.Context, input *GetDeploymentsInput, opts ...request.Option) (*GetDeploymentsOutput, error) {
+	req, out := c.GetDeploymentsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetDeviceRegistration = "GetDeviceRegistration"
 
 // GetDeviceRegistrationRequest generates a "aws/request.Request" representing the
@@ -68,7 +147,7 @@ func (c *SagemakerEdgeManager) GetDeviceRegistrationRequest(input *GetDeviceRegi
 // Returned Error Types:
 //   - InternalServiceException
 //     An internal failure occurred. Try your request again. If the problem persists,
-//     contact AWS customer support.
+//     contact Amazon Web Services customer support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/GetDeviceRegistration
 func (c *SagemakerEdgeManager) GetDeviceRegistration(input *GetDeviceRegistrationInput) (*GetDeviceRegistrationOutput, error) {
@@ -148,7 +227,7 @@ func (c *SagemakerEdgeManager) SendHeartbeatRequest(input *SendHeartbeatInput) (
 // Returned Error Types:
 //   - InternalServiceException
 //     An internal failure occurred. Try your request again. If the problem persists,
-//     contact AWS customer support.
+//     contact Amazon Web Services customer support.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/sagemaker-edge-2020-09-23/SendHeartbeat
 func (c *SagemakerEdgeManager) SendHeartbeat(input *SendHeartbeatInput) (*SendHeartbeatOutput, error) {
@@ -170,6 +249,383 @@ func (c *SagemakerEdgeManager) SendHeartbeatWithContext(ctx aws.Context, input *
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
+}
+
+// Information about the checksum of a model deployed on a device.
+type Checksum struct {
+	_ struct{} `type:"structure"`
+
+	// The checksum of the model.
+	Sum *string `min:"1" type:"string"`
+
+	// The type of the checksum.
+	Type *string `type:"string" enum:"ChecksumType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Checksum) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Checksum) GoString() string {
+	return s.String()
+}
+
+// SetSum sets the Sum field's value.
+func (s *Checksum) SetSum(v string) *Checksum {
+	s.Sum = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *Checksum) SetType(v string) *Checksum {
+	s.Type = &v
+	return s
+}
+
+type Definition struct {
+	_ struct{} `type:"structure"`
+
+	// The checksum information of the model.
+	Checksum *Checksum `type:"structure"`
+
+	// The unique model handle.
+	ModelHandle *string `min:"1" type:"string"`
+
+	// The absolute S3 location of the model.
+	S3Url *string `type:"string"`
+
+	// The desired state of the model.
+	State *string `type:"string" enum:"ModelState"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Definition) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Definition) GoString() string {
+	return s.String()
+}
+
+// SetChecksum sets the Checksum field's value.
+func (s *Definition) SetChecksum(v *Checksum) *Definition {
+	s.Checksum = v
+	return s
+}
+
+// SetModelHandle sets the ModelHandle field's value.
+func (s *Definition) SetModelHandle(v string) *Definition {
+	s.ModelHandle = &v
+	return s
+}
+
+// SetS3Url sets the S3Url field's value.
+func (s *Definition) SetS3Url(v string) *Definition {
+	s.S3Url = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *Definition) SetState(v string) *Definition {
+	s.State = &v
+	return s
+}
+
+type DeploymentModel struct {
+	_ struct{} `type:"structure"`
+
+	// The desired state of the model.
+	DesiredState *string `type:"string" enum:"ModelState"`
+
+	// The unique handle of the model.
+	ModelHandle *string `min:"1" type:"string"`
+
+	// The name of the model.
+	ModelName *string `min:"4" type:"string"`
+
+	// The version of the model.
+	ModelVersion *string `min:"1" type:"string"`
+
+	// Returns the error message if there is a rollback.
+	RollbackFailureReason *string `type:"string"`
+
+	// Returns the current state of the model.
+	State *string `type:"string" enum:"ModelState"`
+
+	// Returns the deployment status of the model.
+	Status *string `type:"string" enum:"DeploymentStatus"`
+
+	// Returns the error message for the deployment status result.
+	StatusReason *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeploymentModel) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeploymentModel) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeploymentModel) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeploymentModel"}
+	if s.ModelHandle != nil && len(*s.ModelHandle) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelHandle", 1))
+	}
+	if s.ModelName != nil && len(*s.ModelName) < 4 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelName", 4))
+	}
+	if s.ModelVersion != nil && len(*s.ModelVersion) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ModelVersion", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDesiredState sets the DesiredState field's value.
+func (s *DeploymentModel) SetDesiredState(v string) *DeploymentModel {
+	s.DesiredState = &v
+	return s
+}
+
+// SetModelHandle sets the ModelHandle field's value.
+func (s *DeploymentModel) SetModelHandle(v string) *DeploymentModel {
+	s.ModelHandle = &v
+	return s
+}
+
+// SetModelName sets the ModelName field's value.
+func (s *DeploymentModel) SetModelName(v string) *DeploymentModel {
+	s.ModelName = &v
+	return s
+}
+
+// SetModelVersion sets the ModelVersion field's value.
+func (s *DeploymentModel) SetModelVersion(v string) *DeploymentModel {
+	s.ModelVersion = &v
+	return s
+}
+
+// SetRollbackFailureReason sets the RollbackFailureReason field's value.
+func (s *DeploymentModel) SetRollbackFailureReason(v string) *DeploymentModel {
+	s.RollbackFailureReason = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *DeploymentModel) SetState(v string) *DeploymentModel {
+	s.State = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *DeploymentModel) SetStatus(v string) *DeploymentModel {
+	s.Status = &v
+	return s
+}
+
+// SetStatusReason sets the StatusReason field's value.
+func (s *DeploymentModel) SetStatusReason(v string) *DeploymentModel {
+	s.StatusReason = &v
+	return s
+}
+
+// Information about the result of a deployment on an edge device that is registered
+// with SageMaker Edge Manager.
+type DeploymentResult struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp of when the deployment was ended, and the agent got the deployment
+	// results.
+	DeploymentEndTime *time.Time `type:"timestamp"`
+
+	// Returns a list of models deployed on the agent.
+	DeploymentModels []*DeploymentModel `type:"list"`
+
+	// The name and unique ID of the deployment.
+	DeploymentName *string `min:"1" type:"string"`
+
+	// The timestamp of when the deployment was started on the agent.
+	DeploymentStartTime *time.Time `type:"timestamp"`
+
+	// Returns the bucket error code.
+	DeploymentStatus *string `min:"1" type:"string"`
+
+	// Returns the detailed error message.
+	DeploymentStatusMessage *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeploymentResult) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeploymentResult) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeploymentResult) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeploymentResult"}
+	if s.DeploymentName != nil && len(*s.DeploymentName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeploymentName", 1))
+	}
+	if s.DeploymentStatus != nil && len(*s.DeploymentStatus) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeploymentStatus", 1))
+	}
+	if s.DeploymentModels != nil {
+		for i, v := range s.DeploymentModels {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "DeploymentModels", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeploymentEndTime sets the DeploymentEndTime field's value.
+func (s *DeploymentResult) SetDeploymentEndTime(v time.Time) *DeploymentResult {
+	s.DeploymentEndTime = &v
+	return s
+}
+
+// SetDeploymentModels sets the DeploymentModels field's value.
+func (s *DeploymentResult) SetDeploymentModels(v []*DeploymentModel) *DeploymentResult {
+	s.DeploymentModels = v
+	return s
+}
+
+// SetDeploymentName sets the DeploymentName field's value.
+func (s *DeploymentResult) SetDeploymentName(v string) *DeploymentResult {
+	s.DeploymentName = &v
+	return s
+}
+
+// SetDeploymentStartTime sets the DeploymentStartTime field's value.
+func (s *DeploymentResult) SetDeploymentStartTime(v time.Time) *DeploymentResult {
+	s.DeploymentStartTime = &v
+	return s
+}
+
+// SetDeploymentStatus sets the DeploymentStatus field's value.
+func (s *DeploymentResult) SetDeploymentStatus(v string) *DeploymentResult {
+	s.DeploymentStatus = &v
+	return s
+}
+
+// SetDeploymentStatusMessage sets the DeploymentStatusMessage field's value.
+func (s *DeploymentResult) SetDeploymentStatusMessage(v string) *DeploymentResult {
+	s.DeploymentStatusMessage = &v
+	return s
+}
+
+// Information about a deployment on an edge device that is registered with
+// SageMaker Edge Manager.
+type EdgeDeployment struct {
+	_ struct{} `type:"structure"`
+
+	// Returns a list of Definition objects.
+	Definitions []*Definition `type:"list"`
+
+	// The name and unique ID of the deployment.
+	DeploymentName *string `min:"1" type:"string"`
+
+	// Determines whether to rollback to previous configuration if deployment fails.
+	FailureHandlingPolicy *string `type:"string" enum:"FailureHandlingPolicy"`
+
+	// The type of the deployment.
+	Type *string `type:"string" enum:"DeploymentType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EdgeDeployment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EdgeDeployment) GoString() string {
+	return s.String()
+}
+
+// SetDefinitions sets the Definitions field's value.
+func (s *EdgeDeployment) SetDefinitions(v []*Definition) *EdgeDeployment {
+	s.Definitions = v
+	return s
+}
+
+// SetDeploymentName sets the DeploymentName field's value.
+func (s *EdgeDeployment) SetDeploymentName(v string) *EdgeDeployment {
+	s.DeploymentName = &v
+	return s
+}
+
+// SetFailureHandlingPolicy sets the FailureHandlingPolicy field's value.
+func (s *EdgeDeployment) SetFailureHandlingPolicy(v string) *EdgeDeployment {
+	s.FailureHandlingPolicy = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *EdgeDeployment) SetType(v string) *EdgeDeployment {
+	s.Type = &v
+	return s
 }
 
 // Information required for edge device metrics.
@@ -244,6 +700,104 @@ func (s *EdgeMetric) SetTimestamp(v time.Time) *EdgeMetric {
 // SetValue sets the Value field's value.
 func (s *EdgeMetric) SetValue(v float64) *EdgeMetric {
 	s.Value = &v
+	return s
+}
+
+type GetDeploymentsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the fleet that the device belongs to.
+	//
+	// DeviceFleetName is a required field
+	DeviceFleetName *string `min:"1" type:"string" required:"true"`
+
+	// The unique name of the device you want to get the configuration of active
+	// deployments from.
+	//
+	// DeviceName is a required field
+	DeviceName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDeploymentsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDeploymentsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetDeploymentsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetDeploymentsInput"}
+	if s.DeviceFleetName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DeviceFleetName"))
+	}
+	if s.DeviceFleetName != nil && len(*s.DeviceFleetName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeviceFleetName", 1))
+	}
+	if s.DeviceName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DeviceName"))
+	}
+	if s.DeviceName != nil && len(*s.DeviceName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DeviceName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDeviceFleetName sets the DeviceFleetName field's value.
+func (s *GetDeploymentsInput) SetDeviceFleetName(v string) *GetDeploymentsInput {
+	s.DeviceFleetName = &v
+	return s
+}
+
+// SetDeviceName sets the DeviceName field's value.
+func (s *GetDeploymentsInput) SetDeviceName(v string) *GetDeploymentsInput {
+	s.DeviceName = &v
+	return s
+}
+
+type GetDeploymentsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Returns a list of the configurations of the active deployments on the device.
+	Deployments []*EdgeDeployment `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDeploymentsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetDeploymentsOutput) GoString() string {
+	return s.String()
+}
+
+// SetDeployments sets the Deployments field's value.
+func (s *GetDeploymentsOutput) SetDeployments(v []*EdgeDeployment) *GetDeploymentsOutput {
+	s.Deployments = v
 	return s
 }
 
@@ -355,7 +909,7 @@ func (s *GetDeviceRegistrationOutput) SetDeviceRegistration(v string) *GetDevice
 }
 
 // An internal failure occurred. Try your request again. If the problem persists,
-// contact AWS customer support.
+// contact Amazon Web Services customer support.
 type InternalServiceException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -526,6 +1080,9 @@ type SendHeartbeatInput struct {
 	// AgentVersion is a required field
 	AgentVersion *string `min:"1" type:"string" required:"true"`
 
+	// Returns the result of a deployment on the device.
+	DeploymentResult *DeploymentResult `type:"structure"`
+
 	// The name of the fleet that the device belongs to.
 	//
 	// DeviceFleetName is a required field
@@ -589,6 +1146,11 @@ func (s *SendHeartbeatInput) Validate() error {
 			}
 		}
 	}
+	if s.DeploymentResult != nil {
+		if err := s.DeploymentResult.Validate(); err != nil {
+			invalidParams.AddNested("DeploymentResult", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Models != nil {
 		for i, v := range s.Models {
 			if v == nil {
@@ -615,6 +1177,12 @@ func (s *SendHeartbeatInput) SetAgentMetrics(v []*EdgeMetric) *SendHeartbeatInpu
 // SetAgentVersion sets the AgentVersion field's value.
 func (s *SendHeartbeatInput) SetAgentVersion(v string) *SendHeartbeatInput {
 	s.AgentVersion = &v
+	return s
+}
+
+// SetDeploymentResult sets the DeploymentResult field's value.
+func (s *SendHeartbeatInput) SetDeploymentResult(v *DeploymentResult) *SendHeartbeatInput {
+	s.DeploymentResult = v
 	return s
 }
 
@@ -656,4 +1224,76 @@ func (s SendHeartbeatOutput) String() string {
 // value will be replaced with "sensitive".
 func (s SendHeartbeatOutput) GoString() string {
 	return s.String()
+}
+
+const (
+	// ChecksumTypeSha1 is a ChecksumType enum value
+	ChecksumTypeSha1 = "SHA1"
+)
+
+// ChecksumType_Values returns all elements of the ChecksumType enum
+func ChecksumType_Values() []string {
+	return []string{
+		ChecksumTypeSha1,
+	}
+}
+
+const (
+	// DeploymentStatusSuccess is a DeploymentStatus enum value
+	DeploymentStatusSuccess = "SUCCESS"
+
+	// DeploymentStatusFail is a DeploymentStatus enum value
+	DeploymentStatusFail = "FAIL"
+)
+
+// DeploymentStatus_Values returns all elements of the DeploymentStatus enum
+func DeploymentStatus_Values() []string {
+	return []string{
+		DeploymentStatusSuccess,
+		DeploymentStatusFail,
+	}
+}
+
+const (
+	// DeploymentTypeModel is a DeploymentType enum value
+	DeploymentTypeModel = "Model"
+)
+
+// DeploymentType_Values returns all elements of the DeploymentType enum
+func DeploymentType_Values() []string {
+	return []string{
+		DeploymentTypeModel,
+	}
+}
+
+const (
+	// FailureHandlingPolicyRollbackOnFailure is a FailureHandlingPolicy enum value
+	FailureHandlingPolicyRollbackOnFailure = "ROLLBACK_ON_FAILURE"
+
+	// FailureHandlingPolicyDoNothing is a FailureHandlingPolicy enum value
+	FailureHandlingPolicyDoNothing = "DO_NOTHING"
+)
+
+// FailureHandlingPolicy_Values returns all elements of the FailureHandlingPolicy enum
+func FailureHandlingPolicy_Values() []string {
+	return []string{
+		FailureHandlingPolicyRollbackOnFailure,
+		FailureHandlingPolicyDoNothing,
+	}
+}
+
+const (
+	// ModelStateDeploy is a ModelState enum value
+	ModelStateDeploy = "DEPLOY"
+
+	// ModelStateUndeploy is a ModelState enum value
+	ModelStateUndeploy = "UNDEPLOY"
+)
+
+// ModelState_Values returns all elements of the ModelState enum
+func ModelState_Values() []string {
+	return []string{
+		ModelStateDeploy,
+		ModelStateUndeploy,
+	}
 }

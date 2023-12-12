@@ -22,6 +22,12 @@ const (
 	// the document limits in Amazon Textract, see limits.
 	ErrCodeBadDocumentException = "BadDocumentException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// Updating or deleting a resource can cause an inconsistent state.
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeDocumentTooLargeException for service response error code
 	// "DocumentTooLargeException".
 	//
@@ -54,7 +60,7 @@ const (
 	// ErrCodeInvalidJobIdException for service response error code
 	// "InvalidJobIdException".
 	//
-	// An invalid job identifier was passed to GetDocumentAnalysis or to GetDocumentAnalysis.
+	// An invalid job identifier was passed to an asynchronous analysis operation.
 	ErrCodeInvalidJobIdException = "InvalidJobIdException"
 
 	// ErrCodeInvalidKMSKeyException for service response error code
@@ -98,6 +104,19 @@ const (
 	// this limit, contact Amazon Textract.
 	ErrCodeProvisionedThroughputExceededException = "ProvisionedThroughputExceededException"
 
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// Returned when an operation tried to access a nonexistent resource.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
+
+	// ErrCodeServiceQuotaExceededException for service response error code
+	// "ServiceQuotaExceededException".
+	//
+	// Returned when a request cannot be completed as it would exceed a maximum
+	// service quota.
+	ErrCodeServiceQuotaExceededException = "ServiceQuotaExceededException"
+
 	// ErrCodeThrottlingException for service response error code
 	// "ThrottlingException".
 	//
@@ -111,11 +130,18 @@ const (
 	// The format of the input document isn't supported. Documents for operations
 	// can be in PNG, JPEG, PDF, or TIFF format.
 	ErrCodeUnsupportedDocumentException = "UnsupportedDocumentException"
+
+	// ErrCodeValidationException for service response error code
+	// "ValidationException".
+	//
+	// Indicates that a request was not valid. Check request for proper formatting.
+	ErrCodeValidationException = "ValidationException"
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessDeniedException":                  newErrorAccessDeniedException,
 	"BadDocumentException":                   newErrorBadDocumentException,
+	"ConflictException":                      newErrorConflictException,
 	"DocumentTooLargeException":              newErrorDocumentTooLargeException,
 	"HumanLoopQuotaExceededException":        newErrorHumanLoopQuotaExceededException,
 	"IdempotentParameterMismatchException":   newErrorIdempotentParameterMismatchException,
@@ -126,6 +152,9 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"InvalidS3ObjectException":               newErrorInvalidS3ObjectException,
 	"LimitExceededException":                 newErrorLimitExceededException,
 	"ProvisionedThroughputExceededException": newErrorProvisionedThroughputExceededException,
+	"ResourceNotFoundException":              newErrorResourceNotFoundException,
+	"ServiceQuotaExceededException":          newErrorServiceQuotaExceededException,
 	"ThrottlingException":                    newErrorThrottlingException,
 	"UnsupportedDocumentException":           newErrorUnsupportedDocumentException,
+	"ValidationException":                    newErrorValidationException,
 }

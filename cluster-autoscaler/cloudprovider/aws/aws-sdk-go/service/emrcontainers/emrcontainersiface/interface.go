@@ -64,6 +64,10 @@ type EMRContainersAPI interface {
 	CancelJobRunWithContext(aws.Context, *emrcontainers.CancelJobRunInput, ...request.Option) (*emrcontainers.CancelJobRunOutput, error)
 	CancelJobRunRequest(*emrcontainers.CancelJobRunInput) (*request.Request, *emrcontainers.CancelJobRunOutput)
 
+	CreateJobTemplate(*emrcontainers.CreateJobTemplateInput) (*emrcontainers.CreateJobTemplateOutput, error)
+	CreateJobTemplateWithContext(aws.Context, *emrcontainers.CreateJobTemplateInput, ...request.Option) (*emrcontainers.CreateJobTemplateOutput, error)
+	CreateJobTemplateRequest(*emrcontainers.CreateJobTemplateInput) (*request.Request, *emrcontainers.CreateJobTemplateOutput)
+
 	CreateManagedEndpoint(*emrcontainers.CreateManagedEndpointInput) (*emrcontainers.CreateManagedEndpointOutput, error)
 	CreateManagedEndpointWithContext(aws.Context, *emrcontainers.CreateManagedEndpointInput, ...request.Option) (*emrcontainers.CreateManagedEndpointOutput, error)
 	CreateManagedEndpointRequest(*emrcontainers.CreateManagedEndpointInput) (*request.Request, *emrcontainers.CreateManagedEndpointOutput)
@@ -71,6 +75,10 @@ type EMRContainersAPI interface {
 	CreateVirtualCluster(*emrcontainers.CreateVirtualClusterInput) (*emrcontainers.CreateVirtualClusterOutput, error)
 	CreateVirtualClusterWithContext(aws.Context, *emrcontainers.CreateVirtualClusterInput, ...request.Option) (*emrcontainers.CreateVirtualClusterOutput, error)
 	CreateVirtualClusterRequest(*emrcontainers.CreateVirtualClusterInput) (*request.Request, *emrcontainers.CreateVirtualClusterOutput)
+
+	DeleteJobTemplate(*emrcontainers.DeleteJobTemplateInput) (*emrcontainers.DeleteJobTemplateOutput, error)
+	DeleteJobTemplateWithContext(aws.Context, *emrcontainers.DeleteJobTemplateInput, ...request.Option) (*emrcontainers.DeleteJobTemplateOutput, error)
+	DeleteJobTemplateRequest(*emrcontainers.DeleteJobTemplateInput) (*request.Request, *emrcontainers.DeleteJobTemplateOutput)
 
 	DeleteManagedEndpoint(*emrcontainers.DeleteManagedEndpointInput) (*emrcontainers.DeleteManagedEndpointOutput, error)
 	DeleteManagedEndpointWithContext(aws.Context, *emrcontainers.DeleteManagedEndpointInput, ...request.Option) (*emrcontainers.DeleteManagedEndpointOutput, error)
@@ -84,6 +92,10 @@ type EMRContainersAPI interface {
 	DescribeJobRunWithContext(aws.Context, *emrcontainers.DescribeJobRunInput, ...request.Option) (*emrcontainers.DescribeJobRunOutput, error)
 	DescribeJobRunRequest(*emrcontainers.DescribeJobRunInput) (*request.Request, *emrcontainers.DescribeJobRunOutput)
 
+	DescribeJobTemplate(*emrcontainers.DescribeJobTemplateInput) (*emrcontainers.DescribeJobTemplateOutput, error)
+	DescribeJobTemplateWithContext(aws.Context, *emrcontainers.DescribeJobTemplateInput, ...request.Option) (*emrcontainers.DescribeJobTemplateOutput, error)
+	DescribeJobTemplateRequest(*emrcontainers.DescribeJobTemplateInput) (*request.Request, *emrcontainers.DescribeJobTemplateOutput)
+
 	DescribeManagedEndpoint(*emrcontainers.DescribeManagedEndpointInput) (*emrcontainers.DescribeManagedEndpointOutput, error)
 	DescribeManagedEndpointWithContext(aws.Context, *emrcontainers.DescribeManagedEndpointInput, ...request.Option) (*emrcontainers.DescribeManagedEndpointOutput, error)
 	DescribeManagedEndpointRequest(*emrcontainers.DescribeManagedEndpointInput) (*request.Request, *emrcontainers.DescribeManagedEndpointOutput)
@@ -92,12 +104,23 @@ type EMRContainersAPI interface {
 	DescribeVirtualClusterWithContext(aws.Context, *emrcontainers.DescribeVirtualClusterInput, ...request.Option) (*emrcontainers.DescribeVirtualClusterOutput, error)
 	DescribeVirtualClusterRequest(*emrcontainers.DescribeVirtualClusterInput) (*request.Request, *emrcontainers.DescribeVirtualClusterOutput)
 
+	GetManagedEndpointSessionCredentials(*emrcontainers.GetManagedEndpointSessionCredentialsInput) (*emrcontainers.GetManagedEndpointSessionCredentialsOutput, error)
+	GetManagedEndpointSessionCredentialsWithContext(aws.Context, *emrcontainers.GetManagedEndpointSessionCredentialsInput, ...request.Option) (*emrcontainers.GetManagedEndpointSessionCredentialsOutput, error)
+	GetManagedEndpointSessionCredentialsRequest(*emrcontainers.GetManagedEndpointSessionCredentialsInput) (*request.Request, *emrcontainers.GetManagedEndpointSessionCredentialsOutput)
+
 	ListJobRuns(*emrcontainers.ListJobRunsInput) (*emrcontainers.ListJobRunsOutput, error)
 	ListJobRunsWithContext(aws.Context, *emrcontainers.ListJobRunsInput, ...request.Option) (*emrcontainers.ListJobRunsOutput, error)
 	ListJobRunsRequest(*emrcontainers.ListJobRunsInput) (*request.Request, *emrcontainers.ListJobRunsOutput)
 
 	ListJobRunsPages(*emrcontainers.ListJobRunsInput, func(*emrcontainers.ListJobRunsOutput, bool) bool) error
 	ListJobRunsPagesWithContext(aws.Context, *emrcontainers.ListJobRunsInput, func(*emrcontainers.ListJobRunsOutput, bool) bool, ...request.Option) error
+
+	ListJobTemplates(*emrcontainers.ListJobTemplatesInput) (*emrcontainers.ListJobTemplatesOutput, error)
+	ListJobTemplatesWithContext(aws.Context, *emrcontainers.ListJobTemplatesInput, ...request.Option) (*emrcontainers.ListJobTemplatesOutput, error)
+	ListJobTemplatesRequest(*emrcontainers.ListJobTemplatesInput) (*request.Request, *emrcontainers.ListJobTemplatesOutput)
+
+	ListJobTemplatesPages(*emrcontainers.ListJobTemplatesInput, func(*emrcontainers.ListJobTemplatesOutput, bool) bool) error
+	ListJobTemplatesPagesWithContext(aws.Context, *emrcontainers.ListJobTemplatesInput, func(*emrcontainers.ListJobTemplatesOutput, bool) bool, ...request.Option) error
 
 	ListManagedEndpoints(*emrcontainers.ListManagedEndpointsInput) (*emrcontainers.ListManagedEndpointsOutput, error)
 	ListManagedEndpointsWithContext(aws.Context, *emrcontainers.ListManagedEndpointsInput, ...request.Option) (*emrcontainers.ListManagedEndpointsOutput, error)

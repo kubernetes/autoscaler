@@ -17,7 +17,8 @@ const (
 	// ErrCodeCodeStorageExceededException for service response error code
 	// "CodeStorageExceededException".
 	//
-	// You have exceeded your maximum total code size per account. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+	// Your Amazon Web Services account has exceeded its maximum total code size.
+	// For more information, see Lambda quotas (https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html).
 	ErrCodeCodeStorageExceededException = "CodeStorageExceededException"
 
 	// ErrCodeCodeVerificationFailedException for service response error code
@@ -37,15 +38,15 @@ const (
 	// ErrCodeEC2ThrottledException for service response error code
 	// "EC2ThrottledException".
 	//
-	// Lambda was throttled by Amazon EC2 during Lambda function initialization
-	// using the execution role provided for the Lambda function.
+	// Amazon EC2 throttled Lambda during Lambda function initialization using the
+	// execution role provided for the function.
 	ErrCodeEC2ThrottledException = "EC2ThrottledException"
 
 	// ErrCodeEC2UnexpectedException for service response error code
 	// "EC2UnexpectedException".
 	//
-	// Lambda received an unexpected EC2 client exception while setting up for the
-	// Lambda function.
+	// Lambda received an unexpected Amazon EC2 client exception while setting up
+	// for the Lambda function.
 	ErrCodeEC2UnexpectedException = "EC2UnexpectedException"
 
 	// ErrCodeEFSIOException for service response error code
@@ -57,42 +58,44 @@ const (
 	// ErrCodeEFSMountConnectivityException for service response error code
 	// "EFSMountConnectivityException".
 	//
-	// The function couldn't make a network connection to the configured file system.
+	// The Lambda function couldn't make a network connection to the configured
+	// file system.
 	ErrCodeEFSMountConnectivityException = "EFSMountConnectivityException"
 
 	// ErrCodeEFSMountFailureException for service response error code
 	// "EFSMountFailureException".
 	//
-	// The function couldn't mount the configured file system due to a permission
+	// The Lambda function couldn't mount the configured file system due to a permission
 	// or configuration issue.
 	ErrCodeEFSMountFailureException = "EFSMountFailureException"
 
 	// ErrCodeEFSMountTimeoutException for service response error code
 	// "EFSMountTimeoutException".
 	//
-	// The function was able to make a network connection to the configured file
-	// system, but the mount operation timed out.
+	// The Lambda function made a network connection to the configured file system,
+	// but the mount operation timed out.
 	ErrCodeEFSMountTimeoutException = "EFSMountTimeoutException"
 
 	// ErrCodeENILimitReachedException for service response error code
 	// "ENILimitReachedException".
 	//
-	// Lambda was not able to create an elastic network interface in the VPC, specified
+	// Lambda couldn't create an elastic network interface in the VPC, specified
 	// as part of Lambda function configuration, because the limit for network interfaces
-	// has been reached.
+	// has been reached. For more information, see Lambda quotas (https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html).
 	ErrCodeENILimitReachedException = "ENILimitReachedException"
 
 	// ErrCodeInvalidCodeSignatureException for service response error code
 	// "InvalidCodeSignatureException".
 	//
-	// The code signature failed the integrity check. Lambda always blocks deployment
-	// if the integrity check fails, even if code signing policy is set to WARN.
+	// The code signature failed the integrity check. If the integrity check fails,
+	// then Lambda blocks deployment, even if the code signing policy is set to
+	// WARN.
 	ErrCodeInvalidCodeSignatureException = "InvalidCodeSignatureException"
 
 	// ErrCodeInvalidParameterValueException for service response error code
 	// "InvalidParameterValueException".
 	//
-	// One of the parameters in the request is invalid.
+	// One of the parameters in the request is not valid.
 	ErrCodeInvalidParameterValueException = "InvalidParameterValueException"
 
 	// ErrCodeInvalidRequestContentException for service response error code
@@ -110,14 +113,14 @@ const (
 	// ErrCodeInvalidSecurityGroupIDException for service response error code
 	// "InvalidSecurityGroupIDException".
 	//
-	// The Security Group ID provided in the Lambda function VPC configuration is
-	// invalid.
+	// The security group ID provided in the Lambda function VPC configuration is
+	// not valid.
 	ErrCodeInvalidSecurityGroupIDException = "InvalidSecurityGroupIDException"
 
 	// ErrCodeInvalidSubnetIDException for service response error code
 	// "InvalidSubnetIDException".
 	//
-	// The Subnet ID provided in the Lambda function VPC configuration is invalid.
+	// The subnet ID provided in the Lambda function VPC configuration is not valid.
 	ErrCodeInvalidSubnetIDException = "InvalidSubnetIDException"
 
 	// ErrCodeInvalidZipFileException for service response error code
@@ -129,43 +132,44 @@ const (
 	// ErrCodeKMSAccessDeniedException for service response error code
 	// "KMSAccessDeniedException".
 	//
-	// Lambda was unable to decrypt the environment variables because KMS access
-	// was denied. Check the Lambda function's KMS permissions.
+	// Lambda couldn't decrypt the environment variables because KMS access was
+	// denied. Check the Lambda function's KMS permissions.
 	ErrCodeKMSAccessDeniedException = "KMSAccessDeniedException"
 
 	// ErrCodeKMSDisabledException for service response error code
 	// "KMSDisabledException".
 	//
-	// Lambda was unable to decrypt the environment variables because the KMS key
-	// used is disabled. Check the Lambda function's KMS key settings.
+	// Lambda couldn't decrypt the environment variables because the KMS key used
+	// is disabled. Check the Lambda function's KMS key settings.
 	ErrCodeKMSDisabledException = "KMSDisabledException"
 
 	// ErrCodeKMSInvalidStateException for service response error code
 	// "KMSInvalidStateException".
 	//
-	// Lambda was unable to decrypt the environment variables because the KMS key
-	// used is in an invalid state for Decrypt. Check the function's KMS key settings.
+	// Lambda couldn't decrypt the environment variables because the state of the
+	// KMS key used is not valid for Decrypt. Check the function's KMS key settings.
 	ErrCodeKMSInvalidStateException = "KMSInvalidStateException"
 
 	// ErrCodeKMSNotFoundException for service response error code
 	// "KMSNotFoundException".
 	//
-	// Lambda was unable to decrypt the environment variables because the KMS key
-	// was not found. Check the function's KMS key settings.
+	// Lambda couldn't decrypt the environment variables because the KMS key was
+	// not found. Check the function's KMS key settings.
 	ErrCodeKMSNotFoundException = "KMSNotFoundException"
 
 	// ErrCodePolicyLengthExceededException for service response error code
 	// "PolicyLengthExceededException".
 	//
-	// The permissions policy for the resource is too large. Learn more (https://docs.aws.amazon.com/lambda/latest/dg/limits.html)
+	// The permissions policy for the resource is too large. For more information,
+	// see Lambda quotas (https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html).
 	ErrCodePolicyLengthExceededException = "PolicyLengthExceededException"
 
 	// ErrCodePreconditionFailedException for service response error code
 	// "PreconditionFailedException".
 	//
 	// The RevisionId provided does not match the latest RevisionId for the Lambda
-	// function or alias. Call the GetFunction or the GetAlias API to retrieve the
-	// latest RevisionId for your resource.
+	// function or alias. Call the GetFunction or the GetAlias API operation to
+	// retrieve the latest RevisionId for your resource.
 	ErrCodePreconditionFailedException = "PreconditionFailedException"
 
 	// ErrCodeProvisionedConcurrencyConfigNotFoundException for service response error code
@@ -174,11 +178,18 @@ const (
 	// The specified configuration does not exist.
 	ErrCodeProvisionedConcurrencyConfigNotFoundException = "ProvisionedConcurrencyConfigNotFoundException"
 
+	// ErrCodeRecursiveInvocationException for service response error code
+	// "RecursiveInvocationException".
+	//
+	// Lambda has detected your function being invoked in a recursive loop with
+	// other Amazon Web Services resources and stopped your function's invocation.
+	ErrCodeRecursiveInvocationException = "RecursiveInvocationException"
+
 	// ErrCodeRequestTooLargeException for service response error code
 	// "RequestTooLargeException".
 	//
-	// The request payload exceeded the Invoke request body JSON input limit. For
-	// more information, see Limits (https://docs.aws.amazon.com/lambda/latest/dg/limits.html).
+	// The request payload exceeded the Invoke request body JSON input quota. For
+	// more information, see Lambda quotas (https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html).
 	ErrCodeRequestTooLargeException = "RequestTooLargeException"
 
 	// ErrCodeResourceConflictException for service response error code
@@ -191,8 +202,8 @@ const (
 	// "ResourceInUseException".
 	//
 	// The operation conflicts with the resource's availability. For example, you
-	// attempted to update an EventSource Mapping in CREATING, or tried to delete
-	// a EventSource mapping currently in the UPDATING state.
+	// tried to update an event source mapping in the CREATING state, or you tried
+	// to delete an event source mapping currently UPDATING.
 	ErrCodeResourceInUseException = "ResourceInUseException"
 
 	// ErrCodeResourceNotFoundException for service response error code
@@ -214,17 +225,39 @@ const (
 	// The Lambda service encountered an internal error.
 	ErrCodeServiceException = "ServiceException"
 
+	// ErrCodeSnapStartException for service response error code
+	// "SnapStartException".
+	//
+	// The afterRestore() runtime hook (https://docs.aws.amazon.com/lambda/latest/dg/snapstart-runtime-hooks.html)
+	// encountered an error. For more information, check the Amazon CloudWatch logs.
+	ErrCodeSnapStartException = "SnapStartException"
+
+	// ErrCodeSnapStartNotReadyException for service response error code
+	// "SnapStartNotReadyException".
+	//
+	// Lambda is initializing your function. You can invoke the function when the
+	// function state (https://docs.aws.amazon.com/lambda/latest/dg/functions-states.html)
+	// becomes Active.
+	ErrCodeSnapStartNotReadyException = "SnapStartNotReadyException"
+
+	// ErrCodeSnapStartTimeoutException for service response error code
+	// "SnapStartTimeoutException".
+	//
+	// Lambda couldn't restore the snapshot within the timeout limit.
+	ErrCodeSnapStartTimeoutException = "SnapStartTimeoutException"
+
 	// ErrCodeSubnetIPAddressLimitReachedException for service response error code
 	// "SubnetIPAddressLimitReachedException".
 	//
-	// Lambda was not able to set up VPC access for the Lambda function because
-	// one or more configured subnets has no available IP addresses.
+	// Lambda couldn't set up VPC access for the Lambda function because one or
+	// more configured subnets has no available IP addresses.
 	ErrCodeSubnetIPAddressLimitReachedException = "SubnetIPAddressLimitReachedException"
 
 	// ErrCodeTooManyRequestsException for service response error code
 	// "TooManyRequestsException".
 	//
-	// The request throughput limit was exceeded.
+	// The request throughput limit was exceeded. For more information, see Lambda
+	// quotas (https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html#api-requests).
 	ErrCodeTooManyRequestsException = "TooManyRequestsException"
 
 	// ErrCodeUnsupportedMediaTypeException for service response error code
@@ -260,12 +293,16 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"PolicyLengthExceededException":                 newErrorPolicyLengthExceededException,
 	"PreconditionFailedException":                   newErrorPreconditionFailedException,
 	"ProvisionedConcurrencyConfigNotFoundException": newErrorProvisionedConcurrencyConfigNotFoundException,
+	"RecursiveInvocationException":                  newErrorRecursiveInvocationException,
 	"RequestTooLargeException":                      newErrorRequestTooLargeException,
 	"ResourceConflictException":                     newErrorResourceConflictException,
 	"ResourceInUseException":                        newErrorResourceInUseException,
 	"ResourceNotFoundException":                     newErrorResourceNotFoundException,
 	"ResourceNotReadyException":                     newErrorResourceNotReadyException,
 	"ServiceException":                              newErrorServiceException,
+	"SnapStartException":                            newErrorSnapStartException,
+	"SnapStartNotReadyException":                    newErrorSnapStartNotReadyException,
+	"SnapStartTimeoutException":                     newErrorSnapStartTimeoutException,
 	"SubnetIPAddressLimitReachedException":          newErrorSubnetIPAddressLimitReachedException,
 	"TooManyRequestsException":                      newErrorTooManyRequestsException,
 	"UnsupportedMediaTypeException":                 newErrorUnsupportedMediaTypeException,

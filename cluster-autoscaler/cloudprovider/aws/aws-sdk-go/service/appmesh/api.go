@@ -4541,7 +4541,9 @@ type AwsCloudMapServiceDiscovery struct {
 	// will be returned.
 	Attributes []*AwsCloudMapInstanceAttribute `locationName:"attributes" type:"list"`
 
-	// The IP version to use to control traffic within the mesh.
+	// The preferred IP version that this virtual node uses. Setting the IP preference
+	// on the virtual node only overrides the IP preference set for the mesh on
+	// this specific node.
 	IpPreference *string `locationName:"ipPreference" type:"string" enum:"IpPreference"`
 
 	// The name of the Cloud Map namespace to use.
@@ -7836,7 +7838,9 @@ type DnsServiceDiscovery struct {
 	// Hostname is a required field
 	Hostname *string `locationName:"hostname" type:"string" required:"true"`
 
-	// The IP version to use to control traffic within the mesh.
+	// The preferred IP version that this virtual node uses. Setting the IP preference
+	// on the virtual node only overrides the IP preference set for the mesh on
+	// this specific node.
 	IpPreference *string `locationName:"ipPreference" type:"string" enum:"IpPreference"`
 
 	// Specifies the DNS response type for the virtual node.
@@ -7988,14 +7992,17 @@ func (s *EgressFilter) SetType(v string) *EgressFilter {
 type FileAccessLog struct {
 	_ struct{} `type:"structure"`
 
+	// The specified format for the logs. The format is either json_format or text_format.
+	Format *LoggingFormat `locationName:"format" type:"structure"`
+
 	// The file path to write access logs to. You can use /dev/stdout to send access
 	// logs to standard out and configure your Envoy container to use a log driver,
 	// such as awslogs, to export the access logs to a log storage service such
 	// as Amazon CloudWatch Logs. You can also specify a path in the Envoy container's
 	// file system to write the files to disk.
 	//
-	//    <note> <p>The Envoy process must have write permissions to the path that
-	//    you specify here. Otherwise, Envoy fails to bootstrap properly.</p> </note>
+	// The Envoy process must have write permissions to the path that you specify
+	// here. Otherwise, Envoy fails to bootstrap properly.
 	//
 	// Path is a required field
 	Path *string `locationName:"path" min:"1" type:"string" required:"true"`
@@ -8028,11 +8035,22 @@ func (s *FileAccessLog) Validate() error {
 	if s.Path != nil && len(*s.Path) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Path", 1))
 	}
+	if s.Format != nil {
+		if err := s.Format.Validate(); err != nil {
+			invalidParams.AddNested("Format", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFormat sets the Format field's value.
+func (s *FileAccessLog) SetFormat(v *LoggingFormat) *FileAccessLog {
+	s.Format = v
+	return s
 }
 
 // SetPath sets the Path field's value.
@@ -8535,6 +8553,9 @@ func (s *GatewayRouteStatus) SetStatus(v string) *GatewayRouteStatus {
 type GatewayRouteTarget struct {
 	_ struct{} `type:"structure"`
 
+	// The port number of the gateway route target.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// An object that represents a virtual service gateway route target.
 	//
 	// VirtualService is a required field
@@ -8562,6 +8583,9 @@ func (s GatewayRouteTarget) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *GatewayRouteTarget) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GatewayRouteTarget"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
 	if s.VirtualService == nil {
 		invalidParams.Add(request.NewErrParamRequired("VirtualService"))
 	}
@@ -8575,6 +8599,12 @@ func (s *GatewayRouteTarget) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *GatewayRouteTarget) SetPort(v int64) *GatewayRouteTarget {
+	s.Port = &v
+	return s
 }
 
 // SetVirtualService sets the VirtualService field's value.
@@ -8776,6 +8806,9 @@ type GrpcGatewayRouteMatch struct {
 	// The gateway route metadata to be matched on.
 	Metadata []*GrpcGatewayRouteMetadata `locationName:"metadata" min:"1" type:"list"`
 
+	// The gateway route port to be matched on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// The fully qualified domain name for the service to match from the request.
 	ServiceName *string `locationName:"serviceName" type:"string"`
 }
@@ -8803,6 +8836,9 @@ func (s *GrpcGatewayRouteMatch) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "GrpcGatewayRouteMatch"}
 	if s.Metadata != nil && len(s.Metadata) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Metadata", 1))
+	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
 	}
 	if s.Hostname != nil {
 		if err := s.Hostname.Validate(); err != nil {
@@ -8835,6 +8871,12 @@ func (s *GrpcGatewayRouteMatch) SetHostname(v *GatewayRouteHostnameMatch) *GrpcG
 // SetMetadata sets the Metadata field's value.
 func (s *GrpcGatewayRouteMatch) SetMetadata(v []*GrpcGatewayRouteMetadata) *GrpcGatewayRouteMatch {
 	s.Metadata = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *GrpcGatewayRouteMatch) SetPort(v int64) *GrpcGatewayRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -9326,6 +9368,9 @@ type GrpcRouteMatch struct {
 	// also specify a serviceName.
 	MethodName *string `locationName:"methodName" min:"1" type:"string"`
 
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// The fully qualified domain name for the service to match from the request.
 	ServiceName *string `locationName:"serviceName" type:"string"`
 }
@@ -9357,6 +9402,9 @@ func (s *GrpcRouteMatch) Validate() error {
 	if s.MethodName != nil && len(*s.MethodName) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("MethodName", 1))
 	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
 	if s.Metadata != nil {
 		for i, v := range s.Metadata {
 			if v == nil {
@@ -9383,6 +9431,12 @@ func (s *GrpcRouteMatch) SetMetadata(v []*GrpcRouteMetadata) *GrpcRouteMatch {
 // SetMethodName sets the MethodName field's value.
 func (s *GrpcRouteMatch) SetMethodName(v string) *GrpcRouteMatch {
 	s.MethodName = &v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *GrpcRouteMatch) SetPort(v int64) *GrpcRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -10076,6 +10130,9 @@ type HttpGatewayRouteMatch struct {
 	// The path to match on.
 	Path *HttpPathMatch `locationName:"path" type:"structure"`
 
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// Specifies the path to match requests with. This parameter must always start
 	// with /, which by itself matches all requests to the virtual service name.
 	// You can also match for path-based routing of requests. For example, if your
@@ -10110,6 +10167,9 @@ func (s *HttpGatewayRouteMatch) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "HttpGatewayRouteMatch"}
 	if s.Headers != nil && len(s.Headers) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Headers", 1))
+	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
 	}
 	if s.QueryParameters != nil && len(s.QueryParameters) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("QueryParameters", 1))
@@ -10172,6 +10232,12 @@ func (s *HttpGatewayRouteMatch) SetMethod(v string) *HttpGatewayRouteMatch {
 // SetPath sets the Path field's value.
 func (s *HttpGatewayRouteMatch) SetPath(v *HttpPathMatch) *HttpGatewayRouteMatch {
 	s.Path = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *HttpGatewayRouteMatch) SetPort(v int64) *HttpGatewayRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -10812,6 +10878,9 @@ type HttpRouteMatch struct {
 	// The client request path to match on.
 	Path *HttpPathMatch `locationName:"path" type:"structure"`
 
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// Specifies the path to match requests with. This parameter must always start
 	// with /, which by itself matches all requests to the virtual service name.
 	// You can also match for path-based routing of requests. For example, if your
@@ -10850,6 +10919,9 @@ func (s *HttpRouteMatch) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "HttpRouteMatch"}
 	if s.Headers != nil && len(s.Headers) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Headers", 1))
+	}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
 	}
 	if s.QueryParameters != nil && len(s.QueryParameters) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("QueryParameters", 1))
@@ -10901,6 +10973,12 @@ func (s *HttpRouteMatch) SetMethod(v string) *HttpRouteMatch {
 // SetPath sets the Path field's value.
 func (s *HttpRouteMatch) SetPath(v *HttpPathMatch) *HttpRouteMatch {
 	s.Path = v
+	return s
+}
+
+// SetPort sets the Port field's value.
+func (s *HttpRouteMatch) SetPort(v int64) *HttpRouteMatch {
+	s.Port = &v
 	return s
 }
 
@@ -11032,6 +11110,73 @@ func (s *InternalServerErrorException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *InternalServerErrorException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// An object that represents the key value pairs for the JSON.
+type JsonFormatRef struct {
+	_ struct{} `type:"structure"`
+
+	// The specified key for the JSON.
+	//
+	// Key is a required field
+	Key *string `locationName:"key" min:"1" type:"string" required:"true"`
+
+	// The specified value for the JSON.
+	//
+	// Value is a required field
+	Value *string `locationName:"value" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JsonFormatRef) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JsonFormatRef) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *JsonFormatRef) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "JsonFormatRef"}
+	if s.Key == nil {
+		invalidParams.Add(request.NewErrParamRequired("Key"))
+	}
+	if s.Key != nil && len(*s.Key) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Key", 1))
+	}
+	if s.Value == nil {
+		invalidParams.Add(request.NewErrParamRequired("Value"))
+	}
+	if s.Value != nil && len(*s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKey sets the Key field's value.
+func (s *JsonFormatRef) SetKey(v string) *JsonFormatRef {
+	s.Key = &v
+	return s
+}
+
+// SetValue sets the Value field's value.
+func (s *JsonFormatRef) SetValue(v string) *JsonFormatRef {
+	s.Value = &v
+	return s
 }
 
 // You have exceeded a service limit for your account. For more information,
@@ -12894,6 +13039,68 @@ func (s *Logging) SetAccessLog(v *AccessLog) *Logging {
 	return s
 }
 
+// An object that represents the format for the logs.
+type LoggingFormat struct {
+	_ struct{} `type:"structure"`
+
+	Json []*JsonFormatRef `locationName:"json" type:"list"`
+
+	Text *string `locationName:"text" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingFormat) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LoggingFormat) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LoggingFormat) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LoggingFormat"}
+	if s.Text != nil && len(*s.Text) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Text", 1))
+	}
+	if s.Json != nil {
+		for i, v := range s.Json {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Json", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetJson sets the Json field's value.
+func (s *LoggingFormat) SetJson(v []*JsonFormatRef) *LoggingFormat {
+	s.Json = v
+	return s
+}
+
+// SetText sets the Text field's value.
+func (s *LoggingFormat) SetText(v string) *LoggingFormat {
+	s.Text = &v
+	return s
+}
+
 // An object that represents the range of values to match on. The first character
 // of the range is included in the range, though the last character is not.
 // For example, if the range specified were 1-100, only values 1-99 would be
@@ -14428,6 +14635,9 @@ type TcpRoute struct {
 	// Action is a required field
 	Action *TcpRouteAction `locationName:"action" type:"structure" required:"true"`
 
+	// An object that represents the criteria for determining a request match.
+	Match *TcpRouteMatch `locationName:"match" type:"structure"`
+
 	// An object that represents types of timeouts.
 	Timeout *TcpTimeout `locationName:"timeout" type:"structure"`
 }
@@ -14461,6 +14671,11 @@ func (s *TcpRoute) Validate() error {
 			invalidParams.AddNested("Action", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.Match != nil {
+		if err := s.Match.Validate(); err != nil {
+			invalidParams.AddNested("Match", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -14471,6 +14686,12 @@ func (s *TcpRoute) Validate() error {
 // SetAction sets the Action field's value.
 func (s *TcpRoute) SetAction(v *TcpRouteAction) *TcpRoute {
 	s.Action = v
+	return s
+}
+
+// SetMatch sets the Match field's value.
+func (s *TcpRoute) SetMatch(v *TcpRouteMatch) *TcpRoute {
+	s.Match = v
 	return s
 }
 
@@ -14541,6 +14762,51 @@ func (s *TcpRouteAction) SetWeightedTargets(v []*WeightedTarget) *TcpRouteAction
 	return s
 }
 
+// An object representing the TCP route to match.
+type TcpRouteMatch struct {
+	_ struct{} `type:"structure"`
+
+	// The port number to match on.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TcpRouteMatch) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TcpRouteMatch) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TcpRouteMatch) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TcpRouteMatch"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *TcpRouteMatch) SetPort(v int64) *TcpRouteMatch {
+	s.Port = &v
+	return s
+}
+
 // An object that represents types of timeouts.
 type TcpTimeout struct {
 	_ struct{} `type:"structure"`
@@ -14580,7 +14846,13 @@ type TlsValidationContext struct {
 	_ struct{} `type:"structure"`
 
 	// A reference to an object that represents the SANs for a Transport Layer Security
-	// (TLS) validation context.
+	// (TLS) validation context. If you don't specify SANs on the terminating mesh
+	// endpoint, the Envoy proxy for that node doesn't verify the SAN on a peer
+	// client certificate. If you don't specify SANs on the originating mesh endpoint,
+	// the SAN on the certificate provided by the terminating endpoint must match
+	// the mesh endpoint service discovery configuration. Since SPIRE vended certificates
+	// have a SPIFFE ID as a name, you must set the SAN since the name doesn't match
+	// the service discovery name.
 	SubjectAlternativeNames *SubjectAlternativeNames `locationName:"subjectAlternativeNames" type:"structure"`
 
 	// A reference to where to retrieve the trust chain when validating a peer’s
@@ -16548,6 +16820,10 @@ func (s *VirtualGatewayData) SetVirtualGatewayName(v string) *VirtualGatewayData
 type VirtualGatewayFileAccessLog struct {
 	_ struct{} `type:"structure"`
 
+	// The specified format for the virtual gateway access logs. It can be either
+	// json_format or text_format.
+	Format *LoggingFormat `locationName:"format" type:"structure"`
+
 	// The file path to write access logs to. You can use /dev/stdout to send access
 	// logs to standard out and configure your Envoy container to use a log driver,
 	// such as awslogs, to export the access logs to a log storage service such
@@ -16585,11 +16861,22 @@ func (s *VirtualGatewayFileAccessLog) Validate() error {
 	if s.Path != nil && len(*s.Path) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Path", 1))
 	}
+	if s.Format != nil {
+		if err := s.Format.Validate(); err != nil {
+			invalidParams.AddNested("Format", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetFormat sets the Format field's value.
+func (s *VirtualGatewayFileAccessLog) SetFormat(v *LoggingFormat) *VirtualGatewayFileAccessLog {
+	s.Format = v
+	return s
 }
 
 // SetPath sets the Path field's value.
@@ -19623,6 +19910,9 @@ func (s *VirtualServiceStatus) SetStatus(v string) *VirtualServiceStatus {
 type WeightedTarget struct {
 	_ struct{} `type:"structure"`
 
+	// The targeted port of the weighted object.
+	Port *int64 `locationName:"port" min:"1" type:"integer"`
+
 	// The virtual node to associate with the weighted target.
 	//
 	// VirtualNode is a required field
@@ -19655,6 +19945,9 @@ func (s WeightedTarget) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *WeightedTarget) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "WeightedTarget"}
+	if s.Port != nil && *s.Port < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("Port", 1))
+	}
 	if s.VirtualNode == nil {
 		invalidParams.Add(request.NewErrParamRequired("VirtualNode"))
 	}
@@ -19669,6 +19962,12 @@ func (s *WeightedTarget) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetPort sets the Port field's value.
+func (s *WeightedTarget) SetPort(v int64) *WeightedTarget {
+	s.Port = &v
+	return s
 }
 
 // SetVirtualNode sets the VirtualNode field's value.

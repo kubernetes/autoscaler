@@ -270,6 +270,13 @@ type CodeCommitAPI interface {
 	ListBranchesPages(*codecommit.ListBranchesInput, func(*codecommit.ListBranchesOutput, bool) bool) error
 	ListBranchesPagesWithContext(aws.Context, *codecommit.ListBranchesInput, func(*codecommit.ListBranchesOutput, bool) bool, ...request.Option) error
 
+	ListFileCommitHistory(*codecommit.ListFileCommitHistoryInput) (*codecommit.ListFileCommitHistoryOutput, error)
+	ListFileCommitHistoryWithContext(aws.Context, *codecommit.ListFileCommitHistoryInput, ...request.Option) (*codecommit.ListFileCommitHistoryOutput, error)
+	ListFileCommitHistoryRequest(*codecommit.ListFileCommitHistoryInput) (*request.Request, *codecommit.ListFileCommitHistoryOutput)
+
+	ListFileCommitHistoryPages(*codecommit.ListFileCommitHistoryInput, func(*codecommit.ListFileCommitHistoryOutput, bool) bool) error
+	ListFileCommitHistoryPagesWithContext(aws.Context, *codecommit.ListFileCommitHistoryInput, func(*codecommit.ListFileCommitHistoryOutput, bool) bool, ...request.Option) error
+
 	ListPullRequests(*codecommit.ListPullRequestsInput) (*codecommit.ListPullRequestsOutput, error)
 	ListPullRequestsWithContext(aws.Context, *codecommit.ListPullRequestsInput, ...request.Option) (*codecommit.ListPullRequestsOutput, error)
 	ListPullRequestsRequest(*codecommit.ListPullRequestsInput) (*request.Request, *codecommit.ListPullRequestsOutput)

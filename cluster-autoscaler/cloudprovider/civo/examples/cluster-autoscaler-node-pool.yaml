@@ -139,7 +139,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.25.0 # or your custom image
+        - image: registry.k8s.io/autoscaling/cluster-autoscaler:v1.28.0 # or your custom image
           name: cluster-autoscaler
           imagePullPolicy: Always
           resources:
@@ -154,8 +154,8 @@ spec:
             - --v=4
             - --stderrthreshold=info
             - --cloud-provider=civo
-            - --nodes=1:5:<POOL_ID>
-            - --nodes=5:10:<POOL_ID>
+            - --nodes=1:5:<POOL_ID/NAME>
+            - --nodes=5:10:<POOL_ID/NAME>
             - --skip-nodes-with-local-storage=false
             - --skip-nodes-with-system-pods=false
           env:

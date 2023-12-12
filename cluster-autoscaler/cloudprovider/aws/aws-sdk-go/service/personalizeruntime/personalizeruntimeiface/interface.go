@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Personalize Runtime.
 //	func myFunc(svc personalizeruntimeiface.PersonalizeRuntimeAPI) bool {
-//	    // Make svc.GetPersonalizedRanking request
+//	    // Make svc.GetActionRecommendations request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockPersonalizeRuntimeClient struct {
 //	    personalizeruntimeiface.PersonalizeRuntimeAPI
 //	}
-//	func (m *mockPersonalizeRuntimeClient) GetPersonalizedRanking(input *personalizeruntime.GetPersonalizedRankingInput) (*personalizeruntime.GetPersonalizedRankingOutput, error) {
+//	func (m *mockPersonalizeRuntimeClient) GetActionRecommendations(input *personalizeruntime.GetActionRecommendationsInput) (*personalizeruntime.GetActionRecommendationsOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type PersonalizeRuntimeAPI interface {
+	GetActionRecommendations(*personalizeruntime.GetActionRecommendationsInput) (*personalizeruntime.GetActionRecommendationsOutput, error)
+	GetActionRecommendationsWithContext(aws.Context, *personalizeruntime.GetActionRecommendationsInput, ...request.Option) (*personalizeruntime.GetActionRecommendationsOutput, error)
+	GetActionRecommendationsRequest(*personalizeruntime.GetActionRecommendationsInput) (*request.Request, *personalizeruntime.GetActionRecommendationsOutput)
+
 	GetPersonalizedRanking(*personalizeruntime.GetPersonalizedRankingInput) (*personalizeruntime.GetPersonalizedRankingOutput, error)
 	GetPersonalizedRankingWithContext(aws.Context, *personalizeruntime.GetPersonalizedRankingInput, ...request.Option) (*personalizeruntime.GetPersonalizedRankingOutput, error)
 	GetPersonalizedRankingRequest(*personalizeruntime.GetPersonalizedRankingInput) (*request.Request, *personalizeruntime.GetPersonalizedRankingOutput)

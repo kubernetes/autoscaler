@@ -90,6 +90,13 @@ func (c *S3Outposts) CreateEndpointRequest(input *CreateEndpointInput) (req *req
 //   - ConflictException
 //     There was a conflict with this action, and it could not be completed.
 //
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - OutpostOfflineException
+//     The service link connection to your Outposts home Region is down. Check your
+//     connection and try again.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/CreateEndpoint
 func (c *S3Outposts) CreateEndpoint(input *CreateEndpointInput) (*CreateEndpointOutput, error) {
 	req, out := c.CreateEndpointRequest(input)
@@ -186,6 +193,13 @@ func (c *S3Outposts) DeleteEndpointRequest(input *DeleteEndpointInput) (req *req
 //
 //   - ValidationException
 //     There was an exception validating this data.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+//   - OutpostOfflineException
+//     The service link connection to your Outposts home Region is down. Check your
+//     connection and try again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/DeleteEndpoint
 func (c *S3Outposts) DeleteEndpoint(input *DeleteEndpointInput) (*DeleteEndpointOutput, error) {
@@ -287,6 +301,9 @@ func (c *S3Outposts) ListEndpointsRequest(input *ListEndpointsInput) (req *reque
 //   - ValidationException
 //     There was an exception validating this data.
 //
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListEndpoints
 func (c *S3Outposts) ListEndpoints(input *ListEndpointsInput) (*ListEndpointsOutput, error) {
 	req, out := c.ListEndpointsRequest(input)
@@ -353,6 +370,153 @@ func (c *S3Outposts) ListEndpointsPagesWithContext(ctx aws.Context, input *ListE
 
 	for p.Next() {
 		if !fn(p.Page().(*ListEndpointsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListOutpostsWithS3 = "ListOutpostsWithS3"
+
+// ListOutpostsWithS3Request generates a "aws/request.Request" representing the
+// client's request for the ListOutpostsWithS3 operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListOutpostsWithS3 for more information on using the ListOutpostsWithS3
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListOutpostsWithS3Request method.
+//	req, resp := client.ListOutpostsWithS3Request(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListOutpostsWithS3
+func (c *S3Outposts) ListOutpostsWithS3Request(input *ListOutpostsWithS3Input) (req *request.Request, output *ListOutpostsWithS3Output) {
+	op := &request.Operation{
+		Name:       opListOutpostsWithS3,
+		HTTPMethod: "GET",
+		HTTPPath:   "/S3Outposts/ListOutpostsWithS3",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListOutpostsWithS3Input{}
+	}
+
+	output = &ListOutpostsWithS3Output{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListOutpostsWithS3 API operation for Amazon S3 on Outposts.
+//
+// Lists the Outposts with S3 on Outposts capacity for your Amazon Web Services
+// account. Includes S3 on Outposts that you have access to as the Outposts
+// owner, or as a shared user from Resource Access Manager (RAM).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon S3 on Outposts's
+// API operation ListOutpostsWithS3 for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There was an exception with the internal server.
+//
+//   - AccessDeniedException
+//     Access was denied for this action.
+//
+//   - ValidationException
+//     There was an exception validating this data.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListOutpostsWithS3
+func (c *S3Outposts) ListOutpostsWithS3(input *ListOutpostsWithS3Input) (*ListOutpostsWithS3Output, error) {
+	req, out := c.ListOutpostsWithS3Request(input)
+	return out, req.Send()
+}
+
+// ListOutpostsWithS3WithContext is the same as ListOutpostsWithS3 with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListOutpostsWithS3 for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Outposts) ListOutpostsWithS3WithContext(ctx aws.Context, input *ListOutpostsWithS3Input, opts ...request.Option) (*ListOutpostsWithS3Output, error) {
+	req, out := c.ListOutpostsWithS3Request(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListOutpostsWithS3Pages iterates over the pages of a ListOutpostsWithS3 operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListOutpostsWithS3 method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListOutpostsWithS3 operation.
+//	pageNum := 0
+//	err := client.ListOutpostsWithS3Pages(params,
+//	    func(page *s3outposts.ListOutpostsWithS3Output, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *S3Outposts) ListOutpostsWithS3Pages(input *ListOutpostsWithS3Input, fn func(*ListOutpostsWithS3Output, bool) bool) error {
+	return c.ListOutpostsWithS3PagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListOutpostsWithS3PagesWithContext same as ListOutpostsWithS3Pages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *S3Outposts) ListOutpostsWithS3PagesWithContext(ctx aws.Context, input *ListOutpostsWithS3Input, fn func(*ListOutpostsWithS3Output, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListOutpostsWithS3Input
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListOutpostsWithS3Request(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListOutpostsWithS3Output), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -438,6 +602,9 @@ func (c *S3Outposts) ListSharedEndpointsRequest(input *ListSharedEndpointsInput)
 //
 //   - ValidationException
 //     There was an exception validating this data.
+//
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/s3outposts-2017-07-25/ListSharedEndpoints
 func (c *S3Outposts) ListSharedEndpoints(input *ListSharedEndpointsInput) (*ListSharedEndpointsOutput, error) {
@@ -877,6 +1044,9 @@ type Endpoint struct {
 	// The Amazon Resource Name (ARN) of the endpoint.
 	EndpointArn *string `type:"string"`
 
+	// The failure reason, if any, for a create or delete endpoint operation.
+	FailedReason *FailedReason `type:"structure"`
+
 	// The network interface of the endpoint.
 	NetworkInterfaces []*NetworkInterface `type:"list"`
 
@@ -944,6 +1114,12 @@ func (s *Endpoint) SetEndpointArn(v string) *Endpoint {
 	return s
 }
 
+// SetFailedReason sets the FailedReason field's value.
+func (s *Endpoint) SetFailedReason(v *FailedReason) *Endpoint {
+	s.FailedReason = v
+	return s
+}
+
 // SetNetworkInterfaces sets the NetworkInterfaces field's value.
 func (s *Endpoint) SetNetworkInterfaces(v []*NetworkInterface) *Endpoint {
 	s.NetworkInterfaces = v
@@ -977,6 +1153,48 @@ func (s *Endpoint) SetSubnetId(v string) *Endpoint {
 // SetVpcId sets the VpcId field's value.
 func (s *Endpoint) SetVpcId(v string) *Endpoint {
 	s.VpcId = &v
+	return s
+}
+
+// The failure reason, if any, for a create or delete endpoint operation.
+type FailedReason struct {
+	_ struct{} `type:"structure"`
+
+	// The failure code, if any, for a create or delete endpoint operation.
+	ErrorCode *string `type:"string"`
+
+	// Additional error details describing the endpoint failure and recommended
+	// action.
+	Message *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailedReason) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s FailedReason) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *FailedReason) SetErrorCode(v string) *FailedReason {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetMessage sets the Message field's value.
+func (s *FailedReason) SetMessage(v string) *FailedReason {
+	s.Message = &v
 	return s
 }
 
@@ -1140,6 +1358,108 @@ func (s *ListEndpointsOutput) SetNextToken(v string) *ListEndpointsOutput {
 	return s
 }
 
+type ListOutpostsWithS3Input struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The maximum number of Outposts to return. The limit is 100.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" type:"integer"`
+
+	// When you can get additional results from the ListOutpostsWithS3 call, a NextToken
+	// parameter is returned in the output. You can then pass in a subsequent command
+	// to the NextToken parameter to continue listing additional Outposts.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListOutpostsWithS3Input) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListOutpostsWithS3Input) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListOutpostsWithS3Input) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListOutpostsWithS3Input"}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListOutpostsWithS3Input) SetMaxResults(v int64) *ListOutpostsWithS3Input {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListOutpostsWithS3Input) SetNextToken(v string) *ListOutpostsWithS3Input {
+	s.NextToken = &v
+	return s
+}
+
+type ListOutpostsWithS3Output struct {
+	_ struct{} `type:"structure"`
+
+	// Returns a token that you can use to call ListOutpostsWithS3 again and receive
+	// additional results, if there are any.
+	NextToken *string `min:"1" type:"string"`
+
+	// Returns the list of Outposts that have the following characteristics:
+	//
+	//    * outposts that have S3 provisioned
+	//
+	//    * outposts that are Active (not pending any provisioning nor decommissioned)
+	//
+	//    * outposts to which the the calling Amazon Web Services account has access
+	Outposts []*Outpost `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListOutpostsWithS3Output) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListOutpostsWithS3Output) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListOutpostsWithS3Output) SetNextToken(v string) *ListOutpostsWithS3Output {
+	s.NextToken = &v
+	return s
+}
+
+// SetOutposts sets the Outposts field's value.
+func (s *ListOutpostsWithS3Output) SetOutposts(v []*Outpost) *ListOutpostsWithS3Output {
+	s.Outposts = v
+	return s
+}
+
 type ListSharedEndpointsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -1283,6 +1603,141 @@ func (s *NetworkInterface) SetNetworkInterfaceId(v string) *NetworkInterface {
 	return s
 }
 
+// Contains the details for the Outpost object.
+type Outpost struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon S3 capacity of the outpost in bytes.
+	CapacityInBytes *int64 `type:"long"`
+
+	// Specifies the unique Amazon Resource Name (ARN) for the outpost.
+	OutpostArn *string `type:"string"`
+
+	// Specifies the unique identifier for the outpost.
+	OutpostId *string `type:"string"`
+
+	// Returns the Amazon Web Services account ID of the outpost owner. Useful for
+	// comparing owned versus shared outposts.
+	OwnerId *string `type:"string"`
+
+	// Specifies the unique S3 on Outposts ARN for use with Resource Access Manager
+	// (RAM).
+	S3OutpostArn *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Outpost) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Outpost) GoString() string {
+	return s.String()
+}
+
+// SetCapacityInBytes sets the CapacityInBytes field's value.
+func (s *Outpost) SetCapacityInBytes(v int64) *Outpost {
+	s.CapacityInBytes = &v
+	return s
+}
+
+// SetOutpostArn sets the OutpostArn field's value.
+func (s *Outpost) SetOutpostArn(v string) *Outpost {
+	s.OutpostArn = &v
+	return s
+}
+
+// SetOutpostId sets the OutpostId field's value.
+func (s *Outpost) SetOutpostId(v string) *Outpost {
+	s.OutpostId = &v
+	return s
+}
+
+// SetOwnerId sets the OwnerId field's value.
+func (s *Outpost) SetOwnerId(v string) *Outpost {
+	s.OwnerId = &v
+	return s
+}
+
+// SetS3OutpostArn sets the S3OutpostArn field's value.
+func (s *Outpost) SetS3OutpostArn(v string) *Outpost {
+	s.S3OutpostArn = &v
+	return s
+}
+
+// The service link connection to your Outposts home Region is down. Check your
+// connection and try again.
+type OutpostOfflineException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OutpostOfflineException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OutpostOfflineException) GoString() string {
+	return s.String()
+}
+
+func newErrorOutpostOfflineException(v protocol.ResponseMetadata) error {
+	return &OutpostOfflineException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *OutpostOfflineException) Code() string {
+	return "OutpostOfflineException"
+}
+
+// Message returns the exception's message.
+func (s *OutpostOfflineException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *OutpostOfflineException) OrigErr() error {
+	return nil
+}
+
+func (s *OutpostOfflineException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *OutpostOfflineException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *OutpostOfflineException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // The requested resource was not found.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -1344,6 +1799,70 @@ func (s *ResourceNotFoundException) StatusCode() int {
 
 // RequestID returns the service's response RequestID for request.
 func (s *ResourceNotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The request was denied due to request throttling.
+type ThrottlingException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) GoString() string {
+	return s.String()
+}
+
+func newErrorThrottlingException(v protocol.ResponseMetadata) error {
+	return &ThrottlingException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ThrottlingException) Code() string {
+	return "ThrottlingException"
+}
+
+// Message returns the exception's message.
+func (s *ThrottlingException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ThrottlingException) OrigErr() error {
+	return nil
+}
+
+func (s *ThrottlingException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ThrottlingException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ThrottlingException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
@@ -1436,6 +1955,12 @@ const (
 
 	// EndpointStatusDeleting is a EndpointStatus enum value
 	EndpointStatusDeleting = "Deleting"
+
+	// EndpointStatusCreateFailed is a EndpointStatus enum value
+	EndpointStatusCreateFailed = "Create_Failed"
+
+	// EndpointStatusDeleteFailed is a EndpointStatus enum value
+	EndpointStatusDeleteFailed = "Delete_Failed"
 )
 
 // EndpointStatus_Values returns all elements of the EndpointStatus enum
@@ -1444,5 +1969,7 @@ func EndpointStatus_Values() []string {
 		EndpointStatusPending,
 		EndpointStatusAvailable,
 		EndpointStatusDeleting,
+		EndpointStatusCreateFailed,
+		EndpointStatusDeleteFailed,
 	}
 }

@@ -207,6 +207,10 @@ type PanoramaAPI interface {
 	RemoveApplicationInstanceWithContext(aws.Context, *panorama.RemoveApplicationInstanceInput, ...request.Option) (*panorama.RemoveApplicationInstanceOutput, error)
 	RemoveApplicationInstanceRequest(*panorama.RemoveApplicationInstanceInput) (*request.Request, *panorama.RemoveApplicationInstanceOutput)
 
+	SignalApplicationInstanceNodeInstances(*panorama.SignalApplicationInstanceNodeInstancesInput) (*panorama.SignalApplicationInstanceNodeInstancesOutput, error)
+	SignalApplicationInstanceNodeInstancesWithContext(aws.Context, *panorama.SignalApplicationInstanceNodeInstancesInput, ...request.Option) (*panorama.SignalApplicationInstanceNodeInstancesOutput, error)
+	SignalApplicationInstanceNodeInstancesRequest(*panorama.SignalApplicationInstanceNodeInstancesInput) (*request.Request, *panorama.SignalApplicationInstanceNodeInstancesOutput)
+
 	TagResource(*panorama.TagResourceInput) (*panorama.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *panorama.TagResourceInput, ...request.Option) (*panorama.TagResourceOutput, error)
 	TagResourceRequest(*panorama.TagResourceInput) (*request.Request, *panorama.TagResourceOutput)

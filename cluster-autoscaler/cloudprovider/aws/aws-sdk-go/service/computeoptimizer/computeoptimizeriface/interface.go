@@ -68,6 +68,9 @@ type ComputeOptimizerAPI interface {
 	DescribeRecommendationExportJobsWithContext(aws.Context, *computeoptimizer.DescribeRecommendationExportJobsInput, ...request.Option) (*computeoptimizer.DescribeRecommendationExportJobsOutput, error)
 	DescribeRecommendationExportJobsRequest(*computeoptimizer.DescribeRecommendationExportJobsInput) (*request.Request, *computeoptimizer.DescribeRecommendationExportJobsOutput)
 
+	DescribeRecommendationExportJobsPages(*computeoptimizer.DescribeRecommendationExportJobsInput, func(*computeoptimizer.DescribeRecommendationExportJobsOutput, bool) bool) error
+	DescribeRecommendationExportJobsPagesWithContext(aws.Context, *computeoptimizer.DescribeRecommendationExportJobsInput, func(*computeoptimizer.DescribeRecommendationExportJobsOutput, bool) bool, ...request.Option) error
+
 	ExportAutoScalingGroupRecommendations(*computeoptimizer.ExportAutoScalingGroupRecommendationsInput) (*computeoptimizer.ExportAutoScalingGroupRecommendationsOutput, error)
 	ExportAutoScalingGroupRecommendationsWithContext(aws.Context, *computeoptimizer.ExportAutoScalingGroupRecommendationsInput, ...request.Option) (*computeoptimizer.ExportAutoScalingGroupRecommendationsOutput, error)
 	ExportAutoScalingGroupRecommendationsRequest(*computeoptimizer.ExportAutoScalingGroupRecommendationsInput) (*request.Request, *computeoptimizer.ExportAutoScalingGroupRecommendationsOutput)
@@ -80,9 +83,17 @@ type ComputeOptimizerAPI interface {
 	ExportEC2InstanceRecommendationsWithContext(aws.Context, *computeoptimizer.ExportEC2InstanceRecommendationsInput, ...request.Option) (*computeoptimizer.ExportEC2InstanceRecommendationsOutput, error)
 	ExportEC2InstanceRecommendationsRequest(*computeoptimizer.ExportEC2InstanceRecommendationsInput) (*request.Request, *computeoptimizer.ExportEC2InstanceRecommendationsOutput)
 
+	ExportECSServiceRecommendations(*computeoptimizer.ExportECSServiceRecommendationsInput) (*computeoptimizer.ExportECSServiceRecommendationsOutput, error)
+	ExportECSServiceRecommendationsWithContext(aws.Context, *computeoptimizer.ExportECSServiceRecommendationsInput, ...request.Option) (*computeoptimizer.ExportECSServiceRecommendationsOutput, error)
+	ExportECSServiceRecommendationsRequest(*computeoptimizer.ExportECSServiceRecommendationsInput) (*request.Request, *computeoptimizer.ExportECSServiceRecommendationsOutput)
+
 	ExportLambdaFunctionRecommendations(*computeoptimizer.ExportLambdaFunctionRecommendationsInput) (*computeoptimizer.ExportLambdaFunctionRecommendationsOutput, error)
 	ExportLambdaFunctionRecommendationsWithContext(aws.Context, *computeoptimizer.ExportLambdaFunctionRecommendationsInput, ...request.Option) (*computeoptimizer.ExportLambdaFunctionRecommendationsOutput, error)
 	ExportLambdaFunctionRecommendationsRequest(*computeoptimizer.ExportLambdaFunctionRecommendationsInput) (*request.Request, *computeoptimizer.ExportLambdaFunctionRecommendationsOutput)
+
+	ExportLicenseRecommendations(*computeoptimizer.ExportLicenseRecommendationsInput) (*computeoptimizer.ExportLicenseRecommendationsOutput, error)
+	ExportLicenseRecommendationsWithContext(aws.Context, *computeoptimizer.ExportLicenseRecommendationsInput, ...request.Option) (*computeoptimizer.ExportLicenseRecommendationsOutput, error)
+	ExportLicenseRecommendationsRequest(*computeoptimizer.ExportLicenseRecommendationsInput) (*request.Request, *computeoptimizer.ExportLicenseRecommendationsOutput)
 
 	GetAutoScalingGroupRecommendations(*computeoptimizer.GetAutoScalingGroupRecommendationsInput) (*computeoptimizer.GetAutoScalingGroupRecommendationsOutput, error)
 	GetAutoScalingGroupRecommendationsWithContext(aws.Context, *computeoptimizer.GetAutoScalingGroupRecommendationsInput, ...request.Option) (*computeoptimizer.GetAutoScalingGroupRecommendationsOutput, error)
@@ -100,6 +111,14 @@ type ComputeOptimizerAPI interface {
 	GetEC2RecommendationProjectedMetricsWithContext(aws.Context, *computeoptimizer.GetEC2RecommendationProjectedMetricsInput, ...request.Option) (*computeoptimizer.GetEC2RecommendationProjectedMetricsOutput, error)
 	GetEC2RecommendationProjectedMetricsRequest(*computeoptimizer.GetEC2RecommendationProjectedMetricsInput) (*request.Request, *computeoptimizer.GetEC2RecommendationProjectedMetricsOutput)
 
+	GetECSServiceRecommendationProjectedMetrics(*computeoptimizer.GetECSServiceRecommendationProjectedMetricsInput) (*computeoptimizer.GetECSServiceRecommendationProjectedMetricsOutput, error)
+	GetECSServiceRecommendationProjectedMetricsWithContext(aws.Context, *computeoptimizer.GetECSServiceRecommendationProjectedMetricsInput, ...request.Option) (*computeoptimizer.GetECSServiceRecommendationProjectedMetricsOutput, error)
+	GetECSServiceRecommendationProjectedMetricsRequest(*computeoptimizer.GetECSServiceRecommendationProjectedMetricsInput) (*request.Request, *computeoptimizer.GetECSServiceRecommendationProjectedMetricsOutput)
+
+	GetECSServiceRecommendations(*computeoptimizer.GetECSServiceRecommendationsInput) (*computeoptimizer.GetECSServiceRecommendationsOutput, error)
+	GetECSServiceRecommendationsWithContext(aws.Context, *computeoptimizer.GetECSServiceRecommendationsInput, ...request.Option) (*computeoptimizer.GetECSServiceRecommendationsOutput, error)
+	GetECSServiceRecommendationsRequest(*computeoptimizer.GetECSServiceRecommendationsInput) (*request.Request, *computeoptimizer.GetECSServiceRecommendationsOutput)
+
 	GetEffectiveRecommendationPreferences(*computeoptimizer.GetEffectiveRecommendationPreferencesInput) (*computeoptimizer.GetEffectiveRecommendationPreferencesOutput, error)
 	GetEffectiveRecommendationPreferencesWithContext(aws.Context, *computeoptimizer.GetEffectiveRecommendationPreferencesInput, ...request.Option) (*computeoptimizer.GetEffectiveRecommendationPreferencesOutput, error)
 	GetEffectiveRecommendationPreferencesRequest(*computeoptimizer.GetEffectiveRecommendationPreferencesInput) (*request.Request, *computeoptimizer.GetEffectiveRecommendationPreferencesOutput)
@@ -112,17 +131,33 @@ type ComputeOptimizerAPI interface {
 	GetEnrollmentStatusesForOrganizationWithContext(aws.Context, *computeoptimizer.GetEnrollmentStatusesForOrganizationInput, ...request.Option) (*computeoptimizer.GetEnrollmentStatusesForOrganizationOutput, error)
 	GetEnrollmentStatusesForOrganizationRequest(*computeoptimizer.GetEnrollmentStatusesForOrganizationInput) (*request.Request, *computeoptimizer.GetEnrollmentStatusesForOrganizationOutput)
 
+	GetEnrollmentStatusesForOrganizationPages(*computeoptimizer.GetEnrollmentStatusesForOrganizationInput, func(*computeoptimizer.GetEnrollmentStatusesForOrganizationOutput, bool) bool) error
+	GetEnrollmentStatusesForOrganizationPagesWithContext(aws.Context, *computeoptimizer.GetEnrollmentStatusesForOrganizationInput, func(*computeoptimizer.GetEnrollmentStatusesForOrganizationOutput, bool) bool, ...request.Option) error
+
 	GetLambdaFunctionRecommendations(*computeoptimizer.GetLambdaFunctionRecommendationsInput) (*computeoptimizer.GetLambdaFunctionRecommendationsOutput, error)
 	GetLambdaFunctionRecommendationsWithContext(aws.Context, *computeoptimizer.GetLambdaFunctionRecommendationsInput, ...request.Option) (*computeoptimizer.GetLambdaFunctionRecommendationsOutput, error)
 	GetLambdaFunctionRecommendationsRequest(*computeoptimizer.GetLambdaFunctionRecommendationsInput) (*request.Request, *computeoptimizer.GetLambdaFunctionRecommendationsOutput)
+
+	GetLambdaFunctionRecommendationsPages(*computeoptimizer.GetLambdaFunctionRecommendationsInput, func(*computeoptimizer.GetLambdaFunctionRecommendationsOutput, bool) bool) error
+	GetLambdaFunctionRecommendationsPagesWithContext(aws.Context, *computeoptimizer.GetLambdaFunctionRecommendationsInput, func(*computeoptimizer.GetLambdaFunctionRecommendationsOutput, bool) bool, ...request.Option) error
+
+	GetLicenseRecommendations(*computeoptimizer.GetLicenseRecommendationsInput) (*computeoptimizer.GetLicenseRecommendationsOutput, error)
+	GetLicenseRecommendationsWithContext(aws.Context, *computeoptimizer.GetLicenseRecommendationsInput, ...request.Option) (*computeoptimizer.GetLicenseRecommendationsOutput, error)
+	GetLicenseRecommendationsRequest(*computeoptimizer.GetLicenseRecommendationsInput) (*request.Request, *computeoptimizer.GetLicenseRecommendationsOutput)
 
 	GetRecommendationPreferences(*computeoptimizer.GetRecommendationPreferencesInput) (*computeoptimizer.GetRecommendationPreferencesOutput, error)
 	GetRecommendationPreferencesWithContext(aws.Context, *computeoptimizer.GetRecommendationPreferencesInput, ...request.Option) (*computeoptimizer.GetRecommendationPreferencesOutput, error)
 	GetRecommendationPreferencesRequest(*computeoptimizer.GetRecommendationPreferencesInput) (*request.Request, *computeoptimizer.GetRecommendationPreferencesOutput)
 
+	GetRecommendationPreferencesPages(*computeoptimizer.GetRecommendationPreferencesInput, func(*computeoptimizer.GetRecommendationPreferencesOutput, bool) bool) error
+	GetRecommendationPreferencesPagesWithContext(aws.Context, *computeoptimizer.GetRecommendationPreferencesInput, func(*computeoptimizer.GetRecommendationPreferencesOutput, bool) bool, ...request.Option) error
+
 	GetRecommendationSummaries(*computeoptimizer.GetRecommendationSummariesInput) (*computeoptimizer.GetRecommendationSummariesOutput, error)
 	GetRecommendationSummariesWithContext(aws.Context, *computeoptimizer.GetRecommendationSummariesInput, ...request.Option) (*computeoptimizer.GetRecommendationSummariesOutput, error)
 	GetRecommendationSummariesRequest(*computeoptimizer.GetRecommendationSummariesInput) (*request.Request, *computeoptimizer.GetRecommendationSummariesOutput)
+
+	GetRecommendationSummariesPages(*computeoptimizer.GetRecommendationSummariesInput, func(*computeoptimizer.GetRecommendationSummariesOutput, bool) bool) error
+	GetRecommendationSummariesPagesWithContext(aws.Context, *computeoptimizer.GetRecommendationSummariesInput, func(*computeoptimizer.GetRecommendationSummariesOutput, bool) bool, ...request.Option) error
 
 	PutRecommendationPreferences(*computeoptimizer.PutRecommendationPreferencesInput) (*computeoptimizer.PutRecommendationPreferencesOutput, error)
 	PutRecommendationPreferencesWithContext(aws.Context, *computeoptimizer.PutRecommendationPreferencesInput, ...request.Option) (*computeoptimizer.PutRecommendationPreferencesOutput, error)

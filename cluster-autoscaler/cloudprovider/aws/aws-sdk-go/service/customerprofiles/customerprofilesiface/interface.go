@@ -64,9 +64,17 @@ type CustomerProfilesAPI interface {
 	AddProfileKeyWithContext(aws.Context, *customerprofiles.AddProfileKeyInput, ...request.Option) (*customerprofiles.AddProfileKeyOutput, error)
 	AddProfileKeyRequest(*customerprofiles.AddProfileKeyInput) (*request.Request, *customerprofiles.AddProfileKeyOutput)
 
+	CreateCalculatedAttributeDefinition(*customerprofiles.CreateCalculatedAttributeDefinitionInput) (*customerprofiles.CreateCalculatedAttributeDefinitionOutput, error)
+	CreateCalculatedAttributeDefinitionWithContext(aws.Context, *customerprofiles.CreateCalculatedAttributeDefinitionInput, ...request.Option) (*customerprofiles.CreateCalculatedAttributeDefinitionOutput, error)
+	CreateCalculatedAttributeDefinitionRequest(*customerprofiles.CreateCalculatedAttributeDefinitionInput) (*request.Request, *customerprofiles.CreateCalculatedAttributeDefinitionOutput)
+
 	CreateDomain(*customerprofiles.CreateDomainInput) (*customerprofiles.CreateDomainOutput, error)
 	CreateDomainWithContext(aws.Context, *customerprofiles.CreateDomainInput, ...request.Option) (*customerprofiles.CreateDomainOutput, error)
 	CreateDomainRequest(*customerprofiles.CreateDomainInput) (*request.Request, *customerprofiles.CreateDomainOutput)
+
+	CreateEventStream(*customerprofiles.CreateEventStreamInput) (*customerprofiles.CreateEventStreamOutput, error)
+	CreateEventStreamWithContext(aws.Context, *customerprofiles.CreateEventStreamInput, ...request.Option) (*customerprofiles.CreateEventStreamOutput, error)
+	CreateEventStreamRequest(*customerprofiles.CreateEventStreamInput) (*request.Request, *customerprofiles.CreateEventStreamOutput)
 
 	CreateIntegrationWorkflow(*customerprofiles.CreateIntegrationWorkflowInput) (*customerprofiles.CreateIntegrationWorkflowOutput, error)
 	CreateIntegrationWorkflowWithContext(aws.Context, *customerprofiles.CreateIntegrationWorkflowInput, ...request.Option) (*customerprofiles.CreateIntegrationWorkflowOutput, error)
@@ -76,9 +84,17 @@ type CustomerProfilesAPI interface {
 	CreateProfileWithContext(aws.Context, *customerprofiles.CreateProfileInput, ...request.Option) (*customerprofiles.CreateProfileOutput, error)
 	CreateProfileRequest(*customerprofiles.CreateProfileInput) (*request.Request, *customerprofiles.CreateProfileOutput)
 
+	DeleteCalculatedAttributeDefinition(*customerprofiles.DeleteCalculatedAttributeDefinitionInput) (*customerprofiles.DeleteCalculatedAttributeDefinitionOutput, error)
+	DeleteCalculatedAttributeDefinitionWithContext(aws.Context, *customerprofiles.DeleteCalculatedAttributeDefinitionInput, ...request.Option) (*customerprofiles.DeleteCalculatedAttributeDefinitionOutput, error)
+	DeleteCalculatedAttributeDefinitionRequest(*customerprofiles.DeleteCalculatedAttributeDefinitionInput) (*request.Request, *customerprofiles.DeleteCalculatedAttributeDefinitionOutput)
+
 	DeleteDomain(*customerprofiles.DeleteDomainInput) (*customerprofiles.DeleteDomainOutput, error)
 	DeleteDomainWithContext(aws.Context, *customerprofiles.DeleteDomainInput, ...request.Option) (*customerprofiles.DeleteDomainOutput, error)
 	DeleteDomainRequest(*customerprofiles.DeleteDomainInput) (*request.Request, *customerprofiles.DeleteDomainOutput)
+
+	DeleteEventStream(*customerprofiles.DeleteEventStreamInput) (*customerprofiles.DeleteEventStreamOutput, error)
+	DeleteEventStreamWithContext(aws.Context, *customerprofiles.DeleteEventStreamInput, ...request.Option) (*customerprofiles.DeleteEventStreamOutput, error)
+	DeleteEventStreamRequest(*customerprofiles.DeleteEventStreamInput) (*request.Request, *customerprofiles.DeleteEventStreamOutput)
 
 	DeleteIntegration(*customerprofiles.DeleteIntegrationInput) (*customerprofiles.DeleteIntegrationOutput, error)
 	DeleteIntegrationWithContext(aws.Context, *customerprofiles.DeleteIntegrationInput, ...request.Option) (*customerprofiles.DeleteIntegrationOutput, error)
@@ -104,13 +120,29 @@ type CustomerProfilesAPI interface {
 	DeleteWorkflowWithContext(aws.Context, *customerprofiles.DeleteWorkflowInput, ...request.Option) (*customerprofiles.DeleteWorkflowOutput, error)
 	DeleteWorkflowRequest(*customerprofiles.DeleteWorkflowInput) (*request.Request, *customerprofiles.DeleteWorkflowOutput)
 
+	DetectProfileObjectType(*customerprofiles.DetectProfileObjectTypeInput) (*customerprofiles.DetectProfileObjectTypeOutput, error)
+	DetectProfileObjectTypeWithContext(aws.Context, *customerprofiles.DetectProfileObjectTypeInput, ...request.Option) (*customerprofiles.DetectProfileObjectTypeOutput, error)
+	DetectProfileObjectTypeRequest(*customerprofiles.DetectProfileObjectTypeInput) (*request.Request, *customerprofiles.DetectProfileObjectTypeOutput)
+
 	GetAutoMergingPreview(*customerprofiles.GetAutoMergingPreviewInput) (*customerprofiles.GetAutoMergingPreviewOutput, error)
 	GetAutoMergingPreviewWithContext(aws.Context, *customerprofiles.GetAutoMergingPreviewInput, ...request.Option) (*customerprofiles.GetAutoMergingPreviewOutput, error)
 	GetAutoMergingPreviewRequest(*customerprofiles.GetAutoMergingPreviewInput) (*request.Request, *customerprofiles.GetAutoMergingPreviewOutput)
 
+	GetCalculatedAttributeDefinition(*customerprofiles.GetCalculatedAttributeDefinitionInput) (*customerprofiles.GetCalculatedAttributeDefinitionOutput, error)
+	GetCalculatedAttributeDefinitionWithContext(aws.Context, *customerprofiles.GetCalculatedAttributeDefinitionInput, ...request.Option) (*customerprofiles.GetCalculatedAttributeDefinitionOutput, error)
+	GetCalculatedAttributeDefinitionRequest(*customerprofiles.GetCalculatedAttributeDefinitionInput) (*request.Request, *customerprofiles.GetCalculatedAttributeDefinitionOutput)
+
+	GetCalculatedAttributeForProfile(*customerprofiles.GetCalculatedAttributeForProfileInput) (*customerprofiles.GetCalculatedAttributeForProfileOutput, error)
+	GetCalculatedAttributeForProfileWithContext(aws.Context, *customerprofiles.GetCalculatedAttributeForProfileInput, ...request.Option) (*customerprofiles.GetCalculatedAttributeForProfileOutput, error)
+	GetCalculatedAttributeForProfileRequest(*customerprofiles.GetCalculatedAttributeForProfileInput) (*request.Request, *customerprofiles.GetCalculatedAttributeForProfileOutput)
+
 	GetDomain(*customerprofiles.GetDomainInput) (*customerprofiles.GetDomainOutput, error)
 	GetDomainWithContext(aws.Context, *customerprofiles.GetDomainInput, ...request.Option) (*customerprofiles.GetDomainOutput, error)
 	GetDomainRequest(*customerprofiles.GetDomainInput) (*request.Request, *customerprofiles.GetDomainOutput)
+
+	GetEventStream(*customerprofiles.GetEventStreamInput) (*customerprofiles.GetEventStreamOutput, error)
+	GetEventStreamWithContext(aws.Context, *customerprofiles.GetEventStreamInput, ...request.Option) (*customerprofiles.GetEventStreamOutput, error)
+	GetEventStreamRequest(*customerprofiles.GetEventStreamInput) (*request.Request, *customerprofiles.GetEventStreamOutput)
 
 	GetIdentityResolutionJob(*customerprofiles.GetIdentityResolutionJobInput) (*customerprofiles.GetIdentityResolutionJobOutput, error)
 	GetIdentityResolutionJobWithContext(aws.Context, *customerprofiles.GetIdentityResolutionJobInput, ...request.Option) (*customerprofiles.GetIdentityResolutionJobOutput, error)
@@ -132,6 +164,10 @@ type CustomerProfilesAPI interface {
 	GetProfileObjectTypeTemplateWithContext(aws.Context, *customerprofiles.GetProfileObjectTypeTemplateInput, ...request.Option) (*customerprofiles.GetProfileObjectTypeTemplateOutput, error)
 	GetProfileObjectTypeTemplateRequest(*customerprofiles.GetProfileObjectTypeTemplateInput) (*request.Request, *customerprofiles.GetProfileObjectTypeTemplateOutput)
 
+	GetSimilarProfiles(*customerprofiles.GetSimilarProfilesInput) (*customerprofiles.GetSimilarProfilesOutput, error)
+	GetSimilarProfilesWithContext(aws.Context, *customerprofiles.GetSimilarProfilesInput, ...request.Option) (*customerprofiles.GetSimilarProfilesOutput, error)
+	GetSimilarProfilesRequest(*customerprofiles.GetSimilarProfilesInput) (*request.Request, *customerprofiles.GetSimilarProfilesOutput)
+
 	GetWorkflow(*customerprofiles.GetWorkflowInput) (*customerprofiles.GetWorkflowOutput, error)
 	GetWorkflowWithContext(aws.Context, *customerprofiles.GetWorkflowInput, ...request.Option) (*customerprofiles.GetWorkflowOutput, error)
 	GetWorkflowRequest(*customerprofiles.GetWorkflowInput) (*request.Request, *customerprofiles.GetWorkflowOutput)
@@ -144,9 +180,24 @@ type CustomerProfilesAPI interface {
 	ListAccountIntegrationsWithContext(aws.Context, *customerprofiles.ListAccountIntegrationsInput, ...request.Option) (*customerprofiles.ListAccountIntegrationsOutput, error)
 	ListAccountIntegrationsRequest(*customerprofiles.ListAccountIntegrationsInput) (*request.Request, *customerprofiles.ListAccountIntegrationsOutput)
 
+	ListCalculatedAttributeDefinitions(*customerprofiles.ListCalculatedAttributeDefinitionsInput) (*customerprofiles.ListCalculatedAttributeDefinitionsOutput, error)
+	ListCalculatedAttributeDefinitionsWithContext(aws.Context, *customerprofiles.ListCalculatedAttributeDefinitionsInput, ...request.Option) (*customerprofiles.ListCalculatedAttributeDefinitionsOutput, error)
+	ListCalculatedAttributeDefinitionsRequest(*customerprofiles.ListCalculatedAttributeDefinitionsInput) (*request.Request, *customerprofiles.ListCalculatedAttributeDefinitionsOutput)
+
+	ListCalculatedAttributesForProfile(*customerprofiles.ListCalculatedAttributesForProfileInput) (*customerprofiles.ListCalculatedAttributesForProfileOutput, error)
+	ListCalculatedAttributesForProfileWithContext(aws.Context, *customerprofiles.ListCalculatedAttributesForProfileInput, ...request.Option) (*customerprofiles.ListCalculatedAttributesForProfileOutput, error)
+	ListCalculatedAttributesForProfileRequest(*customerprofiles.ListCalculatedAttributesForProfileInput) (*request.Request, *customerprofiles.ListCalculatedAttributesForProfileOutput)
+
 	ListDomains(*customerprofiles.ListDomainsInput) (*customerprofiles.ListDomainsOutput, error)
 	ListDomainsWithContext(aws.Context, *customerprofiles.ListDomainsInput, ...request.Option) (*customerprofiles.ListDomainsOutput, error)
 	ListDomainsRequest(*customerprofiles.ListDomainsInput) (*request.Request, *customerprofiles.ListDomainsOutput)
+
+	ListEventStreams(*customerprofiles.ListEventStreamsInput) (*customerprofiles.ListEventStreamsOutput, error)
+	ListEventStreamsWithContext(aws.Context, *customerprofiles.ListEventStreamsInput, ...request.Option) (*customerprofiles.ListEventStreamsOutput, error)
+	ListEventStreamsRequest(*customerprofiles.ListEventStreamsInput) (*request.Request, *customerprofiles.ListEventStreamsOutput)
+
+	ListEventStreamsPages(*customerprofiles.ListEventStreamsInput, func(*customerprofiles.ListEventStreamsOutput, bool) bool) error
+	ListEventStreamsPagesWithContext(aws.Context, *customerprofiles.ListEventStreamsInput, func(*customerprofiles.ListEventStreamsOutput, bool) bool, ...request.Option) error
 
 	ListIdentityResolutionJobs(*customerprofiles.ListIdentityResolutionJobsInput) (*customerprofiles.ListIdentityResolutionJobsOutput, error)
 	ListIdentityResolutionJobsWithContext(aws.Context, *customerprofiles.ListIdentityResolutionJobsInput, ...request.Option) (*customerprofiles.ListIdentityResolutionJobsOutput, error)
@@ -167,6 +218,10 @@ type CustomerProfilesAPI interface {
 	ListProfileObjects(*customerprofiles.ListProfileObjectsInput) (*customerprofiles.ListProfileObjectsOutput, error)
 	ListProfileObjectsWithContext(aws.Context, *customerprofiles.ListProfileObjectsInput, ...request.Option) (*customerprofiles.ListProfileObjectsOutput, error)
 	ListProfileObjectsRequest(*customerprofiles.ListProfileObjectsInput) (*request.Request, *customerprofiles.ListProfileObjectsOutput)
+
+	ListRuleBasedMatches(*customerprofiles.ListRuleBasedMatchesInput) (*customerprofiles.ListRuleBasedMatchesOutput, error)
+	ListRuleBasedMatchesWithContext(aws.Context, *customerprofiles.ListRuleBasedMatchesInput, ...request.Option) (*customerprofiles.ListRuleBasedMatchesOutput, error)
+	ListRuleBasedMatchesRequest(*customerprofiles.ListRuleBasedMatchesInput) (*request.Request, *customerprofiles.ListRuleBasedMatchesOutput)
 
 	ListTagsForResource(*customerprofiles.ListTagsForResourceInput) (*customerprofiles.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *customerprofiles.ListTagsForResourceInput, ...request.Option) (*customerprofiles.ListTagsForResourceOutput, error)
@@ -203,6 +258,10 @@ type CustomerProfilesAPI interface {
 	UntagResource(*customerprofiles.UntagResourceInput) (*customerprofiles.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *customerprofiles.UntagResourceInput, ...request.Option) (*customerprofiles.UntagResourceOutput, error)
 	UntagResourceRequest(*customerprofiles.UntagResourceInput) (*request.Request, *customerprofiles.UntagResourceOutput)
+
+	UpdateCalculatedAttributeDefinition(*customerprofiles.UpdateCalculatedAttributeDefinitionInput) (*customerprofiles.UpdateCalculatedAttributeDefinitionOutput, error)
+	UpdateCalculatedAttributeDefinitionWithContext(aws.Context, *customerprofiles.UpdateCalculatedAttributeDefinitionInput, ...request.Option) (*customerprofiles.UpdateCalculatedAttributeDefinitionOutput, error)
+	UpdateCalculatedAttributeDefinitionRequest(*customerprofiles.UpdateCalculatedAttributeDefinitionInput) (*request.Request, *customerprofiles.UpdateCalculatedAttributeDefinitionOutput)
 
 	UpdateDomain(*customerprofiles.UpdateDomainInput) (*customerprofiles.UpdateDomainOutput, error)
 	UpdateDomainWithContext(aws.Context, *customerprofiles.UpdateDomainInput, ...request.Option) (*customerprofiles.UpdateDomainOutput, error)

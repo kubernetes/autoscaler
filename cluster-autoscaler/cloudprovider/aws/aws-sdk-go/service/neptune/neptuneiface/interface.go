@@ -120,6 +120,10 @@ type NeptuneAPI interface {
 	CreateEventSubscriptionWithContext(aws.Context, *neptune.CreateEventSubscriptionInput, ...request.Option) (*neptune.CreateEventSubscriptionOutput, error)
 	CreateEventSubscriptionRequest(*neptune.CreateEventSubscriptionInput) (*request.Request, *neptune.CreateEventSubscriptionOutput)
 
+	CreateGlobalCluster(*neptune.CreateGlobalClusterInput) (*neptune.CreateGlobalClusterOutput, error)
+	CreateGlobalClusterWithContext(aws.Context, *neptune.CreateGlobalClusterInput, ...request.Option) (*neptune.CreateGlobalClusterOutput, error)
+	CreateGlobalClusterRequest(*neptune.CreateGlobalClusterInput) (*request.Request, *neptune.CreateGlobalClusterOutput)
+
 	DeleteDBCluster(*neptune.DeleteDBClusterInput) (*neptune.DeleteDBClusterOutput, error)
 	DeleteDBClusterWithContext(aws.Context, *neptune.DeleteDBClusterInput, ...request.Option) (*neptune.DeleteDBClusterOutput, error)
 	DeleteDBClusterRequest(*neptune.DeleteDBClusterInput) (*request.Request, *neptune.DeleteDBClusterOutput)
@@ -151,6 +155,10 @@ type NeptuneAPI interface {
 	DeleteEventSubscription(*neptune.DeleteEventSubscriptionInput) (*neptune.DeleteEventSubscriptionOutput, error)
 	DeleteEventSubscriptionWithContext(aws.Context, *neptune.DeleteEventSubscriptionInput, ...request.Option) (*neptune.DeleteEventSubscriptionOutput, error)
 	DeleteEventSubscriptionRequest(*neptune.DeleteEventSubscriptionInput) (*request.Request, *neptune.DeleteEventSubscriptionOutput)
+
+	DeleteGlobalCluster(*neptune.DeleteGlobalClusterInput) (*neptune.DeleteGlobalClusterOutput, error)
+	DeleteGlobalClusterWithContext(aws.Context, *neptune.DeleteGlobalClusterInput, ...request.Option) (*neptune.DeleteGlobalClusterOutput, error)
+	DeleteGlobalClusterRequest(*neptune.DeleteGlobalClusterInput) (*request.Request, *neptune.DeleteGlobalClusterOutput)
 
 	DescribeDBClusterEndpoints(*neptune.DescribeDBClusterEndpointsInput) (*neptune.DescribeDBClusterEndpointsOutput, error)
 	DescribeDBClusterEndpointsWithContext(aws.Context, *neptune.DescribeDBClusterEndpointsInput, ...request.Option) (*neptune.DescribeDBClusterEndpointsOutput, error)
@@ -255,6 +263,13 @@ type NeptuneAPI interface {
 	DescribeEventsPages(*neptune.DescribeEventsInput, func(*neptune.DescribeEventsOutput, bool) bool) error
 	DescribeEventsPagesWithContext(aws.Context, *neptune.DescribeEventsInput, func(*neptune.DescribeEventsOutput, bool) bool, ...request.Option) error
 
+	DescribeGlobalClusters(*neptune.DescribeGlobalClustersInput) (*neptune.DescribeGlobalClustersOutput, error)
+	DescribeGlobalClustersWithContext(aws.Context, *neptune.DescribeGlobalClustersInput, ...request.Option) (*neptune.DescribeGlobalClustersOutput, error)
+	DescribeGlobalClustersRequest(*neptune.DescribeGlobalClustersInput) (*request.Request, *neptune.DescribeGlobalClustersOutput)
+
+	DescribeGlobalClustersPages(*neptune.DescribeGlobalClustersInput, func(*neptune.DescribeGlobalClustersOutput, bool) bool) error
+	DescribeGlobalClustersPagesWithContext(aws.Context, *neptune.DescribeGlobalClustersInput, func(*neptune.DescribeGlobalClustersOutput, bool) bool, ...request.Option) error
+
 	DescribeOrderableDBInstanceOptions(*neptune.DescribeOrderableDBInstanceOptionsInput) (*neptune.DescribeOrderableDBInstanceOptionsOutput, error)
 	DescribeOrderableDBInstanceOptionsWithContext(aws.Context, *neptune.DescribeOrderableDBInstanceOptionsInput, ...request.Option) (*neptune.DescribeOrderableDBInstanceOptionsOutput, error)
 	DescribeOrderableDBInstanceOptionsRequest(*neptune.DescribeOrderableDBInstanceOptionsInput) (*request.Request, *neptune.DescribeOrderableDBInstanceOptionsOutput)
@@ -276,6 +291,10 @@ type NeptuneAPI interface {
 	FailoverDBCluster(*neptune.FailoverDBClusterInput) (*neptune.FailoverDBClusterOutput, error)
 	FailoverDBClusterWithContext(aws.Context, *neptune.FailoverDBClusterInput, ...request.Option) (*neptune.FailoverDBClusterOutput, error)
 	FailoverDBClusterRequest(*neptune.FailoverDBClusterInput) (*request.Request, *neptune.FailoverDBClusterOutput)
+
+	FailoverGlobalCluster(*neptune.FailoverGlobalClusterInput) (*neptune.FailoverGlobalClusterOutput, error)
+	FailoverGlobalClusterWithContext(aws.Context, *neptune.FailoverGlobalClusterInput, ...request.Option) (*neptune.FailoverGlobalClusterOutput, error)
+	FailoverGlobalClusterRequest(*neptune.FailoverGlobalClusterInput) (*request.Request, *neptune.FailoverGlobalClusterOutput)
 
 	ListTagsForResource(*neptune.ListTagsForResourceInput) (*neptune.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *neptune.ListTagsForResourceInput, ...request.Option) (*neptune.ListTagsForResourceOutput, error)
@@ -313,6 +332,10 @@ type NeptuneAPI interface {
 	ModifyEventSubscriptionWithContext(aws.Context, *neptune.ModifyEventSubscriptionInput, ...request.Option) (*neptune.ModifyEventSubscriptionOutput, error)
 	ModifyEventSubscriptionRequest(*neptune.ModifyEventSubscriptionInput) (*request.Request, *neptune.ModifyEventSubscriptionOutput)
 
+	ModifyGlobalCluster(*neptune.ModifyGlobalClusterInput) (*neptune.ModifyGlobalClusterOutput, error)
+	ModifyGlobalClusterWithContext(aws.Context, *neptune.ModifyGlobalClusterInput, ...request.Option) (*neptune.ModifyGlobalClusterOutput, error)
+	ModifyGlobalClusterRequest(*neptune.ModifyGlobalClusterInput) (*request.Request, *neptune.ModifyGlobalClusterOutput)
+
 	PromoteReadReplicaDBCluster(*neptune.PromoteReadReplicaDBClusterInput) (*neptune.PromoteReadReplicaDBClusterOutput, error)
 	PromoteReadReplicaDBClusterWithContext(aws.Context, *neptune.PromoteReadReplicaDBClusterInput, ...request.Option) (*neptune.PromoteReadReplicaDBClusterOutput, error)
 	PromoteReadReplicaDBClusterRequest(*neptune.PromoteReadReplicaDBClusterInput) (*request.Request, *neptune.PromoteReadReplicaDBClusterOutput)
@@ -320,6 +343,10 @@ type NeptuneAPI interface {
 	RebootDBInstance(*neptune.RebootDBInstanceInput) (*neptune.RebootDBInstanceOutput, error)
 	RebootDBInstanceWithContext(aws.Context, *neptune.RebootDBInstanceInput, ...request.Option) (*neptune.RebootDBInstanceOutput, error)
 	RebootDBInstanceRequest(*neptune.RebootDBInstanceInput) (*request.Request, *neptune.RebootDBInstanceOutput)
+
+	RemoveFromGlobalCluster(*neptune.RemoveFromGlobalClusterInput) (*neptune.RemoveFromGlobalClusterOutput, error)
+	RemoveFromGlobalClusterWithContext(aws.Context, *neptune.RemoveFromGlobalClusterInput, ...request.Option) (*neptune.RemoveFromGlobalClusterOutput, error)
+	RemoveFromGlobalClusterRequest(*neptune.RemoveFromGlobalClusterInput) (*request.Request, *neptune.RemoveFromGlobalClusterOutput)
 
 	RemoveRoleFromDBCluster(*neptune.RemoveRoleFromDBClusterInput) (*neptune.RemoveRoleFromDBClusterOutput, error)
 	RemoveRoleFromDBClusterWithContext(aws.Context, *neptune.RemoveRoleFromDBClusterInput, ...request.Option) (*neptune.RemoveRoleFromDBClusterOutput, error)

@@ -68,6 +68,10 @@ type SFNAPI interface {
 	CreateStateMachineWithContext(aws.Context, *sfn.CreateStateMachineInput, ...request.Option) (*sfn.CreateStateMachineOutput, error)
 	CreateStateMachineRequest(*sfn.CreateStateMachineInput) (*request.Request, *sfn.CreateStateMachineOutput)
 
+	CreateStateMachineAlias(*sfn.CreateStateMachineAliasInput) (*sfn.CreateStateMachineAliasOutput, error)
+	CreateStateMachineAliasWithContext(aws.Context, *sfn.CreateStateMachineAliasInput, ...request.Option) (*sfn.CreateStateMachineAliasOutput, error)
+	CreateStateMachineAliasRequest(*sfn.CreateStateMachineAliasInput) (*request.Request, *sfn.CreateStateMachineAliasOutput)
+
 	DeleteActivity(*sfn.DeleteActivityInput) (*sfn.DeleteActivityOutput, error)
 	DeleteActivityWithContext(aws.Context, *sfn.DeleteActivityInput, ...request.Option) (*sfn.DeleteActivityOutput, error)
 	DeleteActivityRequest(*sfn.DeleteActivityInput) (*request.Request, *sfn.DeleteActivityOutput)
@@ -75,6 +79,14 @@ type SFNAPI interface {
 	DeleteStateMachine(*sfn.DeleteStateMachineInput) (*sfn.DeleteStateMachineOutput, error)
 	DeleteStateMachineWithContext(aws.Context, *sfn.DeleteStateMachineInput, ...request.Option) (*sfn.DeleteStateMachineOutput, error)
 	DeleteStateMachineRequest(*sfn.DeleteStateMachineInput) (*request.Request, *sfn.DeleteStateMachineOutput)
+
+	DeleteStateMachineAlias(*sfn.DeleteStateMachineAliasInput) (*sfn.DeleteStateMachineAliasOutput, error)
+	DeleteStateMachineAliasWithContext(aws.Context, *sfn.DeleteStateMachineAliasInput, ...request.Option) (*sfn.DeleteStateMachineAliasOutput, error)
+	DeleteStateMachineAliasRequest(*sfn.DeleteStateMachineAliasInput) (*request.Request, *sfn.DeleteStateMachineAliasOutput)
+
+	DeleteStateMachineVersion(*sfn.DeleteStateMachineVersionInput) (*sfn.DeleteStateMachineVersionOutput, error)
+	DeleteStateMachineVersionWithContext(aws.Context, *sfn.DeleteStateMachineVersionInput, ...request.Option) (*sfn.DeleteStateMachineVersionOutput, error)
+	DeleteStateMachineVersionRequest(*sfn.DeleteStateMachineVersionInput) (*request.Request, *sfn.DeleteStateMachineVersionOutput)
 
 	DescribeActivity(*sfn.DescribeActivityInput) (*sfn.DescribeActivityOutput, error)
 	DescribeActivityWithContext(aws.Context, *sfn.DescribeActivityInput, ...request.Option) (*sfn.DescribeActivityOutput, error)
@@ -84,9 +96,17 @@ type SFNAPI interface {
 	DescribeExecutionWithContext(aws.Context, *sfn.DescribeExecutionInput, ...request.Option) (*sfn.DescribeExecutionOutput, error)
 	DescribeExecutionRequest(*sfn.DescribeExecutionInput) (*request.Request, *sfn.DescribeExecutionOutput)
 
+	DescribeMapRun(*sfn.DescribeMapRunInput) (*sfn.DescribeMapRunOutput, error)
+	DescribeMapRunWithContext(aws.Context, *sfn.DescribeMapRunInput, ...request.Option) (*sfn.DescribeMapRunOutput, error)
+	DescribeMapRunRequest(*sfn.DescribeMapRunInput) (*request.Request, *sfn.DescribeMapRunOutput)
+
 	DescribeStateMachine(*sfn.DescribeStateMachineInput) (*sfn.DescribeStateMachineOutput, error)
 	DescribeStateMachineWithContext(aws.Context, *sfn.DescribeStateMachineInput, ...request.Option) (*sfn.DescribeStateMachineOutput, error)
 	DescribeStateMachineRequest(*sfn.DescribeStateMachineInput) (*request.Request, *sfn.DescribeStateMachineOutput)
+
+	DescribeStateMachineAlias(*sfn.DescribeStateMachineAliasInput) (*sfn.DescribeStateMachineAliasOutput, error)
+	DescribeStateMachineAliasWithContext(aws.Context, *sfn.DescribeStateMachineAliasInput, ...request.Option) (*sfn.DescribeStateMachineAliasOutput, error)
+	DescribeStateMachineAliasRequest(*sfn.DescribeStateMachineAliasInput) (*request.Request, *sfn.DescribeStateMachineAliasOutput)
 
 	DescribeStateMachineForExecution(*sfn.DescribeStateMachineForExecutionInput) (*sfn.DescribeStateMachineForExecutionOutput, error)
 	DescribeStateMachineForExecutionWithContext(aws.Context, *sfn.DescribeStateMachineForExecutionInput, ...request.Option) (*sfn.DescribeStateMachineForExecutionOutput, error)
@@ -117,6 +137,21 @@ type SFNAPI interface {
 	ListExecutionsPages(*sfn.ListExecutionsInput, func(*sfn.ListExecutionsOutput, bool) bool) error
 	ListExecutionsPagesWithContext(aws.Context, *sfn.ListExecutionsInput, func(*sfn.ListExecutionsOutput, bool) bool, ...request.Option) error
 
+	ListMapRuns(*sfn.ListMapRunsInput) (*sfn.ListMapRunsOutput, error)
+	ListMapRunsWithContext(aws.Context, *sfn.ListMapRunsInput, ...request.Option) (*sfn.ListMapRunsOutput, error)
+	ListMapRunsRequest(*sfn.ListMapRunsInput) (*request.Request, *sfn.ListMapRunsOutput)
+
+	ListMapRunsPages(*sfn.ListMapRunsInput, func(*sfn.ListMapRunsOutput, bool) bool) error
+	ListMapRunsPagesWithContext(aws.Context, *sfn.ListMapRunsInput, func(*sfn.ListMapRunsOutput, bool) bool, ...request.Option) error
+
+	ListStateMachineAliases(*sfn.ListStateMachineAliasesInput) (*sfn.ListStateMachineAliasesOutput, error)
+	ListStateMachineAliasesWithContext(aws.Context, *sfn.ListStateMachineAliasesInput, ...request.Option) (*sfn.ListStateMachineAliasesOutput, error)
+	ListStateMachineAliasesRequest(*sfn.ListStateMachineAliasesInput) (*request.Request, *sfn.ListStateMachineAliasesOutput)
+
+	ListStateMachineVersions(*sfn.ListStateMachineVersionsInput) (*sfn.ListStateMachineVersionsOutput, error)
+	ListStateMachineVersionsWithContext(aws.Context, *sfn.ListStateMachineVersionsInput, ...request.Option) (*sfn.ListStateMachineVersionsOutput, error)
+	ListStateMachineVersionsRequest(*sfn.ListStateMachineVersionsInput) (*request.Request, *sfn.ListStateMachineVersionsOutput)
+
 	ListStateMachines(*sfn.ListStateMachinesInput) (*sfn.ListStateMachinesOutput, error)
 	ListStateMachinesWithContext(aws.Context, *sfn.ListStateMachinesInput, ...request.Option) (*sfn.ListStateMachinesOutput, error)
 	ListStateMachinesRequest(*sfn.ListStateMachinesInput) (*request.Request, *sfn.ListStateMachinesOutput)
@@ -127,6 +162,14 @@ type SFNAPI interface {
 	ListTagsForResource(*sfn.ListTagsForResourceInput) (*sfn.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *sfn.ListTagsForResourceInput, ...request.Option) (*sfn.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*sfn.ListTagsForResourceInput) (*request.Request, *sfn.ListTagsForResourceOutput)
+
+	PublishStateMachineVersion(*sfn.PublishStateMachineVersionInput) (*sfn.PublishStateMachineVersionOutput, error)
+	PublishStateMachineVersionWithContext(aws.Context, *sfn.PublishStateMachineVersionInput, ...request.Option) (*sfn.PublishStateMachineVersionOutput, error)
+	PublishStateMachineVersionRequest(*sfn.PublishStateMachineVersionInput) (*request.Request, *sfn.PublishStateMachineVersionOutput)
+
+	RedriveExecution(*sfn.RedriveExecutionInput) (*sfn.RedriveExecutionOutput, error)
+	RedriveExecutionWithContext(aws.Context, *sfn.RedriveExecutionInput, ...request.Option) (*sfn.RedriveExecutionOutput, error)
+	RedriveExecutionRequest(*sfn.RedriveExecutionInput) (*request.Request, *sfn.RedriveExecutionOutput)
 
 	SendTaskFailure(*sfn.SendTaskFailureInput) (*sfn.SendTaskFailureOutput, error)
 	SendTaskFailureWithContext(aws.Context, *sfn.SendTaskFailureInput, ...request.Option) (*sfn.SendTaskFailureOutput, error)
@@ -156,13 +199,25 @@ type SFNAPI interface {
 	TagResourceWithContext(aws.Context, *sfn.TagResourceInput, ...request.Option) (*sfn.TagResourceOutput, error)
 	TagResourceRequest(*sfn.TagResourceInput) (*request.Request, *sfn.TagResourceOutput)
 
+	TestState(*sfn.TestStateInput) (*sfn.TestStateOutput, error)
+	TestStateWithContext(aws.Context, *sfn.TestStateInput, ...request.Option) (*sfn.TestStateOutput, error)
+	TestStateRequest(*sfn.TestStateInput) (*request.Request, *sfn.TestStateOutput)
+
 	UntagResource(*sfn.UntagResourceInput) (*sfn.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *sfn.UntagResourceInput, ...request.Option) (*sfn.UntagResourceOutput, error)
 	UntagResourceRequest(*sfn.UntagResourceInput) (*request.Request, *sfn.UntagResourceOutput)
 
+	UpdateMapRun(*sfn.UpdateMapRunInput) (*sfn.UpdateMapRunOutput, error)
+	UpdateMapRunWithContext(aws.Context, *sfn.UpdateMapRunInput, ...request.Option) (*sfn.UpdateMapRunOutput, error)
+	UpdateMapRunRequest(*sfn.UpdateMapRunInput) (*request.Request, *sfn.UpdateMapRunOutput)
+
 	UpdateStateMachine(*sfn.UpdateStateMachineInput) (*sfn.UpdateStateMachineOutput, error)
 	UpdateStateMachineWithContext(aws.Context, *sfn.UpdateStateMachineInput, ...request.Option) (*sfn.UpdateStateMachineOutput, error)
 	UpdateStateMachineRequest(*sfn.UpdateStateMachineInput) (*request.Request, *sfn.UpdateStateMachineOutput)
+
+	UpdateStateMachineAlias(*sfn.UpdateStateMachineAliasInput) (*sfn.UpdateStateMachineAliasOutput, error)
+	UpdateStateMachineAliasWithContext(aws.Context, *sfn.UpdateStateMachineAliasInput, ...request.Option) (*sfn.UpdateStateMachineAliasOutput, error)
+	UpdateStateMachineAliasRequest(*sfn.UpdateStateMachineAliasInput) (*request.Request, *sfn.UpdateStateMachineAliasOutput)
 }
 
 var _ SFNAPI = (*sfn.SFN)(nil)

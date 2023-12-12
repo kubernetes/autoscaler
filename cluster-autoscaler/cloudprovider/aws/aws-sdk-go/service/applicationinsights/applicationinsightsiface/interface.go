@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon CloudWatch Application Insights.
 //	func myFunc(svc applicationinsightsiface.ApplicationInsightsAPI) bool {
-//	    // Make svc.CreateApplication request
+//	    // Make svc.AddWorkload request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockApplicationInsightsClient struct {
 //	    applicationinsightsiface.ApplicationInsightsAPI
 //	}
-//	func (m *mockApplicationInsightsClient) CreateApplication(input *applicationinsights.CreateApplicationInput) (*applicationinsights.CreateApplicationOutput, error) {
+//	func (m *mockApplicationInsightsClient) AddWorkload(input *applicationinsights.AddWorkloadInput) (*applicationinsights.AddWorkloadOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type ApplicationInsightsAPI interface {
+	AddWorkload(*applicationinsights.AddWorkloadInput) (*applicationinsights.AddWorkloadOutput, error)
+	AddWorkloadWithContext(aws.Context, *applicationinsights.AddWorkloadInput, ...request.Option) (*applicationinsights.AddWorkloadOutput, error)
+	AddWorkloadRequest(*applicationinsights.AddWorkloadInput) (*request.Request, *applicationinsights.AddWorkloadOutput)
+
 	CreateApplication(*applicationinsights.CreateApplicationInput) (*applicationinsights.CreateApplicationOutput, error)
 	CreateApplicationWithContext(aws.Context, *applicationinsights.CreateApplicationInput, ...request.Option) (*applicationinsights.CreateApplicationOutput, error)
 	CreateApplicationRequest(*applicationinsights.CreateApplicationInput) (*request.Request, *applicationinsights.CreateApplicationOutput)
@@ -116,6 +120,10 @@ type ApplicationInsightsAPI interface {
 	DescribeProblemObservationsWithContext(aws.Context, *applicationinsights.DescribeProblemObservationsInput, ...request.Option) (*applicationinsights.DescribeProblemObservationsOutput, error)
 	DescribeProblemObservationsRequest(*applicationinsights.DescribeProblemObservationsInput) (*request.Request, *applicationinsights.DescribeProblemObservationsOutput)
 
+	DescribeWorkload(*applicationinsights.DescribeWorkloadInput) (*applicationinsights.DescribeWorkloadOutput, error)
+	DescribeWorkloadWithContext(aws.Context, *applicationinsights.DescribeWorkloadInput, ...request.Option) (*applicationinsights.DescribeWorkloadOutput, error)
+	DescribeWorkloadRequest(*applicationinsights.DescribeWorkloadInput) (*request.Request, *applicationinsights.DescribeWorkloadOutput)
+
 	ListApplications(*applicationinsights.ListApplicationsInput) (*applicationinsights.ListApplicationsOutput, error)
 	ListApplicationsWithContext(aws.Context, *applicationinsights.ListApplicationsInput, ...request.Option) (*applicationinsights.ListApplicationsOutput, error)
 	ListApplicationsRequest(*applicationinsights.ListApplicationsInput) (*request.Request, *applicationinsights.ListApplicationsOutput)
@@ -162,6 +170,17 @@ type ApplicationInsightsAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *applicationinsights.ListTagsForResourceInput, ...request.Option) (*applicationinsights.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*applicationinsights.ListTagsForResourceInput) (*request.Request, *applicationinsights.ListTagsForResourceOutput)
 
+	ListWorkloads(*applicationinsights.ListWorkloadsInput) (*applicationinsights.ListWorkloadsOutput, error)
+	ListWorkloadsWithContext(aws.Context, *applicationinsights.ListWorkloadsInput, ...request.Option) (*applicationinsights.ListWorkloadsOutput, error)
+	ListWorkloadsRequest(*applicationinsights.ListWorkloadsInput) (*request.Request, *applicationinsights.ListWorkloadsOutput)
+
+	ListWorkloadsPages(*applicationinsights.ListWorkloadsInput, func(*applicationinsights.ListWorkloadsOutput, bool) bool) error
+	ListWorkloadsPagesWithContext(aws.Context, *applicationinsights.ListWorkloadsInput, func(*applicationinsights.ListWorkloadsOutput, bool) bool, ...request.Option) error
+
+	RemoveWorkload(*applicationinsights.RemoveWorkloadInput) (*applicationinsights.RemoveWorkloadOutput, error)
+	RemoveWorkloadWithContext(aws.Context, *applicationinsights.RemoveWorkloadInput, ...request.Option) (*applicationinsights.RemoveWorkloadOutput, error)
+	RemoveWorkloadRequest(*applicationinsights.RemoveWorkloadInput) (*request.Request, *applicationinsights.RemoveWorkloadOutput)
+
 	TagResource(*applicationinsights.TagResourceInput) (*applicationinsights.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *applicationinsights.TagResourceInput, ...request.Option) (*applicationinsights.TagResourceOutput, error)
 	TagResourceRequest(*applicationinsights.TagResourceInput) (*request.Request, *applicationinsights.TagResourceOutput)
@@ -185,6 +204,14 @@ type ApplicationInsightsAPI interface {
 	UpdateLogPattern(*applicationinsights.UpdateLogPatternInput) (*applicationinsights.UpdateLogPatternOutput, error)
 	UpdateLogPatternWithContext(aws.Context, *applicationinsights.UpdateLogPatternInput, ...request.Option) (*applicationinsights.UpdateLogPatternOutput, error)
 	UpdateLogPatternRequest(*applicationinsights.UpdateLogPatternInput) (*request.Request, *applicationinsights.UpdateLogPatternOutput)
+
+	UpdateProblem(*applicationinsights.UpdateProblemInput) (*applicationinsights.UpdateProblemOutput, error)
+	UpdateProblemWithContext(aws.Context, *applicationinsights.UpdateProblemInput, ...request.Option) (*applicationinsights.UpdateProblemOutput, error)
+	UpdateProblemRequest(*applicationinsights.UpdateProblemInput) (*request.Request, *applicationinsights.UpdateProblemOutput)
+
+	UpdateWorkload(*applicationinsights.UpdateWorkloadInput) (*applicationinsights.UpdateWorkloadOutput, error)
+	UpdateWorkloadWithContext(aws.Context, *applicationinsights.UpdateWorkloadInput, ...request.Option) (*applicationinsights.UpdateWorkloadOutput, error)
+	UpdateWorkloadRequest(*applicationinsights.UpdateWorkloadInput) (*request.Request, *applicationinsights.UpdateWorkloadOutput)
 }
 
 var _ ApplicationInsightsAPI = (*applicationinsights.ApplicationInsights)(nil)

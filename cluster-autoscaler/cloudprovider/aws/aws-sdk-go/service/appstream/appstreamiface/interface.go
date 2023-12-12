@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon AppStream.
 //	func myFunc(svc appstreamiface.AppStreamAPI) bool {
-//	    // Make svc.AssociateApplicationFleet request
+//	    // Make svc.AssociateAppBlockBuilderAppBlock request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockAppStreamClient struct {
 //	    appstreamiface.AppStreamAPI
 //	}
-//	func (m *mockAppStreamClient) AssociateApplicationFleet(input *appstream.AssociateApplicationFleetInput) (*appstream.AssociateApplicationFleetOutput, error) {
+//	func (m *mockAppStreamClient) AssociateAppBlockBuilderAppBlock(input *appstream.AssociateAppBlockBuilderAppBlockInput) (*appstream.AssociateAppBlockBuilderAppBlockOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type AppStreamAPI interface {
+	AssociateAppBlockBuilderAppBlock(*appstream.AssociateAppBlockBuilderAppBlockInput) (*appstream.AssociateAppBlockBuilderAppBlockOutput, error)
+	AssociateAppBlockBuilderAppBlockWithContext(aws.Context, *appstream.AssociateAppBlockBuilderAppBlockInput, ...request.Option) (*appstream.AssociateAppBlockBuilderAppBlockOutput, error)
+	AssociateAppBlockBuilderAppBlockRequest(*appstream.AssociateAppBlockBuilderAppBlockInput) (*request.Request, *appstream.AssociateAppBlockBuilderAppBlockOutput)
+
 	AssociateApplicationFleet(*appstream.AssociateApplicationFleetInput) (*appstream.AssociateApplicationFleetOutput, error)
 	AssociateApplicationFleetWithContext(aws.Context, *appstream.AssociateApplicationFleetInput, ...request.Option) (*appstream.AssociateApplicationFleetOutput, error)
 	AssociateApplicationFleetRequest(*appstream.AssociateApplicationFleetInput) (*request.Request, *appstream.AssociateApplicationFleetOutput)
@@ -87,6 +91,14 @@ type AppStreamAPI interface {
 	CreateAppBlock(*appstream.CreateAppBlockInput) (*appstream.CreateAppBlockOutput, error)
 	CreateAppBlockWithContext(aws.Context, *appstream.CreateAppBlockInput, ...request.Option) (*appstream.CreateAppBlockOutput, error)
 	CreateAppBlockRequest(*appstream.CreateAppBlockInput) (*request.Request, *appstream.CreateAppBlockOutput)
+
+	CreateAppBlockBuilder(*appstream.CreateAppBlockBuilderInput) (*appstream.CreateAppBlockBuilderOutput, error)
+	CreateAppBlockBuilderWithContext(aws.Context, *appstream.CreateAppBlockBuilderInput, ...request.Option) (*appstream.CreateAppBlockBuilderOutput, error)
+	CreateAppBlockBuilderRequest(*appstream.CreateAppBlockBuilderInput) (*request.Request, *appstream.CreateAppBlockBuilderOutput)
+
+	CreateAppBlockBuilderStreamingURL(*appstream.CreateAppBlockBuilderStreamingURLInput) (*appstream.CreateAppBlockBuilderStreamingURLOutput, error)
+	CreateAppBlockBuilderStreamingURLWithContext(aws.Context, *appstream.CreateAppBlockBuilderStreamingURLInput, ...request.Option) (*appstream.CreateAppBlockBuilderStreamingURLOutput, error)
+	CreateAppBlockBuilderStreamingURLRequest(*appstream.CreateAppBlockBuilderStreamingURLInput) (*request.Request, *appstream.CreateAppBlockBuilderStreamingURLOutput)
 
 	CreateApplication(*appstream.CreateApplicationInput) (*appstream.CreateApplicationOutput, error)
 	CreateApplicationWithContext(aws.Context, *appstream.CreateApplicationInput, ...request.Option) (*appstream.CreateApplicationOutput, error)
@@ -136,6 +148,10 @@ type AppStreamAPI interface {
 	DeleteAppBlockWithContext(aws.Context, *appstream.DeleteAppBlockInput, ...request.Option) (*appstream.DeleteAppBlockOutput, error)
 	DeleteAppBlockRequest(*appstream.DeleteAppBlockInput) (*request.Request, *appstream.DeleteAppBlockOutput)
 
+	DeleteAppBlockBuilder(*appstream.DeleteAppBlockBuilderInput) (*appstream.DeleteAppBlockBuilderOutput, error)
+	DeleteAppBlockBuilderWithContext(aws.Context, *appstream.DeleteAppBlockBuilderInput, ...request.Option) (*appstream.DeleteAppBlockBuilderOutput, error)
+	DeleteAppBlockBuilderRequest(*appstream.DeleteAppBlockBuilderInput) (*request.Request, *appstream.DeleteAppBlockBuilderOutput)
+
 	DeleteApplication(*appstream.DeleteApplicationInput) (*appstream.DeleteApplicationOutput, error)
 	DeleteApplicationWithContext(aws.Context, *appstream.DeleteApplicationInput, ...request.Option) (*appstream.DeleteApplicationOutput, error)
 	DeleteApplicationRequest(*appstream.DeleteApplicationInput) (*request.Request, *appstream.DeleteApplicationOutput)
@@ -175,6 +191,20 @@ type AppStreamAPI interface {
 	DeleteUser(*appstream.DeleteUserInput) (*appstream.DeleteUserOutput, error)
 	DeleteUserWithContext(aws.Context, *appstream.DeleteUserInput, ...request.Option) (*appstream.DeleteUserOutput, error)
 	DeleteUserRequest(*appstream.DeleteUserInput) (*request.Request, *appstream.DeleteUserOutput)
+
+	DescribeAppBlockBuilderAppBlockAssociations(*appstream.DescribeAppBlockBuilderAppBlockAssociationsInput) (*appstream.DescribeAppBlockBuilderAppBlockAssociationsOutput, error)
+	DescribeAppBlockBuilderAppBlockAssociationsWithContext(aws.Context, *appstream.DescribeAppBlockBuilderAppBlockAssociationsInput, ...request.Option) (*appstream.DescribeAppBlockBuilderAppBlockAssociationsOutput, error)
+	DescribeAppBlockBuilderAppBlockAssociationsRequest(*appstream.DescribeAppBlockBuilderAppBlockAssociationsInput) (*request.Request, *appstream.DescribeAppBlockBuilderAppBlockAssociationsOutput)
+
+	DescribeAppBlockBuilderAppBlockAssociationsPages(*appstream.DescribeAppBlockBuilderAppBlockAssociationsInput, func(*appstream.DescribeAppBlockBuilderAppBlockAssociationsOutput, bool) bool) error
+	DescribeAppBlockBuilderAppBlockAssociationsPagesWithContext(aws.Context, *appstream.DescribeAppBlockBuilderAppBlockAssociationsInput, func(*appstream.DescribeAppBlockBuilderAppBlockAssociationsOutput, bool) bool, ...request.Option) error
+
+	DescribeAppBlockBuilders(*appstream.DescribeAppBlockBuildersInput) (*appstream.DescribeAppBlockBuildersOutput, error)
+	DescribeAppBlockBuildersWithContext(aws.Context, *appstream.DescribeAppBlockBuildersInput, ...request.Option) (*appstream.DescribeAppBlockBuildersOutput, error)
+	DescribeAppBlockBuildersRequest(*appstream.DescribeAppBlockBuildersInput) (*request.Request, *appstream.DescribeAppBlockBuildersOutput)
+
+	DescribeAppBlockBuildersPages(*appstream.DescribeAppBlockBuildersInput, func(*appstream.DescribeAppBlockBuildersOutput, bool) bool) error
+	DescribeAppBlockBuildersPagesWithContext(aws.Context, *appstream.DescribeAppBlockBuildersInput, func(*appstream.DescribeAppBlockBuildersOutput, bool) bool, ...request.Option) error
 
 	DescribeAppBlocks(*appstream.DescribeAppBlocksInput) (*appstream.DescribeAppBlocksOutput, error)
 	DescribeAppBlocksWithContext(aws.Context, *appstream.DescribeAppBlocksInput, ...request.Option) (*appstream.DescribeAppBlocksOutput, error)
@@ -242,6 +272,10 @@ type AppStreamAPI interface {
 	DisableUserWithContext(aws.Context, *appstream.DisableUserInput, ...request.Option) (*appstream.DisableUserOutput, error)
 	DisableUserRequest(*appstream.DisableUserInput) (*request.Request, *appstream.DisableUserOutput)
 
+	DisassociateAppBlockBuilderAppBlock(*appstream.DisassociateAppBlockBuilderAppBlockInput) (*appstream.DisassociateAppBlockBuilderAppBlockOutput, error)
+	DisassociateAppBlockBuilderAppBlockWithContext(aws.Context, *appstream.DisassociateAppBlockBuilderAppBlockInput, ...request.Option) (*appstream.DisassociateAppBlockBuilderAppBlockOutput, error)
+	DisassociateAppBlockBuilderAppBlockRequest(*appstream.DisassociateAppBlockBuilderAppBlockInput) (*request.Request, *appstream.DisassociateAppBlockBuilderAppBlockOutput)
+
 	DisassociateApplicationFleet(*appstream.DisassociateApplicationFleetInput) (*appstream.DisassociateApplicationFleetOutput, error)
 	DisassociateApplicationFleetWithContext(aws.Context, *appstream.DisassociateApplicationFleetInput, ...request.Option) (*appstream.DisassociateApplicationFleetOutput, error)
 	DisassociateApplicationFleetRequest(*appstream.DisassociateApplicationFleetInput) (*request.Request, *appstream.DisassociateApplicationFleetOutput)
@@ -278,6 +312,10 @@ type AppStreamAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *appstream.ListTagsForResourceInput, ...request.Option) (*appstream.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*appstream.ListTagsForResourceInput) (*request.Request, *appstream.ListTagsForResourceOutput)
 
+	StartAppBlockBuilder(*appstream.StartAppBlockBuilderInput) (*appstream.StartAppBlockBuilderOutput, error)
+	StartAppBlockBuilderWithContext(aws.Context, *appstream.StartAppBlockBuilderInput, ...request.Option) (*appstream.StartAppBlockBuilderOutput, error)
+	StartAppBlockBuilderRequest(*appstream.StartAppBlockBuilderInput) (*request.Request, *appstream.StartAppBlockBuilderOutput)
+
 	StartFleet(*appstream.StartFleetInput) (*appstream.StartFleetOutput, error)
 	StartFleetWithContext(aws.Context, *appstream.StartFleetInput, ...request.Option) (*appstream.StartFleetOutput, error)
 	StartFleetRequest(*appstream.StartFleetInput) (*request.Request, *appstream.StartFleetOutput)
@@ -285,6 +323,10 @@ type AppStreamAPI interface {
 	StartImageBuilder(*appstream.StartImageBuilderInput) (*appstream.StartImageBuilderOutput, error)
 	StartImageBuilderWithContext(aws.Context, *appstream.StartImageBuilderInput, ...request.Option) (*appstream.StartImageBuilderOutput, error)
 	StartImageBuilderRequest(*appstream.StartImageBuilderInput) (*request.Request, *appstream.StartImageBuilderOutput)
+
+	StopAppBlockBuilder(*appstream.StopAppBlockBuilderInput) (*appstream.StopAppBlockBuilderOutput, error)
+	StopAppBlockBuilderWithContext(aws.Context, *appstream.StopAppBlockBuilderInput, ...request.Option) (*appstream.StopAppBlockBuilderOutput, error)
+	StopAppBlockBuilderRequest(*appstream.StopAppBlockBuilderInput) (*request.Request, *appstream.StopAppBlockBuilderOutput)
 
 	StopFleet(*appstream.StopFleetInput) (*appstream.StopFleetOutput, error)
 	StopFleetWithContext(aws.Context, *appstream.StopFleetInput, ...request.Option) (*appstream.StopFleetOutput, error)
@@ -301,6 +343,10 @@ type AppStreamAPI interface {
 	UntagResource(*appstream.UntagResourceInput) (*appstream.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *appstream.UntagResourceInput, ...request.Option) (*appstream.UntagResourceOutput, error)
 	UntagResourceRequest(*appstream.UntagResourceInput) (*request.Request, *appstream.UntagResourceOutput)
+
+	UpdateAppBlockBuilder(*appstream.UpdateAppBlockBuilderInput) (*appstream.UpdateAppBlockBuilderOutput, error)
+	UpdateAppBlockBuilderWithContext(aws.Context, *appstream.UpdateAppBlockBuilderInput, ...request.Option) (*appstream.UpdateAppBlockBuilderOutput, error)
+	UpdateAppBlockBuilderRequest(*appstream.UpdateAppBlockBuilderInput) (*request.Request, *appstream.UpdateAppBlockBuilderOutput)
 
 	UpdateApplication(*appstream.UpdateApplicationInput) (*appstream.UpdateApplicationOutput, error)
 	UpdateApplicationWithContext(aws.Context, *appstream.UpdateApplicationInput, ...request.Option) (*appstream.UpdateApplicationOutput, error)

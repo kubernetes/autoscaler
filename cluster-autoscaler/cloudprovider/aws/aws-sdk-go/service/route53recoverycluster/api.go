@@ -57,8 +57,8 @@ func (c *Route53RecoveryCluster) GetRoutingControlStateRequest(input *GetRouting
 //
 // Get the state for a routing control. A routing control is a simple on/off
 // switch that you can use to route traffic to cells. When a routing control
-// state is On, traffic flows to a cell. When the state is Off, traffic does
-// not flow.
+// state is set to ON, traffic flows to a cell. When the state is set to OFF,
+// traffic does not flow.
 //
 // Before you can create a routing control, you must first create a cluster,
 // and then host the control in a control panel on the cluster. For more information,
@@ -186,8 +186,8 @@ func (c *Route53RecoveryCluster) ListRoutingControlsRequest(input *ListRoutingCo
 // it lists all the routing controls in the cluster.
 //
 // A routing control is a simple on/off switch in Route 53 ARC that you can
-// use to route traffic to cells. When a routing control state is On, traffic
-// flows to a cell. When the state is Off, traffic does not flow.
+// use to route traffic to cells. When a routing control state is set to ON,
+// traffic flows to a cell. When the state is set to OFF, traffic does not flow.
 //
 // Before you can create a routing control, you must first create a cluster,
 // and then host the control in a control panel on the cluster. For more information,
@@ -351,8 +351,8 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStateRequest(input *UpdateR
 // UpdateRoutingControlState API operation for Route53 Recovery Cluster.
 //
 // Set the state of the routing control to reroute traffic. You can set the
-// value to be On or Off. When the state is On, traffic flows to a cell. When
-// the state is Off, traffic does not flow.
+// value to ON or OFF. When the state is ON, traffic flows to a cell. When the
+// state is OFF, traffic does not flow.
 //
 // With Route 53 ARC, you can add safety rules for routing controls, which are
 // safeguards for routing control state updates that help prevent unexpected
@@ -477,8 +477,8 @@ func (c *Route53RecoveryCluster) UpdateRoutingControlStatesRequest(input *Update
 // UpdateRoutingControlStates API operation for Route53 Recovery Cluster.
 //
 // Set multiple routing control states. You can set the value for each state
-// to be On or Off. When the state is On, traffic flows to a cell. When it's
-// Off, traffic does not flow.
+// to be ON or OFF. When the state is ON, traffic flows to a cell. When it's
+// OFF, traffic does not flow.
 //
 // With Route 53 ARC, you can add safety rules for routing controls, which are
 // safeguards for routing control state updates that help prevent unexpected
@@ -1124,8 +1124,8 @@ func (s *ResourceNotFoundException) RequestID() string {
 }
 
 // A routing control, which is a simple on/off switch that you can use to route
-// traffic to cells. When a routing control state is On, traffic flows to a
-// cell. When the state is Off, traffic does not flow.
+// traffic to cells. When a routing control state is set to ON, traffic flows
+// to a cell. When the state is set to OFF, traffic does not flow.
 type RoutingControl struct {
 	_ struct{} `type:"structure"`
 
@@ -1133,8 +1133,12 @@ type RoutingControl struct {
 	// is located.
 	ControlPanelArn *string `min:"1" type:"string"`
 
-	// The name of the control panel where the routing control is located.
+	// The name of the control panel where the routing control is located. Only
+	// ASCII characters are supported for control panel names.
 	ControlPanelName *string `min:"1" type:"string"`
+
+	// The Amazon Web Services account ID of the routing control owner.
+	Owner *string `min:"12" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the routing control.
 	RoutingControlArn *string `min:"1" type:"string"`
@@ -1143,7 +1147,8 @@ type RoutingControl struct {
 	RoutingControlName *string `min:"1" type:"string"`
 
 	// The current state of the routing control. When a routing control state is
-	// On, traffic flows to a cell. When the state is Off, traffic does not flow.
+	// set to ON, traffic flows to a cell. When the state is set to OFF, traffic
+	// does not flow.
 	RoutingControlState *string `type:"string" enum:"RoutingControlState"`
 }
 
@@ -1174,6 +1179,12 @@ func (s *RoutingControl) SetControlPanelArn(v string) *RoutingControl {
 // SetControlPanelName sets the ControlPanelName field's value.
 func (s *RoutingControl) SetControlPanelName(v string) *RoutingControl {
 	s.ControlPanelName = &v
+	return s
+}
+
+// SetOwner sets the Owner field's value.
+func (s *RoutingControl) SetOwner(v string) *RoutingControl {
+	s.Owner = &v
 	return s
 }
 
@@ -1416,7 +1427,7 @@ type UpdateRoutingControlStateInput struct {
 	// RoutingControlArn is a required field
 	RoutingControlArn *string `min:"1" type:"string" required:"true"`
 
-	// The state of the routing control. You can set the value to be On or Off.
+	// The state of the routing control. You can set the value to ON or OFF.
 	//
 	// RoutingControlState is a required field
 	RoutingControlState *string `type:"string" required:"true" enum:"RoutingControlState"`

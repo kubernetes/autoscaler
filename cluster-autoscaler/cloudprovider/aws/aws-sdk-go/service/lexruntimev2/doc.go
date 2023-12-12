@@ -3,6 +3,9 @@
 // Package lexruntimev2 provides the client and types for making API
 // requests to Amazon Lex Runtime V2.
 //
+// This section contains documentation for the Amazon Lex V2 Runtime V2 API
+// operations.
+//
 // See https://docs.aws.amazon.com/goto/WebAPI/runtime.lex.v2-2020-08-07 for more information on this service.
 //
 // See lexruntimev2 package documentation for more information.
