@@ -76,6 +76,14 @@ type SSMContactsAPI interface {
 	CreateContactChannelWithContext(aws.Context, *ssmcontacts.CreateContactChannelInput, ...request.Option) (*ssmcontacts.CreateContactChannelOutput, error)
 	CreateContactChannelRequest(*ssmcontacts.CreateContactChannelInput) (*request.Request, *ssmcontacts.CreateContactChannelOutput)
 
+	CreateRotation(*ssmcontacts.CreateRotationInput) (*ssmcontacts.CreateRotationOutput, error)
+	CreateRotationWithContext(aws.Context, *ssmcontacts.CreateRotationInput, ...request.Option) (*ssmcontacts.CreateRotationOutput, error)
+	CreateRotationRequest(*ssmcontacts.CreateRotationInput) (*request.Request, *ssmcontacts.CreateRotationOutput)
+
+	CreateRotationOverride(*ssmcontacts.CreateRotationOverrideInput) (*ssmcontacts.CreateRotationOverrideOutput, error)
+	CreateRotationOverrideWithContext(aws.Context, *ssmcontacts.CreateRotationOverrideInput, ...request.Option) (*ssmcontacts.CreateRotationOverrideOutput, error)
+	CreateRotationOverrideRequest(*ssmcontacts.CreateRotationOverrideInput) (*request.Request, *ssmcontacts.CreateRotationOverrideOutput)
+
 	DeactivateContactChannel(*ssmcontacts.DeactivateContactChannelInput) (*ssmcontacts.DeactivateContactChannelOutput, error)
 	DeactivateContactChannelWithContext(aws.Context, *ssmcontacts.DeactivateContactChannelInput, ...request.Option) (*ssmcontacts.DeactivateContactChannelOutput, error)
 	DeactivateContactChannelRequest(*ssmcontacts.DeactivateContactChannelInput) (*request.Request, *ssmcontacts.DeactivateContactChannelOutput)
@@ -87,6 +95,14 @@ type SSMContactsAPI interface {
 	DeleteContactChannel(*ssmcontacts.DeleteContactChannelInput) (*ssmcontacts.DeleteContactChannelOutput, error)
 	DeleteContactChannelWithContext(aws.Context, *ssmcontacts.DeleteContactChannelInput, ...request.Option) (*ssmcontacts.DeleteContactChannelOutput, error)
 	DeleteContactChannelRequest(*ssmcontacts.DeleteContactChannelInput) (*request.Request, *ssmcontacts.DeleteContactChannelOutput)
+
+	DeleteRotation(*ssmcontacts.DeleteRotationInput) (*ssmcontacts.DeleteRotationOutput, error)
+	DeleteRotationWithContext(aws.Context, *ssmcontacts.DeleteRotationInput, ...request.Option) (*ssmcontacts.DeleteRotationOutput, error)
+	DeleteRotationRequest(*ssmcontacts.DeleteRotationInput) (*request.Request, *ssmcontacts.DeleteRotationOutput)
+
+	DeleteRotationOverride(*ssmcontacts.DeleteRotationOverrideInput) (*ssmcontacts.DeleteRotationOverrideOutput, error)
+	DeleteRotationOverrideWithContext(aws.Context, *ssmcontacts.DeleteRotationOverrideInput, ...request.Option) (*ssmcontacts.DeleteRotationOverrideOutput, error)
+	DeleteRotationOverrideRequest(*ssmcontacts.DeleteRotationOverrideInput) (*request.Request, *ssmcontacts.DeleteRotationOverrideOutput)
 
 	DescribeEngagement(*ssmcontacts.DescribeEngagementInput) (*ssmcontacts.DescribeEngagementOutput, error)
 	DescribeEngagementWithContext(aws.Context, *ssmcontacts.DescribeEngagementInput, ...request.Option) (*ssmcontacts.DescribeEngagementOutput, error)
@@ -107,6 +123,14 @@ type SSMContactsAPI interface {
 	GetContactPolicy(*ssmcontacts.GetContactPolicyInput) (*ssmcontacts.GetContactPolicyOutput, error)
 	GetContactPolicyWithContext(aws.Context, *ssmcontacts.GetContactPolicyInput, ...request.Option) (*ssmcontacts.GetContactPolicyOutput, error)
 	GetContactPolicyRequest(*ssmcontacts.GetContactPolicyInput) (*request.Request, *ssmcontacts.GetContactPolicyOutput)
+
+	GetRotation(*ssmcontacts.GetRotationInput) (*ssmcontacts.GetRotationOutput, error)
+	GetRotationWithContext(aws.Context, *ssmcontacts.GetRotationInput, ...request.Option) (*ssmcontacts.GetRotationOutput, error)
+	GetRotationRequest(*ssmcontacts.GetRotationInput) (*request.Request, *ssmcontacts.GetRotationOutput)
+
+	GetRotationOverride(*ssmcontacts.GetRotationOverrideInput) (*ssmcontacts.GetRotationOverrideOutput, error)
+	GetRotationOverrideWithContext(aws.Context, *ssmcontacts.GetRotationOverrideInput, ...request.Option) (*ssmcontacts.GetRotationOverrideOutput, error)
+	GetRotationOverrideRequest(*ssmcontacts.GetRotationOverrideInput) (*request.Request, *ssmcontacts.GetRotationOverrideOutput)
 
 	ListContactChannels(*ssmcontacts.ListContactChannelsInput) (*ssmcontacts.ListContactChannelsOutput, error)
 	ListContactChannelsWithContext(aws.Context, *ssmcontacts.ListContactChannelsInput, ...request.Option) (*ssmcontacts.ListContactChannelsOutput, error)
@@ -136,6 +160,13 @@ type SSMContactsAPI interface {
 	ListPageReceiptsPages(*ssmcontacts.ListPageReceiptsInput, func(*ssmcontacts.ListPageReceiptsOutput, bool) bool) error
 	ListPageReceiptsPagesWithContext(aws.Context, *ssmcontacts.ListPageReceiptsInput, func(*ssmcontacts.ListPageReceiptsOutput, bool) bool, ...request.Option) error
 
+	ListPageResolutions(*ssmcontacts.ListPageResolutionsInput) (*ssmcontacts.ListPageResolutionsOutput, error)
+	ListPageResolutionsWithContext(aws.Context, *ssmcontacts.ListPageResolutionsInput, ...request.Option) (*ssmcontacts.ListPageResolutionsOutput, error)
+	ListPageResolutionsRequest(*ssmcontacts.ListPageResolutionsInput) (*request.Request, *ssmcontacts.ListPageResolutionsOutput)
+
+	ListPageResolutionsPages(*ssmcontacts.ListPageResolutionsInput, func(*ssmcontacts.ListPageResolutionsOutput, bool) bool) error
+	ListPageResolutionsPagesWithContext(aws.Context, *ssmcontacts.ListPageResolutionsInput, func(*ssmcontacts.ListPageResolutionsOutput, bool) bool, ...request.Option) error
+
 	ListPagesByContact(*ssmcontacts.ListPagesByContactInput) (*ssmcontacts.ListPagesByContactOutput, error)
 	ListPagesByContactWithContext(aws.Context, *ssmcontacts.ListPagesByContactInput, ...request.Option) (*ssmcontacts.ListPagesByContactOutput, error)
 	ListPagesByContactRequest(*ssmcontacts.ListPagesByContactInput) (*request.Request, *ssmcontacts.ListPagesByContactOutput)
@@ -149,6 +180,34 @@ type SSMContactsAPI interface {
 
 	ListPagesByEngagementPages(*ssmcontacts.ListPagesByEngagementInput, func(*ssmcontacts.ListPagesByEngagementOutput, bool) bool) error
 	ListPagesByEngagementPagesWithContext(aws.Context, *ssmcontacts.ListPagesByEngagementInput, func(*ssmcontacts.ListPagesByEngagementOutput, bool) bool, ...request.Option) error
+
+	ListPreviewRotationShifts(*ssmcontacts.ListPreviewRotationShiftsInput) (*ssmcontacts.ListPreviewRotationShiftsOutput, error)
+	ListPreviewRotationShiftsWithContext(aws.Context, *ssmcontacts.ListPreviewRotationShiftsInput, ...request.Option) (*ssmcontacts.ListPreviewRotationShiftsOutput, error)
+	ListPreviewRotationShiftsRequest(*ssmcontacts.ListPreviewRotationShiftsInput) (*request.Request, *ssmcontacts.ListPreviewRotationShiftsOutput)
+
+	ListPreviewRotationShiftsPages(*ssmcontacts.ListPreviewRotationShiftsInput, func(*ssmcontacts.ListPreviewRotationShiftsOutput, bool) bool) error
+	ListPreviewRotationShiftsPagesWithContext(aws.Context, *ssmcontacts.ListPreviewRotationShiftsInput, func(*ssmcontacts.ListPreviewRotationShiftsOutput, bool) bool, ...request.Option) error
+
+	ListRotationOverrides(*ssmcontacts.ListRotationOverridesInput) (*ssmcontacts.ListRotationOverridesOutput, error)
+	ListRotationOverridesWithContext(aws.Context, *ssmcontacts.ListRotationOverridesInput, ...request.Option) (*ssmcontacts.ListRotationOverridesOutput, error)
+	ListRotationOverridesRequest(*ssmcontacts.ListRotationOverridesInput) (*request.Request, *ssmcontacts.ListRotationOverridesOutput)
+
+	ListRotationOverridesPages(*ssmcontacts.ListRotationOverridesInput, func(*ssmcontacts.ListRotationOverridesOutput, bool) bool) error
+	ListRotationOverridesPagesWithContext(aws.Context, *ssmcontacts.ListRotationOverridesInput, func(*ssmcontacts.ListRotationOverridesOutput, bool) bool, ...request.Option) error
+
+	ListRotationShifts(*ssmcontacts.ListRotationShiftsInput) (*ssmcontacts.ListRotationShiftsOutput, error)
+	ListRotationShiftsWithContext(aws.Context, *ssmcontacts.ListRotationShiftsInput, ...request.Option) (*ssmcontacts.ListRotationShiftsOutput, error)
+	ListRotationShiftsRequest(*ssmcontacts.ListRotationShiftsInput) (*request.Request, *ssmcontacts.ListRotationShiftsOutput)
+
+	ListRotationShiftsPages(*ssmcontacts.ListRotationShiftsInput, func(*ssmcontacts.ListRotationShiftsOutput, bool) bool) error
+	ListRotationShiftsPagesWithContext(aws.Context, *ssmcontacts.ListRotationShiftsInput, func(*ssmcontacts.ListRotationShiftsOutput, bool) bool, ...request.Option) error
+
+	ListRotations(*ssmcontacts.ListRotationsInput) (*ssmcontacts.ListRotationsOutput, error)
+	ListRotationsWithContext(aws.Context, *ssmcontacts.ListRotationsInput, ...request.Option) (*ssmcontacts.ListRotationsOutput, error)
+	ListRotationsRequest(*ssmcontacts.ListRotationsInput) (*request.Request, *ssmcontacts.ListRotationsOutput)
+
+	ListRotationsPages(*ssmcontacts.ListRotationsInput, func(*ssmcontacts.ListRotationsOutput, bool) bool) error
+	ListRotationsPagesWithContext(aws.Context, *ssmcontacts.ListRotationsInput, func(*ssmcontacts.ListRotationsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*ssmcontacts.ListTagsForResourceInput) (*ssmcontacts.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *ssmcontacts.ListTagsForResourceInput, ...request.Option) (*ssmcontacts.ListTagsForResourceOutput, error)
@@ -185,6 +244,10 @@ type SSMContactsAPI interface {
 	UpdateContactChannel(*ssmcontacts.UpdateContactChannelInput) (*ssmcontacts.UpdateContactChannelOutput, error)
 	UpdateContactChannelWithContext(aws.Context, *ssmcontacts.UpdateContactChannelInput, ...request.Option) (*ssmcontacts.UpdateContactChannelOutput, error)
 	UpdateContactChannelRequest(*ssmcontacts.UpdateContactChannelInput) (*request.Request, *ssmcontacts.UpdateContactChannelOutput)
+
+	UpdateRotation(*ssmcontacts.UpdateRotationInput) (*ssmcontacts.UpdateRotationOutput, error)
+	UpdateRotationWithContext(aws.Context, *ssmcontacts.UpdateRotationInput, ...request.Option) (*ssmcontacts.UpdateRotationOutput, error)
+	UpdateRotationRequest(*ssmcontacts.UpdateRotationInput) (*request.Request, *ssmcontacts.UpdateRotationOutput)
 }
 
 var _ SSMContactsAPI = (*ssmcontacts.SSMContacts)(nil)

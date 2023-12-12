@@ -144,6 +144,9 @@ type AmplifyAPI interface {
 	ListAppsWithContext(aws.Context, *amplify.ListAppsInput, ...request.Option) (*amplify.ListAppsOutput, error)
 	ListAppsRequest(*amplify.ListAppsInput) (*request.Request, *amplify.ListAppsOutput)
 
+	ListAppsPages(*amplify.ListAppsInput, func(*amplify.ListAppsOutput, bool) bool) error
+	ListAppsPagesWithContext(aws.Context, *amplify.ListAppsInput, func(*amplify.ListAppsOutput, bool) bool, ...request.Option) error
+
 	ListArtifacts(*amplify.ListArtifactsInput) (*amplify.ListArtifactsOutput, error)
 	ListArtifactsWithContext(aws.Context, *amplify.ListArtifactsInput, ...request.Option) (*amplify.ListArtifactsOutput, error)
 	ListArtifactsRequest(*amplify.ListArtifactsInput) (*request.Request, *amplify.ListArtifactsOutput)
@@ -156,13 +159,22 @@ type AmplifyAPI interface {
 	ListBranchesWithContext(aws.Context, *amplify.ListBranchesInput, ...request.Option) (*amplify.ListBranchesOutput, error)
 	ListBranchesRequest(*amplify.ListBranchesInput) (*request.Request, *amplify.ListBranchesOutput)
 
+	ListBranchesPages(*amplify.ListBranchesInput, func(*amplify.ListBranchesOutput, bool) bool) error
+	ListBranchesPagesWithContext(aws.Context, *amplify.ListBranchesInput, func(*amplify.ListBranchesOutput, bool) bool, ...request.Option) error
+
 	ListDomainAssociations(*amplify.ListDomainAssociationsInput) (*amplify.ListDomainAssociationsOutput, error)
 	ListDomainAssociationsWithContext(aws.Context, *amplify.ListDomainAssociationsInput, ...request.Option) (*amplify.ListDomainAssociationsOutput, error)
 	ListDomainAssociationsRequest(*amplify.ListDomainAssociationsInput) (*request.Request, *amplify.ListDomainAssociationsOutput)
 
+	ListDomainAssociationsPages(*amplify.ListDomainAssociationsInput, func(*amplify.ListDomainAssociationsOutput, bool) bool) error
+	ListDomainAssociationsPagesWithContext(aws.Context, *amplify.ListDomainAssociationsInput, func(*amplify.ListDomainAssociationsOutput, bool) bool, ...request.Option) error
+
 	ListJobs(*amplify.ListJobsInput) (*amplify.ListJobsOutput, error)
 	ListJobsWithContext(aws.Context, *amplify.ListJobsInput, ...request.Option) (*amplify.ListJobsOutput, error)
 	ListJobsRequest(*amplify.ListJobsInput) (*request.Request, *amplify.ListJobsOutput)
+
+	ListJobsPages(*amplify.ListJobsInput, func(*amplify.ListJobsOutput, bool) bool) error
+	ListJobsPagesWithContext(aws.Context, *amplify.ListJobsInput, func(*amplify.ListJobsOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*amplify.ListTagsForResourceInput) (*amplify.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *amplify.ListTagsForResourceInput, ...request.Option) (*amplify.ListTagsForResourceOutput, error)

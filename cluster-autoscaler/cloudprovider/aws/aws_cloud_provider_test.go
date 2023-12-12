@@ -723,4 +723,19 @@ func TestHasInstance(t *testing.T) {
 	assert.ErrorContains(t, err, nodeNotPresentErr)
 	assert.False(t, present)
 
+	// Case 4: correct node - not autoscaled -> not present in AWS -> no warning
+	node4 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "node-2",
+			Annotations: map[string]string{
+				"k8s.io/cluster-autoscaler-enabled": "false",
+			},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id-2",
+		},
+	}
+	present, err = provider.HasInstance(node4)
+	assert.NoError(t, err)
+	assert.False(t, present)
 }

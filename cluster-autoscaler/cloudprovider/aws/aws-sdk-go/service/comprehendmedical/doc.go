@@ -3,8 +3,12 @@
 // Package comprehendmedical provides the client and types for making API
 // requests to AWS Comprehend Medical.
 //
-// Comprehend Medical; extracts structured information from unstructured clinical
-// text. Use these actions to gain insight in your documents.
+// Amazon Comprehend Medical extracts structured information from unstructured
+// clinical text. Use these actions to gain insight in your documents. Amazon
+// Comprehend Medical only detects entities in English language texts. Amazon
+// Comprehend Medical places limits on the sizes of files allowed for different
+// API operations. To learn more, see Guidelines and quotas (https://docs.aws.amazon.com/comprehend-medical/latest/dev/comprehendmedical-quotas.html)
+// in the Amazon Comprehend Medical Developer Guide.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30 for more information on this service.
 //

@@ -70,8 +70,13 @@ To create a valid configuration, follow instructions for your cloud provider:
 
 - [AWS](#aws---using-auto-discovery-of-tagged-instance-groups)
 - [GCE](#gce)
-- [Azure AKS](#azure-aks)
+- [Azure](#azure)
 - [OpenStack Magnum](#openstack-magnum)
+- [Cluster API](#cluster-api)
+
+### Templating the autoDiscovery.clusterName
+
+The cluster name can be templated in the `autoDiscovery.clusterName` variable. This is useful when the cluster name is dynamically generated based on other values coming from external systems like Argo CD or Flux. This also allows you to use global Helm values to set the cluster name, e.g., `autoDiscovery.clusterName=\{\{ .Values.global.clusterName }}`, so that you don't need to set it in more than 1 location in the values file.
 
 ### AWS - Using auto-discovery of tagged instance groups
 
@@ -182,20 +187,18 @@ In the event you want to explicitly specify MIGs instead of using auto-discovery
 --set autoscalingGroups[n].name=https://content.googleapis.com/compute/v1/projects/$PROJECTID/zones/$ZONENAME/instanceGroupManagers/$FULL-MIG-NAME,autoscalingGroups[n].maxSize=$MAXSIZE,autoscalingGroups[n].minSize=$MINSIZE
 ```
 
-### Azure AKS
+### Azure
 
 The following parameters are required:
 
 - `cloudProvider=azure`
-- `autoscalingGroups[0].name=your-agent-pool,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
+- `autoscalingGroups[0].name=your-vmss,autoscalingGroups[0].maxSize=10,autoscalingGroups[0].minSize=1`
 - `azureClientID: "your-service-principal-app-id"`
 - `azureClientSecret: "your-service-principal-client-secret"`
 - `azureSubscriptionID: "your-azure-subscription-id"`
 - `azureTenantID: "your-azure-tenant-id"`
-- `azureClusterName: "your-aks-cluster-name"`
 - `azureResourceGroup: "your-aks-cluster-resource-group-name"`
-- `azureVMType: "AKS"`
-- `azureNodeResourceGroup: "your-aks-cluster-node-resource-group"`
+- `azureVMType: "vmss"`
 
 ### OpenStack Magnum
 
@@ -229,6 +232,32 @@ Additional config parameters available, see the `values.yaml` for more details
 - `clusterAPIKubeconfigSecret`
 - `clusterAPIWorkloadKubeconfigPath`
 - `clusterAPICloudConfigPath`
+
+### Exoscale
+
+The following parameters are required:
+
+- `cloudProvider=exoscale`
+- `autoDiscovery.clusterName=<CLUSTER NAME>`
+
+Create an Exoscale API key with appropriate permissions as described in [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md).
+A secret of name `<release-name>-exoscale-cluster-autoscaler` needs to be created, containing the api key and secret, as well as the zone.
+
+```console
+$ kubectl create secret generic my-release-exoscale-cluster-autoscaler \
+    --from-literal=api-key="EXOxxxxxxxxxxxxxxxxxxxxxxxx" \
+    --from-literal=api-secret="xxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" --from-literal=api-zone="ch-gva-2"
+```
+
+After creating the secret, the chart may be installed:
+
+```console
+$ helm install my-release autoscaler/cluster-autoscaler \
+    --set cloudProvider=exoscale \
+    --set autoDiscovery.clusterName=<CLUSTER NAME>
+```
+
+Read [cluster-autoscaler/cloudprovider/exoscale/README.md](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/exoscale/README.md) for further information on the setup without helm.
 
 ## Uninstalling the Chart
 
@@ -353,8 +382,6 @@ vpa:
 | awsSecretAccessKey | string | `""` | AWS access secret key ([if AWS user keys used](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md#using-aws-credentials)) |
 | azureClientID | string | `""` | Service Principal ClientID with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
 | azureClientSecret | string | `""` | Service Principal ClientSecret with contributor permission to Cluster and Node ResourceGroup. Required if `cloudProvider=azure` |
-| azureClusterName | string | `""` | Azure AKS cluster name. Required if `cloudProvider=azure` |
-| azureNodeResourceGroup | string | `""` | Azure resource group where the cluster's nodes are located, typically set as `MC_<cluster-resource-group-name>_<cluster-name>_<location>`. Required if `cloudProvider=azure` |
 | azureResourceGroup | string | `""` | Azure resource group that the cluster is located. Required if `cloudProvider=azure` |
 | azureSubscriptionID | string | `""` | Azure subscription where the resources are located. Required if `cloudProvider=azure` |
 | azureTenantID | string | `""` | Azure tenant where the resources are located. Required if `cloudProvider=azure` |
@@ -386,8 +413,9 @@ vpa:
 | image.pullPolicy | string | `"IfNotPresent"` | Image pull policy |
 | image.pullSecrets | list | `[]` | Image pull secrets |
 | image.repository | string | `"registry.k8s.io/autoscaling/cluster-autoscaler"` | Image repository |
-| image.tag | string | `"v1.27.2"` | Image tag |
+| image.tag | string | `"v1.28.2"` | Image tag |
 | kubeTargetVersionOverride | string | `""` | Allow overriding the `.Capabilities.KubeVersion.GitVersion` check. Useful for `helm template` commands. |
+| kwokConfigMapName | string | `"kwok-provider-config"` | configmap for configuring kwok provider |
 | magnumCABundlePath | string | `"/etc/kubernetes/ca-bundle.crt"` | Path to the host's CA bundle, from `ca-file` in the cloud-config file. |
 | magnumClusterName | string | `""` | Cluster name or ID in Magnum. Required if `cloudProvider=magnum` and not setting `autoDiscovery.clusterName`. |
 | nameOverride | string | `""` | String to partially override `cluster-autoscaler.fullname` template (will maintain the release name) |
@@ -411,6 +439,7 @@ vpa:
 | rbac.serviceAccount.name | string | `""` | The name of the ServiceAccount to use. If not set and create is `true`, a name is generated using the fullname template. |
 | replicaCount | int | `1` | Desired number of pods |
 | resources | object | `{}` | Pod resource requests and limits. |
+| revisionHistoryLimit | int | `10` | The number of revisions to keep. |
 | secretKeyRefNameOverride | string | `""` | Overrides the name of the Secret to use when loading the secretKeyRef for AWS and Azure env variables |
 | securityContext | object | `{}` | [Security context for pod](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/) |
 | service.annotations | object | `{}` | Annotations to add to service |

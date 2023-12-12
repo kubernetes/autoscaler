@@ -197,6 +197,7 @@ type gceMig struct {
 	gceManager GceManager
 	minSize    int
 	maxSize    int
+	domainUrl  string
 }
 
 // GceRef returns Mig's GceRef
@@ -307,7 +308,7 @@ func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 
 // Id returns mig url.
 func (mig *gceMig) Id() string {
-	return GenerateMigUrl(mig.gceRef)
+	return GenerateMigUrl(mig.domainUrl, mig.gceRef)
 }
 
 // Debug returns a debug string for the Mig.
@@ -369,12 +370,12 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		defer config.Close()
 	}
 
-	manager, err := CreateGceManager(config, do, opts.Regional, opts.GCEOptions.ConcurrentRefreshes, opts.UserAgent, opts.GCEOptions.MigInstancesMinRefreshWaitTime)
+	manager, err := CreateGceManager(config, do, opts.Regional, opts.GCEOptions.ConcurrentRefreshes, opts.UserAgent, opts.GCEOptions.DomainUrl, opts.GCEOptions.MigInstancesMinRefreshWaitTime)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
 
-	pricingModel := NewGcePriceModel(NewGcePriceInfo(), opts.GCEOptions.ExpanderEphemeralStorageSupport)
+	pricingModel := NewGcePriceModel(NewGcePriceInfo())
 	provider, err := BuildGceCloudProvider(manager, rl, pricingModel)
 	if err != nil {
 		klog.Fatalf("Failed to create GCE cloud provider: %v", err)

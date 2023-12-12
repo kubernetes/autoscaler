@@ -104,6 +104,18 @@ type ForecastServiceAPI interface {
 	CreatePredictorBacktestExportJobWithContext(aws.Context, *forecastservice.CreatePredictorBacktestExportJobInput, ...request.Option) (*forecastservice.CreatePredictorBacktestExportJobOutput, error)
 	CreatePredictorBacktestExportJobRequest(*forecastservice.CreatePredictorBacktestExportJobInput) (*request.Request, *forecastservice.CreatePredictorBacktestExportJobOutput)
 
+	CreateWhatIfAnalysis(*forecastservice.CreateWhatIfAnalysisInput) (*forecastservice.CreateWhatIfAnalysisOutput, error)
+	CreateWhatIfAnalysisWithContext(aws.Context, *forecastservice.CreateWhatIfAnalysisInput, ...request.Option) (*forecastservice.CreateWhatIfAnalysisOutput, error)
+	CreateWhatIfAnalysisRequest(*forecastservice.CreateWhatIfAnalysisInput) (*request.Request, *forecastservice.CreateWhatIfAnalysisOutput)
+
+	CreateWhatIfForecast(*forecastservice.CreateWhatIfForecastInput) (*forecastservice.CreateWhatIfForecastOutput, error)
+	CreateWhatIfForecastWithContext(aws.Context, *forecastservice.CreateWhatIfForecastInput, ...request.Option) (*forecastservice.CreateWhatIfForecastOutput, error)
+	CreateWhatIfForecastRequest(*forecastservice.CreateWhatIfForecastInput) (*request.Request, *forecastservice.CreateWhatIfForecastOutput)
+
+	CreateWhatIfForecastExport(*forecastservice.CreateWhatIfForecastExportInput) (*forecastservice.CreateWhatIfForecastExportOutput, error)
+	CreateWhatIfForecastExportWithContext(aws.Context, *forecastservice.CreateWhatIfForecastExportInput, ...request.Option) (*forecastservice.CreateWhatIfForecastExportOutput, error)
+	CreateWhatIfForecastExportRequest(*forecastservice.CreateWhatIfForecastExportInput) (*request.Request, *forecastservice.CreateWhatIfForecastExportOutput)
+
 	DeleteDataset(*forecastservice.DeleteDatasetInput) (*forecastservice.DeleteDatasetOutput, error)
 	DeleteDatasetWithContext(aws.Context, *forecastservice.DeleteDatasetInput, ...request.Option) (*forecastservice.DeleteDatasetOutput, error)
 	DeleteDatasetRequest(*forecastservice.DeleteDatasetInput) (*request.Request, *forecastservice.DeleteDatasetOutput)
@@ -148,6 +160,18 @@ type ForecastServiceAPI interface {
 	DeleteResourceTreeWithContext(aws.Context, *forecastservice.DeleteResourceTreeInput, ...request.Option) (*forecastservice.DeleteResourceTreeOutput, error)
 	DeleteResourceTreeRequest(*forecastservice.DeleteResourceTreeInput) (*request.Request, *forecastservice.DeleteResourceTreeOutput)
 
+	DeleteWhatIfAnalysis(*forecastservice.DeleteWhatIfAnalysisInput) (*forecastservice.DeleteWhatIfAnalysisOutput, error)
+	DeleteWhatIfAnalysisWithContext(aws.Context, *forecastservice.DeleteWhatIfAnalysisInput, ...request.Option) (*forecastservice.DeleteWhatIfAnalysisOutput, error)
+	DeleteWhatIfAnalysisRequest(*forecastservice.DeleteWhatIfAnalysisInput) (*request.Request, *forecastservice.DeleteWhatIfAnalysisOutput)
+
+	DeleteWhatIfForecast(*forecastservice.DeleteWhatIfForecastInput) (*forecastservice.DeleteWhatIfForecastOutput, error)
+	DeleteWhatIfForecastWithContext(aws.Context, *forecastservice.DeleteWhatIfForecastInput, ...request.Option) (*forecastservice.DeleteWhatIfForecastOutput, error)
+	DeleteWhatIfForecastRequest(*forecastservice.DeleteWhatIfForecastInput) (*request.Request, *forecastservice.DeleteWhatIfForecastOutput)
+
+	DeleteWhatIfForecastExport(*forecastservice.DeleteWhatIfForecastExportInput) (*forecastservice.DeleteWhatIfForecastExportOutput, error)
+	DeleteWhatIfForecastExportWithContext(aws.Context, *forecastservice.DeleteWhatIfForecastExportInput, ...request.Option) (*forecastservice.DeleteWhatIfForecastExportOutput, error)
+	DeleteWhatIfForecastExportRequest(*forecastservice.DeleteWhatIfForecastExportInput) (*request.Request, *forecastservice.DeleteWhatIfForecastExportOutput)
+
 	DescribeAutoPredictor(*forecastservice.DescribeAutoPredictorInput) (*forecastservice.DescribeAutoPredictorOutput, error)
 	DescribeAutoPredictorWithContext(aws.Context, *forecastservice.DescribeAutoPredictorInput, ...request.Option) (*forecastservice.DescribeAutoPredictorOutput, error)
 	DescribeAutoPredictorRequest(*forecastservice.DescribeAutoPredictorInput) (*request.Request, *forecastservice.DescribeAutoPredictorOutput)
@@ -191,6 +215,18 @@ type ForecastServiceAPI interface {
 	DescribePredictorBacktestExportJob(*forecastservice.DescribePredictorBacktestExportJobInput) (*forecastservice.DescribePredictorBacktestExportJobOutput, error)
 	DescribePredictorBacktestExportJobWithContext(aws.Context, *forecastservice.DescribePredictorBacktestExportJobInput, ...request.Option) (*forecastservice.DescribePredictorBacktestExportJobOutput, error)
 	DescribePredictorBacktestExportJobRequest(*forecastservice.DescribePredictorBacktestExportJobInput) (*request.Request, *forecastservice.DescribePredictorBacktestExportJobOutput)
+
+	DescribeWhatIfAnalysis(*forecastservice.DescribeWhatIfAnalysisInput) (*forecastservice.DescribeWhatIfAnalysisOutput, error)
+	DescribeWhatIfAnalysisWithContext(aws.Context, *forecastservice.DescribeWhatIfAnalysisInput, ...request.Option) (*forecastservice.DescribeWhatIfAnalysisOutput, error)
+	DescribeWhatIfAnalysisRequest(*forecastservice.DescribeWhatIfAnalysisInput) (*request.Request, *forecastservice.DescribeWhatIfAnalysisOutput)
+
+	DescribeWhatIfForecast(*forecastservice.DescribeWhatIfForecastInput) (*forecastservice.DescribeWhatIfForecastOutput, error)
+	DescribeWhatIfForecastWithContext(aws.Context, *forecastservice.DescribeWhatIfForecastInput, ...request.Option) (*forecastservice.DescribeWhatIfForecastOutput, error)
+	DescribeWhatIfForecastRequest(*forecastservice.DescribeWhatIfForecastInput) (*request.Request, *forecastservice.DescribeWhatIfForecastOutput)
+
+	DescribeWhatIfForecastExport(*forecastservice.DescribeWhatIfForecastExportInput) (*forecastservice.DescribeWhatIfForecastExportOutput, error)
+	DescribeWhatIfForecastExportWithContext(aws.Context, *forecastservice.DescribeWhatIfForecastExportInput, ...request.Option) (*forecastservice.DescribeWhatIfForecastExportOutput, error)
+	DescribeWhatIfForecastExportRequest(*forecastservice.DescribeWhatIfForecastExportInput) (*request.Request, *forecastservice.DescribeWhatIfForecastExportOutput)
 
 	GetAccuracyMetrics(*forecastservice.GetAccuracyMetricsInput) (*forecastservice.GetAccuracyMetricsOutput, error)
 	GetAccuracyMetricsWithContext(aws.Context, *forecastservice.GetAccuracyMetricsInput, ...request.Option) (*forecastservice.GetAccuracyMetricsOutput, error)
@@ -276,6 +312,27 @@ type ForecastServiceAPI interface {
 	ListTagsForResource(*forecastservice.ListTagsForResourceInput) (*forecastservice.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *forecastservice.ListTagsForResourceInput, ...request.Option) (*forecastservice.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*forecastservice.ListTagsForResourceInput) (*request.Request, *forecastservice.ListTagsForResourceOutput)
+
+	ListWhatIfAnalyses(*forecastservice.ListWhatIfAnalysesInput) (*forecastservice.ListWhatIfAnalysesOutput, error)
+	ListWhatIfAnalysesWithContext(aws.Context, *forecastservice.ListWhatIfAnalysesInput, ...request.Option) (*forecastservice.ListWhatIfAnalysesOutput, error)
+	ListWhatIfAnalysesRequest(*forecastservice.ListWhatIfAnalysesInput) (*request.Request, *forecastservice.ListWhatIfAnalysesOutput)
+
+	ListWhatIfAnalysesPages(*forecastservice.ListWhatIfAnalysesInput, func(*forecastservice.ListWhatIfAnalysesOutput, bool) bool) error
+	ListWhatIfAnalysesPagesWithContext(aws.Context, *forecastservice.ListWhatIfAnalysesInput, func(*forecastservice.ListWhatIfAnalysesOutput, bool) bool, ...request.Option) error
+
+	ListWhatIfForecastExports(*forecastservice.ListWhatIfForecastExportsInput) (*forecastservice.ListWhatIfForecastExportsOutput, error)
+	ListWhatIfForecastExportsWithContext(aws.Context, *forecastservice.ListWhatIfForecastExportsInput, ...request.Option) (*forecastservice.ListWhatIfForecastExportsOutput, error)
+	ListWhatIfForecastExportsRequest(*forecastservice.ListWhatIfForecastExportsInput) (*request.Request, *forecastservice.ListWhatIfForecastExportsOutput)
+
+	ListWhatIfForecastExportsPages(*forecastservice.ListWhatIfForecastExportsInput, func(*forecastservice.ListWhatIfForecastExportsOutput, bool) bool) error
+	ListWhatIfForecastExportsPagesWithContext(aws.Context, *forecastservice.ListWhatIfForecastExportsInput, func(*forecastservice.ListWhatIfForecastExportsOutput, bool) bool, ...request.Option) error
+
+	ListWhatIfForecasts(*forecastservice.ListWhatIfForecastsInput) (*forecastservice.ListWhatIfForecastsOutput, error)
+	ListWhatIfForecastsWithContext(aws.Context, *forecastservice.ListWhatIfForecastsInput, ...request.Option) (*forecastservice.ListWhatIfForecastsOutput, error)
+	ListWhatIfForecastsRequest(*forecastservice.ListWhatIfForecastsInput) (*request.Request, *forecastservice.ListWhatIfForecastsOutput)
+
+	ListWhatIfForecastsPages(*forecastservice.ListWhatIfForecastsInput, func(*forecastservice.ListWhatIfForecastsOutput, bool) bool) error
+	ListWhatIfForecastsPagesWithContext(aws.Context, *forecastservice.ListWhatIfForecastsInput, func(*forecastservice.ListWhatIfForecastsOutput, bool) bool, ...request.Option) error
 
 	ResumeResource(*forecastservice.ResumeResourceInput) (*forecastservice.ResumeResourceOutput, error)
 	ResumeResourceWithContext(aws.Context, *forecastservice.ResumeResourceInput, ...request.Option) (*forecastservice.ResumeResourceOutput, error)

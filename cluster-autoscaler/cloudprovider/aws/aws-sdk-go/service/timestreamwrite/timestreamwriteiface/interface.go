@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Timestream Write.
 //	func myFunc(svc timestreamwriteiface.TimestreamWriteAPI) bool {
-//	    // Make svc.CreateDatabase request
+//	    // Make svc.CreateBatchLoadTask request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockTimestreamWriteClient struct {
 //	    timestreamwriteiface.TimestreamWriteAPI
 //	}
-//	func (m *mockTimestreamWriteClient) CreateDatabase(input *timestreamwrite.CreateDatabaseInput) (*timestreamwrite.CreateDatabaseOutput, error) {
+//	func (m *mockTimestreamWriteClient) CreateBatchLoadTask(input *timestreamwrite.CreateBatchLoadTaskInput) (*timestreamwrite.CreateBatchLoadTaskOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type TimestreamWriteAPI interface {
+	CreateBatchLoadTask(*timestreamwrite.CreateBatchLoadTaskInput) (*timestreamwrite.CreateBatchLoadTaskOutput, error)
+	CreateBatchLoadTaskWithContext(aws.Context, *timestreamwrite.CreateBatchLoadTaskInput, ...request.Option) (*timestreamwrite.CreateBatchLoadTaskOutput, error)
+	CreateBatchLoadTaskRequest(*timestreamwrite.CreateBatchLoadTaskInput) (*request.Request, *timestreamwrite.CreateBatchLoadTaskOutput)
+
 	CreateDatabase(*timestreamwrite.CreateDatabaseInput) (*timestreamwrite.CreateDatabaseOutput, error)
 	CreateDatabaseWithContext(aws.Context, *timestreamwrite.CreateDatabaseInput, ...request.Option) (*timestreamwrite.CreateDatabaseOutput, error)
 	CreateDatabaseRequest(*timestreamwrite.CreateDatabaseInput) (*request.Request, *timestreamwrite.CreateDatabaseOutput)
@@ -76,6 +80,10 @@ type TimestreamWriteAPI interface {
 	DeleteTableWithContext(aws.Context, *timestreamwrite.DeleteTableInput, ...request.Option) (*timestreamwrite.DeleteTableOutput, error)
 	DeleteTableRequest(*timestreamwrite.DeleteTableInput) (*request.Request, *timestreamwrite.DeleteTableOutput)
 
+	DescribeBatchLoadTask(*timestreamwrite.DescribeBatchLoadTaskInput) (*timestreamwrite.DescribeBatchLoadTaskOutput, error)
+	DescribeBatchLoadTaskWithContext(aws.Context, *timestreamwrite.DescribeBatchLoadTaskInput, ...request.Option) (*timestreamwrite.DescribeBatchLoadTaskOutput, error)
+	DescribeBatchLoadTaskRequest(*timestreamwrite.DescribeBatchLoadTaskInput) (*request.Request, *timestreamwrite.DescribeBatchLoadTaskOutput)
+
 	DescribeDatabase(*timestreamwrite.DescribeDatabaseInput) (*timestreamwrite.DescribeDatabaseOutput, error)
 	DescribeDatabaseWithContext(aws.Context, *timestreamwrite.DescribeDatabaseInput, ...request.Option) (*timestreamwrite.DescribeDatabaseOutput, error)
 	DescribeDatabaseRequest(*timestreamwrite.DescribeDatabaseInput) (*request.Request, *timestreamwrite.DescribeDatabaseOutput)
@@ -87,6 +95,13 @@ type TimestreamWriteAPI interface {
 	DescribeTable(*timestreamwrite.DescribeTableInput) (*timestreamwrite.DescribeTableOutput, error)
 	DescribeTableWithContext(aws.Context, *timestreamwrite.DescribeTableInput, ...request.Option) (*timestreamwrite.DescribeTableOutput, error)
 	DescribeTableRequest(*timestreamwrite.DescribeTableInput) (*request.Request, *timestreamwrite.DescribeTableOutput)
+
+	ListBatchLoadTasks(*timestreamwrite.ListBatchLoadTasksInput) (*timestreamwrite.ListBatchLoadTasksOutput, error)
+	ListBatchLoadTasksWithContext(aws.Context, *timestreamwrite.ListBatchLoadTasksInput, ...request.Option) (*timestreamwrite.ListBatchLoadTasksOutput, error)
+	ListBatchLoadTasksRequest(*timestreamwrite.ListBatchLoadTasksInput) (*request.Request, *timestreamwrite.ListBatchLoadTasksOutput)
+
+	ListBatchLoadTasksPages(*timestreamwrite.ListBatchLoadTasksInput, func(*timestreamwrite.ListBatchLoadTasksOutput, bool) bool) error
+	ListBatchLoadTasksPagesWithContext(aws.Context, *timestreamwrite.ListBatchLoadTasksInput, func(*timestreamwrite.ListBatchLoadTasksOutput, bool) bool, ...request.Option) error
 
 	ListDatabases(*timestreamwrite.ListDatabasesInput) (*timestreamwrite.ListDatabasesOutput, error)
 	ListDatabasesWithContext(aws.Context, *timestreamwrite.ListDatabasesInput, ...request.Option) (*timestreamwrite.ListDatabasesOutput, error)
@@ -105,6 +120,10 @@ type TimestreamWriteAPI interface {
 	ListTagsForResource(*timestreamwrite.ListTagsForResourceInput) (*timestreamwrite.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *timestreamwrite.ListTagsForResourceInput, ...request.Option) (*timestreamwrite.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*timestreamwrite.ListTagsForResourceInput) (*request.Request, *timestreamwrite.ListTagsForResourceOutput)
+
+	ResumeBatchLoadTask(*timestreamwrite.ResumeBatchLoadTaskInput) (*timestreamwrite.ResumeBatchLoadTaskOutput, error)
+	ResumeBatchLoadTaskWithContext(aws.Context, *timestreamwrite.ResumeBatchLoadTaskInput, ...request.Option) (*timestreamwrite.ResumeBatchLoadTaskOutput, error)
+	ResumeBatchLoadTaskRequest(*timestreamwrite.ResumeBatchLoadTaskInput) (*request.Request, *timestreamwrite.ResumeBatchLoadTaskOutput)
 
 	TagResource(*timestreamwrite.TagResourceInput) (*timestreamwrite.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *timestreamwrite.TagResourceInput, ...request.Option) (*timestreamwrite.TagResourceOutput, error)

@@ -93,6 +93,7 @@ type CertificateCreateResult struct {
 // CertificateClient is a client for the Certificates API.
 type CertificateClient struct {
 	client *Client
+	Action *ResourceActionClient
 }
 
 // GetByID retrieves a Certificate by its ID. If the Certificate does not exist, nil is returned.
@@ -182,7 +183,7 @@ func (c *CertificateClient) All(ctx context.Context) ([]*Certificate, error) {
 
 // AllWithOpts returns all Certificates for the given options.
 func (c *CertificateClient) AllWithOpts(ctx context.Context, opts CertificateListOpts) ([]*Certificate, error) {
-	var allCertificates []*Certificate
+	allCertificates := []*Certificate{}
 
 	err := c.client.all(func(page int) (*Response, error) {
 		opts.Page = page
