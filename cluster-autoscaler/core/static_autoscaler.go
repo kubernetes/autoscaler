@@ -228,10 +228,15 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if allNodes, err := a.AllNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
-	} else if allNodes, err = filterNodesFromSelectedGroups(a.CloudProvider, allNodes...); err != nil {
-		klog.Errorf("Failed to filter nodes based on selected node groups: %v", err)
 	} else {
-		taints.CleanAllToBeDeleted(allNodes,
+		// Make sure we are only cleaning taints from selected node groups.
+		// If filtering fails, we use the initial list of all nodes as a fallback.
+		selectedNodes, err = filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+		if err != nil {
+			klog.Warningf("Failed to filter nodes based on selected node groups: %v", err)
+			selectedNodes = allNodes
+		}
+		taints.CleanAllToBeDeleted(selectedNodes,
 			a.AutoscalingContext.ClientSet, a.Recorder, a.CordonNodeBeforeTerminate)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
@@ -667,12 +672,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) caerrors.AutoscalerErr
 				scaleDownStatus.Result == scaledownstatus.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				taintableNodes := a.scaleDownPlanner.UnneededNodes()
-				allNodes, err := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
+
+				// Make sure we are only cleaning taints from selected node groups.
+				// If filtering fails, we use the initial list of all nodes as a fallback.
+				selectedNodes, err := filterNodesFromSelectedGroups(a.CloudProvider, allNodes...)
 				if err != nil {
 					klog.Warningf("Failed filtering nodes based on selected node groups: %v", err)
+					selectedNodes = allNodes
 				}
-				// REVIEW: Shall we do the below calls if there's an error? This is essentially gonna mean that untaintableNodes is empty since allNodes is empty.
-				untaintableNodes := subtractNodes(allNodes, taintableNodes)
+
+				// This is a sanity check to make sure `taintableNodes` only includes
+				// nodes from selected nodes.
+				taintableNodes = intersectNodes(selectedNodes, taintableNodes)
+				untaintableNodes := subtractNodes(selectedNodes, taintableNodes)
 				actuation.UpdateSoftDeletionTaints(a.AutoscalingContext, taintableNodes, untaintableNodes)
 			}
 
@@ -1083,6 +1095,25 @@ func subtractNodesByName(nodes []*apiv1.Node, namesToRemove []string) []*apiv1.N
 
 func subtractNodes(a []*apiv1.Node, b []*apiv1.Node) []*apiv1.Node {
 	return subtractNodesByName(a, nodeNames(b))
+}
+
+func filterNodesByName(nodes []*apiv1.Node, names []string) []*apiv1.Node {
+	c := make([]*apiv1.Node, 0, len(names))
+	filterSet := make(map[string]bool, len(names))
+	for _, name := range names {
+		filterSet[name] = true
+	}
+	for _, n := range nodes {
+		if filterSet[n.Name] {
+			c = append(c, n)
+		}
+	}
+	return c
+}
+
+// intersectNodes gives intersection of 2 node lists
+func intersectNodes(a []*apiv1.Node, b []*apiv1.Node) []*apiv1.Node {
+	return filterNodesByName(a, nodeNames(b))
 }
 
 func nodeNames(ns []*apiv1.Node) []string {
