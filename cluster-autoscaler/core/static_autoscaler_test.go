@@ -223,9 +223,6 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
 
 	clientset := fake.NewSimpleClientset(n1, n2, n3, n4, n5)
-	newN5, err := clientset.CoreV1().Nodes().Get(stdcontext.TODO(), n5.Name, metav1.GetOptions{})
-	fmt.Println("#################################", newN5, err)
-
 	context, err := NewScaleTestAutoscalingContext(options, clientset, nil, provider, processorCallbacks, nil)
 	assert.NoError(t, err)
 
