@@ -20,14 +20,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	v1 "k8s.io/api/apps/v1"
 	"math"
 	"strings"
 	"testing"
+	"time"
+
+	v1 "k8s.io/api/apps/v1"
 
 	machinecodes "github.com/gardener/machine-controller-manager/pkg/util/provider/machinecodes/codes"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	customfake "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mcm/fakeclient"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 
 	"github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	. "github.com/onsi/gomega"
@@ -576,6 +579,141 @@ func TestNodes(t *testing.T) {
 					}
 				}
 				g.Expect(found).To(BeTrue())
+			}
+		})
+	}
+}
+
+func TestGetOptions(t *testing.T) {
+	type expect struct {
+		ngOptions *config.NodeGroupAutoscalingOptions
+		err       error
+	}
+	type data struct {
+		name   string
+		setup  setup
+		expect expect
+	}
+	table := []data{
+		{
+			"should throw error if machinedeployment cannot be found",
+			setup{
+				nodeGroups: []string{nodeGroup1},
+			},
+			expect{
+				err: fmt.Errorf("unable to fetch MachineDeployment object machinedeployment-1, Error: machinedeployment.machine.sapcloud.io \"machinedeployment-1\" not found"),
+			},
+		},
+		{
+			"should return default nodegroupautoscalingoptions if none are provided",
+			setup{
+				machineDeployments: newMachineDeployments(1, 2, nil, nil, nil),
+				nodeGroups:         []string{nodeGroup1},
+			},
+			expect{
+				ngOptions: &config.NodeGroupAutoscalingOptions{
+					ScaleDownUtilizationThreshold:    0.5,
+					ScaleDownGpuUtilizationThreshold: 0.5,
+					ScaleDownUnneededTime:            1 * time.Minute,
+					ScaleDownUnreadyTime:             1 * time.Minute,
+					MaxNodeProvisionTime:             1 * time.Minute,
+				},
+				err: nil,
+			},
+		},
+		{
+			"should return nodegroupautoscalingoptions with values from mcd if all annotations are present",
+			setup{
+				machineDeployments: newMachineDeployments(
+					1,
+					2,
+					nil,
+					map[string]string{
+						ScaleDownUtilizationThresholdAnnotation:    "0.7",
+						ScaleDownGpuUtilizationThresholdAnnotation: "0.7",
+						ScaleDownUnneededTimeAnnotation:            "5m",
+						ScaleDownUnreadyTimeAnnotation:             "5m",
+						MaxNodeProvisionTimeAnnotation:             "5m",
+					},
+					nil,
+				),
+				nodeGroups: []string{nodeGroup1},
+			},
+			expect{
+				ngOptions: &config.NodeGroupAutoscalingOptions{
+					ScaleDownUtilizationThreshold:    0.7,
+					ScaleDownGpuUtilizationThreshold: 0.7,
+					ScaleDownUnneededTime:            5 * time.Minute,
+					ScaleDownUnreadyTime:             5 * time.Minute,
+					MaxNodeProvisionTime:             5 * time.Minute,
+				},
+				err: nil,
+			},
+		},
+		{
+			"should return nodegroupautoscalingoptions with annotations values from mcd and remaining defaults",
+			setup{
+				machineDeployments: newMachineDeployments(
+					1,
+					2,
+					nil,
+					map[string]string{
+						ScaleDownUtilizationThresholdAnnotation: "0.7",
+						ScaleDownUnneededTimeAnnotation:         "5m",
+						MaxNodeProvisionTimeAnnotation:          "2m",
+					},
+					nil,
+				),
+				nodeGroups: []string{nodeGroup1},
+			},
+			expect{
+				ngOptions: &config.NodeGroupAutoscalingOptions{
+					ScaleDownUtilizationThreshold:    0.7,
+					ScaleDownGpuUtilizationThreshold: 0.5,
+					ScaleDownUnneededTime:            5 * time.Minute,
+					ScaleDownUnreadyTime:             1 * time.Minute,
+					MaxNodeProvisionTime:             2 * time.Minute,
+				},
+				err: nil,
+			},
+		},
+	}
+
+	for _, entry := range table {
+		entry := entry // have a shallow copy of the entry for parallelization of tests
+		t.Run(entry.name, func(t *testing.T) {
+			t.Parallel()
+			g := NewWithT(t)
+			stop := make(chan struct{})
+			defer close(stop)
+			controlMachineObjects, targetCoreObjects, _ := setupEnv(&entry.setup)
+			m, trackers, hasSyncedCacheFns := createMcmManager(t, stop, testNamespace, nil, controlMachineObjects, targetCoreObjects, nil)
+			defer trackers.Stop()
+			waitForCacheSync(t, stop, hasSyncedCacheFns)
+
+			md, err := buildMachineDeploymentFromSpec(entry.setup.nodeGroups[0], m)
+			g.Expect(err).To(BeNil())
+
+			ngAutoScalingOpDefaults := config.NodeGroupAutoscalingOptions{
+				ScaleDownUtilizationThreshold:    0.5,
+				ScaleDownGpuUtilizationThreshold: 0.5,
+				ScaleDownUnneededTime:            1 * time.Minute,
+				ScaleDownUnreadyTime:             1 * time.Minute,
+				MaxNodeProvisionTime:             1 * time.Minute,
+			}
+
+			options, err := md.GetOptions(ngAutoScalingOpDefaults)
+
+			if entry.expect.err != nil {
+				g.Expect(err).To(Equal(entry.expect.err))
+				g.Expect(options).To(BeNil())
+			} else {
+				g.Expect(err).To(BeNil())
+				g.Expect(*options).To(HaveField("ScaleDownUtilizationThreshold", entry.expect.ngOptions.ScaleDownUtilizationThreshold))
+				g.Expect(*options).To(HaveField("ScaleDownGpuUtilizationThreshold", entry.expect.ngOptions.ScaleDownGpuUtilizationThreshold))
+				g.Expect(*options).To(HaveField("ScaleDownUnneededTime", entry.expect.ngOptions.ScaleDownUnneededTime))
+				g.Expect(*options).To(HaveField("ScaleDownUnreadyTime", entry.expect.ngOptions.ScaleDownUnreadyTime))
+				g.Expect(*options).To(HaveField("MaxNodeProvisionTime", entry.expect.ngOptions.MaxNodeProvisionTime))
 			}
 		})
 	}

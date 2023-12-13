@@ -707,6 +707,16 @@ func validateNodeTemplate(nodeTemplateAttributes *v1alpha1.NodeTemplate) error {
 	return nil
 }
 
+// GetMachineDeploymentAnnotations returns the annotations present on the machine deployment for the provided machine deployment name
+func (m *McmManager) GetMachineDeploymentAnnotations(machineDeploymentName string) (map[string]string, error) {
+	md, err := m.machineDeploymentLister.MachineDeployments(m.namespace).Get(machineDeploymentName)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch MachineDeployment object %s, Error: %v", machineDeploymentName, err)
+	}
+
+	return md.Annotations, nil
+}
+
 // GetMachineDeploymentNodeTemplate returns the NodeTemplate of a node belonging to the same worker pool as the machinedeployment
 // If no node present then it forms the nodeTemplate using the one present in machineClass
 func (m *McmManager) GetMachineDeploymentNodeTemplate(machinedeployment *MachineDeployment) (*nodeTemplate, error) {

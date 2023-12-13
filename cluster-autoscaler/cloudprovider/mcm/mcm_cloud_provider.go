@@ -24,6 +24,10 @@ package mcm
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
@@ -34,7 +38,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog/v2"
 	schedulerframework "k8s.io/kubernetes/pkg/scheduler/framework"
-	"strings"
 )
 
 const (
@@ -44,6 +47,21 @@ const (
 	// GPULabel is the label added to nodes with GPU resource.
 	// TODO: Align on a GPU Label for Gardener.
 	GPULabel = "gardener.cloud/accelerator"
+
+	// ScaleDownUtilizationThresholdAnnotation is the annotation key for the value of NodeGroupAutoscalingOptions.ScaleDownUtilizationThreshold
+	ScaleDownUtilizationThresholdAnnotation = "autoscaler.gardener.cloud/scale-down-utilization-threshold"
+
+	// ScaleDownGpuUtilizationThresholdAnnotation is the annotation key for the value of NodeGroupAutoscalingOptions.ScaleDownGpuUtilizationThreshold
+	ScaleDownGpuUtilizationThresholdAnnotation = "autoscaler.gardener.cloud/scale-down-gpu-utilization-threshold"
+
+	// ScaleDownUnneededTimeAnnotation is the annotation key for the value of NodeGroupAutoscalingOptions.ScaleDownUnneededTime
+	ScaleDownUnneededTimeAnnotation = "autoscaler.gardener.cloud/scale-down-unneeded-time"
+
+	// ScaleDownUnreadyTimeAnnotation is the annotation key for the value of NodeGroupAutoscalingOptions.ScaleDownUnreadyTime
+	ScaleDownUnreadyTimeAnnotation = "autoscaler.gardener.cloud/scale-down-unready-time"
+
+	// MaxNodeProvisionTimeAnnotation is the annotation key for the value of NodeGroupAutoscalingOptions.MaxNodeProvisionTime
+	MaxNodeProvisionTimeAnnotation = "autoscaler.gardener.cloud/max-node-provision-time"
 )
 
 // MCMCloudProvider implements the cloud provider interface for machine-controller-manager
@@ -439,9 +457,49 @@ func (machinedeployment *MachineDeployment) Nodes() ([]cloudprovider.Instance, e
 // GetOptions returns NodeGroupAutoscalingOptions that should be used for this particular
 // NodeGroup. Returning a nil will result in using default options.
 // Implementation optional.
-// TODO: add proper implementation
 func (machinedeployment *MachineDeployment) GetOptions(defaults config.NodeGroupAutoscalingOptions) (*config.NodeGroupAutoscalingOptions, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	mcdAnnotations, err := machinedeployment.mcmManager.GetMachineDeploymentAnnotations(machinedeployment.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	scaleDownUtilThresholdValue := defaults.ScaleDownUtilizationThreshold
+	if _, ok := mcdAnnotations[ScaleDownUtilizationThresholdAnnotation]; ok {
+		if floatVal, err := strconv.ParseFloat(mcdAnnotations[ScaleDownUtilizationThresholdAnnotation], 64); err == nil {
+			scaleDownUtilThresholdValue = floatVal
+		}
+	}
+	scaleDownGPUUtilThresholdValue := defaults.ScaleDownGpuUtilizationThreshold
+	if _, ok := mcdAnnotations[ScaleDownGpuUtilizationThresholdAnnotation]; ok {
+		if floatVal, err := strconv.ParseFloat(mcdAnnotations[ScaleDownGpuUtilizationThresholdAnnotation], 64); err == nil {
+			scaleDownGPUUtilThresholdValue = floatVal
+		}
+	}
+	scaleDownUnneededDuration := defaults.ScaleDownUnneededTime
+	if _, ok := mcdAnnotations[ScaleDownUnneededTimeAnnotation]; ok {
+		if durationVal, err := time.ParseDuration(mcdAnnotations[ScaleDownUnneededTimeAnnotation]); err == nil {
+			scaleDownUnneededDuration = durationVal
+		}
+	}
+	scaleDownUnreadyDuration := defaults.ScaleDownUnreadyTime
+	if _, ok := mcdAnnotations[ScaleDownUnreadyTimeAnnotation]; ok {
+		if durationVal, err := time.ParseDuration(mcdAnnotations[ScaleDownUnreadyTimeAnnotation]); err == nil {
+			scaleDownUnreadyDuration = durationVal
+		}
+	}
+	maxNodeProvisionDuration := defaults.MaxNodeProvisionTime
+	if _, ok := mcdAnnotations[MaxNodeProvisionTimeAnnotation]; ok {
+		if durationVal, err := time.ParseDuration(mcdAnnotations[MaxNodeProvisionTimeAnnotation]); err == nil {
+			maxNodeProvisionDuration = durationVal
+		}
+	}
+	return &config.NodeGroupAutoscalingOptions{
+		ScaleDownUtilizationThreshold:    scaleDownUtilThresholdValue,
+		ScaleDownGpuUtilizationThreshold: scaleDownGPUUtilThresholdValue,
+		ScaleDownUnneededTime:            scaleDownUnneededDuration,
+		ScaleDownUnreadyTime:             scaleDownUnreadyDuration,
+		MaxNodeProvisionTime:             maxNodeProvisionDuration,
+	}, nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.
