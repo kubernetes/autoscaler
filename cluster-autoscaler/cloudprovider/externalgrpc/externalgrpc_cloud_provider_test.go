@@ -34,7 +34,7 @@ import (
 func TestCloudProvider_NodeGroups(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -117,7 +117,7 @@ func TestCloudProvider_NodeGroups(t *testing.T) {
 func TestCloudProvider_NodeGroupForNode(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -235,7 +235,7 @@ func TestCloudProvider_NodeGroupForNode(t *testing.T) {
 func TestCloudProvider_Pricing(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	model, errPricing := c.Pricing()
 	assert.NoError(t, errPricing)
@@ -376,7 +376,7 @@ func TestCloudProvider_Pricing(t *testing.T) {
 func TestCloudProvider_GPULabel(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -399,7 +399,7 @@ func TestCloudProvider_GPULabel(t *testing.T) {
 	// test grpc error
 	client2, m2, teardown2 := setupTest(t)
 	defer teardown2()
-	c2 := newExternalGrpcCloudProvider(client2, nil)
+	c2 := newExternalGrpcCloudProvider(client2, defaultGRPCTimeout, nil)
 
 	m2.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -422,7 +422,7 @@ func TestCloudProvider_GPULabel(t *testing.T) {
 func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	m.On("Refresh", mock.Anything, mock.Anything).Return(&protos.RefreshResponse{}, nil)
 
@@ -453,7 +453,7 @@ func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	// test no gpu types
 	client2, m2, teardown2 := setupTest(t)
 	defer teardown2()
-	c2 := newExternalGrpcCloudProvider(client2, nil)
+	c2 := newExternalGrpcCloudProvider(client2, defaultGRPCTimeout, nil)
 
 	m2.On(
 		"GetAvailableGPUTypes", mock.Anything, mock.Anything,
@@ -469,7 +469,7 @@ func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 	// test grpc error
 	client3, m3, teardown3 := setupTest(t)
 	defer teardown3()
-	c3 := newExternalGrpcCloudProvider(client3, nil)
+	c3 := newExternalGrpcCloudProvider(client3, defaultGRPCTimeout, nil)
 
 	m3.On(
 		"GetAvailableGPUTypes", mock.Anything, mock.Anything,
@@ -491,7 +491,7 @@ func TestCloudProvider_GetAvailableGPUTypes(t *testing.T) {
 func TestCloudProvider_Cleanup(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	// test correct call
 	m.On(
@@ -519,7 +519,7 @@ func TestCloudProvider_Cleanup(t *testing.T) {
 func TestCloudProvider_Refresh(t *testing.T) {
 	client, m, teardown := setupTest(t)
 	defer teardown()
-	c := newExternalGrpcCloudProvider(client, nil)
+	c := newExternalGrpcCloudProvider(client, defaultGRPCTimeout, nil)
 
 	// test correct call
 	m.On(
