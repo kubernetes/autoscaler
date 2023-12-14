@@ -41,11 +41,11 @@ var ipSpaceExhaustedError = cloudprovider.InstanceErrorInfo{ErrorClass: cloudpro
 var noBackOff = Status{IsBackedOff: false}
 var backoffWithQuotaError = Status{
 	IsBackedOff: true,
-	ErrorInfo:   &quotaError,
+	ErrorInfo:   quotaError,
 }
 var backoffWithIpSpaceExhaustedError = Status{
 	IsBackedOff: true,
-	ErrorInfo:   &ipSpaceExhaustedError,
+	ErrorInfo:   ipSpaceExhaustedError,
 }
 
 func TestBackoffTwoKeys(t *testing.T) {
