@@ -143,6 +143,13 @@ type ClusterStateRegistry struct {
 	scaleUpFailures map[string][]ScaleUpFailure
 }
 
+// NodeGroupScalingSafety contains information about the safety of the node group to scale up/down.
+type NodeGroupScalingSafety struct {
+	SafeToScale   bool
+	Healthy       bool
+	BackoffStatus backoff.Status
+}
+
 // NewClusterStateRegistry creates new ClusterStateRegistry.
 func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder, backoff backoff.Backoff, nodeGroupConfigProcessor nodegroupconfig.NodeGroupConfigProcessor) *ClusterStateRegistry {
 	emptyStatus := &api.ClusterAutoscalerStatus{
@@ -276,7 +283,11 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			} else {
 				gpuResource, gpuType = gpu.GetGpuInfoForMetrics(csr.cloudProvider.GetNodeGpuConfig(nodeInfo.Node()), availableGPUTypes, nodeInfo.Node(), scaleUpRequest.NodeGroup)
 			}
-			csr.registerFailedScaleUpNoLock(scaleUpRequest.NodeGroup, metrics.Timeout, cloudprovider.OtherErrorClass, "timeout", gpuResource, gpuType, currentTime)
+			csr.registerFailedScaleUpNoLock(scaleUpRequest.NodeGroup, metrics.Timeout, cloudprovider.InstanceErrorInfo{
+				ErrorClass:   cloudprovider.OtherErrorClass,
+				ErrorCode:    "timeout",
+				ErrorMessage: fmt.Sprintf("Scale-up timed out for node group %v after %v", nodeGroupName, currentTime.Sub(scaleUpRequest.Time)),
+			}, gpuResource, gpuType, currentTime)
 			delete(csr.scaleUpRequests, nodeGroupName)
 		}
 	}
@@ -291,25 +302,29 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 }
 
 // To be executed under a lock.
-func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGroup, errorClass cloudprovider.InstanceErrorClass, errorCode string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGroup, errorInfo cloudprovider.InstanceErrorInfo, currentTime time.Time) {
 	nodeGroupInfo := csr.nodeInfosForGroups[nodeGroup.Id()]
-	backoffUntil := csr.backoff.Backoff(nodeGroup, nodeGroupInfo, errorClass, errorCode, currentTime)
-	klog.Warningf("Disabling scale-up for node group %v until %v; errorClass=%v; errorCode=%v", nodeGroup.Id(), backoffUntil, errorClass, errorCode)
+	backoffUntil := csr.backoff.Backoff(nodeGroup, nodeGroupInfo, errorInfo, currentTime)
+	klog.Warningf("Disabling scale-up for node group %v until %v; errorClass=%v; errorCode=%v", nodeGroup.Id(), backoffUntil, errorInfo.ErrorClass, errorInfo.ErrorCode)
 }
 
 // RegisterFailedScaleUp should be called after getting error from cloudprovider
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
-func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, gpuResourceName, gpuType string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorMessage, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
-	csr.registerFailedScaleUpNoLock(nodeGroup, reason, cloudprovider.OtherErrorClass, string(reason), gpuResourceName, gpuType, currentTime)
+	csr.registerFailedScaleUpNoLock(nodeGroup, reason, cloudprovider.InstanceErrorInfo{
+		ErrorClass:   cloudprovider.OtherErrorClass,
+		ErrorCode:    string(reason),
+		ErrorMessage: errorMessage,
+	}, gpuResourceName, gpuType, currentTime)
 }
 
-func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorClass cloudprovider.InstanceErrorClass, errorCode string, gpuResourceName, gpuType string, currentTime time.Time) {
+func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorInfo cloudprovider.InstanceErrorInfo, gpuResourceName, gpuType string, currentTime time.Time) {
 	csr.scaleUpFailures[nodeGroup.Id()] = append(csr.scaleUpFailures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: reason, Time: currentTime})
 	metrics.RegisterFailedScaleUp(reason, gpuResourceName, gpuType)
-	csr.backoffNodeGroup(nodeGroup, errorClass, errorCode, currentTime)
+	csr.backoffNodeGroup(nodeGroup, errorInfo, currentTime)
 }
 
 // UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
@@ -415,7 +430,6 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 		unjustifiedUnready += acceptable.MinNodes - len(readiness.Ready)
 	}
 	// TODO: verify against max nodes as well.
-
 	if unjustifiedUnready > csr.config.OkTotalUnreadyCount &&
 		float64(unjustifiedUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*
 			float64(len(readiness.Ready)+len(readiness.Unready)+len(readiness.NotStarted)) {
@@ -442,12 +456,11 @@ func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
 }
 
-// IsNodeGroupSafeToScaleUp returns true if node group can be scaled up now.
-func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroup cloudprovider.NodeGroup, now time.Time) bool {
-	if !csr.IsNodeGroupHealthy(nodeGroup.Id()) {
-		return false
-	}
-	return !csr.backoff.IsBackedOff(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
+// IsNodeGroupSafeToScaleUp returns information about node group safety to be scaled up now.
+func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroup cloudprovider.NodeGroup, now time.Time) NodeGroupScalingSafety {
+	isHealthy := csr.IsNodeGroupHealthy(nodeGroup.Id())
+	backoffStatus := csr.backoff.BackoffStatus(nodeGroup, csr.nodeInfosForGroups[nodeGroup.Id()], now)
+	return NodeGroupScalingSafety{SafeToScale: isHealthy && !backoffStatus.IsBackedOff, Healthy: isHealthy, BackoffStatus: backoffStatus}
 }
 
 func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
@@ -789,7 +802,7 @@ func (csr *ClusterStateRegistry) GetClusterReadiness() Readiness {
 	return csr.totalReadiness
 }
 
-func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
+func buildHealthStatusNodeGroup(isHealthy bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
 		Message: fmt.Sprintf("ready=%d unready=%d (resourceUnready=%d) notStarted=%d longNotStarted=0 registered=%d longUnregistered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
@@ -804,7 +817,7 @@ func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable Ac
 			maxSize),
 		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
-	if isReady {
+	if isHealthy {
 		condition.Status = api.ClusterAutoscalerHealthy
 	} else {
 		condition.Status = api.ClusterAutoscalerUnhealthy
@@ -812,7 +825,7 @@ func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable Ac
 	return condition
 }
 
-func buildScaleUpStatusNodeGroup(isScaleUpInProgress bool, isSafeToScaleUp bool, readiness Readiness, acceptable AcceptableRange) api.ClusterAutoscalerCondition {
+func buildScaleUpStatusNodeGroup(isScaleUpInProgress bool, scaleUpSafety NodeGroupScalingSafety, readiness Readiness, acceptable AcceptableRange) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerScaleUp,
 		Message: fmt.Sprintf("ready=%d cloudProviderTarget=%d",
@@ -822,7 +835,9 @@ func buildScaleUpStatusNodeGroup(isScaleUpInProgress bool, isSafeToScaleUp bool,
 	}
 	if isScaleUpInProgress {
 		condition.Status = api.ClusterAutoscalerInProgress
-	} else if !isSafeToScaleUp {
+	} else if !scaleUpSafety.Healthy {
+		condition.Status = api.ClusterAutoscalerUnhealthy
+	} else if !scaleUpSafety.SafeToScale {
 		condition.Status = api.ClusterAutoscalerBackoff
 	} else {
 		condition.Status = api.ClusterAutoscalerNoActivity
@@ -1124,7 +1139,12 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 			}
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
-			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), errorCode.class, errorCode.code, gpuResource, gpuType, currentTime)
+
+			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), cloudprovider.InstanceErrorInfo{
+				ErrorClass:   errorCode.class,
+				ErrorCode:    errorCode.code,
+				ErrorMessage: csr.buildErrorMessageEventString(currentUniqueErrorMessagesForErrorCode[errorCode]),
+			}, gpuResource, gpuType, currentTime)
 		}
 	}
 }
