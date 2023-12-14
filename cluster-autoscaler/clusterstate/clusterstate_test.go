@@ -928,7 +928,7 @@ func TestScaleUpBackoff(t *testing.T) {
 		Healthy:     true,
 		BackoffStatus: backoff.Status{
 			IsBackedOff: true,
-			ErrorInfo: &cloudprovider.InstanceErrorInfo{
+			ErrorInfo: cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
 				ErrorCode:    "timeout",
 				ErrorMessage: "Scale-up timed out for node group ng1 after 3m0s",
@@ -937,7 +937,7 @@ func TestScaleUpBackoff(t *testing.T) {
 	}, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 	assert.Equal(t, backoff.Status{
 		IsBackedOff: true,
-		ErrorInfo: &cloudprovider.InstanceErrorInfo{
+		ErrorInfo: cloudprovider.InstanceErrorInfo{
 			ErrorClass:   cloudprovider.OtherErrorClass,
 			ErrorCode:    "timeout",
 			ErrorMessage: "Scale-up timed out for node group ng1 after 3m0s",
@@ -961,7 +961,7 @@ func TestScaleUpBackoff(t *testing.T) {
 		Healthy:     true,
 		BackoffStatus: backoff.Status{
 			IsBackedOff: true,
-			ErrorInfo: &cloudprovider.InstanceErrorInfo{
+			ErrorInfo: cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
 				ErrorCode:    "timeout",
 				ErrorMessage: "Scale-up timed out for node group ng1 after 2m1s",
@@ -975,7 +975,7 @@ func TestScaleUpBackoff(t *testing.T) {
 		Healthy:     true,
 		BackoffStatus: backoff.Status{
 			IsBackedOff: true,
-			ErrorInfo: &cloudprovider.InstanceErrorInfo{
+			ErrorInfo: cloudprovider.InstanceErrorInfo{
 				ErrorClass:   cloudprovider.OtherErrorClass,
 				ErrorCode:    "timeout",
 				ErrorMessage: "Scale-up timed out for node group ng1 after 2m1s",

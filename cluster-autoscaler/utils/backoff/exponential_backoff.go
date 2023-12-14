@@ -101,7 +101,7 @@ func (b *exponentialBackoff) BackoffStatus(nodeGroup cloudprovider.NodeGroup, no
 	}
 	return Status{
 		IsBackedOff: true,
-		ErrorInfo:   &backoffInfo.errorInfo,
+		ErrorInfo:   backoffInfo.errorInfo,
 	}
 }
 
