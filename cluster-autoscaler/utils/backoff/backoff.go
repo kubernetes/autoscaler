@@ -26,7 +26,7 @@ import (
 // Status contains information about back off status.
 type Status struct {
 	IsBackedOff bool
-	ErrorInfo   *cloudprovider.InstanceErrorInfo
+	ErrorInfo   cloudprovider.InstanceErrorInfo
 }
 
 // Backoff allows time-based backing off of node groups considered in scale up algorithm
