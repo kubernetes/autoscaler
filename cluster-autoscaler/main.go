@@ -187,8 +187,8 @@ var (
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
-	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
-	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
+	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed.This flag is deprecated and will be removed in future releases.")
+	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.This flag is deprecated and will be removed in future releases.")
 
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
@@ -282,6 +282,14 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		klog.Infof("Setting max-scale-down-parallelism to %d, based on the max-empty-bulk-delete value %d", *maxScaleDownParallelismFlag, *maxEmptyBulkDeleteFlag)
 	} else if !isFlagPassed("max-empty-bulk-delete") && isFlagPassed("max-scale-down-parallelism") {
 		*maxEmptyBulkDeleteFlag = *maxScaleDownParallelismFlag
+	}
+
+	if isFlagPassed("node-autoprovisioning-enabled") {
+		klog.Warning("The node-autoprovisioning-enabled flag is deprecated and will be removed in k8s version 1.31.")
+	}
+
+	if isFlagPassed("max-autoprovisioned-node-group-count") {
+		klog.Warning("The max-autoprovisioned-node-group-count flag is deprecated and will be removed in k8s version 1.31.")
 	}
 
 	var parsedSchedConfig *scheduler_config.KubeSchedulerConfiguration
