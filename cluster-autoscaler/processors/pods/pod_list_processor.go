@@ -48,3 +48,32 @@ func (p *NoOpPodListProcessor) Process(
 // CleanUp cleans up the processor's internal structures.
 func (p *NoOpPodListProcessor) CleanUp() {
 }
+
+// ListedPodListProcessor is a list of PodListProcessors
+type ListedPodListProcessor struct {
+	Processors []PodListProcessor
+}
+
+// Process runs sub-processors sequentially
+func (p *ListedPodListProcessor) Process(ctx *context.AutoscalingContext, unschedulablePods []*apiv1.Pod) ([]*apiv1.Pod, error) {
+	var err error
+	for _, processor := range p.Processors {
+		unschedulablePods, err = processor.Process(ctx, unschedulablePods)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return unschedulablePods, nil
+}
+
+// CleanUp cleans up the processor's internal structures.
+func (p *ListedPodListProcessor) CleanUp() {
+	for _, processor := range p.Processors {
+		processor.CleanUp()
+	}
+}
+
+// AppendProcessor append processor to the list.
+func (p *ListedPodListProcessor) AppendProcessor(processor PodListProcessor) {
+	p.Processors = append(p.Processors, processor)
+}

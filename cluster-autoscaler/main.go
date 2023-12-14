@@ -51,6 +51,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodeinfosprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/provreq"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/emptycandidates"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/scaledowncandidates/previouscandidates"
@@ -250,6 +251,7 @@ var (
 			"--max-graceful-termination-sec flag should not be set when this flag is set. Not setting this flag will use unordered evictor by default."+
 			"Priority evictor reuses the concepts of drain logic in kubelet(https://github.com/kubernetes/enhancements/tree/master/keps/sig-node/2712-pod-priority-based-graceful-node-shutdown#migration-from-the-node-graceful-shutdown-feature)."+
 			"Eg. flag usage:  '10000:20,1000:100,0:60'")
+	provisioningRequestsEnabled             = flag.Bool("enable-provisioning-requests", false, "Whether the clusterautoscaler will be handling the ProvisioningRequest CRs.")
 )
 
 func isFlagPassed(name string) bool {
@@ -420,6 +422,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		},
 		DynamicNodeDeleteDelayAfterTaintEnabled: *dynamicNodeDeleteDelayAfterTaintEnabled,
 		BypassedSchedulers:                      scheduler_util.GetBypassedSchedulersMap(*bypassedSchedulers),
+		ProvisioningRequestEnabled:              *provisioningRequestsEnabled,
 	}
 }
 
@@ -475,7 +478,11 @@ func buildAutoscaler(debuggingSnapshotter debuggingsnapshot.DebuggingSnapshotter
 
 	opts.Processors = ca_processors.DefaultProcessors(autoscalingOptions)
 	opts.Processors.TemplateNodeInfoProvider = nodeinfosprovider.NewDefaultTemplateNodeInfoProvider(nodeInfoCacheExpireTime, *forceDaemonSets)
-	opts.Processors.PodListProcessor = podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+	podListProcessor := podlistprocessor.NewDefaultPodListProcessor(opts.PredicateChecker)
+	if autoscalingOptions.ProvisioningRequestEnabled {
+		podListProcessor.AppendProcessor(provreq.NewProvisioningRequestPodsFilter(provreq.NewDefautlEventManager()))
+	}
+	opts.Processors.PodListProcessor = podListProcessor
 	scaleDownCandidatesComparers := []scaledowncandidates.CandidatesComparer{}
 	if autoscalingOptions.ParallelDrain {
 		sdCandidatesSorting := previouscandidates.NewPreviousCandidates()
