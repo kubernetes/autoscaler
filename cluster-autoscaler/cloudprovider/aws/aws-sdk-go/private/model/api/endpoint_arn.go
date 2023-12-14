@@ -76,11 +76,15 @@ const accountIDWithARNShapeTmplDef = `
 {{ range $_, $name := $.MemberNames -}}
 	{{ $elem := index $.MemberRefs $name -}}
 	{{ if $elem.AccountIDMemberWithARN -}}
-		// updateAccountID returns a pointer to a modified copy of input, 
+		{{ $FunctionName := $name }}
+		{{ if eq $name "AccountId" }}
+  		{{ $FunctionName = "AccountID" }}
+		{{ end }}
+		// update{{ $FunctionName }} returns a pointer to a modified copy of input,
 		// if account id is not provided, we update the account id in modified input
 		// if account id is provided, but doesn't match with the one in ARN, we throw an error
 		// if account id is not updated, we return nil. Note that original input is not modified. 
-		func (s {{ $.ShapeName }}) updateAccountID(accountId string) (interface{}, error) {
+		func (s {{ $.ShapeName }}) update{{ $FunctionName }}(accountId string) (interface{}, error) {
 			if s.{{ $name }} == nil {
 				s.{{ $name }} = aws.String(accountId)
 				return &s, nil

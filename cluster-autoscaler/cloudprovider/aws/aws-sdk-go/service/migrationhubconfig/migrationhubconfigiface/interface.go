@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Migration Hub Config.
-//    func myFunc(svc migrationhubconfigiface.MigrationHubConfigAPI) bool {
-//        // Make svc.CreateHomeRegionControl request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Migration Hub Config.
+//	func myFunc(svc migrationhubconfigiface.MigrationHubConfigAPI) bool {
+//	    // Make svc.CreateHomeRegionControl request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := migrationhubconfig.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := migrationhubconfig.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockMigrationHubConfigClient struct {
-//        migrationhubconfigiface.MigrationHubConfigAPI
-//    }
-//    func (m *mockMigrationHubConfigClient) CreateHomeRegionControl(input *migrationhubconfig.CreateHomeRegionControlInput) (*migrationhubconfig.CreateHomeRegionControlOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockMigrationHubConfigClient struct {
+//	    migrationhubconfigiface.MigrationHubConfigAPI
+//	}
+//	func (m *mockMigrationHubConfigClient) CreateHomeRegionControl(input *migrationhubconfig.CreateHomeRegionControlInput) (*migrationhubconfig.CreateHomeRegionControlOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockMigrationHubConfigClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockMigrationHubConfigClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -63,6 +63,10 @@ type MigrationHubConfigAPI interface {
 	CreateHomeRegionControl(*migrationhubconfig.CreateHomeRegionControlInput) (*migrationhubconfig.CreateHomeRegionControlOutput, error)
 	CreateHomeRegionControlWithContext(aws.Context, *migrationhubconfig.CreateHomeRegionControlInput, ...request.Option) (*migrationhubconfig.CreateHomeRegionControlOutput, error)
 	CreateHomeRegionControlRequest(*migrationhubconfig.CreateHomeRegionControlInput) (*request.Request, *migrationhubconfig.CreateHomeRegionControlOutput)
+
+	DeleteHomeRegionControl(*migrationhubconfig.DeleteHomeRegionControlInput) (*migrationhubconfig.DeleteHomeRegionControlOutput, error)
+	DeleteHomeRegionControlWithContext(aws.Context, *migrationhubconfig.DeleteHomeRegionControlInput, ...request.Option) (*migrationhubconfig.DeleteHomeRegionControlOutput, error)
+	DeleteHomeRegionControlRequest(*migrationhubconfig.DeleteHomeRegionControlInput) (*request.Request, *migrationhubconfig.DeleteHomeRegionControlOutput)
 
 	DescribeHomeRegionControls(*migrationhubconfig.DescribeHomeRegionControlsInput) (*migrationhubconfig.DescribeHomeRegionControlsOutput, error)
 	DescribeHomeRegionControlsWithContext(aws.Context, *migrationhubconfig.DescribeHomeRegionControlsInput, ...request.Option) (*migrationhubconfig.DescribeHomeRegionControlsOutput, error)

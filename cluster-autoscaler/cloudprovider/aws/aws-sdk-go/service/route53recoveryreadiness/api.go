@@ -29,14 +29,13 @@ const opCreateCell = "CreateCell"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCellRequest method.
+//	req, resp := client.CreateCellRequest(params)
 //
-//    // Example sending a request using the CreateCellRequest method.
-//    req, resp := client.CreateCellRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateCell
 func (c *Route53RecoveryReadiness) CreateCellRequest(input *CreateCellInput) (req *request.Request, output *CreateCellOutput) {
@@ -67,15 +66,16 @@ func (c *Route53RecoveryReadiness) CreateCellRequest(input *CreateCellInput) (re
 // API operation CreateCell for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * AccessDeniedException
+//   - ConflictException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateCell
 func (c *Route53RecoveryReadiness) CreateCell(input *CreateCellInput) (*CreateCellOutput, error) {
@@ -115,14 +115,13 @@ const opCreateCrossAccountAuthorization = "CreateCrossAccountAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCrossAccountAuthorizationRequest method.
+//	req, resp := client.CreateCrossAccountAuthorizationRequest(params)
 //
-//    // Example sending a request using the CreateCrossAccountAuthorizationRequest method.
-//    req, resp := client.CreateCrossAccountAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateCrossAccountAuthorization
 func (c *Route53RecoveryReadiness) CreateCrossAccountAuthorizationRequest(input *CreateCrossAccountAuthorizationInput) (req *request.Request, output *CreateCrossAccountAuthorizationOutput) {
@@ -155,15 +154,16 @@ func (c *Route53RecoveryReadiness) CreateCrossAccountAuthorizationRequest(input 
 // API operation CreateCrossAccountAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * AccessDeniedException
+//   - ConflictException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateCrossAccountAuthorization
 func (c *Route53RecoveryReadiness) CreateCrossAccountAuthorization(input *CreateCrossAccountAuthorizationInput) (*CreateCrossAccountAuthorizationOutput, error) {
@@ -203,14 +203,13 @@ const opCreateReadinessCheck = "CreateReadinessCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateReadinessCheckRequest method.
+//	req, resp := client.CreateReadinessCheckRequest(params)
 //
-//    // Example sending a request using the CreateReadinessCheckRequest method.
-//    req, resp := client.CreateReadinessCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateReadinessCheck
 func (c *Route53RecoveryReadiness) CreateReadinessCheckRequest(input *CreateReadinessCheckInput) (req *request.Request, output *CreateReadinessCheckOutput) {
@@ -244,15 +243,16 @@ func (c *Route53RecoveryReadiness) CreateReadinessCheckRequest(input *CreateRead
 // API operation CreateReadinessCheck for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * AccessDeniedException
+//   - ConflictException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateReadinessCheck
 func (c *Route53RecoveryReadiness) CreateReadinessCheck(input *CreateReadinessCheckInput) (*CreateReadinessCheckOutput, error) {
@@ -292,14 +292,13 @@ const opCreateRecoveryGroup = "CreateRecoveryGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRecoveryGroupRequest method.
+//	req, resp := client.CreateRecoveryGroupRequest(params)
 //
-//    // Example sending a request using the CreateRecoveryGroupRequest method.
-//    req, resp := client.CreateRecoveryGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateRecoveryGroup
 func (c *Route53RecoveryReadiness) CreateRecoveryGroupRequest(input *CreateRecoveryGroupInput) (req *request.Request, output *CreateRecoveryGroupOutput) {
@@ -331,15 +330,16 @@ func (c *Route53RecoveryReadiness) CreateRecoveryGroupRequest(input *CreateRecov
 // API operation CreateRecoveryGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * AccessDeniedException
+//   - ConflictException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateRecoveryGroup
 func (c *Route53RecoveryReadiness) CreateRecoveryGroup(input *CreateRecoveryGroupInput) (*CreateRecoveryGroupOutput, error) {
@@ -379,14 +379,13 @@ const opCreateResourceSet = "CreateResourceSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateResourceSetRequest method.
+//	req, resp := client.CreateResourceSetRequest(params)
 //
-//    // Example sending a request using the CreateResourceSetRequest method.
-//    req, resp := client.CreateResourceSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateResourceSet
 func (c *Route53RecoveryReadiness) CreateResourceSetRequest(input *CreateResourceSetInput) (req *request.Request, output *CreateResourceSetOutput) {
@@ -419,15 +418,16 @@ func (c *Route53RecoveryReadiness) CreateResourceSetRequest(input *CreateResourc
 // API operation CreateResourceSet for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * ConflictException
+//   - InternalServerException
 //
-//   * AccessDeniedException
+//   - ConflictException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/CreateResourceSet
 func (c *Route53RecoveryReadiness) CreateResourceSet(input *CreateResourceSetInput) (*CreateResourceSetOutput, error) {
@@ -467,14 +467,13 @@ const opDeleteCell = "DeleteCell"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCellRequest method.
+//	req, resp := client.DeleteCellRequest(params)
 //
-//    // Example sending a request using the DeleteCellRequest method.
-//    req, resp := client.DeleteCellRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteCell
 func (c *Route53RecoveryReadiness) DeleteCellRequest(input *DeleteCellInput) (req *request.Request, output *DeleteCellOutput) {
@@ -507,15 +506,16 @@ func (c *Route53RecoveryReadiness) DeleteCellRequest(input *DeleteCellInput) (re
 // API operation DeleteCell for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteCell
 func (c *Route53RecoveryReadiness) DeleteCell(input *DeleteCellInput) (*DeleteCellOutput, error) {
@@ -555,14 +555,13 @@ const opDeleteCrossAccountAuthorization = "DeleteCrossAccountAuthorization"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCrossAccountAuthorizationRequest method.
+//	req, resp := client.DeleteCrossAccountAuthorizationRequest(params)
 //
-//    // Example sending a request using the DeleteCrossAccountAuthorizationRequest method.
-//    req, resp := client.DeleteCrossAccountAuthorizationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteCrossAccountAuthorization
 func (c *Route53RecoveryReadiness) DeleteCrossAccountAuthorizationRequest(input *DeleteCrossAccountAuthorizationInput) (req *request.Request, output *DeleteCrossAccountAuthorizationOutput) {
@@ -594,13 +593,14 @@ func (c *Route53RecoveryReadiness) DeleteCrossAccountAuthorizationRequest(input 
 // API operation DeleteCrossAccountAuthorization for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteCrossAccountAuthorization
 func (c *Route53RecoveryReadiness) DeleteCrossAccountAuthorization(input *DeleteCrossAccountAuthorizationInput) (*DeleteCrossAccountAuthorizationOutput, error) {
@@ -640,14 +640,13 @@ const opDeleteReadinessCheck = "DeleteReadinessCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteReadinessCheckRequest method.
+//	req, resp := client.DeleteReadinessCheckRequest(params)
 //
-//    // Example sending a request using the DeleteReadinessCheckRequest method.
-//    req, resp := client.DeleteReadinessCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteReadinessCheck
 func (c *Route53RecoveryReadiness) DeleteReadinessCheckRequest(input *DeleteReadinessCheckInput) (req *request.Request, output *DeleteReadinessCheckOutput) {
@@ -679,15 +678,16 @@ func (c *Route53RecoveryReadiness) DeleteReadinessCheckRequest(input *DeleteRead
 // API operation DeleteReadinessCheck for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteReadinessCheck
 func (c *Route53RecoveryReadiness) DeleteReadinessCheck(input *DeleteReadinessCheckInput) (*DeleteReadinessCheckOutput, error) {
@@ -727,14 +727,13 @@ const opDeleteRecoveryGroup = "DeleteRecoveryGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecoveryGroupRequest method.
+//	req, resp := client.DeleteRecoveryGroupRequest(params)
 //
-//    // Example sending a request using the DeleteRecoveryGroupRequest method.
-//    req, resp := client.DeleteRecoveryGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteRecoveryGroup
 func (c *Route53RecoveryReadiness) DeleteRecoveryGroupRequest(input *DeleteRecoveryGroupInput) (req *request.Request, output *DeleteRecoveryGroupOutput) {
@@ -766,15 +765,16 @@ func (c *Route53RecoveryReadiness) DeleteRecoveryGroupRequest(input *DeleteRecov
 // API operation DeleteRecoveryGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteRecoveryGroup
 func (c *Route53RecoveryReadiness) DeleteRecoveryGroup(input *DeleteRecoveryGroupInput) (*DeleteRecoveryGroupOutput, error) {
@@ -814,14 +814,13 @@ const opDeleteResourceSet = "DeleteResourceSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteResourceSetRequest method.
+//	req, resp := client.DeleteResourceSetRequest(params)
 //
-//    // Example sending a request using the DeleteResourceSetRequest method.
-//    req, resp := client.DeleteResourceSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteResourceSet
 func (c *Route53RecoveryReadiness) DeleteResourceSetRequest(input *DeleteResourceSetInput) (req *request.Request, output *DeleteResourceSetOutput) {
@@ -853,15 +852,16 @@ func (c *Route53RecoveryReadiness) DeleteResourceSetRequest(input *DeleteResourc
 // API operation DeleteResourceSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/DeleteResourceSet
 func (c *Route53RecoveryReadiness) DeleteResourceSet(input *DeleteResourceSetInput) (*DeleteResourceSetOutput, error) {
@@ -901,14 +901,13 @@ const opGetArchitectureRecommendations = "GetArchitectureRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetArchitectureRecommendationsRequest method.
+//	req, resp := client.GetArchitectureRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetArchitectureRecommendationsRequest method.
-//    req, resp := client.GetArchitectureRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetArchitectureRecommendations
 func (c *Route53RecoveryReadiness) GetArchitectureRecommendationsRequest(input *GetArchitectureRecommendationsInput) (req *request.Request, output *GetArchitectureRecommendationsOutput) {
@@ -940,15 +939,16 @@ func (c *Route53RecoveryReadiness) GetArchitectureRecommendationsRequest(input *
 // API operation GetArchitectureRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetArchitectureRecommendations
 func (c *Route53RecoveryReadiness) GetArchitectureRecommendations(input *GetArchitectureRecommendationsInput) (*GetArchitectureRecommendationsOutput, error) {
@@ -988,14 +988,13 @@ const opGetCell = "GetCell"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCellRequest method.
+//	req, resp := client.GetCellRequest(params)
 //
-//    // Example sending a request using the GetCellRequest method.
-//    req, resp := client.GetCellRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetCell
 func (c *Route53RecoveryReadiness) GetCellRequest(input *GetCellInput) (req *request.Request, output *GetCellOutput) {
@@ -1028,15 +1027,16 @@ func (c *Route53RecoveryReadiness) GetCellRequest(input *GetCellInput) (req *req
 // API operation GetCell for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetCell
 func (c *Route53RecoveryReadiness) GetCell(input *GetCellInput) (*GetCellOutput, error) {
@@ -1076,14 +1076,13 @@ const opGetCellReadinessSummary = "GetCellReadinessSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCellReadinessSummaryRequest method.
+//	req, resp := client.GetCellReadinessSummaryRequest(params)
 //
-//    // Example sending a request using the GetCellReadinessSummaryRequest method.
-//    req, resp := client.GetCellReadinessSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetCellReadinessSummary
 func (c *Route53RecoveryReadiness) GetCellReadinessSummaryRequest(input *GetCellReadinessSummaryInput) (req *request.Request, output *GetCellReadinessSummaryOutput) {
@@ -1121,15 +1120,16 @@ func (c *Route53RecoveryReadiness) GetCellReadinessSummaryRequest(input *GetCell
 // API operation GetCellReadinessSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetCellReadinessSummary
 func (c *Route53RecoveryReadiness) GetCellReadinessSummary(input *GetCellReadinessSummaryInput) (*GetCellReadinessSummaryOutput, error) {
@@ -1161,15 +1161,14 @@ func (c *Route53RecoveryReadiness) GetCellReadinessSummaryWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCellReadinessSummary operation.
-//    pageNum := 0
-//    err := client.GetCellReadinessSummaryPages(params,
-//        func(page *route53recoveryreadiness.GetCellReadinessSummaryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCellReadinessSummary operation.
+//	pageNum := 0
+//	err := client.GetCellReadinessSummaryPages(params,
+//	    func(page *route53recoveryreadiness.GetCellReadinessSummaryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) GetCellReadinessSummaryPages(input *GetCellReadinessSummaryInput, fn func(*GetCellReadinessSummaryOutput, bool) bool) error {
 	return c.GetCellReadinessSummaryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1221,14 +1220,13 @@ const opGetReadinessCheck = "GetReadinessCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReadinessCheckRequest method.
+//	req, resp := client.GetReadinessCheckRequest(params)
 //
-//    // Example sending a request using the GetReadinessCheckRequest method.
-//    req, resp := client.GetReadinessCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetReadinessCheck
 func (c *Route53RecoveryReadiness) GetReadinessCheckRequest(input *GetReadinessCheckInput) (req *request.Request, output *GetReadinessCheckOutput) {
@@ -1259,15 +1257,16 @@ func (c *Route53RecoveryReadiness) GetReadinessCheckRequest(input *GetReadinessC
 // API operation GetReadinessCheck for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetReadinessCheck
 func (c *Route53RecoveryReadiness) GetReadinessCheck(input *GetReadinessCheckInput) (*GetReadinessCheckOutput, error) {
@@ -1307,14 +1306,13 @@ const opGetReadinessCheckResourceStatus = "GetReadinessCheckResourceStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReadinessCheckResourceStatusRequest method.
+//	req, resp := client.GetReadinessCheckResourceStatusRequest(params)
 //
-//    // Example sending a request using the GetReadinessCheckResourceStatusRequest method.
-//    req, resp := client.GetReadinessCheckResourceStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetReadinessCheckResourceStatus
 func (c *Route53RecoveryReadiness) GetReadinessCheckResourceStatusRequest(input *GetReadinessCheckResourceStatusInput) (req *request.Request, output *GetReadinessCheckResourceStatusOutput) {
@@ -1353,15 +1351,16 @@ func (c *Route53RecoveryReadiness) GetReadinessCheckResourceStatusRequest(input 
 // API operation GetReadinessCheckResourceStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetReadinessCheckResourceStatus
 func (c *Route53RecoveryReadiness) GetReadinessCheckResourceStatus(input *GetReadinessCheckResourceStatusInput) (*GetReadinessCheckResourceStatusOutput, error) {
@@ -1393,15 +1392,14 @@ func (c *Route53RecoveryReadiness) GetReadinessCheckResourceStatusWithContext(ct
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetReadinessCheckResourceStatus operation.
-//    pageNum := 0
-//    err := client.GetReadinessCheckResourceStatusPages(params,
-//        func(page *route53recoveryreadiness.GetReadinessCheckResourceStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetReadinessCheckResourceStatus operation.
+//	pageNum := 0
+//	err := client.GetReadinessCheckResourceStatusPages(params,
+//	    func(page *route53recoveryreadiness.GetReadinessCheckResourceStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) GetReadinessCheckResourceStatusPages(input *GetReadinessCheckResourceStatusInput, fn func(*GetReadinessCheckResourceStatusOutput, bool) bool) error {
 	return c.GetReadinessCheckResourceStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1453,14 +1451,13 @@ const opGetReadinessCheckStatus = "GetReadinessCheckStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetReadinessCheckStatusRequest method.
+//	req, resp := client.GetReadinessCheckStatusRequest(params)
 //
-//    // Example sending a request using the GetReadinessCheckStatusRequest method.
-//    req, resp := client.GetReadinessCheckStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetReadinessCheckStatus
 func (c *Route53RecoveryReadiness) GetReadinessCheckStatusRequest(input *GetReadinessCheckStatusInput) (req *request.Request, output *GetReadinessCheckStatusOutput) {
@@ -1499,15 +1496,16 @@ func (c *Route53RecoveryReadiness) GetReadinessCheckStatusRequest(input *GetRead
 // API operation GetReadinessCheckStatus for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetReadinessCheckStatus
 func (c *Route53RecoveryReadiness) GetReadinessCheckStatus(input *GetReadinessCheckStatusInput) (*GetReadinessCheckStatusOutput, error) {
@@ -1539,15 +1537,14 @@ func (c *Route53RecoveryReadiness) GetReadinessCheckStatusWithContext(ctx aws.Co
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetReadinessCheckStatus operation.
-//    pageNum := 0
-//    err := client.GetReadinessCheckStatusPages(params,
-//        func(page *route53recoveryreadiness.GetReadinessCheckStatusOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetReadinessCheckStatus operation.
+//	pageNum := 0
+//	err := client.GetReadinessCheckStatusPages(params,
+//	    func(page *route53recoveryreadiness.GetReadinessCheckStatusOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) GetReadinessCheckStatusPages(input *GetReadinessCheckStatusInput, fn func(*GetReadinessCheckStatusOutput, bool) bool) error {
 	return c.GetReadinessCheckStatusPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1599,14 +1596,13 @@ const opGetRecoveryGroup = "GetRecoveryGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecoveryGroupRequest method.
+//	req, resp := client.GetRecoveryGroupRequest(params)
 //
-//    // Example sending a request using the GetRecoveryGroupRequest method.
-//    req, resp := client.GetRecoveryGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetRecoveryGroup
 func (c *Route53RecoveryReadiness) GetRecoveryGroupRequest(input *GetRecoveryGroupInput) (req *request.Request, output *GetRecoveryGroupOutput) {
@@ -1638,15 +1634,16 @@ func (c *Route53RecoveryReadiness) GetRecoveryGroupRequest(input *GetRecoveryGro
 // API operation GetRecoveryGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetRecoveryGroup
 func (c *Route53RecoveryReadiness) GetRecoveryGroup(input *GetRecoveryGroupInput) (*GetRecoveryGroupOutput, error) {
@@ -1686,14 +1683,13 @@ const opGetRecoveryGroupReadinessSummary = "GetRecoveryGroupReadinessSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecoveryGroupReadinessSummaryRequest method.
+//	req, resp := client.GetRecoveryGroupReadinessSummaryRequest(params)
 //
-//    // Example sending a request using the GetRecoveryGroupReadinessSummaryRequest method.
-//    req, resp := client.GetRecoveryGroupReadinessSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetRecoveryGroupReadinessSummary
 func (c *Route53RecoveryReadiness) GetRecoveryGroupReadinessSummaryRequest(input *GetRecoveryGroupReadinessSummaryInput) (req *request.Request, output *GetRecoveryGroupReadinessSummaryOutput) {
@@ -1732,15 +1728,16 @@ func (c *Route53RecoveryReadiness) GetRecoveryGroupReadinessSummaryRequest(input
 // API operation GetRecoveryGroupReadinessSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetRecoveryGroupReadinessSummary
 func (c *Route53RecoveryReadiness) GetRecoveryGroupReadinessSummary(input *GetRecoveryGroupReadinessSummaryInput) (*GetRecoveryGroupReadinessSummaryOutput, error) {
@@ -1772,15 +1769,14 @@ func (c *Route53RecoveryReadiness) GetRecoveryGroupReadinessSummaryWithContext(c
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetRecoveryGroupReadinessSummary operation.
-//    pageNum := 0
-//    err := client.GetRecoveryGroupReadinessSummaryPages(params,
-//        func(page *route53recoveryreadiness.GetRecoveryGroupReadinessSummaryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetRecoveryGroupReadinessSummary operation.
+//	pageNum := 0
+//	err := client.GetRecoveryGroupReadinessSummaryPages(params,
+//	    func(page *route53recoveryreadiness.GetRecoveryGroupReadinessSummaryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) GetRecoveryGroupReadinessSummaryPages(input *GetRecoveryGroupReadinessSummaryInput, fn func(*GetRecoveryGroupReadinessSummaryOutput, bool) bool) error {
 	return c.GetRecoveryGroupReadinessSummaryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1832,14 +1828,13 @@ const opGetResourceSet = "GetResourceSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetResourceSetRequest method.
+//	req, resp := client.GetResourceSetRequest(params)
 //
-//    // Example sending a request using the GetResourceSetRequest method.
-//    req, resp := client.GetResourceSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetResourceSet
 func (c *Route53RecoveryReadiness) GetResourceSetRequest(input *GetResourceSetInput) (req *request.Request, output *GetResourceSetOutput) {
@@ -1871,15 +1866,16 @@ func (c *Route53RecoveryReadiness) GetResourceSetRequest(input *GetResourceSetIn
 // API operation GetResourceSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/GetResourceSet
 func (c *Route53RecoveryReadiness) GetResourceSet(input *GetResourceSetInput) (*GetResourceSetOutput, error) {
@@ -1919,14 +1915,13 @@ const opListCells = "ListCells"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCellsRequest method.
+//	req, resp := client.ListCellsRequest(params)
 //
-//    // Example sending a request using the ListCellsRequest method.
-//    req, resp := client.ListCellsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListCells
 func (c *Route53RecoveryReadiness) ListCellsRequest(input *ListCellsInput) (req *request.Request, output *ListCellsOutput) {
@@ -1963,13 +1958,14 @@ func (c *Route53RecoveryReadiness) ListCellsRequest(input *ListCellsInput) (req 
 // API operation ListCells for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListCells
 func (c *Route53RecoveryReadiness) ListCells(input *ListCellsInput) (*ListCellsOutput, error) {
@@ -2001,15 +1997,14 @@ func (c *Route53RecoveryReadiness) ListCellsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCells operation.
-//    pageNum := 0
-//    err := client.ListCellsPages(params,
-//        func(page *route53recoveryreadiness.ListCellsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCells operation.
+//	pageNum := 0
+//	err := client.ListCellsPages(params,
+//	    func(page *route53recoveryreadiness.ListCellsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) ListCellsPages(input *ListCellsInput, fn func(*ListCellsOutput, bool) bool) error {
 	return c.ListCellsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2061,14 +2056,13 @@ const opListCrossAccountAuthorizations = "ListCrossAccountAuthorizations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListCrossAccountAuthorizationsRequest method.
+//	req, resp := client.ListCrossAccountAuthorizationsRequest(params)
 //
-//    // Example sending a request using the ListCrossAccountAuthorizationsRequest method.
-//    req, resp := client.ListCrossAccountAuthorizationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListCrossAccountAuthorizations
 func (c *Route53RecoveryReadiness) ListCrossAccountAuthorizationsRequest(input *ListCrossAccountAuthorizationsInput) (req *request.Request, output *ListCrossAccountAuthorizationsOutput) {
@@ -2106,13 +2100,14 @@ func (c *Route53RecoveryReadiness) ListCrossAccountAuthorizationsRequest(input *
 // API operation ListCrossAccountAuthorizations for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListCrossAccountAuthorizations
 func (c *Route53RecoveryReadiness) ListCrossAccountAuthorizations(input *ListCrossAccountAuthorizationsInput) (*ListCrossAccountAuthorizationsOutput, error) {
@@ -2144,15 +2139,14 @@ func (c *Route53RecoveryReadiness) ListCrossAccountAuthorizationsWithContext(ctx
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListCrossAccountAuthorizations operation.
-//    pageNum := 0
-//    err := client.ListCrossAccountAuthorizationsPages(params,
-//        func(page *route53recoveryreadiness.ListCrossAccountAuthorizationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListCrossAccountAuthorizations operation.
+//	pageNum := 0
+//	err := client.ListCrossAccountAuthorizationsPages(params,
+//	    func(page *route53recoveryreadiness.ListCrossAccountAuthorizationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) ListCrossAccountAuthorizationsPages(input *ListCrossAccountAuthorizationsInput, fn func(*ListCrossAccountAuthorizationsOutput, bool) bool) error {
 	return c.ListCrossAccountAuthorizationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2204,14 +2198,13 @@ const opListReadinessChecks = "ListReadinessChecks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListReadinessChecksRequest method.
+//	req, resp := client.ListReadinessChecksRequest(params)
 //
-//    // Example sending a request using the ListReadinessChecksRequest method.
-//    req, resp := client.ListReadinessChecksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListReadinessChecks
 func (c *Route53RecoveryReadiness) ListReadinessChecksRequest(input *ListReadinessChecksInput) (req *request.Request, output *ListReadinessChecksOutput) {
@@ -2248,13 +2241,14 @@ func (c *Route53RecoveryReadiness) ListReadinessChecksRequest(input *ListReadine
 // API operation ListReadinessChecks for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListReadinessChecks
 func (c *Route53RecoveryReadiness) ListReadinessChecks(input *ListReadinessChecksInput) (*ListReadinessChecksOutput, error) {
@@ -2286,15 +2280,14 @@ func (c *Route53RecoveryReadiness) ListReadinessChecksWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListReadinessChecks operation.
-//    pageNum := 0
-//    err := client.ListReadinessChecksPages(params,
-//        func(page *route53recoveryreadiness.ListReadinessChecksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListReadinessChecks operation.
+//	pageNum := 0
+//	err := client.ListReadinessChecksPages(params,
+//	    func(page *route53recoveryreadiness.ListReadinessChecksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) ListReadinessChecksPages(input *ListReadinessChecksInput, fn func(*ListReadinessChecksOutput, bool) bool) error {
 	return c.ListReadinessChecksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2346,14 +2339,13 @@ const opListRecoveryGroups = "ListRecoveryGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRecoveryGroupsRequest method.
+//	req, resp := client.ListRecoveryGroupsRequest(params)
 //
-//    // Example sending a request using the ListRecoveryGroupsRequest method.
-//    req, resp := client.ListRecoveryGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListRecoveryGroups
 func (c *Route53RecoveryReadiness) ListRecoveryGroupsRequest(input *ListRecoveryGroupsInput) (req *request.Request, output *ListRecoveryGroupsOutput) {
@@ -2390,13 +2382,14 @@ func (c *Route53RecoveryReadiness) ListRecoveryGroupsRequest(input *ListRecovery
 // API operation ListRecoveryGroups for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListRecoveryGroups
 func (c *Route53RecoveryReadiness) ListRecoveryGroups(input *ListRecoveryGroupsInput) (*ListRecoveryGroupsOutput, error) {
@@ -2428,15 +2421,14 @@ func (c *Route53RecoveryReadiness) ListRecoveryGroupsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRecoveryGroups operation.
-//    pageNum := 0
-//    err := client.ListRecoveryGroupsPages(params,
-//        func(page *route53recoveryreadiness.ListRecoveryGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRecoveryGroups operation.
+//	pageNum := 0
+//	err := client.ListRecoveryGroupsPages(params,
+//	    func(page *route53recoveryreadiness.ListRecoveryGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) ListRecoveryGroupsPages(input *ListRecoveryGroupsInput, fn func(*ListRecoveryGroupsOutput, bool) bool) error {
 	return c.ListRecoveryGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2488,14 +2480,13 @@ const opListResourceSets = "ListResourceSets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListResourceSetsRequest method.
+//	req, resp := client.ListResourceSetsRequest(params)
 //
-//    // Example sending a request using the ListResourceSetsRequest method.
-//    req, resp := client.ListResourceSetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListResourceSets
 func (c *Route53RecoveryReadiness) ListResourceSetsRequest(input *ListResourceSetsInput) (req *request.Request, output *ListResourceSetsOutput) {
@@ -2532,13 +2523,14 @@ func (c *Route53RecoveryReadiness) ListResourceSetsRequest(input *ListResourceSe
 // API operation ListResourceSets for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListResourceSets
 func (c *Route53RecoveryReadiness) ListResourceSets(input *ListResourceSetsInput) (*ListResourceSetsOutput, error) {
@@ -2570,15 +2562,14 @@ func (c *Route53RecoveryReadiness) ListResourceSetsWithContext(ctx aws.Context, 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListResourceSets operation.
-//    pageNum := 0
-//    err := client.ListResourceSetsPages(params,
-//        func(page *route53recoveryreadiness.ListResourceSetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListResourceSets operation.
+//	pageNum := 0
+//	err := client.ListResourceSetsPages(params,
+//	    func(page *route53recoveryreadiness.ListResourceSetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) ListResourceSetsPages(input *ListResourceSetsInput, fn func(*ListResourceSetsOutput, bool) bool) error {
 	return c.ListResourceSetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2630,14 +2621,13 @@ const opListRules = "ListRules"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRulesRequest method.
+//	req, resp := client.ListRulesRequest(params)
 //
-//    // Example sending a request using the ListRulesRequest method.
-//    req, resp := client.ListRulesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListRules
 func (c *Route53RecoveryReadiness) ListRulesRequest(input *ListRulesInput) (req *request.Request, output *ListRulesOutput) {
@@ -2675,13 +2665,14 @@ func (c *Route53RecoveryReadiness) ListRulesRequest(input *ListRulesInput) (req 
 // API operation ListRules for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListRules
 func (c *Route53RecoveryReadiness) ListRules(input *ListRulesInput) (*ListRulesOutput, error) {
@@ -2713,15 +2704,14 @@ func (c *Route53RecoveryReadiness) ListRulesWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListRules operation.
-//    pageNum := 0
-//    err := client.ListRulesPages(params,
-//        func(page *route53recoveryreadiness.ListRulesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListRules operation.
+//	pageNum := 0
+//	err := client.ListRulesPages(params,
+//	    func(page *route53recoveryreadiness.ListRulesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Route53RecoveryReadiness) ListRulesPages(input *ListRulesInput, fn func(*ListRulesOutput, bool) bool) error {
 	return c.ListRulesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2773,14 +2763,13 @@ const opListTagsForResources = "ListTagsForResources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourcesRequest method.
+//	req, resp := client.ListTagsForResourcesRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourcesRequest method.
-//    req, resp := client.ListTagsForResourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListTagsForResources
 func (c *Route53RecoveryReadiness) ListTagsForResourcesRequest(input *ListTagsForResourcesInput) (req *request.Request, output *ListTagsForResourcesOutput) {
@@ -2811,11 +2800,12 @@ func (c *Route53RecoveryReadiness) ListTagsForResourcesRequest(input *ListTagsFo
 // API operation ListTagsForResources for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ValidationException
+//
+//   - InternalServerException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/ListTagsForResources
 func (c *Route53RecoveryReadiness) ListTagsForResources(input *ListTagsForResourcesInput) (*ListTagsForResourcesOutput, error) {
@@ -2855,14 +2845,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/TagResource
 func (c *Route53RecoveryReadiness) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2894,11 +2883,12 @@ func (c *Route53RecoveryReadiness) TagResourceRequest(input *TagResourceInput) (
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ValidationException
+//
+//   - InternalServerException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/TagResource
 func (c *Route53RecoveryReadiness) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2938,14 +2928,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UntagResource
 func (c *Route53RecoveryReadiness) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2977,11 +2966,12 @@ func (c *Route53RecoveryReadiness) UntagResourceRequest(input *UntagResourceInpu
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ValidationException
+//   - ResourceNotFoundException
 //
-//   * InternalServerException
+//   - ValidationException
+//
+//   - InternalServerException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UntagResource
 func (c *Route53RecoveryReadiness) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3021,14 +3011,13 @@ const opUpdateCell = "UpdateCell"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCellRequest method.
+//	req, resp := client.UpdateCellRequest(params)
 //
-//    // Example sending a request using the UpdateCellRequest method.
-//    req, resp := client.UpdateCellRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateCell
 func (c *Route53RecoveryReadiness) UpdateCellRequest(input *UpdateCellInput) (req *request.Request, output *UpdateCellOutput) {
@@ -3060,15 +3049,16 @@ func (c *Route53RecoveryReadiness) UpdateCellRequest(input *UpdateCellInput) (re
 // API operation UpdateCell for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateCell
 func (c *Route53RecoveryReadiness) UpdateCell(input *UpdateCellInput) (*UpdateCellOutput, error) {
@@ -3108,14 +3098,13 @@ const opUpdateReadinessCheck = "UpdateReadinessCheck"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateReadinessCheckRequest method.
+//	req, resp := client.UpdateReadinessCheckRequest(params)
 //
-//    // Example sending a request using the UpdateReadinessCheckRequest method.
-//    req, resp := client.UpdateReadinessCheckRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateReadinessCheck
 func (c *Route53RecoveryReadiness) UpdateReadinessCheckRequest(input *UpdateReadinessCheckInput) (req *request.Request, output *UpdateReadinessCheckOutput) {
@@ -3146,15 +3135,16 @@ func (c *Route53RecoveryReadiness) UpdateReadinessCheckRequest(input *UpdateRead
 // API operation UpdateReadinessCheck for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateReadinessCheck
 func (c *Route53RecoveryReadiness) UpdateReadinessCheck(input *UpdateReadinessCheckInput) (*UpdateReadinessCheckOutput, error) {
@@ -3194,14 +3184,13 @@ const opUpdateRecoveryGroup = "UpdateRecoveryGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRecoveryGroupRequest method.
+//	req, resp := client.UpdateRecoveryGroupRequest(params)
 //
-//    // Example sending a request using the UpdateRecoveryGroupRequest method.
-//    req, resp := client.UpdateRecoveryGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateRecoveryGroup
 func (c *Route53RecoveryReadiness) UpdateRecoveryGroupRequest(input *UpdateRecoveryGroupInput) (req *request.Request, output *UpdateRecoveryGroupOutput) {
@@ -3232,15 +3221,16 @@ func (c *Route53RecoveryReadiness) UpdateRecoveryGroupRequest(input *UpdateRecov
 // API operation UpdateRecoveryGroup for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateRecoveryGroup
 func (c *Route53RecoveryReadiness) UpdateRecoveryGroup(input *UpdateRecoveryGroupInput) (*UpdateRecoveryGroupOutput, error) {
@@ -3280,14 +3270,13 @@ const opUpdateResourceSet = "UpdateResourceSet"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateResourceSetRequest method.
+//	req, resp := client.UpdateResourceSetRequest(params)
 //
-//    // Example sending a request using the UpdateResourceSetRequest method.
-//    req, resp := client.UpdateResourceSetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateResourceSet
 func (c *Route53RecoveryReadiness) UpdateResourceSetRequest(input *UpdateResourceSetInput) (req *request.Request, output *UpdateResourceSetOutput) {
@@ -3318,15 +3307,16 @@ func (c *Route53RecoveryReadiness) UpdateResourceSetRequest(input *UpdateResourc
 // API operation UpdateResourceSet for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
 //
-//   * ThrottlingException
+//   - ResourceNotFoundException
 //
-//   * ValidationException
+//   - ThrottlingException
 //
-//   * InternalServerException
+//   - ValidationException
 //
-//   * AccessDeniedException
+//   - InternalServerException
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-readiness-2019-12-02/UpdateResourceSet
 func (c *Route53RecoveryReadiness) UpdateResourceSet(input *UpdateResourceSetInput) (*UpdateResourceSetOutput, error) {

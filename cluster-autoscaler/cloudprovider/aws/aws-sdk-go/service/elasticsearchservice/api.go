@@ -29,14 +29,13 @@ const opAcceptInboundCrossClusterSearchConnection = "AcceptInboundCrossClusterSe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AcceptInboundCrossClusterSearchConnectionRequest method.
+//	req, resp := client.AcceptInboundCrossClusterSearchConnectionRequest(params)
 //
-//    // Example sending a request using the AcceptInboundCrossClusterSearchConnectionRequest method.
-//    req, resp := client.AcceptInboundCrossClusterSearchConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) AcceptInboundCrossClusterSearchConnectionRequest(input *AcceptInboundCrossClusterSearchConnectionInput) (req *request.Request, output *AcceptInboundCrossClusterSearchConnectionOutput) {
 	op := &request.Operation{
 		Name:       opAcceptInboundCrossClusterSearchConnection,
@@ -66,18 +65,18 @@ func (c *ElasticsearchService) AcceptInboundCrossClusterSearchConnectionRequest(
 // API operation AcceptInboundCrossClusterSearchConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) AcceptInboundCrossClusterSearchConnection(input *AcceptInboundCrossClusterSearchConnectionInput) (*AcceptInboundCrossClusterSearchConnectionOutput, error) {
 	req, out := c.AcceptInboundCrossClusterSearchConnectionRequest(input)
 	return out, req.Send()
@@ -115,14 +114,13 @@ const opAddTags = "AddTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsRequest method.
+//	req, resp := client.AddTagsRequest(params)
 //
-//    // Example sending a request using the AddTagsRequest method.
-//    req, resp := client.AddTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
 	op := &request.Operation{
 		Name:       opAddTags,
@@ -154,22 +152,22 @@ func (c *ElasticsearchService) AddTagsRequest(input *AddTagsInput) (req *request
 // API operation AddTags for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
 	req, out := c.AddTagsRequest(input)
 	return out, req.Send()
@@ -207,14 +205,13 @@ const opAssociatePackage = "AssociatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociatePackageRequest method.
+//	req, resp := client.AssociatePackageRequest(params)
 //
-//    // Example sending a request using the AssociatePackageRequest method.
-//    req, resp := client.AssociatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) AssociatePackageRequest(input *AssociatePackageInput) (req *request.Request, output *AssociatePackageOutput) {
 	op := &request.Operation{
 		Name:       opAssociatePackage,
@@ -243,30 +240,30 @@ func (c *ElasticsearchService) AssociatePackageRequest(input *AssociatePackageIn
 // API operation AssociatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
-//   * ConflictException
-//   An error occurred because the client attempts to remove a resource that is
-//   currently in use. Returns HTTP status code 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
 func (c *ElasticsearchService) AssociatePackage(input *AssociatePackageInput) (*AssociatePackageOutput, error) {
 	req, out := c.AssociatePackageRequest(input)
 	return out, req.Send()
@@ -288,6 +285,103 @@ func (c *ElasticsearchService) AssociatePackageWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opAuthorizeVpcEndpointAccess = "AuthorizeVpcEndpointAccess"
+
+// AuthorizeVpcEndpointAccessRequest generates a "aws/request.Request" representing the
+// client's request for the AuthorizeVpcEndpointAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AuthorizeVpcEndpointAccess for more information on using the AuthorizeVpcEndpointAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AuthorizeVpcEndpointAccessRequest method.
+//	req, resp := client.AuthorizeVpcEndpointAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) AuthorizeVpcEndpointAccessRequest(input *AuthorizeVpcEndpointAccessInput) (req *request.Request, output *AuthorizeVpcEndpointAccessOutput) {
+	op := &request.Operation{
+		Name:       opAuthorizeVpcEndpointAccess,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/authorizeVpcEndpointAccess",
+	}
+
+	if input == nil {
+		input = &AuthorizeVpcEndpointAccessInput{}
+	}
+
+	output = &AuthorizeVpcEndpointAccessOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AuthorizeVpcEndpointAccess API operation for Amazon Elasticsearch Service.
+//
+// Provides access to an Amazon OpenSearch Service domain through the use of
+// an interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation AuthorizeVpcEndpointAccess for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) AuthorizeVpcEndpointAccess(input *AuthorizeVpcEndpointAccessInput) (*AuthorizeVpcEndpointAccessOutput, error) {
+	req, out := c.AuthorizeVpcEndpointAccessRequest(input)
+	return out, req.Send()
+}
+
+// AuthorizeVpcEndpointAccessWithContext is the same as AuthorizeVpcEndpointAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AuthorizeVpcEndpointAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) AuthorizeVpcEndpointAccessWithContext(ctx aws.Context, input *AuthorizeVpcEndpointAccessInput, opts ...request.Option) (*AuthorizeVpcEndpointAccessOutput, error) {
+	req, out := c.AuthorizeVpcEndpointAccessRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCancelElasticsearchServiceSoftwareUpdate = "CancelElasticsearchServiceSoftwareUpdate"
 
 // CancelElasticsearchServiceSoftwareUpdateRequest generates a "aws/request.Request" representing the
@@ -304,14 +398,13 @@ const opCancelElasticsearchServiceSoftwareUpdate = "CancelElasticsearchServiceSo
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CancelElasticsearchServiceSoftwareUpdateRequest method.
+//	req, resp := client.CancelElasticsearchServiceSoftwareUpdateRequest(params)
 //
-//    // Example sending a request using the CancelElasticsearchServiceSoftwareUpdateRequest method.
-//    req, resp := client.CancelElasticsearchServiceSoftwareUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) CancelElasticsearchServiceSoftwareUpdateRequest(input *CancelElasticsearchServiceSoftwareUpdateInput) (req *request.Request, output *CancelElasticsearchServiceSoftwareUpdateOutput) {
 	op := &request.Operation{
 		Name:       opCancelElasticsearchServiceSoftwareUpdate,
@@ -342,22 +435,22 @@ func (c *ElasticsearchService) CancelElasticsearchServiceSoftwareUpdateRequest(i
 // API operation CancelElasticsearchServiceSoftwareUpdate for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) CancelElasticsearchServiceSoftwareUpdate(input *CancelElasticsearchServiceSoftwareUpdateInput) (*CancelElasticsearchServiceSoftwareUpdateOutput, error) {
 	req, out := c.CancelElasticsearchServiceSoftwareUpdateRequest(input)
 	return out, req.Send()
@@ -395,14 +488,13 @@ const opCreateElasticsearchDomain = "CreateElasticsearchDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateElasticsearchDomainRequest method.
+//	req, resp := client.CreateElasticsearchDomainRequest(params)
 //
-//    // Example sending a request using the CreateElasticsearchDomainRequest method.
-//    req, resp := client.CreateElasticsearchDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) CreateElasticsearchDomainRequest(input *CreateElasticsearchDomainInput) (req *request.Request, output *CreateElasticsearchDomainOutput) {
 	op := &request.Operation{
 		Name:       opCreateElasticsearchDomain,
@@ -433,34 +525,34 @@ func (c *ElasticsearchService) CreateElasticsearchDomainRequest(input *CreateEla
 // API operation CreateElasticsearchDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) CreateElasticsearchDomain(input *CreateElasticsearchDomainInput) (*CreateElasticsearchDomainOutput, error) {
 	req, out := c.CreateElasticsearchDomainRequest(input)
 	return out, req.Send()
@@ -498,14 +590,13 @@ const opCreateOutboundCrossClusterSearchConnection = "CreateOutboundCrossCluster
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateOutboundCrossClusterSearchConnectionRequest method.
+//	req, resp := client.CreateOutboundCrossClusterSearchConnectionRequest(params)
 //
-//    // Example sending a request using the CreateOutboundCrossClusterSearchConnectionRequest method.
-//    req, resp := client.CreateOutboundCrossClusterSearchConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) CreateOutboundCrossClusterSearchConnectionRequest(input *CreateOutboundCrossClusterSearchConnectionInput) (req *request.Request, output *CreateOutboundCrossClusterSearchConnectionOutput) {
 	op := &request.Operation{
 		Name:       opCreateOutboundCrossClusterSearchConnection,
@@ -535,23 +626,23 @@ func (c *ElasticsearchService) CreateOutboundCrossClusterSearchConnectionRequest
 // API operation CreateOutboundCrossClusterSearchConnection for usage and error information.
 //
 // Returned Error Types:
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) CreateOutboundCrossClusterSearchConnection(input *CreateOutboundCrossClusterSearchConnectionInput) (*CreateOutboundCrossClusterSearchConnectionOutput, error) {
 	req, out := c.CreateOutboundCrossClusterSearchConnectionRequest(input)
 	return out, req.Send()
@@ -589,14 +680,13 @@ const opCreatePackage = "CreatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePackageRequest method.
+//	req, resp := client.CreatePackageRequest(params)
 //
-//    // Example sending a request using the CreatePackageRequest method.
-//    req, resp := client.CreatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) CreatePackageRequest(input *CreatePackageInput) (req *request.Request, output *CreatePackageOutput) {
 	op := &request.Operation{
 		Name:       opCreatePackage,
@@ -625,34 +715,34 @@ func (c *ElasticsearchService) CreatePackageRequest(input *CreatePackageInput) (
 // API operation CreatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) CreatePackage(input *CreatePackageInput) (*CreatePackageOutput, error) {
 	req, out := c.CreatePackageRequest(input)
 	return out, req.Send()
@@ -674,6 +764,102 @@ func (c *ElasticsearchService) CreatePackageWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opCreateVpcEndpoint = "CreateVpcEndpoint"
+
+// CreateVpcEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVpcEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVpcEndpoint for more information on using the CreateVpcEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVpcEndpointRequest method.
+//	req, resp := client.CreateVpcEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) CreateVpcEndpointRequest(input *CreateVpcEndpointInput) (req *request.Request, output *CreateVpcEndpointOutput) {
+	op := &request.Operation{
+		Name:       opCreateVpcEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints",
+	}
+
+	if input == nil {
+		input = &CreateVpcEndpointInput{}
+	}
+
+	output = &CreateVpcEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVpcEndpoint API operation for Amazon Elasticsearch Service.
+//
+// Creates an Amazon OpenSearch Service-managed VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation CreateVpcEndpoint for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) CreateVpcEndpoint(input *CreateVpcEndpointInput) (*CreateVpcEndpointOutput, error) {
+	req, out := c.CreateVpcEndpointRequest(input)
+	return out, req.Send()
+}
+
+// CreateVpcEndpointWithContext is the same as CreateVpcEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVpcEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) CreateVpcEndpointWithContext(ctx aws.Context, input *CreateVpcEndpointInput, opts ...request.Option) (*CreateVpcEndpointOutput, error) {
+	req, out := c.CreateVpcEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteElasticsearchDomain = "DeleteElasticsearchDomain"
 
 // DeleteElasticsearchDomainRequest generates a "aws/request.Request" representing the
@@ -690,14 +876,13 @@ const opDeleteElasticsearchDomain = "DeleteElasticsearchDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteElasticsearchDomainRequest method.
+//	req, resp := client.DeleteElasticsearchDomainRequest(params)
 //
-//    // Example sending a request using the DeleteElasticsearchDomainRequest method.
-//    req, resp := client.DeleteElasticsearchDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DeleteElasticsearchDomainRequest(input *DeleteElasticsearchDomainInput) (req *request.Request, output *DeleteElasticsearchDomainOutput) {
 	op := &request.Operation{
 		Name:       opDeleteElasticsearchDomain,
@@ -727,22 +912,22 @@ func (c *ElasticsearchService) DeleteElasticsearchDomainRequest(input *DeleteEla
 // API operation DeleteElasticsearchDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DeleteElasticsearchDomain(input *DeleteElasticsearchDomainInput) (*DeleteElasticsearchDomainOutput, error) {
 	req, out := c.DeleteElasticsearchDomainRequest(input)
 	return out, req.Send()
@@ -780,14 +965,13 @@ const opDeleteElasticsearchServiceRole = "DeleteElasticsearchServiceRole"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteElasticsearchServiceRoleRequest method.
+//	req, resp := client.DeleteElasticsearchServiceRoleRequest(params)
 //
-//    // Example sending a request using the DeleteElasticsearchServiceRoleRequest method.
-//    req, resp := client.DeleteElasticsearchServiceRoleRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DeleteElasticsearchServiceRoleRequest(input *DeleteElasticsearchServiceRoleInput) (req *request.Request, output *DeleteElasticsearchServiceRoleOutput) {
 	op := &request.Operation{
 		Name:       opDeleteElasticsearchServiceRole,
@@ -821,18 +1005,18 @@ func (c *ElasticsearchService) DeleteElasticsearchServiceRoleRequest(input *Dele
 // API operation DeleteElasticsearchServiceRole for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DeleteElasticsearchServiceRole(input *DeleteElasticsearchServiceRoleInput) (*DeleteElasticsearchServiceRoleOutput, error) {
 	req, out := c.DeleteElasticsearchServiceRoleRequest(input)
 	return out, req.Send()
@@ -870,14 +1054,13 @@ const opDeleteInboundCrossClusterSearchConnection = "DeleteInboundCrossClusterSe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInboundCrossClusterSearchConnectionRequest method.
+//	req, resp := client.DeleteInboundCrossClusterSearchConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteInboundCrossClusterSearchConnectionRequest method.
-//    req, resp := client.DeleteInboundCrossClusterSearchConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DeleteInboundCrossClusterSearchConnectionRequest(input *DeleteInboundCrossClusterSearchConnectionInput) (req *request.Request, output *DeleteInboundCrossClusterSearchConnectionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteInboundCrossClusterSearchConnection,
@@ -907,14 +1090,14 @@ func (c *ElasticsearchService) DeleteInboundCrossClusterSearchConnectionRequest(
 // API operation DeleteInboundCrossClusterSearchConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) DeleteInboundCrossClusterSearchConnection(input *DeleteInboundCrossClusterSearchConnectionInput) (*DeleteInboundCrossClusterSearchConnectionOutput, error) {
 	req, out := c.DeleteInboundCrossClusterSearchConnectionRequest(input)
 	return out, req.Send()
@@ -952,14 +1135,13 @@ const opDeleteOutboundCrossClusterSearchConnection = "DeleteOutboundCrossCluster
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteOutboundCrossClusterSearchConnectionRequest method.
+//	req, resp := client.DeleteOutboundCrossClusterSearchConnectionRequest(params)
 //
-//    // Example sending a request using the DeleteOutboundCrossClusterSearchConnectionRequest method.
-//    req, resp := client.DeleteOutboundCrossClusterSearchConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DeleteOutboundCrossClusterSearchConnectionRequest(input *DeleteOutboundCrossClusterSearchConnectionInput) (req *request.Request, output *DeleteOutboundCrossClusterSearchConnectionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteOutboundCrossClusterSearchConnection,
@@ -989,14 +1171,14 @@ func (c *ElasticsearchService) DeleteOutboundCrossClusterSearchConnectionRequest
 // API operation DeleteOutboundCrossClusterSearchConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) DeleteOutboundCrossClusterSearchConnection(input *DeleteOutboundCrossClusterSearchConnectionInput) (*DeleteOutboundCrossClusterSearchConnectionOutput, error) {
 	req, out := c.DeleteOutboundCrossClusterSearchConnectionRequest(input)
 	return out, req.Send()
@@ -1034,14 +1216,13 @@ const opDeletePackage = "DeletePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePackageRequest method.
+//	req, resp := client.DeletePackageRequest(params)
 //
-//    // Example sending a request using the DeletePackageRequest method.
-//    req, resp := client.DeletePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DeletePackageRequest(input *DeletePackageInput) (req *request.Request, output *DeletePackageOutput) {
 	op := &request.Operation{
 		Name:       opDeletePackage,
@@ -1070,30 +1251,30 @@ func (c *ElasticsearchService) DeletePackageRequest(input *DeletePackageInput) (
 // API operation DeletePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
-//   * ConflictException
-//   An error occurred because the client attempts to remove a resource that is
-//   currently in use. Returns HTTP status code 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
 func (c *ElasticsearchService) DeletePackage(input *DeletePackageInput) (*DeletePackageOutput, error) {
 	req, out := c.DeletePackageRequest(input)
 	return out, req.Send()
@@ -1115,6 +1296,94 @@ func (c *ElasticsearchService) DeletePackageWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opDeleteVpcEndpoint = "DeleteVpcEndpoint"
+
+// DeleteVpcEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVpcEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVpcEndpoint for more information on using the DeleteVpcEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVpcEndpointRequest method.
+//	req, resp := client.DeleteVpcEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) DeleteVpcEndpointRequest(input *DeleteVpcEndpointInput) (req *request.Request, output *DeleteVpcEndpointOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVpcEndpoint,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints/{VpcEndpointId}",
+	}
+
+	if input == nil {
+		input = &DeleteVpcEndpointInput{}
+	}
+
+	output = &DeleteVpcEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVpcEndpoint API operation for Amazon Elasticsearch Service.
+//
+// Deletes an Amazon OpenSearch Service-managed interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation DeleteVpcEndpoint for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) DeleteVpcEndpoint(input *DeleteVpcEndpointInput) (*DeleteVpcEndpointOutput, error) {
+	req, out := c.DeleteVpcEndpointRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVpcEndpointWithContext is the same as DeleteVpcEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVpcEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) DeleteVpcEndpointWithContext(ctx aws.Context, input *DeleteVpcEndpointInput, opts ...request.Option) (*DeleteVpcEndpointOutput, error) {
+	req, out := c.DeleteVpcEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeDomainAutoTunes = "DescribeDomainAutoTunes"
 
 // DescribeDomainAutoTunesRequest generates a "aws/request.Request" representing the
@@ -1131,14 +1400,13 @@ const opDescribeDomainAutoTunes = "DescribeDomainAutoTunes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainAutoTunesRequest method.
+//	req, resp := client.DescribeDomainAutoTunesRequest(params)
 //
-//    // Example sending a request using the DescribeDomainAutoTunesRequest method.
-//    req, resp := client.DescribeDomainAutoTunesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeDomainAutoTunesRequest(input *DescribeDomainAutoTunesInput) (req *request.Request, output *DescribeDomainAutoTunesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDomainAutoTunes,
@@ -1174,22 +1442,22 @@ func (c *ElasticsearchService) DescribeDomainAutoTunesRequest(input *DescribeDom
 // API operation DescribeDomainAutoTunes for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribeDomainAutoTunes(input *DescribeDomainAutoTunesInput) (*DescribeDomainAutoTunesOutput, error) {
 	req, out := c.DescribeDomainAutoTunesRequest(input)
 	return out, req.Send()
@@ -1219,15 +1487,14 @@ func (c *ElasticsearchService) DescribeDomainAutoTunesWithContext(ctx aws.Contex
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDomainAutoTunes operation.
-//    pageNum := 0
-//    err := client.DescribeDomainAutoTunesPages(params,
-//        func(page *elasticsearchservice.DescribeDomainAutoTunesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDomainAutoTunes operation.
+//	pageNum := 0
+//	err := client.DescribeDomainAutoTunesPages(params,
+//	    func(page *elasticsearchservice.DescribeDomainAutoTunesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) DescribeDomainAutoTunesPages(input *DescribeDomainAutoTunesInput, fn func(*DescribeDomainAutoTunesOutput, bool) bool) error {
 	return c.DescribeDomainAutoTunesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1279,14 +1546,13 @@ const opDescribeDomainChangeProgress = "DescribeDomainChangeProgress"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDomainChangeProgressRequest method.
+//	req, resp := client.DescribeDomainChangeProgressRequest(params)
 //
-//    // Example sending a request using the DescribeDomainChangeProgressRequest method.
-//    req, resp := client.DescribeDomainChangeProgressRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeDomainChangeProgressRequest(input *DescribeDomainChangeProgressInput) (req *request.Request, output *DescribeDomainChangeProgressOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDomainChangeProgress,
@@ -1316,22 +1582,22 @@ func (c *ElasticsearchService) DescribeDomainChangeProgressRequest(input *Descri
 // API operation DescribeDomainChangeProgress for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribeDomainChangeProgress(input *DescribeDomainChangeProgressInput) (*DescribeDomainChangeProgressOutput, error) {
 	req, out := c.DescribeDomainChangeProgressRequest(input)
 	return out, req.Send()
@@ -1369,14 +1635,13 @@ const opDescribeElasticsearchDomain = "DescribeElasticsearchDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticsearchDomainRequest method.
+//	req, resp := client.DescribeElasticsearchDomainRequest(params)
 //
-//    // Example sending a request using the DescribeElasticsearchDomainRequest method.
-//    req, resp := client.DescribeElasticsearchDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeElasticsearchDomainRequest(input *DescribeElasticsearchDomainInput) (req *request.Request, output *DescribeElasticsearchDomainOutput) {
 	op := &request.Operation{
 		Name:       opDescribeElasticsearchDomain,
@@ -1406,22 +1671,22 @@ func (c *ElasticsearchService) DescribeElasticsearchDomainRequest(input *Describ
 // API operation DescribeElasticsearchDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribeElasticsearchDomain(input *DescribeElasticsearchDomainInput) (*DescribeElasticsearchDomainOutput, error) {
 	req, out := c.DescribeElasticsearchDomainRequest(input)
 	return out, req.Send()
@@ -1459,14 +1724,13 @@ const opDescribeElasticsearchDomainConfig = "DescribeElasticsearchDomainConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticsearchDomainConfigRequest method.
+//	req, resp := client.DescribeElasticsearchDomainConfigRequest(params)
 //
-//    // Example sending a request using the DescribeElasticsearchDomainConfigRequest method.
-//    req, resp := client.DescribeElasticsearchDomainConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeElasticsearchDomainConfigRequest(input *DescribeElasticsearchDomainConfigInput) (req *request.Request, output *DescribeElasticsearchDomainConfigOutput) {
 	op := &request.Operation{
 		Name:       opDescribeElasticsearchDomainConfig,
@@ -1497,22 +1761,22 @@ func (c *ElasticsearchService) DescribeElasticsearchDomainConfigRequest(input *D
 // API operation DescribeElasticsearchDomainConfig for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribeElasticsearchDomainConfig(input *DescribeElasticsearchDomainConfigInput) (*DescribeElasticsearchDomainConfigOutput, error) {
 	req, out := c.DescribeElasticsearchDomainConfigRequest(input)
 	return out, req.Send()
@@ -1550,14 +1814,13 @@ const opDescribeElasticsearchDomains = "DescribeElasticsearchDomains"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticsearchDomainsRequest method.
+//	req, resp := client.DescribeElasticsearchDomainsRequest(params)
 //
-//    // Example sending a request using the DescribeElasticsearchDomainsRequest method.
-//    req, resp := client.DescribeElasticsearchDomainsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeElasticsearchDomainsRequest(input *DescribeElasticsearchDomainsInput) (req *request.Request, output *DescribeElasticsearchDomainsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeElasticsearchDomains,
@@ -1587,18 +1850,18 @@ func (c *ElasticsearchService) DescribeElasticsearchDomainsRequest(input *Descri
 // API operation DescribeElasticsearchDomains for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribeElasticsearchDomains(input *DescribeElasticsearchDomainsInput) (*DescribeElasticsearchDomainsOutput, error) {
 	req, out := c.DescribeElasticsearchDomainsRequest(input)
 	return out, req.Send()
@@ -1636,14 +1899,13 @@ const opDescribeElasticsearchInstanceTypeLimits = "DescribeElasticsearchInstance
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeElasticsearchInstanceTypeLimitsRequest method.
+//	req, resp := client.DescribeElasticsearchInstanceTypeLimitsRequest(params)
 //
-//    // Example sending a request using the DescribeElasticsearchInstanceTypeLimitsRequest method.
-//    req, resp := client.DescribeElasticsearchInstanceTypeLimitsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeElasticsearchInstanceTypeLimitsRequest(input *DescribeElasticsearchInstanceTypeLimitsInput) (req *request.Request, output *DescribeElasticsearchInstanceTypeLimitsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeElasticsearchInstanceTypeLimits,
@@ -1674,30 +1936,30 @@ func (c *ElasticsearchService) DescribeElasticsearchInstanceTypeLimitsRequest(in
 // API operation DescribeElasticsearchInstanceTypeLimits for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribeElasticsearchInstanceTypeLimits(input *DescribeElasticsearchInstanceTypeLimitsInput) (*DescribeElasticsearchInstanceTypeLimitsOutput, error) {
 	req, out := c.DescribeElasticsearchInstanceTypeLimitsRequest(input)
 	return out, req.Send()
@@ -1735,14 +1997,13 @@ const opDescribeInboundCrossClusterSearchConnections = "DescribeInboundCrossClus
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInboundCrossClusterSearchConnectionsRequest method.
+//	req, resp := client.DescribeInboundCrossClusterSearchConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeInboundCrossClusterSearchConnectionsRequest method.
-//    req, resp := client.DescribeInboundCrossClusterSearchConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeInboundCrossClusterSearchConnectionsRequest(input *DescribeInboundCrossClusterSearchConnectionsInput) (req *request.Request, output *DescribeInboundCrossClusterSearchConnectionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeInboundCrossClusterSearchConnections,
@@ -1778,14 +2039,14 @@ func (c *ElasticsearchService) DescribeInboundCrossClusterSearchConnectionsReque
 // API operation DescribeInboundCrossClusterSearchConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationTokenException
-//   The request processing has failed because of invalid pagination token provided
-//   by customer. Returns an HTTP status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - InvalidPaginationTokenException
+//     The request processing has failed because of invalid pagination token provided
+//     by customer. Returns an HTTP status code of 400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) DescribeInboundCrossClusterSearchConnections(input *DescribeInboundCrossClusterSearchConnectionsInput) (*DescribeInboundCrossClusterSearchConnectionsOutput, error) {
 	req, out := c.DescribeInboundCrossClusterSearchConnectionsRequest(input)
 	return out, req.Send()
@@ -1815,15 +2076,14 @@ func (c *ElasticsearchService) DescribeInboundCrossClusterSearchConnectionsWithC
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeInboundCrossClusterSearchConnections operation.
-//    pageNum := 0
-//    err := client.DescribeInboundCrossClusterSearchConnectionsPages(params,
-//        func(page *elasticsearchservice.DescribeInboundCrossClusterSearchConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeInboundCrossClusterSearchConnections operation.
+//	pageNum := 0
+//	err := client.DescribeInboundCrossClusterSearchConnectionsPages(params,
+//	    func(page *elasticsearchservice.DescribeInboundCrossClusterSearchConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) DescribeInboundCrossClusterSearchConnectionsPages(input *DescribeInboundCrossClusterSearchConnectionsInput, fn func(*DescribeInboundCrossClusterSearchConnectionsOutput, bool) bool) error {
 	return c.DescribeInboundCrossClusterSearchConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1875,14 +2135,13 @@ const opDescribeOutboundCrossClusterSearchConnections = "DescribeOutboundCrossCl
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeOutboundCrossClusterSearchConnectionsRequest method.
+//	req, resp := client.DescribeOutboundCrossClusterSearchConnectionsRequest(params)
 //
-//    // Example sending a request using the DescribeOutboundCrossClusterSearchConnectionsRequest method.
-//    req, resp := client.DescribeOutboundCrossClusterSearchConnectionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeOutboundCrossClusterSearchConnectionsRequest(input *DescribeOutboundCrossClusterSearchConnectionsInput) (req *request.Request, output *DescribeOutboundCrossClusterSearchConnectionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeOutboundCrossClusterSearchConnections,
@@ -1917,14 +2176,14 @@ func (c *ElasticsearchService) DescribeOutboundCrossClusterSearchConnectionsRequ
 // API operation DescribeOutboundCrossClusterSearchConnections for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidPaginationTokenException
-//   The request processing has failed because of invalid pagination token provided
-//   by customer. Returns an HTTP status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - InvalidPaginationTokenException
+//     The request processing has failed because of invalid pagination token provided
+//     by customer. Returns an HTTP status code of 400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) DescribeOutboundCrossClusterSearchConnections(input *DescribeOutboundCrossClusterSearchConnectionsInput) (*DescribeOutboundCrossClusterSearchConnectionsOutput, error) {
 	req, out := c.DescribeOutboundCrossClusterSearchConnectionsRequest(input)
 	return out, req.Send()
@@ -1954,15 +2213,14 @@ func (c *ElasticsearchService) DescribeOutboundCrossClusterSearchConnectionsWith
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeOutboundCrossClusterSearchConnections operation.
-//    pageNum := 0
-//    err := client.DescribeOutboundCrossClusterSearchConnectionsPages(params,
-//        func(page *elasticsearchservice.DescribeOutboundCrossClusterSearchConnectionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeOutboundCrossClusterSearchConnections operation.
+//	pageNum := 0
+//	err := client.DescribeOutboundCrossClusterSearchConnectionsPages(params,
+//	    func(page *elasticsearchservice.DescribeOutboundCrossClusterSearchConnectionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) DescribeOutboundCrossClusterSearchConnectionsPages(input *DescribeOutboundCrossClusterSearchConnectionsInput, fn func(*DescribeOutboundCrossClusterSearchConnectionsOutput, bool) bool) error {
 	return c.DescribeOutboundCrossClusterSearchConnectionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2014,14 +2272,13 @@ const opDescribePackages = "DescribePackages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackagesRequest method.
+//	req, resp := client.DescribePackagesRequest(params)
 //
-//    // Example sending a request using the DescribePackagesRequest method.
-//    req, resp := client.DescribePackagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribePackagesRequest(input *DescribePackagesInput) (req *request.Request, output *DescribePackagesOutput) {
 	op := &request.Operation{
 		Name:       opDescribePackages,
@@ -2057,26 +2314,26 @@ func (c *ElasticsearchService) DescribePackagesRequest(input *DescribePackagesIn
 // API operation DescribePackages for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) DescribePackages(input *DescribePackagesInput) (*DescribePackagesOutput, error) {
 	req, out := c.DescribePackagesRequest(input)
 	return out, req.Send()
@@ -2106,15 +2363,14 @@ func (c *ElasticsearchService) DescribePackagesWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribePackages operation.
-//    pageNum := 0
-//    err := client.DescribePackagesPages(params,
-//        func(page *elasticsearchservice.DescribePackagesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribePackages operation.
+//	pageNum := 0
+//	err := client.DescribePackagesPages(params,
+//	    func(page *elasticsearchservice.DescribePackagesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) DescribePackagesPages(input *DescribePackagesInput, fn func(*DescribePackagesOutput, bool) bool) error {
 	return c.DescribePackagesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2166,14 +2422,13 @@ const opDescribeReservedElasticsearchInstanceOfferings = "DescribeReservedElasti
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedElasticsearchInstanceOfferingsRequest method.
+//	req, resp := client.DescribeReservedElasticsearchInstanceOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeReservedElasticsearchInstanceOfferingsRequest method.
-//    req, resp := client.DescribeReservedElasticsearchInstanceOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeReservedElasticsearchInstanceOfferingsRequest(input *DescribeReservedElasticsearchInstanceOfferingsInput) (req *request.Request, output *DescribeReservedElasticsearchInstanceOfferingsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeReservedElasticsearchInstanceOfferings,
@@ -2208,23 +2463,23 @@ func (c *ElasticsearchService) DescribeReservedElasticsearchInstanceOfferingsReq
 // API operation DescribeReservedElasticsearchInstanceOfferings for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) DescribeReservedElasticsearchInstanceOfferings(input *DescribeReservedElasticsearchInstanceOfferingsInput) (*DescribeReservedElasticsearchInstanceOfferingsOutput, error) {
 	req, out := c.DescribeReservedElasticsearchInstanceOfferingsRequest(input)
 	return out, req.Send()
@@ -2254,15 +2509,14 @@ func (c *ElasticsearchService) DescribeReservedElasticsearchInstanceOfferingsWit
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedElasticsearchInstanceOfferings operation.
-//    pageNum := 0
-//    err := client.DescribeReservedElasticsearchInstanceOfferingsPages(params,
-//        func(page *elasticsearchservice.DescribeReservedElasticsearchInstanceOfferingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedElasticsearchInstanceOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeReservedElasticsearchInstanceOfferingsPages(params,
+//	    func(page *elasticsearchservice.DescribeReservedElasticsearchInstanceOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) DescribeReservedElasticsearchInstanceOfferingsPages(input *DescribeReservedElasticsearchInstanceOfferingsInput, fn func(*DescribeReservedElasticsearchInstanceOfferingsOutput, bool) bool) error {
 	return c.DescribeReservedElasticsearchInstanceOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2314,14 +2568,13 @@ const opDescribeReservedElasticsearchInstances = "DescribeReservedElasticsearchI
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeReservedElasticsearchInstancesRequest method.
+//	req, resp := client.DescribeReservedElasticsearchInstancesRequest(params)
 //
-//    // Example sending a request using the DescribeReservedElasticsearchInstancesRequest method.
-//    req, resp := client.DescribeReservedElasticsearchInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DescribeReservedElasticsearchInstancesRequest(input *DescribeReservedElasticsearchInstancesInput) (req *request.Request, output *DescribeReservedElasticsearchInstancesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeReservedElasticsearchInstances,
@@ -2356,23 +2609,23 @@ func (c *ElasticsearchService) DescribeReservedElasticsearchInstancesRequest(inp
 // API operation DescribeReservedElasticsearchInstances for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) DescribeReservedElasticsearchInstances(input *DescribeReservedElasticsearchInstancesInput) (*DescribeReservedElasticsearchInstancesOutput, error) {
 	req, out := c.DescribeReservedElasticsearchInstancesRequest(input)
 	return out, req.Send()
@@ -2402,15 +2655,14 @@ func (c *ElasticsearchService) DescribeReservedElasticsearchInstancesWithContext
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeReservedElasticsearchInstances operation.
-//    pageNum := 0
-//    err := client.DescribeReservedElasticsearchInstancesPages(params,
-//        func(page *elasticsearchservice.DescribeReservedElasticsearchInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeReservedElasticsearchInstances operation.
+//	pageNum := 0
+//	err := client.DescribeReservedElasticsearchInstancesPages(params,
+//	    func(page *elasticsearchservice.DescribeReservedElasticsearchInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) DescribeReservedElasticsearchInstancesPages(input *DescribeReservedElasticsearchInstancesInput, fn func(*DescribeReservedElasticsearchInstancesOutput, bool) bool) error {
 	return c.DescribeReservedElasticsearchInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2446,6 +2698,94 @@ func (c *ElasticsearchService) DescribeReservedElasticsearchInstancesPagesWithCo
 	return p.Err()
 }
 
+const opDescribeVpcEndpoints = "DescribeVpcEndpoints"
+
+// DescribeVpcEndpointsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVpcEndpoints operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVpcEndpoints for more information on using the DescribeVpcEndpoints
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVpcEndpointsRequest method.
+//	req, resp := client.DescribeVpcEndpointsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) DescribeVpcEndpointsRequest(input *DescribeVpcEndpointsInput) (req *request.Request, output *DescribeVpcEndpointsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVpcEndpoints,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints/describe",
+	}
+
+	if input == nil {
+		input = &DescribeVpcEndpointsInput{}
+	}
+
+	output = &DescribeVpcEndpointsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVpcEndpoints API operation for Amazon Elasticsearch Service.
+//
+// Describes one or more Amazon OpenSearch Service-managed VPC endpoints.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation DescribeVpcEndpoints for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) DescribeVpcEndpoints(input *DescribeVpcEndpointsInput) (*DescribeVpcEndpointsOutput, error) {
+	req, out := c.DescribeVpcEndpointsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVpcEndpointsWithContext is the same as DescribeVpcEndpoints with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVpcEndpoints for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) DescribeVpcEndpointsWithContext(ctx aws.Context, input *DescribeVpcEndpointsInput, opts ...request.Option) (*DescribeVpcEndpointsOutput, error) {
+	req, out := c.DescribeVpcEndpointsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDissociatePackage = "DissociatePackage"
 
 // DissociatePackageRequest generates a "aws/request.Request" representing the
@@ -2462,14 +2802,13 @@ const opDissociatePackage = "DissociatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DissociatePackageRequest method.
+//	req, resp := client.DissociatePackageRequest(params)
 //
-//    // Example sending a request using the DissociatePackageRequest method.
-//    req, resp := client.DissociatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) DissociatePackageRequest(input *DissociatePackageInput) (req *request.Request, output *DissociatePackageOutput) {
 	op := &request.Operation{
 		Name:       opDissociatePackage,
@@ -2498,30 +2837,30 @@ func (c *ElasticsearchService) DissociatePackageRequest(input *DissociatePackage
 // API operation DissociatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
-//   * ConflictException
-//   An error occurred because the client attempts to remove a resource that is
-//   currently in use. Returns HTTP status code 409.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
 func (c *ElasticsearchService) DissociatePackage(input *DissociatePackageInput) (*DissociatePackageOutput, error) {
 	req, out := c.DissociatePackageRequest(input)
 	return out, req.Send()
@@ -2559,14 +2898,13 @@ const opGetCompatibleElasticsearchVersions = "GetCompatibleElasticsearchVersions
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCompatibleElasticsearchVersionsRequest method.
+//	req, resp := client.GetCompatibleElasticsearchVersionsRequest(params)
 //
-//    // Example sending a request using the GetCompatibleElasticsearchVersionsRequest method.
-//    req, resp := client.GetCompatibleElasticsearchVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) GetCompatibleElasticsearchVersionsRequest(input *GetCompatibleElasticsearchVersionsInput) (req *request.Request, output *GetCompatibleElasticsearchVersionsOutput) {
 	op := &request.Operation{
 		Name:       opGetCompatibleElasticsearchVersions,
@@ -2597,26 +2935,26 @@ func (c *ElasticsearchService) GetCompatibleElasticsearchVersionsRequest(input *
 // API operation GetCompatibleElasticsearchVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) GetCompatibleElasticsearchVersions(input *GetCompatibleElasticsearchVersionsInput) (*GetCompatibleElasticsearchVersionsOutput, error) {
 	req, out := c.GetCompatibleElasticsearchVersionsRequest(input)
 	return out, req.Send()
@@ -2654,14 +2992,13 @@ const opGetPackageVersionHistory = "GetPackageVersionHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPackageVersionHistoryRequest method.
+//	req, resp := client.GetPackageVersionHistoryRequest(params)
 //
-//    // Example sending a request using the GetPackageVersionHistoryRequest method.
-//    req, resp := client.GetPackageVersionHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) GetPackageVersionHistoryRequest(input *GetPackageVersionHistoryInput) (req *request.Request, output *GetPackageVersionHistoryOutput) {
 	op := &request.Operation{
 		Name:       opGetPackageVersionHistory,
@@ -2697,26 +3034,26 @@ func (c *ElasticsearchService) GetPackageVersionHistoryRequest(input *GetPackage
 // API operation GetPackageVersionHistory for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) GetPackageVersionHistory(input *GetPackageVersionHistoryInput) (*GetPackageVersionHistoryOutput, error) {
 	req, out := c.GetPackageVersionHistoryRequest(input)
 	return out, req.Send()
@@ -2746,15 +3083,14 @@ func (c *ElasticsearchService) GetPackageVersionHistoryWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetPackageVersionHistory operation.
-//    pageNum := 0
-//    err := client.GetPackageVersionHistoryPages(params,
-//        func(page *elasticsearchservice.GetPackageVersionHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetPackageVersionHistory operation.
+//	pageNum := 0
+//	err := client.GetPackageVersionHistoryPages(params,
+//	    func(page *elasticsearchservice.GetPackageVersionHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) GetPackageVersionHistoryPages(input *GetPackageVersionHistoryInput, fn func(*GetPackageVersionHistoryOutput, bool) bool) error {
 	return c.GetPackageVersionHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2806,14 +3142,13 @@ const opGetUpgradeHistory = "GetUpgradeHistory"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUpgradeHistoryRequest method.
+//	req, resp := client.GetUpgradeHistoryRequest(params)
 //
-//    // Example sending a request using the GetUpgradeHistoryRequest method.
-//    req, resp := client.GetUpgradeHistoryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) GetUpgradeHistoryRequest(input *GetUpgradeHistoryInput) (req *request.Request, output *GetUpgradeHistoryOutput) {
 	op := &request.Operation{
 		Name:       opGetUpgradeHistory,
@@ -2849,26 +3184,26 @@ func (c *ElasticsearchService) GetUpgradeHistoryRequest(input *GetUpgradeHistory
 // API operation GetUpgradeHistory for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) GetUpgradeHistory(input *GetUpgradeHistoryInput) (*GetUpgradeHistoryOutput, error) {
 	req, out := c.GetUpgradeHistoryRequest(input)
 	return out, req.Send()
@@ -2898,15 +3233,14 @@ func (c *ElasticsearchService) GetUpgradeHistoryWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetUpgradeHistory operation.
-//    pageNum := 0
-//    err := client.GetUpgradeHistoryPages(params,
-//        func(page *elasticsearchservice.GetUpgradeHistoryOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetUpgradeHistory operation.
+//	pageNum := 0
+//	err := client.GetUpgradeHistoryPages(params,
+//	    func(page *elasticsearchservice.GetUpgradeHistoryOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) GetUpgradeHistoryPages(input *GetUpgradeHistoryInput, fn func(*GetUpgradeHistoryOutput, bool) bool) error {
 	return c.GetUpgradeHistoryPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2958,14 +3292,13 @@ const opGetUpgradeStatus = "GetUpgradeStatus"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUpgradeStatusRequest method.
+//	req, resp := client.GetUpgradeStatusRequest(params)
 //
-//    // Example sending a request using the GetUpgradeStatusRequest method.
-//    req, resp := client.GetUpgradeStatusRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) GetUpgradeStatusRequest(input *GetUpgradeStatusInput) (req *request.Request, output *GetUpgradeStatusOutput) {
 	op := &request.Operation{
 		Name:       opGetUpgradeStatus,
@@ -2995,26 +3328,26 @@ func (c *ElasticsearchService) GetUpgradeStatusRequest(input *GetUpgradeStatusIn
 // API operation GetUpgradeStatus for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) GetUpgradeStatus(input *GetUpgradeStatusInput) (*GetUpgradeStatusOutput, error) {
 	req, out := c.GetUpgradeStatusRequest(input)
 	return out, req.Send()
@@ -3052,14 +3385,13 @@ const opListDomainNames = "ListDomainNames"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainNamesRequest method.
+//	req, resp := client.ListDomainNamesRequest(params)
 //
-//    // Example sending a request using the ListDomainNamesRequest method.
-//    req, resp := client.ListDomainNamesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) ListDomainNamesRequest(input *ListDomainNamesInput) (req *request.Request, output *ListDomainNamesOutput) {
 	op := &request.Operation{
 		Name:       opListDomainNames,
@@ -3089,13 +3421,13 @@ func (c *ElasticsearchService) ListDomainNamesRequest(input *ListDomainNamesInpu
 // API operation ListDomainNames for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) ListDomainNames(input *ListDomainNamesInput) (*ListDomainNamesOutput, error) {
 	req, out := c.ListDomainNamesRequest(input)
 	return out, req.Send()
@@ -3133,14 +3465,13 @@ const opListDomainsForPackage = "ListDomainsForPackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDomainsForPackageRequest method.
+//	req, resp := client.ListDomainsForPackageRequest(params)
 //
-//    // Example sending a request using the ListDomainsForPackageRequest method.
-//    req, resp := client.ListDomainsForPackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) ListDomainsForPackageRequest(input *ListDomainsForPackageInput) (req *request.Request, output *ListDomainsForPackageOutput) {
 	op := &request.Operation{
 		Name:       opListDomainsForPackage,
@@ -3175,26 +3506,26 @@ func (c *ElasticsearchService) ListDomainsForPackageRequest(input *ListDomainsFo
 // API operation ListDomainsForPackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) ListDomainsForPackage(input *ListDomainsForPackageInput) (*ListDomainsForPackageOutput, error) {
 	req, out := c.ListDomainsForPackageRequest(input)
 	return out, req.Send()
@@ -3224,15 +3555,14 @@ func (c *ElasticsearchService) ListDomainsForPackageWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListDomainsForPackage operation.
-//    pageNum := 0
-//    err := client.ListDomainsForPackagePages(params,
-//        func(page *elasticsearchservice.ListDomainsForPackageOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListDomainsForPackage operation.
+//	pageNum := 0
+//	err := client.ListDomainsForPackagePages(params,
+//	    func(page *elasticsearchservice.ListDomainsForPackageOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) ListDomainsForPackagePages(input *ListDomainsForPackageInput, fn func(*ListDomainsForPackageOutput, bool) bool) error {
 	return c.ListDomainsForPackagePagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3284,14 +3614,13 @@ const opListElasticsearchInstanceTypes = "ListElasticsearchInstanceTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListElasticsearchInstanceTypesRequest method.
+//	req, resp := client.ListElasticsearchInstanceTypesRequest(params)
 //
-//    // Example sending a request using the ListElasticsearchInstanceTypesRequest method.
-//    req, resp := client.ListElasticsearchInstanceTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) ListElasticsearchInstanceTypesRequest(input *ListElasticsearchInstanceTypesInput) (req *request.Request, output *ListElasticsearchInstanceTypesOutput) {
 	op := &request.Operation{
 		Name:       opListElasticsearchInstanceTypes,
@@ -3316,7 +3645,7 @@ func (c *ElasticsearchService) ListElasticsearchInstanceTypesRequest(input *List
 
 // ListElasticsearchInstanceTypes API operation for Amazon Elasticsearch Service.
 //
-// List all Elasticsearch instance types that are supported for given ElasticsearchVersion
+// # List all Elasticsearch instance types that are supported for given ElasticsearchVersion
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3326,22 +3655,22 @@ func (c *ElasticsearchService) ListElasticsearchInstanceTypesRequest(input *List
 // API operation ListElasticsearchInstanceTypes for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) ListElasticsearchInstanceTypes(input *ListElasticsearchInstanceTypesInput) (*ListElasticsearchInstanceTypesOutput, error) {
 	req, out := c.ListElasticsearchInstanceTypesRequest(input)
 	return out, req.Send()
@@ -3371,15 +3700,14 @@ func (c *ElasticsearchService) ListElasticsearchInstanceTypesWithContext(ctx aws
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListElasticsearchInstanceTypes operation.
-//    pageNum := 0
-//    err := client.ListElasticsearchInstanceTypesPages(params,
-//        func(page *elasticsearchservice.ListElasticsearchInstanceTypesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListElasticsearchInstanceTypes operation.
+//	pageNum := 0
+//	err := client.ListElasticsearchInstanceTypesPages(params,
+//	    func(page *elasticsearchservice.ListElasticsearchInstanceTypesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) ListElasticsearchInstanceTypesPages(input *ListElasticsearchInstanceTypesInput, fn func(*ListElasticsearchInstanceTypesOutput, bool) bool) error {
 	return c.ListElasticsearchInstanceTypesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3431,14 +3759,13 @@ const opListElasticsearchVersions = "ListElasticsearchVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListElasticsearchVersionsRequest method.
+//	req, resp := client.ListElasticsearchVersionsRequest(params)
 //
-//    // Example sending a request using the ListElasticsearchVersionsRequest method.
-//    req, resp := client.ListElasticsearchVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) ListElasticsearchVersionsRequest(input *ListElasticsearchVersionsInput) (req *request.Request, output *ListElasticsearchVersionsOutput) {
 	op := &request.Operation{
 		Name:       opListElasticsearchVersions,
@@ -3463,7 +3790,7 @@ func (c *ElasticsearchService) ListElasticsearchVersionsRequest(input *ListElast
 
 // ListElasticsearchVersions API operation for Amazon Elasticsearch Service.
 //
-// List all supported Elasticsearch versions
+// # List all supported Elasticsearch versions
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3473,22 +3800,22 @@ func (c *ElasticsearchService) ListElasticsearchVersionsRequest(input *ListElast
 // API operation ListElasticsearchVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) ListElasticsearchVersions(input *ListElasticsearchVersionsInput) (*ListElasticsearchVersionsOutput, error) {
 	req, out := c.ListElasticsearchVersionsRequest(input)
 	return out, req.Send()
@@ -3518,15 +3845,14 @@ func (c *ElasticsearchService) ListElasticsearchVersionsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListElasticsearchVersions operation.
-//    pageNum := 0
-//    err := client.ListElasticsearchVersionsPages(params,
-//        func(page *elasticsearchservice.ListElasticsearchVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListElasticsearchVersions operation.
+//	pageNum := 0
+//	err := client.ListElasticsearchVersionsPages(params,
+//	    func(page *elasticsearchservice.ListElasticsearchVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) ListElasticsearchVersionsPages(input *ListElasticsearchVersionsInput, fn func(*ListElasticsearchVersionsOutput, bool) bool) error {
 	return c.ListElasticsearchVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3578,14 +3904,13 @@ const opListPackagesForDomain = "ListPackagesForDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackagesForDomainRequest method.
+//	req, resp := client.ListPackagesForDomainRequest(params)
 //
-//    // Example sending a request using the ListPackagesForDomainRequest method.
-//    req, resp := client.ListPackagesForDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) ListPackagesForDomainRequest(input *ListPackagesForDomainInput) (req *request.Request, output *ListPackagesForDomainOutput) {
 	op := &request.Operation{
 		Name:       opListPackagesForDomain,
@@ -3620,26 +3945,26 @@ func (c *ElasticsearchService) ListPackagesForDomainRequest(input *ListPackagesF
 // API operation ListPackagesForDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) ListPackagesForDomain(input *ListPackagesForDomainInput) (*ListPackagesForDomainOutput, error) {
 	req, out := c.ListPackagesForDomainRequest(input)
 	return out, req.Send()
@@ -3669,15 +3994,14 @@ func (c *ElasticsearchService) ListPackagesForDomainWithContext(ctx aws.Context,
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackagesForDomain operation.
-//    pageNum := 0
-//    err := client.ListPackagesForDomainPages(params,
-//        func(page *elasticsearchservice.ListPackagesForDomainOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackagesForDomain operation.
+//	pageNum := 0
+//	err := client.ListPackagesForDomainPages(params,
+//	    func(page *elasticsearchservice.ListPackagesForDomainOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticsearchService) ListPackagesForDomainPages(input *ListPackagesForDomainInput, fn func(*ListPackagesForDomainOutput, bool) bool) error {
 	return c.ListPackagesForDomainPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3729,14 +4053,13 @@ const opListTags = "ListTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsRequest method.
+//	req, resp := client.ListTagsRequest(params)
 //
-//    // Example sending a request using the ListTagsRequest method.
-//    req, resp := client.ListTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
 	op := &request.Operation{
 		Name:       opListTags,
@@ -3765,22 +4088,22 @@ func (c *ElasticsearchService) ListTagsRequest(input *ListTagsInput) (req *reque
 // API operation ListTags for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
 	req, out := c.ListTagsRequest(input)
 	return out, req.Send()
@@ -3802,6 +4125,269 @@ func (c *ElasticsearchService) ListTagsWithContext(ctx aws.Context, input *ListT
 	return out, req.Send()
 }
 
+const opListVpcEndpointAccess = "ListVpcEndpointAccess"
+
+// ListVpcEndpointAccessRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcEndpointAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcEndpointAccess for more information on using the ListVpcEndpointAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcEndpointAccessRequest method.
+//	req, resp := client.ListVpcEndpointAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) ListVpcEndpointAccessRequest(input *ListVpcEndpointAccessInput) (req *request.Request, output *ListVpcEndpointAccessOutput) {
+	op := &request.Operation{
+		Name:       opListVpcEndpointAccess,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/listVpcEndpointAccess",
+	}
+
+	if input == nil {
+		input = &ListVpcEndpointAccessInput{}
+	}
+
+	output = &ListVpcEndpointAccessOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcEndpointAccess API operation for Amazon Elasticsearch Service.
+//
+// Retrieves information about each principal that is allowed to access a given
+// Amazon OpenSearch Service domain through the use of an interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation ListVpcEndpointAccess for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) ListVpcEndpointAccess(input *ListVpcEndpointAccessInput) (*ListVpcEndpointAccessOutput, error) {
+	req, out := c.ListVpcEndpointAccessRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcEndpointAccessWithContext is the same as ListVpcEndpointAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcEndpointAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) ListVpcEndpointAccessWithContext(ctx aws.Context, input *ListVpcEndpointAccessInput, opts ...request.Option) (*ListVpcEndpointAccessOutput, error) {
+	req, out := c.ListVpcEndpointAccessRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListVpcEndpoints = "ListVpcEndpoints"
+
+// ListVpcEndpointsRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcEndpoints operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcEndpoints for more information on using the ListVpcEndpoints
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcEndpointsRequest method.
+//	req, resp := client.ListVpcEndpointsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) ListVpcEndpointsRequest(input *ListVpcEndpointsInput) (req *request.Request, output *ListVpcEndpointsOutput) {
+	op := &request.Operation{
+		Name:       opListVpcEndpoints,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints",
+	}
+
+	if input == nil {
+		input = &ListVpcEndpointsInput{}
+	}
+
+	output = &ListVpcEndpointsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcEndpoints API operation for Amazon Elasticsearch Service.
+//
+// Retrieves all Amazon OpenSearch Service-managed VPC endpoints in the current
+// account and Region.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation ListVpcEndpoints for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) ListVpcEndpoints(input *ListVpcEndpointsInput) (*ListVpcEndpointsOutput, error) {
+	req, out := c.ListVpcEndpointsRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcEndpointsWithContext is the same as ListVpcEndpoints with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcEndpoints for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) ListVpcEndpointsWithContext(ctx aws.Context, input *ListVpcEndpointsInput, opts ...request.Option) (*ListVpcEndpointsOutput, error) {
+	req, out := c.ListVpcEndpointsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListVpcEndpointsForDomain = "ListVpcEndpointsForDomain"
+
+// ListVpcEndpointsForDomainRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcEndpointsForDomain operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcEndpointsForDomain for more information on using the ListVpcEndpointsForDomain
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcEndpointsForDomainRequest method.
+//	req, resp := client.ListVpcEndpointsForDomainRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) ListVpcEndpointsForDomainRequest(input *ListVpcEndpointsForDomainInput) (req *request.Request, output *ListVpcEndpointsForDomainOutput) {
+	op := &request.Operation{
+		Name:       opListVpcEndpointsForDomain,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/vpcEndpoints",
+	}
+
+	if input == nil {
+		input = &ListVpcEndpointsForDomainInput{}
+	}
+
+	output = &ListVpcEndpointsForDomainOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcEndpointsForDomain API operation for Amazon Elasticsearch Service.
+//
+// Retrieves all Amazon OpenSearch Service-managed VPC endpoints associated
+// with a particular domain.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation ListVpcEndpointsForDomain for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) ListVpcEndpointsForDomain(input *ListVpcEndpointsForDomainInput) (*ListVpcEndpointsForDomainOutput, error) {
+	req, out := c.ListVpcEndpointsForDomainRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcEndpointsForDomainWithContext is the same as ListVpcEndpointsForDomain with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcEndpointsForDomain for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) ListVpcEndpointsForDomainWithContext(ctx aws.Context, input *ListVpcEndpointsForDomainInput, opts ...request.Option) (*ListVpcEndpointsForDomainOutput, error) {
+	req, out := c.ListVpcEndpointsForDomainRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPurchaseReservedElasticsearchInstanceOffering = "PurchaseReservedElasticsearchInstanceOffering"
 
 // PurchaseReservedElasticsearchInstanceOfferingRequest generates a "aws/request.Request" representing the
@@ -3818,14 +4404,13 @@ const opPurchaseReservedElasticsearchInstanceOffering = "PurchaseReservedElastic
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PurchaseReservedElasticsearchInstanceOfferingRequest method.
+//	req, resp := client.PurchaseReservedElasticsearchInstanceOfferingRequest(params)
 //
-//    // Example sending a request using the PurchaseReservedElasticsearchInstanceOfferingRequest method.
-//    req, resp := client.PurchaseReservedElasticsearchInstanceOfferingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) PurchaseReservedElasticsearchInstanceOfferingRequest(input *PurchaseReservedElasticsearchInstanceOfferingInput) (req *request.Request, output *PurchaseReservedElasticsearchInstanceOfferingOutput) {
 	op := &request.Operation{
 		Name:       opPurchaseReservedElasticsearchInstanceOffering,
@@ -3854,31 +4439,31 @@ func (c *ElasticsearchService) PurchaseReservedElasticsearchInstanceOfferingRequ
 // API operation PurchaseReservedElasticsearchInstanceOffering for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) PurchaseReservedElasticsearchInstanceOffering(input *PurchaseReservedElasticsearchInstanceOfferingInput) (*PurchaseReservedElasticsearchInstanceOfferingOutput, error) {
 	req, out := c.PurchaseReservedElasticsearchInstanceOfferingRequest(input)
 	return out, req.Send()
@@ -3916,14 +4501,13 @@ const opRejectInboundCrossClusterSearchConnection = "RejectInboundCrossClusterSe
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RejectInboundCrossClusterSearchConnectionRequest method.
+//	req, resp := client.RejectInboundCrossClusterSearchConnectionRequest(params)
 //
-//    // Example sending a request using the RejectInboundCrossClusterSearchConnectionRequest method.
-//    req, resp := client.RejectInboundCrossClusterSearchConnectionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) RejectInboundCrossClusterSearchConnectionRequest(input *RejectInboundCrossClusterSearchConnectionInput) (req *request.Request, output *RejectInboundCrossClusterSearchConnectionOutput) {
 	op := &request.Operation{
 		Name:       opRejectInboundCrossClusterSearchConnection,
@@ -3953,14 +4537,14 @@ func (c *ElasticsearchService) RejectInboundCrossClusterSearchConnectionRequest(
 // API operation RejectInboundCrossClusterSearchConnection for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 func (c *ElasticsearchService) RejectInboundCrossClusterSearchConnection(input *RejectInboundCrossClusterSearchConnectionInput) (*RejectInboundCrossClusterSearchConnectionOutput, error) {
 	req, out := c.RejectInboundCrossClusterSearchConnectionRequest(input)
 	return out, req.Send()
@@ -3998,14 +4582,13 @@ const opRemoveTags = "RemoveTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveTagsRequest method.
+//	req, resp := client.RemoveTagsRequest(params)
 //
-//    // Example sending a request using the RemoveTagsRequest method.
-//    req, resp := client.RemoveTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) RemoveTagsRequest(input *RemoveTagsInput) (req *request.Request, output *RemoveTagsOutput) {
 	op := &request.Operation{
 		Name:       opRemoveTags,
@@ -4035,18 +4618,18 @@ func (c *ElasticsearchService) RemoveTagsRequest(input *RemoveTagsInput) (req *r
 // API operation RemoveTags for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOutput, error) {
 	req, out := c.RemoveTagsRequest(input)
 	return out, req.Send()
@@ -4068,6 +4651,100 @@ func (c *ElasticsearchService) RemoveTagsWithContext(ctx aws.Context, input *Rem
 	return out, req.Send()
 }
 
+const opRevokeVpcEndpointAccess = "RevokeVpcEndpointAccess"
+
+// RevokeVpcEndpointAccessRequest generates a "aws/request.Request" representing the
+// client's request for the RevokeVpcEndpointAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RevokeVpcEndpointAccess for more information on using the RevokeVpcEndpointAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RevokeVpcEndpointAccessRequest method.
+//	req, resp := client.RevokeVpcEndpointAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) RevokeVpcEndpointAccessRequest(input *RevokeVpcEndpointAccessInput) (req *request.Request, output *RevokeVpcEndpointAccessOutput) {
+	op := &request.Operation{
+		Name:       opRevokeVpcEndpointAccess,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/revokeVpcEndpointAccess",
+	}
+
+	if input == nil {
+		input = &RevokeVpcEndpointAccessInput{}
+	}
+
+	output = &RevokeVpcEndpointAccessOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// RevokeVpcEndpointAccess API operation for Amazon Elasticsearch Service.
+//
+// Revokes access to an Amazon OpenSearch Service domain that was provided through
+// an interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation RevokeVpcEndpointAccess for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) RevokeVpcEndpointAccess(input *RevokeVpcEndpointAccessInput) (*RevokeVpcEndpointAccessOutput, error) {
+	req, out := c.RevokeVpcEndpointAccessRequest(input)
+	return out, req.Send()
+}
+
+// RevokeVpcEndpointAccessWithContext is the same as RevokeVpcEndpointAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RevokeVpcEndpointAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) RevokeVpcEndpointAccessWithContext(ctx aws.Context, input *RevokeVpcEndpointAccessInput, opts ...request.Option) (*RevokeVpcEndpointAccessOutput, error) {
+	req, out := c.RevokeVpcEndpointAccessRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opStartElasticsearchServiceSoftwareUpdate = "StartElasticsearchServiceSoftwareUpdate"
 
 // StartElasticsearchServiceSoftwareUpdateRequest generates a "aws/request.Request" representing the
@@ -4084,14 +4761,13 @@ const opStartElasticsearchServiceSoftwareUpdate = "StartElasticsearchServiceSoft
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartElasticsearchServiceSoftwareUpdateRequest method.
+//	req, resp := client.StartElasticsearchServiceSoftwareUpdateRequest(params)
 //
-//    // Example sending a request using the StartElasticsearchServiceSoftwareUpdateRequest method.
-//    req, resp := client.StartElasticsearchServiceSoftwareUpdateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) StartElasticsearchServiceSoftwareUpdateRequest(input *StartElasticsearchServiceSoftwareUpdateInput) (req *request.Request, output *StartElasticsearchServiceSoftwareUpdateOutput) {
 	op := &request.Operation{
 		Name:       opStartElasticsearchServiceSoftwareUpdate,
@@ -4120,22 +4796,22 @@ func (c *ElasticsearchService) StartElasticsearchServiceSoftwareUpdateRequest(in
 // API operation StartElasticsearchServiceSoftwareUpdate for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) StartElasticsearchServiceSoftwareUpdate(input *StartElasticsearchServiceSoftwareUpdateInput) (*StartElasticsearchServiceSoftwareUpdateOutput, error) {
 	req, out := c.StartElasticsearchServiceSoftwareUpdateRequest(input)
 	return out, req.Send()
@@ -4173,14 +4849,13 @@ const opUpdateElasticsearchDomainConfig = "UpdateElasticsearchDomainConfig"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateElasticsearchDomainConfigRequest method.
+//	req, resp := client.UpdateElasticsearchDomainConfigRequest(params)
 //
-//    // Example sending a request using the UpdateElasticsearchDomainConfigRequest method.
-//    req, resp := client.UpdateElasticsearchDomainConfigRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) UpdateElasticsearchDomainConfigRequest(input *UpdateElasticsearchDomainConfigInput) (req *request.Request, output *UpdateElasticsearchDomainConfigOutput) {
 	op := &request.Operation{
 		Name:       opUpdateElasticsearchDomainConfig,
@@ -4210,30 +4885,30 @@ func (c *ElasticsearchService) UpdateElasticsearchDomainConfigRequest(input *Upd
 // API operation UpdateElasticsearchDomainConfig for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * InvalidTypeException
-//   An exception for trying to create or access sub-resource that is either invalid
-//   or not supported. Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InvalidTypeException
+//     An exception for trying to create or access sub-resource that is either invalid
+//     or not supported. Gives http status code of 409.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) UpdateElasticsearchDomainConfig(input *UpdateElasticsearchDomainConfigInput) (*UpdateElasticsearchDomainConfigOutput, error) {
 	req, out := c.UpdateElasticsearchDomainConfigRequest(input)
 	return out, req.Send()
@@ -4271,14 +4946,13 @@ const opUpdatePackage = "UpdatePackage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePackageRequest method.
+//	req, resp := client.UpdatePackageRequest(params)
 //
-//    // Example sending a request using the UpdatePackageRequest method.
-//    req, resp := client.UpdatePackageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) UpdatePackageRequest(input *UpdatePackageInput) (req *request.Request, output *UpdatePackageOutput) {
 	op := &request.Operation{
 		Name:       opUpdatePackage,
@@ -4307,30 +4981,30 @@ func (c *ElasticsearchService) UpdatePackageRequest(input *UpdatePackageInput) (
 // API operation UpdatePackage for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * LimitExceededException
-//   An exception for trying to create more than allowed resources or sub-resources.
-//   Gives http status code of 409.
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
 //
-//   * AccessDeniedException
-//   An error occurred because user does not have permissions to access the resource.
-//   Returns HTTP status code 403.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - AccessDeniedException
+//     An error occurred because user does not have permissions to access the resource.
+//     Returns HTTP status code 403.
 //
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 func (c *ElasticsearchService) UpdatePackage(input *UpdatePackageInput) (*UpdatePackageOutput, error) {
 	req, out := c.UpdatePackageRequest(input)
 	return out, req.Send()
@@ -4352,6 +5026,102 @@ func (c *ElasticsearchService) UpdatePackageWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opUpdateVpcEndpoint = "UpdateVpcEndpoint"
+
+// UpdateVpcEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateVpcEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateVpcEndpoint for more information on using the UpdateVpcEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateVpcEndpointRequest method.
+//	req, resp := client.UpdateVpcEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) UpdateVpcEndpointRequest(input *UpdateVpcEndpointInput) (req *request.Request, output *UpdateVpcEndpointOutput) {
+	op := &request.Operation{
+		Name:       opUpdateVpcEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints/update",
+	}
+
+	if input == nil {
+		input = &UpdateVpcEndpointInput{}
+	}
+
+	output = &UpdateVpcEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateVpcEndpoint API operation for Amazon Elasticsearch Service.
+//
+// Modifies an Amazon OpenSearch Service-managed interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation UpdateVpcEndpoint for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) UpdateVpcEndpoint(input *UpdateVpcEndpointInput) (*UpdateVpcEndpointOutput, error) {
+	req, out := c.UpdateVpcEndpointRequest(input)
+	return out, req.Send()
+}
+
+// UpdateVpcEndpointWithContext is the same as UpdateVpcEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateVpcEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) UpdateVpcEndpointWithContext(ctx aws.Context, input *UpdateVpcEndpointInput, opts ...request.Option) (*UpdateVpcEndpointOutput, error) {
+	req, out := c.UpdateVpcEndpointRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpgradeElasticsearchDomain = "UpgradeElasticsearchDomain"
 
 // UpgradeElasticsearchDomainRequest generates a "aws/request.Request" representing the
@@ -4368,14 +5138,13 @@ const opUpgradeElasticsearchDomain = "UpgradeElasticsearchDomain"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpgradeElasticsearchDomainRequest method.
+//	req, resp := client.UpgradeElasticsearchDomainRequest(params)
 //
-//    // Example sending a request using the UpgradeElasticsearchDomainRequest method.
-//    req, resp := client.UpgradeElasticsearchDomainRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *ElasticsearchService) UpgradeElasticsearchDomainRequest(input *UpgradeElasticsearchDomainInput) (req *request.Request, output *UpgradeElasticsearchDomainOutput) {
 	op := &request.Operation{
 		Name:       opUpgradeElasticsearchDomain,
@@ -4405,30 +5174,30 @@ func (c *ElasticsearchService) UpgradeElasticsearchDomainRequest(input *UpgradeE
 // API operation UpgradeElasticsearchDomain for usage and error information.
 //
 // Returned Error Types:
-//   * BaseException
-//   An error occurred while processing the request.
 //
-//   * ResourceNotFoundException
-//   An exception for accessing or deleting a resource that does not exist. Gives
-//   http status code of 400.
+//   - BaseException
+//     An error occurred while processing the request.
 //
-//   * ResourceAlreadyExistsException
-//   An exception for creating a resource that already exists. Gives http status
-//   code of 400.
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
 //
-//   * DisabledOperationException
-//   An error occured because the client wanted to access a not supported operation.
-//   Gives http status code of 409.
+//   - ResourceAlreadyExistsException
+//     An exception for creating a resource that already exists. Gives http status
+//     code of 400.
 //
-//   * ValidationException
-//   An exception for missing / invalid input fields. Gives http status code of
-//   400.
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
 //
-//   * InternalException
-//   The request processing has failed because of an unknown error, exception
-//   or failure (the failure is internal to the service) . Gives http status code
-//   of 500.
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
 //
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
 func (c *ElasticsearchService) UpgradeElasticsearchDomain(input *UpgradeElasticsearchDomainInput) (*UpgradeElasticsearchDomainOutput, error) {
 	req, out := c.UpgradeElasticsearchDomainRequest(input)
 	return out, req.Send()
@@ -4792,12 +5561,12 @@ func (s *AdditionalLimit) SetLimitValues(v []*string) *AdditionalLimit {
 // Status of the advanced options for the specified Elasticsearch domain. Currently,
 // the following advanced options are available:
 //
-//    * Option to allow references to indices in an HTTP request body. Must
-//    be false when configuring access to individual sub-resources. By default,
-//    the value is true. See Configuration Advanced Options for more information.
+//   - Option to allow references to indices in an HTTP request body. Must
+//     be false when configuring access to individual sub-resources. By default,
+//     the value is true. See Configuration Advanced Options for more information.
 //
-//    * Option to specify the percentage of heap space that is allocated to
-//    field data. By default, this setting is unbounded.
+//   - Option to specify the percentage of heap space that is allocated to
+//     field data. By default, this setting is unbounded.
 //
 // For more information, see Configuring Advanced Options (http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-advanced-options).
 type AdvancedOptionsStatus struct {
@@ -5151,6 +5920,151 @@ func (s AssociatePackageOutput) GoString() string {
 // SetDomainPackageDetails sets the DomainPackageDetails field's value.
 func (s *AssociatePackageOutput) SetDomainPackageDetails(v *DomainPackageDetails) *AssociatePackageOutput {
 	s.DomainPackageDetails = v
+	return s
+}
+
+// Container for request parameters to the AuthorizeVpcEndpointAccess operation.
+// Specifies the account to be permitted to manage VPC endpoints against the
+// domain.
+type AuthorizeVpcEndpointAccessInput struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID to grant access to.
+	//
+	// Account is a required field
+	Account *string `type:"string" required:"true"`
+
+	// The name of the OpenSearch Service domain to provide access to.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AuthorizeVpcEndpointAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AuthorizeVpcEndpointAccessInput"}
+	if s.Account == nil {
+		invalidParams.Add(request.NewErrParamRequired("Account"))
+	}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccount sets the Account field's value.
+func (s *AuthorizeVpcEndpointAccessInput) SetAccount(v string) *AuthorizeVpcEndpointAccessInput {
+	s.Account = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *AuthorizeVpcEndpointAccessInput) SetDomainName(v string) *AuthorizeVpcEndpointAccessInput {
+	s.DomainName = &v
+	return s
+}
+
+// Container for response parameters to the AuthorizeVpcEndpointAccess operation.
+// Contains the account ID and the type of the account being authorized to access
+// the VPC endpoint.
+type AuthorizeVpcEndpointAccessOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the account or service that was provided access to the
+	// domain.
+	//
+	// AuthorizedPrincipal is a required field
+	AuthorizedPrincipal *AuthorizedPrincipal `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedPrincipal sets the AuthorizedPrincipal field's value.
+func (s *AuthorizeVpcEndpointAccessOutput) SetAuthorizedPrincipal(v *AuthorizedPrincipal) *AuthorizeVpcEndpointAccessOutput {
+	s.AuthorizedPrincipal = v
+	return s
+}
+
+// Information about an account or service that has access to an Amazon OpenSearch
+// Service domain through the use of an interface VPC endpoint.
+type AuthorizedPrincipal struct {
+	_ struct{} `type:"structure"`
+
+	// The IAM principal that is allowed access to the domain.
+	Principal *string `type:"string"`
+
+	// The type of principal.
+	PrincipalType *string `type:"string" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedPrincipal) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedPrincipal) GoString() string {
+	return s.String()
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *AuthorizedPrincipal) SetPrincipal(v string) *AuthorizedPrincipal {
+	s.Principal = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *AuthorizedPrincipal) SetPrincipalType(v string) *AuthorizedPrincipal {
+	s.PrincipalType = &v
 	return s
 }
 
@@ -6782,6 +7696,117 @@ func (s *CreatePackageOutput) SetPackageDetails(v *PackageDetails) *CreatePackag
 	return s
 }
 
+// Container for the parameters to the CreateVpcEndpointRequest operation.
+type CreateVpcEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier to ensure idempotency of the request.
+	ClientToken *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the domain to grant access to.
+	//
+	// DomainArn is a required field
+	DomainArn *string `min:"1" type:"string" required:"true"`
+
+	// Options to specify the subnets and security groups for the endpoint.
+	//
+	// VpcOptions is a required field
+	VpcOptions *VPCOptions `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpcEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpcEndpointInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.DomainArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainArn"))
+	}
+	if s.DomainArn != nil && len(*s.DomainArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainArn", 1))
+	}
+	if s.VpcOptions == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcOptions"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateVpcEndpointInput) SetClientToken(v string) *CreateVpcEndpointInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDomainArn sets the DomainArn field's value.
+func (s *CreateVpcEndpointInput) SetDomainArn(v string) *CreateVpcEndpointInput {
+	s.DomainArn = &v
+	return s
+}
+
+// SetVpcOptions sets the VpcOptions field's value.
+func (s *CreateVpcEndpointInput) SetVpcOptions(v *VPCOptions) *CreateVpcEndpointInput {
+	s.VpcOptions = v
+	return s
+}
+
+// Container for response parameters to the CreateVpcEndpoint operation. Contains
+// the configuration and status of the VPC Endpoint being created.
+type CreateVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the newly created VPC endpoint.
+	//
+	// VpcEndpoint is a required field
+	VpcEndpoint *VpcEndpoint `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpoint sets the VpcEndpoint field's value.
+func (s *CreateVpcEndpointOutput) SetVpcEndpoint(v *VpcEndpoint) *CreateVpcEndpointOutput {
+	s.VpcEndpoint = v
+	return s
+}
+
 // Container for the parameters to the DeleteElasticsearchDomain operation.
 // Specifies the name of the Elasticsearch domain that you want to delete.
 type DeleteElasticsearchDomainInput struct {
@@ -7159,6 +8184,92 @@ func (s DeletePackageOutput) GoString() string {
 // SetPackageDetails sets the PackageDetails field's value.
 func (s *DeletePackageOutput) SetPackageDetails(v *PackageDetails) *DeletePackageOutput {
 	s.PackageDetails = v
+	return s
+}
+
+// Deletes an Amazon OpenSearch Service-managed interface VPC endpoint.
+type DeleteVpcEndpointInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique identifier of the endpoint to be deleted.
+	//
+	// VpcEndpointId is a required field
+	VpcEndpointId *string `location:"uri" locationName:"VpcEndpointId" min:"5" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpcEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpcEndpointInput"}
+	if s.VpcEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcEndpointId"))
+	}
+	if s.VpcEndpointId != nil && len(*s.VpcEndpointId) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcEndpointId", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *DeleteVpcEndpointInput) SetVpcEndpointId(v string) *DeleteVpcEndpointInput {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// Container for response parameters to the DeleteVpcEndpoint operation. Contains
+// the summarized detail of the VPC Endpoint being deleted.
+type DeleteVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the deleted endpoint, including its current status (DELETING
+	// or DELETE_FAILED).
+	//
+	// VpcEndpointSummary is a required field
+	VpcEndpointSummary *VpcEndpointSummary `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpointSummary sets the VpcEndpointSummary field's value.
+func (s *DeleteVpcEndpointOutput) SetVpcEndpointSummary(v *VpcEndpointSummary) *DeleteVpcEndpointOutput {
+	s.VpcEndpointSummary = v
 	return s
 }
 
@@ -8010,8 +9121,8 @@ type DescribePackagesFilter struct {
 	// Any field from PackageDetails.
 	Name *string `type:"string" enum:"DescribePackagesFilterName"`
 
-	// A list of values for the specified field.
-	Value []*string `type:"list"`
+	// A non-empty list of values for the specified field.
+	Value []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -8030,6 +9141,19 @@ func (s DescribePackagesFilter) String() string {
 // value will be replaced with "sensitive".
 func (s DescribePackagesFilter) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribePackagesFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribePackagesFilter"}
+	if s.Value != nil && len(s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetName sets the Name field's value.
@@ -8075,6 +9199,26 @@ func (s DescribePackagesInput) String() string {
 // value will be replaced with "sensitive".
 func (s DescribePackagesInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribePackagesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribePackagesInput"}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetFilters sets the Filters field's value.
@@ -8321,6 +9465,102 @@ func (s *DescribeReservedElasticsearchInstancesOutput) SetNextToken(v string) *D
 // SetReservedElasticsearchInstances sets the ReservedElasticsearchInstances field's value.
 func (s *DescribeReservedElasticsearchInstancesOutput) SetReservedElasticsearchInstances(v []*ReservedElasticsearchInstance) *DescribeReservedElasticsearchInstancesOutput {
 	s.ReservedElasticsearchInstances = v
+	return s
+}
+
+// Container for request parameters to the DescribeVpcEndpoints operation. Specifies
+// the list of VPC endpoints to be described.
+type DescribeVpcEndpointsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifiers of the endpoints to get information about.
+	//
+	// VpcEndpointIds is a required field
+	VpcEndpointIds []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVpcEndpointsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVpcEndpointsInput"}
+	if s.VpcEndpointIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcEndpointIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVpcEndpointIds sets the VpcEndpointIds field's value.
+func (s *DescribeVpcEndpointsInput) SetVpcEndpointIds(v []*string) *DescribeVpcEndpointsInput {
+	s.VpcEndpointIds = v
+	return s
+}
+
+// Container for response parameters to the DescribeVpcEndpoints operation.
+// Returns a list containing configuration details and status of the VPC Endpoints
+// as well as a list containing error responses of the endpoints that could
+// not be described
+type DescribeVpcEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Any errors associated with the request.
+	//
+	// VpcEndpointErrors is a required field
+	VpcEndpointErrors []*VpcEndpointError `type:"list" required:"true"`
+
+	// Information about each requested VPC endpoint.
+	//
+	// VpcEndpoints is a required field
+	VpcEndpoints []*VpcEndpoint `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpointErrors sets the VpcEndpointErrors field's value.
+func (s *DescribeVpcEndpointsOutput) SetVpcEndpointErrors(v []*VpcEndpointError) *DescribeVpcEndpointsOutput {
+	s.VpcEndpointErrors = v
+	return s
+}
+
+// SetVpcEndpoints sets the VpcEndpoints field's value.
+func (s *DescribeVpcEndpointsOutput) SetVpcEndpoints(v []*VpcEndpoint) *DescribeVpcEndpointsOutput {
+	s.VpcEndpoints = v
 	return s
 }
 
@@ -8951,8 +10191,11 @@ type EBSOptions struct {
 	// Specifies whether EBS-based storage is enabled.
 	EBSEnabled *bool `type:"boolean"`
 
-	// Specifies the IOPD for a Provisioned IOPS EBS volume (SSD).
+	// Specifies the IOPS for Provisioned IOPS And GP3 EBS volume (SSD).
 	Iops *int64 `type:"integer"`
+
+	// Specifies the Throughput for GP3 EBS volume (SSD).
+	Throughput *int64 `type:"integer"`
 
 	// Integer to specify the size of an EBS volume.
 	VolumeSize *int64 `type:"integer"`
@@ -8988,6 +10231,12 @@ func (s *EBSOptions) SetEBSEnabled(v bool) *EBSOptions {
 // SetIops sets the Iops field's value.
 func (s *EBSOptions) SetIops(v int64) *EBSOptions {
 	s.Iops = &v
+	return s
+}
+
+// SetThroughput sets the Throughput field's value.
+func (s *EBSOptions) SetThroughput(v int64) *EBSOptions {
+	s.Throughput = &v
 	return s
 }
 
@@ -11449,13 +12698,306 @@ func (s *ListTagsOutput) SetTagList(v []*Tag) *ListTagsOutput {
 	return s
 }
 
+// Retrieves information about each principal that is allowed to access a given
+// Amazon OpenSearch Service domain through the use of an interface VPC endpoint
+type ListVpcEndpointAccessInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the OpenSearch Service domain to retrieve access information
+	// for.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListVpcEndpointAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListVpcEndpointAccessInput"}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *ListVpcEndpointAccessInput) SetDomainName(v string) *ListVpcEndpointAccessInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointAccessInput) SetNextToken(v string) *ListVpcEndpointAccessInput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for response parameters to the ListVpcEndpointAccess operation.
+// Returns a list of accounts id and account type authorized to manage VPC endpoints.
+type ListVpcEndpointAccessOutput struct {
+	_ struct{} `type:"structure"`
+
+	// List of AuthorizedPrincipal describing the details of the permissions to
+	// manage VPC endpoints against the specified domain.
+	//
+	// AuthorizedPrincipalList is a required field
+	AuthorizedPrincipalList []*AuthorizedPrincipal `type:"list" required:"true"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	//
+	// NextToken is a required field
+	NextToken *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedPrincipalList sets the AuthorizedPrincipalList field's value.
+func (s *ListVpcEndpointAccessOutput) SetAuthorizedPrincipalList(v []*AuthorizedPrincipal) *ListVpcEndpointAccessOutput {
+	s.AuthorizedPrincipalList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointAccessOutput) SetNextToken(v string) *ListVpcEndpointAccessOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for request parameters to the ListVpcEndpointsForDomain operation.
+// Specifies the domain whose VPC endpoints will be listed.
+type ListVpcEndpointsForDomainInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Name of the ElasticSearch domain whose VPC endpoints are to be listed.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListVpcEndpointsForDomainInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListVpcEndpointsForDomainInput"}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *ListVpcEndpointsForDomainInput) SetDomainName(v string) *ListVpcEndpointsForDomainInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsForDomainInput) SetNextToken(v string) *ListVpcEndpointsForDomainInput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for response parameters to the ListVpcEndpointsForDomain operation.
+// Returns a list containing summarized details of the VPC endpoints.
+type ListVpcEndpointsForDomainOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about each endpoint associated with the domain.
+	//
+	// NextToken is a required field
+	NextToken *string `type:"string" required:"true"`
+
+	// Provides list of VpcEndpointSummary summarizing details of the VPC endpoints.
+	//
+	// VpcEndpointSummaryList is a required field
+	VpcEndpointSummaryList []*VpcEndpointSummary `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsForDomainOutput) SetNextToken(v string) *ListVpcEndpointsForDomainOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVpcEndpointSummaryList sets the VpcEndpointSummaryList field's value.
+func (s *ListVpcEndpointsForDomainOutput) SetVpcEndpointSummaryList(v []*VpcEndpointSummary) *ListVpcEndpointsForDomainOutput {
+	s.VpcEndpointSummaryList = v
+	return s
+}
+
+// Container for request parameters to the ListVpcEndpoints operation.
+type ListVpcEndpointsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Identifier to allow retrieval of paginated results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsInput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsInput) SetNextToken(v string) *ListVpcEndpointsInput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for response parameters to the ListVpcEndpoints operation. Returns
+// a list containing summarized details of the VPC endpoints.
+type ListVpcEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	//
+	// NextToken is a required field
+	NextToken *string `type:"string" required:"true"`
+
+	// Information about each endpoint.
+	//
+	// VpcEndpointSummaryList is a required field
+	VpcEndpointSummaryList []*VpcEndpointSummary `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsOutput) SetNextToken(v string) *ListVpcEndpointsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVpcEndpointSummaryList sets the VpcEndpointSummaryList field's value.
+func (s *ListVpcEndpointsOutput) SetVpcEndpointSummaryList(v []*VpcEndpointSummary) *ListVpcEndpointsOutput {
+	s.VpcEndpointSummaryList = v
+	return s
+}
+
 // Log Publishing option that is set for given domain. Attributes and their
 // details:
-//    * CloudWatchLogsLogGroupArn: ARN of the Cloudwatch log group to which
-//    log needs to be published.
 //
-//    * Enabled: Whether the log publishing for given log type is enabled or
-//    not
+//   - CloudWatchLogsLogGroupArn: ARN of the Cloudwatch log group to which
+//     log needs to be published.
+//
+//   - Enabled: Whether the log publishing for given log type is enabled or
+//     not
 type LogPublishingOption struct {
 	_ struct{} `type:"structure"`
 
@@ -12805,6 +14347,95 @@ func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Revokes access to an Amazon OpenSearch Service domain that was provided through
+// an interface VPC endpoint.
+type RevokeVpcEndpointAccessInput struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID to revoke access from.
+	//
+	// Account is a required field
+	Account *string `type:"string" required:"true"`
+
+	// The name of the OpenSearch Service domain.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RevokeVpcEndpointAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RevokeVpcEndpointAccessInput"}
+	if s.Account == nil {
+		invalidParams.Add(request.NewErrParamRequired("Account"))
+	}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccount sets the Account field's value.
+func (s *RevokeVpcEndpointAccessInput) SetAccount(v string) *RevokeVpcEndpointAccessInput {
+	s.Account = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *RevokeVpcEndpointAccessInput) SetDomainName(v string) *RevokeVpcEndpointAccessInput {
+	s.DomainName = &v
+	return s
+}
+
+// Container for response parameters to the RevokeVpcEndpointAccess operation.
+// The response body for this operation is empty.
+type RevokeVpcEndpointAccessOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessOutput) GoString() string {
+	return s.String()
+}
+
 // Specifies the SAML Identity Provider's information.
 type SAMLIdp struct {
 	_ struct{} `type:"structure"`
@@ -13386,8 +15017,8 @@ type StorageType struct {
 
 	// SubType of the given storage type. List of available sub-storage options:
 	// For "instance" storageType we wont have any storageSubType, in case of "ebs"
-	// storageType we will have following valid storageSubTypes standard gp2 io1
-	// Refer VolumeType for more information regarding above EBS storage options.
+	// storageType we will have following valid storageSubTypes standard gp2 gp3
+	// io1 Refer VolumeType for more information regarding above EBS storage options.
 	StorageSubTypeName *string `type:"string"`
 
 	// List of limits that are applicable for given storage type.
@@ -13447,7 +15078,10 @@ type StorageTypeLimit struct {
 	// applicable. MaximumIops Maximum amount of Iops that is applicable for given
 	// storage type.It can be empty if it is not applicable. MinimumIops Minimum
 	// amount of Iops that is applicable for given storage type.It can be empty
-	// if it is not applicable.
+	// if it is not applicable. MaximumThroughput Maximum amount of Throughput that
+	// is applicable for given storage type.It can be empty if it is not applicable.
+	// MinimumThroughput Minimum amount of Throughput that is applicable for given
+	// storage type.It can be empty if it is not applicable.
 	LimitName *string `type:"string"`
 
 	// Values for the StorageTypeLimit$LimitName .
@@ -13928,6 +15562,104 @@ func (s UpdatePackageOutput) GoString() string {
 // SetPackageDetails sets the PackageDetails field's value.
 func (s *UpdatePackageOutput) SetPackageDetails(v *PackageDetails) *UpdatePackageOutput {
 	s.PackageDetails = v
+	return s
+}
+
+// Modifies an Amazon OpenSearch Service-managed interface VPC endpoint.
+type UpdateVpcEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier of the VPC endpoint to be updated.
+	//
+	// VpcEndpointId is a required field
+	VpcEndpointId *string `min:"5" type:"string" required:"true"`
+
+	// The security groups and/or subnets to add, remove, or modify.
+	//
+	// VpcOptions is a required field
+	VpcOptions *VPCOptions `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateVpcEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateVpcEndpointInput"}
+	if s.VpcEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcEndpointId"))
+	}
+	if s.VpcEndpointId != nil && len(*s.VpcEndpointId) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcEndpointId", 5))
+	}
+	if s.VpcOptions == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcOptions"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *UpdateVpcEndpointInput) SetVpcEndpointId(v string) *UpdateVpcEndpointInput {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// SetVpcOptions sets the VpcOptions field's value.
+func (s *UpdateVpcEndpointInput) SetVpcOptions(v *VPCOptions) *UpdateVpcEndpointInput {
+	s.VpcOptions = v
+	return s
+}
+
+// Contains the configuration and status of the VPC endpoint being updated.
+type UpdateVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The endpoint to be updated.
+	//
+	// VpcEndpoint is a required field
+	VpcEndpoint *VpcEndpoint `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpoint sets the VpcEndpoint field's value.
+func (s *UpdateVpcEndpointOutput) SetVpcEndpoint(v *VpcEndpoint) *UpdateVpcEndpointOutput {
+	s.VpcEndpoint = v
 	return s
 }
 
@@ -14431,6 +16163,195 @@ func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The connection endpoint for connecting to an Amazon OpenSearch Service domain
+// through a proxy.
+type VpcEndpoint struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the domain associated with the endpoint.
+	DomainArn *string `min:"1" type:"string"`
+
+	// The connection endpoint ID for connecting to the domain.
+	Endpoint *string `type:"string"`
+
+	// The current status of the endpoint.
+	Status *string `type:"string" enum:"VpcEndpointStatus"`
+
+	// The unique identifier of the endpoint.
+	VpcEndpointId *string `min:"5" type:"string"`
+
+	// The creator of the endpoint.
+	VpcEndpointOwner *string `type:"string"`
+
+	// Options to specify the subnets and security groups for an Amazon OpenSearch
+	// Service VPC endpoint.
+	VpcOptions *VPCDerivedInfo `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpoint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpoint) GoString() string {
+	return s.String()
+}
+
+// SetDomainArn sets the DomainArn field's value.
+func (s *VpcEndpoint) SetDomainArn(v string) *VpcEndpoint {
+	s.DomainArn = &v
+	return s
+}
+
+// SetEndpoint sets the Endpoint field's value.
+func (s *VpcEndpoint) SetEndpoint(v string) *VpcEndpoint {
+	s.Endpoint = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VpcEndpoint) SetStatus(v string) *VpcEndpoint {
+	s.Status = &v
+	return s
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *VpcEndpoint) SetVpcEndpointId(v string) *VpcEndpoint {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// SetVpcEndpointOwner sets the VpcEndpointOwner field's value.
+func (s *VpcEndpoint) SetVpcEndpointOwner(v string) *VpcEndpoint {
+	s.VpcEndpointOwner = &v
+	return s
+}
+
+// SetVpcOptions sets the VpcOptions field's value.
+func (s *VpcEndpoint) SetVpcOptions(v *VPCDerivedInfo) *VpcEndpoint {
+	s.VpcOptions = v
+	return s
+}
+
+// Error information when attempting to describe an Amazon OpenSearch Service-managed
+// VPC endpoint.
+type VpcEndpointError struct {
+	_ struct{} `type:"structure"`
+
+	// The code associated with the error.
+	ErrorCode *string `type:"string" enum:"VpcEndpointErrorCode"`
+
+	// A message describing the error.
+	ErrorMessage *string `type:"string"`
+
+	// The unique identifier of the endpoint.
+	VpcEndpointId *string `min:"5" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *VpcEndpointError) SetErrorCode(v string) *VpcEndpointError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *VpcEndpointError) SetErrorMessage(v string) *VpcEndpointError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *VpcEndpointError) SetVpcEndpointId(v string) *VpcEndpointError {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// Summary information for an Amazon OpenSearch Service-managed VPC endpoint.
+type VpcEndpointSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the domain associated with the endpoint.
+	DomainArn *string `min:"1" type:"string"`
+
+	// The current status of the endpoint.
+	Status *string `type:"string" enum:"VpcEndpointStatus"`
+
+	// The unique identifier of the endpoint.
+	VpcEndpointId *string `min:"5" type:"string"`
+
+	// The creator of the endpoint.
+	VpcEndpointOwner *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointSummary) GoString() string {
+	return s.String()
+}
+
+// SetDomainArn sets the DomainArn field's value.
+func (s *VpcEndpointSummary) SetDomainArn(v string) *VpcEndpointSummary {
+	s.DomainArn = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VpcEndpointSummary) SetStatus(v string) *VpcEndpointSummary {
+	s.Status = &v
+	return s
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *VpcEndpointSummary) SetVpcEndpointId(v string) *VpcEndpointSummary {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// SetVpcEndpointOwner sets the VpcEndpointOwner field's value.
+func (s *VpcEndpointSummary) SetVpcEndpointOwner(v string) *VpcEndpointSummary {
+	s.VpcEndpointOwner = &v
+	return s
+}
+
 // Specifies the zone awareness configuration for the domain cluster, such as
 // the number of availability zones.
 type ZoneAwarenessConfig struct {
@@ -14923,18 +16844,19 @@ func InboundCrossClusterSearchConnectionStatusCode_Values() []string {
 }
 
 // Type of Log File, it can be one of the following:
-//    * INDEX_SLOW_LOGS: Index slow logs contain insert requests that took more
-//    time than configured index query log threshold to execute.
 //
-//    * SEARCH_SLOW_LOGS: Search slow logs contain search queries that took
-//    more time than configured search query log threshold to execute.
+//   - INDEX_SLOW_LOGS: Index slow logs contain insert requests that took more
+//     time than configured index query log threshold to execute.
 //
-//    * ES_APPLICATION_LOGS: Elasticsearch application logs contain information
-//    about errors and warnings raised during the operation of the service and
-//    can be useful for troubleshooting.
+//   - SEARCH_SLOW_LOGS: Search slow logs contain search queries that took
+//     more time than configured search query log threshold to execute.
 //
-//    * AUDIT_LOGS: Audit logs contain records of user requests for access from
-//    the domain.
+//   - ES_APPLICATION_LOGS: Elasticsearch application logs contain information
+//     about errors and warnings raised during the operation of the service and
+//     can be useful for troubleshooting.
+//
+//   - AUDIT_LOGS: Audit logs contain records of user requests for access from
+//     the domain.
 const (
 	// LogTypeIndexSlowLogs is a LogType enum value
 	LogTypeIndexSlowLogs = "INDEX_SLOW_LOGS"
@@ -14961,10 +16883,10 @@ func LogType_Values() []string {
 
 // The state of a requested change. One of the following:
 //
-//    * Processing: The request change is still in-process.
+//   - Processing: The request change is still in-process.
 //
-//    * Active: The request change is processed and deployed to the Elasticsearch
-//    domain.
+//   - Active: The request change is processed and deployed to the Elasticsearch
+//     domain.
 const (
 	// OptionStateRequiresIndexDocuments is a OptionState enum value
 	OptionStateRequiresIndexDocuments = "RequiresIndexDocuments"
@@ -15099,6 +17021,27 @@ const (
 func PackageType_Values() []string {
 	return []string{
 		PackageTypeTxtDictionary,
+	}
+}
+
+// Specifies the type of AWS account permitted to manage VPC endpoints.:
+//
+//   - AWS_ACCOUNT: Indicates that the account is owned by an AWS user.
+//
+//   - AWS_SERVICE: Indicates the the account is owned by an AWS service.
+const (
+	// PrincipalTypeAwsAccount is a PrincipalType enum value
+	PrincipalTypeAwsAccount = "AWS_ACCOUNT"
+
+	// PrincipalTypeAwsService is a PrincipalType enum value
+	PrincipalTypeAwsService = "AWS_SERVICE"
+)
+
+// PrincipalType_Values returns all elements of the PrincipalType enum
+func PrincipalType_Values() []string {
+	return []string{
+		PrincipalTypeAwsAccount,
+		PrincipalTypeAwsService,
 	}
 }
 
@@ -15254,7 +17197,7 @@ func UpgradeStep_Values() []string {
 	}
 }
 
-// The type of EBS volume, standard, gp2, or io1. See Configuring EBS-based
+// The type of EBS volume, standard, gp2, gp3 or io1. See Configuring EBS-based
 // Storage (http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-ebs)for
 // more information.
 const (
@@ -15266,6 +17209,9 @@ const (
 
 	// VolumeTypeIo1 is a VolumeType enum value
 	VolumeTypeIo1 = "io1"
+
+	// VolumeTypeGp3 is a VolumeType enum value
+	VolumeTypeGp3 = "gp3"
 )
 
 // VolumeType_Values returns all elements of the VolumeType enum
@@ -15274,5 +17220,81 @@ func VolumeType_Values() []string {
 		VolumeTypeStandard,
 		VolumeTypeGp2,
 		VolumeTypeIo1,
+		VolumeTypeGp3,
+	}
+}
+
+// Specifies the error code of the failure encountered while describing the
+// VPC endpoint:
+//
+//   - ENDPOINT_NOT_FOUND: Indicates that the requested VPC endpoint does not
+//     exist.
+//
+//   - SERVER_ERROR: Indicates the describe endpoint operation failed due to
+//     an internal server error.
+const (
+	// VpcEndpointErrorCodeEndpointNotFound is a VpcEndpointErrorCode enum value
+	VpcEndpointErrorCodeEndpointNotFound = "ENDPOINT_NOT_FOUND"
+
+	// VpcEndpointErrorCodeServerError is a VpcEndpointErrorCode enum value
+	VpcEndpointErrorCodeServerError = "SERVER_ERROR"
+)
+
+// VpcEndpointErrorCode_Values returns all elements of the VpcEndpointErrorCode enum
+func VpcEndpointErrorCode_Values() []string {
+	return []string{
+		VpcEndpointErrorCodeEndpointNotFound,
+		VpcEndpointErrorCodeServerError,
+	}
+}
+
+// Specifies the current status of the VPC endpoint:
+//
+//   - CREATING: Indicates that the VPC endpoint is currently being created.
+//
+//   - CREATE_FAILED: Indicates that the VPC endpoint creation failed.
+//
+//   - ACTIVE: Indicates that the VPC endpoint is currently active.
+//
+//   - UPDATING: Indicates that the VPC endpoint is currently being updated.
+//
+//   - UPDATE_FAILED: Indicates that the VPC endpoint update failed.
+//
+//   - DELETING: Indicates that the VPC endpoint is currently being deleted.
+//
+//   - DELETE_FAILED: Indicates that the VPC endpoint deletion failed.
+const (
+	// VpcEndpointStatusCreating is a VpcEndpointStatus enum value
+	VpcEndpointStatusCreating = "CREATING"
+
+	// VpcEndpointStatusCreateFailed is a VpcEndpointStatus enum value
+	VpcEndpointStatusCreateFailed = "CREATE_FAILED"
+
+	// VpcEndpointStatusActive is a VpcEndpointStatus enum value
+	VpcEndpointStatusActive = "ACTIVE"
+
+	// VpcEndpointStatusUpdating is a VpcEndpointStatus enum value
+	VpcEndpointStatusUpdating = "UPDATING"
+
+	// VpcEndpointStatusUpdateFailed is a VpcEndpointStatus enum value
+	VpcEndpointStatusUpdateFailed = "UPDATE_FAILED"
+
+	// VpcEndpointStatusDeleting is a VpcEndpointStatus enum value
+	VpcEndpointStatusDeleting = "DELETING"
+
+	// VpcEndpointStatusDeleteFailed is a VpcEndpointStatus enum value
+	VpcEndpointStatusDeleteFailed = "DELETE_FAILED"
+)
+
+// VpcEndpointStatus_Values returns all elements of the VpcEndpointStatus enum
+func VpcEndpointStatus_Values() []string {
+	return []string{
+		VpcEndpointStatusCreating,
+		VpcEndpointStatusCreateFailed,
+		VpcEndpointStatusActive,
+		VpcEndpointStatusUpdating,
+		VpcEndpointStatusUpdateFailed,
+		VpcEndpointStatusDeleting,
+		VpcEndpointStatusDeleteFailed,
 	}
 }

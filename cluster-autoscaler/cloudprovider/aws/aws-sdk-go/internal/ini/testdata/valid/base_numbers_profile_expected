@@ -1,9 +1,10 @@
 {
 	"default": {
-		"binary": 9,
-		"octal": 71,
-		"ten": 12,
-		"hex": 44977,
-		"hex2": 44977
+		"binary": "0b1001",
+		"octal": "0o107",
+		"ten": "12",
+		"hex": "0xAFB1",
+		"hex2": "0xafb1",
+		"color": "970b00"
 	}
 }

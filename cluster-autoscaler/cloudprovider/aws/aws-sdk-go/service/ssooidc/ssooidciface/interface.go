@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS SSO OIDC.
-//    func myFunc(svc ssooidciface.SSOOIDCAPI) bool {
-//        // Make svc.CreateToken request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS SSO OIDC.
+//	func myFunc(svc ssooidciface.SSOOIDCAPI) bool {
+//	    // Make svc.CreateToken request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ssooidc.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ssooidc.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSSOOIDCClient struct {
-//        ssooidciface.SSOOIDCAPI
-//    }
-//    func (m *mockSSOOIDCClient) CreateToken(input *ssooidc.CreateTokenInput) (*ssooidc.CreateTokenOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSSOOIDCClient struct {
+//	    ssooidciface.SSOOIDCAPI
+//	}
+//	func (m *mockSSOOIDCClient) CreateToken(input *ssooidc.CreateTokenInput) (*ssooidc.CreateTokenOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSSOOIDCClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSSOOIDCClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -63,6 +63,10 @@ type SSOOIDCAPI interface {
 	CreateToken(*ssooidc.CreateTokenInput) (*ssooidc.CreateTokenOutput, error)
 	CreateTokenWithContext(aws.Context, *ssooidc.CreateTokenInput, ...request.Option) (*ssooidc.CreateTokenOutput, error)
 	CreateTokenRequest(*ssooidc.CreateTokenInput) (*request.Request, *ssooidc.CreateTokenOutput)
+
+	CreateTokenWithIAM(*ssooidc.CreateTokenWithIAMInput) (*ssooidc.CreateTokenWithIAMOutput, error)
+	CreateTokenWithIAMWithContext(aws.Context, *ssooidc.CreateTokenWithIAMInput, ...request.Option) (*ssooidc.CreateTokenWithIAMOutput, error)
+	CreateTokenWithIAMRequest(*ssooidc.CreateTokenWithIAMInput) (*request.Request, *ssooidc.CreateTokenWithIAMOutput)
 
 	RegisterClient(*ssooidc.RegisterClientInput) (*ssooidc.RegisterClientOutput, error)
 	RegisterClientWithContext(aws.Context, *ssooidc.RegisterClientInput, ...request.Option) (*ssooidc.RegisterClientOutput, error)

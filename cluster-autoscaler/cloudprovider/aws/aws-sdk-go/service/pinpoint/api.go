@@ -29,14 +29,13 @@ const opCreateApp = "CreateApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppRequest method.
+//	req, resp := client.CreateAppRequest(params)
 //
-//    // Example sending a request using the CreateAppRequest method.
-//    req, resp := client.CreateAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateApp
 func (c *Pinpoint) CreateAppRequest(input *CreateAppInput) (req *request.Request, output *CreateAppOutput) {
@@ -67,26 +66,27 @@ func (c *Pinpoint) CreateAppRequest(input *CreateAppInput) (req *request.Request
 // API operation CreateApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateApp
 func (c *Pinpoint) CreateApp(input *CreateAppInput) (*CreateAppOutput, error) {
@@ -126,14 +126,13 @@ const opCreateCampaign = "CreateCampaign"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCampaignRequest method.
+//	req, resp := client.CreateCampaignRequest(params)
 //
-//    // Example sending a request using the CreateCampaignRequest method.
-//    req, resp := client.CreateCampaignRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateCampaign
 func (c *Pinpoint) CreateCampaignRequest(input *CreateCampaignInput) (req *request.Request, output *CreateCampaignOutput) {
@@ -165,26 +164,27 @@ func (c *Pinpoint) CreateCampaignRequest(input *CreateCampaignInput) (req *reque
 // API operation CreateCampaign for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateCampaign
 func (c *Pinpoint) CreateCampaign(input *CreateCampaignInput) (*CreateCampaignOutput, error) {
@@ -224,14 +224,13 @@ const opCreateEmailTemplate = "CreateEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEmailTemplateRequest method.
+//	req, resp := client.CreateEmailTemplateRequest(params)
 //
-//    // Example sending a request using the CreateEmailTemplateRequest method.
-//    req, resp := client.CreateEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateEmailTemplate
 func (c *Pinpoint) CreateEmailTemplateRequest(input *CreateEmailTemplateInput) (req *request.Request, output *CreateEmailTemplateOutput) {
@@ -262,20 +261,21 @@ func (c *Pinpoint) CreateEmailTemplateRequest(input *CreateEmailTemplateInput) (
 // API operation CreateEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * BadRequestException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateEmailTemplate
 func (c *Pinpoint) CreateEmailTemplate(input *CreateEmailTemplateInput) (*CreateEmailTemplateOutput, error) {
@@ -315,14 +315,13 @@ const opCreateExportJob = "CreateExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateExportJobRequest method.
+//	req, resp := client.CreateExportJobRequest(params)
 //
-//    // Example sending a request using the CreateExportJobRequest method.
-//    req, resp := client.CreateExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateExportJob
 func (c *Pinpoint) CreateExportJobRequest(input *CreateExportJobInput) (req *request.Request, output *CreateExportJobOutput) {
@@ -353,26 +352,27 @@ func (c *Pinpoint) CreateExportJobRequest(input *CreateExportJobInput) (req *req
 // API operation CreateExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateExportJob
 func (c *Pinpoint) CreateExportJob(input *CreateExportJobInput) (*CreateExportJobOutput, error) {
@@ -412,14 +412,13 @@ const opCreateImportJob = "CreateImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateImportJobRequest method.
+//	req, resp := client.CreateImportJobRequest(params)
 //
-//    // Example sending a request using the CreateImportJobRequest method.
-//    req, resp := client.CreateImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateImportJob
 func (c *Pinpoint) CreateImportJobRequest(input *CreateImportJobInput) (req *request.Request, output *CreateImportJobOutput) {
@@ -450,26 +449,27 @@ func (c *Pinpoint) CreateImportJobRequest(input *CreateImportJobInput) (req *req
 // API operation CreateImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateImportJob
 func (c *Pinpoint) CreateImportJob(input *CreateImportJobInput) (*CreateImportJobOutput, error) {
@@ -509,14 +509,13 @@ const opCreateInAppTemplate = "CreateInAppTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInAppTemplateRequest method.
+//	req, resp := client.CreateInAppTemplateRequest(params)
 //
-//    // Example sending a request using the CreateInAppTemplateRequest method.
-//    req, resp := client.CreateInAppTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateInAppTemplate
 func (c *Pinpoint) CreateInAppTemplateRequest(input *CreateInAppTemplateInput) (req *request.Request, output *CreateInAppTemplateOutput) {
@@ -547,20 +546,21 @@ func (c *Pinpoint) CreateInAppTemplateRequest(input *CreateInAppTemplateInput) (
 // API operation CreateInAppTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * BadRequestException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateInAppTemplate
 func (c *Pinpoint) CreateInAppTemplate(input *CreateInAppTemplateInput) (*CreateInAppTemplateOutput, error) {
@@ -600,14 +600,13 @@ const opCreateJourney = "CreateJourney"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateJourneyRequest method.
+//	req, resp := client.CreateJourneyRequest(params)
 //
-//    // Example sending a request using the CreateJourneyRequest method.
-//    req, resp := client.CreateJourneyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateJourney
 func (c *Pinpoint) CreateJourneyRequest(input *CreateJourneyInput) (req *request.Request, output *CreateJourneyOutput) {
@@ -638,26 +637,27 @@ func (c *Pinpoint) CreateJourneyRequest(input *CreateJourneyInput) (req *request
 // API operation CreateJourney for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateJourney
 func (c *Pinpoint) CreateJourney(input *CreateJourneyInput) (*CreateJourneyOutput, error) {
@@ -697,14 +697,13 @@ const opCreatePushTemplate = "CreatePushTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePushTemplateRequest method.
+//	req, resp := client.CreatePushTemplateRequest(params)
 //
-//    // Example sending a request using the CreatePushTemplateRequest method.
-//    req, resp := client.CreatePushTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreatePushTemplate
 func (c *Pinpoint) CreatePushTemplateRequest(input *CreatePushTemplateInput) (req *request.Request, output *CreatePushTemplateOutput) {
@@ -736,20 +735,21 @@ func (c *Pinpoint) CreatePushTemplateRequest(input *CreatePushTemplateInput) (re
 // API operation CreatePushTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * BadRequestException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreatePushTemplate
 func (c *Pinpoint) CreatePushTemplate(input *CreatePushTemplateInput) (*CreatePushTemplateOutput, error) {
@@ -789,14 +789,13 @@ const opCreateRecommenderConfiguration = "CreateRecommenderConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRecommenderConfigurationRequest method.
+//	req, resp := client.CreateRecommenderConfigurationRequest(params)
 //
-//    // Example sending a request using the CreateRecommenderConfigurationRequest method.
-//    req, resp := client.CreateRecommenderConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateRecommenderConfiguration
 func (c *Pinpoint) CreateRecommenderConfigurationRequest(input *CreateRecommenderConfigurationInput) (req *request.Request, output *CreateRecommenderConfigurationOutput) {
@@ -827,26 +826,27 @@ func (c *Pinpoint) CreateRecommenderConfigurationRequest(input *CreateRecommende
 // API operation CreateRecommenderConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateRecommenderConfiguration
 func (c *Pinpoint) CreateRecommenderConfiguration(input *CreateRecommenderConfigurationInput) (*CreateRecommenderConfigurationOutput, error) {
@@ -886,14 +886,13 @@ const opCreateSegment = "CreateSegment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSegmentRequest method.
+//	req, resp := client.CreateSegmentRequest(params)
 //
-//    // Example sending a request using the CreateSegmentRequest method.
-//    req, resp := client.CreateSegmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateSegment
 func (c *Pinpoint) CreateSegmentRequest(input *CreateSegmentInput) (req *request.Request, output *CreateSegmentOutput) {
@@ -925,26 +924,27 @@ func (c *Pinpoint) CreateSegmentRequest(input *CreateSegmentInput) (req *request
 // API operation CreateSegment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateSegment
 func (c *Pinpoint) CreateSegment(input *CreateSegmentInput) (*CreateSegmentOutput, error) {
@@ -984,14 +984,13 @@ const opCreateSmsTemplate = "CreateSmsTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSmsTemplateRequest method.
+//	req, resp := client.CreateSmsTemplateRequest(params)
 //
-//    // Example sending a request using the CreateSmsTemplateRequest method.
-//    req, resp := client.CreateSmsTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateSmsTemplate
 func (c *Pinpoint) CreateSmsTemplateRequest(input *CreateSmsTemplateInput) (req *request.Request, output *CreateSmsTemplateOutput) {
@@ -1022,20 +1021,21 @@ func (c *Pinpoint) CreateSmsTemplateRequest(input *CreateSmsTemplateInput) (req 
 // API operation CreateSmsTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * BadRequestException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateSmsTemplate
 func (c *Pinpoint) CreateSmsTemplate(input *CreateSmsTemplateInput) (*CreateSmsTemplateOutput, error) {
@@ -1075,14 +1075,13 @@ const opCreateVoiceTemplate = "CreateVoiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVoiceTemplateRequest method.
+//	req, resp := client.CreateVoiceTemplateRequest(params)
 //
-//    // Example sending a request using the CreateVoiceTemplateRequest method.
-//    req, resp := client.CreateVoiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateVoiceTemplate
 func (c *Pinpoint) CreateVoiceTemplateRequest(input *CreateVoiceTemplateInput) (req *request.Request, output *CreateVoiceTemplateOutput) {
@@ -1113,20 +1112,21 @@ func (c *Pinpoint) CreateVoiceTemplateRequest(input *CreateVoiceTemplateInput) (
 // API operation CreateVoiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * BadRequestException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/CreateVoiceTemplate
 func (c *Pinpoint) CreateVoiceTemplate(input *CreateVoiceTemplateInput) (*CreateVoiceTemplateOutput, error) {
@@ -1166,14 +1166,13 @@ const opDeleteAdmChannel = "DeleteAdmChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAdmChannelRequest method.
+//	req, resp := client.DeleteAdmChannelRequest(params)
 //
-//    // Example sending a request using the DeleteAdmChannelRequest method.
-//    req, resp := client.DeleteAdmChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteAdmChannel
 func (c *Pinpoint) DeleteAdmChannelRequest(input *DeleteAdmChannelInput) (req *request.Request, output *DeleteAdmChannelOutput) {
@@ -1205,26 +1204,27 @@ func (c *Pinpoint) DeleteAdmChannelRequest(input *DeleteAdmChannelInput) (req *r
 // API operation DeleteAdmChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteAdmChannel
 func (c *Pinpoint) DeleteAdmChannel(input *DeleteAdmChannelInput) (*DeleteAdmChannelOutput, error) {
@@ -1264,14 +1264,13 @@ const opDeleteApnsChannel = "DeleteApnsChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApnsChannelRequest method.
+//	req, resp := client.DeleteApnsChannelRequest(params)
 //
-//    // Example sending a request using the DeleteApnsChannelRequest method.
-//    req, resp := client.DeleteApnsChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsChannel
 func (c *Pinpoint) DeleteApnsChannelRequest(input *DeleteApnsChannelInput) (req *request.Request, output *DeleteApnsChannelOutput) {
@@ -1303,26 +1302,27 @@ func (c *Pinpoint) DeleteApnsChannelRequest(input *DeleteApnsChannelInput) (req 
 // API operation DeleteApnsChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsChannel
 func (c *Pinpoint) DeleteApnsChannel(input *DeleteApnsChannelInput) (*DeleteApnsChannelOutput, error) {
@@ -1362,14 +1362,13 @@ const opDeleteApnsSandboxChannel = "DeleteApnsSandboxChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApnsSandboxChannelRequest method.
+//	req, resp := client.DeleteApnsSandboxChannelRequest(params)
 //
-//    // Example sending a request using the DeleteApnsSandboxChannelRequest method.
-//    req, resp := client.DeleteApnsSandboxChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsSandboxChannel
 func (c *Pinpoint) DeleteApnsSandboxChannelRequest(input *DeleteApnsSandboxChannelInput) (req *request.Request, output *DeleteApnsSandboxChannelOutput) {
@@ -1401,26 +1400,27 @@ func (c *Pinpoint) DeleteApnsSandboxChannelRequest(input *DeleteApnsSandboxChann
 // API operation DeleteApnsSandboxChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsSandboxChannel
 func (c *Pinpoint) DeleteApnsSandboxChannel(input *DeleteApnsSandboxChannelInput) (*DeleteApnsSandboxChannelOutput, error) {
@@ -1460,14 +1460,13 @@ const opDeleteApnsVoipChannel = "DeleteApnsVoipChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApnsVoipChannelRequest method.
+//	req, resp := client.DeleteApnsVoipChannelRequest(params)
 //
-//    // Example sending a request using the DeleteApnsVoipChannelRequest method.
-//    req, resp := client.DeleteApnsVoipChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsVoipChannel
 func (c *Pinpoint) DeleteApnsVoipChannelRequest(input *DeleteApnsVoipChannelInput) (req *request.Request, output *DeleteApnsVoipChannelOutput) {
@@ -1499,26 +1498,27 @@ func (c *Pinpoint) DeleteApnsVoipChannelRequest(input *DeleteApnsVoipChannelInpu
 // API operation DeleteApnsVoipChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsVoipChannel
 func (c *Pinpoint) DeleteApnsVoipChannel(input *DeleteApnsVoipChannelInput) (*DeleteApnsVoipChannelOutput, error) {
@@ -1558,14 +1558,13 @@ const opDeleteApnsVoipSandboxChannel = "DeleteApnsVoipSandboxChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApnsVoipSandboxChannelRequest method.
+//	req, resp := client.DeleteApnsVoipSandboxChannelRequest(params)
 //
-//    // Example sending a request using the DeleteApnsVoipSandboxChannelRequest method.
-//    req, resp := client.DeleteApnsVoipSandboxChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsVoipSandboxChannel
 func (c *Pinpoint) DeleteApnsVoipSandboxChannelRequest(input *DeleteApnsVoipSandboxChannelInput) (req *request.Request, output *DeleteApnsVoipSandboxChannelOutput) {
@@ -1597,26 +1596,27 @@ func (c *Pinpoint) DeleteApnsVoipSandboxChannelRequest(input *DeleteApnsVoipSand
 // API operation DeleteApnsVoipSandboxChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApnsVoipSandboxChannel
 func (c *Pinpoint) DeleteApnsVoipSandboxChannel(input *DeleteApnsVoipSandboxChannelInput) (*DeleteApnsVoipSandboxChannelOutput, error) {
@@ -1656,14 +1656,13 @@ const opDeleteApp = "DeleteApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppRequest method.
+//	req, resp := client.DeleteAppRequest(params)
 //
-//    // Example sending a request using the DeleteAppRequest method.
-//    req, resp := client.DeleteAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApp
 func (c *Pinpoint) DeleteAppRequest(input *DeleteAppInput) (req *request.Request, output *DeleteAppOutput) {
@@ -1694,26 +1693,27 @@ func (c *Pinpoint) DeleteAppRequest(input *DeleteAppInput) (req *request.Request
 // API operation DeleteApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteApp
 func (c *Pinpoint) DeleteApp(input *DeleteAppInput) (*DeleteAppOutput, error) {
@@ -1753,14 +1753,13 @@ const opDeleteBaiduChannel = "DeleteBaiduChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBaiduChannelRequest method.
+//	req, resp := client.DeleteBaiduChannelRequest(params)
 //
-//    // Example sending a request using the DeleteBaiduChannelRequest method.
-//    req, resp := client.DeleteBaiduChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteBaiduChannel
 func (c *Pinpoint) DeleteBaiduChannelRequest(input *DeleteBaiduChannelInput) (req *request.Request, output *DeleteBaiduChannelOutput) {
@@ -1792,26 +1791,27 @@ func (c *Pinpoint) DeleteBaiduChannelRequest(input *DeleteBaiduChannelInput) (re
 // API operation DeleteBaiduChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteBaiduChannel
 func (c *Pinpoint) DeleteBaiduChannel(input *DeleteBaiduChannelInput) (*DeleteBaiduChannelOutput, error) {
@@ -1851,14 +1851,13 @@ const opDeleteCampaign = "DeleteCampaign"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCampaignRequest method.
+//	req, resp := client.DeleteCampaignRequest(params)
 //
-//    // Example sending a request using the DeleteCampaignRequest method.
-//    req, resp := client.DeleteCampaignRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteCampaign
 func (c *Pinpoint) DeleteCampaignRequest(input *DeleteCampaignInput) (req *request.Request, output *DeleteCampaignOutput) {
@@ -1889,26 +1888,27 @@ func (c *Pinpoint) DeleteCampaignRequest(input *DeleteCampaignInput) (req *reque
 // API operation DeleteCampaign for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteCampaign
 func (c *Pinpoint) DeleteCampaign(input *DeleteCampaignInput) (*DeleteCampaignOutput, error) {
@@ -1948,14 +1948,13 @@ const opDeleteEmailChannel = "DeleteEmailChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEmailChannelRequest method.
+//	req, resp := client.DeleteEmailChannelRequest(params)
 //
-//    // Example sending a request using the DeleteEmailChannelRequest method.
-//    req, resp := client.DeleteEmailChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEmailChannel
 func (c *Pinpoint) DeleteEmailChannelRequest(input *DeleteEmailChannelInput) (req *request.Request, output *DeleteEmailChannelOutput) {
@@ -1987,26 +1986,27 @@ func (c *Pinpoint) DeleteEmailChannelRequest(input *DeleteEmailChannelInput) (re
 // API operation DeleteEmailChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEmailChannel
 func (c *Pinpoint) DeleteEmailChannel(input *DeleteEmailChannelInput) (*DeleteEmailChannelOutput, error) {
@@ -2046,14 +2046,13 @@ const opDeleteEmailTemplate = "DeleteEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEmailTemplateRequest method.
+//	req, resp := client.DeleteEmailTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteEmailTemplateRequest method.
-//    req, resp := client.DeleteEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEmailTemplate
 func (c *Pinpoint) DeleteEmailTemplateRequest(input *DeleteEmailTemplateInput) (req *request.Request, output *DeleteEmailTemplateOutput) {
@@ -2085,26 +2084,27 @@ func (c *Pinpoint) DeleteEmailTemplateRequest(input *DeleteEmailTemplateInput) (
 // API operation DeleteEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEmailTemplate
 func (c *Pinpoint) DeleteEmailTemplate(input *DeleteEmailTemplateInput) (*DeleteEmailTemplateOutput, error) {
@@ -2144,14 +2144,13 @@ const opDeleteEndpoint = "DeleteEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEndpointRequest method.
+//	req, resp := client.DeleteEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteEndpointRequest method.
-//    req, resp := client.DeleteEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEndpoint
 func (c *Pinpoint) DeleteEndpointRequest(input *DeleteEndpointInput) (req *request.Request, output *DeleteEndpointOutput) {
@@ -2182,26 +2181,27 @@ func (c *Pinpoint) DeleteEndpointRequest(input *DeleteEndpointInput) (req *reque
 // API operation DeleteEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEndpoint
 func (c *Pinpoint) DeleteEndpoint(input *DeleteEndpointInput) (*DeleteEndpointOutput, error) {
@@ -2241,14 +2241,13 @@ const opDeleteEventStream = "DeleteEventStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEventStreamRequest method.
+//	req, resp := client.DeleteEventStreamRequest(params)
 //
-//    // Example sending a request using the DeleteEventStreamRequest method.
-//    req, resp := client.DeleteEventStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEventStream
 func (c *Pinpoint) DeleteEventStreamRequest(input *DeleteEventStreamInput) (req *request.Request, output *DeleteEventStreamOutput) {
@@ -2279,26 +2278,27 @@ func (c *Pinpoint) DeleteEventStreamRequest(input *DeleteEventStreamInput) (req 
 // API operation DeleteEventStream for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteEventStream
 func (c *Pinpoint) DeleteEventStream(input *DeleteEventStreamInput) (*DeleteEventStreamOutput, error) {
@@ -2338,14 +2338,13 @@ const opDeleteGcmChannel = "DeleteGcmChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteGcmChannelRequest method.
+//	req, resp := client.DeleteGcmChannelRequest(params)
 //
-//    // Example sending a request using the DeleteGcmChannelRequest method.
-//    req, resp := client.DeleteGcmChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteGcmChannel
 func (c *Pinpoint) DeleteGcmChannelRequest(input *DeleteGcmChannelInput) (req *request.Request, output *DeleteGcmChannelOutput) {
@@ -2377,26 +2376,27 @@ func (c *Pinpoint) DeleteGcmChannelRequest(input *DeleteGcmChannelInput) (req *r
 // API operation DeleteGcmChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteGcmChannel
 func (c *Pinpoint) DeleteGcmChannel(input *DeleteGcmChannelInput) (*DeleteGcmChannelOutput, error) {
@@ -2436,14 +2436,13 @@ const opDeleteInAppTemplate = "DeleteInAppTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInAppTemplateRequest method.
+//	req, resp := client.DeleteInAppTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteInAppTemplateRequest method.
-//    req, resp := client.DeleteInAppTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteInAppTemplate
 func (c *Pinpoint) DeleteInAppTemplateRequest(input *DeleteInAppTemplateInput) (req *request.Request, output *DeleteInAppTemplateOutput) {
@@ -2474,26 +2473,27 @@ func (c *Pinpoint) DeleteInAppTemplateRequest(input *DeleteInAppTemplateInput) (
 // API operation DeleteInAppTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteInAppTemplate
 func (c *Pinpoint) DeleteInAppTemplate(input *DeleteInAppTemplateInput) (*DeleteInAppTemplateOutput, error) {
@@ -2533,14 +2533,13 @@ const opDeleteJourney = "DeleteJourney"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteJourneyRequest method.
+//	req, resp := client.DeleteJourneyRequest(params)
 //
-//    // Example sending a request using the DeleteJourneyRequest method.
-//    req, resp := client.DeleteJourneyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteJourney
 func (c *Pinpoint) DeleteJourneyRequest(input *DeleteJourneyInput) (req *request.Request, output *DeleteJourneyOutput) {
@@ -2571,26 +2570,27 @@ func (c *Pinpoint) DeleteJourneyRequest(input *DeleteJourneyInput) (req *request
 // API operation DeleteJourney for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteJourney
 func (c *Pinpoint) DeleteJourney(input *DeleteJourneyInput) (*DeleteJourneyOutput, error) {
@@ -2630,14 +2630,13 @@ const opDeletePushTemplate = "DeletePushTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePushTemplateRequest method.
+//	req, resp := client.DeletePushTemplateRequest(params)
 //
-//    // Example sending a request using the DeletePushTemplateRequest method.
-//    req, resp := client.DeletePushTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeletePushTemplate
 func (c *Pinpoint) DeletePushTemplateRequest(input *DeletePushTemplateInput) (req *request.Request, output *DeletePushTemplateOutput) {
@@ -2669,26 +2668,27 @@ func (c *Pinpoint) DeletePushTemplateRequest(input *DeletePushTemplateInput) (re
 // API operation DeletePushTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeletePushTemplate
 func (c *Pinpoint) DeletePushTemplate(input *DeletePushTemplateInput) (*DeletePushTemplateOutput, error) {
@@ -2728,14 +2728,13 @@ const opDeleteRecommenderConfiguration = "DeleteRecommenderConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRecommenderConfigurationRequest method.
+//	req, resp := client.DeleteRecommenderConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteRecommenderConfigurationRequest method.
-//    req, resp := client.DeleteRecommenderConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteRecommenderConfiguration
 func (c *Pinpoint) DeleteRecommenderConfigurationRequest(input *DeleteRecommenderConfigurationInput) (req *request.Request, output *DeleteRecommenderConfigurationOutput) {
@@ -2766,26 +2765,27 @@ func (c *Pinpoint) DeleteRecommenderConfigurationRequest(input *DeleteRecommende
 // API operation DeleteRecommenderConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteRecommenderConfiguration
 func (c *Pinpoint) DeleteRecommenderConfiguration(input *DeleteRecommenderConfigurationInput) (*DeleteRecommenderConfigurationOutput, error) {
@@ -2825,14 +2825,13 @@ const opDeleteSegment = "DeleteSegment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSegmentRequest method.
+//	req, resp := client.DeleteSegmentRequest(params)
 //
-//    // Example sending a request using the DeleteSegmentRequest method.
-//    req, resp := client.DeleteSegmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteSegment
 func (c *Pinpoint) DeleteSegmentRequest(input *DeleteSegmentInput) (req *request.Request, output *DeleteSegmentOutput) {
@@ -2863,26 +2862,27 @@ func (c *Pinpoint) DeleteSegmentRequest(input *DeleteSegmentInput) (req *request
 // API operation DeleteSegment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteSegment
 func (c *Pinpoint) DeleteSegment(input *DeleteSegmentInput) (*DeleteSegmentOutput, error) {
@@ -2922,14 +2922,13 @@ const opDeleteSmsChannel = "DeleteSmsChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSmsChannelRequest method.
+//	req, resp := client.DeleteSmsChannelRequest(params)
 //
-//    // Example sending a request using the DeleteSmsChannelRequest method.
-//    req, resp := client.DeleteSmsChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteSmsChannel
 func (c *Pinpoint) DeleteSmsChannelRequest(input *DeleteSmsChannelInput) (req *request.Request, output *DeleteSmsChannelOutput) {
@@ -2961,26 +2960,27 @@ func (c *Pinpoint) DeleteSmsChannelRequest(input *DeleteSmsChannelInput) (req *r
 // API operation DeleteSmsChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteSmsChannel
 func (c *Pinpoint) DeleteSmsChannel(input *DeleteSmsChannelInput) (*DeleteSmsChannelOutput, error) {
@@ -3020,14 +3020,13 @@ const opDeleteSmsTemplate = "DeleteSmsTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteSmsTemplateRequest method.
+//	req, resp := client.DeleteSmsTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteSmsTemplateRequest method.
-//    req, resp := client.DeleteSmsTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteSmsTemplate
 func (c *Pinpoint) DeleteSmsTemplateRequest(input *DeleteSmsTemplateInput) (req *request.Request, output *DeleteSmsTemplateOutput) {
@@ -3058,26 +3057,27 @@ func (c *Pinpoint) DeleteSmsTemplateRequest(input *DeleteSmsTemplateInput) (req 
 // API operation DeleteSmsTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteSmsTemplate
 func (c *Pinpoint) DeleteSmsTemplate(input *DeleteSmsTemplateInput) (*DeleteSmsTemplateOutput, error) {
@@ -3117,14 +3117,13 @@ const opDeleteUserEndpoints = "DeleteUserEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserEndpointsRequest method.
+//	req, resp := client.DeleteUserEndpointsRequest(params)
 //
-//    // Example sending a request using the DeleteUserEndpointsRequest method.
-//    req, resp := client.DeleteUserEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteUserEndpoints
 func (c *Pinpoint) DeleteUserEndpointsRequest(input *DeleteUserEndpointsInput) (req *request.Request, output *DeleteUserEndpointsOutput) {
@@ -3155,26 +3154,27 @@ func (c *Pinpoint) DeleteUserEndpointsRequest(input *DeleteUserEndpointsInput) (
 // API operation DeleteUserEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteUserEndpoints
 func (c *Pinpoint) DeleteUserEndpoints(input *DeleteUserEndpointsInput) (*DeleteUserEndpointsOutput, error) {
@@ -3214,14 +3214,13 @@ const opDeleteVoiceChannel = "DeleteVoiceChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVoiceChannelRequest method.
+//	req, resp := client.DeleteVoiceChannelRequest(params)
 //
-//    // Example sending a request using the DeleteVoiceChannelRequest method.
-//    req, resp := client.DeleteVoiceChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteVoiceChannel
 func (c *Pinpoint) DeleteVoiceChannelRequest(input *DeleteVoiceChannelInput) (req *request.Request, output *DeleteVoiceChannelOutput) {
@@ -3253,26 +3252,27 @@ func (c *Pinpoint) DeleteVoiceChannelRequest(input *DeleteVoiceChannelInput) (re
 // API operation DeleteVoiceChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteVoiceChannel
 func (c *Pinpoint) DeleteVoiceChannel(input *DeleteVoiceChannelInput) (*DeleteVoiceChannelOutput, error) {
@@ -3312,14 +3312,13 @@ const opDeleteVoiceTemplate = "DeleteVoiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVoiceTemplateRequest method.
+//	req, resp := client.DeleteVoiceTemplateRequest(params)
 //
-//    // Example sending a request using the DeleteVoiceTemplateRequest method.
-//    req, resp := client.DeleteVoiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteVoiceTemplate
 func (c *Pinpoint) DeleteVoiceTemplateRequest(input *DeleteVoiceTemplateInput) (req *request.Request, output *DeleteVoiceTemplateOutput) {
@@ -3351,26 +3350,27 @@ func (c *Pinpoint) DeleteVoiceTemplateRequest(input *DeleteVoiceTemplateInput) (
 // API operation DeleteVoiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/DeleteVoiceTemplate
 func (c *Pinpoint) DeleteVoiceTemplate(input *DeleteVoiceTemplateInput) (*DeleteVoiceTemplateOutput, error) {
@@ -3410,14 +3410,13 @@ const opGetAdmChannel = "GetAdmChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAdmChannelRequest method.
+//	req, resp := client.GetAdmChannelRequest(params)
 //
-//    // Example sending a request using the GetAdmChannelRequest method.
-//    req, resp := client.GetAdmChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetAdmChannel
 func (c *Pinpoint) GetAdmChannelRequest(input *GetAdmChannelInput) (req *request.Request, output *GetAdmChannelOutput) {
@@ -3449,26 +3448,27 @@ func (c *Pinpoint) GetAdmChannelRequest(input *GetAdmChannelInput) (req *request
 // API operation GetAdmChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetAdmChannel
 func (c *Pinpoint) GetAdmChannel(input *GetAdmChannelInput) (*GetAdmChannelOutput, error) {
@@ -3508,14 +3508,13 @@ const opGetApnsChannel = "GetApnsChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApnsChannelRequest method.
+//	req, resp := client.GetApnsChannelRequest(params)
 //
-//    // Example sending a request using the GetApnsChannelRequest method.
-//    req, resp := client.GetApnsChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsChannel
 func (c *Pinpoint) GetApnsChannelRequest(input *GetApnsChannelInput) (req *request.Request, output *GetApnsChannelOutput) {
@@ -3547,26 +3546,27 @@ func (c *Pinpoint) GetApnsChannelRequest(input *GetApnsChannelInput) (req *reque
 // API operation GetApnsChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsChannel
 func (c *Pinpoint) GetApnsChannel(input *GetApnsChannelInput) (*GetApnsChannelOutput, error) {
@@ -3606,14 +3606,13 @@ const opGetApnsSandboxChannel = "GetApnsSandboxChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApnsSandboxChannelRequest method.
+//	req, resp := client.GetApnsSandboxChannelRequest(params)
 //
-//    // Example sending a request using the GetApnsSandboxChannelRequest method.
-//    req, resp := client.GetApnsSandboxChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsSandboxChannel
 func (c *Pinpoint) GetApnsSandboxChannelRequest(input *GetApnsSandboxChannelInput) (req *request.Request, output *GetApnsSandboxChannelOutput) {
@@ -3645,26 +3644,27 @@ func (c *Pinpoint) GetApnsSandboxChannelRequest(input *GetApnsSandboxChannelInpu
 // API operation GetApnsSandboxChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsSandboxChannel
 func (c *Pinpoint) GetApnsSandboxChannel(input *GetApnsSandboxChannelInput) (*GetApnsSandboxChannelOutput, error) {
@@ -3704,14 +3704,13 @@ const opGetApnsVoipChannel = "GetApnsVoipChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApnsVoipChannelRequest method.
+//	req, resp := client.GetApnsVoipChannelRequest(params)
 //
-//    // Example sending a request using the GetApnsVoipChannelRequest method.
-//    req, resp := client.GetApnsVoipChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsVoipChannel
 func (c *Pinpoint) GetApnsVoipChannelRequest(input *GetApnsVoipChannelInput) (req *request.Request, output *GetApnsVoipChannelOutput) {
@@ -3743,26 +3742,27 @@ func (c *Pinpoint) GetApnsVoipChannelRequest(input *GetApnsVoipChannelInput) (re
 // API operation GetApnsVoipChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsVoipChannel
 func (c *Pinpoint) GetApnsVoipChannel(input *GetApnsVoipChannelInput) (*GetApnsVoipChannelOutput, error) {
@@ -3802,14 +3802,13 @@ const opGetApnsVoipSandboxChannel = "GetApnsVoipSandboxChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApnsVoipSandboxChannelRequest method.
+//	req, resp := client.GetApnsVoipSandboxChannelRequest(params)
 //
-//    // Example sending a request using the GetApnsVoipSandboxChannelRequest method.
-//    req, resp := client.GetApnsVoipSandboxChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsVoipSandboxChannel
 func (c *Pinpoint) GetApnsVoipSandboxChannelRequest(input *GetApnsVoipSandboxChannelInput) (req *request.Request, output *GetApnsVoipSandboxChannelOutput) {
@@ -3841,26 +3840,27 @@ func (c *Pinpoint) GetApnsVoipSandboxChannelRequest(input *GetApnsVoipSandboxCha
 // API operation GetApnsVoipSandboxChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApnsVoipSandboxChannel
 func (c *Pinpoint) GetApnsVoipSandboxChannel(input *GetApnsVoipSandboxChannelInput) (*GetApnsVoipSandboxChannelOutput, error) {
@@ -3900,14 +3900,13 @@ const opGetApp = "GetApp"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppRequest method.
+//	req, resp := client.GetAppRequest(params)
 //
-//    // Example sending a request using the GetAppRequest method.
-//    req, resp := client.GetAppRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApp
 func (c *Pinpoint) GetAppRequest(input *GetAppInput) (req *request.Request, output *GetAppOutput) {
@@ -3938,26 +3937,27 @@ func (c *Pinpoint) GetAppRequest(input *GetAppInput) (req *request.Request, outp
 // API operation GetApp for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApp
 func (c *Pinpoint) GetApp(input *GetAppInput) (*GetAppOutput, error) {
@@ -3997,14 +3997,13 @@ const opGetApplicationDateRangeKpi = "GetApplicationDateRangeKpi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApplicationDateRangeKpiRequest method.
+//	req, resp := client.GetApplicationDateRangeKpiRequest(params)
 //
-//    // Example sending a request using the GetApplicationDateRangeKpiRequest method.
-//    req, resp := client.GetApplicationDateRangeKpiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApplicationDateRangeKpi
 func (c *Pinpoint) GetApplicationDateRangeKpiRequest(input *GetApplicationDateRangeKpiInput) (req *request.Request, output *GetApplicationDateRangeKpiOutput) {
@@ -4036,26 +4035,27 @@ func (c *Pinpoint) GetApplicationDateRangeKpiRequest(input *GetApplicationDateRa
 // API operation GetApplicationDateRangeKpi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApplicationDateRangeKpi
 func (c *Pinpoint) GetApplicationDateRangeKpi(input *GetApplicationDateRangeKpiInput) (*GetApplicationDateRangeKpiOutput, error) {
@@ -4095,14 +4095,13 @@ const opGetApplicationSettings = "GetApplicationSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApplicationSettingsRequest method.
+//	req, resp := client.GetApplicationSettingsRequest(params)
 //
-//    // Example sending a request using the GetApplicationSettingsRequest method.
-//    req, resp := client.GetApplicationSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApplicationSettings
 func (c *Pinpoint) GetApplicationSettingsRequest(input *GetApplicationSettingsInput) (req *request.Request, output *GetApplicationSettingsOutput) {
@@ -4133,26 +4132,27 @@ func (c *Pinpoint) GetApplicationSettingsRequest(input *GetApplicationSettingsIn
 // API operation GetApplicationSettings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApplicationSettings
 func (c *Pinpoint) GetApplicationSettings(input *GetApplicationSettingsInput) (*GetApplicationSettingsOutput, error) {
@@ -4192,14 +4192,13 @@ const opGetApps = "GetApps"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppsRequest method.
+//	req, resp := client.GetAppsRequest(params)
 //
-//    // Example sending a request using the GetAppsRequest method.
-//    req, resp := client.GetAppsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApps
 func (c *Pinpoint) GetAppsRequest(input *GetAppsInput) (req *request.Request, output *GetAppsOutput) {
@@ -4231,26 +4230,27 @@ func (c *Pinpoint) GetAppsRequest(input *GetAppsInput) (req *request.Request, ou
 // API operation GetApps for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetApps
 func (c *Pinpoint) GetApps(input *GetAppsInput) (*GetAppsOutput, error) {
@@ -4290,14 +4290,13 @@ const opGetBaiduChannel = "GetBaiduChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBaiduChannelRequest method.
+//	req, resp := client.GetBaiduChannelRequest(params)
 //
-//    // Example sending a request using the GetBaiduChannelRequest method.
-//    req, resp := client.GetBaiduChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetBaiduChannel
 func (c *Pinpoint) GetBaiduChannelRequest(input *GetBaiduChannelInput) (req *request.Request, output *GetBaiduChannelOutput) {
@@ -4329,26 +4328,27 @@ func (c *Pinpoint) GetBaiduChannelRequest(input *GetBaiduChannelInput) (req *req
 // API operation GetBaiduChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetBaiduChannel
 func (c *Pinpoint) GetBaiduChannel(input *GetBaiduChannelInput) (*GetBaiduChannelOutput, error) {
@@ -4388,14 +4388,13 @@ const opGetCampaign = "GetCampaign"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCampaignRequest method.
+//	req, resp := client.GetCampaignRequest(params)
 //
-//    // Example sending a request using the GetCampaignRequest method.
-//    req, resp := client.GetCampaignRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaign
 func (c *Pinpoint) GetCampaignRequest(input *GetCampaignInput) (req *request.Request, output *GetCampaignOutput) {
@@ -4427,26 +4426,27 @@ func (c *Pinpoint) GetCampaignRequest(input *GetCampaignInput) (req *request.Req
 // API operation GetCampaign for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaign
 func (c *Pinpoint) GetCampaign(input *GetCampaignInput) (*GetCampaignOutput, error) {
@@ -4486,14 +4486,13 @@ const opGetCampaignActivities = "GetCampaignActivities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCampaignActivitiesRequest method.
+//	req, resp := client.GetCampaignActivitiesRequest(params)
 //
-//    // Example sending a request using the GetCampaignActivitiesRequest method.
-//    req, resp := client.GetCampaignActivitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignActivities
 func (c *Pinpoint) GetCampaignActivitiesRequest(input *GetCampaignActivitiesInput) (req *request.Request, output *GetCampaignActivitiesOutput) {
@@ -4524,26 +4523,27 @@ func (c *Pinpoint) GetCampaignActivitiesRequest(input *GetCampaignActivitiesInpu
 // API operation GetCampaignActivities for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignActivities
 func (c *Pinpoint) GetCampaignActivities(input *GetCampaignActivitiesInput) (*GetCampaignActivitiesOutput, error) {
@@ -4583,14 +4583,13 @@ const opGetCampaignDateRangeKpi = "GetCampaignDateRangeKpi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCampaignDateRangeKpiRequest method.
+//	req, resp := client.GetCampaignDateRangeKpiRequest(params)
 //
-//    // Example sending a request using the GetCampaignDateRangeKpiRequest method.
-//    req, resp := client.GetCampaignDateRangeKpiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignDateRangeKpi
 func (c *Pinpoint) GetCampaignDateRangeKpiRequest(input *GetCampaignDateRangeKpiInput) (req *request.Request, output *GetCampaignDateRangeKpiOutput) {
@@ -4622,26 +4621,27 @@ func (c *Pinpoint) GetCampaignDateRangeKpiRequest(input *GetCampaignDateRangeKpi
 // API operation GetCampaignDateRangeKpi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignDateRangeKpi
 func (c *Pinpoint) GetCampaignDateRangeKpi(input *GetCampaignDateRangeKpiInput) (*GetCampaignDateRangeKpiOutput, error) {
@@ -4681,14 +4681,13 @@ const opGetCampaignVersion = "GetCampaignVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCampaignVersionRequest method.
+//	req, resp := client.GetCampaignVersionRequest(params)
 //
-//    // Example sending a request using the GetCampaignVersionRequest method.
-//    req, resp := client.GetCampaignVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignVersion
 func (c *Pinpoint) GetCampaignVersionRequest(input *GetCampaignVersionInput) (req *request.Request, output *GetCampaignVersionOutput) {
@@ -4720,26 +4719,27 @@ func (c *Pinpoint) GetCampaignVersionRequest(input *GetCampaignVersionInput) (re
 // API operation GetCampaignVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignVersion
 func (c *Pinpoint) GetCampaignVersion(input *GetCampaignVersionInput) (*GetCampaignVersionOutput, error) {
@@ -4779,14 +4779,13 @@ const opGetCampaignVersions = "GetCampaignVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCampaignVersionsRequest method.
+//	req, resp := client.GetCampaignVersionsRequest(params)
 //
-//    // Example sending a request using the GetCampaignVersionsRequest method.
-//    req, resp := client.GetCampaignVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignVersions
 func (c *Pinpoint) GetCampaignVersionsRequest(input *GetCampaignVersionsInput) (req *request.Request, output *GetCampaignVersionsOutput) {
@@ -4818,26 +4817,27 @@ func (c *Pinpoint) GetCampaignVersionsRequest(input *GetCampaignVersionsInput) (
 // API operation GetCampaignVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaignVersions
 func (c *Pinpoint) GetCampaignVersions(input *GetCampaignVersionsInput) (*GetCampaignVersionsOutput, error) {
@@ -4877,14 +4877,13 @@ const opGetCampaigns = "GetCampaigns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCampaignsRequest method.
+//	req, resp := client.GetCampaignsRequest(params)
 //
-//    // Example sending a request using the GetCampaignsRequest method.
-//    req, resp := client.GetCampaignsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaigns
 func (c *Pinpoint) GetCampaignsRequest(input *GetCampaignsInput) (req *request.Request, output *GetCampaignsOutput) {
@@ -4916,26 +4915,27 @@ func (c *Pinpoint) GetCampaignsRequest(input *GetCampaignsInput) (req *request.R
 // API operation GetCampaigns for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetCampaigns
 func (c *Pinpoint) GetCampaigns(input *GetCampaignsInput) (*GetCampaignsOutput, error) {
@@ -4975,14 +4975,13 @@ const opGetChannels = "GetChannels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetChannelsRequest method.
+//	req, resp := client.GetChannelsRequest(params)
 //
-//    // Example sending a request using the GetChannelsRequest method.
-//    req, resp := client.GetChannelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetChannels
 func (c *Pinpoint) GetChannelsRequest(input *GetChannelsInput) (req *request.Request, output *GetChannelsOutput) {
@@ -5014,26 +5013,27 @@ func (c *Pinpoint) GetChannelsRequest(input *GetChannelsInput) (req *request.Req
 // API operation GetChannels for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetChannels
 func (c *Pinpoint) GetChannels(input *GetChannelsInput) (*GetChannelsOutput, error) {
@@ -5073,14 +5073,13 @@ const opGetEmailChannel = "GetEmailChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEmailChannelRequest method.
+//	req, resp := client.GetEmailChannelRequest(params)
 //
-//    // Example sending a request using the GetEmailChannelRequest method.
-//    req, resp := client.GetEmailChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEmailChannel
 func (c *Pinpoint) GetEmailChannelRequest(input *GetEmailChannelInput) (req *request.Request, output *GetEmailChannelOutput) {
@@ -5112,26 +5111,27 @@ func (c *Pinpoint) GetEmailChannelRequest(input *GetEmailChannelInput) (req *req
 // API operation GetEmailChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEmailChannel
 func (c *Pinpoint) GetEmailChannel(input *GetEmailChannelInput) (*GetEmailChannelOutput, error) {
@@ -5171,14 +5171,13 @@ const opGetEmailTemplate = "GetEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEmailTemplateRequest method.
+//	req, resp := client.GetEmailTemplateRequest(params)
 //
-//    // Example sending a request using the GetEmailTemplateRequest method.
-//    req, resp := client.GetEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEmailTemplate
 func (c *Pinpoint) GetEmailTemplateRequest(input *GetEmailTemplateInput) (req *request.Request, output *GetEmailTemplateOutput) {
@@ -5210,26 +5209,27 @@ func (c *Pinpoint) GetEmailTemplateRequest(input *GetEmailTemplateInput) (req *r
 // API operation GetEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEmailTemplate
 func (c *Pinpoint) GetEmailTemplate(input *GetEmailTemplateInput) (*GetEmailTemplateOutput, error) {
@@ -5269,14 +5269,13 @@ const opGetEndpoint = "GetEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEndpointRequest method.
+//	req, resp := client.GetEndpointRequest(params)
 //
-//    // Example sending a request using the GetEndpointRequest method.
-//    req, resp := client.GetEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEndpoint
 func (c *Pinpoint) GetEndpointRequest(input *GetEndpointInput) (req *request.Request, output *GetEndpointOutput) {
@@ -5308,26 +5307,27 @@ func (c *Pinpoint) GetEndpointRequest(input *GetEndpointInput) (req *request.Req
 // API operation GetEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEndpoint
 func (c *Pinpoint) GetEndpoint(input *GetEndpointInput) (*GetEndpointOutput, error) {
@@ -5367,14 +5367,13 @@ const opGetEventStream = "GetEventStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEventStreamRequest method.
+//	req, resp := client.GetEventStreamRequest(params)
 //
-//    // Example sending a request using the GetEventStreamRequest method.
-//    req, resp := client.GetEventStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEventStream
 func (c *Pinpoint) GetEventStreamRequest(input *GetEventStreamInput) (req *request.Request, output *GetEventStreamOutput) {
@@ -5405,26 +5404,27 @@ func (c *Pinpoint) GetEventStreamRequest(input *GetEventStreamInput) (req *reque
 // API operation GetEventStream for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetEventStream
 func (c *Pinpoint) GetEventStream(input *GetEventStreamInput) (*GetEventStreamOutput, error) {
@@ -5464,14 +5464,13 @@ const opGetExportJob = "GetExportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExportJobRequest method.
+//	req, resp := client.GetExportJobRequest(params)
 //
-//    // Example sending a request using the GetExportJobRequest method.
-//    req, resp := client.GetExportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetExportJob
 func (c *Pinpoint) GetExportJobRequest(input *GetExportJobInput) (req *request.Request, output *GetExportJobOutput) {
@@ -5503,26 +5502,27 @@ func (c *Pinpoint) GetExportJobRequest(input *GetExportJobInput) (req *request.R
 // API operation GetExportJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetExportJob
 func (c *Pinpoint) GetExportJob(input *GetExportJobInput) (*GetExportJobOutput, error) {
@@ -5562,14 +5562,13 @@ const opGetExportJobs = "GetExportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetExportJobsRequest method.
+//	req, resp := client.GetExportJobsRequest(params)
 //
-//    // Example sending a request using the GetExportJobsRequest method.
-//    req, resp := client.GetExportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetExportJobs
 func (c *Pinpoint) GetExportJobsRequest(input *GetExportJobsInput) (req *request.Request, output *GetExportJobsOutput) {
@@ -5601,26 +5600,27 @@ func (c *Pinpoint) GetExportJobsRequest(input *GetExportJobsInput) (req *request
 // API operation GetExportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetExportJobs
 func (c *Pinpoint) GetExportJobs(input *GetExportJobsInput) (*GetExportJobsOutput, error) {
@@ -5660,14 +5660,13 @@ const opGetGcmChannel = "GetGcmChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetGcmChannelRequest method.
+//	req, resp := client.GetGcmChannelRequest(params)
 //
-//    // Example sending a request using the GetGcmChannelRequest method.
-//    req, resp := client.GetGcmChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetGcmChannel
 func (c *Pinpoint) GetGcmChannelRequest(input *GetGcmChannelInput) (req *request.Request, output *GetGcmChannelOutput) {
@@ -5699,26 +5698,27 @@ func (c *Pinpoint) GetGcmChannelRequest(input *GetGcmChannelInput) (req *request
 // API operation GetGcmChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetGcmChannel
 func (c *Pinpoint) GetGcmChannel(input *GetGcmChannelInput) (*GetGcmChannelOutput, error) {
@@ -5758,14 +5758,13 @@ const opGetImportJob = "GetImportJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImportJobRequest method.
+//	req, resp := client.GetImportJobRequest(params)
 //
-//    // Example sending a request using the GetImportJobRequest method.
-//    req, resp := client.GetImportJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetImportJob
 func (c *Pinpoint) GetImportJobRequest(input *GetImportJobInput) (req *request.Request, output *GetImportJobOutput) {
@@ -5797,26 +5796,27 @@ func (c *Pinpoint) GetImportJobRequest(input *GetImportJobInput) (req *request.R
 // API operation GetImportJob for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetImportJob
 func (c *Pinpoint) GetImportJob(input *GetImportJobInput) (*GetImportJobOutput, error) {
@@ -5856,14 +5856,13 @@ const opGetImportJobs = "GetImportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetImportJobsRequest method.
+//	req, resp := client.GetImportJobsRequest(params)
 //
-//    // Example sending a request using the GetImportJobsRequest method.
-//    req, resp := client.GetImportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetImportJobs
 func (c *Pinpoint) GetImportJobsRequest(input *GetImportJobsInput) (req *request.Request, output *GetImportJobsOutput) {
@@ -5895,26 +5894,27 @@ func (c *Pinpoint) GetImportJobsRequest(input *GetImportJobsInput) (req *request
 // API operation GetImportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetImportJobs
 func (c *Pinpoint) GetImportJobs(input *GetImportJobsInput) (*GetImportJobsOutput, error) {
@@ -5954,14 +5954,13 @@ const opGetInAppMessages = "GetInAppMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInAppMessagesRequest method.
+//	req, resp := client.GetInAppMessagesRequest(params)
 //
-//    // Example sending a request using the GetInAppMessagesRequest method.
-//    req, resp := client.GetInAppMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetInAppMessages
 func (c *Pinpoint) GetInAppMessagesRequest(input *GetInAppMessagesInput) (req *request.Request, output *GetInAppMessagesOutput) {
@@ -5992,26 +5991,27 @@ func (c *Pinpoint) GetInAppMessagesRequest(input *GetInAppMessagesInput) (req *r
 // API operation GetInAppMessages for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetInAppMessages
 func (c *Pinpoint) GetInAppMessages(input *GetInAppMessagesInput) (*GetInAppMessagesOutput, error) {
@@ -6051,14 +6051,13 @@ const opGetInAppTemplate = "GetInAppTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetInAppTemplateRequest method.
+//	req, resp := client.GetInAppTemplateRequest(params)
 //
-//    // Example sending a request using the GetInAppTemplateRequest method.
-//    req, resp := client.GetInAppTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetInAppTemplate
 func (c *Pinpoint) GetInAppTemplateRequest(input *GetInAppTemplateInput) (req *request.Request, output *GetInAppTemplateOutput) {
@@ -6090,26 +6089,27 @@ func (c *Pinpoint) GetInAppTemplateRequest(input *GetInAppTemplateInput) (req *r
 // API operation GetInAppTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetInAppTemplate
 func (c *Pinpoint) GetInAppTemplate(input *GetInAppTemplateInput) (*GetInAppTemplateOutput, error) {
@@ -6149,14 +6149,13 @@ const opGetJourney = "GetJourney"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJourneyRequest method.
+//	req, resp := client.GetJourneyRequest(params)
 //
-//    // Example sending a request using the GetJourneyRequest method.
-//    req, resp := client.GetJourneyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourney
 func (c *Pinpoint) GetJourneyRequest(input *GetJourneyInput) (req *request.Request, output *GetJourneyOutput) {
@@ -6188,26 +6187,27 @@ func (c *Pinpoint) GetJourneyRequest(input *GetJourneyInput) (req *request.Reque
 // API operation GetJourney for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourney
 func (c *Pinpoint) GetJourney(input *GetJourneyInput) (*GetJourneyOutput, error) {
@@ -6247,14 +6247,13 @@ const opGetJourneyDateRangeKpi = "GetJourneyDateRangeKpi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJourneyDateRangeKpiRequest method.
+//	req, resp := client.GetJourneyDateRangeKpiRequest(params)
 //
-//    // Example sending a request using the GetJourneyDateRangeKpiRequest method.
-//    req, resp := client.GetJourneyDateRangeKpiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyDateRangeKpi
 func (c *Pinpoint) GetJourneyDateRangeKpiRequest(input *GetJourneyDateRangeKpiInput) (req *request.Request, output *GetJourneyDateRangeKpiOutput) {
@@ -6286,26 +6285,27 @@ func (c *Pinpoint) GetJourneyDateRangeKpiRequest(input *GetJourneyDateRangeKpiIn
 // API operation GetJourneyDateRangeKpi for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyDateRangeKpi
 func (c *Pinpoint) GetJourneyDateRangeKpi(input *GetJourneyDateRangeKpiInput) (*GetJourneyDateRangeKpiOutput, error) {
@@ -6345,14 +6345,13 @@ const opGetJourneyExecutionActivityMetrics = "GetJourneyExecutionActivityMetrics
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJourneyExecutionActivityMetricsRequest method.
+//	req, resp := client.GetJourneyExecutionActivityMetricsRequest(params)
 //
-//    // Example sending a request using the GetJourneyExecutionActivityMetricsRequest method.
-//    req, resp := client.GetJourneyExecutionActivityMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyExecutionActivityMetrics
 func (c *Pinpoint) GetJourneyExecutionActivityMetricsRequest(input *GetJourneyExecutionActivityMetricsInput) (req *request.Request, output *GetJourneyExecutionActivityMetricsOutput) {
@@ -6384,26 +6383,27 @@ func (c *Pinpoint) GetJourneyExecutionActivityMetricsRequest(input *GetJourneyEx
 // API operation GetJourneyExecutionActivityMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyExecutionActivityMetrics
 func (c *Pinpoint) GetJourneyExecutionActivityMetrics(input *GetJourneyExecutionActivityMetricsInput) (*GetJourneyExecutionActivityMetricsOutput, error) {
@@ -6443,14 +6443,13 @@ const opGetJourneyExecutionMetrics = "GetJourneyExecutionMetrics"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetJourneyExecutionMetricsRequest method.
+//	req, resp := client.GetJourneyExecutionMetricsRequest(params)
 //
-//    // Example sending a request using the GetJourneyExecutionMetricsRequest method.
-//    req, resp := client.GetJourneyExecutionMetricsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyExecutionMetrics
 func (c *Pinpoint) GetJourneyExecutionMetricsRequest(input *GetJourneyExecutionMetricsInput) (req *request.Request, output *GetJourneyExecutionMetricsOutput) {
@@ -6482,26 +6481,27 @@ func (c *Pinpoint) GetJourneyExecutionMetricsRequest(input *GetJourneyExecutionM
 // API operation GetJourneyExecutionMetrics for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyExecutionMetrics
 func (c *Pinpoint) GetJourneyExecutionMetrics(input *GetJourneyExecutionMetricsInput) (*GetJourneyExecutionMetricsOutput, error) {
@@ -6525,6 +6525,299 @@ func (c *Pinpoint) GetJourneyExecutionMetricsWithContext(ctx aws.Context, input 
 	return out, req.Send()
 }
 
+const opGetJourneyRunExecutionActivityMetrics = "GetJourneyRunExecutionActivityMetrics"
+
+// GetJourneyRunExecutionActivityMetricsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJourneyRunExecutionActivityMetrics operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetJourneyRunExecutionActivityMetrics for more information on using the GetJourneyRunExecutionActivityMetrics
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetJourneyRunExecutionActivityMetricsRequest method.
+//	req, resp := client.GetJourneyRunExecutionActivityMetricsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionActivityMetrics
+func (c *Pinpoint) GetJourneyRunExecutionActivityMetricsRequest(input *GetJourneyRunExecutionActivityMetricsInput) (req *request.Request, output *GetJourneyRunExecutionActivityMetricsOutput) {
+	op := &request.Operation{
+		Name:       opGetJourneyRunExecutionActivityMetrics,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}/journeys/{journey-id}/runs/{run-id}/activities/{journey-activity-id}/execution-metrics",
+	}
+
+	if input == nil {
+		input = &GetJourneyRunExecutionActivityMetricsInput{}
+	}
+
+	output = &GetJourneyRunExecutionActivityMetricsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetJourneyRunExecutionActivityMetrics API operation for Amazon Pinpoint.
+//
+// Retrieves (queries) pre-aggregated data for a standard run execution metric
+// that applies to a journey activity.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetJourneyRunExecutionActivityMetrics for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Provides information about an API request or response.
+//
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
+//
+//   - NotFoundException
+//     Provides information about an API request or response.
+//
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionActivityMetrics
+func (c *Pinpoint) GetJourneyRunExecutionActivityMetrics(input *GetJourneyRunExecutionActivityMetricsInput) (*GetJourneyRunExecutionActivityMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionActivityMetricsRequest(input)
+	return out, req.Send()
+}
+
+// GetJourneyRunExecutionActivityMetricsWithContext is the same as GetJourneyRunExecutionActivityMetrics with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetJourneyRunExecutionActivityMetrics for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetJourneyRunExecutionActivityMetricsWithContext(ctx aws.Context, input *GetJourneyRunExecutionActivityMetricsInput, opts ...request.Option) (*GetJourneyRunExecutionActivityMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionActivityMetricsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetJourneyRunExecutionMetrics = "GetJourneyRunExecutionMetrics"
+
+// GetJourneyRunExecutionMetricsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJourneyRunExecutionMetrics operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetJourneyRunExecutionMetrics for more information on using the GetJourneyRunExecutionMetrics
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetJourneyRunExecutionMetricsRequest method.
+//	req, resp := client.GetJourneyRunExecutionMetricsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionMetrics
+func (c *Pinpoint) GetJourneyRunExecutionMetricsRequest(input *GetJourneyRunExecutionMetricsInput) (req *request.Request, output *GetJourneyRunExecutionMetricsOutput) {
+	op := &request.Operation{
+		Name:       opGetJourneyRunExecutionMetrics,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}/journeys/{journey-id}/runs/{run-id}/execution-metrics",
+	}
+
+	if input == nil {
+		input = &GetJourneyRunExecutionMetricsInput{}
+	}
+
+	output = &GetJourneyRunExecutionMetricsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetJourneyRunExecutionMetrics API operation for Amazon Pinpoint.
+//
+// Retrieves (queries) pre-aggregated data for a standard run execution metric
+// that applies to a journey.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetJourneyRunExecutionMetrics for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Provides information about an API request or response.
+//
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
+//
+//   - NotFoundException
+//     Provides information about an API request or response.
+//
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRunExecutionMetrics
+func (c *Pinpoint) GetJourneyRunExecutionMetrics(input *GetJourneyRunExecutionMetricsInput) (*GetJourneyRunExecutionMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionMetricsRequest(input)
+	return out, req.Send()
+}
+
+// GetJourneyRunExecutionMetricsWithContext is the same as GetJourneyRunExecutionMetrics with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetJourneyRunExecutionMetrics for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetJourneyRunExecutionMetricsWithContext(ctx aws.Context, input *GetJourneyRunExecutionMetricsInput, opts ...request.Option) (*GetJourneyRunExecutionMetricsOutput, error) {
+	req, out := c.GetJourneyRunExecutionMetricsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetJourneyRuns = "GetJourneyRuns"
+
+// GetJourneyRunsRequest generates a "aws/request.Request" representing the
+// client's request for the GetJourneyRuns operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetJourneyRuns for more information on using the GetJourneyRuns
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetJourneyRunsRequest method.
+//	req, resp := client.GetJourneyRunsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRuns
+func (c *Pinpoint) GetJourneyRunsRequest(input *GetJourneyRunsInput) (req *request.Request, output *GetJourneyRunsOutput) {
+	op := &request.Operation{
+		Name:       opGetJourneyRuns,
+		HTTPMethod: "GET",
+		HTTPPath:   "/v1/apps/{application-id}/journeys/{journey-id}/runs",
+	}
+
+	if input == nil {
+		input = &GetJourneyRunsInput{}
+	}
+
+	output = &GetJourneyRunsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetJourneyRuns API operation for Amazon Pinpoint.
+//
+// Provides information about the runs of a journey.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Pinpoint's
+// API operation GetJourneyRuns for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     Provides information about an API request or response.
+//
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
+//
+//   - NotFoundException
+//     Provides information about an API request or response.
+//
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetJourneyRuns
+func (c *Pinpoint) GetJourneyRuns(input *GetJourneyRunsInput) (*GetJourneyRunsOutput, error) {
+	req, out := c.GetJourneyRunsRequest(input)
+	return out, req.Send()
+}
+
+// GetJourneyRunsWithContext is the same as GetJourneyRuns with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetJourneyRuns for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Pinpoint) GetJourneyRunsWithContext(ctx aws.Context, input *GetJourneyRunsInput, opts ...request.Option) (*GetJourneyRunsOutput, error) {
+	req, out := c.GetJourneyRunsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetPushTemplate = "GetPushTemplate"
 
 // GetPushTemplateRequest generates a "aws/request.Request" representing the
@@ -6541,14 +6834,13 @@ const opGetPushTemplate = "GetPushTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPushTemplateRequest method.
+//	req, resp := client.GetPushTemplateRequest(params)
 //
-//    // Example sending a request using the GetPushTemplateRequest method.
-//    req, resp := client.GetPushTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetPushTemplate
 func (c *Pinpoint) GetPushTemplateRequest(input *GetPushTemplateInput) (req *request.Request, output *GetPushTemplateOutput) {
@@ -6580,26 +6872,27 @@ func (c *Pinpoint) GetPushTemplateRequest(input *GetPushTemplateInput) (req *req
 // API operation GetPushTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetPushTemplate
 func (c *Pinpoint) GetPushTemplate(input *GetPushTemplateInput) (*GetPushTemplateOutput, error) {
@@ -6639,14 +6932,13 @@ const opGetRecommenderConfiguration = "GetRecommenderConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommenderConfigurationRequest method.
+//	req, resp := client.GetRecommenderConfigurationRequest(params)
 //
-//    // Example sending a request using the GetRecommenderConfigurationRequest method.
-//    req, resp := client.GetRecommenderConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetRecommenderConfiguration
 func (c *Pinpoint) GetRecommenderConfigurationRequest(input *GetRecommenderConfigurationInput) (req *request.Request, output *GetRecommenderConfigurationOutput) {
@@ -6678,26 +6970,27 @@ func (c *Pinpoint) GetRecommenderConfigurationRequest(input *GetRecommenderConfi
 // API operation GetRecommenderConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetRecommenderConfiguration
 func (c *Pinpoint) GetRecommenderConfiguration(input *GetRecommenderConfigurationInput) (*GetRecommenderConfigurationOutput, error) {
@@ -6737,14 +7030,13 @@ const opGetRecommenderConfigurations = "GetRecommenderConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommenderConfigurationsRequest method.
+//	req, resp := client.GetRecommenderConfigurationsRequest(params)
 //
-//    // Example sending a request using the GetRecommenderConfigurationsRequest method.
-//    req, resp := client.GetRecommenderConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetRecommenderConfigurations
 func (c *Pinpoint) GetRecommenderConfigurationsRequest(input *GetRecommenderConfigurationsInput) (req *request.Request, output *GetRecommenderConfigurationsOutput) {
@@ -6776,26 +7068,27 @@ func (c *Pinpoint) GetRecommenderConfigurationsRequest(input *GetRecommenderConf
 // API operation GetRecommenderConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetRecommenderConfigurations
 func (c *Pinpoint) GetRecommenderConfigurations(input *GetRecommenderConfigurationsInput) (*GetRecommenderConfigurationsOutput, error) {
@@ -6835,14 +7128,13 @@ const opGetSegment = "GetSegment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSegmentRequest method.
+//	req, resp := client.GetSegmentRequest(params)
 //
-//    // Example sending a request using the GetSegmentRequest method.
-//    req, resp := client.GetSegmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegment
 func (c *Pinpoint) GetSegmentRequest(input *GetSegmentInput) (req *request.Request, output *GetSegmentOutput) {
@@ -6874,26 +7166,27 @@ func (c *Pinpoint) GetSegmentRequest(input *GetSegmentInput) (req *request.Reque
 // API operation GetSegment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegment
 func (c *Pinpoint) GetSegment(input *GetSegmentInput) (*GetSegmentOutput, error) {
@@ -6933,14 +7226,13 @@ const opGetSegmentExportJobs = "GetSegmentExportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSegmentExportJobsRequest method.
+//	req, resp := client.GetSegmentExportJobsRequest(params)
 //
-//    // Example sending a request using the GetSegmentExportJobsRequest method.
-//    req, resp := client.GetSegmentExportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentExportJobs
 func (c *Pinpoint) GetSegmentExportJobsRequest(input *GetSegmentExportJobsInput) (req *request.Request, output *GetSegmentExportJobsOutput) {
@@ -6972,26 +7264,27 @@ func (c *Pinpoint) GetSegmentExportJobsRequest(input *GetSegmentExportJobsInput)
 // API operation GetSegmentExportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentExportJobs
 func (c *Pinpoint) GetSegmentExportJobs(input *GetSegmentExportJobsInput) (*GetSegmentExportJobsOutput, error) {
@@ -7031,14 +7324,13 @@ const opGetSegmentImportJobs = "GetSegmentImportJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSegmentImportJobsRequest method.
+//	req, resp := client.GetSegmentImportJobsRequest(params)
 //
-//    // Example sending a request using the GetSegmentImportJobsRequest method.
-//    req, resp := client.GetSegmentImportJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentImportJobs
 func (c *Pinpoint) GetSegmentImportJobsRequest(input *GetSegmentImportJobsInput) (req *request.Request, output *GetSegmentImportJobsOutput) {
@@ -7070,26 +7362,27 @@ func (c *Pinpoint) GetSegmentImportJobsRequest(input *GetSegmentImportJobsInput)
 // API operation GetSegmentImportJobs for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentImportJobs
 func (c *Pinpoint) GetSegmentImportJobs(input *GetSegmentImportJobsInput) (*GetSegmentImportJobsOutput, error) {
@@ -7129,14 +7422,13 @@ const opGetSegmentVersion = "GetSegmentVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSegmentVersionRequest method.
+//	req, resp := client.GetSegmentVersionRequest(params)
 //
-//    // Example sending a request using the GetSegmentVersionRequest method.
-//    req, resp := client.GetSegmentVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentVersion
 func (c *Pinpoint) GetSegmentVersionRequest(input *GetSegmentVersionInput) (req *request.Request, output *GetSegmentVersionOutput) {
@@ -7168,26 +7460,27 @@ func (c *Pinpoint) GetSegmentVersionRequest(input *GetSegmentVersionInput) (req 
 // API operation GetSegmentVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentVersion
 func (c *Pinpoint) GetSegmentVersion(input *GetSegmentVersionInput) (*GetSegmentVersionOutput, error) {
@@ -7227,14 +7520,13 @@ const opGetSegmentVersions = "GetSegmentVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSegmentVersionsRequest method.
+//	req, resp := client.GetSegmentVersionsRequest(params)
 //
-//    // Example sending a request using the GetSegmentVersionsRequest method.
-//    req, resp := client.GetSegmentVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentVersions
 func (c *Pinpoint) GetSegmentVersionsRequest(input *GetSegmentVersionsInput) (req *request.Request, output *GetSegmentVersionsOutput) {
@@ -7266,26 +7558,27 @@ func (c *Pinpoint) GetSegmentVersionsRequest(input *GetSegmentVersionsInput) (re
 // API operation GetSegmentVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegmentVersions
 func (c *Pinpoint) GetSegmentVersions(input *GetSegmentVersionsInput) (*GetSegmentVersionsOutput, error) {
@@ -7325,14 +7618,13 @@ const opGetSegments = "GetSegments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSegmentsRequest method.
+//	req, resp := client.GetSegmentsRequest(params)
 //
-//    // Example sending a request using the GetSegmentsRequest method.
-//    req, resp := client.GetSegmentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegments
 func (c *Pinpoint) GetSegmentsRequest(input *GetSegmentsInput) (req *request.Request, output *GetSegmentsOutput) {
@@ -7364,26 +7656,27 @@ func (c *Pinpoint) GetSegmentsRequest(input *GetSegmentsInput) (req *request.Req
 // API operation GetSegments for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSegments
 func (c *Pinpoint) GetSegments(input *GetSegmentsInput) (*GetSegmentsOutput, error) {
@@ -7423,14 +7716,13 @@ const opGetSmsChannel = "GetSmsChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSmsChannelRequest method.
+//	req, resp := client.GetSmsChannelRequest(params)
 //
-//    // Example sending a request using the GetSmsChannelRequest method.
-//    req, resp := client.GetSmsChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSmsChannel
 func (c *Pinpoint) GetSmsChannelRequest(input *GetSmsChannelInput) (req *request.Request, output *GetSmsChannelOutput) {
@@ -7462,26 +7754,27 @@ func (c *Pinpoint) GetSmsChannelRequest(input *GetSmsChannelInput) (req *request
 // API operation GetSmsChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSmsChannel
 func (c *Pinpoint) GetSmsChannel(input *GetSmsChannelInput) (*GetSmsChannelOutput, error) {
@@ -7521,14 +7814,13 @@ const opGetSmsTemplate = "GetSmsTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSmsTemplateRequest method.
+//	req, resp := client.GetSmsTemplateRequest(params)
 //
-//    // Example sending a request using the GetSmsTemplateRequest method.
-//    req, resp := client.GetSmsTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSmsTemplate
 func (c *Pinpoint) GetSmsTemplateRequest(input *GetSmsTemplateInput) (req *request.Request, output *GetSmsTemplateOutput) {
@@ -7560,26 +7852,27 @@ func (c *Pinpoint) GetSmsTemplateRequest(input *GetSmsTemplateInput) (req *reque
 // API operation GetSmsTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetSmsTemplate
 func (c *Pinpoint) GetSmsTemplate(input *GetSmsTemplateInput) (*GetSmsTemplateOutput, error) {
@@ -7619,14 +7912,13 @@ const opGetUserEndpoints = "GetUserEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserEndpointsRequest method.
+//	req, resp := client.GetUserEndpointsRequest(params)
 //
-//    // Example sending a request using the GetUserEndpointsRequest method.
-//    req, resp := client.GetUserEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetUserEndpoints
 func (c *Pinpoint) GetUserEndpointsRequest(input *GetUserEndpointsInput) (req *request.Request, output *GetUserEndpointsOutput) {
@@ -7658,26 +7950,27 @@ func (c *Pinpoint) GetUserEndpointsRequest(input *GetUserEndpointsInput) (req *r
 // API operation GetUserEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetUserEndpoints
 func (c *Pinpoint) GetUserEndpoints(input *GetUserEndpointsInput) (*GetUserEndpointsOutput, error) {
@@ -7717,14 +8010,13 @@ const opGetVoiceChannel = "GetVoiceChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVoiceChannelRequest method.
+//	req, resp := client.GetVoiceChannelRequest(params)
 //
-//    // Example sending a request using the GetVoiceChannelRequest method.
-//    req, resp := client.GetVoiceChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetVoiceChannel
 func (c *Pinpoint) GetVoiceChannelRequest(input *GetVoiceChannelInput) (req *request.Request, output *GetVoiceChannelOutput) {
@@ -7756,26 +8048,27 @@ func (c *Pinpoint) GetVoiceChannelRequest(input *GetVoiceChannelInput) (req *req
 // API operation GetVoiceChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetVoiceChannel
 func (c *Pinpoint) GetVoiceChannel(input *GetVoiceChannelInput) (*GetVoiceChannelOutput, error) {
@@ -7815,14 +8108,13 @@ const opGetVoiceTemplate = "GetVoiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVoiceTemplateRequest method.
+//	req, resp := client.GetVoiceTemplateRequest(params)
 //
-//    // Example sending a request using the GetVoiceTemplateRequest method.
-//    req, resp := client.GetVoiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetVoiceTemplate
 func (c *Pinpoint) GetVoiceTemplateRequest(input *GetVoiceTemplateInput) (req *request.Request, output *GetVoiceTemplateOutput) {
@@ -7854,26 +8146,27 @@ func (c *Pinpoint) GetVoiceTemplateRequest(input *GetVoiceTemplateInput) (req *r
 // API operation GetVoiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/GetVoiceTemplate
 func (c *Pinpoint) GetVoiceTemplate(input *GetVoiceTemplateInput) (*GetVoiceTemplateOutput, error) {
@@ -7913,14 +8206,13 @@ const opListJourneys = "ListJourneys"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListJourneysRequest method.
+//	req, resp := client.ListJourneysRequest(params)
 //
-//    // Example sending a request using the ListJourneysRequest method.
-//    req, resp := client.ListJourneysRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListJourneys
 func (c *Pinpoint) ListJourneysRequest(input *ListJourneysInput) (req *request.Request, output *ListJourneysOutput) {
@@ -7952,26 +8244,27 @@ func (c *Pinpoint) ListJourneysRequest(input *ListJourneysInput) (req *request.R
 // API operation ListJourneys for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListJourneys
 func (c *Pinpoint) ListJourneys(input *ListJourneysInput) (*ListJourneysOutput, error) {
@@ -8011,14 +8304,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListTagsForResource
 func (c *Pinpoint) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -8086,14 +8378,13 @@ const opListTemplateVersions = "ListTemplateVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTemplateVersionsRequest method.
+//	req, resp := client.ListTemplateVersionsRequest(params)
 //
-//    // Example sending a request using the ListTemplateVersionsRequest method.
-//    req, resp := client.ListTemplateVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListTemplateVersions
 func (c *Pinpoint) ListTemplateVersionsRequest(input *ListTemplateVersionsInput) (req *request.Request, output *ListTemplateVersionsOutput) {
@@ -8124,26 +8415,27 @@ func (c *Pinpoint) ListTemplateVersionsRequest(input *ListTemplateVersionsInput)
 // API operation ListTemplateVersions for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListTemplateVersions
 func (c *Pinpoint) ListTemplateVersions(input *ListTemplateVersionsInput) (*ListTemplateVersionsOutput, error) {
@@ -8183,14 +8475,13 @@ const opListTemplates = "ListTemplates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTemplatesRequest method.
+//	req, resp := client.ListTemplatesRequest(params)
 //
-//    // Example sending a request using the ListTemplatesRequest method.
-//    req, resp := client.ListTemplatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListTemplates
 func (c *Pinpoint) ListTemplatesRequest(input *ListTemplatesInput) (req *request.Request, output *ListTemplatesOutput) {
@@ -8222,20 +8513,21 @@ func (c *Pinpoint) ListTemplatesRequest(input *ListTemplatesInput) (req *request
 // API operation ListTemplates for usage and error information.
 //
 // Returned Error Types:
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * BadRequestException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
+//
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/ListTemplates
 func (c *Pinpoint) ListTemplates(input *ListTemplatesInput) (*ListTemplatesOutput, error) {
@@ -8275,14 +8567,13 @@ const opPhoneNumberValidate = "PhoneNumberValidate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PhoneNumberValidateRequest method.
+//	req, resp := client.PhoneNumberValidateRequest(params)
 //
-//    // Example sending a request using the PhoneNumberValidateRequest method.
-//    req, resp := client.PhoneNumberValidateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/PhoneNumberValidate
 func (c *Pinpoint) PhoneNumberValidateRequest(input *PhoneNumberValidateInput) (req *request.Request, output *PhoneNumberValidateOutput) {
@@ -8313,26 +8604,27 @@ func (c *Pinpoint) PhoneNumberValidateRequest(input *PhoneNumberValidateInput) (
 // API operation PhoneNumberValidate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/PhoneNumberValidate
 func (c *Pinpoint) PhoneNumberValidate(input *PhoneNumberValidateInput) (*PhoneNumberValidateOutput, error) {
@@ -8372,14 +8664,13 @@ const opPutEventStream = "PutEventStream"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEventStreamRequest method.
+//	req, resp := client.PutEventStreamRequest(params)
 //
-//    // Example sending a request using the PutEventStreamRequest method.
-//    req, resp := client.PutEventStreamRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/PutEventStream
 func (c *Pinpoint) PutEventStreamRequest(input *PutEventStreamInput) (req *request.Request, output *PutEventStreamOutput) {
@@ -8411,26 +8702,27 @@ func (c *Pinpoint) PutEventStreamRequest(input *PutEventStreamInput) (req *reque
 // API operation PutEventStream for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/PutEventStream
 func (c *Pinpoint) PutEventStream(input *PutEventStreamInput) (*PutEventStreamOutput, error) {
@@ -8470,14 +8762,13 @@ const opPutEvents = "PutEvents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutEventsRequest method.
+//	req, resp := client.PutEventsRequest(params)
 //
-//    // Example sending a request using the PutEventsRequest method.
-//    req, resp := client.PutEventsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/PutEvents
 func (c *Pinpoint) PutEventsRequest(input *PutEventsInput) (req *request.Request, output *PutEventsOutput) {
@@ -8509,26 +8800,27 @@ func (c *Pinpoint) PutEventsRequest(input *PutEventsInput) (req *request.Request
 // API operation PutEvents for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/PutEvents
 func (c *Pinpoint) PutEvents(input *PutEventsInput) (*PutEventsOutput, error) {
@@ -8568,14 +8860,13 @@ const opRemoveAttributes = "RemoveAttributes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveAttributesRequest method.
+//	req, resp := client.RemoveAttributesRequest(params)
 //
-//    // Example sending a request using the RemoveAttributesRequest method.
-//    req, resp := client.RemoveAttributesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/RemoveAttributes
 func (c *Pinpoint) RemoveAttributesRequest(input *RemoveAttributesInput) (req *request.Request, output *RemoveAttributesOutput) {
@@ -8596,8 +8887,9 @@ func (c *Pinpoint) RemoveAttributesRequest(input *RemoveAttributesInput) (req *r
 
 // RemoveAttributes API operation for Amazon Pinpoint.
 //
-// Removes one or more attributes, of the same attribute type, from all the
-// endpoints that are associated with an application.
+// Removes one or more custom attributes, of the same attribute type, from the
+// application. Existing endpoints still have the attributes but Amazon Pinpoint
+// will stop capturing new or changed values for these attributes.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8607,26 +8899,27 @@ func (c *Pinpoint) RemoveAttributesRequest(input *RemoveAttributesInput) (req *r
 // API operation RemoveAttributes for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/RemoveAttributes
 func (c *Pinpoint) RemoveAttributes(input *RemoveAttributesInput) (*RemoveAttributesOutput, error) {
@@ -8666,14 +8959,13 @@ const opSendMessages = "SendMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendMessagesRequest method.
+//	req, resp := client.SendMessagesRequest(params)
 //
-//    // Example sending a request using the SendMessagesRequest method.
-//    req, resp := client.SendMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendMessages
 func (c *Pinpoint) SendMessagesRequest(input *SendMessagesInput) (req *request.Request, output *SendMessagesOutput) {
@@ -8704,26 +8996,27 @@ func (c *Pinpoint) SendMessagesRequest(input *SendMessagesInput) (req *request.R
 // API operation SendMessages for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendMessages
 func (c *Pinpoint) SendMessages(input *SendMessagesInput) (*SendMessagesOutput, error) {
@@ -8763,14 +9056,13 @@ const opSendOTPMessage = "SendOTPMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendOTPMessageRequest method.
+//	req, resp := client.SendOTPMessageRequest(params)
 //
-//    // Example sending a request using the SendOTPMessageRequest method.
-//    req, resp := client.SendOTPMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendOTPMessage
 func (c *Pinpoint) SendOTPMessageRequest(input *SendOTPMessageInput) (req *request.Request, output *SendOTPMessageOutput) {
@@ -8791,7 +9083,7 @@ func (c *Pinpoint) SendOTPMessageRequest(input *SendOTPMessageInput) (req *reque
 
 // SendOTPMessage API operation for Amazon Pinpoint.
 //
-// Send an OTP message
+// # Send an OTP message
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -8801,26 +9093,27 @@ func (c *Pinpoint) SendOTPMessageRequest(input *SendOTPMessageInput) (req *reque
 // API operation SendOTPMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendOTPMessage
 func (c *Pinpoint) SendOTPMessage(input *SendOTPMessageInput) (*SendOTPMessageOutput, error) {
@@ -8860,14 +9153,13 @@ const opSendUsersMessages = "SendUsersMessages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SendUsersMessagesRequest method.
+//	req, resp := client.SendUsersMessagesRequest(params)
 //
-//    // Example sending a request using the SendUsersMessagesRequest method.
-//    req, resp := client.SendUsersMessagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendUsersMessages
 func (c *Pinpoint) SendUsersMessagesRequest(input *SendUsersMessagesInput) (req *request.Request, output *SendUsersMessagesOutput) {
@@ -8898,26 +9190,27 @@ func (c *Pinpoint) SendUsersMessagesRequest(input *SendUsersMessagesInput) (req 
 // API operation SendUsersMessages for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendUsersMessages
 func (c *Pinpoint) SendUsersMessages(input *SendUsersMessagesInput) (*SendUsersMessagesOutput, error) {
@@ -8957,14 +9250,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/TagResource
 func (c *Pinpoint) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -9033,14 +9325,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UntagResource
 func (c *Pinpoint) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -9109,14 +9400,13 @@ const opUpdateAdmChannel = "UpdateAdmChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAdmChannelRequest method.
+//	req, resp := client.UpdateAdmChannelRequest(params)
 //
-//    // Example sending a request using the UpdateAdmChannelRequest method.
-//    req, resp := client.UpdateAdmChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateAdmChannel
 func (c *Pinpoint) UpdateAdmChannelRequest(input *UpdateAdmChannelInput) (req *request.Request, output *UpdateAdmChannelOutput) {
@@ -9148,26 +9438,27 @@ func (c *Pinpoint) UpdateAdmChannelRequest(input *UpdateAdmChannelInput) (req *r
 // API operation UpdateAdmChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateAdmChannel
 func (c *Pinpoint) UpdateAdmChannel(input *UpdateAdmChannelInput) (*UpdateAdmChannelOutput, error) {
@@ -9207,14 +9498,13 @@ const opUpdateApnsChannel = "UpdateApnsChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApnsChannelRequest method.
+//	req, resp := client.UpdateApnsChannelRequest(params)
 //
-//    // Example sending a request using the UpdateApnsChannelRequest method.
-//    req, resp := client.UpdateApnsChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsChannel
 func (c *Pinpoint) UpdateApnsChannelRequest(input *UpdateApnsChannelInput) (req *request.Request, output *UpdateApnsChannelOutput) {
@@ -9246,26 +9536,27 @@ func (c *Pinpoint) UpdateApnsChannelRequest(input *UpdateApnsChannelInput) (req 
 // API operation UpdateApnsChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsChannel
 func (c *Pinpoint) UpdateApnsChannel(input *UpdateApnsChannelInput) (*UpdateApnsChannelOutput, error) {
@@ -9305,14 +9596,13 @@ const opUpdateApnsSandboxChannel = "UpdateApnsSandboxChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApnsSandboxChannelRequest method.
+//	req, resp := client.UpdateApnsSandboxChannelRequest(params)
 //
-//    // Example sending a request using the UpdateApnsSandboxChannelRequest method.
-//    req, resp := client.UpdateApnsSandboxChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsSandboxChannel
 func (c *Pinpoint) UpdateApnsSandboxChannelRequest(input *UpdateApnsSandboxChannelInput) (req *request.Request, output *UpdateApnsSandboxChannelOutput) {
@@ -9344,26 +9634,27 @@ func (c *Pinpoint) UpdateApnsSandboxChannelRequest(input *UpdateApnsSandboxChann
 // API operation UpdateApnsSandboxChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsSandboxChannel
 func (c *Pinpoint) UpdateApnsSandboxChannel(input *UpdateApnsSandboxChannelInput) (*UpdateApnsSandboxChannelOutput, error) {
@@ -9403,14 +9694,13 @@ const opUpdateApnsVoipChannel = "UpdateApnsVoipChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApnsVoipChannelRequest method.
+//	req, resp := client.UpdateApnsVoipChannelRequest(params)
 //
-//    // Example sending a request using the UpdateApnsVoipChannelRequest method.
-//    req, resp := client.UpdateApnsVoipChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsVoipChannel
 func (c *Pinpoint) UpdateApnsVoipChannelRequest(input *UpdateApnsVoipChannelInput) (req *request.Request, output *UpdateApnsVoipChannelOutput) {
@@ -9442,26 +9732,27 @@ func (c *Pinpoint) UpdateApnsVoipChannelRequest(input *UpdateApnsVoipChannelInpu
 // API operation UpdateApnsVoipChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsVoipChannel
 func (c *Pinpoint) UpdateApnsVoipChannel(input *UpdateApnsVoipChannelInput) (*UpdateApnsVoipChannelOutput, error) {
@@ -9501,14 +9792,13 @@ const opUpdateApnsVoipSandboxChannel = "UpdateApnsVoipSandboxChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApnsVoipSandboxChannelRequest method.
+//	req, resp := client.UpdateApnsVoipSandboxChannelRequest(params)
 //
-//    // Example sending a request using the UpdateApnsVoipSandboxChannelRequest method.
-//    req, resp := client.UpdateApnsVoipSandboxChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsVoipSandboxChannel
 func (c *Pinpoint) UpdateApnsVoipSandboxChannelRequest(input *UpdateApnsVoipSandboxChannelInput) (req *request.Request, output *UpdateApnsVoipSandboxChannelOutput) {
@@ -9540,26 +9830,27 @@ func (c *Pinpoint) UpdateApnsVoipSandboxChannelRequest(input *UpdateApnsVoipSand
 // API operation UpdateApnsVoipSandboxChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApnsVoipSandboxChannel
 func (c *Pinpoint) UpdateApnsVoipSandboxChannel(input *UpdateApnsVoipSandboxChannelInput) (*UpdateApnsVoipSandboxChannelOutput, error) {
@@ -9599,14 +9890,13 @@ const opUpdateApplicationSettings = "UpdateApplicationSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApplicationSettingsRequest method.
+//	req, resp := client.UpdateApplicationSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateApplicationSettingsRequest method.
-//    req, resp := client.UpdateApplicationSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApplicationSettings
 func (c *Pinpoint) UpdateApplicationSettingsRequest(input *UpdateApplicationSettingsInput) (req *request.Request, output *UpdateApplicationSettingsOutput) {
@@ -9637,26 +9927,27 @@ func (c *Pinpoint) UpdateApplicationSettingsRequest(input *UpdateApplicationSett
 // API operation UpdateApplicationSettings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateApplicationSettings
 func (c *Pinpoint) UpdateApplicationSettings(input *UpdateApplicationSettingsInput) (*UpdateApplicationSettingsOutput, error) {
@@ -9696,14 +9987,13 @@ const opUpdateBaiduChannel = "UpdateBaiduChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBaiduChannelRequest method.
+//	req, resp := client.UpdateBaiduChannelRequest(params)
 //
-//    // Example sending a request using the UpdateBaiduChannelRequest method.
-//    req, resp := client.UpdateBaiduChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateBaiduChannel
 func (c *Pinpoint) UpdateBaiduChannelRequest(input *UpdateBaiduChannelInput) (req *request.Request, output *UpdateBaiduChannelOutput) {
@@ -9735,26 +10025,27 @@ func (c *Pinpoint) UpdateBaiduChannelRequest(input *UpdateBaiduChannelInput) (re
 // API operation UpdateBaiduChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateBaiduChannel
 func (c *Pinpoint) UpdateBaiduChannel(input *UpdateBaiduChannelInput) (*UpdateBaiduChannelOutput, error) {
@@ -9794,14 +10085,13 @@ const opUpdateCampaign = "UpdateCampaign"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCampaignRequest method.
+//	req, resp := client.UpdateCampaignRequest(params)
 //
-//    // Example sending a request using the UpdateCampaignRequest method.
-//    req, resp := client.UpdateCampaignRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateCampaign
 func (c *Pinpoint) UpdateCampaignRequest(input *UpdateCampaignInput) (req *request.Request, output *UpdateCampaignOutput) {
@@ -9832,26 +10122,27 @@ func (c *Pinpoint) UpdateCampaignRequest(input *UpdateCampaignInput) (req *reque
 // API operation UpdateCampaign for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateCampaign
 func (c *Pinpoint) UpdateCampaign(input *UpdateCampaignInput) (*UpdateCampaignOutput, error) {
@@ -9891,14 +10182,13 @@ const opUpdateEmailChannel = "UpdateEmailChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEmailChannelRequest method.
+//	req, resp := client.UpdateEmailChannelRequest(params)
 //
-//    // Example sending a request using the UpdateEmailChannelRequest method.
-//    req, resp := client.UpdateEmailChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEmailChannel
 func (c *Pinpoint) UpdateEmailChannelRequest(input *UpdateEmailChannelInput) (req *request.Request, output *UpdateEmailChannelOutput) {
@@ -9930,26 +10220,27 @@ func (c *Pinpoint) UpdateEmailChannelRequest(input *UpdateEmailChannelInput) (re
 // API operation UpdateEmailChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEmailChannel
 func (c *Pinpoint) UpdateEmailChannel(input *UpdateEmailChannelInput) (*UpdateEmailChannelOutput, error) {
@@ -9989,14 +10280,13 @@ const opUpdateEmailTemplate = "UpdateEmailTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEmailTemplateRequest method.
+//	req, resp := client.UpdateEmailTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateEmailTemplateRequest method.
-//    req, resp := client.UpdateEmailTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEmailTemplate
 func (c *Pinpoint) UpdateEmailTemplateRequest(input *UpdateEmailTemplateInput) (req *request.Request, output *UpdateEmailTemplateOutput) {
@@ -10028,26 +10318,27 @@ func (c *Pinpoint) UpdateEmailTemplateRequest(input *UpdateEmailTemplateInput) (
 // API operation UpdateEmailTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEmailTemplate
 func (c *Pinpoint) UpdateEmailTemplate(input *UpdateEmailTemplateInput) (*UpdateEmailTemplateOutput, error) {
@@ -10087,14 +10378,13 @@ const opUpdateEndpoint = "UpdateEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEndpointRequest method.
+//	req, resp := client.UpdateEndpointRequest(params)
 //
-//    // Example sending a request using the UpdateEndpointRequest method.
-//    req, resp := client.UpdateEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEndpoint
 func (c *Pinpoint) UpdateEndpointRequest(input *UpdateEndpointInput) (req *request.Request, output *UpdateEndpointOutput) {
@@ -10129,26 +10419,27 @@ func (c *Pinpoint) UpdateEndpointRequest(input *UpdateEndpointInput) (req *reque
 // API operation UpdateEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEndpoint
 func (c *Pinpoint) UpdateEndpoint(input *UpdateEndpointInput) (*UpdateEndpointOutput, error) {
@@ -10188,14 +10479,13 @@ const opUpdateEndpointsBatch = "UpdateEndpointsBatch"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEndpointsBatchRequest method.
+//	req, resp := client.UpdateEndpointsBatchRequest(params)
 //
-//    // Example sending a request using the UpdateEndpointsBatchRequest method.
-//    req, resp := client.UpdateEndpointsBatchRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEndpointsBatch
 func (c *Pinpoint) UpdateEndpointsBatchRequest(input *UpdateEndpointsBatchInput) (req *request.Request, output *UpdateEndpointsBatchOutput) {
@@ -10230,26 +10520,27 @@ func (c *Pinpoint) UpdateEndpointsBatchRequest(input *UpdateEndpointsBatchInput)
 // API operation UpdateEndpointsBatch for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateEndpointsBatch
 func (c *Pinpoint) UpdateEndpointsBatch(input *UpdateEndpointsBatchInput) (*UpdateEndpointsBatchOutput, error) {
@@ -10289,14 +10580,13 @@ const opUpdateGcmChannel = "UpdateGcmChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateGcmChannelRequest method.
+//	req, resp := client.UpdateGcmChannelRequest(params)
 //
-//    // Example sending a request using the UpdateGcmChannelRequest method.
-//    req, resp := client.UpdateGcmChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateGcmChannel
 func (c *Pinpoint) UpdateGcmChannelRequest(input *UpdateGcmChannelInput) (req *request.Request, output *UpdateGcmChannelOutput) {
@@ -10328,26 +10618,27 @@ func (c *Pinpoint) UpdateGcmChannelRequest(input *UpdateGcmChannelInput) (req *r
 // API operation UpdateGcmChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateGcmChannel
 func (c *Pinpoint) UpdateGcmChannel(input *UpdateGcmChannelInput) (*UpdateGcmChannelOutput, error) {
@@ -10387,14 +10678,13 @@ const opUpdateInAppTemplate = "UpdateInAppTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInAppTemplateRequest method.
+//	req, resp := client.UpdateInAppTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateInAppTemplateRequest method.
-//    req, resp := client.UpdateInAppTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateInAppTemplate
 func (c *Pinpoint) UpdateInAppTemplateRequest(input *UpdateInAppTemplateInput) (req *request.Request, output *UpdateInAppTemplateOutput) {
@@ -10426,26 +10716,27 @@ func (c *Pinpoint) UpdateInAppTemplateRequest(input *UpdateInAppTemplateInput) (
 // API operation UpdateInAppTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateInAppTemplate
 func (c *Pinpoint) UpdateInAppTemplate(input *UpdateInAppTemplateInput) (*UpdateInAppTemplateOutput, error) {
@@ -10485,14 +10776,13 @@ const opUpdateJourney = "UpdateJourney"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateJourneyRequest method.
+//	req, resp := client.UpdateJourneyRequest(params)
 //
-//    // Example sending a request using the UpdateJourneyRequest method.
-//    req, resp := client.UpdateJourneyRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateJourney
 func (c *Pinpoint) UpdateJourneyRequest(input *UpdateJourneyInput) (req *request.Request, output *UpdateJourneyOutput) {
@@ -10523,29 +10813,30 @@ func (c *Pinpoint) UpdateJourneyRequest(input *UpdateJourneyInput) (req *request
 // API operation UpdateJourney for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
 //
-//   * ConflictException
-//   Provides information about an API request or response.
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
+//
+//   - ConflictException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateJourney
 func (c *Pinpoint) UpdateJourney(input *UpdateJourneyInput) (*UpdateJourneyOutput, error) {
@@ -10585,14 +10876,13 @@ const opUpdateJourneyState = "UpdateJourneyState"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateJourneyStateRequest method.
+//	req, resp := client.UpdateJourneyStateRequest(params)
 //
-//    // Example sending a request using the UpdateJourneyStateRequest method.
-//    req, resp := client.UpdateJourneyStateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateJourneyState
 func (c *Pinpoint) UpdateJourneyStateRequest(input *UpdateJourneyStateInput) (req *request.Request, output *UpdateJourneyStateOutput) {
@@ -10623,26 +10913,27 @@ func (c *Pinpoint) UpdateJourneyStateRequest(input *UpdateJourneyStateInput) (re
 // API operation UpdateJourneyState for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateJourneyState
 func (c *Pinpoint) UpdateJourneyState(input *UpdateJourneyStateInput) (*UpdateJourneyStateOutput, error) {
@@ -10682,14 +10973,13 @@ const opUpdatePushTemplate = "UpdatePushTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePushTemplateRequest method.
+//	req, resp := client.UpdatePushTemplateRequest(params)
 //
-//    // Example sending a request using the UpdatePushTemplateRequest method.
-//    req, resp := client.UpdatePushTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdatePushTemplate
 func (c *Pinpoint) UpdatePushTemplateRequest(input *UpdatePushTemplateInput) (req *request.Request, output *UpdatePushTemplateOutput) {
@@ -10721,26 +11011,27 @@ func (c *Pinpoint) UpdatePushTemplateRequest(input *UpdatePushTemplateInput) (re
 // API operation UpdatePushTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdatePushTemplate
 func (c *Pinpoint) UpdatePushTemplate(input *UpdatePushTemplateInput) (*UpdatePushTemplateOutput, error) {
@@ -10780,14 +11071,13 @@ const opUpdateRecommenderConfiguration = "UpdateRecommenderConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRecommenderConfigurationRequest method.
+//	req, resp := client.UpdateRecommenderConfigurationRequest(params)
 //
-//    // Example sending a request using the UpdateRecommenderConfigurationRequest method.
-//    req, resp := client.UpdateRecommenderConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateRecommenderConfiguration
 func (c *Pinpoint) UpdateRecommenderConfigurationRequest(input *UpdateRecommenderConfigurationInput) (req *request.Request, output *UpdateRecommenderConfigurationOutput) {
@@ -10818,26 +11108,27 @@ func (c *Pinpoint) UpdateRecommenderConfigurationRequest(input *UpdateRecommende
 // API operation UpdateRecommenderConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateRecommenderConfiguration
 func (c *Pinpoint) UpdateRecommenderConfiguration(input *UpdateRecommenderConfigurationInput) (*UpdateRecommenderConfigurationOutput, error) {
@@ -10877,14 +11168,13 @@ const opUpdateSegment = "UpdateSegment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSegmentRequest method.
+//	req, resp := client.UpdateSegmentRequest(params)
 //
-//    // Example sending a request using the UpdateSegmentRequest method.
-//    req, resp := client.UpdateSegmentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateSegment
 func (c *Pinpoint) UpdateSegmentRequest(input *UpdateSegmentInput) (req *request.Request, output *UpdateSegmentOutput) {
@@ -10916,26 +11206,27 @@ func (c *Pinpoint) UpdateSegmentRequest(input *UpdateSegmentInput) (req *request
 // API operation UpdateSegment for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateSegment
 func (c *Pinpoint) UpdateSegment(input *UpdateSegmentInput) (*UpdateSegmentOutput, error) {
@@ -10975,14 +11266,13 @@ const opUpdateSmsChannel = "UpdateSmsChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSmsChannelRequest method.
+//	req, resp := client.UpdateSmsChannelRequest(params)
 //
-//    // Example sending a request using the UpdateSmsChannelRequest method.
-//    req, resp := client.UpdateSmsChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateSmsChannel
 func (c *Pinpoint) UpdateSmsChannelRequest(input *UpdateSmsChannelInput) (req *request.Request, output *UpdateSmsChannelOutput) {
@@ -11014,26 +11304,27 @@ func (c *Pinpoint) UpdateSmsChannelRequest(input *UpdateSmsChannelInput) (req *r
 // API operation UpdateSmsChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateSmsChannel
 func (c *Pinpoint) UpdateSmsChannel(input *UpdateSmsChannelInput) (*UpdateSmsChannelOutput, error) {
@@ -11073,14 +11364,13 @@ const opUpdateSmsTemplate = "UpdateSmsTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateSmsTemplateRequest method.
+//	req, resp := client.UpdateSmsTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateSmsTemplateRequest method.
-//    req, resp := client.UpdateSmsTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateSmsTemplate
 func (c *Pinpoint) UpdateSmsTemplateRequest(input *UpdateSmsTemplateInput) (req *request.Request, output *UpdateSmsTemplateOutput) {
@@ -11112,26 +11402,27 @@ func (c *Pinpoint) UpdateSmsTemplateRequest(input *UpdateSmsTemplateInput) (req 
 // API operation UpdateSmsTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateSmsTemplate
 func (c *Pinpoint) UpdateSmsTemplate(input *UpdateSmsTemplateInput) (*UpdateSmsTemplateOutput, error) {
@@ -11171,14 +11462,13 @@ const opUpdateTemplateActiveVersion = "UpdateTemplateActiveVersion"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTemplateActiveVersionRequest method.
+//	req, resp := client.UpdateTemplateActiveVersionRequest(params)
 //
-//    // Example sending a request using the UpdateTemplateActiveVersionRequest method.
-//    req, resp := client.UpdateTemplateActiveVersionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateTemplateActiveVersion
 func (c *Pinpoint) UpdateTemplateActiveVersionRequest(input *UpdateTemplateActiveVersionInput) (req *request.Request, output *UpdateTemplateActiveVersionOutput) {
@@ -11209,26 +11499,27 @@ func (c *Pinpoint) UpdateTemplateActiveVersionRequest(input *UpdateTemplateActiv
 // API operation UpdateTemplateActiveVersion for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateTemplateActiveVersion
 func (c *Pinpoint) UpdateTemplateActiveVersion(input *UpdateTemplateActiveVersionInput) (*UpdateTemplateActiveVersionOutput, error) {
@@ -11268,14 +11559,13 @@ const opUpdateVoiceChannel = "UpdateVoiceChannel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVoiceChannelRequest method.
+//	req, resp := client.UpdateVoiceChannelRequest(params)
 //
-//    // Example sending a request using the UpdateVoiceChannelRequest method.
-//    req, resp := client.UpdateVoiceChannelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateVoiceChannel
 func (c *Pinpoint) UpdateVoiceChannelRequest(input *UpdateVoiceChannelInput) (req *request.Request, output *UpdateVoiceChannelOutput) {
@@ -11307,26 +11597,27 @@ func (c *Pinpoint) UpdateVoiceChannelRequest(input *UpdateVoiceChannelInput) (re
 // API operation UpdateVoiceChannel for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateVoiceChannel
 func (c *Pinpoint) UpdateVoiceChannel(input *UpdateVoiceChannelInput) (*UpdateVoiceChannelOutput, error) {
@@ -11366,14 +11657,13 @@ const opUpdateVoiceTemplate = "UpdateVoiceTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVoiceTemplateRequest method.
+//	req, resp := client.UpdateVoiceTemplateRequest(params)
 //
-//    // Example sending a request using the UpdateVoiceTemplateRequest method.
-//    req, resp := client.UpdateVoiceTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateVoiceTemplate
 func (c *Pinpoint) UpdateVoiceTemplateRequest(input *UpdateVoiceTemplateInput) (req *request.Request, output *UpdateVoiceTemplateOutput) {
@@ -11405,26 +11695,27 @@ func (c *Pinpoint) UpdateVoiceTemplateRequest(input *UpdateVoiceTemplateInput) (
 // API operation UpdateVoiceTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/UpdateVoiceTemplate
 func (c *Pinpoint) UpdateVoiceTemplate(input *UpdateVoiceTemplateInput) (*UpdateVoiceTemplateOutput, error) {
@@ -11464,14 +11755,13 @@ const opVerifyOTPMessage = "VerifyOTPMessage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the VerifyOTPMessageRequest method.
+//	req, resp := client.VerifyOTPMessageRequest(params)
 //
-//    // Example sending a request using the VerifyOTPMessageRequest method.
-//    req, resp := client.VerifyOTPMessageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/VerifyOTPMessage
 func (c *Pinpoint) VerifyOTPMessageRequest(input *VerifyOTPMessageInput) (req *request.Request, output *VerifyOTPMessageOutput) {
@@ -11492,7 +11782,7 @@ func (c *Pinpoint) VerifyOTPMessageRequest(input *VerifyOTPMessageInput) (req *r
 
 // VerifyOTPMessage API operation for Amazon Pinpoint.
 //
-// Verify an OTP
+// # Verify an OTP
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -11502,26 +11792,27 @@ func (c *Pinpoint) VerifyOTPMessageRequest(input *VerifyOTPMessageInput) (req *r
 // API operation VerifyOTPMessage for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Provides information about an API request or response.
 //
-//   * InternalServerErrorException
-//   Provides information about an API request or response.
+//   - BadRequestException
+//     Provides information about an API request or response.
 //
-//   * PayloadTooLargeException
-//   Provides information about an API request or response.
+//   - InternalServerErrorException
+//     Provides information about an API request or response.
 //
-//   * ForbiddenException
-//   Provides information about an API request or response.
+//   - PayloadTooLargeException
+//     Provides information about an API request or response.
 //
-//   * NotFoundException
-//   Provides information about an API request or response.
+//   - ForbiddenException
+//     Provides information about an API request or response.
 //
-//   * MethodNotAllowedException
-//   Provides information about an API request or response.
+//   - NotFoundException
+//     Provides information about an API request or response.
 //
-//   * TooManyRequestsException
-//   Provides information about an API request or response.
+//   - MethodNotAllowedException
+//     Provides information about an API request or response.
+//
+//   - TooManyRequestsException
+//     Provides information about an API request or response.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/VerifyOTPMessage
 func (c *Pinpoint) VerifyOTPMessage(input *VerifyOTPMessageInput) (*VerifyOTPMessageOutput, error) {
@@ -13533,6 +13824,12 @@ type ActivityResponse struct {
 	// or COMPLETED.
 	End *string `type:"string"`
 
+	// A JSON object that contains metrics relating to the campaign execution for
+	// this campaign activity. For information about the structure and contents
+	// of the results, see Standard Amazon Pinpoint analytics metrics (https://docs.aws.amazon.com//pinpoint/latest/developerguide/analytics-standard-metrics.html)
+	// in the Amazon Pinpoint Developer Guide.
+	ExecutionMetrics map[string]*string `type:"map"`
+
 	// The unique identifier for the activity.
 	//
 	// Id is a required field
@@ -13605,6 +13902,12 @@ func (s *ActivityResponse) SetCampaignId(v string) *ActivityResponse {
 // SetEnd sets the End field's value.
 func (s *ActivityResponse) SetEnd(v string) *ActivityResponse {
 	s.End = &v
+	return s
+}
+
+// SetExecutionMetrics sets the ExecutionMetrics field's value.
+func (s *ActivityResponse) SetExecutionMetrics(v map[string]*string) *ActivityResponse {
+	s.ExecutionMetrics = v
 	return s
 }
 
@@ -14055,6 +14358,61 @@ func (s *ApplicationResponse) SetTags(v map[string]*string) *ApplicationResponse
 	return s
 }
 
+// The default sending limits for journeys in the application. To override these
+// limits and define custom limits for a specific journey, use the Journey resource.
+type ApplicationSettingsJourneyLimits struct {
+	_ struct{} `type:"structure"`
+
+	// The daily number of messages that an endpoint can receive from all journeys.
+	// The maximum value is 100. If set to 0, this limit will not apply.
+	DailyCap *int64 `type:"integer"`
+
+	// The default maximum number of messages that can be sent to an endpoint during
+	// the specified timeframe for all journeys.
+	TimeframeCap *JourneyTimeframeCap `type:"structure"`
+
+	// The default maximum number of messages that a single journey can sent to
+	// a single endpoint. The maximum value is 100. If set to 0, this limit will
+	// not apply.
+	TotalCap *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSettingsJourneyLimits) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ApplicationSettingsJourneyLimits) GoString() string {
+	return s.String()
+}
+
+// SetDailyCap sets the DailyCap field's value.
+func (s *ApplicationSettingsJourneyLimits) SetDailyCap(v int64) *ApplicationSettingsJourneyLimits {
+	s.DailyCap = &v
+	return s
+}
+
+// SetTimeframeCap sets the TimeframeCap field's value.
+func (s *ApplicationSettingsJourneyLimits) SetTimeframeCap(v *JourneyTimeframeCap) *ApplicationSettingsJourneyLimits {
+	s.TimeframeCap = v
+	return s
+}
+
+// SetTotalCap sets the TotalCap field's value.
+func (s *ApplicationSettingsJourneyLimits) SetTotalCap(v int64) *ApplicationSettingsJourneyLimits {
+	s.TotalCap = &v
+	return s
+}
+
 // Provides information about an application, including the default settings
 // for an application.
 type ApplicationSettingsResource struct {
@@ -14070,6 +14428,11 @@ type ApplicationSettingsResource struct {
 	// for campaigns in the application. You can use this hook to customize segments
 	// that are used by campaigns in the application.
 	CampaignHook *CampaignHook `type:"structure"`
+
+	// The default sending limits for journeys in the application. These limits
+	// apply to each journey for the application but can be overridden, on a per
+	// journey basis, with the JourneyLimits resource.
+	JourneyLimits *ApplicationSettingsJourneyLimits `type:"structure"`
 
 	// The date and time, in ISO 8601 format, when the application's settings were
 	// last modified.
@@ -14125,6 +14488,12 @@ func (s *ApplicationSettingsResource) SetApplicationId(v string) *ApplicationSet
 // SetCampaignHook sets the CampaignHook field's value.
 func (s *ApplicationSettingsResource) SetCampaignHook(v *CampaignHook) *ApplicationSettingsResource {
 	s.CampaignHook = v
+	return s
+}
+
+// SetJourneyLimits sets the JourneyLimits field's value.
+func (s *ApplicationSettingsResource) SetJourneyLimits(v *ApplicationSettingsJourneyLimits) *ApplicationSettingsResource {
+	s.JourneyLimits = v
 	return s
 }
 
@@ -15865,6 +16234,125 @@ func (s ChannelsResponse) GoString() string {
 // SetChannels sets the Channels field's value.
 func (s *ChannelsResponse) SetChannels(v map[string]*ChannelResponse) *ChannelsResponse {
 	s.Channels = v
+	return s
+}
+
+// The time when a journey will not send messages. QuietTime should be configured
+// first and SendingSchedule should be set to true.
+type ClosedDays struct {
+	_ struct{} `type:"structure"`
+
+	// Rules for a Channel.
+	CUSTOM []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	EMAIL []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	PUSH []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	SMS []*ClosedDaysRule `type:"list"`
+
+	// Rules for a Channel.
+	VOICE []*ClosedDaysRule `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDays) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDays) GoString() string {
+	return s.String()
+}
+
+// SetCUSTOM sets the CUSTOM field's value.
+func (s *ClosedDays) SetCUSTOM(v []*ClosedDaysRule) *ClosedDays {
+	s.CUSTOM = v
+	return s
+}
+
+// SetEMAIL sets the EMAIL field's value.
+func (s *ClosedDays) SetEMAIL(v []*ClosedDaysRule) *ClosedDays {
+	s.EMAIL = v
+	return s
+}
+
+// SetPUSH sets the PUSH field's value.
+func (s *ClosedDays) SetPUSH(v []*ClosedDaysRule) *ClosedDays {
+	s.PUSH = v
+	return s
+}
+
+// SetSMS sets the SMS field's value.
+func (s *ClosedDays) SetSMS(v []*ClosedDaysRule) *ClosedDays {
+	s.SMS = v
+	return s
+}
+
+// SetVOICE sets the VOICE field's value.
+func (s *ClosedDays) SetVOICE(v []*ClosedDaysRule) *ClosedDays {
+	s.VOICE = v
+	return s
+}
+
+// Specifies the rule settings for when messages can't be sent.
+type ClosedDaysRule struct {
+	_ struct{} `type:"structure"`
+
+	// End DateTime ISO 8601 format
+	EndDateTime *string `type:"string"`
+
+	// The name of the closed day rule.
+	Name *string `type:"string"`
+
+	// Start DateTime ISO 8601 format
+	StartDateTime *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDaysRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ClosedDaysRule) GoString() string {
+	return s.String()
+}
+
+// SetEndDateTime sets the EndDateTime field's value.
+func (s *ClosedDaysRule) SetEndDateTime(v string) *ClosedDaysRule {
+	s.EndDateTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *ClosedDaysRule) SetName(v string) *ClosedDaysRule {
+	s.Name = &v
+	return s
+}
+
+// SetStartDateTime sets the StartDateTime field's value.
+func (s *ClosedDaysRule) SetStartDateTime(v string) *ClosedDaysRule {
+	s.StartDateTime = &v
 	return s
 }
 
@@ -20617,9 +21105,17 @@ type EmailTemplateRequest struct {
 	// message template.
 	Subject *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -20899,7 +21395,8 @@ type EndpointBatchItem struct {
 	// specified by the Address property.
 	EndpointStatus *string `type:"string"`
 
-	// The unique identifier for the endpoint in the context of the batch.
+	// The case insensitive unique identifier for the endpoint in the context of
+	// the batch. The identifier can't contain $, { or }.
 	Id *string `type:"string"`
 
 	// The geographic information for the endpoint.
@@ -23065,12 +23562,19 @@ type GCMChannelRequest struct {
 
 	// The Web API Key, also referred to as an API_KEY or server key, that you received
 	// from Google to communicate with Google services.
-	//
-	// ApiKey is a required field
-	ApiKey *string `type:"string" required:"true"`
+	ApiKey *string `type:"string"`
+
+	// The default authentication method used for GCM. Values are either "TOKEN"
+	// or "KEY". Defaults to "KEY".
+	DefaultAuthenticationMethod *string `type:"string"`
 
 	// Specifies whether to enable the GCM channel for the application.
 	Enabled *bool `type:"boolean"`
+
+	// The contents of the JSON file provided by Google during registration in order
+	// to generate an access token for authentication. For more information see
+	// Migrate from legacy FCM APIs to HTTP v1 (https://firebase.google.com/docs/cloud-messaging/migrate-v1).
+	ServiceJson *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -23091,28 +23595,27 @@ func (s GCMChannelRequest) GoString() string {
 	return s.String()
 }
 
-// Validate inspects the fields of the type to determine if they are valid.
-func (s *GCMChannelRequest) Validate() error {
-	invalidParams := request.ErrInvalidParams{Context: "GCMChannelRequest"}
-	if s.ApiKey == nil {
-		invalidParams.Add(request.NewErrParamRequired("ApiKey"))
-	}
-
-	if invalidParams.Len() > 0 {
-		return invalidParams
-	}
-	return nil
-}
-
 // SetApiKey sets the ApiKey field's value.
 func (s *GCMChannelRequest) SetApiKey(v string) *GCMChannelRequest {
 	s.ApiKey = &v
 	return s
 }
 
+// SetDefaultAuthenticationMethod sets the DefaultAuthenticationMethod field's value.
+func (s *GCMChannelRequest) SetDefaultAuthenticationMethod(v string) *GCMChannelRequest {
+	s.DefaultAuthenticationMethod = &v
+	return s
+}
+
 // SetEnabled sets the Enabled field's value.
 func (s *GCMChannelRequest) SetEnabled(v bool) *GCMChannelRequest {
 	s.Enabled = &v
+	return s
+}
+
+// SetServiceJson sets the ServiceJson field's value.
+func (s *GCMChannelRequest) SetServiceJson(v string) *GCMChannelRequest {
+	s.ServiceJson = &v
 	return s
 }
 
@@ -23131,15 +23634,21 @@ type GCMChannelResponse struct {
 
 	// The Web API Key, also referred to as an API_KEY or server key, that you received
 	// from Google to communicate with Google services.
-	//
-	// Credential is a required field
-	Credential *string `type:"string" required:"true"`
+	Credential *string `type:"string"`
+
+	// The default authentication method used for GCM. Values are either "TOKEN"
+	// or "KEY". Defaults to "KEY".
+	DefaultAuthenticationMethod *string `type:"string"`
 
 	// Specifies whether the GCM channel is enabled for the application.
 	Enabled *bool `type:"boolean"`
 
 	// (Not used) This property is retained only for backward compatibility.
 	HasCredential *bool `type:"boolean"`
+
+	// Returns true if the JSON file provided by Google during registration process
+	// was used in the ServiceJson field of the request.
+	HasFcmServiceCredentials *bool `type:"boolean"`
 
 	// (Deprecated) An identifier for the GCM channel. This property is retained
 	// only for backward compatibility.
@@ -23200,6 +23709,12 @@ func (s *GCMChannelResponse) SetCredential(v string) *GCMChannelResponse {
 	return s
 }
 
+// SetDefaultAuthenticationMethod sets the DefaultAuthenticationMethod field's value.
+func (s *GCMChannelResponse) SetDefaultAuthenticationMethod(v string) *GCMChannelResponse {
+	s.DefaultAuthenticationMethod = &v
+	return s
+}
+
 // SetEnabled sets the Enabled field's value.
 func (s *GCMChannelResponse) SetEnabled(v bool) *GCMChannelResponse {
 	s.Enabled = &v
@@ -23209,6 +23724,12 @@ func (s *GCMChannelResponse) SetEnabled(v bool) *GCMChannelResponse {
 // SetHasCredential sets the HasCredential field's value.
 func (s *GCMChannelResponse) SetHasCredential(v bool) *GCMChannelResponse {
 	s.HasCredential = &v
+	return s
+}
+
+// SetHasFcmServiceCredentials sets the HasFcmServiceCredentials field's value.
+func (s *GCMChannelResponse) SetHasFcmServiceCredentials(v bool) *GCMChannelResponse {
+	s.HasFcmServiceCredentials = &v
 	return s
 }
 
@@ -23295,6 +23816,10 @@ type GCMMessage struct {
 
 	// The URL of an image to display in the push notification.
 	ImageUrl *string `type:"string"`
+
+	// The preferred authentication method, with valid values "KEY" or "TOKEN".
+	// If a value isn't provided then the DefaultAuthenticationMethod is used.
+	PreferredAuthenticationMethod *string `type:"string"`
 
 	// para>normal - The notification might be delayed. Delivery is optimized for
 	// battery usage on the recipient's device. Use this value unless immediate
@@ -23412,6 +23937,12 @@ func (s *GCMMessage) SetImageIconUrl(v string) *GCMMessage {
 // SetImageUrl sets the ImageUrl field's value.
 func (s *GCMMessage) SetImageUrl(v string) *GCMMessage {
 	s.ImageUrl = &v
+	return s
+}
+
+// SetPreferredAuthenticationMethod sets the PreferredAuthenticationMethod field's value.
+func (s *GCMMessage) SetPreferredAuthenticationMethod(v string) *GCMMessage {
+	s.PreferredAuthenticationMethod = &v
 	return s
 }
 
@@ -26678,6 +27209,388 @@ func (s *GetJourneyOutput) SetJourneyResponse(v *JourneyResponse) *GetJourneyOut
 	return s
 }
 
+type GetJourneyRunExecutionActivityMetricsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+
+	// JourneyActivityId is a required field
+	JourneyActivityId *string `location:"uri" locationName:"journey-activity-id" type:"string" required:"true"`
+
+	// JourneyId is a required field
+	JourneyId *string `location:"uri" locationName:"journey-id" type:"string" required:"true"`
+
+	NextToken *string `location:"querystring" locationName:"next-token" type:"string"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	// RunId is a required field
+	RunId *string `location:"uri" locationName:"run-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJourneyRunExecutionActivityMetricsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJourneyRunExecutionActivityMetricsInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+	if s.ApplicationId != nil && len(*s.ApplicationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationId", 1))
+	}
+	if s.JourneyActivityId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyActivityId"))
+	}
+	if s.JourneyActivityId != nil && len(*s.JourneyActivityId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyActivityId", 1))
+	}
+	if s.JourneyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyId"))
+	}
+	if s.JourneyId != nil && len(*s.JourneyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyId", 1))
+	}
+	if s.RunId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RunId"))
+	}
+	if s.RunId != nil && len(*s.RunId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RunId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetApplicationId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyActivityId sets the JourneyActivityId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetJourneyActivityId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.JourneyActivityId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetJourneyId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.JourneyId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetNextToken(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetPageSize(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *GetJourneyRunExecutionActivityMetricsInput) SetRunId(v string) *GetJourneyRunExecutionActivityMetricsInput {
+	s.RunId = &v
+	return s
+}
+
+type GetJourneyRunExecutionActivityMetricsOutput struct {
+	_ struct{} `type:"structure" payload:"JourneyRunExecutionActivityMetricsResponse"`
+
+	// Provides the results of a query that retrieved the data for a standard execution
+	// metric that applies to a journey activity for a particular journey run, and
+	// provides information about that query.
+	//
+	// JourneyRunExecutionActivityMetricsResponse is a required field
+	JourneyRunExecutionActivityMetricsResponse *JourneyRunExecutionActivityMetricsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionActivityMetricsOutput) GoString() string {
+	return s.String()
+}
+
+// SetJourneyRunExecutionActivityMetricsResponse sets the JourneyRunExecutionActivityMetricsResponse field's value.
+func (s *GetJourneyRunExecutionActivityMetricsOutput) SetJourneyRunExecutionActivityMetricsResponse(v *JourneyRunExecutionActivityMetricsResponse) *GetJourneyRunExecutionActivityMetricsOutput {
+	s.JourneyRunExecutionActivityMetricsResponse = v
+	return s
+}
+
+type GetJourneyRunExecutionMetricsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+
+	// JourneyId is a required field
+	JourneyId *string `location:"uri" locationName:"journey-id" type:"string" required:"true"`
+
+	NextToken *string `location:"querystring" locationName:"next-token" type:"string"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	// RunId is a required field
+	RunId *string `location:"uri" locationName:"run-id" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJourneyRunExecutionMetricsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJourneyRunExecutionMetricsInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+	if s.ApplicationId != nil && len(*s.ApplicationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationId", 1))
+	}
+	if s.JourneyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyId"))
+	}
+	if s.JourneyId != nil && len(*s.JourneyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyId", 1))
+	}
+	if s.RunId == nil {
+		invalidParams.Add(request.NewErrParamRequired("RunId"))
+	}
+	if s.RunId != nil && len(*s.RunId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RunId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetApplicationId(v string) *GetJourneyRunExecutionMetricsInput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetJourneyId(v string) *GetJourneyRunExecutionMetricsInput {
+	s.JourneyId = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetNextToken(v string) *GetJourneyRunExecutionMetricsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetPageSize(v string) *GetJourneyRunExecutionMetricsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *GetJourneyRunExecutionMetricsInput) SetRunId(v string) *GetJourneyRunExecutionMetricsInput {
+	s.RunId = &v
+	return s
+}
+
+type GetJourneyRunExecutionMetricsOutput struct {
+	_ struct{} `type:"structure" payload:"JourneyRunExecutionMetricsResponse"`
+
+	// Provides the results of a query that retrieved the data for a standard execution
+	// metric that applies to a journey run, and provides information about that
+	// query.
+	//
+	// JourneyRunExecutionMetricsResponse is a required field
+	JourneyRunExecutionMetricsResponse *JourneyRunExecutionMetricsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunExecutionMetricsOutput) GoString() string {
+	return s.String()
+}
+
+// SetJourneyRunExecutionMetricsResponse sets the JourneyRunExecutionMetricsResponse field's value.
+func (s *GetJourneyRunExecutionMetricsOutput) SetJourneyRunExecutionMetricsResponse(v *JourneyRunExecutionMetricsResponse) *GetJourneyRunExecutionMetricsOutput {
+	s.JourneyRunExecutionMetricsResponse = v
+	return s
+}
+
+type GetJourneyRunsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// ApplicationId is a required field
+	ApplicationId *string `location:"uri" locationName:"application-id" type:"string" required:"true"`
+
+	// JourneyId is a required field
+	JourneyId *string `location:"uri" locationName:"journey-id" type:"string" required:"true"`
+
+	PageSize *string `location:"querystring" locationName:"page-size" type:"string"`
+
+	Token *string `location:"querystring" locationName:"token" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetJourneyRunsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetJourneyRunsInput"}
+	if s.ApplicationId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ApplicationId"))
+	}
+	if s.ApplicationId != nil && len(*s.ApplicationId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ApplicationId", 1))
+	}
+	if s.JourneyId == nil {
+		invalidParams.Add(request.NewErrParamRequired("JourneyId"))
+	}
+	if s.JourneyId != nil && len(*s.JourneyId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("JourneyId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *GetJourneyRunsInput) SetApplicationId(v string) *GetJourneyRunsInput {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *GetJourneyRunsInput) SetJourneyId(v string) *GetJourneyRunsInput {
+	s.JourneyId = &v
+	return s
+}
+
+// SetPageSize sets the PageSize field's value.
+func (s *GetJourneyRunsInput) SetPageSize(v string) *GetJourneyRunsInput {
+	s.PageSize = &v
+	return s
+}
+
+// SetToken sets the Token field's value.
+func (s *GetJourneyRunsInput) SetToken(v string) *GetJourneyRunsInput {
+	s.Token = &v
+	return s
+}
+
+type GetJourneyRunsOutput struct {
+	_ struct{} `type:"structure" payload:"JourneyRunsResponse"`
+
+	// Provides information from all runs of a journey.
+	//
+	// JourneyRunsResponse is a required field
+	JourneyRunsResponse *JourneyRunsResponse `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetJourneyRunsOutput) GoString() string {
+	return s.String()
+}
+
+// SetJourneyRunsResponse sets the JourneyRunsResponse field's value.
+func (s *GetJourneyRunsOutput) SetJourneyRunsResponse(v *JourneyRunsResponse) *GetJourneyRunsOutput {
+	s.JourneyRunsResponse = v
+	return s
+}
+
 type GetPushTemplateInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -29131,9 +30044,17 @@ type InAppTemplateRequest struct {
 	// The layout of the message.
 	Layout *string `type:"string" enum:"Layout"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The description of the template.
@@ -29246,7 +30167,8 @@ type InAppTemplateResponse struct {
 	// TemplateName is a required field
 	TemplateName *string `type:"string" required:"true"`
 
-	// The type of the template.
+	// The type of channel that the message template is designed for. For an in-app
+	// message template, this value is INAPP.
 	//
 	// TemplateType is a required field
 	TemplateType *string `type:"string" required:"true" enum:"TemplateType"`
@@ -29668,26 +30590,26 @@ type JourneyExecutionActivityMetricsResponse struct {
 
 	// The type of activity that the metric applies to. Possible values are:
 	//
-	//    * CONDITIONAL_SPLIT - For a yes/no split activity, which is an activity
+	//    * CONDITIONAL_SPLIT – For a yes/no split activity, which is an activity
 	//    that sends participants down one of two paths in a journey.
 	//
-	//    * HOLDOUT - For a holdout activity, which is an activity that stops a
-	//    journey for a specified percentage of participants.
+	//    * HOLDOUT – For a holdout activity, which is an activity that stops
+	//    a journey for a specified percentage of participants.
 	//
-	//    * MESSAGE - For an email activity, which is an activity that sends an
+	//    * MESSAGE – For an email activity, which is an activity that sends an
 	//    email message to participants.
 	//
-	//    * MULTI_CONDITIONAL_SPLIT - For a multivariate split activity, which is
-	//    an activity that sends participants down one of as many as five paths
+	//    * MULTI_CONDITIONAL_SPLIT – For a multivariate split activity, which
+	//    is an activity that sends participants down one of as many as five paths
 	//    in a journey.
 	//
-	//    * RANDOM_SPLIT - For a random split activity, which is an activity that
+	//    * RANDOM_SPLIT – For a random split activity, which is an activity that
 	//    sends specified percentages of participants down one of as many as five
 	//    paths in a journey.
 	//
-	//    * WAIT - For a wait activity, which is an activity that waits for a certain
-	//    amount of time or until a specific date and time before moving participants
-	//    to the next activity in a journey.
+	//    * WAIT – For a wait activity, which is an activity that waits for a
+	//    certain amount of time or until a specific date and time before moving
+	//    participants to the next activity in a journey.
 	//
 	// ActivityType is a required field
 	ActivityType *string `type:"string" required:"true"`
@@ -29860,10 +30782,19 @@ type JourneyLimits struct {
 	// number of times, set this value to 0.
 	EndpointReentryCap *int64 `type:"integer"`
 
+	// Minimum time that must pass before an endpoint can re-enter a given journey.
 	EndpointReentryInterval *string `type:"string"`
 
 	// The maximum number of messages that the journey can send each second.
 	MessagesPerSecond *int64 `type:"integer"`
+
+	// The number of messages that an endpoint can receive during the specified
+	// timeframe.
+	TimeframeCap *JourneyTimeframeCap `type:"structure"`
+
+	// The maximum number of messages a journey can sent to a single endpoint. The
+	// maximum value is 100. If set to 0, this limit will not apply.
+	TotalCap *int64 `type:"integer"`
 }
 
 // String returns the string representation.
@@ -29908,6 +30839,18 @@ func (s *JourneyLimits) SetMessagesPerSecond(v int64) *JourneyLimits {
 	return s
 }
 
+// SetTimeframeCap sets the TimeframeCap field's value.
+func (s *JourneyLimits) SetTimeframeCap(v *JourneyTimeframeCap) *JourneyLimits {
+	s.TimeframeCap = v
+	return s
+}
+
+// SetTotalCap sets the TotalCap field's value.
+func (s *JourneyLimits) SetTotalCap(v int64) *JourneyLimits {
+	s.TotalCap = &v
+	return s
+}
+
 // Specifies the message configuration for a push notification that's sent to
 // participants in a journey.
 type JourneyPushMessage struct {
@@ -29915,7 +30858,7 @@ type JourneyPushMessage struct {
 
 	// The number of seconds that the push notification service should keep the
 	// message, if the service is unable to deliver the notification the first time.
-	// This value is converted to an expiration value when it's sent to a push-notification
+	// This value is converted to an expiration value when it's sent to a push notification
 	// service. If this value is 0, the service treats the notification as if it
 	// expires immediately and the service doesn't store or try to deliver the notification
 	// again.
@@ -29964,6 +30907,10 @@ type JourneyResponse struct {
 	// ApplicationId is a required field
 	ApplicationId *string `type:"string" required:"true"`
 
+	// The time when a journey will not send messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	ClosedDays *ClosedDays `type:"structure"`
+
 	// The date, in ISO 8601 format, when the journey was created.
 	CreationDate *string `type:"string"`
 
@@ -29991,6 +30938,10 @@ type JourneyResponse struct {
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
+	// The time when a journey can send messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	OpenHours *OpenHours `type:"structure"`
+
 	// The quiet time settings for the journey. Quiet time is a specific time range
 	// when a journey doesn't send messages to participants, if all the following
 	// conditions are met:
@@ -30012,8 +30963,16 @@ type JourneyResponse struct {
 	// for the journey, as a duration in ISO 8601 format.
 	RefreshFrequency *string `type:"string"`
 
+	// Indicates whether the journey participants should be refreshed when a segment
+	// is updated.
+	RefreshOnSegmentUpdate *bool `type:"boolean"`
+
 	// The schedule settings for the journey.
 	Schedule *JourneySchedule `type:"structure"`
+
+	// Indicates if journey has Advance Quiet Time enabled. This flag should be
+	// set to true in order to allow using OpenHours and ClosedDays.
+	SendingSchedule *bool `type:"boolean"`
 
 	// The unique identifier for the first activity in the journey.
 	StartActivity *string `type:"string"`
@@ -30052,6 +31011,25 @@ type JourneyResponse struct {
 
 	// This object is not used or supported.
 	Tags map[string]*string `locationName:"tags" type:"map"`
+
+	// An array of time zone estimation methods, if any, to use for determining
+	// an Endpoints (https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints-endpoint-id.html)
+	// time zone if the Endpoint does not have a value for the Demographic.Timezone
+	// attribute.
+	//
+	//    * PHONE_NUMBER - A time zone is determined based on the Endpoint.Address
+	//    and Endpoint.Location.Country.
+	//
+	//    * POSTAL_CODE - A time zone is determined based on the Endpoint.Location.PostalCode
+	//    and Endpoint.Location.Country. POSTAL_CODE detection is only supported
+	//    in the United States, United Kingdom, Australia, New Zealand, Canada,
+	//    France, Italy, Spain, Germany and in regions where Amazon Pinpoint is
+	//    available.
+	TimezoneEstimationMethods []*string `type:"list" enum:"TimezoneEstimationMethodsElement"`
+
+	// Indicates whether endpoints in quiet hours should enter a wait activity until
+	// quiet hours have elapsed.
+	WaitForQuietTime *bool `type:"boolean"`
 }
 
 // String returns the string representation.
@@ -30081,6 +31059,12 @@ func (s *JourneyResponse) SetActivities(v map[string]*Activity) *JourneyResponse
 // SetApplicationId sets the ApplicationId field's value.
 func (s *JourneyResponse) SetApplicationId(v string) *JourneyResponse {
 	s.ApplicationId = &v
+	return s
+}
+
+// SetClosedDays sets the ClosedDays field's value.
+func (s *JourneyResponse) SetClosedDays(v *ClosedDays) *JourneyResponse {
+	s.ClosedDays = v
 	return s
 }
 
@@ -30126,6 +31110,12 @@ func (s *JourneyResponse) SetName(v string) *JourneyResponse {
 	return s
 }
 
+// SetOpenHours sets the OpenHours field's value.
+func (s *JourneyResponse) SetOpenHours(v *OpenHours) *JourneyResponse {
+	s.OpenHours = v
+	return s
+}
+
 // SetQuietTime sets the QuietTime field's value.
 func (s *JourneyResponse) SetQuietTime(v *QuietTime) *JourneyResponse {
 	s.QuietTime = v
@@ -30138,9 +31128,21 @@ func (s *JourneyResponse) SetRefreshFrequency(v string) *JourneyResponse {
 	return s
 }
 
+// SetRefreshOnSegmentUpdate sets the RefreshOnSegmentUpdate field's value.
+func (s *JourneyResponse) SetRefreshOnSegmentUpdate(v bool) *JourneyResponse {
+	s.RefreshOnSegmentUpdate = &v
+	return s
+}
+
 // SetSchedule sets the Schedule field's value.
 func (s *JourneyResponse) SetSchedule(v *JourneySchedule) *JourneyResponse {
 	s.Schedule = v
+	return s
+}
+
+// SetSendingSchedule sets the SendingSchedule field's value.
+func (s *JourneyResponse) SetSendingSchedule(v bool) *JourneyResponse {
+	s.SendingSchedule = &v
 	return s
 }
 
@@ -30165,6 +31167,341 @@ func (s *JourneyResponse) SetState(v string) *JourneyResponse {
 // SetTags sets the Tags field's value.
 func (s *JourneyResponse) SetTags(v map[string]*string) *JourneyResponse {
 	s.Tags = v
+	return s
+}
+
+// SetTimezoneEstimationMethods sets the TimezoneEstimationMethods field's value.
+func (s *JourneyResponse) SetTimezoneEstimationMethods(v []*string) *JourneyResponse {
+	s.TimezoneEstimationMethods = v
+	return s
+}
+
+// SetWaitForQuietTime sets the WaitForQuietTime field's value.
+func (s *JourneyResponse) SetWaitForQuietTime(v bool) *JourneyResponse {
+	s.WaitForQuietTime = &v
+	return s
+}
+
+// Provides the results of a query that retrieved the data for a standard execution
+// metric that applies to a journey activity for a particular journey run, and
+// provides information about that query.
+type JourneyRunExecutionActivityMetricsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The type of activity that the metric applies to. Possible values are:
+	//
+	//    * CONDITIONAL_SPLIT – For a yes/no split activity, which is an activity
+	//    that sends participants down one of two paths in a journey.
+	//
+	//    * HOLDOUT – For a holdout activity, which is an activity that stops
+	//    a journey for a specified percentage of participants.
+	//
+	//    * MESSAGE – For an email activity, which is an activity that sends an
+	//    email message to participants.
+	//
+	//    * MULTI_CONDITIONAL_SPLIT – For a multivariate split activity, which
+	//    is an activity that sends participants down one of as many as five paths
+	//    in a journey.
+	//
+	//    * RANDOM_SPLIT – For a random split activity, which is an activity that
+	//    sends specified percentages of participants down one of as many as five
+	//    paths in a journey.
+	//
+	//    * WAIT – For a wait activity, which is an activity that waits for a
+	//    certain amount of time or until a specific date and time before moving
+	//    participants to the next activity in a journey.
+	//
+	// ActivityType is a required field
+	ActivityType *string `type:"string" required:"true"`
+
+	// The unique identifier for the application that the metric applies to.
+	//
+	// ApplicationId is a required field
+	ApplicationId *string `type:"string" required:"true"`
+
+	// The unique identifier for the activity that the metric applies to.
+	//
+	// JourneyActivityId is a required field
+	JourneyActivityId *string `type:"string" required:"true"`
+
+	// The unique identifier for the journey that the metric applies to.
+	//
+	// JourneyId is a required field
+	JourneyId *string `type:"string" required:"true"`
+
+	// The date and time, in ISO 8601 format, when Amazon Pinpoint last evaluated
+	// the execution status of the activity for this journey run and updated the
+	// data for the metric.
+	//
+	// LastEvaluatedTime is a required field
+	LastEvaluatedTime *string `type:"string" required:"true"`
+
+	// A JSON object that contains the results of the query. For information about
+	// the structure and contents of the results, see see Standard Amazon Pinpoint
+	// analytics metrics (https://docs.aws.amazon.com//pinpoint/latest/developerguide/analytics-standard-metrics.html)
+	// in the Amazon Pinpoint Developer Guide.
+	//
+	// Metrics is a required field
+	Metrics map[string]*string `type:"map" required:"true"`
+
+	// The unique identifier for the journey run that the metric applies to.
+	//
+	// RunId is a required field
+	RunId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionActivityMetricsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionActivityMetricsResponse) GoString() string {
+	return s.String()
+}
+
+// SetActivityType sets the ActivityType field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetActivityType(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.ActivityType = &v
+	return s
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetApplicationId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyActivityId sets the JourneyActivityId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetJourneyActivityId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.JourneyActivityId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetJourneyId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.JourneyId = &v
+	return s
+}
+
+// SetLastEvaluatedTime sets the LastEvaluatedTime field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetLastEvaluatedTime(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.LastEvaluatedTime = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetMetrics(v map[string]*string) *JourneyRunExecutionActivityMetricsResponse {
+	s.Metrics = v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *JourneyRunExecutionActivityMetricsResponse) SetRunId(v string) *JourneyRunExecutionActivityMetricsResponse {
+	s.RunId = &v
+	return s
+}
+
+// Provides the results of a query that retrieved the data for a standard execution
+// metric that applies to a journey run, and provides information about that
+// query.
+type JourneyRunExecutionMetricsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifier for the application that the metric applies to.
+	//
+	// ApplicationId is a required field
+	ApplicationId *string `type:"string" required:"true"`
+
+	// The unique identifier for the journey that the metric applies to.
+	//
+	// JourneyId is a required field
+	JourneyId *string `type:"string" required:"true"`
+
+	// The date and time, in ISO 8601 format, when Amazon Pinpoint last evaluated
+	// the journey run and updated the data for the metric.
+	//
+	// LastEvaluatedTime is a required field
+	LastEvaluatedTime *string `type:"string" required:"true"`
+
+	// A JSON object that contains the results of the query. For information about
+	// the structure and contents of the results, see the Standard Amazon Pinpoint
+	// analytics metrics (https://docs.aws.amazon.com//pinpoint/latest/developerguide/analytics-standard-metrics.html)
+	// in the Amazon Pinpoint Developer Guide.
+	//
+	// Metrics is a required field
+	Metrics map[string]*string `type:"map" required:"true"`
+
+	// The unique identifier for the journey run that the metric applies to.
+	//
+	// RunId is a required field
+	RunId *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionMetricsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunExecutionMetricsResponse) GoString() string {
+	return s.String()
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetApplicationId(v string) *JourneyRunExecutionMetricsResponse {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetJourneyId sets the JourneyId field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetJourneyId(v string) *JourneyRunExecutionMetricsResponse {
+	s.JourneyId = &v
+	return s
+}
+
+// SetLastEvaluatedTime sets the LastEvaluatedTime field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetLastEvaluatedTime(v string) *JourneyRunExecutionMetricsResponse {
+	s.LastEvaluatedTime = &v
+	return s
+}
+
+// SetMetrics sets the Metrics field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetMetrics(v map[string]*string) *JourneyRunExecutionMetricsResponse {
+	s.Metrics = v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *JourneyRunExecutionMetricsResponse) SetRunId(v string) *JourneyRunExecutionMetricsResponse {
+	s.RunId = &v
+	return s
+}
+
+// Provides information from a specified run of a journey.
+type JourneyRunResponse struct {
+	_ struct{} `type:"structure"`
+
+	// The time when the journey run was created or scheduled, in ISO 8601 format.
+	//
+	// CreationTime is a required field
+	CreationTime *string `type:"string" required:"true"`
+
+	// The last time the journey run was updated, in ISO 8601 format..
+	//
+	// LastUpdateTime is a required field
+	LastUpdateTime *string `type:"string" required:"true"`
+
+	// The unique identifier for the run.
+	//
+	// RunId is a required field
+	RunId *string `type:"string" required:"true"`
+
+	// The current status of the journey run.
+	//
+	// Status is a required field
+	Status *string `type:"string" required:"true" enum:"JourneyRunStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunResponse) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *JourneyRunResponse) SetCreationTime(v string) *JourneyRunResponse {
+	s.CreationTime = &v
+	return s
+}
+
+// SetLastUpdateTime sets the LastUpdateTime field's value.
+func (s *JourneyRunResponse) SetLastUpdateTime(v string) *JourneyRunResponse {
+	s.LastUpdateTime = &v
+	return s
+}
+
+// SetRunId sets the RunId field's value.
+func (s *JourneyRunResponse) SetRunId(v string) *JourneyRunResponse {
+	s.RunId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *JourneyRunResponse) SetStatus(v string) *JourneyRunResponse {
+	s.Status = &v
+	return s
+}
+
+// Provides information from all runs of a journey.
+type JourneyRunsResponse struct {
+	_ struct{} `type:"structure"`
+
+	// An array of responses, one for each run of the journey
+	//
+	// Item is a required field
+	Item []*JourneyRunResponse `type:"list" required:"true"`
+
+	// The string to use in a subsequent request to get the next page of results
+	// in a paginated response. This value is null if there are no additional pages.
+	NextToken *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunsResponse) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyRunsResponse) GoString() string {
+	return s.String()
+}
+
+// SetItem sets the Item field's value.
+func (s *JourneyRunsResponse) SetItem(v []*JourneyRunResponse) *JourneyRunsResponse {
+	s.Item = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *JourneyRunsResponse) SetNextToken(v string) *JourneyRunsResponse {
+	s.NextToken = &v
 	return s
 }
 
@@ -30348,6 +31685,51 @@ func (s JourneyStateRequest) GoString() string {
 // SetState sets the State field's value.
 func (s *JourneyStateRequest) SetState(v string) *JourneyStateRequest {
 	s.State = &v
+	return s
+}
+
+// The number of messages that can be sent to an endpoint during the specified
+// timeframe for all journeys.
+type JourneyTimeframeCap struct {
+	_ struct{} `type:"structure"`
+
+	// The maximum number of messages that all journeys can send to an endpoint
+	// during the specified timeframe. The maximum value is 100. If set to 0, this
+	// limit will not apply.
+	Cap *int64 `type:"integer"`
+
+	// The length of the timeframe in days. The maximum value is 30. If set to 0,
+	// this limit will not apply.
+	Days *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyTimeframeCap) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s JourneyTimeframeCap) GoString() string {
+	return s.String()
+}
+
+// SetCap sets the Cap field's value.
+func (s *JourneyTimeframeCap) SetCap(v int64) *JourneyTimeframeCap {
+	s.Cap = &v
+	return s
+}
+
+// SetDays sets the Days field's value.
+func (s *JourneyTimeframeCap) SetDays(v int64) *JourneyTimeframeCap {
+	s.Days = &v
 	return s
 }
 
@@ -31956,6 +33338,117 @@ func (s *NumberValidateResponse) SetZipCode(v string) *NumberValidateResponse {
 	return s
 }
 
+// Specifies the times when message are allowed to be sent to endpoints.
+type OpenHours struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the schedule settings for the custom channel.
+	CUSTOM map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the email channel.
+	EMAIL map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the push channel.
+	PUSH map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the SMS channel.
+	SMS map[string][]*OpenHoursRule `type:"map"`
+
+	// Specifies the schedule settings for the voice channel.
+	VOICE map[string][]*OpenHoursRule `type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHours) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHours) GoString() string {
+	return s.String()
+}
+
+// SetCUSTOM sets the CUSTOM field's value.
+func (s *OpenHours) SetCUSTOM(v map[string][]*OpenHoursRule) *OpenHours {
+	s.CUSTOM = v
+	return s
+}
+
+// SetEMAIL sets the EMAIL field's value.
+func (s *OpenHours) SetEMAIL(v map[string][]*OpenHoursRule) *OpenHours {
+	s.EMAIL = v
+	return s
+}
+
+// SetPUSH sets the PUSH field's value.
+func (s *OpenHours) SetPUSH(v map[string][]*OpenHoursRule) *OpenHours {
+	s.PUSH = v
+	return s
+}
+
+// SetSMS sets the SMS field's value.
+func (s *OpenHours) SetSMS(v map[string][]*OpenHoursRule) *OpenHours {
+	s.SMS = v
+	return s
+}
+
+// SetVOICE sets the VOICE field's value.
+func (s *OpenHours) SetVOICE(v map[string][]*OpenHoursRule) *OpenHours {
+	s.VOICE = v
+	return s
+}
+
+// Specifies the start and end time for OpenHours.
+type OpenHoursRule struct {
+	_ struct{} `type:"structure"`
+
+	// The end of the scheduled time, in ISO 8601 format, when the channel can't
+	// send messages.
+	EndTime *string `type:"string"`
+
+	// The start of the scheduled time, in ISO 8601 format, when the channel can
+	// send messages.
+	StartTime *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHoursRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s OpenHoursRule) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *OpenHoursRule) SetEndTime(v string) *OpenHoursRule {
+	s.EndTime = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *OpenHoursRule) SetStartTime(v string) *OpenHoursRule {
+	s.StartTime = &v
+	return s
+}
+
 // Override button configuration.
 type OverrideButtonConfiguration struct {
 	_ struct{} `type:"structure"`
@@ -32411,9 +33904,17 @@ type PushNotificationTemplateRequest struct {
 	// if the template contains message variables for recommendation data.
 	RecommenderId *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -33925,9 +35426,17 @@ type SMSTemplateRequest struct {
 	// if the template contains message variables for recommendation data.
 	RecommenderId *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -36415,6 +37924,10 @@ type TemplateConfiguration struct {
 	// The email template to use for the message.
 	EmailTemplate *Template `type:"structure"`
 
+	// The InApp template to use for the message. The InApp template object is not
+	// supported for SendMessages.
+	InAppTemplate *Template `type:"structure"`
+
 	// The push notification template to use for the message.
 	PushTemplate *Template `type:"structure"`
 
@@ -36447,6 +37960,12 @@ func (s TemplateConfiguration) GoString() string {
 // SetEmailTemplate sets the EmailTemplate field's value.
 func (s *TemplateConfiguration) SetEmailTemplate(v *Template) *TemplateConfiguration {
 	s.EmailTemplate = v
+	return s
+}
+
+// SetInAppTemplate sets the InAppTemplate field's value.
+func (s *TemplateConfiguration) SetInAppTemplate(v *Template) *TemplateConfiguration {
+	s.InAppTemplate = v
 	return s
 }
 
@@ -36568,7 +38087,7 @@ type TemplateResponse struct {
 	TemplateName *string `type:"string" required:"true"`
 
 	// The type of channel that the message template is designed for. Possible values
-	// are: EMAIL, PUSH, SMS, and VOICE.
+	// are: EMAIL, PUSH, SMS, INAPP, and VOICE.
 	//
 	// TemplateType is a required field
 	TemplateType *string `type:"string" required:"true" enum:"TemplateType"`
@@ -36681,7 +38200,7 @@ type TemplateVersionResponse struct {
 	TemplateName *string `type:"string" required:"true"`
 
 	// The type of channel that the message template is designed for. Possible values
-	// are: EMAIL, PUSH, SMS, and VOICE.
+	// are: EMAIL, PUSH, SMS, INAPP, and VOICE.
 	//
 	// TemplateType is a required field
 	TemplateType *string `type:"string" required:"true"`
@@ -38417,11 +39936,6 @@ func (s *UpdateGcmChannelInput) Validate() error {
 	}
 	if s.GCMChannelRequest == nil {
 		invalidParams.Add(request.NewErrParamRequired("GCMChannelRequest"))
-	}
-	if s.GCMChannelRequest != nil {
-		if err := s.GCMChannelRequest.Validate(); err != nil {
-			invalidParams.AddNested("GCMChannelRequest", err.(request.ErrInvalidParams))
-		}
 	}
 
 	if invalidParams.Len() > 0 {
@@ -40311,9 +41825,17 @@ type VoiceTemplateRequest struct {
 	// (https://docs.aws.amazon.com/polly/latest/dg/what-is.html).
 	LanguageCode *string `type:"string"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the message template. Each tag consists of a required tag key and an
-	// associated tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the message template. Each tag consists of a required tag
+	// key and an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// A custom description of the message template.
@@ -40640,6 +42162,11 @@ type WriteApplicationSettingsRequest struct {
 	// Specifies whether to enable application-related alarms in Amazon CloudWatch.
 	CloudWatchMetricsEnabled *bool `type:"boolean"`
 
+	// The default sending limits for journeys in the application. These limits
+	// apply to each journey for the application but can be overridden, on a per
+	// journey basis, with the JourneyLimits resource.
+	JourneyLimits *ApplicationSettingsJourneyLimits `type:"structure"`
+
 	// The default sending limits for campaigns in the application. To override
 	// these limits and define custom limits for a specific campaign or journey,
 	// use the Campaign resource or the Journey resource, respectively.
@@ -40696,6 +42223,12 @@ func (s *WriteApplicationSettingsRequest) SetCampaignHook(v *CampaignHook) *Writ
 // SetCloudWatchMetricsEnabled sets the CloudWatchMetricsEnabled field's value.
 func (s *WriteApplicationSettingsRequest) SetCloudWatchMetricsEnabled(v bool) *WriteApplicationSettingsRequest {
 	s.CloudWatchMetricsEnabled = &v
+	return s
+}
+
+// SetJourneyLimits sets the JourneyLimits field's value.
+func (s *WriteApplicationSettingsRequest) SetJourneyLimits(v *ApplicationSettingsJourneyLimits) *WriteApplicationSettingsRequest {
+	s.JourneyLimits = v
 	return s
 }
 
@@ -40763,9 +42296,17 @@ type WriteCampaignRequest struct {
 	// The version of the segment to associate with the campaign.
 	SegmentVersion *int64 `type:"integer"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the campaign. Each tag consists of a required tag key and an associated
-	// tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the campaign. Each tag consists of a required tag key and
+	// an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// The message template to use for the campaign.
@@ -41016,6 +42557,10 @@ type WriteJourneyRequest struct {
 	// must be alphanumeric characters.
 	Activities map[string]*Activity `type:"map"`
 
+	// The time when journey will stop sending messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	ClosedDays *ClosedDays `type:"structure"`
+
 	// The date, in ISO 8601 format, when the journey was created.
 	CreationDate *string `type:"string"`
 
@@ -41041,6 +42586,10 @@ type WriteJourneyRequest struct {
 	// Name is a required field
 	Name *string `type:"string" required:"true"`
 
+	// The time when journey allow to send messages. QuietTime should be configured
+	// first and SendingSchedule should be set to true.
+	OpenHours *OpenHours `type:"structure"`
+
 	// The quiet time settings for the journey. Quiet time is a specific time range
 	// when a journey doesn't send messages to participants, if all the following
 	// conditions are met:
@@ -41062,10 +42611,16 @@ type WriteJourneyRequest struct {
 	// for the journey, as a duration in ISO 8601 format.
 	RefreshFrequency *string `type:"string"`
 
+	// Indicates whether the journey participants should be refreshed when a segment
+	// is updated.
 	RefreshOnSegmentUpdate *bool `type:"boolean"`
 
 	// The schedule settings for the journey.
 	Schedule *JourneySchedule `type:"structure"`
+
+	// Indicates if journey has Advance Quiet Time enabled. This flag should be
+	// set to true in order to allow using OpenHours and ClosedDays.
+	SendingSchedule *bool `type:"boolean"`
 
 	// The unique identifier for the first activity in the journey. The identifier
 	// for this activity can contain a maximum of 128 characters. The characters
@@ -41089,6 +42644,23 @@ type WriteJourneyRequest struct {
 	// the Journey State resource.
 	State *string `type:"string" enum:"State"`
 
+	// An array of time zone estimation methods, if any, to use for determining
+	// an Endpoints (https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints-endpoint-id.html)
+	// time zone if the Endpoint does not have a value for the Demographic.Timezone
+	// attribute.
+	//
+	//    * PHONE_NUMBER - A time zone is determined based on the Endpoint.Address
+	//    and Endpoint.Location.Country.
+	//
+	//    * POSTAL_CODE - A time zone is determined based on the Endpoint.Location.PostalCode
+	//    and Endpoint.Location.Country. POSTAL_CODE detection is only supported
+	//    in the United States, United Kingdom, Australia, New Zealand, Canada,
+	//    France, Italy, Spain, Germany and in regions where Amazon Pinpoint is
+	//    available.
+	TimezoneEstimationMethods []*string `type:"list" enum:"TimezoneEstimationMethodsElement"`
+
+	// Indicates whether endpoints in quiet hours should enter a wait activity until
+	// quiet hours have elapsed.
 	WaitForQuietTime *bool `type:"boolean"`
 }
 
@@ -41144,6 +42716,12 @@ func (s *WriteJourneyRequest) SetActivities(v map[string]*Activity) *WriteJourne
 	return s
 }
 
+// SetClosedDays sets the ClosedDays field's value.
+func (s *WriteJourneyRequest) SetClosedDays(v *ClosedDays) *WriteJourneyRequest {
+	s.ClosedDays = v
+	return s
+}
+
 // SetCreationDate sets the CreationDate field's value.
 func (s *WriteJourneyRequest) SetCreationDate(v string) *WriteJourneyRequest {
 	s.CreationDate = &v
@@ -41180,6 +42758,12 @@ func (s *WriteJourneyRequest) SetName(v string) *WriteJourneyRequest {
 	return s
 }
 
+// SetOpenHours sets the OpenHours field's value.
+func (s *WriteJourneyRequest) SetOpenHours(v *OpenHours) *WriteJourneyRequest {
+	s.OpenHours = v
+	return s
+}
+
 // SetQuietTime sets the QuietTime field's value.
 func (s *WriteJourneyRequest) SetQuietTime(v *QuietTime) *WriteJourneyRequest {
 	s.QuietTime = v
@@ -41204,6 +42788,12 @@ func (s *WriteJourneyRequest) SetSchedule(v *JourneySchedule) *WriteJourneyReque
 	return s
 }
 
+// SetSendingSchedule sets the SendingSchedule field's value.
+func (s *WriteJourneyRequest) SetSendingSchedule(v bool) *WriteJourneyRequest {
+	s.SendingSchedule = &v
+	return s
+}
+
 // SetStartActivity sets the StartActivity field's value.
 func (s *WriteJourneyRequest) SetStartActivity(v string) *WriteJourneyRequest {
 	s.StartActivity = &v
@@ -41219,6 +42809,12 @@ func (s *WriteJourneyRequest) SetStartCondition(v *StartCondition) *WriteJourney
 // SetState sets the State field's value.
 func (s *WriteJourneyRequest) SetState(v string) *WriteJourneyRequest {
 	s.State = &v
+	return s
+}
+
+// SetTimezoneEstimationMethods sets the TimezoneEstimationMethods field's value.
+func (s *WriteJourneyRequest) SetTimezoneEstimationMethods(v []*string) *WriteJourneyRequest {
+	s.TimezoneEstimationMethods = v
 	return s
 }
 
@@ -41245,9 +42841,17 @@ type WriteSegmentRequest struct {
 	// or more base segments. Your request can include only one segment group.
 	SegmentGroups *SegmentGroupList `type:"structure"`
 
-	// A string-to-string map of key-value pairs that defines the tags to associate
-	// with the segment. Each tag consists of a required tag key and an associated
-	// tag value.
+	// As of 22-05-2023 tags has been deprecated for update operations. After this
+	// date any value in tags is not processed and an error code is not returned.
+	// To manage tags we recommend using either Tags (https://docs.aws.amazon.com/pinpoint/latest/apireference/tags-resource-arn.html)
+	// in the API Reference for Amazon Pinpoint, resourcegroupstaggingapi (https://docs.aws.amazon.com/cli/latest/reference/resourcegroupstaggingapi/index.html)
+	// commands in the AWS Command Line Interface Documentation or resourcegroupstaggingapi
+	// (https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/resourcegroupstaggingapi/package-summary.html)
+	// in the AWS SDK.
+	//
+	// (Deprecated) A string-to-string map of key-value pairs that defines the tags
+	// to associate with the segment. Each tag consists of a required tag key and
+	// an associated tag value.
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
@@ -41625,6 +43229,43 @@ func ChannelType_Values() []string {
 	}
 }
 
+// Day of a week.
+const (
+	// DayOfWeekMonday is a DayOfWeek enum value
+	DayOfWeekMonday = "MONDAY"
+
+	// DayOfWeekTuesday is a DayOfWeek enum value
+	DayOfWeekTuesday = "TUESDAY"
+
+	// DayOfWeekWednesday is a DayOfWeek enum value
+	DayOfWeekWednesday = "WEDNESDAY"
+
+	// DayOfWeekThursday is a DayOfWeek enum value
+	DayOfWeekThursday = "THURSDAY"
+
+	// DayOfWeekFriday is a DayOfWeek enum value
+	DayOfWeekFriday = "FRIDAY"
+
+	// DayOfWeekSaturday is a DayOfWeek enum value
+	DayOfWeekSaturday = "SATURDAY"
+
+	// DayOfWeekSunday is a DayOfWeek enum value
+	DayOfWeekSunday = "SUNDAY"
+)
+
+// DayOfWeek_Values returns all elements of the DayOfWeek enum
+func DayOfWeek_Values() []string {
+	return []string{
+		DayOfWeekMonday,
+		DayOfWeekTuesday,
+		DayOfWeekWednesday,
+		DayOfWeekThursday,
+		DayOfWeekFriday,
+		DayOfWeekSaturday,
+		DayOfWeekSunday,
+	}
+}
+
 const (
 	// DeliveryStatusSuccessful is a DeliveryStatus enum value
 	DeliveryStatusSuccessful = "SUCCESSFUL"
@@ -41894,6 +43535,30 @@ func JobStatus_Values() []string {
 }
 
 const (
+	// JourneyRunStatusScheduled is a JourneyRunStatus enum value
+	JourneyRunStatusScheduled = "SCHEDULED"
+
+	// JourneyRunStatusRunning is a JourneyRunStatus enum value
+	JourneyRunStatusRunning = "RUNNING"
+
+	// JourneyRunStatusCompleted is a JourneyRunStatus enum value
+	JourneyRunStatusCompleted = "COMPLETED"
+
+	// JourneyRunStatusCancelled is a JourneyRunStatus enum value
+	JourneyRunStatusCancelled = "CANCELLED"
+)
+
+// JourneyRunStatus_Values returns all elements of the JourneyRunStatus enum
+func JourneyRunStatus_Values() []string {
+	return []string{
+		JourneyRunStatusScheduled,
+		JourneyRunStatusRunning,
+		JourneyRunStatusCompleted,
+		JourneyRunStatusCancelled,
+	}
+}
+
+const (
 	// LayoutBottomBanner is a Layout enum value
 	LayoutBottomBanner = "BOTTOM_BANNER"
 
@@ -42082,6 +43747,22 @@ func TemplateType_Values() []string {
 		TemplateTypeVoice,
 		TemplateTypePush,
 		TemplateTypeInapp,
+	}
+}
+
+const (
+	// TimezoneEstimationMethodsElementPhoneNumber is a TimezoneEstimationMethodsElement enum value
+	TimezoneEstimationMethodsElementPhoneNumber = "PHONE_NUMBER"
+
+	// TimezoneEstimationMethodsElementPostalCode is a TimezoneEstimationMethodsElement enum value
+	TimezoneEstimationMethodsElementPostalCode = "POSTAL_CODE"
+)
+
+// TimezoneEstimationMethodsElement_Values returns all elements of the TimezoneEstimationMethodsElement enum
+func TimezoneEstimationMethodsElement_Values() []string {
+	return []string{
+		TimezoneEstimationMethodsElementPhoneNumber,
+		TimezoneEstimationMethodsElementPostalCode,
 	}
 }
 

@@ -3,7 +3,6 @@
 // Package waf provides the client and types for making API
 // requests to AWS WAF.
 //
-//
 // This is AWS WAF Classic documentation. For more information, see AWS WAF
 // Classic (https://docs.aws.amazon.com/waf/latest/developerguide/classic-waf-chapter.html)
 // in the developer guide.
@@ -28,7 +27,7 @@
 // See waf package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/waf/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS WAF with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

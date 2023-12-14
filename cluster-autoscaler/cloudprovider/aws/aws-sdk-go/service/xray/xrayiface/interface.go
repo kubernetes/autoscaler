@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS X-Ray.
-//    func myFunc(svc xrayiface.XRayAPI) bool {
-//        // Make svc.BatchGetTraces request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS X-Ray.
+//	func myFunc(svc xrayiface.XRayAPI) bool {
+//	    // Make svc.BatchGetTraces request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := xray.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := xray.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockXRayClient struct {
-//        xrayiface.XRayAPI
-//    }
-//    func (m *mockXRayClient) BatchGetTraces(input *xray.BatchGetTracesInput) (*xray.BatchGetTracesOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockXRayClient struct {
+//	    xrayiface.XRayAPI
+//	}
+//	func (m *mockXRayClient) BatchGetTraces(input *xray.BatchGetTracesInput) (*xray.BatchGetTracesOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockXRayClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockXRayClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -78,6 +78,10 @@ type XRayAPI interface {
 	DeleteGroup(*xray.DeleteGroupInput) (*xray.DeleteGroupOutput, error)
 	DeleteGroupWithContext(aws.Context, *xray.DeleteGroupInput, ...request.Option) (*xray.DeleteGroupOutput, error)
 	DeleteGroupRequest(*xray.DeleteGroupInput) (*request.Request, *xray.DeleteGroupOutput)
+
+	DeleteResourcePolicy(*xray.DeleteResourcePolicyInput) (*xray.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(aws.Context, *xray.DeleteResourcePolicyInput, ...request.Option) (*xray.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(*xray.DeleteResourcePolicyInput) (*request.Request, *xray.DeleteResourcePolicyOutput)
 
 	DeleteSamplingRule(*xray.DeleteSamplingRuleInput) (*xray.DeleteSamplingRuleOutput, error)
 	DeleteSamplingRuleWithContext(aws.Context, *xray.DeleteSamplingRuleInput, ...request.Option) (*xray.DeleteSamplingRuleOutput, error)
@@ -166,13 +170,27 @@ type XRayAPI interface {
 	GetTraceSummariesPages(*xray.GetTraceSummariesInput, func(*xray.GetTraceSummariesOutput, bool) bool) error
 	GetTraceSummariesPagesWithContext(aws.Context, *xray.GetTraceSummariesInput, func(*xray.GetTraceSummariesOutput, bool) bool, ...request.Option) error
 
+	ListResourcePolicies(*xray.ListResourcePoliciesInput) (*xray.ListResourcePoliciesOutput, error)
+	ListResourcePoliciesWithContext(aws.Context, *xray.ListResourcePoliciesInput, ...request.Option) (*xray.ListResourcePoliciesOutput, error)
+	ListResourcePoliciesRequest(*xray.ListResourcePoliciesInput) (*request.Request, *xray.ListResourcePoliciesOutput)
+
+	ListResourcePoliciesPages(*xray.ListResourcePoliciesInput, func(*xray.ListResourcePoliciesOutput, bool) bool) error
+	ListResourcePoliciesPagesWithContext(aws.Context, *xray.ListResourcePoliciesInput, func(*xray.ListResourcePoliciesOutput, bool) bool, ...request.Option) error
+
 	ListTagsForResource(*xray.ListTagsForResourceInput) (*xray.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *xray.ListTagsForResourceInput, ...request.Option) (*xray.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*xray.ListTagsForResourceInput) (*request.Request, *xray.ListTagsForResourceOutput)
 
+	ListTagsForResourcePages(*xray.ListTagsForResourceInput, func(*xray.ListTagsForResourceOutput, bool) bool) error
+	ListTagsForResourcePagesWithContext(aws.Context, *xray.ListTagsForResourceInput, func(*xray.ListTagsForResourceOutput, bool) bool, ...request.Option) error
+
 	PutEncryptionConfig(*xray.PutEncryptionConfigInput) (*xray.PutEncryptionConfigOutput, error)
 	PutEncryptionConfigWithContext(aws.Context, *xray.PutEncryptionConfigInput, ...request.Option) (*xray.PutEncryptionConfigOutput, error)
 	PutEncryptionConfigRequest(*xray.PutEncryptionConfigInput) (*request.Request, *xray.PutEncryptionConfigOutput)
+
+	PutResourcePolicy(*xray.PutResourcePolicyInput) (*xray.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(aws.Context, *xray.PutResourcePolicyInput, ...request.Option) (*xray.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(*xray.PutResourcePolicyInput) (*request.Request, *xray.PutResourcePolicyOutput)
 
 	PutTelemetryRecords(*xray.PutTelemetryRecordsInput) (*xray.PutTelemetryRecordsOutput, error)
 	PutTelemetryRecordsWithContext(aws.Context, *xray.PutTelemetryRecordsInput, ...request.Option) (*xray.PutTelemetryRecordsOutput, error)

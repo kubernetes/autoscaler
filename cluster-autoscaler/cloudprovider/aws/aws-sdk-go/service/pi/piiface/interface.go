@@ -23,43 +23,51 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Performance Insights.
-//    func myFunc(svc piiface.PIAPI) bool {
-//        // Make svc.DescribeDimensionKeys request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Performance Insights.
+//	func myFunc(svc piiface.PIAPI) bool {
+//	    // Make svc.CreatePerformanceAnalysisReport request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := pi.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := pi.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockPIClient struct {
-//        piiface.PIAPI
-//    }
-//    func (m *mockPIClient) DescribeDimensionKeys(input *pi.DescribeDimensionKeysInput) (*pi.DescribeDimensionKeysOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockPIClient struct {
+//	    piiface.PIAPI
+//	}
+//	func (m *mockPIClient) CreatePerformanceAnalysisReport(input *pi.CreatePerformanceAnalysisReportInput) (*pi.CreatePerformanceAnalysisReportOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockPIClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockPIClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type PIAPI interface {
+	CreatePerformanceAnalysisReport(*pi.CreatePerformanceAnalysisReportInput) (*pi.CreatePerformanceAnalysisReportOutput, error)
+	CreatePerformanceAnalysisReportWithContext(aws.Context, *pi.CreatePerformanceAnalysisReportInput, ...request.Option) (*pi.CreatePerformanceAnalysisReportOutput, error)
+	CreatePerformanceAnalysisReportRequest(*pi.CreatePerformanceAnalysisReportInput) (*request.Request, *pi.CreatePerformanceAnalysisReportOutput)
+
+	DeletePerformanceAnalysisReport(*pi.DeletePerformanceAnalysisReportInput) (*pi.DeletePerformanceAnalysisReportOutput, error)
+	DeletePerformanceAnalysisReportWithContext(aws.Context, *pi.DeletePerformanceAnalysisReportInput, ...request.Option) (*pi.DeletePerformanceAnalysisReportOutput, error)
+	DeletePerformanceAnalysisReportRequest(*pi.DeletePerformanceAnalysisReportInput) (*request.Request, *pi.DeletePerformanceAnalysisReportOutput)
+
 	DescribeDimensionKeys(*pi.DescribeDimensionKeysInput) (*pi.DescribeDimensionKeysOutput, error)
 	DescribeDimensionKeysWithContext(aws.Context, *pi.DescribeDimensionKeysInput, ...request.Option) (*pi.DescribeDimensionKeysOutput, error)
 	DescribeDimensionKeysRequest(*pi.DescribeDimensionKeysInput) (*request.Request, *pi.DescribeDimensionKeysOutput)
@@ -70,6 +78,10 @@ type PIAPI interface {
 	GetDimensionKeyDetails(*pi.GetDimensionKeyDetailsInput) (*pi.GetDimensionKeyDetailsOutput, error)
 	GetDimensionKeyDetailsWithContext(aws.Context, *pi.GetDimensionKeyDetailsInput, ...request.Option) (*pi.GetDimensionKeyDetailsOutput, error)
 	GetDimensionKeyDetailsRequest(*pi.GetDimensionKeyDetailsInput) (*request.Request, *pi.GetDimensionKeyDetailsOutput)
+
+	GetPerformanceAnalysisReport(*pi.GetPerformanceAnalysisReportInput) (*pi.GetPerformanceAnalysisReportOutput, error)
+	GetPerformanceAnalysisReportWithContext(aws.Context, *pi.GetPerformanceAnalysisReportInput, ...request.Option) (*pi.GetPerformanceAnalysisReportOutput, error)
+	GetPerformanceAnalysisReportRequest(*pi.GetPerformanceAnalysisReportInput) (*request.Request, *pi.GetPerformanceAnalysisReportOutput)
 
 	GetResourceMetadata(*pi.GetResourceMetadataInput) (*pi.GetResourceMetadataOutput, error)
 	GetResourceMetadataWithContext(aws.Context, *pi.GetResourceMetadataInput, ...request.Option) (*pi.GetResourceMetadataOutput, error)
@@ -95,6 +107,25 @@ type PIAPI interface {
 
 	ListAvailableResourceMetricsPages(*pi.ListAvailableResourceMetricsInput, func(*pi.ListAvailableResourceMetricsOutput, bool) bool) error
 	ListAvailableResourceMetricsPagesWithContext(aws.Context, *pi.ListAvailableResourceMetricsInput, func(*pi.ListAvailableResourceMetricsOutput, bool) bool, ...request.Option) error
+
+	ListPerformanceAnalysisReports(*pi.ListPerformanceAnalysisReportsInput) (*pi.ListPerformanceAnalysisReportsOutput, error)
+	ListPerformanceAnalysisReportsWithContext(aws.Context, *pi.ListPerformanceAnalysisReportsInput, ...request.Option) (*pi.ListPerformanceAnalysisReportsOutput, error)
+	ListPerformanceAnalysisReportsRequest(*pi.ListPerformanceAnalysisReportsInput) (*request.Request, *pi.ListPerformanceAnalysisReportsOutput)
+
+	ListPerformanceAnalysisReportsPages(*pi.ListPerformanceAnalysisReportsInput, func(*pi.ListPerformanceAnalysisReportsOutput, bool) bool) error
+	ListPerformanceAnalysisReportsPagesWithContext(aws.Context, *pi.ListPerformanceAnalysisReportsInput, func(*pi.ListPerformanceAnalysisReportsOutput, bool) bool, ...request.Option) error
+
+	ListTagsForResource(*pi.ListTagsForResourceInput) (*pi.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *pi.ListTagsForResourceInput, ...request.Option) (*pi.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*pi.ListTagsForResourceInput) (*request.Request, *pi.ListTagsForResourceOutput)
+
+	TagResource(*pi.TagResourceInput) (*pi.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *pi.TagResourceInput, ...request.Option) (*pi.TagResourceOutput, error)
+	TagResourceRequest(*pi.TagResourceInput) (*request.Request, *pi.TagResourceOutput)
+
+	UntagResource(*pi.UntagResourceInput) (*pi.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *pi.UntagResourceInput, ...request.Option) (*pi.UntagResourceOutput, error)
+	UntagResourceRequest(*pi.UntagResourceInput) (*request.Request, *pi.UntagResourceOutput)
 }
 
 var _ PIAPI = (*pi.PI)(nil)

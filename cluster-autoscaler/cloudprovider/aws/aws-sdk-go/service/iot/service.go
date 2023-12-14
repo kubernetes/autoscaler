@@ -40,17 +40,18 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IoT client from just a session.
-//     svc := iot.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IoT client with additional configuration
-//     svc := iot.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IoT client from just a session.
+//	svc := iot.New(mySession)
+//
+//	// Create a IoT client with additional configuration
+//	svc := iot.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoT {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {
-		c.SigningName = "execute-api"
+		c.SigningName = "iot"
 	}
 	return newClient(*c.Config, c.Handlers, c.PartitionID, c.Endpoint, c.SigningRegion, c.SigningName, c.ResolvedRegion)
 }

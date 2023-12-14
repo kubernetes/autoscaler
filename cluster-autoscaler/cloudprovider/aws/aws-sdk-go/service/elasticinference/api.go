@@ -28,14 +28,13 @@ const opDescribeAcceleratorOfferings = "DescribeAcceleratorOfferings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAcceleratorOfferingsRequest method.
+//	req, resp := client.DescribeAcceleratorOfferingsRequest(params)
 //
-//    // Example sending a request using the DescribeAcceleratorOfferingsRequest method.
-//    req, resp := client.DescribeAcceleratorOfferingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/DescribeAcceleratorOfferings
 func (c *ElasticInference) DescribeAcceleratorOfferingsRequest(input *DescribeAcceleratorOfferingsInput) (req *request.Request, output *DescribeAcceleratorOfferingsOutput) {
@@ -59,6 +58,14 @@ func (c *ElasticInference) DescribeAcceleratorOfferingsRequest(input *DescribeAc
 // Describes the locations in which a given accelerator type or set of types
 // is present in a given region.
 //
+// February 15, 2023: Starting April 15, 2023, AWS will not onboard new customers
+// to Amazon Elastic Inference (EI), and will help current customers migrate
+// their workloads to options that offer better price and performance. After
+// April 15, 2023, new customers will not be able to launch instances with Amazon
+// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+// customers who have used Amazon EI at least once during the past 30-day period
+// are considered current customers and will be able to continue using the service.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -67,14 +74,15 @@ func (c *ElasticInference) DescribeAcceleratorOfferingsRequest(input *DescribeAc
 // API operation DescribeAcceleratorOfferings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Raised when a malformed input has been provided to the API.
 //
-//   * ResourceNotFoundException
-//   Raised when the requested resource cannot be found.
+//   - BadRequestException
+//     Raised when a malformed input has been provided to the API.
 //
-//   * InternalServerException
-//   Raised when an unexpected error occurred during request processing.
+//   - ResourceNotFoundException
+//     Raised when the requested resource cannot be found.
+//
+//   - InternalServerException
+//     Raised when an unexpected error occurred during request processing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/DescribeAcceleratorOfferings
 func (c *ElasticInference) DescribeAcceleratorOfferings(input *DescribeAcceleratorOfferingsInput) (*DescribeAcceleratorOfferingsOutput, error) {
@@ -114,14 +122,13 @@ const opDescribeAcceleratorTypes = "DescribeAcceleratorTypes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAcceleratorTypesRequest method.
+//	req, resp := client.DescribeAcceleratorTypesRequest(params)
 //
-//    // Example sending a request using the DescribeAcceleratorTypesRequest method.
-//    req, resp := client.DescribeAcceleratorTypesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/DescribeAcceleratorTypes
 func (c *ElasticInference) DescribeAcceleratorTypesRequest(input *DescribeAcceleratorTypesInput) (req *request.Request, output *DescribeAcceleratorTypesOutput) {
@@ -145,6 +152,14 @@ func (c *ElasticInference) DescribeAcceleratorTypesRequest(input *DescribeAccele
 // Describes the accelerator types available in a given region, as well as their
 // characteristics, such as memory and throughput.
 //
+// February 15, 2023: Starting April 15, 2023, AWS will not onboard new customers
+// to Amazon Elastic Inference (EI), and will help current customers migrate
+// their workloads to options that offer better price and performance. After
+// April 15, 2023, new customers will not be able to launch instances with Amazon
+// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+// customers who have used Amazon EI at least once during the past 30-day period
+// are considered current customers and will be able to continue using the service.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -153,8 +168,8 @@ func (c *ElasticInference) DescribeAcceleratorTypesRequest(input *DescribeAccele
 // API operation DescribeAcceleratorTypes for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   Raised when an unexpected error occurred during request processing.
+//   - InternalServerException
+//     Raised when an unexpected error occurred during request processing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/DescribeAcceleratorTypes
 func (c *ElasticInference) DescribeAcceleratorTypes(input *DescribeAcceleratorTypesInput) (*DescribeAcceleratorTypesOutput, error) {
@@ -194,14 +209,13 @@ const opDescribeAccelerators = "DescribeAccelerators"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAcceleratorsRequest method.
+//	req, resp := client.DescribeAcceleratorsRequest(params)
 //
-//    // Example sending a request using the DescribeAcceleratorsRequest method.
-//    req, resp := client.DescribeAcceleratorsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/DescribeAccelerators
 func (c *ElasticInference) DescribeAcceleratorsRequest(input *DescribeAcceleratorsInput) (req *request.Request, output *DescribeAcceleratorsOutput) {
@@ -231,6 +245,14 @@ func (c *ElasticInference) DescribeAcceleratorsRequest(input *DescribeAccelerato
 // Describes information over a provided set of accelerators belonging to an
 // account.
 //
+// February 15, 2023: Starting April 15, 2023, AWS will not onboard new customers
+// to Amazon Elastic Inference (EI), and will help current customers migrate
+// their workloads to options that offer better price and performance. After
+// April 15, 2023, new customers will not be able to launch instances with Amazon
+// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+// customers who have used Amazon EI at least once during the past 30-day period
+// are considered current customers and will be able to continue using the service.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -239,14 +261,15 @@ func (c *ElasticInference) DescribeAcceleratorsRequest(input *DescribeAccelerato
 // API operation DescribeAccelerators for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Raised when a malformed input has been provided to the API.
 //
-//   * ResourceNotFoundException
-//   Raised when the requested resource cannot be found.
+//   - BadRequestException
+//     Raised when a malformed input has been provided to the API.
 //
-//   * InternalServerException
-//   Raised when an unexpected error occurred during request processing.
+//   - ResourceNotFoundException
+//     Raised when the requested resource cannot be found.
+//
+//   - InternalServerException
+//     Raised when an unexpected error occurred during request processing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/DescribeAccelerators
 func (c *ElasticInference) DescribeAccelerators(input *DescribeAcceleratorsInput) (*DescribeAcceleratorsOutput, error) {
@@ -278,15 +301,14 @@ func (c *ElasticInference) DescribeAcceleratorsWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeAccelerators operation.
-//    pageNum := 0
-//    err := client.DescribeAcceleratorsPages(params,
-//        func(page *elasticinference.DescribeAcceleratorsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeAccelerators operation.
+//	pageNum := 0
+//	err := client.DescribeAcceleratorsPages(params,
+//	    func(page *elasticinference.DescribeAcceleratorsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ElasticInference) DescribeAcceleratorsPages(input *DescribeAcceleratorsInput, fn func(*DescribeAcceleratorsOutput, bool) bool) error {
 	return c.DescribeAcceleratorsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -338,14 +360,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/ListTagsForResource
 func (c *ElasticInference) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -368,6 +389,14 @@ func (c *ElasticInference) ListTagsForResourceRequest(input *ListTagsForResource
 //
 // Returns all tags of an Elastic Inference Accelerator.
 //
+// February 15, 2023: Starting April 15, 2023, AWS will not onboard new customers
+// to Amazon Elastic Inference (EI), and will help current customers migrate
+// their workloads to options that offer better price and performance. After
+// April 15, 2023, new customers will not be able to launch instances with Amazon
+// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+// customers who have used Amazon EI at least once during the past 30-day period
+// are considered current customers and will be able to continue using the service.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -376,14 +405,15 @@ func (c *ElasticInference) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Raised when a malformed input has been provided to the API.
 //
-//   * ResourceNotFoundException
-//   Raised when the requested resource cannot be found.
+//   - BadRequestException
+//     Raised when a malformed input has been provided to the API.
 //
-//   * InternalServerException
-//   Raised when an unexpected error occurred during request processing.
+//   - ResourceNotFoundException
+//     Raised when the requested resource cannot be found.
+//
+//   - InternalServerException
+//     Raised when an unexpected error occurred during request processing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/ListTagsForResource
 func (c *ElasticInference) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -423,14 +453,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/TagResource
 func (c *ElasticInference) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -454,6 +483,14 @@ func (c *ElasticInference) TagResourceRequest(input *TagResourceInput) (req *req
 //
 // Adds the specified tags to an Elastic Inference Accelerator.
 //
+// February 15, 2023: Starting April 15, 2023, AWS will not onboard new customers
+// to Amazon Elastic Inference (EI), and will help current customers migrate
+// their workloads to options that offer better price and performance. After
+// April 15, 2023, new customers will not be able to launch instances with Amazon
+// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+// customers who have used Amazon EI at least once during the past 30-day period
+// are considered current customers and will be able to continue using the service.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -462,14 +499,15 @@ func (c *ElasticInference) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Raised when a malformed input has been provided to the API.
 //
-//   * ResourceNotFoundException
-//   Raised when the requested resource cannot be found.
+//   - BadRequestException
+//     Raised when a malformed input has been provided to the API.
 //
-//   * InternalServerException
-//   Raised when an unexpected error occurred during request processing.
+//   - ResourceNotFoundException
+//     Raised when the requested resource cannot be found.
+//
+//   - InternalServerException
+//     Raised when an unexpected error occurred during request processing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/TagResource
 func (c *ElasticInference) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -509,14 +547,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/UntagResource
 func (c *ElasticInference) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -540,6 +577,14 @@ func (c *ElasticInference) UntagResourceRequest(input *UntagResourceInput) (req 
 //
 // Removes the specified tags from an Elastic Inference Accelerator.
 //
+// February 15, 2023: Starting April 15, 2023, AWS will not onboard new customers
+// to Amazon Elastic Inference (EI), and will help current customers migrate
+// their workloads to options that offer better price and performance. After
+// April 15, 2023, new customers will not be able to launch instances with Amazon
+// EI accelerators in Amazon SageMaker, Amazon ECS, or Amazon EC2. However,
+// customers who have used Amazon EI at least once during the past 30-day period
+// are considered current customers and will be able to continue using the service.
+//
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
 // the error.
@@ -548,14 +593,15 @@ func (c *ElasticInference) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   Raised when a malformed input has been provided to the API.
 //
-//   * ResourceNotFoundException
-//   Raised when the requested resource cannot be found.
+//   - BadRequestException
+//     Raised when a malformed input has been provided to the API.
 //
-//   * InternalServerException
-//   Raised when an unexpected error occurred during request processing.
+//   - ResourceNotFoundException
+//     Raised when the requested resource cannot be found.
+//
+//   - InternalServerException
+//     Raised when an unexpected error occurred during request processing.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/elastic-inference-2017-07-25/UntagResource
 func (c *ElasticInference) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {

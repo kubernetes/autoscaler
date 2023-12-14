@@ -27,14 +27,13 @@ const opGetLatestConfiguration = "GetLatestConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLatestConfigurationRequest method.
+//	req, resp := client.GetLatestConfigurationRequest(params)
 //
-//    // Example sending a request using the GetLatestConfigurationRequest method.
-//    req, resp := client.GetLatestConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/GetLatestConfiguration
 func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurationInput) (req *request.Request, output *GetLatestConfigurationOutput) {
@@ -58,19 +57,19 @@ func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurat
 // Retrieves the latest deployed configuration. This API may return empty configuration
 // data if the client already has the latest version. For more information about
 // this API action and to view example CLI commands that show how to use it
-// with the StartConfigurationSession API action, see Receiving the configuration
+// with the StartConfigurationSession API action, see Retrieving the configuration
 // (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration)
 // in the AppConfig User Guide.
 //
 // Note the following important information.
 //
-//    * Each configuration token is only valid for one call to GetLatestConfiguration.
-//    The GetLatestConfiguration response includes a NextPollConfigurationToken
-//    that should always replace the token used for the just-completed call
-//    in preparation for the next one.
+//   - Each configuration token is only valid for one call to GetLatestConfiguration.
+//     The GetLatestConfiguration response includes a NextPollConfigurationToken
+//     that should always replace the token used for the just-completed call
+//     in preparation for the next one.
 //
-//    * GetLatestConfiguration is a priced call. For more information, see Pricing
-//    (https://aws.amazon.com/systems-manager/pricing/).
+//   - GetLatestConfiguration is a priced call. For more information, see Pricing
+//     (https://aws.amazon.com/systems-manager/pricing/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -80,17 +79,18 @@ func (c *AppConfigData) GetLatestConfigurationRequest(input *GetLatestConfigurat
 // API operation GetLatestConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by the service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by the service.
+//
+//   - InternalServerException
+//     There was an internal failure in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/GetLatestConfiguration
 func (c *AppConfigData) GetLatestConfiguration(input *GetLatestConfigurationInput) (*GetLatestConfigurationOutput, error) {
@@ -130,14 +130,13 @@ const opStartConfigurationSession = "StartConfigurationSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartConfigurationSessionRequest method.
+//	req, resp := client.StartConfigurationSessionRequest(params)
 //
-//    // Example sending a request using the StartConfigurationSessionRequest method.
-//    req, resp := client.StartConfigurationSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/StartConfigurationSession
 func (c *AppConfigData) StartConfigurationSessionRequest(input *StartConfigurationSessionInput) (req *request.Request, output *StartConfigurationSessionOutput) {
@@ -160,7 +159,7 @@ func (c *AppConfigData) StartConfigurationSessionRequest(input *StartConfigurati
 //
 // Starts a configuration session used to retrieve a deployed configuration.
 // For more information about this API action and to view example CLI commands
-// that show how to use it with the GetLatestConfiguration API action, see Receiving
+// that show how to use it with the GetLatestConfiguration API action, see Retrieving
 // the configuration (http://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-retrieving-the-configuration)
 // in the AppConfig User Guide.
 //
@@ -172,17 +171,18 @@ func (c *AppConfigData) StartConfigurationSessionRequest(input *StartConfigurati
 // API operation StartConfigurationSession for usage and error information.
 //
 // Returned Error Types:
-//   * ThrottlingException
-//   The request was denied due to request throttling.
 //
-//   * ResourceNotFoundException
-//   The requested resource could not be found.
+//   - ThrottlingException
+//     The request was denied due to request throttling.
 //
-//   * BadRequestException
-//   The input fails to satisfy the constraints specified by the service.
+//   - ResourceNotFoundException
+//     The requested resource could not be found.
 //
-//   * InternalServerException
-//   There was an internal failure in the service.
+//   - BadRequestException
+//     The input fails to satisfy the constraints specified by the service.
+//
+//   - InternalServerException
+//     There was an internal failure in the service.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/appconfigdata-2021-11-11/StartConfigurationSession
 func (c *AppConfigData) StartConfigurationSession(input *StartConfigurationSessionInput) (*StartConfigurationSessionOutput, error) {
@@ -315,8 +315,12 @@ type GetLatestConfigurationInput struct {
 	// Token describing the current state of the configuration session. To obtain
 	// a token, first call the StartConfigurationSession API. Note that every call
 	// to GetLatestConfiguration will return a new ConfigurationToken (NextPollConfigurationToken
-	// in the response) and MUST be provided to subsequent GetLatestConfiguration
+	// in the response) and must be provided to subsequent GetLatestConfiguration
 	// API calls.
+	//
+	// This token should only be used once. To support long poll use cases, the
+	// token is valid for up to 24 hours. If a GetLatestConfiguration call uses
+	// an expired token, the system returns BadRequestException.
 	//
 	// ConfigurationToken is a required field
 	ConfigurationToken *string `location:"querystring" locationName:"configuration_token" type:"string" required:"true"`
@@ -374,13 +378,23 @@ type GetLatestConfigurationOutput struct {
 	ContentType *string `location:"header" locationName:"Content-Type" type:"string"`
 
 	// The latest token describing the current state of the configuration session.
-	// This MUST be provided to the next call to GetLatestConfiguration.
+	// This must be provided to the next call to GetLatestConfiguration.
+	//
+	// This token should only be used once. To support long poll use cases, the
+	// token is valid for up to 24 hours. If a GetLatestConfiguration call uses
+	// an expired token, the system returns BadRequestException.
 	NextPollConfigurationToken *string `location:"header" locationName:"Next-Poll-Configuration-Token" type:"string"`
 
 	// The amount of time the client should wait before polling for configuration
 	// updates again. Use RequiredMinimumPollIntervalInSeconds to set the desired
 	// poll interval.
 	NextPollIntervalInSeconds *int64 `location:"header" locationName:"Next-Poll-Interval-In-Seconds" type:"integer"`
+
+	// The user-defined label for the AppConfig hosted configuration version. This
+	// attribute doesn't apply if the configuration is not from an AppConfig hosted
+	// configuration version. If the client already has the latest version of the
+	// configuration data, this value is empty.
+	VersionLabel *string `location:"header" locationName:"Version-Label" type:"string"`
 }
 
 // String returns the string representation.
@@ -422,6 +436,12 @@ func (s *GetLatestConfigurationOutput) SetNextPollConfigurationToken(v string) *
 // SetNextPollIntervalInSeconds sets the NextPollIntervalInSeconds field's value.
 func (s *GetLatestConfigurationOutput) SetNextPollIntervalInSeconds(v int64) *GetLatestConfigurationOutput {
 	s.NextPollIntervalInSeconds = &v
+	return s
+}
+
+// SetVersionLabel sets the VersionLabel field's value.
+func (s *GetLatestConfigurationOutput) SetVersionLabel(v string) *GetLatestConfigurationOutput {
+	s.VersionLabel = &v
 	return s
 }
 
@@ -612,7 +632,7 @@ type StartConfigurationSessionInput struct {
 
 	// Sets a constraint on a session. If you specify a value of, for example, 60
 	// seconds, then the client that established the session can't call GetLatestConfiguration
-	// more frequently then every 60 seconds.
+	// more frequently than every 60 seconds.
 	RequiredMinimumPollIntervalInSeconds *int64 `min:"15" type:"integer"`
 }
 
@@ -696,8 +716,13 @@ type StartConfigurationSessionOutput struct {
 	// to the GetLatestConfiguration API to retrieve configuration data.
 	//
 	// This token should only be used once in your first call to GetLatestConfiguration.
-	// You MUST use the new token in the GetLatestConfiguration response (NextPollConfigurationToken)
+	// You must use the new token in the GetLatestConfiguration response (NextPollConfigurationToken)
 	// in each subsequent call to GetLatestConfiguration.
+	//
+	// The InitialConfigurationToken and NextPollConfigurationToken should only
+	// be used once. To support long poll use cases, the tokens are valid for up
+	// to 24 hours. If a GetLatestConfiguration call uses an expired token, the
+	// system returns BadRequestException.
 	InitialConfigurationToken *string `type:"string"`
 }
 

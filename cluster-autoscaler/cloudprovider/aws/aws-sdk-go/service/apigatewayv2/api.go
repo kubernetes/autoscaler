@@ -29,14 +29,13 @@ const opCreateApi = "CreateApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApiRequest method.
+//	req, resp := client.CreateApiRequest(params)
 //
-//    // Example sending a request using the CreateApiRequest method.
-//    req, resp := client.CreateApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateApi
 func (c *ApiGatewayV2) CreateApiRequest(input *CreateApiInput) (req *request.Request, output *CreateApiOutput) {
@@ -67,21 +66,22 @@ func (c *ApiGatewayV2) CreateApiRequest(input *CreateApiInput) (req *request.Req
 // API operation CreateApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateApi
 func (c *ApiGatewayV2) CreateApi(input *CreateApiInput) (*CreateApiOutput, error) {
@@ -121,14 +121,13 @@ const opCreateApiMapping = "CreateApiMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateApiMappingRequest method.
+//	req, resp := client.CreateApiMappingRequest(params)
 //
-//    // Example sending a request using the CreateApiMappingRequest method.
-//    req, resp := client.CreateApiMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateApiMapping
 func (c *ApiGatewayV2) CreateApiMappingRequest(input *CreateApiMappingInput) (req *request.Request, output *CreateApiMappingOutput) {
@@ -159,21 +158,22 @@ func (c *ApiGatewayV2) CreateApiMappingRequest(input *CreateApiMappingInput) (re
 // API operation CreateApiMapping for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateApiMapping
 func (c *ApiGatewayV2) CreateApiMapping(input *CreateApiMappingInput) (*CreateApiMappingOutput, error) {
@@ -213,14 +213,13 @@ const opCreateAuthorizer = "CreateAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAuthorizerRequest method.
+//	req, resp := client.CreateAuthorizerRequest(params)
 //
-//    // Example sending a request using the CreateAuthorizerRequest method.
-//    req, resp := client.CreateAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateAuthorizer
 func (c *ApiGatewayV2) CreateAuthorizerRequest(input *CreateAuthorizerInput) (req *request.Request, output *CreateAuthorizerOutput) {
@@ -251,21 +250,22 @@ func (c *ApiGatewayV2) CreateAuthorizerRequest(input *CreateAuthorizerInput) (re
 // API operation CreateAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateAuthorizer
 func (c *ApiGatewayV2) CreateAuthorizer(input *CreateAuthorizerInput) (*CreateAuthorizerOutput, error) {
@@ -305,14 +305,13 @@ const opCreateDeployment = "CreateDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDeploymentRequest method.
+//	req, resp := client.CreateDeploymentRequest(params)
 //
-//    // Example sending a request using the CreateDeploymentRequest method.
-//    req, resp := client.CreateDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateDeployment
 func (c *ApiGatewayV2) CreateDeploymentRequest(input *CreateDeploymentInput) (req *request.Request, output *CreateDeploymentOutput) {
@@ -343,21 +342,22 @@ func (c *ApiGatewayV2) CreateDeploymentRequest(input *CreateDeploymentInput) (re
 // API operation CreateDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateDeployment
 func (c *ApiGatewayV2) CreateDeployment(input *CreateDeploymentInput) (*CreateDeploymentOutput, error) {
@@ -397,14 +397,13 @@ const opCreateDomainName = "CreateDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDomainNameRequest method.
+//	req, resp := client.CreateDomainNameRequest(params)
 //
-//    // Example sending a request using the CreateDomainNameRequest method.
-//    req, resp := client.CreateDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateDomainName
 func (c *ApiGatewayV2) CreateDomainNameRequest(input *CreateDomainNameInput) (req *request.Request, output *CreateDomainNameOutput) {
@@ -435,23 +434,24 @@ func (c *ApiGatewayV2) CreateDomainNameRequest(input *CreateDomainNameInput) (re
 // API operation CreateDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
-//   * AccessDeniedException
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
+//
+//   - AccessDeniedException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateDomainName
 func (c *ApiGatewayV2) CreateDomainName(input *CreateDomainNameInput) (*CreateDomainNameOutput, error) {
@@ -491,14 +491,13 @@ const opCreateIntegration = "CreateIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIntegrationRequest method.
+//	req, resp := client.CreateIntegrationRequest(params)
 //
-//    // Example sending a request using the CreateIntegrationRequest method.
-//    req, resp := client.CreateIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateIntegration
 func (c *ApiGatewayV2) CreateIntegrationRequest(input *CreateIntegrationInput) (req *request.Request, output *CreateIntegrationOutput) {
@@ -529,21 +528,22 @@ func (c *ApiGatewayV2) CreateIntegrationRequest(input *CreateIntegrationInput) (
 // API operation CreateIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateIntegration
 func (c *ApiGatewayV2) CreateIntegration(input *CreateIntegrationInput) (*CreateIntegrationOutput, error) {
@@ -583,14 +583,13 @@ const opCreateIntegrationResponse = "CreateIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIntegrationResponseRequest method.
+//	req, resp := client.CreateIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the CreateIntegrationResponseRequest method.
-//    req, resp := client.CreateIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateIntegrationResponse
 func (c *ApiGatewayV2) CreateIntegrationResponseRequest(input *CreateIntegrationResponseInput) (req *request.Request, output *CreateIntegrationResponseOutput) {
@@ -621,21 +620,22 @@ func (c *ApiGatewayV2) CreateIntegrationResponseRequest(input *CreateIntegration
 // API operation CreateIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateIntegrationResponse
 func (c *ApiGatewayV2) CreateIntegrationResponse(input *CreateIntegrationResponseInput) (*CreateIntegrationResponseOutput, error) {
@@ -675,14 +675,13 @@ const opCreateModel = "CreateModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateModelRequest method.
+//	req, resp := client.CreateModelRequest(params)
 //
-//    // Example sending a request using the CreateModelRequest method.
-//    req, resp := client.CreateModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateModel
 func (c *ApiGatewayV2) CreateModelRequest(input *CreateModelInput) (req *request.Request, output *CreateModelOutput) {
@@ -713,21 +712,22 @@ func (c *ApiGatewayV2) CreateModelRequest(input *CreateModelInput) (req *request
 // API operation CreateModel for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateModel
 func (c *ApiGatewayV2) CreateModel(input *CreateModelInput) (*CreateModelOutput, error) {
@@ -767,14 +767,13 @@ const opCreateRoute = "CreateRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRouteRequest method.
+//	req, resp := client.CreateRouteRequest(params)
 //
-//    // Example sending a request using the CreateRouteRequest method.
-//    req, resp := client.CreateRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateRoute
 func (c *ApiGatewayV2) CreateRouteRequest(input *CreateRouteInput) (req *request.Request, output *CreateRouteOutput) {
@@ -805,21 +804,22 @@ func (c *ApiGatewayV2) CreateRouteRequest(input *CreateRouteInput) (req *request
 // API operation CreateRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateRoute
 func (c *ApiGatewayV2) CreateRoute(input *CreateRouteInput) (*CreateRouteOutput, error) {
@@ -859,14 +859,13 @@ const opCreateRouteResponse = "CreateRouteResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRouteResponseRequest method.
+//	req, resp := client.CreateRouteResponseRequest(params)
 //
-//    // Example sending a request using the CreateRouteResponseRequest method.
-//    req, resp := client.CreateRouteResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateRouteResponse
 func (c *ApiGatewayV2) CreateRouteResponseRequest(input *CreateRouteResponseInput) (req *request.Request, output *CreateRouteResponseOutput) {
@@ -897,21 +896,22 @@ func (c *ApiGatewayV2) CreateRouteResponseRequest(input *CreateRouteResponseInpu
 // API operation CreateRouteResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateRouteResponse
 func (c *ApiGatewayV2) CreateRouteResponse(input *CreateRouteResponseInput) (*CreateRouteResponseOutput, error) {
@@ -951,14 +951,13 @@ const opCreateStage = "CreateStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateStageRequest method.
+//	req, resp := client.CreateStageRequest(params)
 //
-//    // Example sending a request using the CreateStageRequest method.
-//    req, resp := client.CreateStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateStage
 func (c *ApiGatewayV2) CreateStageRequest(input *CreateStageInput) (req *request.Request, output *CreateStageOutput) {
@@ -989,21 +988,22 @@ func (c *ApiGatewayV2) CreateStageRequest(input *CreateStageInput) (req *request
 // API operation CreateStage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateStage
 func (c *ApiGatewayV2) CreateStage(input *CreateStageInput) (*CreateStageOutput, error) {
@@ -1043,14 +1043,13 @@ const opCreateVpcLink = "CreateVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateVpcLinkRequest method.
+//	req, resp := client.CreateVpcLinkRequest(params)
 //
-//    // Example sending a request using the CreateVpcLinkRequest method.
-//    req, resp := client.CreateVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateVpcLink
 func (c *ApiGatewayV2) CreateVpcLinkRequest(input *CreateVpcLinkInput) (req *request.Request, output *CreateVpcLinkOutput) {
@@ -1081,12 +1080,13 @@ func (c *ApiGatewayV2) CreateVpcLinkRequest(input *CreateVpcLinkInput) (req *req
 // API operation CreateVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/CreateVpcLink
 func (c *ApiGatewayV2) CreateVpcLink(input *CreateVpcLinkInput) (*CreateVpcLinkOutput, error) {
@@ -1126,14 +1126,13 @@ const opDeleteAccessLogSettings = "DeleteAccessLogSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAccessLogSettingsRequest method.
+//	req, resp := client.DeleteAccessLogSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteAccessLogSettingsRequest method.
-//    req, resp := client.DeleteAccessLogSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteAccessLogSettings
 func (c *ApiGatewayV2) DeleteAccessLogSettingsRequest(input *DeleteAccessLogSettingsInput) (req *request.Request, output *DeleteAccessLogSettingsOutput) {
@@ -1166,12 +1165,13 @@ func (c *ApiGatewayV2) DeleteAccessLogSettingsRequest(input *DeleteAccessLogSett
 // API operation DeleteAccessLogSettings for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteAccessLogSettings
 func (c *ApiGatewayV2) DeleteAccessLogSettings(input *DeleteAccessLogSettingsInput) (*DeleteAccessLogSettingsOutput, error) {
@@ -1211,14 +1211,13 @@ const opDeleteApi = "DeleteApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApiRequest method.
+//	req, resp := client.DeleteApiRequest(params)
 //
-//    // Example sending a request using the DeleteApiRequest method.
-//    req, resp := client.DeleteApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteApi
 func (c *ApiGatewayV2) DeleteApiRequest(input *DeleteApiInput) (req *request.Request, output *DeleteApiOutput) {
@@ -1250,12 +1249,13 @@ func (c *ApiGatewayV2) DeleteApiRequest(input *DeleteApiInput) (req *request.Req
 // API operation DeleteApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteApi
 func (c *ApiGatewayV2) DeleteApi(input *DeleteApiInput) (*DeleteApiOutput, error) {
@@ -1295,14 +1295,13 @@ const opDeleteApiMapping = "DeleteApiMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteApiMappingRequest method.
+//	req, resp := client.DeleteApiMappingRequest(params)
 //
-//    // Example sending a request using the DeleteApiMappingRequest method.
-//    req, resp := client.DeleteApiMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteApiMapping
 func (c *ApiGatewayV2) DeleteApiMappingRequest(input *DeleteApiMappingInput) (req *request.Request, output *DeleteApiMappingOutput) {
@@ -1334,16 +1333,17 @@ func (c *ApiGatewayV2) DeleteApiMappingRequest(input *DeleteApiMappingInput) (re
 // API operation DeleteApiMapping for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteApiMapping
 func (c *ApiGatewayV2) DeleteApiMapping(input *DeleteApiMappingInput) (*DeleteApiMappingOutput, error) {
@@ -1383,14 +1383,13 @@ const opDeleteAuthorizer = "DeleteAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAuthorizerRequest method.
+//	req, resp := client.DeleteAuthorizerRequest(params)
 //
-//    // Example sending a request using the DeleteAuthorizerRequest method.
-//    req, resp := client.DeleteAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteAuthorizer
 func (c *ApiGatewayV2) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (req *request.Request, output *DeleteAuthorizerOutput) {
@@ -1422,12 +1421,13 @@ func (c *ApiGatewayV2) DeleteAuthorizerRequest(input *DeleteAuthorizerInput) (re
 // API operation DeleteAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteAuthorizer
 func (c *ApiGatewayV2) DeleteAuthorizer(input *DeleteAuthorizerInput) (*DeleteAuthorizerOutput, error) {
@@ -1467,14 +1467,13 @@ const opDeleteCorsConfiguration = "DeleteCorsConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCorsConfigurationRequest method.
+//	req, resp := client.DeleteCorsConfigurationRequest(params)
 //
-//    // Example sending a request using the DeleteCorsConfigurationRequest method.
-//    req, resp := client.DeleteCorsConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteCorsConfiguration
 func (c *ApiGatewayV2) DeleteCorsConfigurationRequest(input *DeleteCorsConfigurationInput) (req *request.Request, output *DeleteCorsConfigurationOutput) {
@@ -1506,12 +1505,13 @@ func (c *ApiGatewayV2) DeleteCorsConfigurationRequest(input *DeleteCorsConfigura
 // API operation DeleteCorsConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteCorsConfiguration
 func (c *ApiGatewayV2) DeleteCorsConfiguration(input *DeleteCorsConfigurationInput) (*DeleteCorsConfigurationOutput, error) {
@@ -1551,14 +1551,13 @@ const opDeleteDeployment = "DeleteDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDeploymentRequest method.
+//	req, resp := client.DeleteDeploymentRequest(params)
 //
-//    // Example sending a request using the DeleteDeploymentRequest method.
-//    req, resp := client.DeleteDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteDeployment
 func (c *ApiGatewayV2) DeleteDeploymentRequest(input *DeleteDeploymentInput) (req *request.Request, output *DeleteDeploymentOutput) {
@@ -1590,12 +1589,13 @@ func (c *ApiGatewayV2) DeleteDeploymentRequest(input *DeleteDeploymentInput) (re
 // API operation DeleteDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteDeployment
 func (c *ApiGatewayV2) DeleteDeployment(input *DeleteDeploymentInput) (*DeleteDeploymentOutput, error) {
@@ -1635,14 +1635,13 @@ const opDeleteDomainName = "DeleteDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDomainNameRequest method.
+//	req, resp := client.DeleteDomainNameRequest(params)
 //
-//    // Example sending a request using the DeleteDomainNameRequest method.
-//    req, resp := client.DeleteDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteDomainName
 func (c *ApiGatewayV2) DeleteDomainNameRequest(input *DeleteDomainNameInput) (req *request.Request, output *DeleteDomainNameOutput) {
@@ -1674,12 +1673,13 @@ func (c *ApiGatewayV2) DeleteDomainNameRequest(input *DeleteDomainNameInput) (re
 // API operation DeleteDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteDomainName
 func (c *ApiGatewayV2) DeleteDomainName(input *DeleteDomainNameInput) (*DeleteDomainNameOutput, error) {
@@ -1719,14 +1719,13 @@ const opDeleteIntegration = "DeleteIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntegrationRequest method.
+//	req, resp := client.DeleteIntegrationRequest(params)
 //
-//    // Example sending a request using the DeleteIntegrationRequest method.
-//    req, resp := client.DeleteIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteIntegration
 func (c *ApiGatewayV2) DeleteIntegrationRequest(input *DeleteIntegrationInput) (req *request.Request, output *DeleteIntegrationOutput) {
@@ -1758,12 +1757,13 @@ func (c *ApiGatewayV2) DeleteIntegrationRequest(input *DeleteIntegrationInput) (
 // API operation DeleteIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteIntegration
 func (c *ApiGatewayV2) DeleteIntegration(input *DeleteIntegrationInput) (*DeleteIntegrationOutput, error) {
@@ -1803,14 +1803,13 @@ const opDeleteIntegrationResponse = "DeleteIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIntegrationResponseRequest method.
+//	req, resp := client.DeleteIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the DeleteIntegrationResponseRequest method.
-//    req, resp := client.DeleteIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteIntegrationResponse
 func (c *ApiGatewayV2) DeleteIntegrationResponseRequest(input *DeleteIntegrationResponseInput) (req *request.Request, output *DeleteIntegrationResponseOutput) {
@@ -1842,12 +1841,13 @@ func (c *ApiGatewayV2) DeleteIntegrationResponseRequest(input *DeleteIntegration
 // API operation DeleteIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteIntegrationResponse
 func (c *ApiGatewayV2) DeleteIntegrationResponse(input *DeleteIntegrationResponseInput) (*DeleteIntegrationResponseOutput, error) {
@@ -1887,14 +1887,13 @@ const opDeleteModel = "DeleteModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteModelRequest method.
+//	req, resp := client.DeleteModelRequest(params)
 //
-//    // Example sending a request using the DeleteModelRequest method.
-//    req, resp := client.DeleteModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteModel
 func (c *ApiGatewayV2) DeleteModelRequest(input *DeleteModelInput) (req *request.Request, output *DeleteModelOutput) {
@@ -1926,12 +1925,13 @@ func (c *ApiGatewayV2) DeleteModelRequest(input *DeleteModelInput) (req *request
 // API operation DeleteModel for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteModel
 func (c *ApiGatewayV2) DeleteModel(input *DeleteModelInput) (*DeleteModelOutput, error) {
@@ -1971,14 +1971,13 @@ const opDeleteRoute = "DeleteRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteRequest method.
+//	req, resp := client.DeleteRouteRequest(params)
 //
-//    // Example sending a request using the DeleteRouteRequest method.
-//    req, resp := client.DeleteRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRoute
 func (c *ApiGatewayV2) DeleteRouteRequest(input *DeleteRouteInput) (req *request.Request, output *DeleteRouteOutput) {
@@ -2010,12 +2009,13 @@ func (c *ApiGatewayV2) DeleteRouteRequest(input *DeleteRouteInput) (req *request
 // API operation DeleteRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRoute
 func (c *ApiGatewayV2) DeleteRoute(input *DeleteRouteInput) (*DeleteRouteOutput, error) {
@@ -2055,14 +2055,13 @@ const opDeleteRouteRequestParameter = "DeleteRouteRequestParameter"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteRequestParameterRequest method.
+//	req, resp := client.DeleteRouteRequestParameterRequest(params)
 //
-//    // Example sending a request using the DeleteRouteRequestParameterRequest method.
-//    req, resp := client.DeleteRouteRequestParameterRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRouteRequestParameter
 func (c *ApiGatewayV2) DeleteRouteRequestParameterRequest(input *DeleteRouteRequestParameterInput) (req *request.Request, output *DeleteRouteRequestParameterOutput) {
@@ -2094,12 +2093,13 @@ func (c *ApiGatewayV2) DeleteRouteRequestParameterRequest(input *DeleteRouteRequ
 // API operation DeleteRouteRequestParameter for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRouteRequestParameter
 func (c *ApiGatewayV2) DeleteRouteRequestParameter(input *DeleteRouteRequestParameterInput) (*DeleteRouteRequestParameterOutput, error) {
@@ -2139,14 +2139,13 @@ const opDeleteRouteResponse = "DeleteRouteResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteResponseRequest method.
+//	req, resp := client.DeleteRouteResponseRequest(params)
 //
-//    // Example sending a request using the DeleteRouteResponseRequest method.
-//    req, resp := client.DeleteRouteResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRouteResponse
 func (c *ApiGatewayV2) DeleteRouteResponseRequest(input *DeleteRouteResponseInput) (req *request.Request, output *DeleteRouteResponseOutput) {
@@ -2178,12 +2177,13 @@ func (c *ApiGatewayV2) DeleteRouteResponseRequest(input *DeleteRouteResponseInpu
 // API operation DeleteRouteResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRouteResponse
 func (c *ApiGatewayV2) DeleteRouteResponse(input *DeleteRouteResponseInput) (*DeleteRouteResponseOutput, error) {
@@ -2223,14 +2223,13 @@ const opDeleteRouteSettings = "DeleteRouteSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRouteSettingsRequest method.
+//	req, resp := client.DeleteRouteSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteRouteSettingsRequest method.
-//    req, resp := client.DeleteRouteSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRouteSettings
 func (c *ApiGatewayV2) DeleteRouteSettingsRequest(input *DeleteRouteSettingsInput) (req *request.Request, output *DeleteRouteSettingsOutput) {
@@ -2262,12 +2261,13 @@ func (c *ApiGatewayV2) DeleteRouteSettingsRequest(input *DeleteRouteSettingsInpu
 // API operation DeleteRouteSettings for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteRouteSettings
 func (c *ApiGatewayV2) DeleteRouteSettings(input *DeleteRouteSettingsInput) (*DeleteRouteSettingsOutput, error) {
@@ -2307,14 +2307,13 @@ const opDeleteStage = "DeleteStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteStageRequest method.
+//	req, resp := client.DeleteStageRequest(params)
 //
-//    // Example sending a request using the DeleteStageRequest method.
-//    req, resp := client.DeleteStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteStage
 func (c *ApiGatewayV2) DeleteStageRequest(input *DeleteStageInput) (req *request.Request, output *DeleteStageOutput) {
@@ -2346,12 +2345,13 @@ func (c *ApiGatewayV2) DeleteStageRequest(input *DeleteStageInput) (req *request
 // API operation DeleteStage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteStage
 func (c *ApiGatewayV2) DeleteStage(input *DeleteStageInput) (*DeleteStageOutput, error) {
@@ -2391,14 +2391,13 @@ const opDeleteVpcLink = "DeleteVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteVpcLinkRequest method.
+//	req, resp := client.DeleteVpcLinkRequest(params)
 //
-//    // Example sending a request using the DeleteVpcLinkRequest method.
-//    req, resp := client.DeleteVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteVpcLink
 func (c *ApiGatewayV2) DeleteVpcLinkRequest(input *DeleteVpcLinkInput) (req *request.Request, output *DeleteVpcLinkOutput) {
@@ -2430,12 +2429,13 @@ func (c *ApiGatewayV2) DeleteVpcLinkRequest(input *DeleteVpcLinkInput) (req *req
 // API operation DeleteVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/DeleteVpcLink
 func (c *ApiGatewayV2) DeleteVpcLink(input *DeleteVpcLinkInput) (*DeleteVpcLinkOutput, error) {
@@ -2475,14 +2475,13 @@ const opExportApi = "ExportApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ExportApiRequest method.
+//	req, resp := client.ExportApiRequest(params)
 //
-//    // Example sending a request using the ExportApiRequest method.
-//    req, resp := client.ExportApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ExportApi
 func (c *ApiGatewayV2) ExportApiRequest(input *ExportApiInput) (req *request.Request, output *ExportApiOutput) {
@@ -2513,16 +2512,17 @@ func (c *ApiGatewayV2) ExportApiRequest(input *ExportApiInput) (req *request.Req
 // API operation ExportApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ExportApi
 func (c *ApiGatewayV2) ExportApi(input *ExportApiInput) (*ExportApiOutput, error) {
@@ -2562,14 +2562,13 @@ const opGetApi = "GetApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApiRequest method.
+//	req, resp := client.GetApiRequest(params)
 //
-//    // Example sending a request using the GetApiRequest method.
-//    req, resp := client.GetApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApi
 func (c *ApiGatewayV2) GetApiRequest(input *GetApiInput) (req *request.Request, output *GetApiOutput) {
@@ -2600,12 +2599,13 @@ func (c *ApiGatewayV2) GetApiRequest(input *GetApiInput) (req *request.Request, 
 // API operation GetApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApi
 func (c *ApiGatewayV2) GetApi(input *GetApiInput) (*GetApiOutput, error) {
@@ -2645,14 +2645,13 @@ const opGetApiMapping = "GetApiMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApiMappingRequest method.
+//	req, resp := client.GetApiMappingRequest(params)
 //
-//    // Example sending a request using the GetApiMappingRequest method.
-//    req, resp := client.GetApiMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApiMapping
 func (c *ApiGatewayV2) GetApiMappingRequest(input *GetApiMappingInput) (req *request.Request, output *GetApiMappingOutput) {
@@ -2683,16 +2682,17 @@ func (c *ApiGatewayV2) GetApiMappingRequest(input *GetApiMappingInput) (req *req
 // API operation GetApiMapping for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApiMapping
 func (c *ApiGatewayV2) GetApiMapping(input *GetApiMappingInput) (*GetApiMappingOutput, error) {
@@ -2732,14 +2732,13 @@ const opGetApiMappings = "GetApiMappings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApiMappingsRequest method.
+//	req, resp := client.GetApiMappingsRequest(params)
 //
-//    // Example sending a request using the GetApiMappingsRequest method.
-//    req, resp := client.GetApiMappingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApiMappings
 func (c *ApiGatewayV2) GetApiMappingsRequest(input *GetApiMappingsInput) (req *request.Request, output *GetApiMappingsOutput) {
@@ -2770,16 +2769,17 @@ func (c *ApiGatewayV2) GetApiMappingsRequest(input *GetApiMappingsInput) (req *r
 // API operation GetApiMappings for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApiMappings
 func (c *ApiGatewayV2) GetApiMappings(input *GetApiMappingsInput) (*GetApiMappingsOutput, error) {
@@ -2819,14 +2819,13 @@ const opGetApis = "GetApis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetApisRequest method.
+//	req, resp := client.GetApisRequest(params)
 //
-//    // Example sending a request using the GetApisRequest method.
-//    req, resp := client.GetApisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApis
 func (c *ApiGatewayV2) GetApisRequest(input *GetApisInput) (req *request.Request, output *GetApisOutput) {
@@ -2857,16 +2856,17 @@ func (c *ApiGatewayV2) GetApisRequest(input *GetApisInput) (req *request.Request
 // API operation GetApis for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetApis
 func (c *ApiGatewayV2) GetApis(input *GetApisInput) (*GetApisOutput, error) {
@@ -2906,14 +2906,13 @@ const opGetAuthorizer = "GetAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAuthorizerRequest method.
+//	req, resp := client.GetAuthorizerRequest(params)
 //
-//    // Example sending a request using the GetAuthorizerRequest method.
-//    req, resp := client.GetAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetAuthorizer
 func (c *ApiGatewayV2) GetAuthorizerRequest(input *GetAuthorizerInput) (req *request.Request, output *GetAuthorizerOutput) {
@@ -2944,12 +2943,13 @@ func (c *ApiGatewayV2) GetAuthorizerRequest(input *GetAuthorizerInput) (req *req
 // API operation GetAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetAuthorizer
 func (c *ApiGatewayV2) GetAuthorizer(input *GetAuthorizerInput) (*GetAuthorizerOutput, error) {
@@ -2989,14 +2989,13 @@ const opGetAuthorizers = "GetAuthorizers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAuthorizersRequest method.
+//	req, resp := client.GetAuthorizersRequest(params)
 //
-//    // Example sending a request using the GetAuthorizersRequest method.
-//    req, resp := client.GetAuthorizersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetAuthorizers
 func (c *ApiGatewayV2) GetAuthorizersRequest(input *GetAuthorizersInput) (req *request.Request, output *GetAuthorizersOutput) {
@@ -3027,16 +3026,17 @@ func (c *ApiGatewayV2) GetAuthorizersRequest(input *GetAuthorizersInput) (req *r
 // API operation GetAuthorizers for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetAuthorizers
 func (c *ApiGatewayV2) GetAuthorizers(input *GetAuthorizersInput) (*GetAuthorizersOutput, error) {
@@ -3076,14 +3076,13 @@ const opGetDeployment = "GetDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeploymentRequest method.
+//	req, resp := client.GetDeploymentRequest(params)
 //
-//    // Example sending a request using the GetDeploymentRequest method.
-//    req, resp := client.GetDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDeployment
 func (c *ApiGatewayV2) GetDeploymentRequest(input *GetDeploymentInput) (req *request.Request, output *GetDeploymentOutput) {
@@ -3114,12 +3113,13 @@ func (c *ApiGatewayV2) GetDeploymentRequest(input *GetDeploymentInput) (req *req
 // API operation GetDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDeployment
 func (c *ApiGatewayV2) GetDeployment(input *GetDeploymentInput) (*GetDeploymentOutput, error) {
@@ -3159,14 +3159,13 @@ const opGetDeployments = "GetDeployments"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDeploymentsRequest method.
+//	req, resp := client.GetDeploymentsRequest(params)
 //
-//    // Example sending a request using the GetDeploymentsRequest method.
-//    req, resp := client.GetDeploymentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDeployments
 func (c *ApiGatewayV2) GetDeploymentsRequest(input *GetDeploymentsInput) (req *request.Request, output *GetDeploymentsOutput) {
@@ -3197,16 +3196,17 @@ func (c *ApiGatewayV2) GetDeploymentsRequest(input *GetDeploymentsInput) (req *r
 // API operation GetDeployments for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDeployments
 func (c *ApiGatewayV2) GetDeployments(input *GetDeploymentsInput) (*GetDeploymentsOutput, error) {
@@ -3246,14 +3246,13 @@ const opGetDomainName = "GetDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainNameRequest method.
+//	req, resp := client.GetDomainNameRequest(params)
 //
-//    // Example sending a request using the GetDomainNameRequest method.
-//    req, resp := client.GetDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDomainName
 func (c *ApiGatewayV2) GetDomainNameRequest(input *GetDomainNameInput) (req *request.Request, output *GetDomainNameOutput) {
@@ -3284,12 +3283,13 @@ func (c *ApiGatewayV2) GetDomainNameRequest(input *GetDomainNameInput) (req *req
 // API operation GetDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDomainName
 func (c *ApiGatewayV2) GetDomainName(input *GetDomainNameInput) (*GetDomainNameOutput, error) {
@@ -3329,14 +3329,13 @@ const opGetDomainNames = "GetDomainNames"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDomainNamesRequest method.
+//	req, resp := client.GetDomainNamesRequest(params)
 //
-//    // Example sending a request using the GetDomainNamesRequest method.
-//    req, resp := client.GetDomainNamesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDomainNames
 func (c *ApiGatewayV2) GetDomainNamesRequest(input *GetDomainNamesInput) (req *request.Request, output *GetDomainNamesOutput) {
@@ -3367,16 +3366,17 @@ func (c *ApiGatewayV2) GetDomainNamesRequest(input *GetDomainNamesInput) (req *r
 // API operation GetDomainNames for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetDomainNames
 func (c *ApiGatewayV2) GetDomainNames(input *GetDomainNamesInput) (*GetDomainNamesOutput, error) {
@@ -3416,14 +3416,13 @@ const opGetIntegration = "GetIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationRequest method.
+//	req, resp := client.GetIntegrationRequest(params)
 //
-//    // Example sending a request using the GetIntegrationRequest method.
-//    req, resp := client.GetIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegration
 func (c *ApiGatewayV2) GetIntegrationRequest(input *GetIntegrationInput) (req *request.Request, output *GetIntegrationOutput) {
@@ -3454,12 +3453,13 @@ func (c *ApiGatewayV2) GetIntegrationRequest(input *GetIntegrationInput) (req *r
 // API operation GetIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegration
 func (c *ApiGatewayV2) GetIntegration(input *GetIntegrationInput) (*GetIntegrationOutput, error) {
@@ -3499,14 +3499,13 @@ const opGetIntegrationResponse = "GetIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationResponseRequest method.
+//	req, resp := client.GetIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the GetIntegrationResponseRequest method.
-//    req, resp := client.GetIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrationResponse
 func (c *ApiGatewayV2) GetIntegrationResponseRequest(input *GetIntegrationResponseInput) (req *request.Request, output *GetIntegrationResponseOutput) {
@@ -3537,12 +3536,13 @@ func (c *ApiGatewayV2) GetIntegrationResponseRequest(input *GetIntegrationRespon
 // API operation GetIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrationResponse
 func (c *ApiGatewayV2) GetIntegrationResponse(input *GetIntegrationResponseInput) (*GetIntegrationResponseOutput, error) {
@@ -3582,14 +3582,13 @@ const opGetIntegrationResponses = "GetIntegrationResponses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationResponsesRequest method.
+//	req, resp := client.GetIntegrationResponsesRequest(params)
 //
-//    // Example sending a request using the GetIntegrationResponsesRequest method.
-//    req, resp := client.GetIntegrationResponsesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrationResponses
 func (c *ApiGatewayV2) GetIntegrationResponsesRequest(input *GetIntegrationResponsesInput) (req *request.Request, output *GetIntegrationResponsesOutput) {
@@ -3620,16 +3619,17 @@ func (c *ApiGatewayV2) GetIntegrationResponsesRequest(input *GetIntegrationRespo
 // API operation GetIntegrationResponses for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrationResponses
 func (c *ApiGatewayV2) GetIntegrationResponses(input *GetIntegrationResponsesInput) (*GetIntegrationResponsesOutput, error) {
@@ -3669,14 +3669,13 @@ const opGetIntegrations = "GetIntegrations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIntegrationsRequest method.
+//	req, resp := client.GetIntegrationsRequest(params)
 //
-//    // Example sending a request using the GetIntegrationsRequest method.
-//    req, resp := client.GetIntegrationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrations
 func (c *ApiGatewayV2) GetIntegrationsRequest(input *GetIntegrationsInput) (req *request.Request, output *GetIntegrationsOutput) {
@@ -3707,16 +3706,17 @@ func (c *ApiGatewayV2) GetIntegrationsRequest(input *GetIntegrationsInput) (req 
 // API operation GetIntegrations for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetIntegrations
 func (c *ApiGatewayV2) GetIntegrations(input *GetIntegrationsInput) (*GetIntegrationsOutput, error) {
@@ -3756,14 +3756,13 @@ const opGetModel = "GetModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetModelRequest method.
+//	req, resp := client.GetModelRequest(params)
 //
-//    // Example sending a request using the GetModelRequest method.
-//    req, resp := client.GetModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetModel
 func (c *ApiGatewayV2) GetModelRequest(input *GetModelInput) (req *request.Request, output *GetModelOutput) {
@@ -3794,12 +3793,13 @@ func (c *ApiGatewayV2) GetModelRequest(input *GetModelInput) (req *request.Reque
 // API operation GetModel for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetModel
 func (c *ApiGatewayV2) GetModel(input *GetModelInput) (*GetModelOutput, error) {
@@ -3839,14 +3839,13 @@ const opGetModelTemplate = "GetModelTemplate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetModelTemplateRequest method.
+//	req, resp := client.GetModelTemplateRequest(params)
 //
-//    // Example sending a request using the GetModelTemplateRequest method.
-//    req, resp := client.GetModelTemplateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetModelTemplate
 func (c *ApiGatewayV2) GetModelTemplateRequest(input *GetModelTemplateInput) (req *request.Request, output *GetModelTemplateOutput) {
@@ -3877,12 +3876,13 @@ func (c *ApiGatewayV2) GetModelTemplateRequest(input *GetModelTemplateInput) (re
 // API operation GetModelTemplate for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetModelTemplate
 func (c *ApiGatewayV2) GetModelTemplate(input *GetModelTemplateInput) (*GetModelTemplateOutput, error) {
@@ -3922,14 +3922,13 @@ const opGetModels = "GetModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetModelsRequest method.
+//	req, resp := client.GetModelsRequest(params)
 //
-//    // Example sending a request using the GetModelsRequest method.
-//    req, resp := client.GetModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetModels
 func (c *ApiGatewayV2) GetModelsRequest(input *GetModelsInput) (req *request.Request, output *GetModelsOutput) {
@@ -3960,16 +3959,17 @@ func (c *ApiGatewayV2) GetModelsRequest(input *GetModelsInput) (req *request.Req
 // API operation GetModels for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetModels
 func (c *ApiGatewayV2) GetModels(input *GetModelsInput) (*GetModelsOutput, error) {
@@ -4009,14 +4009,13 @@ const opGetRoute = "GetRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRouteRequest method.
+//	req, resp := client.GetRouteRequest(params)
 //
-//    // Example sending a request using the GetRouteRequest method.
-//    req, resp := client.GetRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRoute
 func (c *ApiGatewayV2) GetRouteRequest(input *GetRouteInput) (req *request.Request, output *GetRouteOutput) {
@@ -4047,12 +4046,13 @@ func (c *ApiGatewayV2) GetRouteRequest(input *GetRouteInput) (req *request.Reque
 // API operation GetRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRoute
 func (c *ApiGatewayV2) GetRoute(input *GetRouteInput) (*GetRouteOutput, error) {
@@ -4092,14 +4092,13 @@ const opGetRouteResponse = "GetRouteResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRouteResponseRequest method.
+//	req, resp := client.GetRouteResponseRequest(params)
 //
-//    // Example sending a request using the GetRouteResponseRequest method.
-//    req, resp := client.GetRouteResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRouteResponse
 func (c *ApiGatewayV2) GetRouteResponseRequest(input *GetRouteResponseInput) (req *request.Request, output *GetRouteResponseOutput) {
@@ -4130,12 +4129,13 @@ func (c *ApiGatewayV2) GetRouteResponseRequest(input *GetRouteResponseInput) (re
 // API operation GetRouteResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRouteResponse
 func (c *ApiGatewayV2) GetRouteResponse(input *GetRouteResponseInput) (*GetRouteResponseOutput, error) {
@@ -4175,14 +4175,13 @@ const opGetRouteResponses = "GetRouteResponses"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRouteResponsesRequest method.
+//	req, resp := client.GetRouteResponsesRequest(params)
 //
-//    // Example sending a request using the GetRouteResponsesRequest method.
-//    req, resp := client.GetRouteResponsesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRouteResponses
 func (c *ApiGatewayV2) GetRouteResponsesRequest(input *GetRouteResponsesInput) (req *request.Request, output *GetRouteResponsesOutput) {
@@ -4213,16 +4212,17 @@ func (c *ApiGatewayV2) GetRouteResponsesRequest(input *GetRouteResponsesInput) (
 // API operation GetRouteResponses for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRouteResponses
 func (c *ApiGatewayV2) GetRouteResponses(input *GetRouteResponsesInput) (*GetRouteResponsesOutput, error) {
@@ -4262,14 +4262,13 @@ const opGetRoutes = "GetRoutes"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRoutesRequest method.
+//	req, resp := client.GetRoutesRequest(params)
 //
-//    // Example sending a request using the GetRoutesRequest method.
-//    req, resp := client.GetRoutesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRoutes
 func (c *ApiGatewayV2) GetRoutesRequest(input *GetRoutesInput) (req *request.Request, output *GetRoutesOutput) {
@@ -4300,16 +4299,17 @@ func (c *ApiGatewayV2) GetRoutesRequest(input *GetRoutesInput) (req *request.Req
 // API operation GetRoutes for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetRoutes
 func (c *ApiGatewayV2) GetRoutes(input *GetRoutesInput) (*GetRoutesOutput, error) {
@@ -4349,14 +4349,13 @@ const opGetStage = "GetStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStageRequest method.
+//	req, resp := client.GetStageRequest(params)
 //
-//    // Example sending a request using the GetStageRequest method.
-//    req, resp := client.GetStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetStage
 func (c *ApiGatewayV2) GetStageRequest(input *GetStageInput) (req *request.Request, output *GetStageOutput) {
@@ -4387,12 +4386,13 @@ func (c *ApiGatewayV2) GetStageRequest(input *GetStageInput) (req *request.Reque
 // API operation GetStage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetStage
 func (c *ApiGatewayV2) GetStage(input *GetStageInput) (*GetStageOutput, error) {
@@ -4432,14 +4432,13 @@ const opGetStages = "GetStages"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetStagesRequest method.
+//	req, resp := client.GetStagesRequest(params)
 //
-//    // Example sending a request using the GetStagesRequest method.
-//    req, resp := client.GetStagesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetStages
 func (c *ApiGatewayV2) GetStagesRequest(input *GetStagesInput) (req *request.Request, output *GetStagesOutput) {
@@ -4470,16 +4469,17 @@ func (c *ApiGatewayV2) GetStagesRequest(input *GetStagesInput) (req *request.Req
 // API operation GetStages for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetStages
 func (c *ApiGatewayV2) GetStages(input *GetStagesInput) (*GetStagesOutput, error) {
@@ -4519,14 +4519,13 @@ const opGetTags = "GetTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTagsRequest method.
+//	req, resp := client.GetTagsRequest(params)
 //
-//    // Example sending a request using the GetTagsRequest method.
-//    req, resp := client.GetTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetTags
 func (c *ApiGatewayV2) GetTagsRequest(input *GetTagsInput) (req *request.Request, output *GetTagsOutput) {
@@ -4557,21 +4556,22 @@ func (c *ApiGatewayV2) GetTagsRequest(input *GetTagsInput) (req *request.Request
 // API operation GetTags for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetTags
 func (c *ApiGatewayV2) GetTags(input *GetTagsInput) (*GetTagsOutput, error) {
@@ -4611,14 +4611,13 @@ const opGetVpcLink = "GetVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpcLinkRequest method.
+//	req, resp := client.GetVpcLinkRequest(params)
 //
-//    // Example sending a request using the GetVpcLinkRequest method.
-//    req, resp := client.GetVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetVpcLink
 func (c *ApiGatewayV2) GetVpcLinkRequest(input *GetVpcLinkInput) (req *request.Request, output *GetVpcLinkOutput) {
@@ -4649,12 +4648,13 @@ func (c *ApiGatewayV2) GetVpcLinkRequest(input *GetVpcLinkInput) (req *request.R
 // API operation GetVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetVpcLink
 func (c *ApiGatewayV2) GetVpcLink(input *GetVpcLinkInput) (*GetVpcLinkOutput, error) {
@@ -4694,14 +4694,13 @@ const opGetVpcLinks = "GetVpcLinks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetVpcLinksRequest method.
+//	req, resp := client.GetVpcLinksRequest(params)
 //
-//    // Example sending a request using the GetVpcLinksRequest method.
-//    req, resp := client.GetVpcLinksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetVpcLinks
 func (c *ApiGatewayV2) GetVpcLinksRequest(input *GetVpcLinksInput) (req *request.Request, output *GetVpcLinksOutput) {
@@ -4732,12 +4731,13 @@ func (c *ApiGatewayV2) GetVpcLinksRequest(input *GetVpcLinksInput) (req *request
 // API operation GetVpcLinks for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/GetVpcLinks
 func (c *ApiGatewayV2) GetVpcLinks(input *GetVpcLinksInput) (*GetVpcLinksOutput, error) {
@@ -4777,14 +4777,13 @@ const opImportApi = "ImportApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ImportApiRequest method.
+//	req, resp := client.ImportApiRequest(params)
 //
-//    // Example sending a request using the ImportApiRequest method.
-//    req, resp := client.ImportApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ImportApi
 func (c *ApiGatewayV2) ImportApiRequest(input *ImportApiInput) (req *request.Request, output *ImportApiOutput) {
@@ -4815,21 +4814,22 @@ func (c *ApiGatewayV2) ImportApiRequest(input *ImportApiInput) (req *request.Req
 // API operation ImportApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ImportApi
 func (c *ApiGatewayV2) ImportApi(input *ImportApiInput) (*ImportApiOutput, error) {
@@ -4869,14 +4869,13 @@ const opReimportApi = "ReimportApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ReimportApiRequest method.
+//	req, resp := client.ReimportApiRequest(params)
 //
-//    // Example sending a request using the ReimportApiRequest method.
-//    req, resp := client.ReimportApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ReimportApi
 func (c *ApiGatewayV2) ReimportApiRequest(input *ReimportApiInput) (req *request.Request, output *ReimportApiOutput) {
@@ -4907,21 +4906,22 @@ func (c *ApiGatewayV2) ReimportApiRequest(input *ReimportApiInput) (req *request
 // API operation ReimportApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ReimportApi
 func (c *ApiGatewayV2) ReimportApi(input *ReimportApiInput) (*ReimportApiOutput, error) {
@@ -4961,14 +4961,13 @@ const opResetAuthorizersCache = "ResetAuthorizersCache"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ResetAuthorizersCacheRequest method.
+//	req, resp := client.ResetAuthorizersCacheRequest(params)
 //
-//    // Example sending a request using the ResetAuthorizersCacheRequest method.
-//    req, resp := client.ResetAuthorizersCacheRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ResetAuthorizersCache
 func (c *ApiGatewayV2) ResetAuthorizersCacheRequest(input *ResetAuthorizersCacheInput) (req *request.Request, output *ResetAuthorizersCacheOutput) {
@@ -5001,12 +5000,13 @@ func (c *ApiGatewayV2) ResetAuthorizersCacheRequest(input *ResetAuthorizersCache
 // API operation ResetAuthorizersCache for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
+//
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/ResetAuthorizersCache
 func (c *ApiGatewayV2) ResetAuthorizersCache(input *ResetAuthorizersCacheInput) (*ResetAuthorizersCacheOutput, error) {
@@ -5046,14 +5046,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/TagResource
 func (c *ApiGatewayV2) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -5085,21 +5084,22 @@ func (c *ApiGatewayV2) TagResourceRequest(input *TagResourceInput) (req *request
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/TagResource
 func (c *ApiGatewayV2) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -5139,14 +5139,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UntagResource
 func (c *ApiGatewayV2) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -5178,21 +5177,22 @@ func (c *ApiGatewayV2) UntagResourceRequest(input *UntagResourceInput) (req *req
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UntagResource
 func (c *ApiGatewayV2) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -5232,14 +5232,13 @@ const opUpdateApi = "UpdateApi"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApiRequest method.
+//	req, resp := client.UpdateApiRequest(params)
 //
-//    // Example sending a request using the UpdateApiRequest method.
-//    req, resp := client.UpdateApiRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateApi
 func (c *ApiGatewayV2) UpdateApiRequest(input *UpdateApiInput) (req *request.Request, output *UpdateApiOutput) {
@@ -5270,21 +5269,22 @@ func (c *ApiGatewayV2) UpdateApiRequest(input *UpdateApiInput) (req *request.Req
 // API operation UpdateApi for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateApi
 func (c *ApiGatewayV2) UpdateApi(input *UpdateApiInput) (*UpdateApiOutput, error) {
@@ -5324,14 +5324,13 @@ const opUpdateApiMapping = "UpdateApiMapping"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateApiMappingRequest method.
+//	req, resp := client.UpdateApiMappingRequest(params)
 //
-//    // Example sending a request using the UpdateApiMappingRequest method.
-//    req, resp := client.UpdateApiMappingRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateApiMapping
 func (c *ApiGatewayV2) UpdateApiMappingRequest(input *UpdateApiMappingInput) (req *request.Request, output *UpdateApiMappingOutput) {
@@ -5362,21 +5361,22 @@ func (c *ApiGatewayV2) UpdateApiMappingRequest(input *UpdateApiMappingInput) (re
 // API operation UpdateApiMapping for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateApiMapping
 func (c *ApiGatewayV2) UpdateApiMapping(input *UpdateApiMappingInput) (*UpdateApiMappingOutput, error) {
@@ -5416,14 +5416,13 @@ const opUpdateAuthorizer = "UpdateAuthorizer"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAuthorizerRequest method.
+//	req, resp := client.UpdateAuthorizerRequest(params)
 //
-//    // Example sending a request using the UpdateAuthorizerRequest method.
-//    req, resp := client.UpdateAuthorizerRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateAuthorizer
 func (c *ApiGatewayV2) UpdateAuthorizerRequest(input *UpdateAuthorizerInput) (req *request.Request, output *UpdateAuthorizerOutput) {
@@ -5454,21 +5453,22 @@ func (c *ApiGatewayV2) UpdateAuthorizerRequest(input *UpdateAuthorizerInput) (re
 // API operation UpdateAuthorizer for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateAuthorizer
 func (c *ApiGatewayV2) UpdateAuthorizer(input *UpdateAuthorizerInput) (*UpdateAuthorizerOutput, error) {
@@ -5508,14 +5508,13 @@ const opUpdateDeployment = "UpdateDeployment"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDeploymentRequest method.
+//	req, resp := client.UpdateDeploymentRequest(params)
 //
-//    // Example sending a request using the UpdateDeploymentRequest method.
-//    req, resp := client.UpdateDeploymentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateDeployment
 func (c *ApiGatewayV2) UpdateDeploymentRequest(input *UpdateDeploymentInput) (req *request.Request, output *UpdateDeploymentOutput) {
@@ -5546,21 +5545,22 @@ func (c *ApiGatewayV2) UpdateDeploymentRequest(input *UpdateDeploymentInput) (re
 // API operation UpdateDeployment for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateDeployment
 func (c *ApiGatewayV2) UpdateDeployment(input *UpdateDeploymentInput) (*UpdateDeploymentOutput, error) {
@@ -5600,14 +5600,13 @@ const opUpdateDomainName = "UpdateDomainName"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDomainNameRequest method.
+//	req, resp := client.UpdateDomainNameRequest(params)
 //
-//    // Example sending a request using the UpdateDomainNameRequest method.
-//    req, resp := client.UpdateDomainNameRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateDomainName
 func (c *ApiGatewayV2) UpdateDomainNameRequest(input *UpdateDomainNameInput) (req *request.Request, output *UpdateDomainNameOutput) {
@@ -5638,21 +5637,22 @@ func (c *ApiGatewayV2) UpdateDomainNameRequest(input *UpdateDomainNameInput) (re
 // API operation UpdateDomainName for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateDomainName
 func (c *ApiGatewayV2) UpdateDomainName(input *UpdateDomainNameInput) (*UpdateDomainNameOutput, error) {
@@ -5692,14 +5692,13 @@ const opUpdateIntegration = "UpdateIntegration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIntegrationRequest method.
+//	req, resp := client.UpdateIntegrationRequest(params)
 //
-//    // Example sending a request using the UpdateIntegrationRequest method.
-//    req, resp := client.UpdateIntegrationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateIntegration
 func (c *ApiGatewayV2) UpdateIntegrationRequest(input *UpdateIntegrationInput) (req *request.Request, output *UpdateIntegrationOutput) {
@@ -5730,21 +5729,22 @@ func (c *ApiGatewayV2) UpdateIntegrationRequest(input *UpdateIntegrationInput) (
 // API operation UpdateIntegration for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateIntegration
 func (c *ApiGatewayV2) UpdateIntegration(input *UpdateIntegrationInput) (*UpdateIntegrationOutput, error) {
@@ -5784,14 +5784,13 @@ const opUpdateIntegrationResponse = "UpdateIntegrationResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIntegrationResponseRequest method.
+//	req, resp := client.UpdateIntegrationResponseRequest(params)
 //
-//    // Example sending a request using the UpdateIntegrationResponseRequest method.
-//    req, resp := client.UpdateIntegrationResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateIntegrationResponse
 func (c *ApiGatewayV2) UpdateIntegrationResponseRequest(input *UpdateIntegrationResponseInput) (req *request.Request, output *UpdateIntegrationResponseOutput) {
@@ -5822,21 +5821,22 @@ func (c *ApiGatewayV2) UpdateIntegrationResponseRequest(input *UpdateIntegration
 // API operation UpdateIntegrationResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateIntegrationResponse
 func (c *ApiGatewayV2) UpdateIntegrationResponse(input *UpdateIntegrationResponseInput) (*UpdateIntegrationResponseOutput, error) {
@@ -5876,14 +5876,13 @@ const opUpdateModel = "UpdateModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateModelRequest method.
+//	req, resp := client.UpdateModelRequest(params)
 //
-//    // Example sending a request using the UpdateModelRequest method.
-//    req, resp := client.UpdateModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateModel
 func (c *ApiGatewayV2) UpdateModelRequest(input *UpdateModelInput) (req *request.Request, output *UpdateModelOutput) {
@@ -5914,21 +5913,22 @@ func (c *ApiGatewayV2) UpdateModelRequest(input *UpdateModelInput) (req *request
 // API operation UpdateModel for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateModel
 func (c *ApiGatewayV2) UpdateModel(input *UpdateModelInput) (*UpdateModelOutput, error) {
@@ -5968,14 +5968,13 @@ const opUpdateRoute = "UpdateRoute"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRouteRequest method.
+//	req, resp := client.UpdateRouteRequest(params)
 //
-//    // Example sending a request using the UpdateRouteRequest method.
-//    req, resp := client.UpdateRouteRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateRoute
 func (c *ApiGatewayV2) UpdateRouteRequest(input *UpdateRouteInput) (req *request.Request, output *UpdateRouteOutput) {
@@ -6006,21 +6005,22 @@ func (c *ApiGatewayV2) UpdateRouteRequest(input *UpdateRouteInput) (req *request
 // API operation UpdateRoute for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateRoute
 func (c *ApiGatewayV2) UpdateRoute(input *UpdateRouteInput) (*UpdateRouteOutput, error) {
@@ -6060,14 +6060,13 @@ const opUpdateRouteResponse = "UpdateRouteResponse"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateRouteResponseRequest method.
+//	req, resp := client.UpdateRouteResponseRequest(params)
 //
-//    // Example sending a request using the UpdateRouteResponseRequest method.
-//    req, resp := client.UpdateRouteResponseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateRouteResponse
 func (c *ApiGatewayV2) UpdateRouteResponseRequest(input *UpdateRouteResponseInput) (req *request.Request, output *UpdateRouteResponseOutput) {
@@ -6098,21 +6097,22 @@ func (c *ApiGatewayV2) UpdateRouteResponseRequest(input *UpdateRouteResponseInpu
 // API operation UpdateRouteResponse for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateRouteResponse
 func (c *ApiGatewayV2) UpdateRouteResponse(input *UpdateRouteResponseInput) (*UpdateRouteResponseOutput, error) {
@@ -6152,14 +6152,13 @@ const opUpdateStage = "UpdateStage"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateStageRequest method.
+//	req, resp := client.UpdateStageRequest(params)
 //
-//    // Example sending a request using the UpdateStageRequest method.
-//    req, resp := client.UpdateStageRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateStage
 func (c *ApiGatewayV2) UpdateStageRequest(input *UpdateStageInput) (req *request.Request, output *UpdateStageOutput) {
@@ -6190,21 +6189,22 @@ func (c *ApiGatewayV2) UpdateStageRequest(input *UpdateStageInput) (req *request
 // API operation UpdateStage for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
 //
-//   * ConflictException
-//   The requested operation would cause a conflict with the current state of
-//   a service resource associated with the request. Resolve the conflict before
-//   retrying this request. See the accompanying error message for details.
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
+//
+//   - ConflictException
+//     The requested operation would cause a conflict with the current state of
+//     a service resource associated with the request. Resolve the conflict before
+//     retrying this request. See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateStage
 func (c *ApiGatewayV2) UpdateStage(input *UpdateStageInput) (*UpdateStageOutput, error) {
@@ -6244,14 +6244,13 @@ const opUpdateVpcLink = "UpdateVpcLink"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateVpcLinkRequest method.
+//	req, resp := client.UpdateVpcLinkRequest(params)
 //
-//    // Example sending a request using the UpdateVpcLinkRequest method.
-//    req, resp := client.UpdateVpcLinkRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateVpcLink
 func (c *ApiGatewayV2) UpdateVpcLinkRequest(input *UpdateVpcLinkInput) (req *request.Request, output *UpdateVpcLinkOutput) {
@@ -6282,16 +6281,17 @@ func (c *ApiGatewayV2) UpdateVpcLinkRequest(input *UpdateVpcLinkInput) (req *req
 // API operation UpdateVpcLink for usage and error information.
 //
 // Returned Error Types:
-//   * NotFoundException
-//   The resource specified in the request was not found. See the message field
-//   for more information.
 //
-//   * TooManyRequestsException
-//   A limit has been exceeded. See the accompanying error message for details.
+//   - NotFoundException
+//     The resource specified in the request was not found. See the message field
+//     for more information.
 //
-//   * BadRequestException
-//   The request is not valid, for example, the input is incomplete or incorrect.
-//   See the accompanying error message for details.
+//   - TooManyRequestsException
+//     A limit has been exceeded. See the accompanying error message for details.
+//
+//   - BadRequestException
+//     The request is not valid, for example, the input is incomplete or incorrect.
+//     See the accompanying error message for details.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/apigatewayv2-2018-11-29/UpdateVpcLink
 func (c *ApiGatewayV2) UpdateVpcLink(input *UpdateVpcLinkInput) (*UpdateVpcLinkOutput, error) {

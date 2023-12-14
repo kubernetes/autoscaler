@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Application Auto Scaling.
-//    func myFunc(svc applicationautoscalingiface.ApplicationAutoScalingAPI) bool {
-//        // Make svc.DeleteScalingPolicy request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Application Auto Scaling.
+//	func myFunc(svc applicationautoscalingiface.ApplicationAutoScalingAPI) bool {
+//	    // Make svc.DeleteScalingPolicy request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := applicationautoscaling.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := applicationautoscaling.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockApplicationAutoScalingClient struct {
-//        applicationautoscalingiface.ApplicationAutoScalingAPI
-//    }
-//    func (m *mockApplicationAutoScalingClient) DeleteScalingPolicy(input *applicationautoscaling.DeleteScalingPolicyInput) (*applicationautoscaling.DeleteScalingPolicyOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockApplicationAutoScalingClient struct {
+//	    applicationautoscalingiface.ApplicationAutoScalingAPI
+//	}
+//	func (m *mockApplicationAutoScalingClient) DeleteScalingPolicy(input *applicationautoscaling.DeleteScalingPolicyInput) (*applicationautoscaling.DeleteScalingPolicyOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockApplicationAutoScalingClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockApplicationAutoScalingClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -100,6 +100,10 @@ type ApplicationAutoScalingAPI interface {
 	DescribeScheduledActionsPages(*applicationautoscaling.DescribeScheduledActionsInput, func(*applicationautoscaling.DescribeScheduledActionsOutput, bool) bool) error
 	DescribeScheduledActionsPagesWithContext(aws.Context, *applicationautoscaling.DescribeScheduledActionsInput, func(*applicationautoscaling.DescribeScheduledActionsOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*applicationautoscaling.ListTagsForResourceInput) (*applicationautoscaling.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *applicationautoscaling.ListTagsForResourceInput, ...request.Option) (*applicationautoscaling.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*applicationautoscaling.ListTagsForResourceInput) (*request.Request, *applicationautoscaling.ListTagsForResourceOutput)
+
 	PutScalingPolicy(*applicationautoscaling.PutScalingPolicyInput) (*applicationautoscaling.PutScalingPolicyOutput, error)
 	PutScalingPolicyWithContext(aws.Context, *applicationautoscaling.PutScalingPolicyInput, ...request.Option) (*applicationautoscaling.PutScalingPolicyOutput, error)
 	PutScalingPolicyRequest(*applicationautoscaling.PutScalingPolicyInput) (*request.Request, *applicationautoscaling.PutScalingPolicyOutput)
@@ -111,6 +115,14 @@ type ApplicationAutoScalingAPI interface {
 	RegisterScalableTarget(*applicationautoscaling.RegisterScalableTargetInput) (*applicationautoscaling.RegisterScalableTargetOutput, error)
 	RegisterScalableTargetWithContext(aws.Context, *applicationautoscaling.RegisterScalableTargetInput, ...request.Option) (*applicationautoscaling.RegisterScalableTargetOutput, error)
 	RegisterScalableTargetRequest(*applicationautoscaling.RegisterScalableTargetInput) (*request.Request, *applicationautoscaling.RegisterScalableTargetOutput)
+
+	TagResource(*applicationautoscaling.TagResourceInput) (*applicationautoscaling.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *applicationautoscaling.TagResourceInput, ...request.Option) (*applicationautoscaling.TagResourceOutput, error)
+	TagResourceRequest(*applicationautoscaling.TagResourceInput) (*request.Request, *applicationautoscaling.TagResourceOutput)
+
+	UntagResource(*applicationautoscaling.UntagResourceInput) (*applicationautoscaling.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *applicationautoscaling.UntagResourceInput, ...request.Option) (*applicationautoscaling.UntagResourceOutput, error)
+	UntagResourceRequest(*applicationautoscaling.UntagResourceInput) (*request.Request, *applicationautoscaling.UntagResourceOutput)
 }
 
 var _ ApplicationAutoScalingAPI = (*applicationautoscaling.ApplicationAutoScaling)(nil)

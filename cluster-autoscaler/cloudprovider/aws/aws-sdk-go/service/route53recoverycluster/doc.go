@@ -12,8 +12,8 @@
 // on a highly available cluster in Route 53 ARC. A cluster provides a set of
 // five redundant Regional endpoints against which you can run API calls to
 // get or update the state of routing controls. To implement failover, you set
-// one routing control On and another one Off, to reroute traffic from one Availability
-// Zone or Amazon Web Services Region to another.
+// one routing control to ON and another one to OFF, to reroute traffic from
+// one Availability Zone or Amazon Web Services Region to another.
 //
 // Be aware that you must specify a Regional endpoint for a cluster when you
 // work with API cluster operations to get or update routing control states
@@ -32,32 +32,32 @@
 // For more information about working with routing control in Route 53 ARC,
 // see the following:
 //
-//    * Create clusters, control panels, and routing controls by using API operations.
-//    For more information, see the Recovery Control Configuration API Reference
-//    Guide for Amazon Route 53 Application Recovery Controller (https://docs.aws.amazon.com/recovery-cluster/latest/api/).
+//   - Create clusters, control panels, and routing controls by using API operations.
+//     For more information, see the Recovery Control Configuration API Reference
+//     Guide for Amazon Route 53 Application Recovery Controller (https://docs.aws.amazon.com/recovery-cluster/latest/api/).
 //
-//    * Learn about the components in recovery control, including clusters,
-//    routing controls, and control panels, and how to work with Route 53 ARC
-//    in the Amazon Web Services console. For more information, see Recovery
-//    control components (https://docs.aws.amazon.com/r53recovery/latest/dg/introduction-components.html#introduction-components-routing)
-//    in the Amazon Route 53 Application Recovery Controller Developer Guide.
+//   - Learn about the components in recovery control, including clusters,
+//     routing controls, and control panels, and how to work with Route 53 ARC
+//     in the Amazon Web Services console. For more information, see Recovery
+//     control components (https://docs.aws.amazon.com/r53recovery/latest/dg/introduction-components.html#introduction-components-routing)
+//     in the Amazon Route 53 Application Recovery Controller Developer Guide.
 //
-//    * Route 53 ARC also provides readiness checks that continually audit resources
-//    to help make sure that your applications are scaled and ready to handle
-//    failover traffic. For more information about the related API operations,
-//    see the Recovery Readiness API Reference Guide for Amazon Route 53 Application
-//    Recovery Controller (https://docs.aws.amazon.com/recovery-readiness/latest/api/).
+//   - Route 53 ARC also provides readiness checks that continually audit resources
+//     to help make sure that your applications are scaled and ready to handle
+//     failover traffic. For more information about the related API operations,
+//     see the Recovery Readiness API Reference Guide for Amazon Route 53 Application
+//     Recovery Controller (https://docs.aws.amazon.com/recovery-readiness/latest/api/).
 //
-//    * For more information about creating resilient applications and preparing
-//    for recovery readiness with Route 53 ARC, see the Amazon Route 53 Application
-//    Recovery Controller Developer Guide (https://docs.aws.amazon.com/r53recovery/latest/dg/).
+//   - For more information about creating resilient applications and preparing
+//     for recovery readiness with Route 53 ARC, see the Amazon Route 53 Application
+//     Recovery Controller Developer Guide (https://docs.aws.amazon.com/r53recovery/latest/dg/).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/route53-recovery-cluster-2019-12-02 for more information on this service.
 //
 // See route53recoverycluster package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/route53recoverycluster/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Route53 Recovery Cluster with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

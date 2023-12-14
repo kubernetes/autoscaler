@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon EMR.
-//    func myFunc(svc emriface.EMRAPI) bool {
-//        // Make svc.AddInstanceFleet request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon EMR.
+//	func myFunc(svc emriface.EMRAPI) bool {
+//	    // Make svc.AddInstanceFleet request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := emr.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := emr.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockEMRClient struct {
-//        emriface.EMRAPI
-//    }
-//    func (m *mockEMRClient) AddInstanceFleet(input *emr.AddInstanceFleetInput) (*emr.AddInstanceFleetOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockEMRClient struct {
+//	    emriface.EMRAPI
+//	}
+//	func (m *mockEMRClient) AddInstanceFleet(input *emr.AddInstanceFleetInput) (*emr.AddInstanceFleetOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockEMRClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockEMRClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -140,6 +140,10 @@ type EMRAPI interface {
 	GetBlockPublicAccessConfigurationWithContext(aws.Context, *emr.GetBlockPublicAccessConfigurationInput, ...request.Option) (*emr.GetBlockPublicAccessConfigurationOutput, error)
 	GetBlockPublicAccessConfigurationRequest(*emr.GetBlockPublicAccessConfigurationInput) (*request.Request, *emr.GetBlockPublicAccessConfigurationOutput)
 
+	GetClusterSessionCredentials(*emr.GetClusterSessionCredentialsInput) (*emr.GetClusterSessionCredentialsOutput, error)
+	GetClusterSessionCredentialsWithContext(aws.Context, *emr.GetClusterSessionCredentialsInput, ...request.Option) (*emr.GetClusterSessionCredentialsOutput, error)
+	GetClusterSessionCredentialsRequest(*emr.GetClusterSessionCredentialsInput) (*request.Request, *emr.GetClusterSessionCredentialsOutput)
+
 	GetManagedScalingPolicy(*emr.GetManagedScalingPolicyInput) (*emr.GetManagedScalingPolicyOutput, error)
 	GetManagedScalingPolicyWithContext(aws.Context, *emr.GetManagedScalingPolicyInput, ...request.Option) (*emr.GetManagedScalingPolicyOutput, error)
 	GetManagedScalingPolicyRequest(*emr.GetManagedScalingPolicyInput) (*request.Request, *emr.GetManagedScalingPolicyOutput)
@@ -224,6 +228,13 @@ type EMRAPI interface {
 
 	ListStudiosPages(*emr.ListStudiosInput, func(*emr.ListStudiosOutput, bool) bool) error
 	ListStudiosPagesWithContext(aws.Context, *emr.ListStudiosInput, func(*emr.ListStudiosOutput, bool) bool, ...request.Option) error
+
+	ListSupportedInstanceTypes(*emr.ListSupportedInstanceTypesInput) (*emr.ListSupportedInstanceTypesOutput, error)
+	ListSupportedInstanceTypesWithContext(aws.Context, *emr.ListSupportedInstanceTypesInput, ...request.Option) (*emr.ListSupportedInstanceTypesOutput, error)
+	ListSupportedInstanceTypesRequest(*emr.ListSupportedInstanceTypesInput) (*request.Request, *emr.ListSupportedInstanceTypesOutput)
+
+	ListSupportedInstanceTypesPages(*emr.ListSupportedInstanceTypesInput, func(*emr.ListSupportedInstanceTypesOutput, bool) bool) error
+	ListSupportedInstanceTypesPagesWithContext(aws.Context, *emr.ListSupportedInstanceTypesInput, func(*emr.ListSupportedInstanceTypesOutput, bool) bool, ...request.Option) error
 
 	ModifyCluster(*emr.ModifyClusterInput) (*emr.ModifyClusterOutput, error)
 	ModifyClusterWithContext(aws.Context, *emr.ModifyClusterInput, ...request.Option) (*emr.ModifyClusterOutput, error)

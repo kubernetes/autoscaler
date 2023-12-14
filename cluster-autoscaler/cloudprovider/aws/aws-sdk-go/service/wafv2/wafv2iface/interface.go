@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS WAFV2.
-//    func myFunc(svc wafv2iface.WAFV2API) bool {
-//        // Make svc.AssociateWebACL request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS WAFV2.
+//	func myFunc(svc wafv2iface.WAFV2API) bool {
+//	    // Make svc.AssociateWebACL request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := wafv2.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := wafv2.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockWAFV2Client struct {
-//        wafv2iface.WAFV2API
-//    }
-//    func (m *mockWAFV2Client) AssociateWebACL(input *wafv2.AssociateWebACLInput) (*wafv2.AssociateWebACLOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockWAFV2Client struct {
+//	    wafv2iface.WAFV2API
+//	}
+//	func (m *mockWAFV2Client) AssociateWebACL(input *wafv2.AssociateWebACLInput) (*wafv2.AssociateWebACLOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockWAFV2Client{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockWAFV2Client{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -67,6 +67,10 @@ type WAFV2API interface {
 	CheckCapacity(*wafv2.CheckCapacityInput) (*wafv2.CheckCapacityOutput, error)
 	CheckCapacityWithContext(aws.Context, *wafv2.CheckCapacityInput, ...request.Option) (*wafv2.CheckCapacityOutput, error)
 	CheckCapacityRequest(*wafv2.CheckCapacityInput) (*request.Request, *wafv2.CheckCapacityOutput)
+
+	CreateAPIKey(*wafv2.CreateAPIKeyInput) (*wafv2.CreateAPIKeyOutput, error)
+	CreateAPIKeyWithContext(aws.Context, *wafv2.CreateAPIKeyInput, ...request.Option) (*wafv2.CreateAPIKeyOutput, error)
+	CreateAPIKeyRequest(*wafv2.CreateAPIKeyInput) (*request.Request, *wafv2.CreateAPIKeyOutput)
 
 	CreateIPSet(*wafv2.CreateIPSetInput) (*wafv2.CreateIPSetOutput, error)
 	CreateIPSetWithContext(aws.Context, *wafv2.CreateIPSetInput, ...request.Option) (*wafv2.CreateIPSetOutput, error)
@@ -112,6 +116,14 @@ type WAFV2API interface {
 	DeleteWebACLWithContext(aws.Context, *wafv2.DeleteWebACLInput, ...request.Option) (*wafv2.DeleteWebACLOutput, error)
 	DeleteWebACLRequest(*wafv2.DeleteWebACLInput) (*request.Request, *wafv2.DeleteWebACLOutput)
 
+	DescribeAllManagedProducts(*wafv2.DescribeAllManagedProductsInput) (*wafv2.DescribeAllManagedProductsOutput, error)
+	DescribeAllManagedProductsWithContext(aws.Context, *wafv2.DescribeAllManagedProductsInput, ...request.Option) (*wafv2.DescribeAllManagedProductsOutput, error)
+	DescribeAllManagedProductsRequest(*wafv2.DescribeAllManagedProductsInput) (*request.Request, *wafv2.DescribeAllManagedProductsOutput)
+
+	DescribeManagedProductsByVendor(*wafv2.DescribeManagedProductsByVendorInput) (*wafv2.DescribeManagedProductsByVendorOutput, error)
+	DescribeManagedProductsByVendorWithContext(aws.Context, *wafv2.DescribeManagedProductsByVendorInput, ...request.Option) (*wafv2.DescribeManagedProductsByVendorOutput, error)
+	DescribeManagedProductsByVendorRequest(*wafv2.DescribeManagedProductsByVendorInput) (*request.Request, *wafv2.DescribeManagedProductsByVendorOutput)
+
 	DescribeManagedRuleGroup(*wafv2.DescribeManagedRuleGroupInput) (*wafv2.DescribeManagedRuleGroupOutput, error)
 	DescribeManagedRuleGroupWithContext(aws.Context, *wafv2.DescribeManagedRuleGroupInput, ...request.Option) (*wafv2.DescribeManagedRuleGroupOutput, error)
 	DescribeManagedRuleGroupRequest(*wafv2.DescribeManagedRuleGroupInput) (*request.Request, *wafv2.DescribeManagedRuleGroupOutput)
@@ -123,6 +135,10 @@ type WAFV2API interface {
 	GenerateMobileSdkReleaseUrl(*wafv2.GenerateMobileSdkReleaseUrlInput) (*wafv2.GenerateMobileSdkReleaseUrlOutput, error)
 	GenerateMobileSdkReleaseUrlWithContext(aws.Context, *wafv2.GenerateMobileSdkReleaseUrlInput, ...request.Option) (*wafv2.GenerateMobileSdkReleaseUrlOutput, error)
 	GenerateMobileSdkReleaseUrlRequest(*wafv2.GenerateMobileSdkReleaseUrlInput) (*request.Request, *wafv2.GenerateMobileSdkReleaseUrlOutput)
+
+	GetDecryptedAPIKey(*wafv2.GetDecryptedAPIKeyInput) (*wafv2.GetDecryptedAPIKeyOutput, error)
+	GetDecryptedAPIKeyWithContext(aws.Context, *wafv2.GetDecryptedAPIKeyInput, ...request.Option) (*wafv2.GetDecryptedAPIKeyOutput, error)
+	GetDecryptedAPIKeyRequest(*wafv2.GetDecryptedAPIKeyInput) (*request.Request, *wafv2.GetDecryptedAPIKeyOutput)
 
 	GetIPSet(*wafv2.GetIPSetInput) (*wafv2.GetIPSetOutput, error)
 	GetIPSetWithContext(aws.Context, *wafv2.GetIPSetInput, ...request.Option) (*wafv2.GetIPSetOutput, error)
@@ -167,6 +183,10 @@ type WAFV2API interface {
 	GetWebACLForResource(*wafv2.GetWebACLForResourceInput) (*wafv2.GetWebACLForResourceOutput, error)
 	GetWebACLForResourceWithContext(aws.Context, *wafv2.GetWebACLForResourceInput, ...request.Option) (*wafv2.GetWebACLForResourceOutput, error)
 	GetWebACLForResourceRequest(*wafv2.GetWebACLForResourceInput) (*request.Request, *wafv2.GetWebACLForResourceOutput)
+
+	ListAPIKeys(*wafv2.ListAPIKeysInput) (*wafv2.ListAPIKeysOutput, error)
+	ListAPIKeysWithContext(aws.Context, *wafv2.ListAPIKeysInput, ...request.Option) (*wafv2.ListAPIKeysOutput, error)
+	ListAPIKeysRequest(*wafv2.ListAPIKeysInput) (*request.Request, *wafv2.ListAPIKeysOutput)
 
 	ListAvailableManagedRuleGroupVersions(*wafv2.ListAvailableManagedRuleGroupVersionsInput) (*wafv2.ListAvailableManagedRuleGroupVersionsOutput, error)
 	ListAvailableManagedRuleGroupVersionsWithContext(aws.Context, *wafv2.ListAvailableManagedRuleGroupVersionsInput, ...request.Option) (*wafv2.ListAvailableManagedRuleGroupVersionsOutput, error)

@@ -3,17 +3,17 @@
 // Package servicecatalog provides the client and types for making API
 // requests to AWS Service Catalog.
 //
-// AWS Service Catalog (https://aws.amazon.com/servicecatalog/) enables organizations
-// to create and manage catalogs of IT services that are approved for AWS. To
-// get the most out of this documentation, you should be familiar with the terminology
-// discussed in AWS Service Catalog Concepts (http://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html).
+// Service Catalog (http://aws.amazon.com/servicecatalog) enables organizations
+// to create and manage catalogs of IT services that are approved for Amazon
+// Web Services. To get the most out of this documentation, you should be familiar
+// with the terminology discussed in Service Catalog Concepts (http://docs.aws.amazon.com/servicecatalog/latest/adminguide/what-is_concepts.html).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/servicecatalog-2015-12-10 for more information on this service.
 //
 // See servicecatalog package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/servicecatalog/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Service Catalog with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

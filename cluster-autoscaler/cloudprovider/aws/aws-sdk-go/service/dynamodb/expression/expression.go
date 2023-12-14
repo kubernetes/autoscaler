@@ -42,19 +42,19 @@ func (l typeList) Swap(i, j int) {
 //
 // Example:
 //
-//     keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
-//     proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
+//	keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
+//	proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
 //
-//     builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
-//     expr := builder.Build()
+//	builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
+//	expr := builder.Build()
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expr.KeyCondition(),
-//       ProjectionExpression:      expr.Projection(),
-//       ExpressionAttributeNames:  expr.Names(),
-//       ExpressionAttributeValues: expr.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expr.KeyCondition(),
+//	  ProjectionExpression:      expr.Projection(),
+//	  ExpressionAttributeNames:  expr.Names(),
+//	  ExpressionAttributeValues: expr.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 type Builder struct {
 	expressionMap map[expressionType]treeBuilder
 }
@@ -66,9 +66,9 @@ type Builder struct {
 //
 // Example:
 //
-//     keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
-//     proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
-//     builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
+//	keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
+//	proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
+//	builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
 func NewBuilder() Builder {
 	return Builder{}
 }
@@ -81,23 +81,23 @@ func NewBuilder() Builder {
 //
 // Example:
 //
-//     // keyCond represents the Key Condition Expression
-//     keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
-//     // proj represents the Projection Expression
-//     proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
+//	// keyCond represents the Key Condition Expression
+//	keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
+//	// proj represents the Projection Expression
+//	proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
 //
-//     // Add keyCond and proj to builder as a Key Condition and Projection
-//     // respectively
-//     builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
-//     expr := builder.Build()
+//	// Add keyCond and proj to builder as a Key Condition and Projection
+//	// respectively
+//	builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
+//	expr := builder.Build()
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expr.KeyCondition(),
-//       ProjectionExpression:      expr.Projection(),
-//       ExpressionAttributeNames:  expr.Names(),
-//       ExpressionAttributeValues: expr.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expr.KeyCondition(),
+//	  ProjectionExpression:      expr.Projection(),
+//	  ExpressionAttributeNames:  expr.Names(),
+//	  ExpressionAttributeValues: expr.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (b Builder) Build() (Expression, error) {
 	if b.expressionMap == nil {
 		return Expression{}, newUnsetParameterError("Build", "Builder")
@@ -169,15 +169,15 @@ func (b Builder) buildChildTrees() (aliasList, map[expressionType]string, error)
 //
 // Example:
 //
-//     // let builder be an existing Builder{} and cond be an existing
-//     // ConditionBuilder{}
-//     builder = builder.WithCondition(cond)
+//	// let builder be an existing Builder{} and cond be an existing
+//	// ConditionBuilder{}
+//	builder = builder.WithCondition(cond)
 //
-//     // add other DynamoDB Expressions to the builder. let proj be an already
-//     // existing ProjectionBuilder
-//     builder = builder.WithProjection(proj)
-//     // create an Expression struct
-//     expr := builder.Build()
+//	// add other DynamoDB Expressions to the builder. let proj be an already
+//	// existing ProjectionBuilder
+//	builder = builder.WithProjection(proj)
+//	// create an Expression struct
+//	expr := builder.Build()
 func (b Builder) WithCondition(conditionBuilder ConditionBuilder) Builder {
 	if b.expressionMap == nil {
 		b.expressionMap = map[expressionType]treeBuilder{}
@@ -193,15 +193,15 @@ func (b Builder) WithCondition(conditionBuilder ConditionBuilder) Builder {
 //
 // Example:
 //
-//     // let builder be an existing Builder{} and proj be an existing
-//     // ProjectionBuilder{}
-//     builder = builder.WithProjection(proj)
+//	// let builder be an existing Builder{} and proj be an existing
+//	// ProjectionBuilder{}
+//	builder = builder.WithProjection(proj)
 //
-//     // add other DynamoDB Expressions to the builder. let cond be an already
-//     // existing ConditionBuilder
-//     builder = builder.WithCondition(cond)
-//     // create an Expression struct
-//     expr := builder.Build()
+//	// add other DynamoDB Expressions to the builder. let cond be an already
+//	// existing ConditionBuilder
+//	builder = builder.WithCondition(cond)
+//	// create an Expression struct
+//	expr := builder.Build()
 func (b Builder) WithProjection(projectionBuilder ProjectionBuilder) Builder {
 	if b.expressionMap == nil {
 		b.expressionMap = map[expressionType]treeBuilder{}
@@ -217,15 +217,15 @@ func (b Builder) WithProjection(projectionBuilder ProjectionBuilder) Builder {
 //
 // Example:
 //
-//     // let builder be an existing Builder{} and keyCond be an existing
-//     // KeyConditionBuilder{}
-//     builder = builder.WithKeyCondition(keyCond)
+//	// let builder be an existing Builder{} and keyCond be an existing
+//	// KeyConditionBuilder{}
+//	builder = builder.WithKeyCondition(keyCond)
 //
-//     // add other DynamoDB Expressions to the builder. let cond be an already
-//     // existing ConditionBuilder
-//     builder = builder.WithCondition(cond)
-//     // create an Expression struct
-//     expr := builder.Build()
+//	// add other DynamoDB Expressions to the builder. let cond be an already
+//	// existing ConditionBuilder
+//	builder = builder.WithCondition(cond)
+//	// create an Expression struct
+//	expr := builder.Build()
 func (b Builder) WithKeyCondition(keyConditionBuilder KeyConditionBuilder) Builder {
 	if b.expressionMap == nil {
 		b.expressionMap = map[expressionType]treeBuilder{}
@@ -241,15 +241,15 @@ func (b Builder) WithKeyCondition(keyConditionBuilder KeyConditionBuilder) Build
 //
 // Example:
 //
-//     // let builder be an existing Builder{} and filt be an existing
-//     // ConditionBuilder{}
-//     builder = builder.WithFilter(filt)
+//	// let builder be an existing Builder{} and filt be an existing
+//	// ConditionBuilder{}
+//	builder = builder.WithFilter(filt)
 //
-//     // add other DynamoDB Expressions to the builder. let cond be an already
-//     // existing ConditionBuilder
-//     builder = builder.WithCondition(cond)
-//     // create an Expression struct
-//     expr := builder.Build()
+//	// add other DynamoDB Expressions to the builder. let cond be an already
+//	// existing ConditionBuilder
+//	builder = builder.WithCondition(cond)
+//	// create an Expression struct
+//	expr := builder.Build()
 func (b Builder) WithFilter(filterBuilder ConditionBuilder) Builder {
 	if b.expressionMap == nil {
 		b.expressionMap = map[expressionType]treeBuilder{}
@@ -265,15 +265,15 @@ func (b Builder) WithFilter(filterBuilder ConditionBuilder) Builder {
 //
 // Example:
 //
-//     // let builder be an existing Builder{} and update be an existing
-//     // UpdateBuilder{}
-//     builder = builder.WithUpdate(update)
+//	// let builder be an existing Builder{} and update be an existing
+//	// UpdateBuilder{}
+//	builder = builder.WithUpdate(update)
 //
-//     // add other DynamoDB Expressions to the builder. let cond be an already
-//     // existing ConditionBuilder
-//     builder = builder.WithCondition(cond)
-//     // create an Expression struct
-//     expr := builder.Build()
+//	// add other DynamoDB Expressions to the builder. let cond be an already
+//	// existing ConditionBuilder
+//	builder = builder.WithCondition(cond)
+//	// create an Expression struct
+//	expr := builder.Build()
 func (b Builder) WithUpdate(updateBuilder UpdateBuilder) Builder {
 	if b.expressionMap == nil {
 		b.expressionMap = map[expressionType]treeBuilder{}
@@ -288,23 +288,23 @@ func (b Builder) WithUpdate(updateBuilder UpdateBuilder) Builder {
 //
 // Example:
 //
-//     // keyCond represents the Key Condition Expression
-//     keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
-//     // proj represents the Projection Expression
-//     proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
+//	// keyCond represents the Key Condition Expression
+//	keyCond := expression.Key("someKey").Equal(expression.Value("someValue"))
+//	// proj represents the Projection Expression
+//	proj := expression.NamesList(expression.Name("aName"), expression.Name("anotherName"), expression.Name("oneOtherName"))
 //
-//     // Add keyCond and proj to builder as a Key Condition and Projection
-//     // respectively
-//     builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
-//     expr := builder.Build()
+//	// Add keyCond and proj to builder as a Key Condition and Projection
+//	// respectively
+//	builder := expression.NewBuilder().WithKeyCondition(keyCond).WithProjection(proj)
+//	expr := builder.Build()
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expr.KeyCondition(),
-//       ProjectionExpression:      expr.Projection(),
-//       ExpressionAttributeNames:  expr.Names(),
-//       ExpressionAttributeValues: expr.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expr.KeyCondition(),
+//	  ProjectionExpression:      expr.Projection(),
+//	  ExpressionAttributeNames:  expr.Names(),
+//	  ExpressionAttributeValues: expr.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 type Expression struct {
 	expressionMap map[expressionType]string
 	namesMap      map[string]*string
@@ -328,19 +328,19 @@ type treeBuilder interface {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     deleteInput := dynamodb.DeleteItemInput{
-//       ConditionExpression:       expression.Condition(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       Key: map[string]*dynamodb.AttributeValue{
-//         "PartitionKey": &dynamodb.AttributeValue{
-//           S: aws.String("SomeKey"),
-//         },
-//       },
-//       TableName: aws.String("SomeTable"),
-//     }
+//	deleteInput := dynamodb.DeleteItemInput{
+//	  ConditionExpression:       expression.Condition(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  Key: map[string]*dynamodb.AttributeValue{
+//	    "PartitionKey": &dynamodb.AttributeValue{
+//	      S: aws.String("SomeKey"),
+//	    },
+//	  },
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) Condition() *string {
 	return e.returnExpression(condition)
 }
@@ -352,15 +352,15 @@ func (e Expression) Condition() *string {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expression.KeyCondition(),
-//       FilterExpression:          expression.Filter(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expression.KeyCondition(),
+//	  FilterExpression:          expression.Filter(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) Filter() *string {
 	return e.returnExpression(filter)
 }
@@ -372,15 +372,15 @@ func (e Expression) Filter() *string {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expression.KeyCondition(),
-//       ProjectionExpression:      expression.Projection(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expression.KeyCondition(),
+//	  ProjectionExpression:      expression.Projection(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) Projection() *string {
 	return e.returnExpression(projection)
 }
@@ -392,15 +392,15 @@ func (e Expression) Projection() *string {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expression.KeyCondition(),
-//       ProjectionExpression:      expression.Projection(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expression.KeyCondition(),
+//	  ProjectionExpression:      expression.Projection(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) KeyCondition() *string {
 	return e.returnExpression(keyCondition)
 }
@@ -412,19 +412,19 @@ func (e Expression) KeyCondition() *string {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     updateInput := dynamodb.UpdateInput{
-//       Key: map[string]*dynamodb.AttributeValue{
-//         "PartitionKey": {
-//           S: aws.String("someKey"),
-//         },
-//       },
-//       UpdateExpression:          expression.Update(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	updateInput := dynamodb.UpdateInput{
+//	  Key: map[string]*dynamodb.AttributeValue{
+//	    "PartitionKey": {
+//	      S: aws.String("someKey"),
+//	    },
+//	  },
+//	  UpdateExpression:          expression.Update(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) Update() *string {
 	return e.returnExpression(update)
 }
@@ -442,15 +442,15 @@ func (e Expression) Update() *string {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expression.KeyCondition(),
-//       ProjectionExpression:      expression.Projection(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expression.KeyCondition(),
+//	  ProjectionExpression:      expression.Projection(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) Names() map[string]*string {
 	return e.namesMap
 }
@@ -468,15 +468,15 @@ func (e Expression) Names() map[string]*string {
 //
 // Example:
 //
-//     // let expression be an instance of Expression{}
+//	// let expression be an instance of Expression{}
 //
-//     queryInput := dynamodb.QueryInput{
-//       KeyConditionExpression:    expression.KeyCondition(),
-//       ProjectionExpression:      expression.Projection(),
-//       ExpressionAttributeNames:  expression.Names(),
-//       ExpressionAttributeValues: expression.Values(),
-//       TableName: aws.String("SomeTable"),
-//     }
+//	queryInput := dynamodb.QueryInput{
+//	  KeyConditionExpression:    expression.KeyCondition(),
+//	  ProjectionExpression:      expression.Projection(),
+//	  ExpressionAttributeNames:  expression.Names(),
+//	  ExpressionAttributeValues: expression.Values(),
+//	  TableName: aws.String("SomeTable"),
+//	}
 func (e Expression) Values() map[string]*dynamodb.AttributeValue {
 	return e.valuesMap
 }
@@ -501,12 +501,13 @@ func (e Expression) returnExpression(expressionType expressionType) *string {
 // fmtExpr is a string that has escaped characters to refer to
 // names/values/children which needs to be aliased at runtime in order to avoid
 // duplicate values. The rules are as follows:
-//     $n: Indicates that an alias of a name needs to be inserted. The
-//         corresponding name to be alias is in the []names slice.
-//     $v: Indicates that an alias of a value needs to be inserted. The
-//         corresponding value to be alias is in the []values slice.
-//     $c: Indicates that the fmtExpr of a child exprNode needs to be inserted.
-//         The corresponding child node is in the []children slice.
+//
+//	$n: Indicates that an alias of a name needs to be inserted. The
+//	    corresponding name to be alias is in the []names slice.
+//	$v: Indicates that an alias of a value needs to be inserted. The
+//	    corresponding value to be alias is in the []values slice.
+//	$c: Indicates that the fmtExpr of a child exprNode needs to be inserted.
+//	    The corresponding child node is in the []children slice.
 type exprNode struct {
 	names    []string
 	values   []dynamodb.AttributeValue

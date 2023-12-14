@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Service Catalog App Registry.
-//    func myFunc(svc appregistryiface.AppRegistryAPI) bool {
-//        // Make svc.AssociateAttributeGroup request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Service Catalog App Registry.
+//	func myFunc(svc appregistryiface.AppRegistryAPI) bool {
+//	    // Make svc.AssociateAttributeGroup request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := appregistry.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := appregistry.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockAppRegistryClient struct {
-//        appregistryiface.AppRegistryAPI
-//    }
-//    func (m *mockAppRegistryClient) AssociateAttributeGroup(input *appregistry.AssociateAttributeGroupInput) (*appregistry.AssociateAttributeGroupOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockAppRegistryClient struct {
+//	    appregistryiface.AppRegistryAPI
+//	}
+//	func (m *mockAppRegistryClient) AssociateAttributeGroup(input *appregistry.AssociateAttributeGroupInput) (*appregistry.AssociateAttributeGroupOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockAppRegistryClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockAppRegistryClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -104,6 +104,10 @@ type AppRegistryAPI interface {
 	GetAttributeGroupWithContext(aws.Context, *appregistry.GetAttributeGroupInput, ...request.Option) (*appregistry.GetAttributeGroupOutput, error)
 	GetAttributeGroupRequest(*appregistry.GetAttributeGroupInput) (*request.Request, *appregistry.GetAttributeGroupOutput)
 
+	GetConfiguration(*appregistry.GetConfigurationInput) (*appregistry.GetConfigurationOutput, error)
+	GetConfigurationWithContext(aws.Context, *appregistry.GetConfigurationInput, ...request.Option) (*appregistry.GetConfigurationOutput, error)
+	GetConfigurationRequest(*appregistry.GetConfigurationInput) (*request.Request, *appregistry.GetConfigurationOutput)
+
 	ListApplications(*appregistry.ListApplicationsInput) (*appregistry.ListApplicationsOutput, error)
 	ListApplicationsWithContext(aws.Context, *appregistry.ListApplicationsInput, ...request.Option) (*appregistry.ListApplicationsOutput, error)
 	ListApplicationsRequest(*appregistry.ListApplicationsInput) (*request.Request, *appregistry.ListApplicationsOutput)
@@ -132,9 +136,20 @@ type AppRegistryAPI interface {
 	ListAttributeGroupsPages(*appregistry.ListAttributeGroupsInput, func(*appregistry.ListAttributeGroupsOutput, bool) bool) error
 	ListAttributeGroupsPagesWithContext(aws.Context, *appregistry.ListAttributeGroupsInput, func(*appregistry.ListAttributeGroupsOutput, bool) bool, ...request.Option) error
 
+	ListAttributeGroupsForApplication(*appregistry.ListAttributeGroupsForApplicationInput) (*appregistry.ListAttributeGroupsForApplicationOutput, error)
+	ListAttributeGroupsForApplicationWithContext(aws.Context, *appregistry.ListAttributeGroupsForApplicationInput, ...request.Option) (*appregistry.ListAttributeGroupsForApplicationOutput, error)
+	ListAttributeGroupsForApplicationRequest(*appregistry.ListAttributeGroupsForApplicationInput) (*request.Request, *appregistry.ListAttributeGroupsForApplicationOutput)
+
+	ListAttributeGroupsForApplicationPages(*appregistry.ListAttributeGroupsForApplicationInput, func(*appregistry.ListAttributeGroupsForApplicationOutput, bool) bool) error
+	ListAttributeGroupsForApplicationPagesWithContext(aws.Context, *appregistry.ListAttributeGroupsForApplicationInput, func(*appregistry.ListAttributeGroupsForApplicationOutput, bool) bool, ...request.Option) error
+
 	ListTagsForResource(*appregistry.ListTagsForResourceInput) (*appregistry.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *appregistry.ListTagsForResourceInput, ...request.Option) (*appregistry.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*appregistry.ListTagsForResourceInput) (*request.Request, *appregistry.ListTagsForResourceOutput)
+
+	PutConfiguration(*appregistry.PutConfigurationInput) (*appregistry.PutConfigurationOutput, error)
+	PutConfigurationWithContext(aws.Context, *appregistry.PutConfigurationInput, ...request.Option) (*appregistry.PutConfigurationOutput, error)
+	PutConfigurationRequest(*appregistry.PutConfigurationInput) (*request.Request, *appregistry.PutConfigurationOutput)
 
 	SyncResource(*appregistry.SyncResourceInput) (*appregistry.SyncResourceOutput, error)
 	SyncResourceWithContext(aws.Context, *appregistry.SyncResourceInput, ...request.Option) (*appregistry.SyncResourceOutput, error)

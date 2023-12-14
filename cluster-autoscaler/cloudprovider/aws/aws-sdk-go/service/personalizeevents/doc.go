@@ -5,14 +5,15 @@
 //
 // Amazon Personalize can consume real-time user event data, such as stream
 // or click data, and use it for model training either alone or combined with
-// historical data. For more information see Recording Events (https://docs.aws.amazon.com/personalize/latest/dg/recording-events.html).
+// historical data. For more information see Recording item interaction events
+// (https://docs.aws.amazon.com/personalize/latest/dg/recording-item-interaction-events.html).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/personalize-events-2018-03-22 for more information on this service.
 //
 // See personalizeevents package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/personalizeevents/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Personalize Events with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

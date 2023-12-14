@@ -29,14 +29,13 @@ const opCreateAssistant = "CreateAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssistantRequest method.
+//	req, resp := client.CreateAssistantRequest(params)
 //
-//    // Example sending a request using the CreateAssistantRequest method.
-//    req, resp := client.CreateAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistant
 func (c *ConnectWisdomService) CreateAssistantRequest(input *CreateAssistantInput) (req *request.Request, output *CreateAssistantOutput) {
@@ -67,22 +66,23 @@ func (c *ConnectWisdomService) CreateAssistantRequest(input *CreateAssistantInpu
 // API operation CreateAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistant
 func (c *ConnectWisdomService) CreateAssistant(input *CreateAssistantInput) (*CreateAssistantOutput, error) {
@@ -122,14 +122,13 @@ const opCreateAssistantAssociation = "CreateAssistantAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssistantAssociationRequest method.
+//	req, resp := client.CreateAssistantAssociationRequest(params)
 //
-//    // Example sending a request using the CreateAssistantAssociationRequest method.
-//    req, resp := client.CreateAssistantAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistantAssociation
 func (c *ConnectWisdomService) CreateAssistantAssociationRequest(input *CreateAssistantAssociationInput) (req *request.Request, output *CreateAssistantAssociationOutput) {
@@ -162,25 +161,26 @@ func (c *ConnectWisdomService) CreateAssistantAssociationRequest(input *CreateAs
 // API operation CreateAssistantAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateAssistantAssociation
 func (c *ConnectWisdomService) CreateAssistantAssociation(input *CreateAssistantAssociationInput) (*CreateAssistantAssociationOutput, error) {
@@ -220,14 +220,13 @@ const opCreateContent = "CreateContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateContentRequest method.
+//	req, resp := client.CreateContentRequest(params)
 //
-//    // Example sending a request using the CreateContentRequest method.
-//    req, resp := client.CreateContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateContent
 func (c *ConnectWisdomService) CreateContentRequest(input *CreateContentInput) (req *request.Request, output *CreateContentOutput) {
@@ -260,25 +259,26 @@ func (c *ConnectWisdomService) CreateContentRequest(input *CreateContentInput) (
 // API operation CreateContent for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateContent
 func (c *ConnectWisdomService) CreateContent(input *CreateContentInput) (*CreateContentOutput, error) {
@@ -318,14 +318,13 @@ const opCreateKnowledgeBase = "CreateKnowledgeBase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateKnowledgeBaseRequest method.
+//	req, resp := client.CreateKnowledgeBaseRequest(params)
 //
-//    // Example sending a request using the CreateKnowledgeBaseRequest method.
-//    req, resp := client.CreateKnowledgeBaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateKnowledgeBase
 func (c *ConnectWisdomService) CreateKnowledgeBaseRequest(input *CreateKnowledgeBaseInput) (req *request.Request, output *CreateKnowledgeBaseOutput) {
@@ -352,13 +351,18 @@ func (c *ConnectWisdomService) CreateKnowledgeBaseRequest(input *CreateKnowledge
 // DataIntegrations with external knowledge bases such as Salesforce and ServiceNow.
 // If you do, you'll get an InvalidRequestException error.
 //
-//    <p>For example, you're programmatically managing your external knowledge
-//    base, and you want to add or remove one of the fields that is being ingested
-//    from Salesforce. Do the following:</p> <ol> <li> <p>Call <a href="https://docs.aws.amazon.com/wisdom/latest/APIReference/API_DeleteKnowledgeBase.html">DeleteKnowledgeBase</a>.</p>
-//    </li> <li> <p>Call <a href="https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_DeleteDataIntegration.html">DeleteDataIntegration</a>.</p>
-//    </li> <li> <p>Call <a href="https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html">CreateDataIntegration</a>
-//    to recreate the DataIntegration or a create different one.</p> </li> <li>
-//    <p>Call CreateKnowledgeBase.</p> </li> </ol> </note>
+// For example, you're programmatically managing your external knowledge base,
+// and you want to add or remove one of the fields that is being ingested from
+// Salesforce. Do the following:
+//
+// Call DeleteKnowledgeBase (https://docs.aws.amazon.com/wisdom/latest/APIReference/API_DeleteKnowledgeBase.html).
+//
+// Call DeleteDataIntegration (https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_DeleteDataIntegration.html).
+//
+// Call CreateDataIntegration (https://docs.aws.amazon.com/appintegrations/latest/APIReference/API_CreateDataIntegration.html)
+// to recreate the DataIntegration or a create different one.
+//
+// Call CreateKnowledgeBase.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -368,22 +372,23 @@ func (c *ConnectWisdomService) CreateKnowledgeBaseRequest(input *CreateKnowledge
 // API operation CreateKnowledgeBase for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ServiceQuotaExceededException
-//   You've exceeded your service quota. To perform the requested action, remove
-//   some of the relevant resources, or use service quotas to request a service
-//   quota increase.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateKnowledgeBase
 func (c *ConnectWisdomService) CreateKnowledgeBase(input *CreateKnowledgeBaseInput) (*CreateKnowledgeBaseOutput, error) {
@@ -407,6 +412,102 @@ func (c *ConnectWisdomService) CreateKnowledgeBaseWithContext(ctx aws.Context, i
 	return out, req.Send()
 }
 
+const opCreateQuickResponse = "CreateQuickResponse"
+
+// CreateQuickResponseRequest generates a "aws/request.Request" representing the
+// client's request for the CreateQuickResponse operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateQuickResponse for more information on using the CreateQuickResponse
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateQuickResponseRequest method.
+//	req, resp := client.CreateQuickResponseRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateQuickResponse
+func (c *ConnectWisdomService) CreateQuickResponseRequest(input *CreateQuickResponseInput) (req *request.Request, output *CreateQuickResponseOutput) {
+	op := &request.Operation{
+		Name:       opCreateQuickResponse,
+		HTTPMethod: "POST",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/quickResponses",
+	}
+
+	if input == nil {
+		input = &CreateQuickResponseInput{}
+	}
+
+	output = &CreateQuickResponseOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateQuickResponse API operation for Amazon Connect Wisdom Service.
+//
+// Creates a Wisdom quick response.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation CreateQuickResponse for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateQuickResponse
+func (c *ConnectWisdomService) CreateQuickResponse(input *CreateQuickResponseInput) (*CreateQuickResponseOutput, error) {
+	req, out := c.CreateQuickResponseRequest(input)
+	return out, req.Send()
+}
+
+// CreateQuickResponseWithContext is the same as CreateQuickResponse with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateQuickResponse for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) CreateQuickResponseWithContext(ctx aws.Context, input *CreateQuickResponseInput, opts ...request.Option) (*CreateQuickResponseOutput, error) {
+	req, out := c.CreateQuickResponseRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateSession = "CreateSession"
 
 // CreateSessionRequest generates a "aws/request.Request" representing the
@@ -423,14 +524,13 @@ const opCreateSession = "CreateSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateSessionRequest method.
+//	req, resp := client.CreateSessionRequest(params)
 //
-//    // Example sending a request using the CreateSessionRequest method.
-//    req, resp := client.CreateSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateSession
 func (c *ConnectWisdomService) CreateSessionRequest(input *CreateSessionInput) (req *request.Request, output *CreateSessionOutput) {
@@ -463,17 +563,18 @@ func (c *ConnectWisdomService) CreateSessionRequest(input *CreateSessionInput) (
 // API operation CreateSession for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/CreateSession
 func (c *ConnectWisdomService) CreateSession(input *CreateSessionInput) (*CreateSessionOutput, error) {
@@ -513,14 +614,13 @@ const opDeleteAssistant = "DeleteAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssistantRequest method.
+//	req, resp := client.DeleteAssistantRequest(params)
 //
-//    // Example sending a request using the DeleteAssistantRequest method.
-//    req, resp := client.DeleteAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistant
 func (c *ConnectWisdomService) DeleteAssistantRequest(input *DeleteAssistantInput) (req *request.Request, output *DeleteAssistantOutput) {
@@ -552,14 +652,15 @@ func (c *ConnectWisdomService) DeleteAssistantRequest(input *DeleteAssistantInpu
 // API operation DeleteAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistant
 func (c *ConnectWisdomService) DeleteAssistant(input *DeleteAssistantInput) (*DeleteAssistantOutput, error) {
@@ -599,14 +700,13 @@ const opDeleteAssistantAssociation = "DeleteAssistantAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssistantAssociationRequest method.
+//	req, resp := client.DeleteAssistantAssociationRequest(params)
 //
-//    // Example sending a request using the DeleteAssistantAssociationRequest method.
-//    req, resp := client.DeleteAssistantAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistantAssociation
 func (c *ConnectWisdomService) DeleteAssistantAssociationRequest(input *DeleteAssistantAssociationInput) (req *request.Request, output *DeleteAssistantAssociationOutput) {
@@ -638,14 +738,15 @@ func (c *ConnectWisdomService) DeleteAssistantAssociationRequest(input *DeleteAs
 // API operation DeleteAssistantAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteAssistantAssociation
 func (c *ConnectWisdomService) DeleteAssistantAssociation(input *DeleteAssistantAssociationInput) (*DeleteAssistantAssociationOutput, error) {
@@ -685,14 +786,13 @@ const opDeleteContent = "DeleteContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteContentRequest method.
+//	req, resp := client.DeleteContentRequest(params)
 //
-//    // Example sending a request using the DeleteContentRequest method.
-//    req, resp := client.DeleteContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteContent
 func (c *ConnectWisdomService) DeleteContentRequest(input *DeleteContentInput) (req *request.Request, output *DeleteContentOutput) {
@@ -724,14 +824,15 @@ func (c *ConnectWisdomService) DeleteContentRequest(input *DeleteContentInput) (
 // API operation DeleteContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteContent
 func (c *ConnectWisdomService) DeleteContent(input *DeleteContentInput) (*DeleteContentOutput, error) {
@@ -755,6 +856,98 @@ func (c *ConnectWisdomService) DeleteContentWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opDeleteImportJob = "DeleteImportJob"
+
+// DeleteImportJobRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteImportJob operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteImportJob for more information on using the DeleteImportJob
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteImportJobRequest method.
+//	req, resp := client.DeleteImportJobRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteImportJob
+func (c *ConnectWisdomService) DeleteImportJobRequest(input *DeleteImportJobInput) (req *request.Request, output *DeleteImportJobOutput) {
+	op := &request.Operation{
+		Name:       opDeleteImportJob,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/importJobs/{importJobId}",
+	}
+
+	if input == nil {
+		input = &DeleteImportJobInput{}
+	}
+
+	output = &DeleteImportJobOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteImportJob API operation for Amazon Connect Wisdom Service.
+//
+// Deletes the quick response import job.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation DeleteImportJob for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteImportJob
+func (c *ConnectWisdomService) DeleteImportJob(input *DeleteImportJobInput) (*DeleteImportJobOutput, error) {
+	req, out := c.DeleteImportJobRequest(input)
+	return out, req.Send()
+}
+
+// DeleteImportJobWithContext is the same as DeleteImportJob with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteImportJob for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) DeleteImportJobWithContext(ctx aws.Context, input *DeleteImportJobInput, opts ...request.Option) (*DeleteImportJobOutput, error) {
+	req, out := c.DeleteImportJobRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteKnowledgeBase = "DeleteKnowledgeBase"
 
 // DeleteKnowledgeBaseRequest generates a "aws/request.Request" representing the
@@ -771,14 +964,13 @@ const opDeleteKnowledgeBase = "DeleteKnowledgeBase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteKnowledgeBaseRequest method.
+//	req, resp := client.DeleteKnowledgeBaseRequest(params)
 //
-//    // Example sending a request using the DeleteKnowledgeBaseRequest method.
-//    req, resp := client.DeleteKnowledgeBaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteKnowledgeBase
 func (c *ConnectWisdomService) DeleteKnowledgeBaseRequest(input *DeleteKnowledgeBaseInput) (req *request.Request, output *DeleteKnowledgeBaseOutput) {
@@ -818,20 +1010,21 @@ func (c *ConnectWisdomService) DeleteKnowledgeBaseRequest(input *DeleteKnowledge
 // API operation DeleteKnowledgeBase for usage and error information.
 //
 // Returned Error Types:
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource. For example, if you're using a Create API (such as CreateAssistant)
-//   that accepts name, a conflicting resource (usually with the same name) is
-//   being created or mutated.
 //
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteKnowledgeBase
 func (c *ConnectWisdomService) DeleteKnowledgeBase(input *DeleteKnowledgeBaseInput) (*DeleteKnowledgeBaseOutput, error) {
@@ -855,6 +1048,92 @@ func (c *ConnectWisdomService) DeleteKnowledgeBaseWithContext(ctx aws.Context, i
 	return out, req.Send()
 }
 
+const opDeleteQuickResponse = "DeleteQuickResponse"
+
+// DeleteQuickResponseRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteQuickResponse operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteQuickResponse for more information on using the DeleteQuickResponse
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteQuickResponseRequest method.
+//	req, resp := client.DeleteQuickResponseRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteQuickResponse
+func (c *ConnectWisdomService) DeleteQuickResponseRequest(input *DeleteQuickResponseInput) (req *request.Request, output *DeleteQuickResponseOutput) {
+	op := &request.Operation{
+		Name:       opDeleteQuickResponse,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/quickResponses/{quickResponseId}",
+	}
+
+	if input == nil {
+		input = &DeleteQuickResponseInput{}
+	}
+
+	output = &DeleteQuickResponseOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteQuickResponse API operation for Amazon Connect Wisdom Service.
+//
+// Deletes a quick response.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation DeleteQuickResponse for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/DeleteQuickResponse
+func (c *ConnectWisdomService) DeleteQuickResponse(input *DeleteQuickResponseInput) (*DeleteQuickResponseOutput, error) {
+	req, out := c.DeleteQuickResponseRequest(input)
+	return out, req.Send()
+}
+
+// DeleteQuickResponseWithContext is the same as DeleteQuickResponse with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteQuickResponse for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) DeleteQuickResponseWithContext(ctx aws.Context, input *DeleteQuickResponseInput, opts ...request.Option) (*DeleteQuickResponseOutput, error) {
+	req, out := c.DeleteQuickResponseRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetAssistant = "GetAssistant"
 
 // GetAssistantRequest generates a "aws/request.Request" representing the
@@ -871,14 +1150,13 @@ const opGetAssistant = "GetAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssistantRequest method.
+//	req, resp := client.GetAssistantRequest(params)
 //
-//    // Example sending a request using the GetAssistantRequest method.
-//    req, resp := client.GetAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistant
 func (c *ConnectWisdomService) GetAssistantRequest(input *GetAssistantInput) (req *request.Request, output *GetAssistantOutput) {
@@ -909,14 +1187,15 @@ func (c *ConnectWisdomService) GetAssistantRequest(input *GetAssistantInput) (re
 // API operation GetAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistant
 func (c *ConnectWisdomService) GetAssistant(input *GetAssistantInput) (*GetAssistantOutput, error) {
@@ -956,14 +1235,13 @@ const opGetAssistantAssociation = "GetAssistantAssociation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAssistantAssociationRequest method.
+//	req, resp := client.GetAssistantAssociationRequest(params)
 //
-//    // Example sending a request using the GetAssistantAssociationRequest method.
-//    req, resp := client.GetAssistantAssociationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistantAssociation
 func (c *ConnectWisdomService) GetAssistantAssociationRequest(input *GetAssistantAssociationInput) (req *request.Request, output *GetAssistantAssociationOutput) {
@@ -994,14 +1272,15 @@ func (c *ConnectWisdomService) GetAssistantAssociationRequest(input *GetAssistan
 // API operation GetAssistantAssociation for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetAssistantAssociation
 func (c *ConnectWisdomService) GetAssistantAssociation(input *GetAssistantAssociationInput) (*GetAssistantAssociationOutput, error) {
@@ -1041,14 +1320,13 @@ const opGetContent = "GetContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContentRequest method.
+//	req, resp := client.GetContentRequest(params)
 //
-//    // Example sending a request using the GetContentRequest method.
-//    req, resp := client.GetContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContent
 func (c *ConnectWisdomService) GetContentRequest(input *GetContentInput) (req *request.Request, output *GetContentOutput) {
@@ -1079,14 +1357,15 @@ func (c *ConnectWisdomService) GetContentRequest(input *GetContentInput) (req *r
 // API operation GetContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContent
 func (c *ConnectWisdomService) GetContent(input *GetContentInput) (*GetContentOutput, error) {
@@ -1126,14 +1405,13 @@ const opGetContentSummary = "GetContentSummary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetContentSummaryRequest method.
+//	req, resp := client.GetContentSummaryRequest(params)
 //
-//    // Example sending a request using the GetContentSummaryRequest method.
-//    req, resp := client.GetContentSummaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContentSummary
 func (c *ConnectWisdomService) GetContentSummaryRequest(input *GetContentSummaryInput) (req *request.Request, output *GetContentSummaryOutput) {
@@ -1164,14 +1442,15 @@ func (c *ConnectWisdomService) GetContentSummaryRequest(input *GetContentSummary
 // API operation GetContentSummary for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetContentSummary
 func (c *ConnectWisdomService) GetContentSummary(input *GetContentSummaryInput) (*GetContentSummaryOutput, error) {
@@ -1195,6 +1474,91 @@ func (c *ConnectWisdomService) GetContentSummaryWithContext(ctx aws.Context, inp
 	return out, req.Send()
 }
 
+const opGetImportJob = "GetImportJob"
+
+// GetImportJobRequest generates a "aws/request.Request" representing the
+// client's request for the GetImportJob operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetImportJob for more information on using the GetImportJob
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetImportJobRequest method.
+//	req, resp := client.GetImportJobRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetImportJob
+func (c *ConnectWisdomService) GetImportJobRequest(input *GetImportJobInput) (req *request.Request, output *GetImportJobOutput) {
+	op := &request.Operation{
+		Name:       opGetImportJob,
+		HTTPMethod: "GET",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/importJobs/{importJobId}",
+	}
+
+	if input == nil {
+		input = &GetImportJobInput{}
+	}
+
+	output = &GetImportJobOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetImportJob API operation for Amazon Connect Wisdom Service.
+//
+// Retrieves the started import job.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation GetImportJob for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetImportJob
+func (c *ConnectWisdomService) GetImportJob(input *GetImportJobInput) (*GetImportJobOutput, error) {
+	req, out := c.GetImportJobRequest(input)
+	return out, req.Send()
+}
+
+// GetImportJobWithContext is the same as GetImportJob with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetImportJob for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) GetImportJobWithContext(ctx aws.Context, input *GetImportJobInput, opts ...request.Option) (*GetImportJobOutput, error) {
+	req, out := c.GetImportJobRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetKnowledgeBase = "GetKnowledgeBase"
 
 // GetKnowledgeBaseRequest generates a "aws/request.Request" representing the
@@ -1211,14 +1575,13 @@ const opGetKnowledgeBase = "GetKnowledgeBase"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetKnowledgeBaseRequest method.
+//	req, resp := client.GetKnowledgeBaseRequest(params)
 //
-//    // Example sending a request using the GetKnowledgeBaseRequest method.
-//    req, resp := client.GetKnowledgeBaseRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetKnowledgeBase
 func (c *ConnectWisdomService) GetKnowledgeBaseRequest(input *GetKnowledgeBaseInput) (req *request.Request, output *GetKnowledgeBaseOutput) {
@@ -1249,14 +1612,15 @@ func (c *ConnectWisdomService) GetKnowledgeBaseRequest(input *GetKnowledgeBaseIn
 // API operation GetKnowledgeBase for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetKnowledgeBase
 func (c *ConnectWisdomService) GetKnowledgeBase(input *GetKnowledgeBaseInput) (*GetKnowledgeBaseOutput, error) {
@@ -1280,6 +1644,91 @@ func (c *ConnectWisdomService) GetKnowledgeBaseWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opGetQuickResponse = "GetQuickResponse"
+
+// GetQuickResponseRequest generates a "aws/request.Request" representing the
+// client's request for the GetQuickResponse operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetQuickResponse for more information on using the GetQuickResponse
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetQuickResponseRequest method.
+//	req, resp := client.GetQuickResponseRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetQuickResponse
+func (c *ConnectWisdomService) GetQuickResponseRequest(input *GetQuickResponseInput) (req *request.Request, output *GetQuickResponseOutput) {
+	op := &request.Operation{
+		Name:       opGetQuickResponse,
+		HTTPMethod: "GET",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/quickResponses/{quickResponseId}",
+	}
+
+	if input == nil {
+		input = &GetQuickResponseInput{}
+	}
+
+	output = &GetQuickResponseOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetQuickResponse API operation for Amazon Connect Wisdom Service.
+//
+// Retrieves the quick response.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation GetQuickResponse for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetQuickResponse
+func (c *ConnectWisdomService) GetQuickResponse(input *GetQuickResponseInput) (*GetQuickResponseOutput, error) {
+	req, out := c.GetQuickResponseRequest(input)
+	return out, req.Send()
+}
+
+// GetQuickResponseWithContext is the same as GetQuickResponse with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetQuickResponse for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) GetQuickResponseWithContext(ctx aws.Context, input *GetQuickResponseInput, opts ...request.Option) (*GetQuickResponseOutput, error) {
+	req, out := c.GetQuickResponseRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetRecommendations = "GetRecommendations"
 
 // GetRecommendationsRequest generates a "aws/request.Request" representing the
@@ -1296,14 +1745,13 @@ const opGetRecommendations = "GetRecommendations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetRecommendationsRequest method.
+//	req, resp := client.GetRecommendationsRequest(params)
 //
-//    // Example sending a request using the GetRecommendationsRequest method.
-//    req, resp := client.GetRecommendationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetRecommendations
 func (c *ConnectWisdomService) GetRecommendationsRequest(input *GetRecommendationsInput) (req *request.Request, output *GetRecommendationsOutput) {
@@ -1340,14 +1788,15 @@ func (c *ConnectWisdomService) GetRecommendationsRequest(input *GetRecommendatio
 // API operation GetRecommendations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetRecommendations
 func (c *ConnectWisdomService) GetRecommendations(input *GetRecommendationsInput) (*GetRecommendationsOutput, error) {
@@ -1387,14 +1836,13 @@ const opGetSession = "GetSession"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSessionRequest method.
+//	req, resp := client.GetSessionRequest(params)
 //
-//    // Example sending a request using the GetSessionRequest method.
-//    req, resp := client.GetSessionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetSession
 func (c *ConnectWisdomService) GetSessionRequest(input *GetSessionInput) (req *request.Request, output *GetSessionOutput) {
@@ -1425,14 +1873,15 @@ func (c *ConnectWisdomService) GetSessionRequest(input *GetSessionInput) (req *r
 // API operation GetSession for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/GetSession
 func (c *ConnectWisdomService) GetSession(input *GetSessionInput) (*GetSessionOutput, error) {
@@ -1472,14 +1921,13 @@ const opListAssistantAssociations = "ListAssistantAssociations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssistantAssociationsRequest method.
+//	req, resp := client.ListAssistantAssociationsRequest(params)
 //
-//    // Example sending a request using the ListAssistantAssociationsRequest method.
-//    req, resp := client.ListAssistantAssociationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistantAssociations
 func (c *ConnectWisdomService) ListAssistantAssociationsRequest(input *ListAssistantAssociationsInput) (req *request.Request, output *ListAssistantAssociationsOutput) {
@@ -1516,14 +1964,15 @@ func (c *ConnectWisdomService) ListAssistantAssociationsRequest(input *ListAssis
 // API operation ListAssistantAssociations for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistantAssociations
 func (c *ConnectWisdomService) ListAssistantAssociations(input *ListAssistantAssociationsInput) (*ListAssistantAssociationsOutput, error) {
@@ -1555,15 +2004,14 @@ func (c *ConnectWisdomService) ListAssistantAssociationsWithContext(ctx aws.Cont
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssistantAssociations operation.
-//    pageNum := 0
-//    err := client.ListAssistantAssociationsPages(params,
-//        func(page *connectwisdomservice.ListAssistantAssociationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssistantAssociations operation.
+//	pageNum := 0
+//	err := client.ListAssistantAssociationsPages(params,
+//	    func(page *connectwisdomservice.ListAssistantAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListAssistantAssociationsPages(input *ListAssistantAssociationsInput, fn func(*ListAssistantAssociationsOutput, bool) bool) error {
 	return c.ListAssistantAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1615,14 +2063,13 @@ const opListAssistants = "ListAssistants"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssistantsRequest method.
+//	req, resp := client.ListAssistantsRequest(params)
 //
-//    // Example sending a request using the ListAssistantsRequest method.
-//    req, resp := client.ListAssistantsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistants
 func (c *ConnectWisdomService) ListAssistantsRequest(input *ListAssistantsInput) (req *request.Request, output *ListAssistantsOutput) {
@@ -1659,11 +2106,12 @@ func (c *ConnectWisdomService) ListAssistantsRequest(input *ListAssistantsInput)
 // API operation ListAssistants for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListAssistants
 func (c *ConnectWisdomService) ListAssistants(input *ListAssistantsInput) (*ListAssistantsOutput, error) {
@@ -1695,15 +2143,14 @@ func (c *ConnectWisdomService) ListAssistantsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssistants operation.
-//    pageNum := 0
-//    err := client.ListAssistantsPages(params,
-//        func(page *connectwisdomservice.ListAssistantsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssistants operation.
+//	pageNum := 0
+//	err := client.ListAssistantsPages(params,
+//	    func(page *connectwisdomservice.ListAssistantsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListAssistantsPages(input *ListAssistantsInput, fn func(*ListAssistantsOutput, bool) bool) error {
 	return c.ListAssistantsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1755,14 +2202,13 @@ const opListContents = "ListContents"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListContentsRequest method.
+//	req, resp := client.ListContentsRequest(params)
 //
-//    // Example sending a request using the ListContentsRequest method.
-//    req, resp := client.ListContentsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListContents
 func (c *ConnectWisdomService) ListContentsRequest(input *ListContentsInput) (req *request.Request, output *ListContentsOutput) {
@@ -1799,14 +2245,15 @@ func (c *ConnectWisdomService) ListContentsRequest(input *ListContentsInput) (re
 // API operation ListContents for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListContents
 func (c *ConnectWisdomService) ListContents(input *ListContentsInput) (*ListContentsOutput, error) {
@@ -1838,15 +2285,14 @@ func (c *ConnectWisdomService) ListContentsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListContents operation.
-//    pageNum := 0
-//    err := client.ListContentsPages(params,
-//        func(page *connectwisdomservice.ListContentsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListContents operation.
+//	pageNum := 0
+//	err := client.ListContentsPages(params,
+//	    func(page *connectwisdomservice.ListContentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListContentsPages(input *ListContentsInput, fn func(*ListContentsOutput, bool) bool) error {
 	return c.ListContentsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1882,6 +2328,145 @@ func (c *ConnectWisdomService) ListContentsPagesWithContext(ctx aws.Context, inp
 	return p.Err()
 }
 
+const opListImportJobs = "ListImportJobs"
+
+// ListImportJobsRequest generates a "aws/request.Request" representing the
+// client's request for the ListImportJobs operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListImportJobs for more information on using the ListImportJobs
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListImportJobsRequest method.
+//	req, resp := client.ListImportJobsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListImportJobs
+func (c *ConnectWisdomService) ListImportJobsRequest(input *ListImportJobsInput) (req *request.Request, output *ListImportJobsOutput) {
+	op := &request.Operation{
+		Name:       opListImportJobs,
+		HTTPMethod: "GET",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/importJobs",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListImportJobsInput{}
+	}
+
+	output = &ListImportJobsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListImportJobs API operation for Amazon Connect Wisdom Service.
+//
+// Lists information about import jobs.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation ListImportJobs for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListImportJobs
+func (c *ConnectWisdomService) ListImportJobs(input *ListImportJobsInput) (*ListImportJobsOutput, error) {
+	req, out := c.ListImportJobsRequest(input)
+	return out, req.Send()
+}
+
+// ListImportJobsWithContext is the same as ListImportJobs with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListImportJobs for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) ListImportJobsWithContext(ctx aws.Context, input *ListImportJobsInput, opts ...request.Option) (*ListImportJobsOutput, error) {
+	req, out := c.ListImportJobsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListImportJobsPages iterates over the pages of a ListImportJobs operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListImportJobs method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListImportJobs operation.
+//	pageNum := 0
+//	err := client.ListImportJobsPages(params,
+//	    func(page *connectwisdomservice.ListImportJobsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ConnectWisdomService) ListImportJobsPages(input *ListImportJobsInput, fn func(*ListImportJobsOutput, bool) bool) error {
+	return c.ListImportJobsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListImportJobsPagesWithContext same as ListImportJobsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) ListImportJobsPagesWithContext(ctx aws.Context, input *ListImportJobsInput, fn func(*ListImportJobsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListImportJobsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListImportJobsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListImportJobsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListKnowledgeBases = "ListKnowledgeBases"
 
 // ListKnowledgeBasesRequest generates a "aws/request.Request" representing the
@@ -1898,14 +2483,13 @@ const opListKnowledgeBases = "ListKnowledgeBases"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListKnowledgeBasesRequest method.
+//	req, resp := client.ListKnowledgeBasesRequest(params)
 //
-//    // Example sending a request using the ListKnowledgeBasesRequest method.
-//    req, resp := client.ListKnowledgeBasesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListKnowledgeBases
 func (c *ConnectWisdomService) ListKnowledgeBasesRequest(input *ListKnowledgeBasesInput) (req *request.Request, output *ListKnowledgeBasesOutput) {
@@ -1942,11 +2526,12 @@ func (c *ConnectWisdomService) ListKnowledgeBasesRequest(input *ListKnowledgeBas
 // API operation ListKnowledgeBases for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListKnowledgeBases
 func (c *ConnectWisdomService) ListKnowledgeBases(input *ListKnowledgeBasesInput) (*ListKnowledgeBasesOutput, error) {
@@ -1978,15 +2563,14 @@ func (c *ConnectWisdomService) ListKnowledgeBasesWithContext(ctx aws.Context, in
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListKnowledgeBases operation.
-//    pageNum := 0
-//    err := client.ListKnowledgeBasesPages(params,
-//        func(page *connectwisdomservice.ListKnowledgeBasesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListKnowledgeBases operation.
+//	pageNum := 0
+//	err := client.ListKnowledgeBasesPages(params,
+//	    func(page *connectwisdomservice.ListKnowledgeBasesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) ListKnowledgeBasesPages(input *ListKnowledgeBasesInput, fn func(*ListKnowledgeBasesOutput, bool) bool) error {
 	return c.ListKnowledgeBasesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2022,6 +2606,148 @@ func (c *ConnectWisdomService) ListKnowledgeBasesPagesWithContext(ctx aws.Contex
 	return p.Err()
 }
 
+const opListQuickResponses = "ListQuickResponses"
+
+// ListQuickResponsesRequest generates a "aws/request.Request" representing the
+// client's request for the ListQuickResponses operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListQuickResponses for more information on using the ListQuickResponses
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListQuickResponsesRequest method.
+//	req, resp := client.ListQuickResponsesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListQuickResponses
+func (c *ConnectWisdomService) ListQuickResponsesRequest(input *ListQuickResponsesInput) (req *request.Request, output *ListQuickResponsesOutput) {
+	op := &request.Operation{
+		Name:       opListQuickResponses,
+		HTTPMethod: "GET",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/quickResponses",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListQuickResponsesInput{}
+	}
+
+	output = &ListQuickResponsesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListQuickResponses API operation for Amazon Connect Wisdom Service.
+//
+// Lists information about quick response.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation ListQuickResponses for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListQuickResponses
+func (c *ConnectWisdomService) ListQuickResponses(input *ListQuickResponsesInput) (*ListQuickResponsesOutput, error) {
+	req, out := c.ListQuickResponsesRequest(input)
+	return out, req.Send()
+}
+
+// ListQuickResponsesWithContext is the same as ListQuickResponses with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListQuickResponses for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) ListQuickResponsesWithContext(ctx aws.Context, input *ListQuickResponsesInput, opts ...request.Option) (*ListQuickResponsesOutput, error) {
+	req, out := c.ListQuickResponsesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListQuickResponsesPages iterates over the pages of a ListQuickResponses operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListQuickResponses method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListQuickResponses operation.
+//	pageNum := 0
+//	err := client.ListQuickResponsesPages(params,
+//	    func(page *connectwisdomservice.ListQuickResponsesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ConnectWisdomService) ListQuickResponsesPages(input *ListQuickResponsesInput, fn func(*ListQuickResponsesOutput, bool) bool) error {
+	return c.ListQuickResponsesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListQuickResponsesPagesWithContext same as ListQuickResponsesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) ListQuickResponsesPagesWithContext(ctx aws.Context, input *ListQuickResponsesInput, fn func(*ListQuickResponsesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListQuickResponsesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListQuickResponsesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListQuickResponsesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -2038,14 +2764,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListTagsForResource
 func (c *ConnectWisdomService) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -2076,8 +2801,8 @@ func (c *ConnectWisdomService) ListTagsForResourceRequest(input *ListTagsForReso
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/ListTagsForResource
 func (c *ConnectWisdomService) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -2117,14 +2842,13 @@ const opNotifyRecommendationsReceived = "NotifyRecommendationsReceived"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the NotifyRecommendationsReceivedRequest method.
+//	req, resp := client.NotifyRecommendationsReceivedRequest(params)
 //
-//    // Example sending a request using the NotifyRecommendationsReceivedRequest method.
-//    req, resp := client.NotifyRecommendationsReceivedRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/NotifyRecommendationsReceived
 func (c *ConnectWisdomService) NotifyRecommendationsReceivedRequest(input *NotifyRecommendationsReceivedInput) (req *request.Request, output *NotifyRecommendationsReceivedOutput) {
@@ -2159,14 +2883,15 @@ func (c *ConnectWisdomService) NotifyRecommendationsReceivedRequest(input *Notif
 // API operation NotifyRecommendationsReceived for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/NotifyRecommendationsReceived
 func (c *ConnectWisdomService) NotifyRecommendationsReceived(input *NotifyRecommendationsReceivedInput) (*NotifyRecommendationsReceivedOutput, error) {
@@ -2206,14 +2931,13 @@ const opQueryAssistant = "QueryAssistant"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the QueryAssistantRequest method.
+//	req, resp := client.QueryAssistantRequest(params)
 //
-//    // Example sending a request using the QueryAssistantRequest method.
-//    req, resp := client.QueryAssistantRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/QueryAssistant
 func (c *ConnectWisdomService) QueryAssistantRequest(input *QueryAssistantInput) (req *request.Request, output *QueryAssistantOutput) {
@@ -2251,14 +2975,21 @@ func (c *ConnectWisdomService) QueryAssistantRequest(input *QueryAssistantInput)
 // API operation QueryAssistant for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - RequestTimeoutException
+//     The request reached the service more than 15 minutes after the date stamp
+//     on the request or more than 15 minutes after the request expiration date
+//     (such as for pre-signed URLs), or the date stamp on the request is more than
+//     15 minutes in the future.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/QueryAssistant
 func (c *ConnectWisdomService) QueryAssistant(input *QueryAssistantInput) (*QueryAssistantOutput, error) {
@@ -2290,15 +3021,14 @@ func (c *ConnectWisdomService) QueryAssistantWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a QueryAssistant operation.
-//    pageNum := 0
-//    err := client.QueryAssistantPages(params,
-//        func(page *connectwisdomservice.QueryAssistantOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a QueryAssistant operation.
+//	pageNum := 0
+//	err := client.QueryAssistantPages(params,
+//	    func(page *connectwisdomservice.QueryAssistantOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) QueryAssistantPages(input *QueryAssistantInput, fn func(*QueryAssistantOutput, bool) bool) error {
 	return c.QueryAssistantPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2350,14 +3080,13 @@ const opRemoveKnowledgeBaseTemplateUri = "RemoveKnowledgeBaseTemplateUri"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RemoveKnowledgeBaseTemplateUriRequest method.
+//	req, resp := client.RemoveKnowledgeBaseTemplateUriRequest(params)
 //
-//    // Example sending a request using the RemoveKnowledgeBaseTemplateUriRequest method.
-//    req, resp := client.RemoveKnowledgeBaseTemplateUriRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/RemoveKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) RemoveKnowledgeBaseTemplateUriRequest(input *RemoveKnowledgeBaseTemplateUriInput) (req *request.Request, output *RemoveKnowledgeBaseTemplateUriOutput) {
@@ -2389,14 +3118,15 @@ func (c *ConnectWisdomService) RemoveKnowledgeBaseTemplateUriRequest(input *Remo
 // API operation RemoveKnowledgeBaseTemplateUri for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/RemoveKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) RemoveKnowledgeBaseTemplateUri(input *RemoveKnowledgeBaseTemplateUriInput) (*RemoveKnowledgeBaseTemplateUriOutput, error) {
@@ -2436,14 +3166,13 @@ const opSearchContent = "SearchContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchContentRequest method.
+//	req, resp := client.SearchContentRequest(params)
 //
-//    // Example sending a request using the SearchContentRequest method.
-//    req, resp := client.SearchContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchContent
 func (c *ConnectWisdomService) SearchContentRequest(input *SearchContentInput) (req *request.Request, output *SearchContentOutput) {
@@ -2481,14 +3210,15 @@ func (c *ConnectWisdomService) SearchContentRequest(input *SearchContentInput) (
 // API operation SearchContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchContent
 func (c *ConnectWisdomService) SearchContent(input *SearchContentInput) (*SearchContentOutput, error) {
@@ -2520,15 +3250,14 @@ func (c *ConnectWisdomService) SearchContentWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchContent operation.
-//    pageNum := 0
-//    err := client.SearchContentPages(params,
-//        func(page *connectwisdomservice.SearchContentOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchContent operation.
+//	pageNum := 0
+//	err := client.SearchContentPages(params,
+//	    func(page *connectwisdomservice.SearchContentOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) SearchContentPages(input *SearchContentInput, fn func(*SearchContentOutput, bool) bool) error {
 	return c.SearchContentPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2564,6 +3293,154 @@ func (c *ConnectWisdomService) SearchContentPagesWithContext(ctx aws.Context, in
 	return p.Err()
 }
 
+const opSearchQuickResponses = "SearchQuickResponses"
+
+// SearchQuickResponsesRequest generates a "aws/request.Request" representing the
+// client's request for the SearchQuickResponses operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SearchQuickResponses for more information on using the SearchQuickResponses
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SearchQuickResponsesRequest method.
+//	req, resp := client.SearchQuickResponsesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchQuickResponses
+func (c *ConnectWisdomService) SearchQuickResponsesRequest(input *SearchQuickResponsesInput) (req *request.Request, output *SearchQuickResponsesOutput) {
+	op := &request.Operation{
+		Name:       opSearchQuickResponses,
+		HTTPMethod: "POST",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/search/quickResponses",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &SearchQuickResponsesInput{}
+	}
+
+	output = &SearchQuickResponsesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// SearchQuickResponses API operation for Amazon Connect Wisdom Service.
+//
+// Searches existing Wisdom quick responses in a Wisdom knowledge base.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation SearchQuickResponses for usage and error information.
+//
+// Returned Error Types:
+//
+//   - RequestTimeoutException
+//     The request reached the service more than 15 minutes after the date stamp
+//     on the request or more than 15 minutes after the request expiration date
+//     (such as for pre-signed URLs), or the date stamp on the request is more than
+//     15 minutes in the future.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchQuickResponses
+func (c *ConnectWisdomService) SearchQuickResponses(input *SearchQuickResponsesInput) (*SearchQuickResponsesOutput, error) {
+	req, out := c.SearchQuickResponsesRequest(input)
+	return out, req.Send()
+}
+
+// SearchQuickResponsesWithContext is the same as SearchQuickResponses with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SearchQuickResponses for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) SearchQuickResponsesWithContext(ctx aws.Context, input *SearchQuickResponsesInput, opts ...request.Option) (*SearchQuickResponsesOutput, error) {
+	req, out := c.SearchQuickResponsesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// SearchQuickResponsesPages iterates over the pages of a SearchQuickResponses operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See SearchQuickResponses method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a SearchQuickResponses operation.
+//	pageNum := 0
+//	err := client.SearchQuickResponsesPages(params,
+//	    func(page *connectwisdomservice.SearchQuickResponsesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ConnectWisdomService) SearchQuickResponsesPages(input *SearchQuickResponsesInput, fn func(*SearchQuickResponsesOutput, bool) bool) error {
+	return c.SearchQuickResponsesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// SearchQuickResponsesPagesWithContext same as SearchQuickResponsesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) SearchQuickResponsesPagesWithContext(ctx aws.Context, input *SearchQuickResponsesInput, fn func(*SearchQuickResponsesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *SearchQuickResponsesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.SearchQuickResponsesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*SearchQuickResponsesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opSearchSessions = "SearchSessions"
 
 // SearchSessionsRequest generates a "aws/request.Request" representing the
@@ -2580,14 +3457,13 @@ const opSearchSessions = "SearchSessions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SearchSessionsRequest method.
+//	req, resp := client.SearchSessionsRequest(params)
 //
-//    // Example sending a request using the SearchSessionsRequest method.
-//    req, resp := client.SearchSessionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchSessions
 func (c *ConnectWisdomService) SearchSessionsRequest(input *SearchSessionsInput) (req *request.Request, output *SearchSessionsOutput) {
@@ -2624,14 +3500,15 @@ func (c *ConnectWisdomService) SearchSessionsRequest(input *SearchSessionsInput)
 // API operation SearchSessions for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/SearchSessions
 func (c *ConnectWisdomService) SearchSessions(input *SearchSessionsInput) (*SearchSessionsOutput, error) {
@@ -2663,15 +3540,14 @@ func (c *ConnectWisdomService) SearchSessionsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a SearchSessions operation.
-//    pageNum := 0
-//    err := client.SearchSessionsPages(params,
-//        func(page *connectwisdomservice.SearchSessionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a SearchSessions operation.
+//	pageNum := 0
+//	err := client.SearchSessionsPages(params,
+//	    func(page *connectwisdomservice.SearchSessionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ConnectWisdomService) SearchSessionsPages(input *SearchSessionsInput, fn func(*SearchSessionsOutput, bool) bool) error {
 	return c.SearchSessionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2723,14 +3599,13 @@ const opStartContentUpload = "StartContentUpload"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartContentUploadRequest method.
+//	req, resp := client.StartContentUploadRequest(params)
 //
-//    // Example sending a request using the StartContentUploadRequest method.
-//    req, resp := client.StartContentUploadRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/StartContentUpload
 func (c *ConnectWisdomService) StartContentUploadRequest(input *StartContentUploadInput) (req *request.Request, output *StartContentUploadOutput) {
@@ -2766,14 +3641,15 @@ func (c *ConnectWisdomService) StartContentUploadRequest(input *StartContentUplo
 // API operation StartContentUpload for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/StartContentUpload
 func (c *ConnectWisdomService) StartContentUpload(input *StartContentUploadInput) (*StartContentUploadOutput, error) {
@@ -2797,6 +3673,108 @@ func (c *ConnectWisdomService) StartContentUploadWithContext(ctx aws.Context, in
 	return out, req.Send()
 }
 
+const opStartImportJob = "StartImportJob"
+
+// StartImportJobRequest generates a "aws/request.Request" representing the
+// client's request for the StartImportJob operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See StartImportJob for more information on using the StartImportJob
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the StartImportJobRequest method.
+//	req, resp := client.StartImportJobRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/StartImportJob
+func (c *ConnectWisdomService) StartImportJobRequest(input *StartImportJobInput) (req *request.Request, output *StartImportJobOutput) {
+	op := &request.Operation{
+		Name:       opStartImportJob,
+		HTTPMethod: "POST",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/importJobs",
+	}
+
+	if input == nil {
+		input = &StartImportJobInput{}
+	}
+
+	output = &StartImportJobOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// StartImportJob API operation for Amazon Connect Wisdom Service.
+//
+// Start an asynchronous job to import Wisdom resources from an uploaded source
+// file. Before calling this API, use StartContentUpload (https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html)
+// to upload an asset that contains the resource data.
+//
+//   - For importing Wisdom quick responses, you need to upload a csv file
+//     including the quick responses. For information about how to format the
+//     csv file for importing quick responses, see Import quick responses (https://docs.aws.amazon.com/console/connect/quick-responses/add-data).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation StartImportJob for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - ServiceQuotaExceededException
+//     You've exceeded your service quota. To perform the requested action, remove
+//     some of the relevant resources, or use service quotas to request a service
+//     quota increase.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/StartImportJob
+func (c *ConnectWisdomService) StartImportJob(input *StartImportJobInput) (*StartImportJobOutput, error) {
+	req, out := c.StartImportJobRequest(input)
+	return out, req.Send()
+}
+
+// StartImportJobWithContext is the same as StartImportJob with the addition of
+// the ability to pass a context and additional request options.
+//
+// See StartImportJob for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) StartImportJobWithContext(ctx aws.Context, input *StartImportJobInput, opts ...request.Option) (*StartImportJobOutput, error) {
+	req, out := c.StartImportJobRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opTagResource = "TagResource"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
@@ -2813,14 +3791,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/TagResource
 func (c *ConnectWisdomService) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2852,12 +3829,13 @@ func (c *ConnectWisdomService) TagResourceRequest(input *TagResourceInput) (req 
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * TooManyTagsException
-//   Amazon Connect Wisdom throws this exception if you have too many tags in
-//   your tag set.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - TooManyTagsException
+//     Amazon Connect Wisdom throws this exception if you have too many tags in
+//     your tag set.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/TagResource
 func (c *ConnectWisdomService) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2897,14 +3875,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UntagResource
 func (c *ConnectWisdomService) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2936,8 +3913,8 @@ func (c *ConnectWisdomService) UntagResourceRequest(input *UntagResourceInput) (
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UntagResource
 func (c *ConnectWisdomService) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2977,14 +3954,13 @@ const opUpdateContent = "UpdateContent"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateContentRequest method.
+//	req, resp := client.UpdateContentRequest(params)
 //
-//    // Example sending a request using the UpdateContentRequest method.
-//    req, resp := client.UpdateContentRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateContent
 func (c *ConnectWisdomService) UpdateContentRequest(input *UpdateContentInput) (req *request.Request, output *UpdateContentOutput) {
@@ -3015,18 +3991,19 @@ func (c *ConnectWisdomService) UpdateContentRequest(input *UpdateContentInput) (
 // API operation UpdateContent for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * PreconditionFailedException
-//   The provided revisionId does not match, indicating the content has been modified
-//   since it was last read.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - PreconditionFailedException
+//     The provided revisionId does not match, indicating the content has been modified
+//     since it was last read.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateContent
 func (c *ConnectWisdomService) UpdateContent(input *UpdateContentInput) (*UpdateContentOutput, error) {
@@ -3066,14 +4043,13 @@ const opUpdateKnowledgeBaseTemplateUri = "UpdateKnowledgeBaseTemplateUri"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateKnowledgeBaseTemplateUriRequest method.
+//	req, resp := client.UpdateKnowledgeBaseTemplateUriRequest(params)
 //
-//    // Example sending a request using the UpdateKnowledgeBaseTemplateUriRequest method.
-//    req, resp := client.UpdateKnowledgeBaseTemplateUriRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUriRequest(input *UpdateKnowledgeBaseTemplateUriInput) (req *request.Request, output *UpdateKnowledgeBaseTemplateUriOutput) {
@@ -3108,14 +4084,15 @@ func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUriRequest(input *Upda
 // API operation UpdateKnowledgeBaseTemplateUri for usage and error information.
 //
 // Returned Error Types:
-//   * ValidationException
-//   The input fails to satisfy the constraints specified by a service.
 //
-//   * AccessDeniedException
-//   You do not have sufficient access to perform this action.
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
 //
-//   * ResourceNotFoundException
-//   The specified resource does not exist.
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateKnowledgeBaseTemplateUri
 func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUri(input *UpdateKnowledgeBaseTemplateUriInput) (*UpdateKnowledgeBaseTemplateUriOutput, error) {
@@ -3134,6 +4111,101 @@ func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUri(input *UpdateKnowl
 // for more information on using Contexts.
 func (c *ConnectWisdomService) UpdateKnowledgeBaseTemplateUriWithContext(ctx aws.Context, input *UpdateKnowledgeBaseTemplateUriInput, opts ...request.Option) (*UpdateKnowledgeBaseTemplateUriOutput, error) {
 	req, out := c.UpdateKnowledgeBaseTemplateUriRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateQuickResponse = "UpdateQuickResponse"
+
+// UpdateQuickResponseRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateQuickResponse operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateQuickResponse for more information on using the UpdateQuickResponse
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateQuickResponseRequest method.
+//	req, resp := client.UpdateQuickResponseRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateQuickResponse
+func (c *ConnectWisdomService) UpdateQuickResponseRequest(input *UpdateQuickResponseInput) (req *request.Request, output *UpdateQuickResponseOutput) {
+	op := &request.Operation{
+		Name:       opUpdateQuickResponse,
+		HTTPMethod: "POST",
+		HTTPPath:   "/knowledgeBases/{knowledgeBaseId}/quickResponses/{quickResponseId}",
+	}
+
+	if input == nil {
+		input = &UpdateQuickResponseInput{}
+	}
+
+	output = &UpdateQuickResponseOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateQuickResponse API operation for Amazon Connect Wisdom Service.
+//
+// Updates an existing Wisdom quick response.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Connect Wisdom Service's
+// API operation UpdateQuickResponse for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource. For example, if you're using a Create API (such as CreateAssistant)
+//     that accepts name, a conflicting resource (usually with the same name) is
+//     being created or mutated.
+//
+//   - ValidationException
+//     The input fails to satisfy the constraints specified by a service.
+//
+//   - AccessDeniedException
+//     You do not have sufficient access to perform this action.
+//
+//   - PreconditionFailedException
+//     The provided revisionId does not match, indicating the content has been modified
+//     since it was last read.
+//
+//   - ResourceNotFoundException
+//     The specified resource does not exist.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/wisdom-2020-10-19/UpdateQuickResponse
+func (c *ConnectWisdomService) UpdateQuickResponse(input *UpdateQuickResponseInput) (*UpdateQuickResponseOutput, error) {
+	req, out := c.UpdateQuickResponseRequest(input)
+	return out, req.Send()
+}
+
+// UpdateQuickResponseWithContext is the same as UpdateQuickResponse with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateQuickResponse for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ConnectWisdomService) UpdateQuickResponseWithContext(ctx aws.Context, input *UpdateQuickResponseInput, opts ...request.Option) (*UpdateQuickResponseOutput, error) {
+	req, out := c.UpdateQuickResponseRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3211,10 +4283,38 @@ type AppIntegrationsConfiguration struct {
 	// The Amazon Resource Name (ARN) of the AppIntegrations DataIntegration to
 	// use for ingesting content.
 	//
+	//    * For Salesforce (https://developer.salesforce.com/docs/atlas.en-us.knowledge_dev.meta/knowledge_dev/sforce_api_objects_knowledge__kav.htm),
+	//    your AppIntegrations DataIntegration must have an ObjectConfiguration
+	//    if objectFields is not provided, including at least Id, ArticleNumber,
+	//    VersionNumber, Title, PublishStatus, and IsDeleted as source fields.
+	//
+	//    * For ServiceNow (https://developer.servicenow.com/dev.do#!/reference/api/rome/rest/knowledge-management-api),
+	//    your AppIntegrations DataIntegration must have an ObjectConfiguration
+	//    if objectFields is not provided, including at least number, short_description,
+	//    sys_mod_count, workflow_state, and active as source fields.
+	//
+	//    * For Zendesk (https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/),
+	//    your AppIntegrations DataIntegration must have an ObjectConfiguration
+	//    if objectFields is not provided, including at least id, title, updated_at,
+	//    and draft as source fields.
+	//
+	//    * For SharePoint (https://learn.microsoft.com/en-us/sharepoint/dev/sp-add-ins/sharepoint-net-server-csom-jsom-and-rest-api-index),
+	//    your AppIntegrations DataIntegration must have a FileConfiguration, including
+	//    only file extensions that are among docx, pdf, html, htm, and txt.
+	//
+	//    * For Amazon S3 (https://aws.amazon.com/s3/), the ObjectConfiguration
+	//    and FileConfiguration of your AppIntegrations DataIntegration must be
+	//    null. The SourceURI of your DataIntegration must use the following format:
+	//    s3://your_s3_bucket_name. The bucket policy of the corresponding S3 bucket
+	//    must allow the Amazon Web Services principal app-integrations.amazonaws.com
+	//    to perform s3:ListBucket, s3:GetObject, and s3:GetBucketLocation against
+	//    the bucket.
+	//
 	// AppIntegrationArn is a required field
 	AppIntegrationArn *string `locationName:"appIntegrationArn" min:"1" type:"string" required:"true"`
 
 	// The fields from the source that are made available to your agents in Wisdom.
+	// Optional if ObjectConfiguration is included in the provided DataIntegration.
 	//
 	//    * For Salesforce (https://developer.salesforce.com/docs/atlas.en-us.knowledge_dev.meta/knowledge_dev/sforce_api_objects_knowledge__kav.htm),
 	//    you must include at least Id, ArticleNumber, VersionNumber, Title, PublishStatus,
@@ -3224,11 +4324,12 @@ type AppIntegrationsConfiguration struct {
 	//    you must include at least number, short_description, sys_mod_count, workflow_state,
 	//    and active.
 	//
+	//    * For Zendesk (https://developer.zendesk.com/api-reference/help_center/help-center-api/articles/),
+	//    you must include at least id, title, updated_at, and draft.
+	//
 	// Make sure to include additional fields. These fields are indexed and used
 	// to source recommendations.
-	//
-	// ObjectFields is a required field
-	ObjectFields []*string `locationName:"objectFields" min:"1" type:"list" required:"true"`
+	ObjectFields []*string `locationName:"objectFields" min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -3257,9 +4358,6 @@ func (s *AppIntegrationsConfiguration) Validate() error {
 	}
 	if s.AppIntegrationArn != nil && len(*s.AppIntegrationArn) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("AppIntegrationArn", 1))
-	}
-	if s.ObjectFields == nil {
-		invalidParams.Add(request.NewErrParamRequired("ObjectFields"))
 	}
 	if s.ObjectFields != nil && len(s.ObjectFields) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("ObjectFields", 1))
@@ -3385,7 +4483,8 @@ func (s *AssistantAssociationData) SetTags(v map[string]*string) *AssistantAssoc
 type AssistantAssociationInputData struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string"`
 }
 
@@ -3560,12 +4659,24 @@ type AssistantData struct {
 	// The description.
 	Description *string `locationName:"description" min:"1" type:"string"`
 
+	// The configuration information for the Wisdom assistant integration.
+	IntegrationConfiguration *AssistantIntegrationConfiguration `locationName:"integrationConfiguration" type:"structure"`
+
 	// The name.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
-	// The KMS key used for encryption.
+	// The configuration information for the customer managed key used for encryption.
+	//
+	// This KMS key must have a policy that allows kms:CreateGrant, kms:DescribeKey,
+	// and kms:Decrypt/kms:GenerateDataKey permissions to the IAM identity using
+	// the key to invoke Wisdom. To use Wisdom with chat, the key policy must also
+	// allow kms:Decrypt, kms:GenerateDataKey*, and kms:DescribeKey permissions
+	// to the connect.amazonaws.com service principal.
+	//
+	// For more information about setting up a customer managed key for Wisdom,
+	// see Enable Amazon Connect Wisdom for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `locationName:"serverSideEncryptionConfiguration" type:"structure"`
 
 	// The status of the assistant.
@@ -3618,6 +4729,12 @@ func (s *AssistantData) SetDescription(v string) *AssistantData {
 	return s
 }
 
+// SetIntegrationConfiguration sets the IntegrationConfiguration field's value.
+func (s *AssistantData) SetIntegrationConfiguration(v *AssistantIntegrationConfiguration) *AssistantData {
+	s.IntegrationConfiguration = v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *AssistantData) SetName(v string) *AssistantData {
 	s.Name = &v
@@ -3648,6 +4765,39 @@ func (s *AssistantData) SetType(v string) *AssistantData {
 	return s
 }
 
+// The configuration information for the Wisdom assistant integration.
+type AssistantIntegrationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the integrated Amazon SNS topic used for
+	// streaming chat messages.
+	TopicIntegrationArn *string `locationName:"topicIntegrationArn" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssistantIntegrationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssistantIntegrationConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetTopicIntegrationArn sets the TopicIntegrationArn field's value.
+func (s *AssistantIntegrationConfiguration) SetTopicIntegrationArn(v string) *AssistantIntegrationConfiguration {
+	s.TopicIntegrationArn = &v
+	return s
+}
+
 // Summary information about the assistant.
 type AssistantSummary struct {
 	_ struct{} `type:"structure"`
@@ -3665,12 +4815,24 @@ type AssistantSummary struct {
 	// The description of the assistant.
 	Description *string `locationName:"description" min:"1" type:"string"`
 
+	// The configuration information for the Wisdom assistant integration.
+	IntegrationConfiguration *AssistantIntegrationConfiguration `locationName:"integrationConfiguration" type:"structure"`
+
 	// The name of the assistant.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
-	// The KMS key used for encryption.
+	// The configuration information for the customer managed key used for encryption.
+	//
+	// This KMS key must have a policy that allows kms:CreateGrant, kms:DescribeKey,
+	// and kms:Decrypt/kms:GenerateDataKey permissions to the IAM identity using
+	// the key to invoke Wisdom. To use Wisdom with chat, the key policy must also
+	// allow kms:Decrypt, kms:GenerateDataKey*, and kms:DescribeKey permissions
+	// to the connect.amazonaws.com service principal.
+	//
+	// For more information about setting up a customer managed key for Wisdom,
+	// see Enable Amazon Connect Wisdom for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `locationName:"serverSideEncryptionConfiguration" type:"structure"`
 
 	// The status of the assistant.
@@ -3723,6 +4885,12 @@ func (s *AssistantSummary) SetDescription(v string) *AssistantSummary {
 	return s
 }
 
+// SetIntegrationConfiguration sets the IntegrationConfiguration field's value.
+func (s *AssistantSummary) SetIntegrationConfiguration(v *AssistantIntegrationConfiguration) *AssistantSummary {
+	s.IntegrationConfiguration = v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *AssistantSummary) SetName(v string) *AssistantSummary {
 	s.Name = &v
@@ -3750,6 +4918,53 @@ func (s *AssistantSummary) SetTags(v map[string]*string) *AssistantSummary {
 // SetType sets the Type field's value.
 func (s *AssistantSummary) SetType(v string) *AssistantSummary {
 	s.Type = &v
+	return s
+}
+
+// The configuration information of the external data source.
+type Configuration struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration information of the Amazon Connect data source.
+	ConnectConfiguration *ConnectConfiguration `locationName:"connectConfiguration" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Configuration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Configuration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Configuration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Configuration"}
+	if s.ConnectConfiguration != nil {
+		if err := s.ConnectConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ConnectConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConnectConfiguration sets the ConnectConfiguration field's value.
+func (s *Configuration) SetConnectConfiguration(v *ConnectConfiguration) *Configuration {
+	s.ConnectConfiguration = v
 	return s
 }
 
@@ -3820,6 +5035,52 @@ func (s *ConflictException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The configuration information of the Amazon Connect data source.
+type ConnectConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The identifier of the Amazon Connect instance. You can find the instanceId
+	// in the ARN of the instance.
+	InstanceId *string `locationName:"instanceId" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConnectConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConnectConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ConnectConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ConnectConfiguration"}
+	if s.InstanceId != nil && len(*s.InstanceId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("InstanceId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInstanceId sets the InstanceId field's value.
+func (s *ConnectConfiguration) SetInstanceId(v string) *ConnectConfiguration {
+	s.InstanceId = &v
+	return s
+}
+
 // Information about the content.
 type ContentData struct {
 	_ struct{} `type:"structure"`
@@ -3844,7 +5105,8 @@ type ContentData struct {
 	// KnowledgeBaseArn is a required field
 	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -4013,7 +5275,8 @@ type ContentReference struct {
 	// The Amazon Resource Name (ARN) of the knowledge base.
 	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string"`
 }
 
@@ -4083,7 +5346,8 @@ type ContentSummary struct {
 	// KnowledgeBaseArn is a required field
 	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -4224,7 +5488,9 @@ type CreateAssistantAssociationInput struct {
 	AssociationType *string `locationName:"associationType" type:"string" required:"true" enum:"AssociationType"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The tags used to organize, track, or control access for this resource.
@@ -4339,7 +5605,9 @@ type CreateAssistantInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description of the assistant.
@@ -4350,7 +5618,16 @@ type CreateAssistantInput struct {
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
 
-	// The KMS key used for encryption.
+	// The configuration information for the customer managed key used for encryption.
+	//
+	// The customer managed key must have a policy that allows kms:CreateGrant,
+	// kms:DescribeKey, and kms:Decrypt/kms:GenerateDataKey permissions to the IAM
+	// identity using the key to invoke Wisdom. To use Wisdom with chat, the key
+	// policy must also allow kms:Decrypt, kms:GenerateDataKey*, and kms:DescribeKey
+	// permissions to the connect.amazonaws.com service principal.
+	//
+	// For more information about setting up a customer managed key for Wisdom,
+	// see Enable Amazon Connect Wisdom for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `locationName:"serverSideEncryptionConfiguration" type:"structure"`
 
 	// The tags used to organize, track, or control access for this resource.
@@ -4481,11 +5758,14 @@ type CreateContentInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -4659,7 +5939,9 @@ type CreateKnowledgeBaseInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description.
@@ -4680,7 +5962,14 @@ type CreateKnowledgeBaseInput struct {
 	// Information about how to render the content.
 	RenderingConfiguration *RenderingConfiguration `locationName:"renderingConfiguration" type:"structure"`
 
-	// The KMS key used for encryption.
+	// The configuration information for the customer managed key used for encryption.
+	//
+	// This KMS key must have a policy that allows kms:CreateGrant, kms:DescribeKey,
+	// and kms:Decrypt/kms:GenerateDataKey permissions to the IAM identity using
+	// the key to invoke Wisdom.
+	//
+	// For more information about setting up a customer managed key for Wisdom,
+	// see Enable Amazon Connect Wisdom for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `locationName:"serverSideEncryptionConfiguration" type:"structure"`
 
 	// The source of the knowledge base content. Only set this argument for EXTERNAL
@@ -4828,6 +6117,235 @@ func (s *CreateKnowledgeBaseOutput) SetKnowledgeBase(v *KnowledgeBaseData) *Crea
 	return s
 }
 
+type CreateQuickResponseInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Connect channels this quick response applies to.
+	Channels []*string `locationName:"channels" type:"list"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The content of the quick response.
+	//
+	// Content is a required field
+	Content *QuickResponseDataProvider `locationName:"content" type:"structure" required:"true"`
+
+	// The media type of the quick response content.
+	//
+	//    * Use application/x.quickresponse;format=plain for a quick response written
+	//    in plain text.
+	//
+	//    * Use application/x.quickresponse;format=markdown for a quick response
+	//    written in richtext.
+	ContentType *string `locationName:"contentType" type:"string"`
+
+	// The description of the quick response.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The configuration information of the user groups that the quick response
+	// is accessible to.
+	GroupingConfiguration *GroupingConfiguration `locationName:"groupingConfiguration" type:"structure"`
+
+	// Whether the quick response is active.
+	IsActive *bool `locationName:"isActive" type:"boolean"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The language code value for the language in which the quick response is written.
+	// The supported language codes include de_DE, en_US, es_ES, fr_FR, id_ID, it_IT,
+	// ja_JP, ko_KR, pt_BR, zh_CN, zh_TW
+	Language *string `locationName:"language" min:"2" type:"string"`
+
+	// The name of the quick response.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The shortcut key of the quick response. The value should be unique across
+	// the knowledge base.
+	ShortcutKey *string `locationName:"shortcutKey" min:"1" type:"string"`
+
+	// The tags used to organize, track, or control access for this resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateQuickResponseInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateQuickResponseInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateQuickResponseInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateQuickResponseInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Content == nil {
+		invalidParams.Add(request.NewErrParamRequired("Content"))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.Language != nil && len(*s.Language) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("Language", 2))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.ShortcutKey != nil && len(*s.ShortcutKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ShortcutKey", 1))
+	}
+	if s.Content != nil {
+		if err := s.Content.Validate(); err != nil {
+			invalidParams.AddNested("Content", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.GroupingConfiguration != nil {
+		if err := s.GroupingConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("GroupingConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetChannels sets the Channels field's value.
+func (s *CreateQuickResponseInput) SetChannels(v []*string) *CreateQuickResponseInput {
+	s.Channels = v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateQuickResponseInput) SetClientToken(v string) *CreateQuickResponseInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetContent sets the Content field's value.
+func (s *CreateQuickResponseInput) SetContent(v *QuickResponseDataProvider) *CreateQuickResponseInput {
+	s.Content = v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *CreateQuickResponseInput) SetContentType(v string) *CreateQuickResponseInput {
+	s.ContentType = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateQuickResponseInput) SetDescription(v string) *CreateQuickResponseInput {
+	s.Description = &v
+	return s
+}
+
+// SetGroupingConfiguration sets the GroupingConfiguration field's value.
+func (s *CreateQuickResponseInput) SetGroupingConfiguration(v *GroupingConfiguration) *CreateQuickResponseInput {
+	s.GroupingConfiguration = v
+	return s
+}
+
+// SetIsActive sets the IsActive field's value.
+func (s *CreateQuickResponseInput) SetIsActive(v bool) *CreateQuickResponseInput {
+	s.IsActive = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *CreateQuickResponseInput) SetKnowledgeBaseId(v string) *CreateQuickResponseInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *CreateQuickResponseInput) SetLanguage(v string) *CreateQuickResponseInput {
+	s.Language = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateQuickResponseInput) SetName(v string) *CreateQuickResponseInput {
+	s.Name = &v
+	return s
+}
+
+// SetShortcutKey sets the ShortcutKey field's value.
+func (s *CreateQuickResponseInput) SetShortcutKey(v string) *CreateQuickResponseInput {
+	s.ShortcutKey = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateQuickResponseInput) SetTags(v map[string]*string) *CreateQuickResponseInput {
+	s.Tags = v
+	return s
+}
+
+type CreateQuickResponseOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The quick response.
+	QuickResponse *QuickResponseData `locationName:"quickResponse" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateQuickResponseOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateQuickResponseOutput) GoString() string {
+	return s.String()
+}
+
+// SetQuickResponse sets the QuickResponse field's value.
+func (s *CreateQuickResponseOutput) SetQuickResponse(v *QuickResponseData) *CreateQuickResponseOutput {
+	s.QuickResponse = v
+	return s
+}
+
 type CreateSessionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4838,7 +6356,9 @@ type CreateSessionInput struct {
 	AssistantId *string `location:"uri" locationName:"assistantId" type:"string" required:"true"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
-	// of the request.
+	// of the request. If not provided, the Amazon Web Services SDK populates this
+	// field. For more information about idempotency, see Making retries safe with
+	// idempotent APIs (https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/).
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
 	// The description.
@@ -5131,8 +6651,9 @@ type DeleteContentInput struct {
 	// ContentId is a required field
 	ContentId *string `location:"uri" locationName:"contentId" type:"string" required:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -5212,6 +6733,95 @@ func (s DeleteContentOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteImportJobInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The identifier of the import job to be deleted.
+	//
+	// ImportJobId is a required field
+	ImportJobId *string `location:"uri" locationName:"importJobId" type:"string" required:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteImportJobInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteImportJobInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteImportJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteImportJobInput"}
+	if s.ImportJobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImportJobId"))
+	}
+	if s.ImportJobId != nil && len(*s.ImportJobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ImportJobId", 1))
+	}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetImportJobId sets the ImportJobId field's value.
+func (s *DeleteImportJobInput) SetImportJobId(v string) *DeleteImportJobInput {
+	s.ImportJobId = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *DeleteImportJobInput) SetKnowledgeBaseId(v string) *DeleteImportJobInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+type DeleteImportJobOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteImportJobOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteImportJobOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteKnowledgeBaseInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -5281,6 +6891,96 @@ func (s DeleteKnowledgeBaseOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteKnowledgeBaseOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteQuickResponseInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The knowledge base from which the quick response is deleted. The identifier
+	// of the knowledge base. This should not be a QUICK_RESPONSES type knowledge
+	// base if you're storing Wisdom Content resource to it.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The identifier of the quick response to delete.
+	//
+	// QuickResponseId is a required field
+	QuickResponseId *string `location:"uri" locationName:"quickResponseId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteQuickResponseInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteQuickResponseInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteQuickResponseInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteQuickResponseInput"}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.QuickResponseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("QuickResponseId"))
+	}
+	if s.QuickResponseId != nil && len(*s.QuickResponseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("QuickResponseId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *DeleteQuickResponseInput) SetKnowledgeBaseId(v string) *DeleteQuickResponseInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetQuickResponseId sets the QuickResponseId field's value.
+func (s *DeleteQuickResponseInput) SetQuickResponseId(v string) *DeleteQuickResponseInput {
+	s.QuickResponseId = &v
+	return s
+}
+
+type DeleteQuickResponseOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteQuickResponseOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteQuickResponseOutput) GoString() string {
 	return s.String()
 }
 
@@ -5378,6 +7078,72 @@ func (s *DocumentText) SetHighlights(v []*Highlight) *DocumentText {
 // SetText sets the Text field's value.
 func (s *DocumentText) SetText(v string) *DocumentText {
 	s.Text = &v
+	return s
+}
+
+// The configuration information of the external data source.
+type ExternalSourceConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration information of the external data source.
+	//
+	// Configuration is a required field
+	Configuration *Configuration `locationName:"configuration" type:"structure" required:"true"`
+
+	// The type of the external data source.
+	//
+	// Source is a required field
+	Source *string `locationName:"source" type:"string" required:"true" enum:"ExternalSource"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExternalSourceConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExternalSourceConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExternalSourceConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExternalSourceConfiguration"}
+	if s.Configuration == nil {
+		invalidParams.Add(request.NewErrParamRequired("Configuration"))
+	}
+	if s.Source == nil {
+		invalidParams.Add(request.NewErrParamRequired("Source"))
+	}
+	if s.Configuration != nil {
+		if err := s.Configuration.Validate(); err != nil {
+			invalidParams.AddNested("Configuration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *ExternalSourceConfiguration) SetConfiguration(v *Configuration) *ExternalSourceConfiguration {
+	s.Configuration = v
+	return s
+}
+
+// SetSource sets the Source field's value.
+func (s *ExternalSourceConfiguration) SetSource(v string) *ExternalSourceConfiguration {
+	s.Source = &v
 	return s
 }
 
@@ -5648,8 +7414,9 @@ type GetContentInput struct {
 	// ContentId is a required field
 	ContentId *string `location:"uri" locationName:"contentId" type:"string" required:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -5747,8 +7514,9 @@ type GetContentSummaryInput struct {
 	// ContentId is a required field
 	ContentId *string `location:"uri" locationName:"contentId" type:"string" required:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -5837,11 +7605,109 @@ func (s *GetContentSummaryOutput) SetContentSummary(v *ContentSummary) *GetConte
 	return s
 }
 
+type GetImportJobInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The identifier of the import job to retrieve.
+	//
+	// ImportJobId is a required field
+	ImportJobId *string `location:"uri" locationName:"importJobId" type:"string" required:"true"`
+
+	// The identifier of the knowledge base that the import job belongs to.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetImportJobInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetImportJobInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetImportJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetImportJobInput"}
+	if s.ImportJobId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImportJobId"))
+	}
+	if s.ImportJobId != nil && len(*s.ImportJobId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ImportJobId", 1))
+	}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetImportJobId sets the ImportJobId field's value.
+func (s *GetImportJobInput) SetImportJobId(v string) *GetImportJobInput {
+	s.ImportJobId = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *GetImportJobInput) SetKnowledgeBaseId(v string) *GetImportJobInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+type GetImportJobOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The import job.
+	ImportJob *ImportJobData `locationName:"importJob" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetImportJobOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetImportJobOutput) GoString() string {
+	return s.String()
+}
+
+// SetImportJob sets the ImportJob field's value.
+func (s *GetImportJobOutput) SetImportJob(v *ImportJobData) *GetImportJobOutput {
+	s.ImportJob = v
+	return s
+}
+
 type GetKnowledgeBaseInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -5915,6 +7781,104 @@ func (s GetKnowledgeBaseOutput) GoString() string {
 // SetKnowledgeBase sets the KnowledgeBase field's value.
 func (s *GetKnowledgeBaseOutput) SetKnowledgeBase(v *KnowledgeBaseData) *GetKnowledgeBaseOutput {
 	s.KnowledgeBase = v
+	return s
+}
+
+type GetQuickResponseInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The identifier of the knowledge base. This should be a QUICK_RESPONSES type
+	// knowledge base.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The identifier of the quick response.
+	//
+	// QuickResponseId is a required field
+	QuickResponseId *string `location:"uri" locationName:"quickResponseId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetQuickResponseInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetQuickResponseInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetQuickResponseInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetQuickResponseInput"}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.QuickResponseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("QuickResponseId"))
+	}
+	if s.QuickResponseId != nil && len(*s.QuickResponseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("QuickResponseId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *GetQuickResponseInput) SetKnowledgeBaseId(v string) *GetQuickResponseInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetQuickResponseId sets the QuickResponseId field's value.
+func (s *GetQuickResponseInput) SetQuickResponseId(v string) *GetQuickResponseInput {
+	s.QuickResponseId = &v
+	return s
+}
+
+type GetQuickResponseOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The quick response.
+	QuickResponse *QuickResponseData `locationName:"quickResponse" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetQuickResponseOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetQuickResponseOutput) GoString() string {
+	return s.String()
+}
+
+// SetQuickResponse sets the QuickResponse field's value.
+func (s *GetQuickResponseOutput) SetQuickResponse(v *QuickResponseData) *GetQuickResponseOutput {
+	s.QuickResponse = v
 	return s
 }
 
@@ -6151,6 +8115,76 @@ func (s *GetSessionOutput) SetSession(v *SessionData) *GetSessionOutput {
 	return s
 }
 
+// The configuration information of the grouping of Wisdom users.
+type GroupingConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The criteria used for grouping Wisdom users.
+	//
+	// The following is the list of supported criteria values.
+	//
+	//    * RoutingProfileArn: Grouping the users by their Amazon Connect routing
+	//    profile ARN (https://docs.aws.amazon.com/connect/latest/APIReference/API_RoutingProfile.html).
+	//    User should have SearchRoutingProfile (https://docs.aws.amazon.com/connect/latest/APIReference/API_SearchRoutingProfiles.html)
+	//    and DescribeRoutingProfile (https://docs.aws.amazon.com/connect/latest/APIReference/API_DescribeRoutingProfile.html)
+	//    permissions when setting criteria to this value.
+	//
+	// Criteria is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by GroupingConfiguration's
+	// String and GoString methods.
+	Criteria *string `locationName:"criteria" min:"1" type:"string" sensitive:"true"`
+
+	// The list of values that define different groups of Wisdom users.
+	//
+	//    * When setting criteria to RoutingProfileArn, you need to provide a list
+	//    of ARNs of Amazon Connect routing profiles (https://docs.aws.amazon.com/connect/latest/APIReference/API_RoutingProfile.html)
+	//    as values of this parameter.
+	Values []*string `locationName:"values" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GroupingConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GroupingConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GroupingConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GroupingConfiguration"}
+	if s.Criteria != nil && len(*s.Criteria) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Criteria", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCriteria sets the Criteria field's value.
+func (s *GroupingConfiguration) SetCriteria(v string) *GroupingConfiguration {
+	s.Criteria = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *GroupingConfiguration) SetValues(v []*string) *GroupingConfiguration {
+	s.Values = v
+	return s
+}
+
 // Offset specification to describe highlighting of document excerpts for rendering
 // search results and recommendations.
 type Highlight struct {
@@ -6193,6 +8227,308 @@ func (s *Highlight) SetEndOffsetExclusive(v int64) *Highlight {
 	return s
 }
 
+// Summary information about the import job.
+type ImportJobData struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp when the import job was created.
+	//
+	// CreatedTime is a required field
+	CreatedTime *time.Time `locationName:"createdTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The configuration information of the external data source.
+	ExternalSourceConfiguration *ExternalSourceConfiguration `locationName:"externalSourceConfiguration" type:"structure"`
+
+	// The link to donwload the information of resource data that failed to be imported.
+	//
+	// FailedRecordReport is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ImportJobData's
+	// String and GoString methods.
+	FailedRecordReport *string `locationName:"failedRecordReport" min:"1" type:"string" sensitive:"true"`
+
+	// The identifier of the import job.
+	//
+	// ImportJobId is a required field
+	ImportJobId *string `locationName:"importJobId" type:"string" required:"true"`
+
+	// The type of the import job.
+	//
+	// ImportJobType is a required field
+	ImportJobType *string `locationName:"importJobType" type:"string" required:"true" enum:"ImportJobType"`
+
+	// The Amazon Resource Name (ARN) of the knowledge base.
+	//
+	// KnowledgeBaseArn is a required field
+	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The timestamp when the import job data was last modified.
+	//
+	// LastModifiedTime is a required field
+	LastModifiedTime *time.Time `locationName:"lastModifiedTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The metadata fields of the imported Wisdom resources.
+	Metadata map[string]*string `locationName:"metadata" type:"map"`
+
+	// The status of the import job.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"ImportJobStatus"`
+
+	// A pointer to the uploaded asset. This value is returned by StartContentUpload
+	// (https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html).
+	//
+	// UploadId is a required field
+	UploadId *string `locationName:"uploadId" min:"1" type:"string" required:"true"`
+
+	// The download link to the resource file that is uploaded to the import job.
+	//
+	// Url is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ImportJobData's
+	// String and GoString methods.
+	//
+	// Url is a required field
+	Url *string `locationName:"url" min:"1" type:"string" required:"true" sensitive:"true"`
+
+	// The expiration time of the URL as an epoch timestamp.
+	//
+	// UrlExpiry is a required field
+	UrlExpiry *time.Time `locationName:"urlExpiry" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportJobData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportJobData) GoString() string {
+	return s.String()
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *ImportJobData) SetCreatedTime(v time.Time) *ImportJobData {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetExternalSourceConfiguration sets the ExternalSourceConfiguration field's value.
+func (s *ImportJobData) SetExternalSourceConfiguration(v *ExternalSourceConfiguration) *ImportJobData {
+	s.ExternalSourceConfiguration = v
+	return s
+}
+
+// SetFailedRecordReport sets the FailedRecordReport field's value.
+func (s *ImportJobData) SetFailedRecordReport(v string) *ImportJobData {
+	s.FailedRecordReport = &v
+	return s
+}
+
+// SetImportJobId sets the ImportJobId field's value.
+func (s *ImportJobData) SetImportJobId(v string) *ImportJobData {
+	s.ImportJobId = &v
+	return s
+}
+
+// SetImportJobType sets the ImportJobType field's value.
+func (s *ImportJobData) SetImportJobType(v string) *ImportJobData {
+	s.ImportJobType = &v
+	return s
+}
+
+// SetKnowledgeBaseArn sets the KnowledgeBaseArn field's value.
+func (s *ImportJobData) SetKnowledgeBaseArn(v string) *ImportJobData {
+	s.KnowledgeBaseArn = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *ImportJobData) SetKnowledgeBaseId(v string) *ImportJobData {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *ImportJobData) SetLastModifiedTime(v time.Time) *ImportJobData {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *ImportJobData) SetMetadata(v map[string]*string) *ImportJobData {
+	s.Metadata = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ImportJobData) SetStatus(v string) *ImportJobData {
+	s.Status = &v
+	return s
+}
+
+// SetUploadId sets the UploadId field's value.
+func (s *ImportJobData) SetUploadId(v string) *ImportJobData {
+	s.UploadId = &v
+	return s
+}
+
+// SetUrl sets the Url field's value.
+func (s *ImportJobData) SetUrl(v string) *ImportJobData {
+	s.Url = &v
+	return s
+}
+
+// SetUrlExpiry sets the UrlExpiry field's value.
+func (s *ImportJobData) SetUrlExpiry(v time.Time) *ImportJobData {
+	s.UrlExpiry = &v
+	return s
+}
+
+// Summary information about the import job.
+type ImportJobSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The timestamp when the import job was created.
+	//
+	// CreatedTime is a required field
+	CreatedTime *time.Time `locationName:"createdTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The configuration information of the external source that the resource data
+	// are imported from.
+	ExternalSourceConfiguration *ExternalSourceConfiguration `locationName:"externalSourceConfiguration" type:"structure"`
+
+	// The identifier of the import job.
+	//
+	// ImportJobId is a required field
+	ImportJobId *string `locationName:"importJobId" type:"string" required:"true"`
+
+	// The type of import job.
+	//
+	// ImportJobType is a required field
+	ImportJobType *string `locationName:"importJobType" type:"string" required:"true" enum:"ImportJobType"`
+
+	// The Amazon Resource Name (ARN) of the knowledge base.
+	//
+	// KnowledgeBaseArn is a required field
+	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The timestamp when the import job was last modified.
+	//
+	// LastModifiedTime is a required field
+	LastModifiedTime *time.Time `locationName:"lastModifiedTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The metadata fields of the imported Wisdom resources.
+	Metadata map[string]*string `locationName:"metadata" type:"map"`
+
+	// The status of the import job.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"ImportJobStatus"`
+
+	// A pointer to the uploaded asset. This value is returned by StartContentUpload
+	// (https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html).
+	//
+	// UploadId is a required field
+	UploadId *string `locationName:"uploadId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportJobSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ImportJobSummary) GoString() string {
+	return s.String()
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *ImportJobSummary) SetCreatedTime(v time.Time) *ImportJobSummary {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetExternalSourceConfiguration sets the ExternalSourceConfiguration field's value.
+func (s *ImportJobSummary) SetExternalSourceConfiguration(v *ExternalSourceConfiguration) *ImportJobSummary {
+	s.ExternalSourceConfiguration = v
+	return s
+}
+
+// SetImportJobId sets the ImportJobId field's value.
+func (s *ImportJobSummary) SetImportJobId(v string) *ImportJobSummary {
+	s.ImportJobId = &v
+	return s
+}
+
+// SetImportJobType sets the ImportJobType field's value.
+func (s *ImportJobSummary) SetImportJobType(v string) *ImportJobSummary {
+	s.ImportJobType = &v
+	return s
+}
+
+// SetKnowledgeBaseArn sets the KnowledgeBaseArn field's value.
+func (s *ImportJobSummary) SetKnowledgeBaseArn(v string) *ImportJobSummary {
+	s.KnowledgeBaseArn = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *ImportJobSummary) SetKnowledgeBaseId(v string) *ImportJobSummary {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *ImportJobSummary) SetLastModifiedTime(v time.Time) *ImportJobSummary {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *ImportJobSummary) SetMetadata(v map[string]*string) *ImportJobSummary {
+	s.Metadata = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ImportJobSummary) SetStatus(v string) *ImportJobSummary {
+	s.Status = &v
+	return s
+}
+
+// SetUploadId sets the UploadId field's value.
+func (s *ImportJobSummary) SetUploadId(v string) *ImportJobSummary {
+	s.UploadId = &v
+	return s
+}
+
 // Association information about the knowledge base.
 type KnowledgeBaseAssociationData struct {
 	_ struct{} `type:"structure"`
@@ -6200,7 +8536,8 @@ type KnowledgeBaseAssociationData struct {
 	// The Amazon Resource Name (ARN) of the knowledge base.
 	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string"`
 }
 
@@ -6246,7 +8583,8 @@ type KnowledgeBaseData struct {
 	// KnowledgeBaseArn is a required field
 	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -6269,7 +8607,14 @@ type KnowledgeBaseData struct {
 	// Information about how to render the content.
 	RenderingConfiguration *RenderingConfiguration `locationName:"renderingConfiguration" type:"structure"`
 
-	// The KMS key used for encryption.
+	// The configuration information for the customer managed key used for encryption.
+	//
+	// This KMS key must have a policy that allows kms:CreateGrant, kms:DescribeKey,
+	// and kms:Decrypt/kms:GenerateDataKey permissions to the IAM identity using
+	// the key to invoke Wisdom.
+	//
+	// For more information about setting up a customer managed key for Wisdom,
+	// see Enable Amazon Connect Wisdom for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `locationName:"serverSideEncryptionConfiguration" type:"structure"`
 
 	// Source configuration information about the knowledge base.
@@ -6380,7 +8725,8 @@ type KnowledgeBaseSummary struct {
 	// KnowledgeBaseArn is a required field
 	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
 
-	// The identifier of the knowledge base.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -6398,7 +8744,14 @@ type KnowledgeBaseSummary struct {
 	// Information about how to render the content.
 	RenderingConfiguration *RenderingConfiguration `locationName:"renderingConfiguration" type:"structure"`
 
-	// The KMS key used for encryption.
+	// The configuration information for the customer managed key used for encryption.
+	//
+	// This KMS key must have a policy that allows kms:CreateGrant, kms:DescribeKey,
+	// kms:Decrypt/kms:GenerateDataKey permissions to the IAM identity using the
+	// key to invoke Wisdom.
+	//
+	// For more information about setting up a customer managed key for Wisdom,
+	// see Enable Amazon Connect Wisdom for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
 	ServerSideEncryptionConfiguration *ServerSideEncryptionConfiguration `locationName:"serverSideEncryptionConfiguration" type:"structure"`
 
 	// Configuration information about the external data source.
@@ -6710,8 +9063,9 @@ func (s *ListAssistantsOutput) SetNextToken(v string) *ListAssistantsOutput {
 type ListContentsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -6824,6 +9178,125 @@ func (s *ListContentsOutput) SetNextToken(v string) *ListContentsOutput {
 	return s
 }
 
+type ListImportJobsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The maximum number of results to return per page.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImportJobsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImportJobsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListImportJobsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListImportJobsInput"}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *ListImportJobsInput) SetKnowledgeBaseId(v string) *ListImportJobsInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListImportJobsInput) SetMaxResults(v int64) *ListImportJobsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListImportJobsInput) SetNextToken(v string) *ListImportJobsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListImportJobsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Summary information about the import jobs.
+	//
+	// ImportJobSummaries is a required field
+	ImportJobSummaries []*ImportJobSummary `locationName:"importJobSummaries" type:"list" required:"true"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImportJobsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListImportJobsOutput) GoString() string {
+	return s.String()
+}
+
+// SetImportJobSummaries sets the ImportJobSummaries field's value.
+func (s *ListImportJobsOutput) SetImportJobSummaries(v []*ImportJobSummary) *ListImportJobsOutput {
+	s.ImportJobSummaries = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListImportJobsOutput) SetNextToken(v string) *ListImportJobsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListKnowledgeBasesInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6920,6 +9393,125 @@ func (s *ListKnowledgeBasesOutput) SetKnowledgeBaseSummaries(v []*KnowledgeBaseS
 // SetNextToken sets the NextToken field's value.
 func (s *ListKnowledgeBasesOutput) SetNextToken(v string) *ListKnowledgeBasesOutput {
 	s.NextToken = &v
+	return s
+}
+
+type ListQuickResponsesInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The maximum number of results to return per page.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListQuickResponsesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListQuickResponsesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListQuickResponsesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListQuickResponsesInput"}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *ListQuickResponsesInput) SetKnowledgeBaseId(v string) *ListQuickResponsesInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListQuickResponsesInput) SetMaxResults(v int64) *ListQuickResponsesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListQuickResponsesInput) SetNextToken(v string) *ListQuickResponsesInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListQuickResponsesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// Summary information about the quick responses.
+	//
+	// QuickResponseSummaries is a required field
+	QuickResponseSummaries []*QuickResponseSummary `locationName:"quickResponseSummaries" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListQuickResponsesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListQuickResponsesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListQuickResponsesOutput) SetNextToken(v string) *ListQuickResponsesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetQuickResponseSummaries sets the QuickResponseSummaries field's value.
+func (s *ListQuickResponsesOutput) SetQuickResponseSummaries(v []*QuickResponseSummary) *ListQuickResponsesOutput {
+	s.QuickResponseSummaries = v
 	return s
 }
 
@@ -7402,6 +9994,1163 @@ func (s *QueryRecommendationTriggerData) SetText(v string) *QueryRecommendationT
 	return s
 }
 
+// The container quick response content.
+type QuickResponseContentProvider struct {
+	_ struct{} `type:"structure"`
+
+	// The content of the quick response.
+	//
+	// Content is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by QuickResponseContentProvider's
+	// String and GoString methods.
+	Content *string `locationName:"content" min:"1" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseContentProvider) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseContentProvider) GoString() string {
+	return s.String()
+}
+
+// SetContent sets the Content field's value.
+func (s *QuickResponseContentProvider) SetContent(v string) *QuickResponseContentProvider {
+	s.Content = &v
+	return s
+}
+
+// The content of the quick response stored in different media types.
+type QuickResponseContents struct {
+	_ struct{} `type:"structure"`
+
+	// The container quick response content.
+	Markdown *QuickResponseContentProvider `locationName:"markdown" type:"structure"`
+
+	// The container quick response content.
+	PlainText *QuickResponseContentProvider `locationName:"plainText" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseContents) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseContents) GoString() string {
+	return s.String()
+}
+
+// SetMarkdown sets the Markdown field's value.
+func (s *QuickResponseContents) SetMarkdown(v *QuickResponseContentProvider) *QuickResponseContents {
+	s.Markdown = v
+	return s
+}
+
+// SetPlainText sets the PlainText field's value.
+func (s *QuickResponseContents) SetPlainText(v *QuickResponseContentProvider) *QuickResponseContents {
+	s.PlainText = v
+	return s
+}
+
+// Information about the quick response.
+type QuickResponseData struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Connect contact channels this quick response applies to. The supported
+	// contact channel types include Chat.
+	Channels []*string `locationName:"channels" type:"list"`
+
+	// The media type of the quick response content.
+	//
+	//    * Use application/x.quickresponse;format=plain for quick response written
+	//    in plain text.
+	//
+	//    * Use application/x.quickresponse;format=markdown for quick response written
+	//    in richtext.
+	//
+	// ContentType is a required field
+	ContentType *string `locationName:"contentType" type:"string" required:"true"`
+
+	// The contents of the quick response.
+	Contents *QuickResponseContents `locationName:"contents" type:"structure"`
+
+	// The timestamp when the quick response was created.
+	//
+	// CreatedTime is a required field
+	CreatedTime *time.Time `locationName:"createdTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The description of the quick response.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The configuration information of the user groups that the quick response
+	// is accessible to.
+	GroupingConfiguration *GroupingConfiguration `locationName:"groupingConfiguration" type:"structure"`
+
+	// Whether the quick response is active.
+	IsActive *bool `locationName:"isActive" type:"boolean"`
+
+	// The Amazon Resource Name (ARN) of the knowledge base.
+	//
+	// KnowledgeBaseArn is a required field
+	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The language code value for the language in which the quick response is written.
+	Language *string `locationName:"language" min:"2" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the user who last updated the quick response
+	// data.
+	LastModifiedBy *string `locationName:"lastModifiedBy" min:"1" type:"string"`
+
+	// The timestamp when the quick response data was last modified.
+	//
+	// LastModifiedTime is a required field
+	LastModifiedTime *time.Time `locationName:"lastModifiedTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The name of the quick response.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the quick response.
+	//
+	// QuickResponseArn is a required field
+	QuickResponseArn *string `locationName:"quickResponseArn" type:"string" required:"true"`
+
+	// The identifier of the quick response.
+	//
+	// QuickResponseId is a required field
+	QuickResponseId *string `locationName:"quickResponseId" type:"string" required:"true"`
+
+	// The shortcut key of the quick response. The value should be unique across
+	// the knowledge base.
+	ShortcutKey *string `locationName:"shortcutKey" min:"1" type:"string"`
+
+	// The status of the quick response data.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"QuickResponseStatus"`
+
+	// The tags used to organize, track, or control access for this resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseData) GoString() string {
+	return s.String()
+}
+
+// SetChannels sets the Channels field's value.
+func (s *QuickResponseData) SetChannels(v []*string) *QuickResponseData {
+	s.Channels = v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *QuickResponseData) SetContentType(v string) *QuickResponseData {
+	s.ContentType = &v
+	return s
+}
+
+// SetContents sets the Contents field's value.
+func (s *QuickResponseData) SetContents(v *QuickResponseContents) *QuickResponseData {
+	s.Contents = v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *QuickResponseData) SetCreatedTime(v time.Time) *QuickResponseData {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *QuickResponseData) SetDescription(v string) *QuickResponseData {
+	s.Description = &v
+	return s
+}
+
+// SetGroupingConfiguration sets the GroupingConfiguration field's value.
+func (s *QuickResponseData) SetGroupingConfiguration(v *GroupingConfiguration) *QuickResponseData {
+	s.GroupingConfiguration = v
+	return s
+}
+
+// SetIsActive sets the IsActive field's value.
+func (s *QuickResponseData) SetIsActive(v bool) *QuickResponseData {
+	s.IsActive = &v
+	return s
+}
+
+// SetKnowledgeBaseArn sets the KnowledgeBaseArn field's value.
+func (s *QuickResponseData) SetKnowledgeBaseArn(v string) *QuickResponseData {
+	s.KnowledgeBaseArn = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *QuickResponseData) SetKnowledgeBaseId(v string) *QuickResponseData {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *QuickResponseData) SetLanguage(v string) *QuickResponseData {
+	s.Language = &v
+	return s
+}
+
+// SetLastModifiedBy sets the LastModifiedBy field's value.
+func (s *QuickResponseData) SetLastModifiedBy(v string) *QuickResponseData {
+	s.LastModifiedBy = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *QuickResponseData) SetLastModifiedTime(v time.Time) *QuickResponseData {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *QuickResponseData) SetName(v string) *QuickResponseData {
+	s.Name = &v
+	return s
+}
+
+// SetQuickResponseArn sets the QuickResponseArn field's value.
+func (s *QuickResponseData) SetQuickResponseArn(v string) *QuickResponseData {
+	s.QuickResponseArn = &v
+	return s
+}
+
+// SetQuickResponseId sets the QuickResponseId field's value.
+func (s *QuickResponseData) SetQuickResponseId(v string) *QuickResponseData {
+	s.QuickResponseId = &v
+	return s
+}
+
+// SetShortcutKey sets the ShortcutKey field's value.
+func (s *QuickResponseData) SetShortcutKey(v string) *QuickResponseData {
+	s.ShortcutKey = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *QuickResponseData) SetStatus(v string) *QuickResponseData {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *QuickResponseData) SetTags(v map[string]*string) *QuickResponseData {
+	s.Tags = v
+	return s
+}
+
+// The container of quick response data.
+type QuickResponseDataProvider struct {
+	_ struct{} `type:"structure"`
+
+	// The content of the quick response.
+	//
+	// Content is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by QuickResponseDataProvider's
+	// String and GoString methods.
+	Content *string `locationName:"content" min:"1" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseDataProvider) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseDataProvider) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QuickResponseDataProvider) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QuickResponseDataProvider"}
+	if s.Content != nil && len(*s.Content) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Content", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetContent sets the Content field's value.
+func (s *QuickResponseDataProvider) SetContent(v string) *QuickResponseDataProvider {
+	s.Content = &v
+	return s
+}
+
+// The quick response fields to filter the quick response query results by.
+//
+// The following is the list of supported field names.
+//
+//   - name
+//
+//   - description
+//
+//   - shortcutKey
+//
+//   - isActive
+//
+//   - channels
+//
+//   - language
+//
+//   - contentType
+//
+//   - createdTime
+//
+//   - lastModifiedTime
+//
+//   - lastModifiedBy
+//
+//   - groupingConfiguration.criteria
+//
+//   - groupingConfiguration.values
+type QuickResponseFilterField struct {
+	_ struct{} `type:"structure"`
+
+	// Whether to treat null value as a match for the attribute field.
+	IncludeNoExistence *bool `locationName:"includeNoExistence" type:"boolean"`
+
+	// The name of the attribute field to filter the quick responses by.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The operator to use for filtering.
+	//
+	// Operator is a required field
+	Operator *string `locationName:"operator" type:"string" required:"true" enum:"QuickResponseFilterOperator"`
+
+	// The values of attribute field to filter the quick response by.
+	Values []*string `locationName:"values" min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseFilterField) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseFilterField) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QuickResponseFilterField) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QuickResponseFilterField"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Operator == nil {
+		invalidParams.Add(request.NewErrParamRequired("Operator"))
+	}
+	if s.Values != nil && len(s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIncludeNoExistence sets the IncludeNoExistence field's value.
+func (s *QuickResponseFilterField) SetIncludeNoExistence(v bool) *QuickResponseFilterField {
+	s.IncludeNoExistence = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *QuickResponseFilterField) SetName(v string) *QuickResponseFilterField {
+	s.Name = &v
+	return s
+}
+
+// SetOperator sets the Operator field's value.
+func (s *QuickResponseFilterField) SetOperator(v string) *QuickResponseFilterField {
+	s.Operator = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *QuickResponseFilterField) SetValues(v []*string) *QuickResponseFilterField {
+	s.Values = v
+	return s
+}
+
+// The quick response fields to order the quick response query results by.
+//
+// The following is the list of supported field names.
+//
+//   - name
+//
+//   - description
+//
+//   - shortcutKey
+//
+//   - isActive
+//
+//   - channels
+//
+//   - language
+//
+//   - contentType
+//
+//   - createdTime
+//
+//   - lastModifiedTime
+//
+//   - lastModifiedBy
+//
+//   - groupingConfiguration.criteria
+//
+//   - groupingConfiguration.values
+type QuickResponseOrderField struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the attribute to order the quick response query results by.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The order at which the quick responses are sorted by.
+	Order *string `locationName:"order" type:"string" enum:"Order"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseOrderField) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseOrderField) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QuickResponseOrderField) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QuickResponseOrderField"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *QuickResponseOrderField) SetName(v string) *QuickResponseOrderField {
+	s.Name = &v
+	return s
+}
+
+// SetOrder sets the Order field's value.
+func (s *QuickResponseOrderField) SetOrder(v string) *QuickResponseOrderField {
+	s.Order = &v
+	return s
+}
+
+// The quick response fields to query quick responses by.
+//
+// The following is the list of supported field names.
+//
+//   - content
+//
+//   - name
+//
+//   - description
+//
+//   - shortcutKey
+type QuickResponseQueryField struct {
+	_ struct{} `type:"structure"`
+
+	// Whether the query expects only exact matches on the attribute field values.
+	// The results of the query will only include exact matches if this parameter
+	// is set to false.
+	AllowFuzziness *bool `locationName:"allowFuzziness" type:"boolean"`
+
+	// The name of the attribute to query the quick responses by.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The operator to use for matching attribute field values in the query.
+	//
+	// Operator is a required field
+	Operator *string `locationName:"operator" type:"string" required:"true" enum:"QuickResponseQueryOperator"`
+
+	// The importance of the attribute field when calculating query result relevancy
+	// scores. The value set for this parameter affects the ordering of search results.
+	Priority *string `locationName:"priority" type:"string" enum:"Priority"`
+
+	// The values of the attribute to query the quick responses by.
+	//
+	// Values is a required field
+	Values []*string `locationName:"values" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseQueryField) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseQueryField) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QuickResponseQueryField) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QuickResponseQueryField"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Operator == nil {
+		invalidParams.Add(request.NewErrParamRequired("Operator"))
+	}
+	if s.Values == nil {
+		invalidParams.Add(request.NewErrParamRequired("Values"))
+	}
+	if s.Values != nil && len(s.Values) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Values", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllowFuzziness sets the AllowFuzziness field's value.
+func (s *QuickResponseQueryField) SetAllowFuzziness(v bool) *QuickResponseQueryField {
+	s.AllowFuzziness = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *QuickResponseQueryField) SetName(v string) *QuickResponseQueryField {
+	s.Name = &v
+	return s
+}
+
+// SetOperator sets the Operator field's value.
+func (s *QuickResponseQueryField) SetOperator(v string) *QuickResponseQueryField {
+	s.Operator = &v
+	return s
+}
+
+// SetPriority sets the Priority field's value.
+func (s *QuickResponseQueryField) SetPriority(v string) *QuickResponseQueryField {
+	s.Priority = &v
+	return s
+}
+
+// SetValues sets the Values field's value.
+func (s *QuickResponseQueryField) SetValues(v []*string) *QuickResponseQueryField {
+	s.Values = v
+	return s
+}
+
+// Information about the import job.
+type QuickResponseSearchExpression struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration of filtering rules applied to quick response query results.
+	Filters []*QuickResponseFilterField `locationName:"filters" type:"list"`
+
+	// The quick response attribute fields on which the query results are ordered.
+	OrderOnField *QuickResponseOrderField `locationName:"orderOnField" type:"structure"`
+
+	// The quick response query expressions.
+	Queries []*QuickResponseQueryField `locationName:"queries" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseSearchExpression) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseSearchExpression) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *QuickResponseSearchExpression) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "QuickResponseSearchExpression"}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.OrderOnField != nil {
+		if err := s.OrderOnField.Validate(); err != nil {
+			invalidParams.AddNested("OrderOnField", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Queries != nil {
+		for i, v := range s.Queries {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Queries", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFilters sets the Filters field's value.
+func (s *QuickResponseSearchExpression) SetFilters(v []*QuickResponseFilterField) *QuickResponseSearchExpression {
+	s.Filters = v
+	return s
+}
+
+// SetOrderOnField sets the OrderOnField field's value.
+func (s *QuickResponseSearchExpression) SetOrderOnField(v *QuickResponseOrderField) *QuickResponseSearchExpression {
+	s.OrderOnField = v
+	return s
+}
+
+// SetQueries sets the Queries field's value.
+func (s *QuickResponseSearchExpression) SetQueries(v []*QuickResponseQueryField) *QuickResponseSearchExpression {
+	s.Queries = v
+	return s
+}
+
+// The result of quick response search.
+type QuickResponseSearchResultData struct {
+	_ struct{} `type:"structure"`
+
+	// The user defined contact attributes that are resolved when the search result
+	// is returned.
+	//
+	// AttributesInterpolated is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by QuickResponseSearchResultData's
+	// String and GoString methods.
+	AttributesInterpolated []*string `locationName:"attributesInterpolated" type:"list" sensitive:"true"`
+
+	// The user defined contact attributes that are not resolved when the search
+	// result is returned.
+	//
+	// AttributesNotInterpolated is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by QuickResponseSearchResultData's
+	// String and GoString methods.
+	AttributesNotInterpolated []*string `locationName:"attributesNotInterpolated" type:"list" sensitive:"true"`
+
+	// The Amazon Connect contact channels this quick response applies to. The supported
+	// contact channel types include Chat.
+	Channels []*string `locationName:"channels" type:"list"`
+
+	// The media type of the quick response content.
+	//
+	//    * Use application/x.quickresponse;format=plain for quick response written
+	//    in plain text.
+	//
+	//    * Use application/x.quickresponse;format=markdown for quick response written
+	//    in richtext.
+	//
+	// ContentType is a required field
+	ContentType *string `locationName:"contentType" type:"string" required:"true"`
+
+	// The contents of the quick response.
+	//
+	// Contents is a required field
+	Contents *QuickResponseContents `locationName:"contents" type:"structure" required:"true"`
+
+	// The timestamp when the quick response was created.
+	//
+	// CreatedTime is a required field
+	CreatedTime *time.Time `locationName:"createdTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The description of the quick response.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The configuration information of the user groups that the quick response
+	// is accessible to.
+	GroupingConfiguration *GroupingConfiguration `locationName:"groupingConfiguration" type:"structure"`
+
+	// Whether the quick response is active.
+	//
+	// IsActive is a required field
+	IsActive *bool `locationName:"isActive" type:"boolean" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the knowledge base.
+	//
+	// KnowledgeBaseArn is a required field
+	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The language code value for the language in which the quick response is written.
+	Language *string `locationName:"language" min:"2" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the user who last updated the quick response
+	// search result data.
+	LastModifiedBy *string `locationName:"lastModifiedBy" min:"1" type:"string"`
+
+	// The timestamp when the quick response search result data was last modified.
+	//
+	// LastModifiedTime is a required field
+	LastModifiedTime *time.Time `locationName:"lastModifiedTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The name of the quick response.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the quick response.
+	//
+	// QuickResponseArn is a required field
+	QuickResponseArn *string `locationName:"quickResponseArn" type:"string" required:"true"`
+
+	// The identifier of the quick response.
+	//
+	// QuickResponseId is a required field
+	QuickResponseId *string `locationName:"quickResponseId" type:"string" required:"true"`
+
+	// The shortcut key of the quick response. The value should be unique across
+	// the knowledge base.
+	ShortcutKey *string `locationName:"shortcutKey" min:"1" type:"string"`
+
+	// The resource status of the quick response.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"QuickResponseStatus"`
+
+	// The tags used to organize, track, or control access for this resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseSearchResultData) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseSearchResultData) GoString() string {
+	return s.String()
+}
+
+// SetAttributesInterpolated sets the AttributesInterpolated field's value.
+func (s *QuickResponseSearchResultData) SetAttributesInterpolated(v []*string) *QuickResponseSearchResultData {
+	s.AttributesInterpolated = v
+	return s
+}
+
+// SetAttributesNotInterpolated sets the AttributesNotInterpolated field's value.
+func (s *QuickResponseSearchResultData) SetAttributesNotInterpolated(v []*string) *QuickResponseSearchResultData {
+	s.AttributesNotInterpolated = v
+	return s
+}
+
+// SetChannels sets the Channels field's value.
+func (s *QuickResponseSearchResultData) SetChannels(v []*string) *QuickResponseSearchResultData {
+	s.Channels = v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *QuickResponseSearchResultData) SetContentType(v string) *QuickResponseSearchResultData {
+	s.ContentType = &v
+	return s
+}
+
+// SetContents sets the Contents field's value.
+func (s *QuickResponseSearchResultData) SetContents(v *QuickResponseContents) *QuickResponseSearchResultData {
+	s.Contents = v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *QuickResponseSearchResultData) SetCreatedTime(v time.Time) *QuickResponseSearchResultData {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *QuickResponseSearchResultData) SetDescription(v string) *QuickResponseSearchResultData {
+	s.Description = &v
+	return s
+}
+
+// SetGroupingConfiguration sets the GroupingConfiguration field's value.
+func (s *QuickResponseSearchResultData) SetGroupingConfiguration(v *GroupingConfiguration) *QuickResponseSearchResultData {
+	s.GroupingConfiguration = v
+	return s
+}
+
+// SetIsActive sets the IsActive field's value.
+func (s *QuickResponseSearchResultData) SetIsActive(v bool) *QuickResponseSearchResultData {
+	s.IsActive = &v
+	return s
+}
+
+// SetKnowledgeBaseArn sets the KnowledgeBaseArn field's value.
+func (s *QuickResponseSearchResultData) SetKnowledgeBaseArn(v string) *QuickResponseSearchResultData {
+	s.KnowledgeBaseArn = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *QuickResponseSearchResultData) SetKnowledgeBaseId(v string) *QuickResponseSearchResultData {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *QuickResponseSearchResultData) SetLanguage(v string) *QuickResponseSearchResultData {
+	s.Language = &v
+	return s
+}
+
+// SetLastModifiedBy sets the LastModifiedBy field's value.
+func (s *QuickResponseSearchResultData) SetLastModifiedBy(v string) *QuickResponseSearchResultData {
+	s.LastModifiedBy = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *QuickResponseSearchResultData) SetLastModifiedTime(v time.Time) *QuickResponseSearchResultData {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *QuickResponseSearchResultData) SetName(v string) *QuickResponseSearchResultData {
+	s.Name = &v
+	return s
+}
+
+// SetQuickResponseArn sets the QuickResponseArn field's value.
+func (s *QuickResponseSearchResultData) SetQuickResponseArn(v string) *QuickResponseSearchResultData {
+	s.QuickResponseArn = &v
+	return s
+}
+
+// SetQuickResponseId sets the QuickResponseId field's value.
+func (s *QuickResponseSearchResultData) SetQuickResponseId(v string) *QuickResponseSearchResultData {
+	s.QuickResponseId = &v
+	return s
+}
+
+// SetShortcutKey sets the ShortcutKey field's value.
+func (s *QuickResponseSearchResultData) SetShortcutKey(v string) *QuickResponseSearchResultData {
+	s.ShortcutKey = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *QuickResponseSearchResultData) SetStatus(v string) *QuickResponseSearchResultData {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *QuickResponseSearchResultData) SetTags(v map[string]*string) *QuickResponseSearchResultData {
+	s.Tags = v
+	return s
+}
+
+// The summary information about the quick response.
+type QuickResponseSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Connect contact channels this quick response applies to. The supported
+	// contact channel types include Chat.
+	Channels []*string `locationName:"channels" type:"list"`
+
+	// The media type of the quick response content.
+	//
+	//    * Use application/x.quickresponse;format=plain for quick response written
+	//    in plain text.
+	//
+	//    * Use application/x.quickresponse;format=markdown for quick response written
+	//    in richtext.
+	//
+	// ContentType is a required field
+	ContentType *string `locationName:"contentType" type:"string" required:"true"`
+
+	// The timestamp when the quick response was created.
+	//
+	// CreatedTime is a required field
+	CreatedTime *time.Time `locationName:"createdTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The description of the quick response.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// Whether the quick response is active.
+	IsActive *bool `locationName:"isActive" type:"boolean"`
+
+	// The Amazon Resource Name (ARN) of the knowledge base.
+	//
+	// KnowledgeBaseArn is a required field
+	KnowledgeBaseArn *string `locationName:"knowledgeBaseArn" type:"string" required:"true"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the user who last updated the quick response
+	// data.
+	LastModifiedBy *string `locationName:"lastModifiedBy" min:"1" type:"string"`
+
+	// The timestamp when the quick response summary was last modified.
+	//
+	// LastModifiedTime is a required field
+	LastModifiedTime *time.Time `locationName:"lastModifiedTime" type:"timestamp" timestampFormat:"unixTimestamp" required:"true"`
+
+	// The name of the quick response.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The Amazon Resource Name (ARN) of the quick response.
+	//
+	// QuickResponseArn is a required field
+	QuickResponseArn *string `locationName:"quickResponseArn" type:"string" required:"true"`
+
+	// The identifier of the quick response.
+	//
+	// QuickResponseId is a required field
+	QuickResponseId *string `locationName:"quickResponseId" type:"string" required:"true"`
+
+	// The resource status of the quick response.
+	//
+	// Status is a required field
+	Status *string `locationName:"status" type:"string" required:"true" enum:"QuickResponseStatus"`
+
+	// The tags used to organize, track, or control access for this resource.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s QuickResponseSummary) GoString() string {
+	return s.String()
+}
+
+// SetChannels sets the Channels field's value.
+func (s *QuickResponseSummary) SetChannels(v []*string) *QuickResponseSummary {
+	s.Channels = v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *QuickResponseSummary) SetContentType(v string) *QuickResponseSummary {
+	s.ContentType = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *QuickResponseSummary) SetCreatedTime(v time.Time) *QuickResponseSummary {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *QuickResponseSummary) SetDescription(v string) *QuickResponseSummary {
+	s.Description = &v
+	return s
+}
+
+// SetIsActive sets the IsActive field's value.
+func (s *QuickResponseSummary) SetIsActive(v bool) *QuickResponseSummary {
+	s.IsActive = &v
+	return s
+}
+
+// SetKnowledgeBaseArn sets the KnowledgeBaseArn field's value.
+func (s *QuickResponseSummary) SetKnowledgeBaseArn(v string) *QuickResponseSummary {
+	s.KnowledgeBaseArn = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *QuickResponseSummary) SetKnowledgeBaseId(v string) *QuickResponseSummary {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLastModifiedBy sets the LastModifiedBy field's value.
+func (s *QuickResponseSummary) SetLastModifiedBy(v string) *QuickResponseSummary {
+	s.LastModifiedBy = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *QuickResponseSummary) SetLastModifiedTime(v time.Time) *QuickResponseSummary {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *QuickResponseSummary) SetName(v string) *QuickResponseSummary {
+	s.Name = &v
+	return s
+}
+
+// SetQuickResponseArn sets the QuickResponseArn field's value.
+func (s *QuickResponseSummary) SetQuickResponseArn(v string) *QuickResponseSummary {
+	s.QuickResponseArn = &v
+	return s
+}
+
+// SetQuickResponseId sets the QuickResponseId field's value.
+func (s *QuickResponseSummary) SetQuickResponseId(v string) *QuickResponseSummary {
+	s.QuickResponseId = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *QuickResponseSummary) SetStatus(v string) *QuickResponseSummary {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *QuickResponseSummary) SetTags(v map[string]*string) *QuickResponseSummary {
+	s.Tags = v
+	return s
+}
+
 // Information about the recommendation.
 type RecommendationData struct {
 	_ struct{} `type:"structure"`
@@ -7595,8 +11344,9 @@ func (s *RecommendationTriggerData) SetQuery(v *QueryRecommendationTriggerData) 
 type RemoveKnowledgeBaseTemplateUriInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -7669,8 +11419,8 @@ type RenderingConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// A URI template containing exactly one variable in ${variableName} format.
-	// This can only be set for EXTERNAL knowledge bases. For Salesforce and ServiceNow,
-	// the variable must be one of the following:
+	// This can only be set for EXTERNAL knowledge bases. For Salesforce, ServiceNow,
+	// and Zendesk, the variable must be one of the following:
 	//
 	//    * Salesforce: Id, ArticleNumber, VersionNumber, Title, PublishStatus,
 	//    or IsDeleted
@@ -7678,9 +11428,10 @@ type RenderingConfiguration struct {
 	//    * ServiceNow: number, short_description, sys_mod_count, workflow_state,
 	//    or active
 	//
-	//    <p>The variable is replaced with the actual value for a piece of content
-	//    when calling <a href="https://docs.aws.amazon.com/wisdom/latest/APIReference/API_GetContent.html">GetContent</a>.
-	//    </p>
+	//    * Zendesk: id, title, updated_at, or draft
+	//
+	// The variable is replaced with the actual value for a piece of content when
+	// calling GetContent (https://docs.aws.amazon.com/wisdom/latest/APIReference/API_GetContent.html).
 	TemplateUri *string `locationName:"templateUri" min:"1" type:"string"`
 }
 
@@ -7719,6 +11470,73 @@ func (s *RenderingConfiguration) Validate() error {
 func (s *RenderingConfiguration) SetTemplateUri(v string) *RenderingConfiguration {
 	s.TemplateUri = &v
 	return s
+}
+
+// The request reached the service more than 15 minutes after the date stamp
+// on the request or more than 15 minutes after the request expiration date
+// (such as for pre-signed URLs), or the date stamp on the request is more than
+// 15 minutes in the future.
+type RequestTimeoutException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RequestTimeoutException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RequestTimeoutException) GoString() string {
+	return s.String()
+}
+
+func newErrorRequestTimeoutException(v protocol.ResponseMetadata) error {
+	return &RequestTimeoutException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *RequestTimeoutException) Code() string {
+	return "RequestTimeoutException"
+}
+
+// Message returns the exception's message.
+func (s *RequestTimeoutException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *RequestTimeoutException) OrigErr() error {
+	return nil
+}
+
+func (s *RequestTimeoutException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *RequestTimeoutException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *RequestTimeoutException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // The specified resource does not exist.
@@ -7845,8 +11663,9 @@ func (s *ResultData) SetResultId(v string) *ResultData {
 type SearchContentInput struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -8035,6 +11854,158 @@ func (s *SearchExpression) SetFilters(v []*Filter) *SearchExpression {
 	return s
 }
 
+type SearchQuickResponsesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The user-defined Amazon Connect contact attributes (https://docs.aws.amazon.com/connect/latest/adminguide/connect-attrib-list.html#user-defined-attributes)
+	// to be resolved when search results are returned.
+	//
+	// Attributes is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by SearchQuickResponsesInput's
+	// String and GoString methods.
+	Attributes map[string]*string `locationName:"attributes" type:"map" sensitive:"true"`
+
+	// The identifier of the knowledge base. This should be a QUICK_RESPONSES type
+	// knowledge base. Can be either the ID or the ARN. URLs cannot contain the
+	// ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The maximum number of results to return per page.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+
+	// The search expression for querying the quick response.
+	//
+	// SearchExpression is a required field
+	SearchExpression *QuickResponseSearchExpression `locationName:"searchExpression" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchQuickResponsesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchQuickResponsesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SearchQuickResponsesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SearchQuickResponsesInput"}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.SearchExpression == nil {
+		invalidParams.Add(request.NewErrParamRequired("SearchExpression"))
+	}
+	if s.SearchExpression != nil {
+		if err := s.SearchExpression.Validate(); err != nil {
+			invalidParams.AddNested("SearchExpression", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *SearchQuickResponsesInput) SetAttributes(v map[string]*string) *SearchQuickResponsesInput {
+	s.Attributes = v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *SearchQuickResponsesInput) SetKnowledgeBaseId(v string) *SearchQuickResponsesInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *SearchQuickResponsesInput) SetMaxResults(v int64) *SearchQuickResponsesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *SearchQuickResponsesInput) SetNextToken(v string) *SearchQuickResponsesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSearchExpression sets the SearchExpression field's value.
+func (s *SearchQuickResponsesInput) SetSearchExpression(v *QuickResponseSearchExpression) *SearchQuickResponsesInput {
+	s.SearchExpression = v
+	return s
+}
+
+type SearchQuickResponsesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token for the next set of results. Use the value returned in the previous
+	// response in the next request to retrieve the next set of results.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The results of the quick response search.
+	//
+	// Results is a required field
+	Results []*QuickResponseSearchResultData `locationName:"results" type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchQuickResponsesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SearchQuickResponsesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *SearchQuickResponsesOutput) SetNextToken(v string) *SearchQuickResponsesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResults sets the Results field's value.
+func (s *SearchQuickResponsesOutput) SetResults(v []*QuickResponseSearchResultData) *SearchQuickResponsesOutput {
+	s.Results = v
+	return s
+}
+
 type SearchSessionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -8171,12 +12142,14 @@ func (s *SearchSessionsOutput) SetSessionSummaries(v []*SessionSummary) *SearchS
 	return s
 }
 
-// The KMS key used for encryption.
+// The configuration information for the customer managed key used for encryption.
 type ServerSideEncryptionConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// The KMS key. For information about valid ID values, see Key identifiers (KeyId)
-	// (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id).
+	// The customer managed key used for encryption. For more information about
+	// setting up a customer managed key for Wisdom, see Enable Amazon Connect Wisdom
+	// for your instance (https://docs.aws.amazon.com/connect/latest/adminguide/enable-wisdom.html).
+	// For information about valid ID values, see Key identifiers (KeyId) (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#key-id).
 	KmsKeyId *string `locationName:"kmsKeyId" min:"1" type:"string"`
 }
 
@@ -8290,6 +12263,9 @@ type SessionData struct {
 	// The description of the session.
 	Description *string `locationName:"description" min:"1" type:"string"`
 
+	// The configuration information for the session integration.
+	IntegrationConfiguration *SessionIntegrationConfiguration `locationName:"integrationConfiguration" type:"structure"`
+
 	// The name of the session.
 	//
 	// Name is a required field
@@ -8333,6 +12309,12 @@ func (s *SessionData) SetDescription(v string) *SessionData {
 	return s
 }
 
+// SetIntegrationConfiguration sets the IntegrationConfiguration field's value.
+func (s *SessionData) SetIntegrationConfiguration(v *SessionIntegrationConfiguration) *SessionData {
+	s.IntegrationConfiguration = v
+	return s
+}
+
 // SetName sets the Name field's value.
 func (s *SessionData) SetName(v string) *SessionData {
 	s.Name = &v
@@ -8354,6 +12336,39 @@ func (s *SessionData) SetSessionId(v string) *SessionData {
 // SetTags sets the Tags field's value.
 func (s *SessionData) SetTags(v map[string]*string) *SessionData {
 	s.Tags = v
+	return s
+}
+
+// The configuration information for the session integration.
+type SessionIntegrationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the integrated Amazon SNS topic used for
+	// streaming chat messages.
+	TopicIntegrationArn *string `locationName:"topicIntegrationArn" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SessionIntegrationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SessionIntegrationConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetTopicIntegrationArn sets the TopicIntegrationArn field's value.
+func (s *SessionIntegrationConfiguration) SetTopicIntegrationArn(v string) *SessionIntegrationConfiguration {
+	s.TopicIntegrationArn = &v
 	return s
 }
 
@@ -8480,11 +12495,16 @@ type StartContentUploadInput struct {
 	// ContentType is a required field
 	ContentType *string `locationName:"contentType" type:"string" required:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The expected expiration time of the generated presigned URL, specified in
+	// minutes.
+	PresignedUrlTimeToLive *int64 `locationName:"presignedUrlTimeToLive" min:"1" type:"integer"`
 }
 
 // String returns the string representation.
@@ -8517,6 +12537,9 @@ func (s *StartContentUploadInput) Validate() error {
 	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
 	}
+	if s.PresignedUrlTimeToLive != nil && *s.PresignedUrlTimeToLive < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("PresignedUrlTimeToLive", 1))
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -8533,6 +12556,12 @@ func (s *StartContentUploadInput) SetContentType(v string) *StartContentUploadIn
 // SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
 func (s *StartContentUploadInput) SetKnowledgeBaseId(v string) *StartContentUploadInput {
 	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetPresignedUrlTimeToLive sets the PresignedUrlTimeToLive field's value.
+func (s *StartContentUploadInput) SetPresignedUrlTimeToLive(v int64) *StartContentUploadInput {
+	s.PresignedUrlTimeToLive = &v
 	return s
 }
 
@@ -8603,6 +12632,161 @@ func (s *StartContentUploadOutput) SetUrl(v string) *StartContentUploadOutput {
 // SetUrlExpiry sets the UrlExpiry field's value.
 func (s *StartContentUploadOutput) SetUrlExpiry(v time.Time) *StartContentUploadOutput {
 	s.UrlExpiry = &v
+	return s
+}
+
+type StartImportJobInput struct {
+	_ struct{} `type:"structure"`
+
+	// The tags used to organize, track, or control access for this resource.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The configuration information of the external source that the resource data
+	// are imported from.
+	ExternalSourceConfiguration *ExternalSourceConfiguration `locationName:"externalSourceConfiguration" type:"structure"`
+
+	// The type of the import job.
+	//
+	//    * For importing quick response resource, set the value to QUICK_RESPONSES.
+	//
+	// ImportJobType is a required field
+	ImportJobType *string `locationName:"importJobType" type:"string" required:"true" enum:"ImportJobType"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	//    * For importing Wisdom quick responses, this should be a QUICK_RESPONSES
+	//    type knowledge base.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The metadata fields of the imported Wisdom resources.
+	Metadata map[string]*string `locationName:"metadata" type:"map"`
+
+	// A pointer to the uploaded asset. This value is returned by StartContentUpload
+	// (https://docs.aws.amazon.com/wisdom/latest/APIReference/API_StartContentUpload.html).
+	//
+	// UploadId is a required field
+	UploadId *string `locationName:"uploadId" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartImportJobInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartImportJobInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *StartImportJobInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "StartImportJobInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.ImportJobType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ImportJobType"))
+	}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.UploadId == nil {
+		invalidParams.Add(request.NewErrParamRequired("UploadId"))
+	}
+	if s.UploadId != nil && len(*s.UploadId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("UploadId", 1))
+	}
+	if s.ExternalSourceConfiguration != nil {
+		if err := s.ExternalSourceConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ExternalSourceConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *StartImportJobInput) SetClientToken(v string) *StartImportJobInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetExternalSourceConfiguration sets the ExternalSourceConfiguration field's value.
+func (s *StartImportJobInput) SetExternalSourceConfiguration(v *ExternalSourceConfiguration) *StartImportJobInput {
+	s.ExternalSourceConfiguration = v
+	return s
+}
+
+// SetImportJobType sets the ImportJobType field's value.
+func (s *StartImportJobInput) SetImportJobType(v string) *StartImportJobInput {
+	s.ImportJobType = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *StartImportJobInput) SetKnowledgeBaseId(v string) *StartImportJobInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *StartImportJobInput) SetMetadata(v map[string]*string) *StartImportJobInput {
+	s.Metadata = v
+	return s
+}
+
+// SetUploadId sets the UploadId field's value.
+func (s *StartImportJobInput) SetUploadId(v string) *StartImportJobInput {
+	s.UploadId = &v
+	return s
+}
+
+type StartImportJobOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The import job.
+	ImportJob *ImportJobData `locationName:"importJob" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartImportJobOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s StartImportJobOutput) GoString() string {
+	return s.String()
+}
+
+// SetImportJob sets the ImportJob field's value.
+func (s *StartImportJobOutput) SetImportJob(v *ImportJobData) *StartImportJobOutput {
+	s.ImportJob = v
 	return s
 }
 
@@ -8856,7 +13040,9 @@ type UpdateContentInput struct {
 	// ContentId is a required field
 	ContentId *string `location:"uri" locationName:"contentId" type:"string" required:"true"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -9024,8 +13210,9 @@ func (s *UpdateContentOutput) SetContent(v *ContentData) *UpdateContentOutput {
 type UpdateKnowledgeBaseTemplateUriInput struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier of the knowledge base. Can be either the ID or the ARN. URLs
-	// cannot contain the ARN.
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
 	//
 	// KnowledgeBaseId is a required field
 	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
@@ -9116,6 +13303,245 @@ func (s UpdateKnowledgeBaseTemplateUriOutput) GoString() string {
 // SetKnowledgeBase sets the KnowledgeBase field's value.
 func (s *UpdateKnowledgeBaseTemplateUriOutput) SetKnowledgeBase(v *KnowledgeBaseData) *UpdateKnowledgeBaseTemplateUriOutput {
 	s.KnowledgeBase = v
+	return s
+}
+
+type UpdateQuickResponseInput struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Connect contact channels this quick response applies to. The supported
+	// contact channel types include Chat.
+	Channels []*string `locationName:"channels" type:"list"`
+
+	// The updated content of the quick response.
+	Content *QuickResponseDataProvider `locationName:"content" type:"structure"`
+
+	// The media type of the quick response content.
+	//
+	//    * Use application/x.quickresponse;format=plain for quick response written
+	//    in plain text.
+	//
+	//    * Use application/x.quickresponse;format=markdown for quick response written
+	//    in richtext.
+	ContentType *string `locationName:"contentType" type:"string"`
+
+	// The updated description of the quick response.
+	Description *string `locationName:"description" min:"1" type:"string"`
+
+	// The updated grouping configuration of the quick response.
+	GroupingConfiguration *GroupingConfiguration `locationName:"groupingConfiguration" type:"structure"`
+
+	// Whether the quick response is active.
+	IsActive *bool `locationName:"isActive" type:"boolean"`
+
+	// The identifier of the knowledge base. This should not be a QUICK_RESPONSES
+	// type knowledge base if you're storing Wisdom Content resource to it. Can
+	// be either the ID or the ARN. URLs cannot contain the ARN.
+	//
+	// KnowledgeBaseId is a required field
+	KnowledgeBaseId *string `location:"uri" locationName:"knowledgeBaseId" type:"string" required:"true"`
+
+	// The language code value for the language in which the quick response is written.
+	// The supported language codes include de_DE, en_US, es_ES, fr_FR, id_ID, it_IT,
+	// ja_JP, ko_KR, pt_BR, zh_CN, zh_TW
+	Language *string `locationName:"language" min:"2" type:"string"`
+
+	// The name of the quick response.
+	Name *string `locationName:"name" min:"1" type:"string"`
+
+	// The identifier of the quick response.
+	//
+	// QuickResponseId is a required field
+	QuickResponseId *string `location:"uri" locationName:"quickResponseId" type:"string" required:"true"`
+
+	// Whether to remove the description from the quick response.
+	RemoveDescription *bool `locationName:"removeDescription" type:"boolean"`
+
+	// Whether to remove the grouping configuration of the quick response.
+	RemoveGroupingConfiguration *bool `locationName:"removeGroupingConfiguration" type:"boolean"`
+
+	// Whether to remove the shortcut key of the quick response.
+	RemoveShortcutKey *bool `locationName:"removeShortcutKey" type:"boolean"`
+
+	// The shortcut key of the quick response. The value should be unique across
+	// the knowledge base.
+	ShortcutKey *string `locationName:"shortcutKey" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateQuickResponseInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateQuickResponseInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateQuickResponseInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateQuickResponseInput"}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.KnowledgeBaseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("KnowledgeBaseId"))
+	}
+	if s.KnowledgeBaseId != nil && len(*s.KnowledgeBaseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("KnowledgeBaseId", 1))
+	}
+	if s.Language != nil && len(*s.Language) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("Language", 2))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.QuickResponseId == nil {
+		invalidParams.Add(request.NewErrParamRequired("QuickResponseId"))
+	}
+	if s.QuickResponseId != nil && len(*s.QuickResponseId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("QuickResponseId", 1))
+	}
+	if s.ShortcutKey != nil && len(*s.ShortcutKey) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ShortcutKey", 1))
+	}
+	if s.Content != nil {
+		if err := s.Content.Validate(); err != nil {
+			invalidParams.AddNested("Content", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.GroupingConfiguration != nil {
+		if err := s.GroupingConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("GroupingConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetChannels sets the Channels field's value.
+func (s *UpdateQuickResponseInput) SetChannels(v []*string) *UpdateQuickResponseInput {
+	s.Channels = v
+	return s
+}
+
+// SetContent sets the Content field's value.
+func (s *UpdateQuickResponseInput) SetContent(v *QuickResponseDataProvider) *UpdateQuickResponseInput {
+	s.Content = v
+	return s
+}
+
+// SetContentType sets the ContentType field's value.
+func (s *UpdateQuickResponseInput) SetContentType(v string) *UpdateQuickResponseInput {
+	s.ContentType = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateQuickResponseInput) SetDescription(v string) *UpdateQuickResponseInput {
+	s.Description = &v
+	return s
+}
+
+// SetGroupingConfiguration sets the GroupingConfiguration field's value.
+func (s *UpdateQuickResponseInput) SetGroupingConfiguration(v *GroupingConfiguration) *UpdateQuickResponseInput {
+	s.GroupingConfiguration = v
+	return s
+}
+
+// SetIsActive sets the IsActive field's value.
+func (s *UpdateQuickResponseInput) SetIsActive(v bool) *UpdateQuickResponseInput {
+	s.IsActive = &v
+	return s
+}
+
+// SetKnowledgeBaseId sets the KnowledgeBaseId field's value.
+func (s *UpdateQuickResponseInput) SetKnowledgeBaseId(v string) *UpdateQuickResponseInput {
+	s.KnowledgeBaseId = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *UpdateQuickResponseInput) SetLanguage(v string) *UpdateQuickResponseInput {
+	s.Language = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateQuickResponseInput) SetName(v string) *UpdateQuickResponseInput {
+	s.Name = &v
+	return s
+}
+
+// SetQuickResponseId sets the QuickResponseId field's value.
+func (s *UpdateQuickResponseInput) SetQuickResponseId(v string) *UpdateQuickResponseInput {
+	s.QuickResponseId = &v
+	return s
+}
+
+// SetRemoveDescription sets the RemoveDescription field's value.
+func (s *UpdateQuickResponseInput) SetRemoveDescription(v bool) *UpdateQuickResponseInput {
+	s.RemoveDescription = &v
+	return s
+}
+
+// SetRemoveGroupingConfiguration sets the RemoveGroupingConfiguration field's value.
+func (s *UpdateQuickResponseInput) SetRemoveGroupingConfiguration(v bool) *UpdateQuickResponseInput {
+	s.RemoveGroupingConfiguration = &v
+	return s
+}
+
+// SetRemoveShortcutKey sets the RemoveShortcutKey field's value.
+func (s *UpdateQuickResponseInput) SetRemoveShortcutKey(v bool) *UpdateQuickResponseInput {
+	s.RemoveShortcutKey = &v
+	return s
+}
+
+// SetShortcutKey sets the ShortcutKey field's value.
+func (s *UpdateQuickResponseInput) SetShortcutKey(v string) *UpdateQuickResponseInput {
+	s.ShortcutKey = &v
+	return s
+}
+
+type UpdateQuickResponseOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The quick response.
+	QuickResponse *QuickResponseData `locationName:"quickResponse" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateQuickResponseOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateQuickResponseOutput) GoString() string {
+	return s.String()
+}
+
+// SetQuickResponse sets the QuickResponse field's value.
+func (s *UpdateQuickResponseOutput) SetQuickResponse(v *QuickResponseData) *UpdateQuickResponseOutput {
+	s.QuickResponse = v
 	return s
 }
 
@@ -9276,6 +13702,18 @@ func ContentStatus_Values() []string {
 }
 
 const (
+	// ExternalSourceAmazonConnect is a ExternalSource enum value
+	ExternalSourceAmazonConnect = "AMAZON_CONNECT"
+)
+
+// ExternalSource_Values returns all elements of the ExternalSource enum
+func ExternalSource_Values() []string {
+	return []string{
+		ExternalSourceAmazonConnect,
+	}
+}
+
+const (
 	// FilterFieldName is a FilterField enum value
 	FilterFieldName = "NAME"
 )
@@ -9296,6 +13734,50 @@ const (
 func FilterOperator_Values() []string {
 	return []string{
 		FilterOperatorEquals,
+	}
+}
+
+const (
+	// ImportJobStatusStartInProgress is a ImportJobStatus enum value
+	ImportJobStatusStartInProgress = "START_IN_PROGRESS"
+
+	// ImportJobStatusFailed is a ImportJobStatus enum value
+	ImportJobStatusFailed = "FAILED"
+
+	// ImportJobStatusComplete is a ImportJobStatus enum value
+	ImportJobStatusComplete = "COMPLETE"
+
+	// ImportJobStatusDeleteInProgress is a ImportJobStatus enum value
+	ImportJobStatusDeleteInProgress = "DELETE_IN_PROGRESS"
+
+	// ImportJobStatusDeleteFailed is a ImportJobStatus enum value
+	ImportJobStatusDeleteFailed = "DELETE_FAILED"
+
+	// ImportJobStatusDeleted is a ImportJobStatus enum value
+	ImportJobStatusDeleted = "DELETED"
+)
+
+// ImportJobStatus_Values returns all elements of the ImportJobStatus enum
+func ImportJobStatus_Values() []string {
+	return []string{
+		ImportJobStatusStartInProgress,
+		ImportJobStatusFailed,
+		ImportJobStatusComplete,
+		ImportJobStatusDeleteInProgress,
+		ImportJobStatusDeleteFailed,
+		ImportJobStatusDeleted,
+	}
+}
+
+const (
+	// ImportJobTypeQuickResponses is a ImportJobType enum value
+	ImportJobTypeQuickResponses = "QUICK_RESPONSES"
+)
+
+// ImportJobType_Values returns all elements of the ImportJobType enum
+func ImportJobType_Values() []string {
+	return []string{
+		ImportJobTypeQuickResponses,
 	}
 }
 
@@ -9337,6 +13819,9 @@ const (
 
 	// KnowledgeBaseTypeCustom is a KnowledgeBaseType enum value
 	KnowledgeBaseTypeCustom = "CUSTOM"
+
+	// KnowledgeBaseTypeQuickResponses is a KnowledgeBaseType enum value
+	KnowledgeBaseTypeQuickResponses = "QUICK_RESPONSES"
 )
 
 // KnowledgeBaseType_Values returns all elements of the KnowledgeBaseType enum
@@ -9344,6 +13829,115 @@ func KnowledgeBaseType_Values() []string {
 	return []string{
 		KnowledgeBaseTypeExternal,
 		KnowledgeBaseTypeCustom,
+		KnowledgeBaseTypeQuickResponses,
+	}
+}
+
+const (
+	// OrderAsc is a Order enum value
+	OrderAsc = "ASC"
+
+	// OrderDesc is a Order enum value
+	OrderDesc = "DESC"
+)
+
+// Order_Values returns all elements of the Order enum
+func Order_Values() []string {
+	return []string{
+		OrderAsc,
+		OrderDesc,
+	}
+}
+
+const (
+	// PriorityHigh is a Priority enum value
+	PriorityHigh = "HIGH"
+
+	// PriorityMedium is a Priority enum value
+	PriorityMedium = "MEDIUM"
+
+	// PriorityLow is a Priority enum value
+	PriorityLow = "LOW"
+)
+
+// Priority_Values returns all elements of the Priority enum
+func Priority_Values() []string {
+	return []string{
+		PriorityHigh,
+		PriorityMedium,
+		PriorityLow,
+	}
+}
+
+const (
+	// QuickResponseFilterOperatorEquals is a QuickResponseFilterOperator enum value
+	QuickResponseFilterOperatorEquals = "EQUALS"
+
+	// QuickResponseFilterOperatorPrefix is a QuickResponseFilterOperator enum value
+	QuickResponseFilterOperatorPrefix = "PREFIX"
+)
+
+// QuickResponseFilterOperator_Values returns all elements of the QuickResponseFilterOperator enum
+func QuickResponseFilterOperator_Values() []string {
+	return []string{
+		QuickResponseFilterOperatorEquals,
+		QuickResponseFilterOperatorPrefix,
+	}
+}
+
+const (
+	// QuickResponseQueryOperatorContains is a QuickResponseQueryOperator enum value
+	QuickResponseQueryOperatorContains = "CONTAINS"
+
+	// QuickResponseQueryOperatorContainsAndPrefix is a QuickResponseQueryOperator enum value
+	QuickResponseQueryOperatorContainsAndPrefix = "CONTAINS_AND_PREFIX"
+)
+
+// QuickResponseQueryOperator_Values returns all elements of the QuickResponseQueryOperator enum
+func QuickResponseQueryOperator_Values() []string {
+	return []string{
+		QuickResponseQueryOperatorContains,
+		QuickResponseQueryOperatorContainsAndPrefix,
+	}
+}
+
+const (
+	// QuickResponseStatusCreateInProgress is a QuickResponseStatus enum value
+	QuickResponseStatusCreateInProgress = "CREATE_IN_PROGRESS"
+
+	// QuickResponseStatusCreateFailed is a QuickResponseStatus enum value
+	QuickResponseStatusCreateFailed = "CREATE_FAILED"
+
+	// QuickResponseStatusCreated is a QuickResponseStatus enum value
+	QuickResponseStatusCreated = "CREATED"
+
+	// QuickResponseStatusDeleteInProgress is a QuickResponseStatus enum value
+	QuickResponseStatusDeleteInProgress = "DELETE_IN_PROGRESS"
+
+	// QuickResponseStatusDeleteFailed is a QuickResponseStatus enum value
+	QuickResponseStatusDeleteFailed = "DELETE_FAILED"
+
+	// QuickResponseStatusDeleted is a QuickResponseStatus enum value
+	QuickResponseStatusDeleted = "DELETED"
+
+	// QuickResponseStatusUpdateInProgress is a QuickResponseStatus enum value
+	QuickResponseStatusUpdateInProgress = "UPDATE_IN_PROGRESS"
+
+	// QuickResponseStatusUpdateFailed is a QuickResponseStatus enum value
+	QuickResponseStatusUpdateFailed = "UPDATE_FAILED"
+)
+
+// QuickResponseStatus_Values returns all elements of the QuickResponseStatus enum
+func QuickResponseStatus_Values() []string {
+	return []string{
+		QuickResponseStatusCreateInProgress,
+		QuickResponseStatusCreateFailed,
+		QuickResponseStatusCreated,
+		QuickResponseStatusDeleteInProgress,
+		QuickResponseStatusDeleteFailed,
+		QuickResponseStatusDeleted,
+		QuickResponseStatusUpdateInProgress,
+		QuickResponseStatusUpdateFailed,
 	}
 }
 

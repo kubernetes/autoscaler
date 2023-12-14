@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a WorkMailMessageFlow client from just a session.
-//     svc := workmailmessageflow.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a WorkMailMessageFlow client with additional configuration
-//     svc := workmailmessageflow.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a WorkMailMessageFlow client from just a session.
+//	svc := workmailmessageflow.New(mySession)
+//
+//	// Create a WorkMailMessageFlow client with additional configuration
+//	svc := workmailmessageflow.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *WorkMailMessageFlow {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Marketplace Entitlement Service.
-//    func myFunc(svc marketplaceentitlementserviceiface.MarketplaceEntitlementServiceAPI) bool {
-//        // Make svc.GetEntitlements request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Marketplace Entitlement Service.
+//	func myFunc(svc marketplaceentitlementserviceiface.MarketplaceEntitlementServiceAPI) bool {
+//	    // Make svc.GetEntitlements request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := marketplaceentitlementservice.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := marketplaceentitlementservice.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockMarketplaceEntitlementServiceClient struct {
-//        marketplaceentitlementserviceiface.MarketplaceEntitlementServiceAPI
-//    }
-//    func (m *mockMarketplaceEntitlementServiceClient) GetEntitlements(input *marketplaceentitlementservice.GetEntitlementsInput) (*marketplaceentitlementservice.GetEntitlementsOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockMarketplaceEntitlementServiceClient struct {
+//	    marketplaceentitlementserviceiface.MarketplaceEntitlementServiceAPI
+//	}
+//	func (m *mockMarketplaceEntitlementServiceClient) GetEntitlements(input *marketplaceentitlementservice.GetEntitlementsInput) (*marketplaceentitlementservice.GetEntitlementsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockMarketplaceEntitlementServiceClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockMarketplaceEntitlementServiceClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -63,6 +63,9 @@ type MarketplaceEntitlementServiceAPI interface {
 	GetEntitlements(*marketplaceentitlementservice.GetEntitlementsInput) (*marketplaceentitlementservice.GetEntitlementsOutput, error)
 	GetEntitlementsWithContext(aws.Context, *marketplaceentitlementservice.GetEntitlementsInput, ...request.Option) (*marketplaceentitlementservice.GetEntitlementsOutput, error)
 	GetEntitlementsRequest(*marketplaceentitlementservice.GetEntitlementsInput) (*request.Request, *marketplaceentitlementservice.GetEntitlementsOutput)
+
+	GetEntitlementsPages(*marketplaceentitlementservice.GetEntitlementsInput, func(*marketplaceentitlementservice.GetEntitlementsOutput, bool) bool) error
+	GetEntitlementsPagesWithContext(aws.Context, *marketplaceentitlementservice.GetEntitlementsInput, func(*marketplaceentitlementservice.GetEntitlementsOutput, bool) bool, ...request.Option) error
 }
 
 var _ MarketplaceEntitlementServiceAPI = (*marketplaceentitlementservice.MarketplaceEntitlementService)(nil)

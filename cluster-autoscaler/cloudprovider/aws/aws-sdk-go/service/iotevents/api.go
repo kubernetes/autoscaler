@@ -29,14 +29,13 @@ const opCreateAlarmModel = "CreateAlarmModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAlarmModelRequest method.
+//	req, resp := client.CreateAlarmModelRequest(params)
 //
-//    // Example sending a request using the CreateAlarmModelRequest method.
-//    req, resp := client.CreateAlarmModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/CreateAlarmModel
 func (c *IoTEvents) CreateAlarmModelRequest(input *CreateAlarmModelInput) (req *request.Request, output *CreateAlarmModelOutput) {
@@ -70,26 +69,27 @@ func (c *IoTEvents) CreateAlarmModelRequest(input *CreateAlarmModelInput) (req *
 // API operation CreateAlarmModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * LimitExceededException
-//   A limit was exceeded.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - LimitExceededException
+//     A limit was exceeded.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/CreateAlarmModel
 func (c *IoTEvents) CreateAlarmModel(input *CreateAlarmModelInput) (*CreateAlarmModelOutput, error) {
@@ -129,14 +129,13 @@ const opCreateDetectorModel = "CreateDetectorModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDetectorModelRequest method.
+//	req, resp := client.CreateDetectorModelRequest(params)
 //
-//    // Example sending a request using the CreateDetectorModelRequest method.
-//    req, resp := client.CreateDetectorModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/CreateDetectorModel
 func (c *IoTEvents) CreateDetectorModelRequest(input *CreateDetectorModelInput) (req *request.Request, output *CreateDetectorModelOutput) {
@@ -167,26 +166,27 @@ func (c *IoTEvents) CreateDetectorModelRequest(input *CreateDetectorModelInput) 
 // API operation CreateDetectorModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * LimitExceededException
-//   A limit was exceeded.
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - LimitExceededException
+//     A limit was exceeded.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/CreateDetectorModel
 func (c *IoTEvents) CreateDetectorModel(input *CreateDetectorModelInput) (*CreateDetectorModelOutput, error) {
@@ -226,14 +226,13 @@ const opCreateInput = "CreateInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateInputRequest method.
+//	req, resp := client.CreateInputRequest(params)
 //
-//    // Example sending a request using the CreateInputRequest method.
-//    req, resp := client.CreateInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/CreateInput
 func (c *IoTEvents) CreateInputRequest(input *CreateInputInput) (req *request.Request, output *CreateInputOutput) {
@@ -264,20 +263,21 @@ func (c *IoTEvents) CreateInputRequest(input *CreateInputInput) (req *request.Re
 // API operation CreateInput for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ResourceAlreadyExistsException
-//   The resource already exists.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ResourceAlreadyExistsException
+//     The resource already exists.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/CreateInput
 func (c *IoTEvents) CreateInput(input *CreateInputInput) (*CreateInputOutput, error) {
@@ -317,14 +317,13 @@ const opDeleteAlarmModel = "DeleteAlarmModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAlarmModelRequest method.
+//	req, resp := client.DeleteAlarmModelRequest(params)
 //
-//    // Example sending a request using the DeleteAlarmModelRequest method.
-//    req, resp := client.DeleteAlarmModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DeleteAlarmModel
 func (c *IoTEvents) DeleteAlarmModelRequest(input *DeleteAlarmModelInput) (req *request.Request, output *DeleteAlarmModelOutput) {
@@ -357,23 +356,24 @@ func (c *IoTEvents) DeleteAlarmModelRequest(input *DeleteAlarmModelInput) (req *
 // API operation DeleteAlarmModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DeleteAlarmModel
 func (c *IoTEvents) DeleteAlarmModel(input *DeleteAlarmModelInput) (*DeleteAlarmModelOutput, error) {
@@ -413,14 +413,13 @@ const opDeleteDetectorModel = "DeleteDetectorModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDetectorModelRequest method.
+//	req, resp := client.DeleteDetectorModelRequest(params)
 //
-//    // Example sending a request using the DeleteDetectorModelRequest method.
-//    req, resp := client.DeleteDetectorModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DeleteDetectorModel
 func (c *IoTEvents) DeleteDetectorModelRequest(input *DeleteDetectorModelInput) (req *request.Request, output *DeleteDetectorModelOutput) {
@@ -453,23 +452,24 @@ func (c *IoTEvents) DeleteDetectorModelRequest(input *DeleteDetectorModelInput) 
 // API operation DeleteDetectorModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DeleteDetectorModel
 func (c *IoTEvents) DeleteDetectorModel(input *DeleteDetectorModelInput) (*DeleteDetectorModelOutput, error) {
@@ -509,14 +509,13 @@ const opDeleteInput = "DeleteInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteInputRequest method.
+//	req, resp := client.DeleteInputRequest(params)
 //
-//    // Example sending a request using the DeleteInputRequest method.
-//    req, resp := client.DeleteInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DeleteInput
 func (c *IoTEvents) DeleteInputRequest(input *DeleteInputInput) (req *request.Request, output *DeleteInputOutput) {
@@ -548,23 +547,24 @@ func (c *IoTEvents) DeleteInputRequest(input *DeleteInputInput) (req *request.Re
 // API operation DeleteInput for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ResourceInUseException
+//     The resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DeleteInput
 func (c *IoTEvents) DeleteInput(input *DeleteInputInput) (*DeleteInputOutput, error) {
@@ -604,14 +604,13 @@ const opDescribeAlarmModel = "DescribeAlarmModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAlarmModelRequest method.
+//	req, resp := client.DescribeAlarmModelRequest(params)
 //
-//    // Example sending a request using the DescribeAlarmModelRequest method.
-//    req, resp := client.DescribeAlarmModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeAlarmModel
 func (c *IoTEvents) DescribeAlarmModelRequest(input *DescribeAlarmModelInput) (req *request.Request, output *DescribeAlarmModelOutput) {
@@ -643,20 +642,21 @@ func (c *IoTEvents) DescribeAlarmModelRequest(input *DescribeAlarmModelInput) (r
 // API operation DescribeAlarmModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeAlarmModel
 func (c *IoTEvents) DescribeAlarmModel(input *DescribeAlarmModelInput) (*DescribeAlarmModelOutput, error) {
@@ -696,14 +696,13 @@ const opDescribeDetectorModel = "DescribeDetectorModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDetectorModelRequest method.
+//	req, resp := client.DescribeDetectorModelRequest(params)
 //
-//    // Example sending a request using the DescribeDetectorModelRequest method.
-//    req, resp := client.DescribeDetectorModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeDetectorModel
 func (c *IoTEvents) DescribeDetectorModelRequest(input *DescribeDetectorModelInput) (req *request.Request, output *DescribeDetectorModelOutput) {
@@ -735,20 +734,21 @@ func (c *IoTEvents) DescribeDetectorModelRequest(input *DescribeDetectorModelInp
 // API operation DescribeDetectorModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeDetectorModel
 func (c *IoTEvents) DescribeDetectorModel(input *DescribeDetectorModelInput) (*DescribeDetectorModelOutput, error) {
@@ -788,14 +788,13 @@ const opDescribeDetectorModelAnalysis = "DescribeDetectorModelAnalysis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDetectorModelAnalysisRequest method.
+//	req, resp := client.DescribeDetectorModelAnalysisRequest(params)
 //
-//    // Example sending a request using the DescribeDetectorModelAnalysisRequest method.
-//    req, resp := client.DescribeDetectorModelAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeDetectorModelAnalysis
 func (c *IoTEvents) DescribeDetectorModelAnalysisRequest(input *DescribeDetectorModelAnalysisInput) (req *request.Request, output *DescribeDetectorModelAnalysisOutput) {
@@ -829,20 +828,21 @@ func (c *IoTEvents) DescribeDetectorModelAnalysisRequest(input *DescribeDetector
 // API operation DescribeDetectorModelAnalysis for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeDetectorModelAnalysis
 func (c *IoTEvents) DescribeDetectorModelAnalysis(input *DescribeDetectorModelAnalysisInput) (*DescribeDetectorModelAnalysisOutput, error) {
@@ -882,14 +882,13 @@ const opDescribeInput = "DescribeInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeInputRequest method.
+//	req, resp := client.DescribeInputRequest(params)
 //
-//    // Example sending a request using the DescribeInputRequest method.
-//    req, resp := client.DescribeInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeInput
 func (c *IoTEvents) DescribeInputRequest(input *DescribeInputInput) (req *request.Request, output *DescribeInputOutput) {
@@ -920,20 +919,21 @@ func (c *IoTEvents) DescribeInputRequest(input *DescribeInputInput) (req *reques
 // API operation DescribeInput for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeInput
 func (c *IoTEvents) DescribeInput(input *DescribeInputInput) (*DescribeInputOutput, error) {
@@ -973,14 +973,13 @@ const opDescribeLoggingOptions = "DescribeLoggingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeLoggingOptionsRequest method.
+//	req, resp := client.DescribeLoggingOptionsRequest(params)
 //
-//    // Example sending a request using the DescribeLoggingOptionsRequest method.
-//    req, resp := client.DescribeLoggingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeLoggingOptions
 func (c *IoTEvents) DescribeLoggingOptionsRequest(input *DescribeLoggingOptionsInput) (req *request.Request, output *DescribeLoggingOptionsOutput) {
@@ -1011,23 +1010,24 @@ func (c *IoTEvents) DescribeLoggingOptionsRequest(input *DescribeLoggingOptionsI
 // API operation DescribeLoggingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * UnsupportedOperationException
-//   The requested operation is not supported.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - UnsupportedOperationException
+//     The requested operation is not supported.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/DescribeLoggingOptions
 func (c *IoTEvents) DescribeLoggingOptions(input *DescribeLoggingOptionsInput) (*DescribeLoggingOptionsOutput, error) {
@@ -1067,14 +1067,13 @@ const opGetDetectorModelAnalysisResults = "GetDetectorModelAnalysisResults"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDetectorModelAnalysisResultsRequest method.
+//	req, resp := client.GetDetectorModelAnalysisResultsRequest(params)
 //
-//    // Example sending a request using the GetDetectorModelAnalysisResultsRequest method.
-//    req, resp := client.GetDetectorModelAnalysisResultsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/GetDetectorModelAnalysisResults
 func (c *IoTEvents) GetDetectorModelAnalysisResultsRequest(input *GetDetectorModelAnalysisResultsInput) (req *request.Request, output *GetDetectorModelAnalysisResultsOutput) {
@@ -1108,20 +1107,21 @@ func (c *IoTEvents) GetDetectorModelAnalysisResultsRequest(input *GetDetectorMod
 // API operation GetDetectorModelAnalysisResults for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/GetDetectorModelAnalysisResults
 func (c *IoTEvents) GetDetectorModelAnalysisResults(input *GetDetectorModelAnalysisResultsInput) (*GetDetectorModelAnalysisResultsOutput, error) {
@@ -1161,14 +1161,13 @@ const opListAlarmModelVersions = "ListAlarmModelVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAlarmModelVersionsRequest method.
+//	req, resp := client.ListAlarmModelVersionsRequest(params)
 //
-//    // Example sending a request using the ListAlarmModelVersionsRequest method.
-//    req, resp := client.ListAlarmModelVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListAlarmModelVersions
 func (c *IoTEvents) ListAlarmModelVersionsRequest(input *ListAlarmModelVersionsInput) (req *request.Request, output *ListAlarmModelVersionsOutput) {
@@ -1200,20 +1199,21 @@ func (c *IoTEvents) ListAlarmModelVersionsRequest(input *ListAlarmModelVersionsI
 // API operation ListAlarmModelVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListAlarmModelVersions
 func (c *IoTEvents) ListAlarmModelVersions(input *ListAlarmModelVersionsInput) (*ListAlarmModelVersionsOutput, error) {
@@ -1253,14 +1253,13 @@ const opListAlarmModels = "ListAlarmModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAlarmModelsRequest method.
+//	req, resp := client.ListAlarmModelsRequest(params)
 //
-//    // Example sending a request using the ListAlarmModelsRequest method.
-//    req, resp := client.ListAlarmModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListAlarmModels
 func (c *IoTEvents) ListAlarmModelsRequest(input *ListAlarmModelsInput) (req *request.Request, output *ListAlarmModelsOutput) {
@@ -1292,17 +1291,18 @@ func (c *IoTEvents) ListAlarmModelsRequest(input *ListAlarmModelsInput) (req *re
 // API operation ListAlarmModels for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListAlarmModels
 func (c *IoTEvents) ListAlarmModels(input *ListAlarmModelsInput) (*ListAlarmModelsOutput, error) {
@@ -1342,14 +1342,13 @@ const opListDetectorModelVersions = "ListDetectorModelVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDetectorModelVersionsRequest method.
+//	req, resp := client.ListDetectorModelVersionsRequest(params)
 //
-//    // Example sending a request using the ListDetectorModelVersionsRequest method.
-//    req, resp := client.ListDetectorModelVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListDetectorModelVersions
 func (c *IoTEvents) ListDetectorModelVersionsRequest(input *ListDetectorModelVersionsInput) (req *request.Request, output *ListDetectorModelVersionsOutput) {
@@ -1381,20 +1380,21 @@ func (c *IoTEvents) ListDetectorModelVersionsRequest(input *ListDetectorModelVer
 // API operation ListDetectorModelVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListDetectorModelVersions
 func (c *IoTEvents) ListDetectorModelVersions(input *ListDetectorModelVersionsInput) (*ListDetectorModelVersionsOutput, error) {
@@ -1434,14 +1434,13 @@ const opListDetectorModels = "ListDetectorModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListDetectorModelsRequest method.
+//	req, resp := client.ListDetectorModelsRequest(params)
 //
-//    // Example sending a request using the ListDetectorModelsRequest method.
-//    req, resp := client.ListDetectorModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListDetectorModels
 func (c *IoTEvents) ListDetectorModelsRequest(input *ListDetectorModelsInput) (req *request.Request, output *ListDetectorModelsOutput) {
@@ -1473,17 +1472,18 @@ func (c *IoTEvents) ListDetectorModelsRequest(input *ListDetectorModelsInput) (r
 // API operation ListDetectorModels for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListDetectorModels
 func (c *IoTEvents) ListDetectorModels(input *ListDetectorModelsInput) (*ListDetectorModelsOutput, error) {
@@ -1523,14 +1523,13 @@ const opListInputRoutings = "ListInputRoutings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInputRoutingsRequest method.
+//	req, resp := client.ListInputRoutingsRequest(params)
 //
-//    // Example sending a request using the ListInputRoutingsRequest method.
-//    req, resp := client.ListInputRoutingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListInputRoutings
 func (c *IoTEvents) ListInputRoutingsRequest(input *ListInputRoutingsInput) (req *request.Request, output *ListInputRoutingsOutput) {
@@ -1561,20 +1560,21 @@ func (c *IoTEvents) ListInputRoutingsRequest(input *ListInputRoutingsInput) (req
 // API operation ListInputRoutings for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListInputRoutings
 func (c *IoTEvents) ListInputRoutings(input *ListInputRoutingsInput) (*ListInputRoutingsOutput, error) {
@@ -1614,14 +1614,13 @@ const opListInputs = "ListInputs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListInputsRequest method.
+//	req, resp := client.ListInputsRequest(params)
 //
-//    // Example sending a request using the ListInputsRequest method.
-//    req, resp := client.ListInputsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListInputs
 func (c *IoTEvents) ListInputsRequest(input *ListInputsInput) (req *request.Request, output *ListInputsOutput) {
@@ -1652,17 +1651,18 @@ func (c *IoTEvents) ListInputsRequest(input *ListInputsInput) (req *request.Requ
 // API operation ListInputs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListInputs
 func (c *IoTEvents) ListInputs(input *ListInputsInput) (*ListInputsOutput, error) {
@@ -1702,14 +1702,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListTagsForResource
 func (c *IoTEvents) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1740,20 +1739,21 @@ func (c *IoTEvents) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
+//
+//   - InternalFailureException
+//     An internal failure occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/ListTagsForResource
 func (c *IoTEvents) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1793,14 +1793,13 @@ const opPutLoggingOptions = "PutLoggingOptions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutLoggingOptionsRequest method.
+//	req, resp := client.PutLoggingOptionsRequest(params)
 //
-//    // Example sending a request using the PutLoggingOptionsRequest method.
-//    req, resp := client.PutLoggingOptionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/PutLoggingOptions
 func (c *IoTEvents) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (req *request.Request, output *PutLoggingOptionsOutput) {
@@ -1837,23 +1836,24 @@ func (c *IoTEvents) PutLoggingOptionsRequest(input *PutLoggingOptionsInput) (req
 // API operation PutLoggingOptions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * UnsupportedOperationException
-//   The requested operation is not supported.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - UnsupportedOperationException
+//     The requested operation is not supported.
+//
+//   - ResourceInUseException
+//     The resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/PutLoggingOptions
 func (c *IoTEvents) PutLoggingOptions(input *PutLoggingOptionsInput) (*PutLoggingOptionsOutput, error) {
@@ -1893,14 +1893,13 @@ const opStartDetectorModelAnalysis = "StartDetectorModelAnalysis"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartDetectorModelAnalysisRequest method.
+//	req, resp := client.StartDetectorModelAnalysisRequest(params)
 //
-//    // Example sending a request using the StartDetectorModelAnalysisRequest method.
-//    req, resp := client.StartDetectorModelAnalysisRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/StartDetectorModelAnalysis
 func (c *IoTEvents) StartDetectorModelAnalysisRequest(input *StartDetectorModelAnalysisInput) (req *request.Request, output *StartDetectorModelAnalysisOutput) {
@@ -1933,20 +1932,21 @@ func (c *IoTEvents) StartDetectorModelAnalysisRequest(input *StartDetectorModelA
 // API operation StartDetectorModelAnalysis for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * LimitExceededException
-//   A limit was exceeded.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - LimitExceededException
+//     A limit was exceeded.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/StartDetectorModelAnalysis
 func (c *IoTEvents) StartDetectorModelAnalysis(input *StartDetectorModelAnalysisInput) (*StartDetectorModelAnalysisOutput, error) {
@@ -1986,14 +1986,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/TagResource
 func (c *IoTEvents) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2026,23 +2025,24 @@ func (c *IoTEvents) TagResourceRequest(input *TagResourceInput) (req *request.Re
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * LimitExceededException
-//   A limit was exceeded.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - LimitExceededException
+//     A limit was exceeded.
+//
+//   - InternalFailureException
+//     An internal failure occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/TagResource
 func (c *IoTEvents) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2082,14 +2082,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UntagResource
 func (c *IoTEvents) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2121,20 +2120,21 @@ func (c *IoTEvents) UntagResourceRequest(input *UntagResourceInput) (req *reques
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
+//
+//   - InternalFailureException
+//     An internal failure occurred.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UntagResource
 func (c *IoTEvents) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2174,14 +2174,13 @@ const opUpdateAlarmModel = "UpdateAlarmModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAlarmModelRequest method.
+//	req, resp := client.UpdateAlarmModelRequest(params)
 //
-//    // Example sending a request using the UpdateAlarmModelRequest method.
-//    req, resp := client.UpdateAlarmModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UpdateAlarmModel
 func (c *IoTEvents) UpdateAlarmModelRequest(input *UpdateAlarmModelInput) (req *request.Request, output *UpdateAlarmModelOutput) {
@@ -2213,23 +2212,24 @@ func (c *IoTEvents) UpdateAlarmModelRequest(input *UpdateAlarmModelInput) (req *
 // API operation UpdateAlarmModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UpdateAlarmModel
 func (c *IoTEvents) UpdateAlarmModel(input *UpdateAlarmModelInput) (*UpdateAlarmModelOutput, error) {
@@ -2269,14 +2269,13 @@ const opUpdateDetectorModel = "UpdateDetectorModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDetectorModelRequest method.
+//	req, resp := client.UpdateDetectorModelRequest(params)
 //
-//    // Example sending a request using the UpdateDetectorModelRequest method.
-//    req, resp := client.UpdateDetectorModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UpdateDetectorModel
 func (c *IoTEvents) UpdateDetectorModelRequest(input *UpdateDetectorModelInput) (req *request.Request, output *UpdateDetectorModelOutput) {
@@ -2308,23 +2307,24 @@ func (c *IoTEvents) UpdateDetectorModelRequest(input *UpdateDetectorModelInput) 
 // API operation UpdateDetectorModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - ResourceInUseException
+//     The resource is in use.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UpdateDetectorModel
 func (c *IoTEvents) UpdateDetectorModel(input *UpdateDetectorModelInput) (*UpdateDetectorModelOutput, error) {
@@ -2364,14 +2364,13 @@ const opUpdateInput = "UpdateInput"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateInputRequest method.
+//	req, resp := client.UpdateInputRequest(params)
 //
-//    // Example sending a request using the UpdateInputRequest method.
-//    req, resp := client.UpdateInputRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UpdateInput
 func (c *IoTEvents) UpdateInputRequest(input *UpdateInputInput) (req *request.Request, output *UpdateInputOutput) {
@@ -2402,23 +2401,24 @@ func (c *IoTEvents) UpdateInputRequest(input *UpdateInputInput) (req *request.Re
 // API operation UpdateInput for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request was invalid.
 //
-//   * ThrottlingException
-//   The request could not be completed due to throttling.
+//   - InvalidRequestException
+//     The request was invalid.
 //
-//   * ResourceNotFoundException
-//   The resource was not found.
+//   - ThrottlingException
+//     The request could not be completed due to throttling.
 //
-//   * InternalFailureException
-//   An internal failure occurred.
+//   - ResourceNotFoundException
+//     The resource was not found.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - InternalFailureException
+//     An internal failure occurred.
 //
-//   * ResourceInUseException
-//   The resource is in use.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ResourceInUseException
+//     The resource is in use.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/iotevents-2018-07-27/UpdateInput
 func (c *IoTEvents) UpdateInput(input *UpdateInputInput) (*UpdateInputOutput, error) {
@@ -3571,18 +3571,18 @@ func (s *AnalysisResultLocation) SetPath(v string) *AnalysisResultLocation {
 //
 // Examples
 //
-//    * For literal values, the expressions must contain single quotes. For
-//    example, the value for the timeInSeconds parameter can be '1586400675'.
+//   - For literal values, the expressions must contain single quotes. For
+//     example, the value for the timeInSeconds parameter can be '1586400675'.
 //
-//    * For references, you must specify either variables or input values. For
-//    example, the value for the offsetInNanos parameter can be $variable.time.
+//   - For references, you must specify either variables or input values. For
+//     example, the value for the offsetInNanos parameter can be $variable.time.
 //
-//    * For a substitution template, you must use ${}, and the template must
-//    be in single quotes. A substitution template can also contain a combination
-//    of literals, operators, functions, references, and substitution templates.
-//    In the following example, the value for the timeInSeconds parameter uses
-//    a substitution template. '${$input.TemperatureInput.sensorData.timestamp
-//    / 1000}'
+//   - For a substitution template, you must use ${}, and the template must
+//     be in single quotes. A substitution template can also contain a combination
+//     of literals, operators, functions, references, and substitution templates.
+//     In the following example, the value for the timeInSeconds parameter uses
+//     a substitution template. '${$input.TemperatureInput.sensorData.timestamp
+//     / 1000}'
 //
 // For more information, see Expressions (https://docs.aws.amazon.com/iotevents/latest/developerguide/iotevents-expressions.html)
 // in the AWS IoT Events Developer Guide.
@@ -3652,11 +3652,11 @@ func (s *AssetPropertyTimestamp) SetTimeInSeconds(v string) *AssetPropertyTimest
 //
 // Examples
 //
-//    * For literal values, the expressions must contain single quotes. For
-//    example, the value for the quality parameter can be 'GOOD'.
+//   - For literal values, the expressions must contain single quotes. For
+//     example, the value for the quality parameter can be 'GOOD'.
 //
-//    * For references, you must specify either variables or input values. For
-//    example, the value for the quality parameter can be $input.TemperatureInput.sensorData.quality.
+//   - For references, you must specify either variables or input values. For
+//     example, the value for the quality parameter can be $input.TemperatureInput.sensorData.quality.
 //
 // For more information, see Expressions (https://docs.aws.amazon.com/iotevents/latest/developerguide/iotevents-expressions.html)
 // in the AWS IoT Events Developer Guide.
@@ -3736,18 +3736,19 @@ func (s *AssetPropertyValue) SetValue(v *AssetPropertyVariant) *AssetPropertyVal
 //
 // Examples
 //
-//    * For literal values, the expressions must contain single quotes. For
-//    example, the value for the integerValue parameter can be '100'.
+//   - For literal values, the expressions must contain single quotes. For
+//     example, the value for the integerValue parameter can be '100'.
 //
-//    * For references, you must specify either variables or parameters. For
-//    example, the value for the booleanValue parameter can be $variable.offline.
+//   - For references, you must specify either variables or parameters. For
+//     example, the value for the booleanValue parameter can be $variable.offline.
 //
-//    * For a substitution template, you must use ${}, and the template must
-//    be in single quotes. A substitution template can also contain a combination
-//    of literals, operators, functions, references, and substitution templates.
-//    In the following example, the value for the doubleValue parameter uses
-//    a substitution template. '${$input.TemperatureInput.sensorData.temperature
-//    * 6 / 5 + 32}'
+//   - For a substitution template, you must use ${}, and the template must
+//     be in single quotes. A substitution template can also contain a combination
+//     of literals, operators, functions, references, and substitution templates.
+//     In the following example, the value for the doubleValue parameter uses
+//     a substitution template. '${$input.TemperatureInput.sensorData.temperature
+//
+//   - 6 / 5 + 32}'
 //
 // For more information, see Expressions (https://docs.aws.amazon.com/iotevents/latest/developerguide/iotevents-expressions.html)
 // in the AWS IoT Events Developer Guide.
@@ -5720,24 +5721,25 @@ func (s *DetectorModelVersionSummary) SetStatus(v string) *DetectorModelVersionS
 //
 // Examples
 //
-//    * For literal values, the expressions must contain single quotes. For
-//    example, the value for the hashKeyType parameter can be 'STRING'.
+//   - For literal values, the expressions must contain single quotes. For
+//     example, the value for the hashKeyType parameter can be 'STRING'.
 //
-//    * For references, you must specify either variables or input values. For
-//    example, the value for the hashKeyField parameter can be $input.GreenhouseInput.name.
+//   - For references, you must specify either variables or input values. For
+//     example, the value for the hashKeyField parameter can be $input.GreenhouseInput.name.
 //
-//    * For a substitution template, you must use ${}, and the template must
-//    be in single quotes. A substitution template can also contain a combination
-//    of literals, operators, functions, references, and substitution templates.
-//    In the following example, the value for the hashKeyValue parameter uses
-//    a substitution template. '${$input.GreenhouseInput.temperature * 6 / 5
-//    + 32} in Fahrenheit'
+//   - For a substitution template, you must use ${}, and the template must
+//     be in single quotes. A substitution template can also contain a combination
+//     of literals, operators, functions, references, and substitution templates.
+//     In the following example, the value for the hashKeyValue parameter uses
+//     a substitution template. '${$input.GreenhouseInput.temperature * 6 / 5
 //
-//    * For a string concatenation, you must use +. A string concatenation can
-//    also contain a combination of literals, operators, functions, references,
-//    and substitution templates. In the following example, the value for the
-//    tableName parameter uses a string concatenation. 'GreenhouseTemperatureTable
-//    ' + $input.GreenhouseInput.date
+//   - 32} in Fahrenheit'
+//
+//   - For a string concatenation, you must use +. A string concatenation can
+//     also contain a combination of literals, operators, functions, references,
+//     and substitution templates. In the following example, the value for the
+//     tableName parameter uses a string concatenation. 'GreenhouseTemperatureTable
+//     ' + $input.GreenhouseInput.date
 //
 // For more information, see Expressions (https://docs.aws.amazon.com/iotevents/latest/developerguide/iotevents-expressions.html)
 // in the AWS IoT Events Developer Guide.
@@ -5938,24 +5940,24 @@ func (s *DynamoDBAction) SetTableName(v string) *DynamoDBAction {
 //
 // Examples
 //
-//    * For literal values, the expressions must contain single quotes. For
-//    example, the value for the tableName parameter can be 'GreenhouseTemperatureTable'.
+//   - For literal values, the expressions must contain single quotes. For
+//     example, the value for the tableName parameter can be 'GreenhouseTemperatureTable'.
 //
-//    * For references, you must specify either variables or input values. For
-//    example, the value for the tableName parameter can be $variable.ddbtableName.
+//   - For references, you must specify either variables or input values. For
+//     example, the value for the tableName parameter can be $variable.ddbtableName.
 //
-//    * For a substitution template, you must use ${}, and the template must
-//    be in single quotes. A substitution template can also contain a combination
-//    of literals, operators, functions, references, and substitution templates.
-//    In the following example, the value for the contentExpression parameter
-//    in Payload uses a substitution template. '{\"sensorID\": \"${$input.GreenhouseInput.sensor_id}\",
-//    \"temperature\": \"${$input.GreenhouseInput.temperature * 9 / 5 + 32}\"}'
+//   - For a substitution template, you must use ${}, and the template must
+//     be in single quotes. A substitution template can also contain a combination
+//     of literals, operators, functions, references, and substitution templates.
+//     In the following example, the value for the contentExpression parameter
+//     in Payload uses a substitution template. '{\"sensorID\": \"${$input.GreenhouseInput.sensor_id}\",
+//     \"temperature\": \"${$input.GreenhouseInput.temperature * 9 / 5 + 32}\"}'
 //
-//    * For a string concatenation, you must use +. A string concatenation can
-//    also contain a combination of literals, operators, functions, references,
-//    and substitution templates. In the following example, the value for the
-//    tableName parameter uses a string concatenation. 'GreenhouseTemperatureTable
-//    ' + $input.GreenhouseInput.date
+//   - For a string concatenation, you must use +. A string concatenation can
+//     also contain a combination of literals, operators, functions, references,
+//     and substitution templates. In the following example, the value for the
+//     tableName parameter uses a string concatenation. 'GreenhouseTemperatureTable
+//     ' + $input.GreenhouseInput.date
 //
 // For more information, see Expressions (https://docs.aws.amazon.com/iotevents/latest/developerguide/iotevents-expressions.html)
 // in the AWS IoT Events Developer Guide.
@@ -7031,18 +7033,18 @@ func (s *IotEventsInputIdentifier) SetInputName(v string) *IotEventsInputIdentif
 //
 // Examples
 //
-//    * For literal values, the expressions must contain single quotes. For
-//    example, the value for the propertyAlias parameter can be '/company/windfarm/3/turbine/7/temperature'.
+//   - For literal values, the expressions must contain single quotes. For
+//     example, the value for the propertyAlias parameter can be '/company/windfarm/3/turbine/7/temperature'.
 //
-//    * For references, you must specify either variables or input values. For
-//    example, the value for the assetId parameter can be $input.TurbineInput.assetId1.
+//   - For references, you must specify either variables or input values. For
+//     example, the value for the assetId parameter can be $input.TurbineInput.assetId1.
 //
-//    * For a substitution template, you must use ${}, and the template must
-//    be in single quotes. A substitution template can also contain a combination
-//    of literals, operators, functions, references, and substitution templates.
-//    In the following example, the value for the propertyAlias parameter uses
-//    a substitution template. 'company/windfarm/${$input.TemperatureInput.sensorData.windfarmID}/turbine/
-//    ${$input.TemperatureInput.sensorData.turbineID}/temperature'
+//   - For a substitution template, you must use ${}, and the template must
+//     be in single quotes. A substitution template can also contain a combination
+//     of literals, operators, functions, references, and substitution templates.
+//     In the following example, the value for the propertyAlias parameter uses
+//     a substitution template. 'company/windfarm/${$input.TemperatureInput.sensorData.windfarmID}/turbine/
+//     ${$input.TemperatureInput.sensorData.turbineID}/temperature'
 //
 // You must specify either propertyAlias or both assetId and propertyId to identify
 // the target asset property in AWS IoT SiteWise.

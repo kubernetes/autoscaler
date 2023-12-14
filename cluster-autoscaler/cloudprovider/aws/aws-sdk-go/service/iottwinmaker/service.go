@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTTwinMaker client from just a session.
-//     svc := iottwinmaker.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a IoTTwinMaker client with additional configuration
-//     svc := iottwinmaker.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a IoTTwinMaker client from just a session.
+//	svc := iottwinmaker.New(mySession)
+//
+//	// Create a IoTTwinMaker client with additional configuration
+//	svc := iottwinmaker.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *IoTTwinMaker {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

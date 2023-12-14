@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Key Management Service.
-//    func myFunc(svc kmsiface.KMSAPI) bool {
-//        // Make svc.CancelKeyDeletion request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Key Management Service.
+//	func myFunc(svc kmsiface.KMSAPI) bool {
+//	    // Make svc.CancelKeyDeletion request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := kms.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := kms.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockKMSClient struct {
-//        kmsiface.KMSAPI
-//    }
-//    func (m *mockKMSClient) CancelKeyDeletion(input *kms.CancelKeyDeletionInput) (*kms.CancelKeyDeletionOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockKMSClient struct {
+//	    kmsiface.KMSAPI
+//	}
+//	func (m *mockKMSClient) CancelKeyDeletion(input *kms.CancelKeyDeletionInput) (*kms.CancelKeyDeletionOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockKMSClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockKMSClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -103,6 +103,9 @@ type KMSAPI interface {
 	DescribeCustomKeyStores(*kms.DescribeCustomKeyStoresInput) (*kms.DescribeCustomKeyStoresOutput, error)
 	DescribeCustomKeyStoresWithContext(aws.Context, *kms.DescribeCustomKeyStoresInput, ...request.Option) (*kms.DescribeCustomKeyStoresOutput, error)
 	DescribeCustomKeyStoresRequest(*kms.DescribeCustomKeyStoresInput) (*request.Request, *kms.DescribeCustomKeyStoresOutput)
+
+	DescribeCustomKeyStoresPages(*kms.DescribeCustomKeyStoresInput, func(*kms.DescribeCustomKeyStoresOutput, bool) bool) error
+	DescribeCustomKeyStoresPagesWithContext(aws.Context, *kms.DescribeCustomKeyStoresInput, func(*kms.DescribeCustomKeyStoresOutput, bool) bool, ...request.Option) error
 
 	DescribeKey(*kms.DescribeKeyInput) (*kms.DescribeKeyOutput, error)
 	DescribeKeyWithContext(aws.Context, *kms.DescribeKeyInput, ...request.Option) (*kms.DescribeKeyOutput, error)
@@ -208,9 +211,15 @@ type KMSAPI interface {
 	ListResourceTagsWithContext(aws.Context, *kms.ListResourceTagsInput, ...request.Option) (*kms.ListResourceTagsOutput, error)
 	ListResourceTagsRequest(*kms.ListResourceTagsInput) (*request.Request, *kms.ListResourceTagsOutput)
 
+	ListResourceTagsPages(*kms.ListResourceTagsInput, func(*kms.ListResourceTagsOutput, bool) bool) error
+	ListResourceTagsPagesWithContext(aws.Context, *kms.ListResourceTagsInput, func(*kms.ListResourceTagsOutput, bool) bool, ...request.Option) error
+
 	ListRetirableGrants(*kms.ListRetirableGrantsInput) (*kms.ListGrantsResponse, error)
 	ListRetirableGrantsWithContext(aws.Context, *kms.ListRetirableGrantsInput, ...request.Option) (*kms.ListGrantsResponse, error)
 	ListRetirableGrantsRequest(*kms.ListRetirableGrantsInput) (*request.Request, *kms.ListGrantsResponse)
+
+	ListRetirableGrantsPages(*kms.ListRetirableGrantsInput, func(*kms.ListGrantsResponse, bool) bool) error
+	ListRetirableGrantsPagesWithContext(aws.Context, *kms.ListRetirableGrantsInput, func(*kms.ListGrantsResponse, bool) bool, ...request.Option) error
 
 	PutKeyPolicy(*kms.PutKeyPolicyInput) (*kms.PutKeyPolicyOutput, error)
 	PutKeyPolicyWithContext(aws.Context, *kms.PutKeyPolicyInput, ...request.Option) (*kms.PutKeyPolicyOutput, error)

@@ -14,6 +14,12 @@ const (
 	// DMS was denied access to the endpoint. Check that the role is correctly configured.
 	ErrCodeAccessDeniedFault = "AccessDeniedFault"
 
+	// ErrCodeCollectorNotFoundFault for service response error code
+	// "CollectorNotFoundFault".
+	//
+	// The specified collector doesn't exist.
+	ErrCodeCollectorNotFoundFault = "CollectorNotFoundFault"
+
 	// ErrCodeInsufficientResourceCapacityFault for service response error code
 	// "InsufficientResourceCapacityFault".
 	//
@@ -26,6 +32,12 @@ const (
 	// The certificate was not valid.
 	ErrCodeInvalidCertificateFault = "InvalidCertificateFault"
 
+	// ErrCodeInvalidOperationFault for service response error code
+	// "InvalidOperationFault".
+	//
+	// The action or operation requested isn't valid.
+	ErrCodeInvalidOperationFault = "InvalidOperationFault"
+
 	// ErrCodeInvalidResourceStateFault for service response error code
 	// "InvalidResourceStateFault".
 	//
@@ -36,7 +48,7 @@ const (
 	// ErrCodeInvalidSubnet for service response error code
 	// "InvalidSubnet".
 	//
-	// The subnet provided is invalid.
+	// The subnet provided isn't valid.
 	ErrCodeInvalidSubnet = "InvalidSubnet"
 
 	// ErrCodeKMSAccessDeniedFault for service response error code
@@ -152,8 +164,10 @@ const (
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"AccessDeniedFault":                           newErrorAccessDeniedFault,
+	"CollectorNotFoundFault":                      newErrorCollectorNotFoundFault,
 	"InsufficientResourceCapacityFault":           newErrorInsufficientResourceCapacityFault,
 	"InvalidCertificateFault":                     newErrorInvalidCertificateFault,
+	"InvalidOperationFault":                       newErrorInvalidOperationFault,
 	"InvalidResourceStateFault":                   newErrorInvalidResourceStateFault,
 	"InvalidSubnet":                               newErrorInvalidSubnet,
 	"KMSAccessDeniedFault":                        newErrorKMSAccessDeniedFault,

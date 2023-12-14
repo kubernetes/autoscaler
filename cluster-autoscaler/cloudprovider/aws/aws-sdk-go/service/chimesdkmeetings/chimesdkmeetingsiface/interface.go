@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Chime SDK Meetings.
-//    func myFunc(svc chimesdkmeetingsiface.ChimeSDKMeetingsAPI) bool {
-//        // Make svc.BatchCreateAttendee request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Chime SDK Meetings.
+//	func myFunc(svc chimesdkmeetingsiface.ChimeSDKMeetingsAPI) bool {
+//	    // Make svc.BatchCreateAttendee request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := chimesdkmeetings.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := chimesdkmeetings.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockChimeSDKMeetingsClient struct {
-//        chimesdkmeetingsiface.ChimeSDKMeetingsAPI
-//    }
-//    func (m *mockChimeSDKMeetingsClient) BatchCreateAttendee(input *chimesdkmeetings.BatchCreateAttendeeInput) (*chimesdkmeetings.BatchCreateAttendeeOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockChimeSDKMeetingsClient struct {
+//	    chimesdkmeetingsiface.ChimeSDKMeetingsAPI
+//	}
+//	func (m *mockChimeSDKMeetingsClient) BatchCreateAttendee(input *chimesdkmeetings.BatchCreateAttendeeInput) (*chimesdkmeetings.BatchCreateAttendeeOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockChimeSDKMeetingsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockChimeSDKMeetingsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -63,6 +63,10 @@ type ChimeSDKMeetingsAPI interface {
 	BatchCreateAttendee(*chimesdkmeetings.BatchCreateAttendeeInput) (*chimesdkmeetings.BatchCreateAttendeeOutput, error)
 	BatchCreateAttendeeWithContext(aws.Context, *chimesdkmeetings.BatchCreateAttendeeInput, ...request.Option) (*chimesdkmeetings.BatchCreateAttendeeOutput, error)
 	BatchCreateAttendeeRequest(*chimesdkmeetings.BatchCreateAttendeeInput) (*request.Request, *chimesdkmeetings.BatchCreateAttendeeOutput)
+
+	BatchUpdateAttendeeCapabilitiesExcept(*chimesdkmeetings.BatchUpdateAttendeeCapabilitiesExceptInput) (*chimesdkmeetings.BatchUpdateAttendeeCapabilitiesExceptOutput, error)
+	BatchUpdateAttendeeCapabilitiesExceptWithContext(aws.Context, *chimesdkmeetings.BatchUpdateAttendeeCapabilitiesExceptInput, ...request.Option) (*chimesdkmeetings.BatchUpdateAttendeeCapabilitiesExceptOutput, error)
+	BatchUpdateAttendeeCapabilitiesExceptRequest(*chimesdkmeetings.BatchUpdateAttendeeCapabilitiesExceptInput) (*request.Request, *chimesdkmeetings.BatchUpdateAttendeeCapabilitiesExceptOutput)
 
 	CreateAttendee(*chimesdkmeetings.CreateAttendeeInput) (*chimesdkmeetings.CreateAttendeeOutput, error)
 	CreateAttendeeWithContext(aws.Context, *chimesdkmeetings.CreateAttendeeInput, ...request.Option) (*chimesdkmeetings.CreateAttendeeOutput, error)
@@ -99,6 +103,10 @@ type ChimeSDKMeetingsAPI interface {
 	ListAttendeesPages(*chimesdkmeetings.ListAttendeesInput, func(*chimesdkmeetings.ListAttendeesOutput, bool) bool) error
 	ListAttendeesPagesWithContext(aws.Context, *chimesdkmeetings.ListAttendeesInput, func(*chimesdkmeetings.ListAttendeesOutput, bool) bool, ...request.Option) error
 
+	ListTagsForResource(*chimesdkmeetings.ListTagsForResourceInput) (*chimesdkmeetings.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *chimesdkmeetings.ListTagsForResourceInput, ...request.Option) (*chimesdkmeetings.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*chimesdkmeetings.ListTagsForResourceInput) (*request.Request, *chimesdkmeetings.ListTagsForResourceOutput)
+
 	StartMeetingTranscription(*chimesdkmeetings.StartMeetingTranscriptionInput) (*chimesdkmeetings.StartMeetingTranscriptionOutput, error)
 	StartMeetingTranscriptionWithContext(aws.Context, *chimesdkmeetings.StartMeetingTranscriptionInput, ...request.Option) (*chimesdkmeetings.StartMeetingTranscriptionOutput, error)
 	StartMeetingTranscriptionRequest(*chimesdkmeetings.StartMeetingTranscriptionInput) (*request.Request, *chimesdkmeetings.StartMeetingTranscriptionOutput)
@@ -106,6 +114,18 @@ type ChimeSDKMeetingsAPI interface {
 	StopMeetingTranscription(*chimesdkmeetings.StopMeetingTranscriptionInput) (*chimesdkmeetings.StopMeetingTranscriptionOutput, error)
 	StopMeetingTranscriptionWithContext(aws.Context, *chimesdkmeetings.StopMeetingTranscriptionInput, ...request.Option) (*chimesdkmeetings.StopMeetingTranscriptionOutput, error)
 	StopMeetingTranscriptionRequest(*chimesdkmeetings.StopMeetingTranscriptionInput) (*request.Request, *chimesdkmeetings.StopMeetingTranscriptionOutput)
+
+	TagResource(*chimesdkmeetings.TagResourceInput) (*chimesdkmeetings.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *chimesdkmeetings.TagResourceInput, ...request.Option) (*chimesdkmeetings.TagResourceOutput, error)
+	TagResourceRequest(*chimesdkmeetings.TagResourceInput) (*request.Request, *chimesdkmeetings.TagResourceOutput)
+
+	UntagResource(*chimesdkmeetings.UntagResourceInput) (*chimesdkmeetings.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *chimesdkmeetings.UntagResourceInput, ...request.Option) (*chimesdkmeetings.UntagResourceOutput, error)
+	UntagResourceRequest(*chimesdkmeetings.UntagResourceInput) (*request.Request, *chimesdkmeetings.UntagResourceOutput)
+
+	UpdateAttendeeCapabilities(*chimesdkmeetings.UpdateAttendeeCapabilitiesInput) (*chimesdkmeetings.UpdateAttendeeCapabilitiesOutput, error)
+	UpdateAttendeeCapabilitiesWithContext(aws.Context, *chimesdkmeetings.UpdateAttendeeCapabilitiesInput, ...request.Option) (*chimesdkmeetings.UpdateAttendeeCapabilitiesOutput, error)
+	UpdateAttendeeCapabilitiesRequest(*chimesdkmeetings.UpdateAttendeeCapabilitiesInput) (*request.Request, *chimesdkmeetings.UpdateAttendeeCapabilitiesOutput)
 }
 
 var _ ChimeSDKMeetingsAPI = (*chimesdkmeetings.ChimeSDKMeetings)(nil)

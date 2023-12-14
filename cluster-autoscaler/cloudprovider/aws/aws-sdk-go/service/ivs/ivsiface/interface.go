@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Interactive Video Service.
-//    func myFunc(svc ivsiface.IVSAPI) bool {
-//        // Make svc.BatchGetChannel request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Interactive Video Service.
+//	func myFunc(svc ivsiface.IVSAPI) bool {
+//	    // Make svc.BatchGetChannel request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ivs.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ivs.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockIVSClient struct {
-//        ivsiface.IVSAPI
-//    }
-//    func (m *mockIVSClient) BatchGetChannel(input *ivs.BatchGetChannelInput) (*ivs.BatchGetChannelOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockIVSClient struct {
+//	    ivsiface.IVSAPI
+//	}
+//	func (m *mockIVSClient) BatchGetChannel(input *ivs.BatchGetChannelInput) (*ivs.BatchGetChannelOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockIVSClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockIVSClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -67,6 +67,10 @@ type IVSAPI interface {
 	BatchGetStreamKey(*ivs.BatchGetStreamKeyInput) (*ivs.BatchGetStreamKeyOutput, error)
 	BatchGetStreamKeyWithContext(aws.Context, *ivs.BatchGetStreamKeyInput, ...request.Option) (*ivs.BatchGetStreamKeyOutput, error)
 	BatchGetStreamKeyRequest(*ivs.BatchGetStreamKeyInput) (*request.Request, *ivs.BatchGetStreamKeyOutput)
+
+	BatchStartViewerSessionRevocation(*ivs.BatchStartViewerSessionRevocationInput) (*ivs.BatchStartViewerSessionRevocationOutput, error)
+	BatchStartViewerSessionRevocationWithContext(aws.Context, *ivs.BatchStartViewerSessionRevocationInput, ...request.Option) (*ivs.BatchStartViewerSessionRevocationOutput, error)
+	BatchStartViewerSessionRevocationRequest(*ivs.BatchStartViewerSessionRevocationInput) (*request.Request, *ivs.BatchStartViewerSessionRevocationOutput)
 
 	CreateChannel(*ivs.CreateChannelInput) (*ivs.CreateChannelOutput, error)
 	CreateChannelWithContext(aws.Context, *ivs.CreateChannelInput, ...request.Option) (*ivs.CreateChannelOutput, error)
@@ -173,6 +177,10 @@ type IVSAPI interface {
 	PutMetadata(*ivs.PutMetadataInput) (*ivs.PutMetadataOutput, error)
 	PutMetadataWithContext(aws.Context, *ivs.PutMetadataInput, ...request.Option) (*ivs.PutMetadataOutput, error)
 	PutMetadataRequest(*ivs.PutMetadataInput) (*request.Request, *ivs.PutMetadataOutput)
+
+	StartViewerSessionRevocation(*ivs.StartViewerSessionRevocationInput) (*ivs.StartViewerSessionRevocationOutput, error)
+	StartViewerSessionRevocationWithContext(aws.Context, *ivs.StartViewerSessionRevocationInput, ...request.Option) (*ivs.StartViewerSessionRevocationOutput, error)
+	StartViewerSessionRevocationRequest(*ivs.StartViewerSessionRevocationInput) (*request.Request, *ivs.StartViewerSessionRevocationOutput)
 
 	StopStream(*ivs.StopStreamInput) (*ivs.StopStreamOutput, error)
 	StopStreamWithContext(aws.Context, *ivs.StopStreamInput, ...request.Option) (*ivs.StopStreamOutput, error)

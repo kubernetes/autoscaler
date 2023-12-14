@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon S3 on Outposts.
-//    func myFunc(svc s3outpostsiface.S3OutpostsAPI) bool {
-//        // Make svc.CreateEndpoint request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon S3 on Outposts.
+//	func myFunc(svc s3outpostsiface.S3OutpostsAPI) bool {
+//	    // Make svc.CreateEndpoint request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := s3outposts.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := s3outposts.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockS3OutpostsClient struct {
-//        s3outpostsiface.S3OutpostsAPI
-//    }
-//    func (m *mockS3OutpostsClient) CreateEndpoint(input *s3outposts.CreateEndpointInput) (*s3outposts.CreateEndpointOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockS3OutpostsClient struct {
+//	    s3outpostsiface.S3OutpostsAPI
+//	}
+//	func (m *mockS3OutpostsClient) CreateEndpoint(input *s3outposts.CreateEndpointInput) (*s3outposts.CreateEndpointOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockS3OutpostsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockS3OutpostsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -74,6 +74,13 @@ type S3OutpostsAPI interface {
 
 	ListEndpointsPages(*s3outposts.ListEndpointsInput, func(*s3outposts.ListEndpointsOutput, bool) bool) error
 	ListEndpointsPagesWithContext(aws.Context, *s3outposts.ListEndpointsInput, func(*s3outposts.ListEndpointsOutput, bool) bool, ...request.Option) error
+
+	ListOutpostsWithS3(*s3outposts.ListOutpostsWithS3Input) (*s3outposts.ListOutpostsWithS3Output, error)
+	ListOutpostsWithS3WithContext(aws.Context, *s3outposts.ListOutpostsWithS3Input, ...request.Option) (*s3outposts.ListOutpostsWithS3Output, error)
+	ListOutpostsWithS3Request(*s3outposts.ListOutpostsWithS3Input) (*request.Request, *s3outposts.ListOutpostsWithS3Output)
+
+	ListOutpostsWithS3Pages(*s3outposts.ListOutpostsWithS3Input, func(*s3outposts.ListOutpostsWithS3Output, bool) bool) error
+	ListOutpostsWithS3PagesWithContext(aws.Context, *s3outposts.ListOutpostsWithS3Input, func(*s3outposts.ListOutpostsWithS3Output, bool) bool, ...request.Option) error
 
 	ListSharedEndpoints(*s3outposts.ListSharedEndpointsInput) (*s3outposts.ListSharedEndpointsOutput, error)
 	ListSharedEndpointsWithContext(aws.Context, *s3outposts.ListSharedEndpointsInput, ...request.Option) (*s3outposts.ListSharedEndpointsOutput, error)

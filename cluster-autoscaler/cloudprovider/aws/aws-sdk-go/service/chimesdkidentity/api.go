@@ -29,14 +29,13 @@ const opCreateAppInstance = "CreateAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppInstanceRequest method.
+//	req, resp := client.CreateAppInstanceRequest(params)
 //
-//    // Example sending a request using the CreateAppInstanceRequest method.
-//    req, resp := client.CreateAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstance
 func (c *ChimeSDKIdentity) CreateAppInstanceRequest(input *CreateAppInstanceInput) (req *request.Request, output *CreateAppInstanceOutput) {
@@ -71,30 +70,31 @@ func (c *ChimeSDKIdentity) CreateAppInstanceRequest(input *CreateAppInstanceInpu
 // API operation CreateAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstance
 func (c *ChimeSDKIdentity) CreateAppInstance(input *CreateAppInstanceInput) (*CreateAppInstanceOutput, error) {
@@ -134,14 +134,13 @@ const opCreateAppInstanceAdmin = "CreateAppInstanceAdmin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppInstanceAdminRequest method.
+//	req, resp := client.CreateAppInstanceAdminRequest(params)
 //
-//    // Example sending a request using the CreateAppInstanceAdminRequest method.
-//    req, resp := client.CreateAppInstanceAdminRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceAdmin
 func (c *ChimeSDKIdentity) CreateAppInstanceAdminRequest(input *CreateAppInstanceAdminInput) (req *request.Request, output *CreateAppInstanceAdminOutput) {
@@ -162,14 +161,15 @@ func (c *ChimeSDKIdentity) CreateAppInstanceAdminRequest(input *CreateAppInstanc
 
 // CreateAppInstanceAdmin API operation for Amazon Chime SDK Identity.
 //
-// Promotes an AppInstanceUser to an AppInstanceAdmin. The promoted user can
-// perform the following actions.
+// Promotes an AppInstanceUser or AppInstanceBot to an AppInstanceAdmin. The
+// promoted entity can perform the following actions.
 //
-//    * ChannelModerator actions across all channels in the AppInstance.
+//   - ChannelModerator actions across all channels in the AppInstance.
 //
-//    * DeleteChannelMessage actions.
+//   - DeleteChannelMessage actions.
 //
-// Only an AppInstanceUser can be promoted to an AppInstanceAdmin role.
+// Only an AppInstanceUser and AppInstanceBot can be promoted to an AppInstanceAdmin
+// role.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -179,30 +179,31 @@ func (c *ChimeSDKIdentity) CreateAppInstanceAdminRequest(input *CreateAppInstanc
 // API operation CreateAppInstanceAdmin for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceAdmin
 func (c *ChimeSDKIdentity) CreateAppInstanceAdmin(input *CreateAppInstanceAdminInput) (*CreateAppInstanceAdminOutput, error) {
@@ -226,6 +227,108 @@ func (c *ChimeSDKIdentity) CreateAppInstanceAdminWithContext(ctx aws.Context, in
 	return out, req.Send()
 }
 
+const opCreateAppInstanceBot = "CreateAppInstanceBot"
+
+// CreateAppInstanceBotRequest generates a "aws/request.Request" representing the
+// client's request for the CreateAppInstanceBot operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateAppInstanceBot for more information on using the CreateAppInstanceBot
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateAppInstanceBotRequest method.
+//	req, resp := client.CreateAppInstanceBotRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceBot
+func (c *ChimeSDKIdentity) CreateAppInstanceBotRequest(input *CreateAppInstanceBotInput) (req *request.Request, output *CreateAppInstanceBotOutput) {
+	op := &request.Operation{
+		Name:       opCreateAppInstanceBot,
+		HTTPMethod: "POST",
+		HTTPPath:   "/app-instance-bots",
+	}
+
+	if input == nil {
+		input = &CreateAppInstanceBotInput{}
+	}
+
+	output = &CreateAppInstanceBotOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateAppInstanceBot API operation for Amazon Chime SDK Identity.
+//
+// Creates a bot under an Amazon Chime AppInstance. The request consists of
+// a unique Configuration and Name for that bot.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Identity's
+// API operation CreateAppInstanceBot for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceBot
+func (c *ChimeSDKIdentity) CreateAppInstanceBot(input *CreateAppInstanceBotInput) (*CreateAppInstanceBotOutput, error) {
+	req, out := c.CreateAppInstanceBotRequest(input)
+	return out, req.Send()
+}
+
+// CreateAppInstanceBotWithContext is the same as CreateAppInstanceBot with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateAppInstanceBot for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) CreateAppInstanceBotWithContext(ctx aws.Context, input *CreateAppInstanceBotInput, opts ...request.Option) (*CreateAppInstanceBotOutput, error) {
+	req, out := c.CreateAppInstanceBotRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateAppInstanceUser = "CreateAppInstanceUser"
 
 // CreateAppInstanceUserRequest generates a "aws/request.Request" representing the
@@ -242,14 +345,13 @@ const opCreateAppInstanceUser = "CreateAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAppInstanceUserRequest method.
+//	req, resp := client.CreateAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the CreateAppInstanceUserRequest method.
-//    req, resp := client.CreateAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceUser
 func (c *ChimeSDKIdentity) CreateAppInstanceUserRequest(input *CreateAppInstanceUserInput) (req *request.Request, output *CreateAppInstanceUserOutput) {
@@ -281,30 +383,31 @@ func (c *ChimeSDKIdentity) CreateAppInstanceUserRequest(input *CreateAppInstance
 // API operation CreateAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/CreateAppInstanceUser
 func (c *ChimeSDKIdentity) CreateAppInstanceUser(input *CreateAppInstanceUserInput) (*CreateAppInstanceUserOutput, error) {
@@ -344,14 +447,13 @@ const opDeleteAppInstance = "DeleteAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppInstanceRequest method.
+//	req, resp := client.DeleteAppInstanceRequest(params)
 //
-//    // Example sending a request using the DeleteAppInstanceRequest method.
-//    req, resp := client.DeleteAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstance
 func (c *ChimeSDKIdentity) DeleteAppInstanceRequest(input *DeleteAppInstanceInput) (req *request.Request, output *DeleteAppInstanceOutput) {
@@ -383,26 +485,27 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceRequest(input *DeleteAppInstanceInpu
 // API operation DeleteAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstance
 func (c *ChimeSDKIdentity) DeleteAppInstance(input *DeleteAppInstanceInput) (*DeleteAppInstanceOutput, error) {
@@ -442,14 +545,13 @@ const opDeleteAppInstanceAdmin = "DeleteAppInstanceAdmin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppInstanceAdminRequest method.
+//	req, resp := client.DeleteAppInstanceAdminRequest(params)
 //
-//    // Example sending a request using the DeleteAppInstanceAdminRequest method.
-//    req, resp := client.DeleteAppInstanceAdminRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceAdmin
 func (c *ChimeSDKIdentity) DeleteAppInstanceAdminRequest(input *DeleteAppInstanceAdminInput) (req *request.Request, output *DeleteAppInstanceAdminOutput) {
@@ -471,8 +573,8 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceAdminRequest(input *DeleteAppInstanc
 
 // DeleteAppInstanceAdmin API operation for Amazon Chime SDK Identity.
 //
-// Demotes an AppInstanceAdmin to an AppInstanceUser. This action does not delete
-// the user.
+// Demotes an AppInstanceAdmin to an AppInstanceUser or AppInstanceBot. This
+// action does not delete the user.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -482,30 +584,31 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceAdminRequest(input *DeleteAppInstanc
 // API operation DeleteAppInstanceAdmin for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceAdmin
 func (c *ChimeSDKIdentity) DeleteAppInstanceAdmin(input *DeleteAppInstanceAdminInput) (*DeleteAppInstanceAdminOutput, error) {
@@ -529,6 +632,108 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceAdminWithContext(ctx aws.Context, in
 	return out, req.Send()
 }
 
+const opDeleteAppInstanceBot = "DeleteAppInstanceBot"
+
+// DeleteAppInstanceBotRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAppInstanceBot operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteAppInstanceBot for more information on using the DeleteAppInstanceBot
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteAppInstanceBotRequest method.
+//	req, resp := client.DeleteAppInstanceBotRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceBot
+func (c *ChimeSDKIdentity) DeleteAppInstanceBotRequest(input *DeleteAppInstanceBotInput) (req *request.Request, output *DeleteAppInstanceBotOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAppInstanceBot,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/app-instance-bots/{appInstanceBotArn}",
+	}
+
+	if input == nil {
+		input = &DeleteAppInstanceBotInput{}
+	}
+
+	output = &DeleteAppInstanceBotOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteAppInstanceBot API operation for Amazon Chime SDK Identity.
+//
+// Deletes an AppInstanceBot.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Identity's
+// API operation DeleteAppInstanceBot for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceBot
+func (c *ChimeSDKIdentity) DeleteAppInstanceBot(input *DeleteAppInstanceBotInput) (*DeleteAppInstanceBotOutput, error) {
+	req, out := c.DeleteAppInstanceBotRequest(input)
+	return out, req.Send()
+}
+
+// DeleteAppInstanceBotWithContext is the same as DeleteAppInstanceBot with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteAppInstanceBot for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) DeleteAppInstanceBotWithContext(ctx aws.Context, input *DeleteAppInstanceBotInput, opts ...request.Option) (*DeleteAppInstanceBotOutput, error) {
+	req, out := c.DeleteAppInstanceBotRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteAppInstanceUser = "DeleteAppInstanceUser"
 
 // DeleteAppInstanceUserRequest generates a "aws/request.Request" representing the
@@ -545,14 +750,13 @@ const opDeleteAppInstanceUser = "DeleteAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAppInstanceUserRequest method.
+//	req, resp := client.DeleteAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the DeleteAppInstanceUserRequest method.
-//    req, resp := client.DeleteAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceUser
 func (c *ChimeSDKIdentity) DeleteAppInstanceUserRequest(input *DeleteAppInstanceUserInput) (req *request.Request, output *DeleteAppInstanceUserOutput) {
@@ -584,30 +788,31 @@ func (c *ChimeSDKIdentity) DeleteAppInstanceUserRequest(input *DeleteAppInstance
 // API operation DeleteAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeleteAppInstanceUser
 func (c *ChimeSDKIdentity) DeleteAppInstanceUser(input *DeleteAppInstanceUserInput) (*DeleteAppInstanceUserOutput, error) {
@@ -647,14 +852,13 @@ const opDeregisterAppInstanceUserEndpoint = "DeregisterAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeregisterAppInstanceUserEndpointRequest method.
+//	req, resp := client.DeregisterAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the DeregisterAppInstanceUserEndpointRequest method.
-//    req, resp := client.DeregisterAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeregisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DeregisterAppInstanceUserEndpointRequest(input *DeregisterAppInstanceUserEndpointInput) (req *request.Request, output *DeregisterAppInstanceUserEndpointOutput) {
@@ -686,23 +890,24 @@ func (c *ChimeSDKIdentity) DeregisterAppInstanceUserEndpointRequest(input *Dereg
 // API operation DeregisterAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DeregisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DeregisterAppInstanceUserEndpoint(input *DeregisterAppInstanceUserEndpointInput) (*DeregisterAppInstanceUserEndpointOutput, error) {
@@ -742,14 +947,13 @@ const opDescribeAppInstance = "DescribeAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceRequest method.
+//	req, resp := client.DescribeAppInstanceRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceRequest method.
-//    req, resp := client.DescribeAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstance
 func (c *ChimeSDKIdentity) DescribeAppInstanceRequest(input *DescribeAppInstanceInput) (req *request.Request, output *DescribeAppInstanceOutput) {
@@ -780,23 +984,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceRequest(input *DescribeAppInstance
 // API operation DescribeAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstance
 func (c *ChimeSDKIdentity) DescribeAppInstance(input *DescribeAppInstanceInput) (*DescribeAppInstanceOutput, error) {
@@ -836,14 +1041,13 @@ const opDescribeAppInstanceAdmin = "DescribeAppInstanceAdmin"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceAdminRequest method.
+//	req, resp := client.DescribeAppInstanceAdminRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceAdminRequest method.
-//    req, resp := client.DescribeAppInstanceAdminRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceAdmin
 func (c *ChimeSDKIdentity) DescribeAppInstanceAdminRequest(input *DescribeAppInstanceAdminInput) (req *request.Request, output *DescribeAppInstanceAdminOutput) {
@@ -874,23 +1078,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceAdminRequest(input *DescribeAppIns
 // API operation DescribeAppInstanceAdmin for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceAdmin
 func (c *ChimeSDKIdentity) DescribeAppInstanceAdmin(input *DescribeAppInstanceAdminInput) (*DescribeAppInstanceAdminOutput, error) {
@@ -914,6 +1119,103 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceAdminWithContext(ctx aws.Context, 
 	return out, req.Send()
 }
 
+const opDescribeAppInstanceBot = "DescribeAppInstanceBot"
+
+// DescribeAppInstanceBotRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeAppInstanceBot operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeAppInstanceBot for more information on using the DescribeAppInstanceBot
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeAppInstanceBotRequest method.
+//	req, resp := client.DescribeAppInstanceBotRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceBot
+func (c *ChimeSDKIdentity) DescribeAppInstanceBotRequest(input *DescribeAppInstanceBotInput) (req *request.Request, output *DescribeAppInstanceBotOutput) {
+	op := &request.Operation{
+		Name:       opDescribeAppInstanceBot,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app-instance-bots/{appInstanceBotArn}",
+	}
+
+	if input == nil {
+		input = &DescribeAppInstanceBotInput{}
+	}
+
+	output = &DescribeAppInstanceBotOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeAppInstanceBot API operation for Amazon Chime SDK Identity.
+//
+// The AppInstanceBot's information.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Identity's
+// API operation DescribeAppInstanceBot for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - NotFoundException
+//     One or more of the resources in the request does not exist in the system.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceBot
+func (c *ChimeSDKIdentity) DescribeAppInstanceBot(input *DescribeAppInstanceBotInput) (*DescribeAppInstanceBotOutput, error) {
+	req, out := c.DescribeAppInstanceBotRequest(input)
+	return out, req.Send()
+}
+
+// DescribeAppInstanceBotWithContext is the same as DescribeAppInstanceBot with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeAppInstanceBot for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) DescribeAppInstanceBotWithContext(ctx aws.Context, input *DescribeAppInstanceBotInput, opts ...request.Option) (*DescribeAppInstanceBotOutput, error) {
+	req, out := c.DescribeAppInstanceBotRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeAppInstanceUser = "DescribeAppInstanceUser"
 
 // DescribeAppInstanceUserRequest generates a "aws/request.Request" representing the
@@ -930,14 +1232,13 @@ const opDescribeAppInstanceUser = "DescribeAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceUserRequest method.
+//	req, resp := client.DescribeAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceUserRequest method.
-//    req, resp := client.DescribeAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUser
 func (c *ChimeSDKIdentity) DescribeAppInstanceUserRequest(input *DescribeAppInstanceUserInput) (req *request.Request, output *DescribeAppInstanceUserOutput) {
@@ -968,23 +1269,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceUserRequest(input *DescribeAppInst
 // API operation DescribeAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUser
 func (c *ChimeSDKIdentity) DescribeAppInstanceUser(input *DescribeAppInstanceUserInput) (*DescribeAppInstanceUserOutput, error) {
@@ -1024,14 +1326,13 @@ const opDescribeAppInstanceUserEndpoint = "DescribeAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAppInstanceUserEndpointRequest method.
+//	req, resp := client.DescribeAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the DescribeAppInstanceUserEndpointRequest method.
-//    req, resp := client.DescribeAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DescribeAppInstanceUserEndpointRequest(input *DescribeAppInstanceUserEndpointInput) (req *request.Request, output *DescribeAppInstanceUserEndpointOutput) {
@@ -1062,23 +1363,24 @@ func (c *ChimeSDKIdentity) DescribeAppInstanceUserEndpointRequest(input *Describ
 // API operation DescribeAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/DescribeAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) DescribeAppInstanceUserEndpoint(input *DescribeAppInstanceUserEndpointInput) (*DescribeAppInstanceUserEndpointOutput, error) {
@@ -1118,14 +1420,13 @@ const opGetAppInstanceRetentionSettings = "GetAppInstanceRetentionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetAppInstanceRetentionSettingsRequest method.
+//	req, resp := client.GetAppInstanceRetentionSettingsRequest(params)
 //
-//    // Example sending a request using the GetAppInstanceRetentionSettingsRequest method.
-//    req, resp := client.GetAppInstanceRetentionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/GetAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) GetAppInstanceRetentionSettingsRequest(input *GetAppInstanceRetentionSettingsInput) (req *request.Request, output *GetAppInstanceRetentionSettingsOutput) {
@@ -1156,23 +1457,24 @@ func (c *ChimeSDKIdentity) GetAppInstanceRetentionSettingsRequest(input *GetAppI
 // API operation GetAppInstanceRetentionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/GetAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) GetAppInstanceRetentionSettings(input *GetAppInstanceRetentionSettingsInput) (*GetAppInstanceRetentionSettingsOutput, error) {
@@ -1212,14 +1514,13 @@ const opListAppInstanceAdmins = "ListAppInstanceAdmins"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstanceAdminsRequest method.
+//	req, resp := client.ListAppInstanceAdminsRequest(params)
 //
-//    // Example sending a request using the ListAppInstanceAdminsRequest method.
-//    req, resp := client.ListAppInstanceAdminsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceAdmins
 func (c *ChimeSDKIdentity) ListAppInstanceAdminsRequest(input *ListAppInstanceAdminsInput) (req *request.Request, output *ListAppInstanceAdminsOutput) {
@@ -1256,26 +1557,27 @@ func (c *ChimeSDKIdentity) ListAppInstanceAdminsRequest(input *ListAppInstanceAd
 // API operation ListAppInstanceAdmins for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceAdmins
 func (c *ChimeSDKIdentity) ListAppInstanceAdmins(input *ListAppInstanceAdminsInput) (*ListAppInstanceAdminsOutput, error) {
@@ -1307,15 +1609,14 @@ func (c *ChimeSDKIdentity) ListAppInstanceAdminsWithContext(ctx aws.Context, inp
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstanceAdmins operation.
-//    pageNum := 0
-//    err := client.ListAppInstanceAdminsPages(params,
-//        func(page *chimesdkidentity.ListAppInstanceAdminsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstanceAdmins operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceAdminsPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceAdminsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstanceAdminsPages(input *ListAppInstanceAdminsInput, fn func(*ListAppInstanceAdminsOutput, bool) bool) error {
 	return c.ListAppInstanceAdminsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1351,6 +1652,160 @@ func (c *ChimeSDKIdentity) ListAppInstanceAdminsPagesWithContext(ctx aws.Context
 	return p.Err()
 }
 
+const opListAppInstanceBots = "ListAppInstanceBots"
+
+// ListAppInstanceBotsRequest generates a "aws/request.Request" representing the
+// client's request for the ListAppInstanceBots operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAppInstanceBots for more information on using the ListAppInstanceBots
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAppInstanceBotsRequest method.
+//	req, resp := client.ListAppInstanceBotsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceBots
+func (c *ChimeSDKIdentity) ListAppInstanceBotsRequest(input *ListAppInstanceBotsInput) (req *request.Request, output *ListAppInstanceBotsOutput) {
+	op := &request.Operation{
+		Name:       opListAppInstanceBots,
+		HTTPMethod: "GET",
+		HTTPPath:   "/app-instance-bots",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAppInstanceBotsInput{}
+	}
+
+	output = &ListAppInstanceBotsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListAppInstanceBots API operation for Amazon Chime SDK Identity.
+//
+// Lists all AppInstanceBots created under a single AppInstance.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Identity's
+// API operation ListAppInstanceBots for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceBots
+func (c *ChimeSDKIdentity) ListAppInstanceBots(input *ListAppInstanceBotsInput) (*ListAppInstanceBotsOutput, error) {
+	req, out := c.ListAppInstanceBotsRequest(input)
+	return out, req.Send()
+}
+
+// ListAppInstanceBotsWithContext is the same as ListAppInstanceBots with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAppInstanceBots for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) ListAppInstanceBotsWithContext(ctx aws.Context, input *ListAppInstanceBotsInput, opts ...request.Option) (*ListAppInstanceBotsOutput, error) {
+	req, out := c.ListAppInstanceBotsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAppInstanceBotsPages iterates over the pages of a ListAppInstanceBots operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAppInstanceBots method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAppInstanceBots operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceBotsPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceBotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *ChimeSDKIdentity) ListAppInstanceBotsPages(input *ListAppInstanceBotsInput, fn func(*ListAppInstanceBotsOutput, bool) bool) error {
+	return c.ListAppInstanceBotsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAppInstanceBotsPagesWithContext same as ListAppInstanceBotsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) ListAppInstanceBotsPagesWithContext(ctx aws.Context, input *ListAppInstanceBotsInput, fn func(*ListAppInstanceBotsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAppInstanceBotsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAppInstanceBotsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAppInstanceBotsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListAppInstanceUserEndpoints = "ListAppInstanceUserEndpoints"
 
 // ListAppInstanceUserEndpointsRequest generates a "aws/request.Request" representing the
@@ -1367,14 +1822,13 @@ const opListAppInstanceUserEndpoints = "ListAppInstanceUserEndpoints"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstanceUserEndpointsRequest method.
+//	req, resp := client.ListAppInstanceUserEndpointsRequest(params)
 //
-//    // Example sending a request using the ListAppInstanceUserEndpointsRequest method.
-//    req, resp := client.ListAppInstanceUserEndpointsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUserEndpoints
 func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsRequest(input *ListAppInstanceUserEndpointsInput) (req *request.Request, output *ListAppInstanceUserEndpointsOutput) {
@@ -1411,23 +1865,24 @@ func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsRequest(input *ListAppIns
 // API operation ListAppInstanceUserEndpoints for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUserEndpoints
 func (c *ChimeSDKIdentity) ListAppInstanceUserEndpoints(input *ListAppInstanceUserEndpointsInput) (*ListAppInstanceUserEndpointsOutput, error) {
@@ -1459,15 +1914,14 @@ func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsWithContext(ctx aws.Conte
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstanceUserEndpoints operation.
-//    pageNum := 0
-//    err := client.ListAppInstanceUserEndpointsPages(params,
-//        func(page *chimesdkidentity.ListAppInstanceUserEndpointsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstanceUserEndpoints operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceUserEndpointsPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceUserEndpointsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstanceUserEndpointsPages(input *ListAppInstanceUserEndpointsInput, fn func(*ListAppInstanceUserEndpointsOutput, bool) bool) error {
 	return c.ListAppInstanceUserEndpointsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1519,14 +1973,13 @@ const opListAppInstanceUsers = "ListAppInstanceUsers"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstanceUsersRequest method.
+//	req, resp := client.ListAppInstanceUsersRequest(params)
 //
-//    // Example sending a request using the ListAppInstanceUsersRequest method.
-//    req, resp := client.ListAppInstanceUsersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUsers
 func (c *ChimeSDKIdentity) ListAppInstanceUsersRequest(input *ListAppInstanceUsersInput) (req *request.Request, output *ListAppInstanceUsersOutput) {
@@ -1563,23 +2016,24 @@ func (c *ChimeSDKIdentity) ListAppInstanceUsersRequest(input *ListAppInstanceUse
 // API operation ListAppInstanceUsers for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstanceUsers
 func (c *ChimeSDKIdentity) ListAppInstanceUsers(input *ListAppInstanceUsersInput) (*ListAppInstanceUsersOutput, error) {
@@ -1611,15 +2065,14 @@ func (c *ChimeSDKIdentity) ListAppInstanceUsersWithContext(ctx aws.Context, inpu
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstanceUsers operation.
-//    pageNum := 0
-//    err := client.ListAppInstanceUsersPages(params,
-//        func(page *chimesdkidentity.ListAppInstanceUsersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstanceUsers operation.
+//	pageNum := 0
+//	err := client.ListAppInstanceUsersPages(params,
+//	    func(page *chimesdkidentity.ListAppInstanceUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstanceUsersPages(input *ListAppInstanceUsersInput, fn func(*ListAppInstanceUsersOutput, bool) bool) error {
 	return c.ListAppInstanceUsersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1671,14 +2124,13 @@ const opListAppInstances = "ListAppInstances"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAppInstancesRequest method.
+//	req, resp := client.ListAppInstancesRequest(params)
 //
-//    // Example sending a request using the ListAppInstancesRequest method.
-//    req, resp := client.ListAppInstancesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstances
 func (c *ChimeSDKIdentity) ListAppInstancesRequest(input *ListAppInstancesInput) (req *request.Request, output *ListAppInstancesOutput) {
@@ -1715,23 +2167,24 @@ func (c *ChimeSDKIdentity) ListAppInstancesRequest(input *ListAppInstancesInput)
 // API operation ListAppInstances for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListAppInstances
 func (c *ChimeSDKIdentity) ListAppInstances(input *ListAppInstancesInput) (*ListAppInstancesOutput, error) {
@@ -1763,15 +2216,14 @@ func (c *ChimeSDKIdentity) ListAppInstancesWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAppInstances operation.
-//    pageNum := 0
-//    err := client.ListAppInstancesPages(params,
-//        func(page *chimesdkidentity.ListAppInstancesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAppInstances operation.
+//	pageNum := 0
+//	err := client.ListAppInstancesPages(params,
+//	    func(page *chimesdkidentity.ListAppInstancesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *ChimeSDKIdentity) ListAppInstancesPages(input *ListAppInstancesInput, fn func(*ListAppInstancesOutput, bool) bool) error {
 	return c.ListAppInstancesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1823,14 +2275,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListTagsForResource
 func (c *ChimeSDKIdentity) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1861,23 +2312,24 @@ func (c *ChimeSDKIdentity) ListTagsForResourceRequest(input *ListTagsForResource
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/ListTagsForResource
 func (c *ChimeSDKIdentity) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -1917,14 +2369,13 @@ const opPutAppInstanceRetentionSettings = "PutAppInstanceRetentionSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutAppInstanceRetentionSettingsRequest method.
+//	req, resp := client.PutAppInstanceRetentionSettingsRequest(params)
 //
-//    // Example sending a request using the PutAppInstanceRetentionSettingsRequest method.
-//    req, resp := client.PutAppInstanceRetentionSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/PutAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettingsRequest(input *PutAppInstanceRetentionSettingsInput) (req *request.Request, output *PutAppInstanceRetentionSettingsOutput) {
@@ -1955,23 +2406,24 @@ func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettingsRequest(input *PutAppI
 // API operation PutAppInstanceRetentionSettings for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/PutAppInstanceRetentionSettings
 func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettings(input *PutAppInstanceRetentionSettingsInput) (*PutAppInstanceRetentionSettingsOutput, error) {
@@ -1995,6 +2447,110 @@ func (c *ChimeSDKIdentity) PutAppInstanceRetentionSettingsWithContext(ctx aws.Co
 	return out, req.Send()
 }
 
+const opPutAppInstanceUserExpirationSettings = "PutAppInstanceUserExpirationSettings"
+
+// PutAppInstanceUserExpirationSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the PutAppInstanceUserExpirationSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutAppInstanceUserExpirationSettings for more information on using the PutAppInstanceUserExpirationSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PutAppInstanceUserExpirationSettingsRequest method.
+//	req, resp := client.PutAppInstanceUserExpirationSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/PutAppInstanceUserExpirationSettings
+func (c *ChimeSDKIdentity) PutAppInstanceUserExpirationSettingsRequest(input *PutAppInstanceUserExpirationSettingsInput) (req *request.Request, output *PutAppInstanceUserExpirationSettingsOutput) {
+	op := &request.Operation{
+		Name:       opPutAppInstanceUserExpirationSettings,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/app-instance-users/{appInstanceUserArn}/expiration-settings",
+	}
+
+	if input == nil {
+		input = &PutAppInstanceUserExpirationSettingsInput{}
+	}
+
+	output = &PutAppInstanceUserExpirationSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutAppInstanceUserExpirationSettings API operation for Amazon Chime SDK Identity.
+//
+// Sets the number of days before the AppInstanceUser is automatically deleted.
+//
+// A background process deletes expired AppInstanceUsers within 6 hours of expiration.
+// Actual deletion times may vary.
+//
+// Expired AppInstanceUsers that have not yet been deleted appear as active,
+// and you can update their expiration settings. The system honors the new settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Identity's
+// API operation PutAppInstanceUserExpirationSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/PutAppInstanceUserExpirationSettings
+func (c *ChimeSDKIdentity) PutAppInstanceUserExpirationSettings(input *PutAppInstanceUserExpirationSettingsInput) (*PutAppInstanceUserExpirationSettingsOutput, error) {
+	req, out := c.PutAppInstanceUserExpirationSettingsRequest(input)
+	return out, req.Send()
+}
+
+// PutAppInstanceUserExpirationSettingsWithContext is the same as PutAppInstanceUserExpirationSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutAppInstanceUserExpirationSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) PutAppInstanceUserExpirationSettingsWithContext(ctx aws.Context, input *PutAppInstanceUserExpirationSettingsInput, opts ...request.Option) (*PutAppInstanceUserExpirationSettingsOutput, error) {
+	req, out := c.PutAppInstanceUserExpirationSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opRegisterAppInstanceUserEndpoint = "RegisterAppInstanceUserEndpoint"
 
 // RegisterAppInstanceUserEndpointRequest generates a "aws/request.Request" representing the
@@ -2011,14 +2567,13 @@ const opRegisterAppInstanceUserEndpoint = "RegisterAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the RegisterAppInstanceUserEndpointRequest method.
+//	req, resp := client.RegisterAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the RegisterAppInstanceUserEndpointRequest method.
-//    req, resp := client.RegisterAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/RegisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) RegisterAppInstanceUserEndpointRequest(input *RegisterAppInstanceUserEndpointInput) (req *request.Request, output *RegisterAppInstanceUserEndpointOutput) {
@@ -2051,30 +2606,31 @@ func (c *ChimeSDKIdentity) RegisterAppInstanceUserEndpointRequest(input *Registe
 // API operation RegisterAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/RegisterAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) RegisterAppInstanceUserEndpoint(input *RegisterAppInstanceUserEndpointInput) (*RegisterAppInstanceUserEndpointOutput, error) {
@@ -2114,14 +2670,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/TagResource
 func (c *ChimeSDKIdentity) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -2153,26 +2708,27 @@ func (c *ChimeSDKIdentity) TagResourceRequest(input *TagResourceInput) (req *req
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/TagResource
 func (c *ChimeSDKIdentity) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -2212,14 +2768,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UntagResource
 func (c *ChimeSDKIdentity) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -2251,23 +2806,24 @@ func (c *ChimeSDKIdentity) UntagResourceRequest(input *UntagResourceInput) (req 
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UntagResource
 func (c *ChimeSDKIdentity) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -2307,14 +2863,13 @@ const opUpdateAppInstance = "UpdateAppInstance"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppInstanceRequest method.
+//	req, resp := client.UpdateAppInstanceRequest(params)
 //
-//    // Example sending a request using the UpdateAppInstanceRequest method.
-//    req, resp := client.UpdateAppInstanceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstance
 func (c *ChimeSDKIdentity) UpdateAppInstanceRequest(input *UpdateAppInstanceInput) (req *request.Request, output *UpdateAppInstanceOutput) {
@@ -2345,27 +2900,28 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceRequest(input *UpdateAppInstanceInpu
 // API operation UpdateAppInstance for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstance
 func (c *ChimeSDKIdentity) UpdateAppInstance(input *UpdateAppInstanceInput) (*UpdateAppInstanceOutput, error) {
@@ -2389,6 +2945,107 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceWithContext(ctx aws.Context, input *
 	return out, req.Send()
 }
 
+const opUpdateAppInstanceBot = "UpdateAppInstanceBot"
+
+// UpdateAppInstanceBotRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateAppInstanceBot operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateAppInstanceBot for more information on using the UpdateAppInstanceBot
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateAppInstanceBotRequest method.
+//	req, resp := client.UpdateAppInstanceBotRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceBot
+func (c *ChimeSDKIdentity) UpdateAppInstanceBotRequest(input *UpdateAppInstanceBotInput) (req *request.Request, output *UpdateAppInstanceBotOutput) {
+	op := &request.Operation{
+		Name:       opUpdateAppInstanceBot,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/app-instance-bots/{appInstanceBotArn}",
+	}
+
+	if input == nil {
+		input = &UpdateAppInstanceBotInput{}
+	}
+
+	output = &UpdateAppInstanceBotOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateAppInstanceBot API operation for Amazon Chime SDK Identity.
+//
+// Updates the name and metadata of an AppInstanceBot.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Chime SDK Identity's
+// API operation UpdateAppInstanceBot for usage and error information.
+//
+// Returned Error Types:
+//
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
+//
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
+//
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
+//
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
+//
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
+//
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
+//
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceBot
+func (c *ChimeSDKIdentity) UpdateAppInstanceBot(input *UpdateAppInstanceBotInput) (*UpdateAppInstanceBotOutput, error) {
+	req, out := c.UpdateAppInstanceBotRequest(input)
+	return out, req.Send()
+}
+
+// UpdateAppInstanceBotWithContext is the same as UpdateAppInstanceBot with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateAppInstanceBot for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ChimeSDKIdentity) UpdateAppInstanceBotWithContext(ctx aws.Context, input *UpdateAppInstanceBotInput, opts ...request.Option) (*UpdateAppInstanceBotOutput, error) {
+	req, out := c.UpdateAppInstanceBotRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateAppInstanceUser = "UpdateAppInstanceUser"
 
 // UpdateAppInstanceUserRequest generates a "aws/request.Request" representing the
@@ -2405,14 +3062,13 @@ const opUpdateAppInstanceUser = "UpdateAppInstanceUser"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppInstanceUserRequest method.
+//	req, resp := client.UpdateAppInstanceUserRequest(params)
 //
-//    // Example sending a request using the UpdateAppInstanceUserRequest method.
-//    req, resp := client.UpdateAppInstanceUserRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUser
 func (c *ChimeSDKIdentity) UpdateAppInstanceUserRequest(input *UpdateAppInstanceUserInput) (req *request.Request, output *UpdateAppInstanceUserOutput) {
@@ -2443,30 +3099,31 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceUserRequest(input *UpdateAppInstance
 // API operation UpdateAppInstanceUser for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ResourceLimitExceededException
-//   The request exceeds the resource limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ResourceLimitExceededException
+//     The request exceeds the resource limit.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUser
 func (c *ChimeSDKIdentity) UpdateAppInstanceUser(input *UpdateAppInstanceUserInput) (*UpdateAppInstanceUserOutput, error) {
@@ -2506,14 +3163,13 @@ const opUpdateAppInstanceUserEndpoint = "UpdateAppInstanceUserEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateAppInstanceUserEndpointRequest method.
+//	req, resp := client.UpdateAppInstanceUserEndpointRequest(params)
 //
-//    // Example sending a request using the UpdateAppInstanceUserEndpointRequest method.
-//    req, resp := client.UpdateAppInstanceUserEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) UpdateAppInstanceUserEndpointRequest(input *UpdateAppInstanceUserEndpointInput) (req *request.Request, output *UpdateAppInstanceUserEndpointOutput) {
@@ -2545,27 +3201,28 @@ func (c *ChimeSDKIdentity) UpdateAppInstanceUserEndpointRequest(input *UpdateApp
 // API operation UpdateAppInstanceUserEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * BadRequestException
-//   The input parameters don't match the service's restrictions.
 //
-//   * ConflictException
-//   The request could not be processed because of conflict in the current state
-//   of the resource.
+//   - BadRequestException
+//     The input parameters don't match the service's restrictions.
 //
-//   * ForbiddenException
-//   The client is permanently forbidden from making the request.
+//   - ConflictException
+//     The request could not be processed because of conflict in the current state
+//     of the resource.
 //
-//   * ThrottledClientException
-//   The client exceeded its request rate limit.
+//   - ForbiddenException
+//     The client is permanently forbidden from making the request.
 //
-//   * UnauthorizedClientException
-//   The client is not currently authorized to make the request.
+//   - ThrottledClientException
+//     The client exceeded its request rate limit.
 //
-//   * ServiceUnavailableException
-//   The service is currently unavailable.
+//   - UnauthorizedClientException
+//     The client is not currently authorized to make the request.
 //
-//   * ServiceFailureException
-//   The service encountered an unexpected error.
+//   - ServiceUnavailableException
+//     The service is currently unavailable.
+//
+//   - ServiceFailureException
+//     The service encountered an unexpected error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/chime-sdk-identity-2021-04-20/UpdateAppInstanceUserEndpoint
 func (c *ChimeSDKIdentity) UpdateAppInstanceUserEndpoint(input *UpdateAppInstanceUserEndpointInput) (*UpdateAppInstanceUserEndpointOutput, error) {
@@ -2666,7 +3323,7 @@ func (s *AppInstance) SetName(v string) *AppInstance {
 	return s
 }
 
-// The details of an AppInstanceAdmin.
+// The name and ARN of the admin for the AppInstance.
 type AppInstanceAdmin struct {
 	_ struct{} `type:"structure"`
 
@@ -2745,6 +3402,149 @@ func (s AppInstanceAdminSummary) GoString() string {
 // SetAdmin sets the Admin field's value.
 func (s *AppInstanceAdminSummary) SetAdmin(v *Identity) *AppInstanceAdminSummary {
 	s.Admin = v
+	return s
+}
+
+// An Amazon Lex V2 chat bot created under an AppInstance.
+type AppInstanceBot struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstanceBot.
+	AppInstanceBotArn *string `min:"5" type:"string"`
+
+	// The data processing instructions for an AppInstanceBot.
+	Configuration *Configuration `type:"structure"`
+
+	// The time at which the AppInstanceBot was created.
+	CreatedTimestamp *time.Time `type:"timestamp"`
+
+	// The time at which the AppInstanceBot was last updated.
+	LastUpdatedTimestamp *time.Time `type:"timestamp"`
+
+	// The metadata for an AppInstanceBot.
+	//
+	// Metadata is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AppInstanceBot's
+	// String and GoString methods.
+	Metadata *string `type:"string" sensitive:"true"`
+
+	// The name of the AppInstanceBot.
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AppInstanceBot's
+	// String and GoString methods.
+	Name *string `type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppInstanceBot) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppInstanceBot) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *AppInstanceBot) SetAppInstanceBotArn(v string) *AppInstanceBot {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *AppInstanceBot) SetConfiguration(v *Configuration) *AppInstanceBot {
+	s.Configuration = v
+	return s
+}
+
+// SetCreatedTimestamp sets the CreatedTimestamp field's value.
+func (s *AppInstanceBot) SetCreatedTimestamp(v time.Time) *AppInstanceBot {
+	s.CreatedTimestamp = &v
+	return s
+}
+
+// SetLastUpdatedTimestamp sets the LastUpdatedTimestamp field's value.
+func (s *AppInstanceBot) SetLastUpdatedTimestamp(v time.Time) *AppInstanceBot {
+	s.LastUpdatedTimestamp = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *AppInstanceBot) SetMetadata(v string) *AppInstanceBot {
+	s.Metadata = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AppInstanceBot) SetName(v string) *AppInstanceBot {
+	s.Name = &v
+	return s
+}
+
+// High-level information about an AppInstanceBot.
+type AppInstanceBotSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstanceBot.
+	AppInstanceBotArn *string `min:"5" type:"string"`
+
+	// The metadata of the AppInstanceBot.
+	//
+	// Metadata is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AppInstanceBotSummary's
+	// String and GoString methods.
+	Metadata *string `type:"string" sensitive:"true"`
+
+	// The name of the AppInstanceBox.
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by AppInstanceBotSummary's
+	// String and GoString methods.
+	Name *string `type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppInstanceBotSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AppInstanceBotSummary) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *AppInstanceBotSummary) SetAppInstanceBotArn(v string) *AppInstanceBotSummary {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *AppInstanceBotSummary) SetMetadata(v string) *AppInstanceBotSummary {
+	s.Metadata = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *AppInstanceBotSummary) SetName(v string) *AppInstanceBotSummary {
+	s.Name = &v
 	return s
 }
 
@@ -2863,6 +3663,9 @@ type AppInstanceUser struct {
 	// The time at which the AppInstanceUser was created.
 	CreatedTimestamp *time.Time `type:"timestamp"`
 
+	// The interval after which an AppInstanceUser is automatically deleted.
+	ExpirationSettings *ExpirationSettings `type:"structure"`
+
 	// The time at which the AppInstanceUser was last updated.
 	LastUpdatedTimestamp *time.Time `type:"timestamp"`
 
@@ -2911,6 +3714,12 @@ func (s *AppInstanceUser) SetCreatedTimestamp(v time.Time) *AppInstanceUser {
 	return s
 }
 
+// SetExpirationSettings sets the ExpirationSettings field's value.
+func (s *AppInstanceUser) SetExpirationSettings(v *ExpirationSettings) *AppInstanceUser {
+	s.ExpirationSettings = v
+	return s
+}
+
 // SetLastUpdatedTimestamp sets the LastUpdatedTimestamp field's value.
 func (s *AppInstanceUser) SetLastUpdatedTimestamp(v time.Time) *AppInstanceUser {
 	s.LastUpdatedTimestamp = &v
@@ -2941,11 +3750,7 @@ type AppInstanceUserEndpoint struct {
 	AllowMessages *string `type:"string" enum:"AllowMessages"`
 
 	// The ARN of the AppInstanceUser.
-	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by AppInstanceUserEndpoint's
-	// String and GoString methods.
-	AppInstanceUserArn *string `min:"5" type:"string" sensitive:"true"`
+	AppInstanceUserArn *string `min:"5" type:"string"`
 
 	// The time at which an AppInstanceUserEndpoint was created.
 	CreatedTimestamp *time.Time `type:"timestamp"`
@@ -2954,11 +3759,7 @@ type AppInstanceUserEndpoint struct {
 	EndpointAttributes *EndpointAttributes `type:"structure"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
-	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by AppInstanceUserEndpoint's
-	// String and GoString methods.
-	EndpointId *string `type:"string" sensitive:"true"`
+	EndpointId *string `type:"string"`
 
 	// A read-only field that represents the state of an AppInstanceUserEndpoint.
 	// Supported values:
@@ -2989,11 +3790,7 @@ type AppInstanceUserEndpoint struct {
 	Name *string `type:"string" sensitive:"true"`
 
 	// The ARN of the resource to which the endpoint belongs.
-	//
-	// ResourceArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by AppInstanceUserEndpoint's
-	// String and GoString methods.
-	ResourceArn *string `min:"5" type:"string" sensitive:"true"`
+	ResourceArn *string `min:"5" type:"string"`
 
 	// The type of the AppInstanceUserEndpoint.
 	Type *string `type:"string" enum:"AppInstanceUserEndpointType"`
@@ -3087,18 +3884,10 @@ type AppInstanceUserEndpointSummary struct {
 	AllowMessages *string `type:"string" enum:"AllowMessages"`
 
 	// The ARN of the AppInstanceUser.
-	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by AppInstanceUserEndpointSummary's
-	// String and GoString methods.
-	AppInstanceUserArn *string `min:"5" type:"string" sensitive:"true"`
+	AppInstanceUserArn *string `min:"5" type:"string"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
-	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by AppInstanceUserEndpointSummary's
-	// String and GoString methods.
-	EndpointId *string `type:"string" sensitive:"true"`
+	EndpointId *string `type:"string"`
 
 	// A read-only field that represent the state of an AppInstanceUserEndpoint.
 	EndpointState *EndpointState `type:"structure"`
@@ -3337,6 +4126,58 @@ func (s *ChannelRetentionSettings) SetRetentionDays(v int64) *ChannelRetentionSe
 	return s
 }
 
+// A structure that contains configuration data.
+type Configuration struct {
+	_ struct{} `type:"structure"`
+
+	// The configuration for an Amazon Lex V2 bot.
+	//
+	// Lex is a required field
+	Lex *LexConfiguration `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Configuration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Configuration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *Configuration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "Configuration"}
+	if s.Lex == nil {
+		invalidParams.Add(request.NewErrParamRequired("Lex"))
+	}
+	if s.Lex != nil {
+		if err := s.Lex.Validate(); err != nil {
+			invalidParams.AddNested("Lex", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLex sets the Lex field's value.
+func (s *Configuration) SetLex(v *LexConfiguration) *Configuration {
+	s.Lex = v
+	return s
+}
+
 // The request could not be processed because of conflict in the current state
 // of the resource.
 type ConflictException struct {
@@ -3473,7 +4314,8 @@ func (s *CreateAppInstanceAdminInput) SetAppInstanceArn(v string) *CreateAppInst
 type CreateAppInstanceAdminOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The name and ARN of the admin for the AppInstance.
+	// The ARN and name of the administrator, the ARN of the AppInstance, and the
+	// created and last-updated timestamps. All timestamps use epoch milliseconds.
 	AppInstanceAdmin *Identity `type:"structure"`
 
 	// The ARN of the of the admin for the AppInstance.
@@ -3510,15 +4352,171 @@ func (s *CreateAppInstanceAdminOutput) SetAppInstanceArn(v string) *CreateAppIns
 	return s
 }
 
+type CreateAppInstanceBotInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstance request.
+	//
+	// AppInstanceArn is a required field
+	AppInstanceArn *string `min:"5" type:"string" required:"true"`
+
+	// The unique ID for the client making the request. Use different tokens for
+	// different AppInstanceBots.
+	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true"`
+
+	// Configuration information about the Amazon Lex V2 V2 bot.
+	//
+	// Configuration is a required field
+	Configuration *Configuration `type:"structure" required:"true"`
+
+	// The request metadata. Limited to a 1KB string in UTF-8.
+	//
+	// Metadata is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAppInstanceBotInput's
+	// String and GoString methods.
+	Metadata *string `type:"string" sensitive:"true"`
+
+	// The user's name.
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateAppInstanceBotInput's
+	// String and GoString methods.
+	Name *string `type:"string" sensitive:"true"`
+
+	// The tags assigned to the AppInstanceBot.
+	Tags []*Tag `min:"1" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppInstanceBotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppInstanceBotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateAppInstanceBotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateAppInstanceBotInput"}
+	if s.AppInstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppInstanceArn"))
+	}
+	if s.AppInstanceArn != nil && len(*s.AppInstanceArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("AppInstanceArn", 5))
+	}
+	if s.ClientRequestToken != nil && len(*s.ClientRequestToken) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientRequestToken", 2))
+	}
+	if s.Configuration == nil {
+		invalidParams.Add(request.NewErrParamRequired("Configuration"))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+	if s.Configuration != nil {
+		if err := s.Configuration.Validate(); err != nil {
+			invalidParams.AddNested("Configuration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppInstanceArn sets the AppInstanceArn field's value.
+func (s *CreateAppInstanceBotInput) SetAppInstanceArn(v string) *CreateAppInstanceBotInput {
+	s.AppInstanceArn = &v
+	return s
+}
+
+// SetClientRequestToken sets the ClientRequestToken field's value.
+func (s *CreateAppInstanceBotInput) SetClientRequestToken(v string) *CreateAppInstanceBotInput {
+	s.ClientRequestToken = &v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *CreateAppInstanceBotInput) SetConfiguration(v *Configuration) *CreateAppInstanceBotInput {
+	s.Configuration = v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *CreateAppInstanceBotInput) SetMetadata(v string) *CreateAppInstanceBotInput {
+	s.Metadata = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateAppInstanceBotInput) SetName(v string) *CreateAppInstanceBotInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateAppInstanceBotInput) SetTags(v []*Tag) *CreateAppInstanceBotInput {
+	s.Tags = v
+	return s
+}
+
+type CreateAppInstanceBotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppinstanceBot.
+	AppInstanceBotArn *string `min:"5" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppInstanceBotOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateAppInstanceBotOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *CreateAppInstanceBotOutput) SetAppInstanceBotArn(v string) *CreateAppInstanceBotOutput {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
 type CreateAppInstanceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ClientRequestToken of the AppInstance.
-	//
-	// ClientRequestToken is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by CreateAppInstanceInput's
-	// String and GoString methods.
-	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true" sensitive:"true"`
+	// The unique ID of the request. Use different tokens to create different AppInstances.
+	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true"`
 
 	// The metadata of the AppInstance. Limited to a 1KB string in UTF-8.
 	//
@@ -3536,7 +4534,7 @@ type CreateAppInstanceInput struct {
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true" sensitive:"true"`
 
-	// Tags assigned to the AppInstanceUser.
+	// Tags assigned to the AppInstance.
 	Tags []*Tag `min:"1" type:"list"`
 }
 
@@ -3662,12 +4660,13 @@ type CreateAppInstanceUserInput struct {
 	// AppInstanceUserId is a required field
 	AppInstanceUserId *string `min:"1" type:"string" required:"true" sensitive:"true"`
 
-	// The token assigned to the user requesting an AppInstance.
-	//
-	// ClientRequestToken is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by CreateAppInstanceUserInput's
-	// String and GoString methods.
-	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true" sensitive:"true"`
+	// The unique ID of the request. Use different tokens to request additional
+	// AppInstances.
+	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true"`
+
+	// Settings that control the interval after which the AppInstanceUser is automatically
+	// deleted.
+	ExpirationSettings *ExpirationSettings `type:"structure"`
 
 	// The request's metadata. Limited to a 1KB string in UTF-8.
 	//
@@ -3734,6 +4733,11 @@ func (s *CreateAppInstanceUserInput) Validate() error {
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
 	}
+	if s.ExpirationSettings != nil {
+		if err := s.ExpirationSettings.Validate(); err != nil {
+			invalidParams.AddNested("ExpirationSettings", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Tags != nil {
 		for i, v := range s.Tags {
 			if v == nil {
@@ -3766,6 +4770,12 @@ func (s *CreateAppInstanceUserInput) SetAppInstanceUserId(v string) *CreateAppIn
 // SetClientRequestToken sets the ClientRequestToken field's value.
 func (s *CreateAppInstanceUserInput) SetClientRequestToken(v string) *CreateAppInstanceUserInput {
 	s.ClientRequestToken = &v
+	return s
+}
+
+// SetExpirationSettings sets the ExpirationSettings field's value.
+func (s *CreateAppInstanceUserInput) SetExpirationSettings(v *ExpirationSettings) *CreateAppInstanceUserInput {
+	s.ExpirationSettings = v
 	return s
 }
 
@@ -3903,6 +4913,77 @@ func (s DeleteAppInstanceAdminOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteAppInstanceAdminOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteAppInstanceBotInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the AppInstanceBot being deleted.
+	//
+	// AppInstanceBotArn is a required field
+	AppInstanceBotArn *string `location:"uri" locationName:"appInstanceBotArn" min:"5" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppInstanceBotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppInstanceBotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAppInstanceBotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAppInstanceBotInput"}
+	if s.AppInstanceBotArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppInstanceBotArn"))
+	}
+	if s.AppInstanceBotArn != nil && len(*s.AppInstanceBotArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("AppInstanceBotArn", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *DeleteAppInstanceBotInput) SetAppInstanceBotArn(v string) *DeleteAppInstanceBotInput {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
+type DeleteAppInstanceBotOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppInstanceBotOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteAppInstanceBotOutput) GoString() string {
 	return s.String()
 }
 
@@ -4053,21 +5134,13 @@ type DeregisterAppInstanceUserEndpointInput struct {
 
 	// The ARN of the AppInstanceUser.
 	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by DeregisterAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// AppInstanceUserArn is a required field
-	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" min:"5" type:"string" required:"true" sensitive:"true"`
+	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" min:"5" type:"string" required:"true"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
 	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by DeregisterAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// EndpointId is a required field
-	EndpointId *string `location:"uri" locationName:"endpointId" type:"string" required:"true" sensitive:"true"`
+	EndpointId *string `location:"uri" locationName:"endpointId" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -4242,6 +5315,86 @@ func (s *DescribeAppInstanceAdminOutput) SetAppInstanceAdmin(v *AppInstanceAdmin
 	return s
 }
 
+type DescribeAppInstanceBotInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the AppInstanceBot.
+	//
+	// AppInstanceBotArn is a required field
+	AppInstanceBotArn *string `location:"uri" locationName:"appInstanceBotArn" min:"5" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppInstanceBotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppInstanceBotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeAppInstanceBotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeAppInstanceBotInput"}
+	if s.AppInstanceBotArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppInstanceBotArn"))
+	}
+	if s.AppInstanceBotArn != nil && len(*s.AppInstanceBotArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("AppInstanceBotArn", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *DescribeAppInstanceBotInput) SetAppInstanceBotArn(v string) *DescribeAppInstanceBotInput {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
+type DescribeAppInstanceBotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The detials of the AppInstanceBot.
+	AppInstanceBot *AppInstanceBot `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppInstanceBotOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeAppInstanceBotOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceBot sets the AppInstanceBot field's value.
+func (s *DescribeAppInstanceBotOutput) SetAppInstanceBot(v *AppInstanceBot) *DescribeAppInstanceBotOutput {
+	s.AppInstanceBot = v
+	return s
+}
+
 type DescribeAppInstanceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4328,21 +5481,13 @@ type DescribeAppInstanceUserEndpointInput struct {
 
 	// The ARN of the AppInstanceUser.
 	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by DescribeAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// AppInstanceUserArn is a required field
-	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" type:"string" required:"true" sensitive:"true"`
+	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" type:"string" required:"true"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
 	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by DescribeAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// EndpointId is a required field
-	EndpointId *string `location:"uri" locationName:"endpointId" type:"string" required:"true" sensitive:"true"`
+	EndpointId *string `location:"uri" locationName:"endpointId" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -4583,19 +5728,19 @@ func (s *EndpointAttributes) SetVoipDeviceToken(v string) *EndpointAttributes {
 // A read-only field that represents the state of an AppInstanceUserEndpoint.
 // Supported values:
 //
-//    * ACTIVE: The AppInstanceUserEndpoint is active and able to receive messages.
-//    When ACTIVE, the EndpointStatusReason remains empty.
+//   - ACTIVE: The AppInstanceUserEndpoint is active and able to receive messages.
+//     When ACTIVE, the EndpointStatusReason remains empty.
 //
-//    * INACTIVE: The AppInstanceUserEndpoint is inactive and can't receive
-//    message. When INACTIVE, the corresponding reason will be conveyed through
-//    EndpointStatusReason.
+//   - INACTIVE: The AppInstanceUserEndpoint is inactive and can't receive
+//     message. When INACTIVE, the corresponding reason will be conveyed through
+//     EndpointStatusReason.
 //
-//    * INVALID_DEVICE_TOKEN indicates that an AppInstanceUserEndpoint is INACTIVE
-//    due to invalid device token
+//   - INVALID_DEVICE_TOKEN indicates that an AppInstanceUserEndpoint is INACTIVE
+//     due to invalid device token
 //
-//    * INVALID_PINPOINT_ARN indicates that an AppInstanceUserEndpoint is INACTIVE
-//    due to an invalid pinpoint ARN that was input through the ResourceArn
-//    field.
+//   - INVALID_PINPOINT_ARN indicates that an AppInstanceUserEndpoint is INACTIVE
+//     due to an invalid pinpoint ARN that was input through the ResourceArn
+//     field.
 type EndpointState struct {
 	_ struct{} `type:"structure"`
 
@@ -4635,6 +5780,70 @@ func (s *EndpointState) SetStatus(v string) *EndpointState {
 // SetStatusReason sets the StatusReason field's value.
 func (s *EndpointState) SetStatusReason(v string) *EndpointState {
 	s.StatusReason = &v
+	return s
+}
+
+// Determines the interval after which an AppInstanceUser is automatically deleted.
+type ExpirationSettings struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the conditions under which an AppInstanceUser will expire.
+	//
+	// ExpirationCriterion is a required field
+	ExpirationCriterion *string `type:"string" required:"true" enum:"ExpirationCriterion"`
+
+	// The period in days after which an AppInstanceUser will be automatically deleted.
+	//
+	// ExpirationDays is a required field
+	ExpirationDays *int64 `min:"1" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExpirationSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ExpirationSettings) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ExpirationSettings) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ExpirationSettings"}
+	if s.ExpirationCriterion == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExpirationCriterion"))
+	}
+	if s.ExpirationDays == nil {
+		invalidParams.Add(request.NewErrParamRequired("ExpirationDays"))
+	}
+	if s.ExpirationDays != nil && *s.ExpirationDays < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("ExpirationDays", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetExpirationCriterion sets the ExpirationCriterion field's value.
+func (s *ExpirationSettings) SetExpirationCriterion(v string) *ExpirationSettings {
+	s.ExpirationCriterion = &v
+	return s
+}
+
+// SetExpirationDays sets the ExpirationDays field's value.
+func (s *ExpirationSettings) SetExpirationDays(v int64) *ExpirationSettings {
+	s.ExpirationDays = &v
 	return s
 }
 
@@ -4794,7 +6003,7 @@ func (s *GetAppInstanceRetentionSettingsOutput) SetInitiateDeletionTimestamp(v t
 	return s
 }
 
-// The details of a user.
+// The details of a user or bot.
 type Identity struct {
 	_ struct{} `type:"structure"`
 
@@ -4836,6 +6045,190 @@ func (s *Identity) SetArn(v string) *Identity {
 // SetName sets the Name field's value.
 func (s *Identity) SetName(v string) *Identity {
 	s.Name = &v
+	return s
+}
+
+// Specifies the type of message that triggers a bot.
+type InvokedBy struct {
+	_ struct{} `type:"structure"`
+
+	// Sets standard messages as the bot trigger. For standard messages:
+	//
+	//    * ALL: The bot processes all standard messages.
+	//
+	//    * AUTO: The bot responds to ALL messages when the channel has one other
+	//    non-hidden member, and responds to MENTIONS when the channel has more
+	//    than one other non-hidden member.
+	//
+	//    * MENTIONS: The bot processes all standard messages that have a message
+	//    attribute with CHIME.mentions and a value of the bot ARN.
+	//
+	//    * NONE: The bot processes no standard messages.
+	//
+	// StandardMessages is a required field
+	StandardMessages *string `type:"string" required:"true" enum:"StandardMessages"`
+
+	// Sets targeted messages as the bot trigger. For targeted messages:
+	//
+	//    * ALL: The bot processes all TargetedMessages sent to it. The bot then
+	//    responds with a targeted message back to the sender.
+	//
+	//    * NONE: The bot processes no targeted messages.
+	//
+	// TargetedMessages is a required field
+	TargetedMessages *string `type:"string" required:"true" enum:"TargetedMessages"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvokedBy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvokedBy) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InvokedBy) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InvokedBy"}
+	if s.StandardMessages == nil {
+		invalidParams.Add(request.NewErrParamRequired("StandardMessages"))
+	}
+	if s.TargetedMessages == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetedMessages"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetStandardMessages sets the StandardMessages field's value.
+func (s *InvokedBy) SetStandardMessages(v string) *InvokedBy {
+	s.StandardMessages = &v
+	return s
+}
+
+// SetTargetedMessages sets the TargetedMessages field's value.
+func (s *InvokedBy) SetTargetedMessages(v string) *InvokedBy {
+	s.TargetedMessages = &v
+	return s
+}
+
+// The configuration for an Amazon Lex V2 bot.
+type LexConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the type of message that triggers a bot.
+	InvokedBy *InvokedBy `type:"structure"`
+
+	// The ARN of the Amazon Lex V2 bot's alias. The ARN uses this format: arn:aws:lex:REGION:ACCOUNT:bot-alias/MYBOTID/MYBOTALIAS
+	//
+	// LexBotAliasArn is a required field
+	LexBotAliasArn *string `min:"15" type:"string" required:"true"`
+
+	// Identifies the Amazon Lex V2 bot's language and locale. The string must match
+	// one of the supported locales in Amazon Lex V2. All of the intents, slot types,
+	// and slots used in the bot must have the same locale. For more information,
+	// see Supported languages (https://docs.aws.amazon.com/lexv2/latest/dg/how-languages.html)
+	// in the Amazon Lex V2 Developer Guide.
+	//
+	// LocaleId is a required field
+	LocaleId *string `type:"string" required:"true"`
+
+	//
+	// Deprecated. Use InvokedBy instead.
+	//
+	// Determines whether the Amazon Lex V2 bot responds to all standard messages.
+	// Control messages are not supported.
+	RespondsTo *string `type:"string" enum:"RespondsTo"`
+
+	// The name of the welcome intent configured in the Amazon Lex V2 bot.
+	WelcomeIntent *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LexConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LexConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LexConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LexConfiguration"}
+	if s.LexBotAliasArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("LexBotAliasArn"))
+	}
+	if s.LexBotAliasArn != nil && len(*s.LexBotAliasArn) < 15 {
+		invalidParams.Add(request.NewErrParamMinLen("LexBotAliasArn", 15))
+	}
+	if s.LocaleId == nil {
+		invalidParams.Add(request.NewErrParamRequired("LocaleId"))
+	}
+	if s.WelcomeIntent != nil && len(*s.WelcomeIntent) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("WelcomeIntent", 1))
+	}
+	if s.InvokedBy != nil {
+		if err := s.InvokedBy.Validate(); err != nil {
+			invalidParams.AddNested("InvokedBy", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetInvokedBy sets the InvokedBy field's value.
+func (s *LexConfiguration) SetInvokedBy(v *InvokedBy) *LexConfiguration {
+	s.InvokedBy = v
+	return s
+}
+
+// SetLexBotAliasArn sets the LexBotAliasArn field's value.
+func (s *LexConfiguration) SetLexBotAliasArn(v string) *LexConfiguration {
+	s.LexBotAliasArn = &v
+	return s
+}
+
+// SetLocaleId sets the LocaleId field's value.
+func (s *LexConfiguration) SetLocaleId(v string) *LexConfiguration {
+	s.LocaleId = &v
+	return s
+}
+
+// SetRespondsTo sets the RespondsTo field's value.
+func (s *LexConfiguration) SetRespondsTo(v string) *LexConfiguration {
+	s.RespondsTo = &v
+	return s
+}
+
+// SetWelcomeIntent sets the WelcomeIntent field's value.
+func (s *LexConfiguration) SetWelcomeIntent(v string) *LexConfiguration {
+	s.WelcomeIntent = &v
 	return s
 }
 
@@ -4964,6 +6357,133 @@ func (s *ListAppInstanceAdminsOutput) SetAppInstanceArn(v string) *ListAppInstan
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListAppInstanceAdminsOutput) SetNextToken(v string) *ListAppInstanceAdminsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListAppInstanceBotsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the AppInstance.
+	//
+	// AppInstanceArn is a required field
+	AppInstanceArn *string `location:"querystring" locationName:"app-instance-arn" min:"5" type:"string" required:"true"`
+
+	// The maximum number of requests to return.
+	MaxResults *int64 `location:"querystring" locationName:"max-results" min:"1" type:"integer"`
+
+	// The token passed by previous API calls until all requested bots are returned.
+	//
+	// NextToken is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ListAppInstanceBotsInput's
+	// String and GoString methods.
+	NextToken *string `location:"querystring" locationName:"next-token" type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAppInstanceBotsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAppInstanceBotsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAppInstanceBotsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAppInstanceBotsInput"}
+	if s.AppInstanceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppInstanceArn"))
+	}
+	if s.AppInstanceArn != nil && len(*s.AppInstanceArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("AppInstanceArn", 5))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppInstanceArn sets the AppInstanceArn field's value.
+func (s *ListAppInstanceBotsInput) SetAppInstanceArn(v string) *ListAppInstanceBotsInput {
+	s.AppInstanceArn = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAppInstanceBotsInput) SetMaxResults(v int64) *ListAppInstanceBotsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAppInstanceBotsInput) SetNextToken(v string) *ListAppInstanceBotsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListAppInstanceBotsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstance.
+	AppInstanceArn *string `min:"5" type:"string"`
+
+	// The information for each requested AppInstanceBot.
+	AppInstanceBots []*AppInstanceBotSummary `type:"list"`
+
+	// The token passed by previous API calls until all requested bots are returned.
+	//
+	// NextToken is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by ListAppInstanceBotsOutput's
+	// String and GoString methods.
+	NextToken *string `type:"string" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAppInstanceBotsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAppInstanceBotsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceArn sets the AppInstanceArn field's value.
+func (s *ListAppInstanceBotsOutput) SetAppInstanceArn(v string) *ListAppInstanceBotsOutput {
+	s.AppInstanceArn = &v
+	return s
+}
+
+// SetAppInstanceBots sets the AppInstanceBots field's value.
+func (s *ListAppInstanceBotsOutput) SetAppInstanceBots(v []*AppInstanceBotSummary) *ListAppInstanceBotsOutput {
+	s.AppInstanceBots = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAppInstanceBotsOutput) SetNextToken(v string) *ListAppInstanceBotsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -5402,6 +6922,72 @@ func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput
 	return s
 }
 
+// One or more of the resources in the request does not exist in the system.
+type NotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Code_ *string `locationName:"Code" type:"string" enum:"ErrorCode"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorNotFoundException(v protocol.ResponseMetadata) error {
+	return &NotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *NotFoundException) Code() string {
+	return "NotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *NotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *NotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *NotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *NotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *NotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type PutAppInstanceRetentionSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5510,6 +7096,111 @@ func (s *PutAppInstanceRetentionSettingsOutput) SetInitiateDeletionTimestamp(v t
 	return s
 }
 
+type PutAppInstanceUserExpirationSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstanceUser.
+	//
+	// AppInstanceUserArn is a required field
+	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" min:"5" type:"string" required:"true"`
+
+	// Settings that control the interval after which an AppInstanceUser is automatically
+	// deleted.
+	ExpirationSettings *ExpirationSettings `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAppInstanceUserExpirationSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAppInstanceUserExpirationSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutAppInstanceUserExpirationSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutAppInstanceUserExpirationSettingsInput"}
+	if s.AppInstanceUserArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppInstanceUserArn"))
+	}
+	if s.AppInstanceUserArn != nil && len(*s.AppInstanceUserArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("AppInstanceUserArn", 5))
+	}
+	if s.ExpirationSettings != nil {
+		if err := s.ExpirationSettings.Validate(); err != nil {
+			invalidParams.AddNested("ExpirationSettings", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppInstanceUserArn sets the AppInstanceUserArn field's value.
+func (s *PutAppInstanceUserExpirationSettingsInput) SetAppInstanceUserArn(v string) *PutAppInstanceUserExpirationSettingsInput {
+	s.AppInstanceUserArn = &v
+	return s
+}
+
+// SetExpirationSettings sets the ExpirationSettings field's value.
+func (s *PutAppInstanceUserExpirationSettingsInput) SetExpirationSettings(v *ExpirationSettings) *PutAppInstanceUserExpirationSettingsInput {
+	s.ExpirationSettings = v
+	return s
+}
+
+type PutAppInstanceUserExpirationSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstanceUser.
+	AppInstanceUserArn *string `min:"5" type:"string"`
+
+	// Settings that control the interval after which an AppInstanceUser is automatically
+	// deleted.
+	ExpirationSettings *ExpirationSettings `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAppInstanceUserExpirationSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PutAppInstanceUserExpirationSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceUserArn sets the AppInstanceUserArn field's value.
+func (s *PutAppInstanceUserExpirationSettingsOutput) SetAppInstanceUserArn(v string) *PutAppInstanceUserExpirationSettingsOutput {
+	s.AppInstanceUserArn = &v
+	return s
+}
+
+// SetExpirationSettings sets the ExpirationSettings field's value.
+func (s *PutAppInstanceUserExpirationSettingsOutput) SetExpirationSettings(v *ExpirationSettings) *PutAppInstanceUserExpirationSettingsOutput {
+	s.ExpirationSettings = v
+	return s
+}
+
 type RegisterAppInstanceUserEndpointInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5527,12 +7218,9 @@ type RegisterAppInstanceUserEndpointInput struct {
 	// AppInstanceUserArn is a required field
 	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" min:"5" type:"string" required:"true" sensitive:"true"`
 
-	// The idempotency token for each client request.
-	//
-	// ClientRequestToken is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by RegisterAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true" sensitive:"true"`
+	// The unique ID assigned to the request. Use different tokens to register other
+	// endpoints.
+	ClientRequestToken *string `min:"2" type:"string" idempotencyToken:"true"`
 
 	// The attributes of an Endpoint.
 	//
@@ -5548,12 +7236,8 @@ type RegisterAppInstanceUserEndpointInput struct {
 
 	// The ARN of the resource to which the endpoint belongs.
 	//
-	// ResourceArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by RegisterAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// ResourceArn is a required field
-	ResourceArn *string `min:"5" type:"string" required:"true" sensitive:"true"`
+	ResourceArn *string `min:"5" type:"string" required:"true"`
 
 	// The type of the AppInstanceUserEndpoint. Supported types:
 	//
@@ -5670,18 +7354,10 @@ type RegisterAppInstanceUserEndpointOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the AppInstanceUser.
-	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by RegisterAppInstanceUserEndpointOutput's
-	// String and GoString methods.
-	AppInstanceUserArn *string `min:"5" type:"string" sensitive:"true"`
+	AppInstanceUserArn *string `min:"5" type:"string"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
-	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by RegisterAppInstanceUserEndpointOutput's
-	// String and GoString methods.
-	EndpointId *string `type:"string" sensitive:"true"`
+	EndpointId *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -6305,6 +7981,136 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type UpdateAppInstanceBotInput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstanceBot.
+	//
+	// AppInstanceBotArn is a required field
+	AppInstanceBotArn *string `location:"uri" locationName:"appInstanceBotArn" min:"5" type:"string" required:"true"`
+
+	// The configuration for the bot update.
+	Configuration *Configuration `type:"structure"`
+
+	// The metadata of the AppInstanceBot.
+	//
+	// Metadata is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAppInstanceBotInput's
+	// String and GoString methods.
+	//
+	// Metadata is a required field
+	Metadata *string `type:"string" required:"true" sensitive:"true"`
+
+	// The name of the AppInstanceBot.
+	//
+	// Name is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateAppInstanceBotInput's
+	// String and GoString methods.
+	//
+	// Name is a required field
+	Name *string `type:"string" required:"true" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppInstanceBotInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppInstanceBotInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateAppInstanceBotInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateAppInstanceBotInput"}
+	if s.AppInstanceBotArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("AppInstanceBotArn"))
+	}
+	if s.AppInstanceBotArn != nil && len(*s.AppInstanceBotArn) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("AppInstanceBotArn", 5))
+	}
+	if s.Metadata == nil {
+		invalidParams.Add(request.NewErrParamRequired("Metadata"))
+	}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Configuration != nil {
+		if err := s.Configuration.Validate(); err != nil {
+			invalidParams.AddNested("Configuration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *UpdateAppInstanceBotInput) SetAppInstanceBotArn(v string) *UpdateAppInstanceBotInput {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
+// SetConfiguration sets the Configuration field's value.
+func (s *UpdateAppInstanceBotInput) SetConfiguration(v *Configuration) *UpdateAppInstanceBotInput {
+	s.Configuration = v
+	return s
+}
+
+// SetMetadata sets the Metadata field's value.
+func (s *UpdateAppInstanceBotInput) SetMetadata(v string) *UpdateAppInstanceBotInput {
+	s.Metadata = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *UpdateAppInstanceBotInput) SetName(v string) *UpdateAppInstanceBotInput {
+	s.Name = &v
+	return s
+}
+
+type UpdateAppInstanceBotOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the AppInstanceBot.
+	AppInstanceBotArn *string `min:"5" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppInstanceBotOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateAppInstanceBotOutput) GoString() string {
+	return s.String()
+}
+
+// SetAppInstanceBotArn sets the AppInstanceBotArn field's value.
+func (s *UpdateAppInstanceBotOutput) SetAppInstanceBotArn(v string) *UpdateAppInstanceBotOutput {
+	s.AppInstanceBotArn = &v
+	return s
+}
+
 type UpdateAppInstanceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6434,21 +8240,13 @@ type UpdateAppInstanceUserEndpointInput struct {
 
 	// The ARN of the AppInstanceUser.
 	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by UpdateAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// AppInstanceUserArn is a required field
-	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" min:"5" type:"string" required:"true" sensitive:"true"`
+	AppInstanceUserArn *string `location:"uri" locationName:"appInstanceUserArn" min:"5" type:"string" required:"true"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
 	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by UpdateAppInstanceUserEndpointInput's
-	// String and GoString methods.
-	//
 	// EndpointId is a required field
-	EndpointId *string `location:"uri" locationName:"endpointId" type:"string" required:"true" sensitive:"true"`
+	EndpointId *string `location:"uri" locationName:"endpointId" type:"string" required:"true"`
 
 	// The name of the AppInstanceUserEndpoint.
 	//
@@ -6526,18 +8324,10 @@ type UpdateAppInstanceUserEndpointOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the AppInstanceUser.
-	//
-	// AppInstanceUserArn is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by UpdateAppInstanceUserEndpointOutput's
-	// String and GoString methods.
-	AppInstanceUserArn *string `min:"5" type:"string" sensitive:"true"`
+	AppInstanceUserArn *string `min:"5" type:"string"`
 
 	// The unique identifier of the AppInstanceUserEndpoint.
-	//
-	// EndpointId is a sensitive parameter and its value will be
-	// replaced with "sensitive" in string returned by UpdateAppInstanceUserEndpointOutput's
-	// String and GoString methods.
-	EndpointId *string `type:"string" sensitive:"true"`
+	EndpointId *string `type:"string"`
 }
 
 // String returns the string representation.
@@ -6822,5 +8612,69 @@ func ErrorCode_Values() []string {
 		ErrorCodeUnprocessable,
 		ErrorCodeVoiceConnectorGroupAssociationsExist,
 		ErrorCodePhoneNumberAssociationsExist,
+	}
+}
+
+const (
+	// ExpirationCriterionCreatedTimestamp is a ExpirationCriterion enum value
+	ExpirationCriterionCreatedTimestamp = "CREATED_TIMESTAMP"
+)
+
+// ExpirationCriterion_Values returns all elements of the ExpirationCriterion enum
+func ExpirationCriterion_Values() []string {
+	return []string{
+		ExpirationCriterionCreatedTimestamp,
+	}
+}
+
+const (
+	// RespondsToStandardMessages is a RespondsTo enum value
+	RespondsToStandardMessages = "STANDARD_MESSAGES"
+)
+
+// RespondsTo_Values returns all elements of the RespondsTo enum
+func RespondsTo_Values() []string {
+	return []string{
+		RespondsToStandardMessages,
+	}
+}
+
+const (
+	// StandardMessagesAuto is a StandardMessages enum value
+	StandardMessagesAuto = "AUTO"
+
+	// StandardMessagesAll is a StandardMessages enum value
+	StandardMessagesAll = "ALL"
+
+	// StandardMessagesMentions is a StandardMessages enum value
+	StandardMessagesMentions = "MENTIONS"
+
+	// StandardMessagesNone is a StandardMessages enum value
+	StandardMessagesNone = "NONE"
+)
+
+// StandardMessages_Values returns all elements of the StandardMessages enum
+func StandardMessages_Values() []string {
+	return []string{
+		StandardMessagesAuto,
+		StandardMessagesAll,
+		StandardMessagesMentions,
+		StandardMessagesNone,
+	}
+}
+
+const (
+	// TargetedMessagesAll is a TargetedMessages enum value
+	TargetedMessagesAll = "ALL"
+
+	// TargetedMessagesNone is a TargetedMessages enum value
+	TargetedMessagesNone = "NONE"
+)
+
+// TargetedMessages_Values returns all elements of the TargetedMessages enum
+func TargetedMessages_Values() []string {
+	return []string{
+		TargetedMessagesAll,
+		TargetedMessagesNone,
 	}
 }

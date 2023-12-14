@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Elastic Load Balancing.
-//    func myFunc(svc elbv2iface.ELBV2API) bool {
-//        // Make svc.AddListenerCertificates request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Elastic Load Balancing.
+//	func myFunc(svc elbv2iface.ELBV2API) bool {
+//	    // Make svc.AddListenerCertificates request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := elbv2.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := elbv2.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockELBV2Client struct {
-//        elbv2iface.ELBV2API
-//    }
-//    func (m *mockELBV2Client) AddListenerCertificates(input *elbv2.AddListenerCertificatesInput) (*elbv2.AddListenerCertificatesOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockELBV2Client struct {
+//	    elbv2iface.ELBV2API
+//	}
+//	func (m *mockELBV2Client) AddListenerCertificates(input *elbv2.AddListenerCertificatesInput) (*elbv2.AddListenerCertificatesOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockELBV2Client{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockELBV2Client{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -67,6 +67,10 @@ type ELBV2API interface {
 	AddTags(*elbv2.AddTagsInput) (*elbv2.AddTagsOutput, error)
 	AddTagsWithContext(aws.Context, *elbv2.AddTagsInput, ...request.Option) (*elbv2.AddTagsOutput, error)
 	AddTagsRequest(*elbv2.AddTagsInput) (*request.Request, *elbv2.AddTagsOutput)
+
+	AddTrustStoreRevocations(*elbv2.AddTrustStoreRevocationsInput) (*elbv2.AddTrustStoreRevocationsOutput, error)
+	AddTrustStoreRevocationsWithContext(aws.Context, *elbv2.AddTrustStoreRevocationsInput, ...request.Option) (*elbv2.AddTrustStoreRevocationsOutput, error)
+	AddTrustStoreRevocationsRequest(*elbv2.AddTrustStoreRevocationsInput) (*request.Request, *elbv2.AddTrustStoreRevocationsOutput)
 
 	CreateListener(*elbv2.CreateListenerInput) (*elbv2.CreateListenerOutput, error)
 	CreateListenerWithContext(aws.Context, *elbv2.CreateListenerInput, ...request.Option) (*elbv2.CreateListenerOutput, error)
@@ -84,6 +88,10 @@ type ELBV2API interface {
 	CreateTargetGroupWithContext(aws.Context, *elbv2.CreateTargetGroupInput, ...request.Option) (*elbv2.CreateTargetGroupOutput, error)
 	CreateTargetGroupRequest(*elbv2.CreateTargetGroupInput) (*request.Request, *elbv2.CreateTargetGroupOutput)
 
+	CreateTrustStore(*elbv2.CreateTrustStoreInput) (*elbv2.CreateTrustStoreOutput, error)
+	CreateTrustStoreWithContext(aws.Context, *elbv2.CreateTrustStoreInput, ...request.Option) (*elbv2.CreateTrustStoreOutput, error)
+	CreateTrustStoreRequest(*elbv2.CreateTrustStoreInput) (*request.Request, *elbv2.CreateTrustStoreOutput)
+
 	DeleteListener(*elbv2.DeleteListenerInput) (*elbv2.DeleteListenerOutput, error)
 	DeleteListenerWithContext(aws.Context, *elbv2.DeleteListenerInput, ...request.Option) (*elbv2.DeleteListenerOutput, error)
 	DeleteListenerRequest(*elbv2.DeleteListenerInput) (*request.Request, *elbv2.DeleteListenerOutput)
@@ -99,6 +107,10 @@ type ELBV2API interface {
 	DeleteTargetGroup(*elbv2.DeleteTargetGroupInput) (*elbv2.DeleteTargetGroupOutput, error)
 	DeleteTargetGroupWithContext(aws.Context, *elbv2.DeleteTargetGroupInput, ...request.Option) (*elbv2.DeleteTargetGroupOutput, error)
 	DeleteTargetGroupRequest(*elbv2.DeleteTargetGroupInput) (*request.Request, *elbv2.DeleteTargetGroupOutput)
+
+	DeleteTrustStore(*elbv2.DeleteTrustStoreInput) (*elbv2.DeleteTrustStoreOutput, error)
+	DeleteTrustStoreWithContext(aws.Context, *elbv2.DeleteTrustStoreInput, ...request.Option) (*elbv2.DeleteTrustStoreOutput, error)
+	DeleteTrustStoreRequest(*elbv2.DeleteTrustStoreInput) (*request.Request, *elbv2.DeleteTrustStoreOutput)
 
 	DeregisterTargets(*elbv2.DeregisterTargetsInput) (*elbv2.DeregisterTargetsOutput, error)
 	DeregisterTargetsWithContext(aws.Context, *elbv2.DeregisterTargetsInput, ...request.Option) (*elbv2.DeregisterTargetsOutput, error)
@@ -157,6 +169,35 @@ type ELBV2API interface {
 	DescribeTargetHealthWithContext(aws.Context, *elbv2.DescribeTargetHealthInput, ...request.Option) (*elbv2.DescribeTargetHealthOutput, error)
 	DescribeTargetHealthRequest(*elbv2.DescribeTargetHealthInput) (*request.Request, *elbv2.DescribeTargetHealthOutput)
 
+	DescribeTrustStoreAssociations(*elbv2.DescribeTrustStoreAssociationsInput) (*elbv2.DescribeTrustStoreAssociationsOutput, error)
+	DescribeTrustStoreAssociationsWithContext(aws.Context, *elbv2.DescribeTrustStoreAssociationsInput, ...request.Option) (*elbv2.DescribeTrustStoreAssociationsOutput, error)
+	DescribeTrustStoreAssociationsRequest(*elbv2.DescribeTrustStoreAssociationsInput) (*request.Request, *elbv2.DescribeTrustStoreAssociationsOutput)
+
+	DescribeTrustStoreAssociationsPages(*elbv2.DescribeTrustStoreAssociationsInput, func(*elbv2.DescribeTrustStoreAssociationsOutput, bool) bool) error
+	DescribeTrustStoreAssociationsPagesWithContext(aws.Context, *elbv2.DescribeTrustStoreAssociationsInput, func(*elbv2.DescribeTrustStoreAssociationsOutput, bool) bool, ...request.Option) error
+
+	DescribeTrustStoreRevocations(*elbv2.DescribeTrustStoreRevocationsInput) (*elbv2.DescribeTrustStoreRevocationsOutput, error)
+	DescribeTrustStoreRevocationsWithContext(aws.Context, *elbv2.DescribeTrustStoreRevocationsInput, ...request.Option) (*elbv2.DescribeTrustStoreRevocationsOutput, error)
+	DescribeTrustStoreRevocationsRequest(*elbv2.DescribeTrustStoreRevocationsInput) (*request.Request, *elbv2.DescribeTrustStoreRevocationsOutput)
+
+	DescribeTrustStoreRevocationsPages(*elbv2.DescribeTrustStoreRevocationsInput, func(*elbv2.DescribeTrustStoreRevocationsOutput, bool) bool) error
+	DescribeTrustStoreRevocationsPagesWithContext(aws.Context, *elbv2.DescribeTrustStoreRevocationsInput, func(*elbv2.DescribeTrustStoreRevocationsOutput, bool) bool, ...request.Option) error
+
+	DescribeTrustStores(*elbv2.DescribeTrustStoresInput) (*elbv2.DescribeTrustStoresOutput, error)
+	DescribeTrustStoresWithContext(aws.Context, *elbv2.DescribeTrustStoresInput, ...request.Option) (*elbv2.DescribeTrustStoresOutput, error)
+	DescribeTrustStoresRequest(*elbv2.DescribeTrustStoresInput) (*request.Request, *elbv2.DescribeTrustStoresOutput)
+
+	DescribeTrustStoresPages(*elbv2.DescribeTrustStoresInput, func(*elbv2.DescribeTrustStoresOutput, bool) bool) error
+	DescribeTrustStoresPagesWithContext(aws.Context, *elbv2.DescribeTrustStoresInput, func(*elbv2.DescribeTrustStoresOutput, bool) bool, ...request.Option) error
+
+	GetTrustStoreCaCertificatesBundle(*elbv2.GetTrustStoreCaCertificatesBundleInput) (*elbv2.GetTrustStoreCaCertificatesBundleOutput, error)
+	GetTrustStoreCaCertificatesBundleWithContext(aws.Context, *elbv2.GetTrustStoreCaCertificatesBundleInput, ...request.Option) (*elbv2.GetTrustStoreCaCertificatesBundleOutput, error)
+	GetTrustStoreCaCertificatesBundleRequest(*elbv2.GetTrustStoreCaCertificatesBundleInput) (*request.Request, *elbv2.GetTrustStoreCaCertificatesBundleOutput)
+
+	GetTrustStoreRevocationContent(*elbv2.GetTrustStoreRevocationContentInput) (*elbv2.GetTrustStoreRevocationContentOutput, error)
+	GetTrustStoreRevocationContentWithContext(aws.Context, *elbv2.GetTrustStoreRevocationContentInput, ...request.Option) (*elbv2.GetTrustStoreRevocationContentOutput, error)
+	GetTrustStoreRevocationContentRequest(*elbv2.GetTrustStoreRevocationContentInput) (*request.Request, *elbv2.GetTrustStoreRevocationContentOutput)
+
 	ModifyListener(*elbv2.ModifyListenerInput) (*elbv2.ModifyListenerOutput, error)
 	ModifyListenerWithContext(aws.Context, *elbv2.ModifyListenerInput, ...request.Option) (*elbv2.ModifyListenerOutput, error)
 	ModifyListenerRequest(*elbv2.ModifyListenerInput) (*request.Request, *elbv2.ModifyListenerOutput)
@@ -177,6 +218,10 @@ type ELBV2API interface {
 	ModifyTargetGroupAttributesWithContext(aws.Context, *elbv2.ModifyTargetGroupAttributesInput, ...request.Option) (*elbv2.ModifyTargetGroupAttributesOutput, error)
 	ModifyTargetGroupAttributesRequest(*elbv2.ModifyTargetGroupAttributesInput) (*request.Request, *elbv2.ModifyTargetGroupAttributesOutput)
 
+	ModifyTrustStore(*elbv2.ModifyTrustStoreInput) (*elbv2.ModifyTrustStoreOutput, error)
+	ModifyTrustStoreWithContext(aws.Context, *elbv2.ModifyTrustStoreInput, ...request.Option) (*elbv2.ModifyTrustStoreOutput, error)
+	ModifyTrustStoreRequest(*elbv2.ModifyTrustStoreInput) (*request.Request, *elbv2.ModifyTrustStoreOutput)
+
 	RegisterTargets(*elbv2.RegisterTargetsInput) (*elbv2.RegisterTargetsOutput, error)
 	RegisterTargetsWithContext(aws.Context, *elbv2.RegisterTargetsInput, ...request.Option) (*elbv2.RegisterTargetsOutput, error)
 	RegisterTargetsRequest(*elbv2.RegisterTargetsInput) (*request.Request, *elbv2.RegisterTargetsOutput)
@@ -188,6 +233,10 @@ type ELBV2API interface {
 	RemoveTags(*elbv2.RemoveTagsInput) (*elbv2.RemoveTagsOutput, error)
 	RemoveTagsWithContext(aws.Context, *elbv2.RemoveTagsInput, ...request.Option) (*elbv2.RemoveTagsOutput, error)
 	RemoveTagsRequest(*elbv2.RemoveTagsInput) (*request.Request, *elbv2.RemoveTagsOutput)
+
+	RemoveTrustStoreRevocations(*elbv2.RemoveTrustStoreRevocationsInput) (*elbv2.RemoveTrustStoreRevocationsOutput, error)
+	RemoveTrustStoreRevocationsWithContext(aws.Context, *elbv2.RemoveTrustStoreRevocationsInput, ...request.Option) (*elbv2.RemoveTrustStoreRevocationsOutput, error)
+	RemoveTrustStoreRevocationsRequest(*elbv2.RemoveTrustStoreRevocationsInput) (*request.Request, *elbv2.RemoveTrustStoreRevocationsOutput)
 
 	SetIpAddressType(*elbv2.SetIpAddressTypeInput) (*elbv2.SetIpAddressTypeOutput, error)
 	SetIpAddressTypeWithContext(aws.Context, *elbv2.SetIpAddressTypeInput, ...request.Option) (*elbv2.SetIpAddressTypeOutput, error)

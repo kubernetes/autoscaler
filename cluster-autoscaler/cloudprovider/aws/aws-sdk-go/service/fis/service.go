@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a FIS client from just a session.
-//     svc := fis.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a FIS client with additional configuration
-//     svc := fis.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a FIS client from just a session.
+//	svc := fis.New(mySession)
+//
+//	// Create a FIS client with additional configuration
+//	svc := fis.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *FIS {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

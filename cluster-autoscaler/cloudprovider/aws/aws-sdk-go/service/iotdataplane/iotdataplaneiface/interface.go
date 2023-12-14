@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS IoT Data Plane.
-//    func myFunc(svc iotdataplaneiface.IoTDataPlaneAPI) bool {
-//        // Make svc.DeleteThingShadow request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS IoT Data Plane.
+//	func myFunc(svc iotdataplaneiface.IoTDataPlaneAPI) bool {
+//	    // Make svc.DeleteThingShadow request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := iotdataplane.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := iotdataplane.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockIoTDataPlaneClient struct {
-//        iotdataplaneiface.IoTDataPlaneAPI
-//    }
-//    func (m *mockIoTDataPlaneClient) DeleteThingShadow(input *iotdataplane.DeleteThingShadowInput) (*iotdataplane.DeleteThingShadowOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockIoTDataPlaneClient struct {
+//	    iotdataplaneiface.IoTDataPlaneAPI
+//	}
+//	func (m *mockIoTDataPlaneClient) DeleteThingShadow(input *iotdataplane.DeleteThingShadowInput) (*iotdataplane.DeleteThingShadowOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockIoTDataPlaneClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockIoTDataPlaneClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,

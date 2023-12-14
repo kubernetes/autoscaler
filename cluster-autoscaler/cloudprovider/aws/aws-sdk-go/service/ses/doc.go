@@ -12,12 +12,22 @@
 // and Amazon SES (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html)
 // in the Amazon SES Developer Guide (https://docs.aws.amazon.com/ses/latest/DeveloperGuide/Welcome.html).
 //
+// This documentation contains reference information related to the following:
+//
+//   - Amazon SES API Actions (https://docs.aws.amazon.com/ses/latest/APIReference/API_Operations.html)
+//
+//   - Amazon SES API Data Types (https://docs.aws.amazon.com/ses/latest/APIReference/API_Types.html)
+//
+//   - Common Parameters (https://docs.aws.amazon.com/ses/latest/APIReference/CommonParameters.html)
+//
+//   - Common Errors (https://docs.aws.amazon.com/ses/latest/APIReference/CommonErrors.html)
+//
 // See https://docs.aws.amazon.com/goto/WebAPI/email-2010-12-01 for more information on this service.
 //
 // See ses package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/ses/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon Simple Email Service with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

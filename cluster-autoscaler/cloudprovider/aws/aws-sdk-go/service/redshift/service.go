@@ -39,13 +39,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Redshift client from just a session.
-//     svc := redshift.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Redshift client with additional configuration
-//     svc := redshift.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Redshift client from just a session.
+//	svc := redshift.New(mySession)
+//
+//	// Create a Redshift client with additional configuration
+//	svc := redshift.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Redshift {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

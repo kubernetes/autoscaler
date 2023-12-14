@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon DevOps Guru.
-//    func myFunc(svc devopsguruiface.DevOpsGuruAPI) bool {
-//        // Make svc.AddNotificationChannel request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon DevOps Guru.
+//	func myFunc(svc devopsguruiface.DevOpsGuruAPI) bool {
+//	    // Make svc.AddNotificationChannel request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := devopsguru.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := devopsguru.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockDevOpsGuruClient struct {
-//        devopsguruiface.DevOpsGuruAPI
-//    }
-//    func (m *mockDevOpsGuruClient) AddNotificationChannel(input *devopsguru.AddNotificationChannelInput) (*devopsguru.AddNotificationChannelOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockDevOpsGuruClient struct {
+//	    devopsguruiface.DevOpsGuruAPI
+//	}
+//	func (m *mockDevOpsGuruClient) AddNotificationChannel(input *devopsguru.AddNotificationChannelInput) (*devopsguru.AddNotificationChannelOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockDevOpsGuruClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockDevOpsGuruClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -139,6 +139,13 @@ type DevOpsGuruAPI interface {
 	ListAnomaliesForInsightPages(*devopsguru.ListAnomaliesForInsightInput, func(*devopsguru.ListAnomaliesForInsightOutput, bool) bool) error
 	ListAnomaliesForInsightPagesWithContext(aws.Context, *devopsguru.ListAnomaliesForInsightInput, func(*devopsguru.ListAnomaliesForInsightOutput, bool) bool, ...request.Option) error
 
+	ListAnomalousLogGroups(*devopsguru.ListAnomalousLogGroupsInput) (*devopsguru.ListAnomalousLogGroupsOutput, error)
+	ListAnomalousLogGroupsWithContext(aws.Context, *devopsguru.ListAnomalousLogGroupsInput, ...request.Option) (*devopsguru.ListAnomalousLogGroupsOutput, error)
+	ListAnomalousLogGroupsRequest(*devopsguru.ListAnomalousLogGroupsInput) (*request.Request, *devopsguru.ListAnomalousLogGroupsOutput)
+
+	ListAnomalousLogGroupsPages(*devopsguru.ListAnomalousLogGroupsInput, func(*devopsguru.ListAnomalousLogGroupsOutput, bool) bool) error
+	ListAnomalousLogGroupsPagesWithContext(aws.Context, *devopsguru.ListAnomalousLogGroupsInput, func(*devopsguru.ListAnomalousLogGroupsOutput, bool) bool, ...request.Option) error
+
 	ListEvents(*devopsguru.ListEventsInput) (*devopsguru.ListEventsOutput, error)
 	ListEventsWithContext(aws.Context, *devopsguru.ListEventsInput, ...request.Option) (*devopsguru.ListEventsOutput, error)
 	ListEventsRequest(*devopsguru.ListEventsInput) (*request.Request, *devopsguru.ListEventsOutput)
@@ -152,6 +159,13 @@ type DevOpsGuruAPI interface {
 
 	ListInsightsPages(*devopsguru.ListInsightsInput, func(*devopsguru.ListInsightsOutput, bool) bool) error
 	ListInsightsPagesWithContext(aws.Context, *devopsguru.ListInsightsInput, func(*devopsguru.ListInsightsOutput, bool) bool, ...request.Option) error
+
+	ListMonitoredResources(*devopsguru.ListMonitoredResourcesInput) (*devopsguru.ListMonitoredResourcesOutput, error)
+	ListMonitoredResourcesWithContext(aws.Context, *devopsguru.ListMonitoredResourcesInput, ...request.Option) (*devopsguru.ListMonitoredResourcesOutput, error)
+	ListMonitoredResourcesRequest(*devopsguru.ListMonitoredResourcesInput) (*request.Request, *devopsguru.ListMonitoredResourcesOutput)
+
+	ListMonitoredResourcesPages(*devopsguru.ListMonitoredResourcesInput, func(*devopsguru.ListMonitoredResourcesOutput, bool) bool) error
+	ListMonitoredResourcesPagesWithContext(aws.Context, *devopsguru.ListMonitoredResourcesInput, func(*devopsguru.ListMonitoredResourcesOutput, bool) bool, ...request.Option) error
 
 	ListNotificationChannels(*devopsguru.ListNotificationChannelsInput) (*devopsguru.ListNotificationChannelsOutput, error)
 	ListNotificationChannelsWithContext(aws.Context, *devopsguru.ListNotificationChannelsInput, ...request.Option) (*devopsguru.ListNotificationChannelsOutput, error)

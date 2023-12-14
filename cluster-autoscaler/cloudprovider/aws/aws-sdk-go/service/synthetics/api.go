@@ -13,6 +13,102 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/private/protocol/restjson"
 )
 
+const opAssociateResource = "AssociateResource"
+
+// AssociateResourceRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateResource for more information on using the AssociateResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateResourceRequest method.
+//	req, resp := client.AssociateResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/AssociateResource
+func (c *Synthetics) AssociateResourceRequest(input *AssociateResourceInput) (req *request.Request, output *AssociateResourceOutput) {
+	op := &request.Operation{
+		Name:       opAssociateResource,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/group/{groupIdentifier}/associate",
+	}
+
+	if input == nil {
+		input = &AssociateResourceInput{}
+	}
+
+	output = &AssociateResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// AssociateResource API operation for Synthetics.
+//
+// Associates a canary with a group. Using groups can help you with managing
+// and automating your canaries, and you can also view aggregated run results
+// and statistics for all canaries in a group.
+//
+// You must run this operation in the Region where the canary exists.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation AssociateResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+//   - ServiceQuotaExceededException
+//     The request exceeded a service quota value.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/AssociateResource
+func (c *Synthetics) AssociateResource(input *AssociateResourceInput) (*AssociateResourceOutput, error) {
+	req, out := c.AssociateResourceRequest(input)
+	return out, req.Send()
+}
+
+// AssociateResourceWithContext is the same as AssociateResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) AssociateResourceWithContext(ctx aws.Context, input *AssociateResourceInput, opts ...request.Option) (*AssociateResourceOutput, error) {
+	req, out := c.AssociateResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateCanary = "CreateCanary"
 
 // CreateCanaryRequest generates a "aws/request.Request" representing the
@@ -29,14 +125,13 @@ const opCreateCanary = "CreateCanary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateCanaryRequest method.
+//	req, resp := client.CreateCanaryRequest(params)
 //
-//    // Example sending a request using the CreateCanaryRequest method.
-//    req, resp := client.CreateCanaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/CreateCanary
 func (c *Synthetics) CreateCanaryRequest(input *CreateCanaryInput) (req *request.Request, output *CreateCanaryOutput) {
@@ -67,9 +162,9 @@ func (c *Synthetics) CreateCanaryRequest(input *CreateCanaryInput) (req *request
 // instead.
 //
 // To create canaries, you must have the CloudWatchSyntheticsFullAccess policy.
-// If you are creating a new IAM role for the canary, you also need the the
-// iam:CreateRole, iam:CreatePolicy and iam:AttachRolePolicy permissions. For
-// more information, see Necessary Roles and Permissions (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_Roles).
+// If you are creating a new IAM role for the canary, you also need the iam:CreateRole,
+// iam:CreatePolicy and iam:AttachRolePolicy permissions. For more information,
+// see Necessary Roles and Permissions (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Canaries_Roles).
 //
 // Do not include secrets or proprietary information in your canary names. The
 // canary name makes up part of the Amazon Resource Name (ARN) for the canary,
@@ -84,14 +179,15 @@ func (c *Synthetics) CreateCanaryRequest(input *CreateCanaryInput) (req *request
 // API operation CreateCanary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
 //
-//   * RequestEntityTooLargeException
-//   One of the input resources is larger than is allowed.
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - RequestEntityTooLargeException
+//     One of the input resources is larger than is allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/CreateCanary
 func (c *Synthetics) CreateCanary(input *CreateCanaryInput) (*CreateCanaryOutput, error) {
@@ -115,6 +211,111 @@ func (c *Synthetics) CreateCanaryWithContext(ctx aws.Context, input *CreateCanar
 	return out, req.Send()
 }
 
+const opCreateGroup = "CreateGroup"
+
+// CreateGroupRequest generates a "aws/request.Request" representing the
+// client's request for the CreateGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateGroup for more information on using the CreateGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateGroupRequest method.
+//	req, resp := client.CreateGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/CreateGroup
+func (c *Synthetics) CreateGroupRequest(input *CreateGroupInput) (req *request.Request, output *CreateGroupOutput) {
+	op := &request.Operation{
+		Name:       opCreateGroup,
+		HTTPMethod: "POST",
+		HTTPPath:   "/group",
+	}
+
+	if input == nil {
+		input = &CreateGroupInput{}
+	}
+
+	output = &CreateGroupOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateGroup API operation for Synthetics.
+//
+// Creates a group which you can use to associate canaries with each other,
+// including cross-Region canaries. Using groups can help you with managing
+// and automating your canaries, and you can also view aggregated run results
+// and statistics for all canaries in a group.
+//
+// Groups are global resources. When you create a group, it is replicated across
+// Amazon Web Services Regions, and you can view it and add canaries to it from
+// any Region. Although the group ARN format reflects the Region name where
+// it was created, a group is not constrained to any Region. This means that
+// you can put canaries from multiple Regions into the same group, and then
+// use that group to view and manage all of those canaries in a single view.
+//
+// Groups are supported in all Regions except the Regions that are disabled
+// by default. For more information about these Regions, see Enabling a Region
+// (https://docs.aws.amazon.com/general/latest/gr/rande-manage.html#rande-manage-enable).
+//
+// Each group can contain as many as 10 canaries. You can have as many as 20
+// groups in your account. Any single canary can be a member of up to 10 groups.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation CreateGroup for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+//   - ServiceQuotaExceededException
+//     The request exceeded a service quota value.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/CreateGroup
+func (c *Synthetics) CreateGroup(input *CreateGroupInput) (*CreateGroupOutput, error) {
+	req, out := c.CreateGroupRequest(input)
+	return out, req.Send()
+}
+
+// CreateGroupWithContext is the same as CreateGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) CreateGroupWithContext(ctx aws.Context, input *CreateGroupInput, opts ...request.Option) (*CreateGroupOutput, error) {
+	req, out := c.CreateGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteCanary = "DeleteCanary"
 
 // DeleteCanaryRequest generates a "aws/request.Request" representing the
@@ -131,14 +332,13 @@ const opDeleteCanary = "DeleteCanary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteCanaryRequest method.
+//	req, resp := client.DeleteCanaryRequest(params)
 //
-//    // Example sending a request using the DeleteCanaryRequest method.
-//    req, resp := client.DeleteCanaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DeleteCanary
 func (c *Synthetics) DeleteCanaryRequest(input *DeleteCanaryInput) (req *request.Request, output *DeleteCanaryOutput) {
@@ -165,20 +365,20 @@ func (c *Synthetics) DeleteCanaryRequest(input *DeleteCanaryInput) (req *request
 // If you specify DeleteLambda to true, CloudWatch Synthetics also deletes the
 // Lambda functions and layers that are used by the canary.
 //
-// Other esources used and created by the canary are not automatically deleted.
+// Other resources used and created by the canary are not automatically deleted.
 // After you delete a canary that you do not intend to use again, you should
 // also delete the following:
 //
-//    * The CloudWatch alarms created for this canary. These alarms have a name
-//    of Synthetics-SharpDrop-Alarm-MyCanaryName .
+//   - The CloudWatch alarms created for this canary. These alarms have a name
+//     of Synthetics-SharpDrop-Alarm-MyCanaryName .
 //
-//    * Amazon S3 objects and buckets, such as the canary's artifact location.
+//   - Amazon S3 objects and buckets, such as the canary's artifact location.
 //
-//    * IAM roles created for the canary. If they were created in the console,
-//    these roles have the name role/service-role/CloudWatchSyntheticsRole-MyCanaryName .
+//   - IAM roles created for the canary. If they were created in the console,
+//     these roles have the name role/service-role/CloudWatchSyntheticsRole-MyCanaryName .
 //
-//    * CloudWatch Logs log groups created for the canary. These logs groups
-//    have the name /aws/lambda/cwsyn-MyCanaryName .
+//   - CloudWatch Logs log groups created for the canary. These logs groups
+//     have the name /aws/lambda/cwsyn-MyCanaryName .
 //
 // Before you delete a canary, you might want to use GetCanary to display the
 // information about this canary. Make note of the information returned by this
@@ -192,17 +392,18 @@ func (c *Synthetics) DeleteCanaryRequest(input *DeleteCanaryInput) (req *request
 // API operation DeleteCanary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - ValidationException
+//     A parameter could not be validated.
 //
-//   * ConflictException
-//   A conflicting operation is already in progress.
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DeleteCanary
 func (c *Synthetics) DeleteCanary(input *DeleteCanaryInput) (*DeleteCanaryOutput, error) {
@@ -226,6 +427,100 @@ func (c *Synthetics) DeleteCanaryWithContext(ctx aws.Context, input *DeleteCanar
 	return out, req.Send()
 }
 
+const opDeleteGroup = "DeleteGroup"
+
+// DeleteGroupRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteGroup for more information on using the DeleteGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteGroupRequest method.
+//	req, resp := client.DeleteGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DeleteGroup
+func (c *Synthetics) DeleteGroupRequest(input *DeleteGroupInput) (req *request.Request, output *DeleteGroupOutput) {
+	op := &request.Operation{
+		Name:       opDeleteGroup,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/group/{groupIdentifier}",
+	}
+
+	if input == nil {
+		input = &DeleteGroupInput{}
+	}
+
+	output = &DeleteGroupOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteGroup API operation for Synthetics.
+//
+// Deletes a group. The group doesn't need to be empty to be deleted. If there
+// are canaries in the group, they are not deleted when you delete the group.
+//
+// Groups are a global resource that appear in all Regions, but the request
+// to delete a group must be made from its home Region. You can find the home
+// Region of a group within its ARN.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation DeleteGroup for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DeleteGroup
+func (c *Synthetics) DeleteGroup(input *DeleteGroupInput) (*DeleteGroupOutput, error) {
+	req, out := c.DeleteGroupRequest(input)
+	return out, req.Send()
+}
+
+// DeleteGroupWithContext is the same as DeleteGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) DeleteGroupWithContext(ctx aws.Context, input *DeleteGroupInput, opts ...request.Option) (*DeleteGroupOutput, error) {
+	req, out := c.DeleteGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeCanaries = "DescribeCanaries"
 
 // DescribeCanariesRequest generates a "aws/request.Request" representing the
@@ -242,14 +537,13 @@ const opDescribeCanaries = "DescribeCanaries"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCanariesRequest method.
+//	req, resp := client.DescribeCanariesRequest(params)
 //
-//    // Example sending a request using the DescribeCanariesRequest method.
-//    req, resp := client.DescribeCanariesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DescribeCanaries
 func (c *Synthetics) DescribeCanariesRequest(input *DescribeCanariesInput) (req *request.Request, output *DescribeCanariesOutput) {
@@ -298,11 +592,12 @@ func (c *Synthetics) DescribeCanariesRequest(input *DescribeCanariesInput) (req 
 // API operation DescribeCanaries for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DescribeCanaries
 func (c *Synthetics) DescribeCanaries(input *DescribeCanariesInput) (*DescribeCanariesOutput, error) {
@@ -334,15 +629,14 @@ func (c *Synthetics) DescribeCanariesWithContext(ctx aws.Context, input *Describ
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCanaries operation.
-//    pageNum := 0
-//    err := client.DescribeCanariesPages(params,
-//        func(page *synthetics.DescribeCanariesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCanaries operation.
+//	pageNum := 0
+//	err := client.DescribeCanariesPages(params,
+//	    func(page *synthetics.DescribeCanariesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Synthetics) DescribeCanariesPages(input *DescribeCanariesInput, fn func(*DescribeCanariesOutput, bool) bool) error {
 	return c.DescribeCanariesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -394,14 +688,13 @@ const opDescribeCanariesLastRun = "DescribeCanariesLastRun"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeCanariesLastRunRequest method.
+//	req, resp := client.DescribeCanariesLastRunRequest(params)
 //
-//    // Example sending a request using the DescribeCanariesLastRunRequest method.
-//    req, resp := client.DescribeCanariesLastRunRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DescribeCanariesLastRun
 func (c *Synthetics) DescribeCanariesLastRunRequest(input *DescribeCanariesLastRunInput) (req *request.Request, output *DescribeCanariesLastRunOutput) {
@@ -450,11 +743,12 @@ func (c *Synthetics) DescribeCanariesLastRunRequest(input *DescribeCanariesLastR
 // API operation DescribeCanariesLastRun for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DescribeCanariesLastRun
 func (c *Synthetics) DescribeCanariesLastRun(input *DescribeCanariesLastRunInput) (*DescribeCanariesLastRunOutput, error) {
@@ -486,15 +780,14 @@ func (c *Synthetics) DescribeCanariesLastRunWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeCanariesLastRun operation.
-//    pageNum := 0
-//    err := client.DescribeCanariesLastRunPages(params,
-//        func(page *synthetics.DescribeCanariesLastRunOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeCanariesLastRun operation.
+//	pageNum := 0
+//	err := client.DescribeCanariesLastRunPages(params,
+//	    func(page *synthetics.DescribeCanariesLastRunOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Synthetics) DescribeCanariesLastRunPages(input *DescribeCanariesLastRunInput, fn func(*DescribeCanariesLastRunOutput, bool) bool) error {
 	return c.DescribeCanariesLastRunPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -546,14 +839,13 @@ const opDescribeRuntimeVersions = "DescribeRuntimeVersions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRuntimeVersionsRequest method.
+//	req, resp := client.DescribeRuntimeVersionsRequest(params)
 //
-//    // Example sending a request using the DescribeRuntimeVersionsRequest method.
-//    req, resp := client.DescribeRuntimeVersionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DescribeRuntimeVersions
 func (c *Synthetics) DescribeRuntimeVersionsRequest(input *DescribeRuntimeVersionsInput) (req *request.Request, output *DescribeRuntimeVersionsOutput) {
@@ -591,11 +883,12 @@ func (c *Synthetics) DescribeRuntimeVersionsRequest(input *DescribeRuntimeVersio
 // API operation DescribeRuntimeVersions for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DescribeRuntimeVersions
 func (c *Synthetics) DescribeRuntimeVersions(input *DescribeRuntimeVersionsInput) (*DescribeRuntimeVersionsOutput, error) {
@@ -627,15 +920,14 @@ func (c *Synthetics) DescribeRuntimeVersionsWithContext(ctx aws.Context, input *
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeRuntimeVersions operation.
-//    pageNum := 0
-//    err := client.DescribeRuntimeVersionsPages(params,
-//        func(page *synthetics.DescribeRuntimeVersionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeRuntimeVersions operation.
+//	pageNum := 0
+//	err := client.DescribeRuntimeVersionsPages(params,
+//	    func(page *synthetics.DescribeRuntimeVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Synthetics) DescribeRuntimeVersionsPages(input *DescribeRuntimeVersionsInput, fn func(*DescribeRuntimeVersionsOutput, bool) bool) error {
 	return c.DescribeRuntimeVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -671,6 +963,96 @@ func (c *Synthetics) DescribeRuntimeVersionsPagesWithContext(ctx aws.Context, in
 	return p.Err()
 }
 
+const opDisassociateResource = "DisassociateResource"
+
+// DisassociateResourceRequest generates a "aws/request.Request" representing the
+// client's request for the DisassociateResource operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisassociateResource for more information on using the DisassociateResource
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DisassociateResourceRequest method.
+//	req, resp := client.DisassociateResourceRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DisassociateResource
+func (c *Synthetics) DisassociateResourceRequest(input *DisassociateResourceInput) (req *request.Request, output *DisassociateResourceOutput) {
+	op := &request.Operation{
+		Name:       opDisassociateResource,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/group/{groupIdentifier}/disassociate",
+	}
+
+	if input == nil {
+		input = &DisassociateResourceInput{}
+	}
+
+	output = &DisassociateResourceOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DisassociateResource API operation for Synthetics.
+//
+// Removes a canary from a group. You must run this operation in the Region
+// where the canary exists.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation DisassociateResource for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/DisassociateResource
+func (c *Synthetics) DisassociateResource(input *DisassociateResourceInput) (*DisassociateResourceOutput, error) {
+	req, out := c.DisassociateResourceRequest(input)
+	return out, req.Send()
+}
+
+// DisassociateResourceWithContext is the same as DisassociateResource with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisassociateResource for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) DisassociateResourceWithContext(ctx aws.Context, input *DisassociateResourceInput, opts ...request.Option) (*DisassociateResourceOutput, error) {
+	req, out := c.DisassociateResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetCanary = "GetCanary"
 
 // GetCanaryRequest generates a "aws/request.Request" representing the
@@ -687,14 +1069,13 @@ const opGetCanary = "GetCanary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCanaryRequest method.
+//	req, resp := client.GetCanaryRequest(params)
 //
-//    // Example sending a request using the GetCanaryRequest method.
-//    req, resp := client.GetCanaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/GetCanary
 func (c *Synthetics) GetCanaryRequest(input *GetCanaryInput) (req *request.Request, output *GetCanaryOutput) {
@@ -727,11 +1108,12 @@ func (c *Synthetics) GetCanaryRequest(input *GetCanaryInput) (req *request.Reque
 // API operation GetCanary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/GetCanary
 func (c *Synthetics) GetCanary(input *GetCanaryInput) (*GetCanaryOutput, error) {
@@ -771,14 +1153,13 @@ const opGetCanaryRuns = "GetCanaryRuns"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetCanaryRunsRequest method.
+//	req, resp := client.GetCanaryRunsRequest(params)
 //
-//    // Example sending a request using the GetCanaryRunsRequest method.
-//    req, resp := client.GetCanaryRunsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/GetCanaryRuns
 func (c *Synthetics) GetCanaryRunsRequest(input *GetCanaryRunsInput) (req *request.Request, output *GetCanaryRunsOutput) {
@@ -815,14 +1196,15 @@ func (c *Synthetics) GetCanaryRunsRequest(input *GetCanaryRunsInput) (req *reque
 // API operation GetCanaryRuns for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/GetCanaryRuns
 func (c *Synthetics) GetCanaryRuns(input *GetCanaryRunsInput) (*GetCanaryRunsOutput, error) {
@@ -854,15 +1236,14 @@ func (c *Synthetics) GetCanaryRunsWithContext(ctx aws.Context, input *GetCanaryR
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a GetCanaryRuns operation.
-//    pageNum := 0
-//    err := client.GetCanaryRunsPages(params,
-//        func(page *synthetics.GetCanaryRunsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a GetCanaryRuns operation.
+//	pageNum := 0
+//	err := client.GetCanaryRunsPages(params,
+//	    func(page *synthetics.GetCanaryRunsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Synthetics) GetCanaryRunsPages(input *GetCanaryRunsInput, fn func(*GetCanaryRunsOutput, bool) bool) error {
 	return c.GetCanaryRunsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -898,6 +1279,524 @@ func (c *Synthetics) GetCanaryRunsPagesWithContext(ctx aws.Context, input *GetCa
 	return p.Err()
 }
 
+const opGetGroup = "GetGroup"
+
+// GetGroupRequest generates a "aws/request.Request" representing the
+// client's request for the GetGroup operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetGroup for more information on using the GetGroup
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetGroupRequest method.
+//	req, resp := client.GetGroupRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/GetGroup
+func (c *Synthetics) GetGroupRequest(input *GetGroupInput) (req *request.Request, output *GetGroupOutput) {
+	op := &request.Operation{
+		Name:       opGetGroup,
+		HTTPMethod: "GET",
+		HTTPPath:   "/group/{groupIdentifier}",
+	}
+
+	if input == nil {
+		input = &GetGroupInput{}
+	}
+
+	output = &GetGroupOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetGroup API operation for Synthetics.
+//
+// Returns information about one group. Groups are a global resource, so you
+// can use this operation from any Region.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation GetGroup for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/GetGroup
+func (c *Synthetics) GetGroup(input *GetGroupInput) (*GetGroupOutput, error) {
+	req, out := c.GetGroupRequest(input)
+	return out, req.Send()
+}
+
+// GetGroupWithContext is the same as GetGroup with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetGroup for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) GetGroupWithContext(ctx aws.Context, input *GetGroupInput, opts ...request.Option) (*GetGroupOutput, error) {
+	req, out := c.GetGroupRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListAssociatedGroups = "ListAssociatedGroups"
+
+// ListAssociatedGroupsRequest generates a "aws/request.Request" representing the
+// client's request for the ListAssociatedGroups operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListAssociatedGroups for more information on using the ListAssociatedGroups
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListAssociatedGroupsRequest method.
+//	req, resp := client.ListAssociatedGroupsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListAssociatedGroups
+func (c *Synthetics) ListAssociatedGroupsRequest(input *ListAssociatedGroupsInput) (req *request.Request, output *ListAssociatedGroupsOutput) {
+	op := &request.Operation{
+		Name:       opListAssociatedGroups,
+		HTTPMethod: "POST",
+		HTTPPath:   "/resource/{resourceArn}/groups",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListAssociatedGroupsInput{}
+	}
+
+	output = &ListAssociatedGroupsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListAssociatedGroups API operation for Synthetics.
+//
+// Returns a list of the groups that the specified canary is associated with.
+// The canary that you specify must be in the current Region.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation ListAssociatedGroups for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListAssociatedGroups
+func (c *Synthetics) ListAssociatedGroups(input *ListAssociatedGroupsInput) (*ListAssociatedGroupsOutput, error) {
+	req, out := c.ListAssociatedGroupsRequest(input)
+	return out, req.Send()
+}
+
+// ListAssociatedGroupsWithContext is the same as ListAssociatedGroups with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListAssociatedGroups for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) ListAssociatedGroupsWithContext(ctx aws.Context, input *ListAssociatedGroupsInput, opts ...request.Option) (*ListAssociatedGroupsOutput, error) {
+	req, out := c.ListAssociatedGroupsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListAssociatedGroupsPages iterates over the pages of a ListAssociatedGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListAssociatedGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListAssociatedGroups operation.
+//	pageNum := 0
+//	err := client.ListAssociatedGroupsPages(params,
+//	    func(page *synthetics.ListAssociatedGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Synthetics) ListAssociatedGroupsPages(input *ListAssociatedGroupsInput, fn func(*ListAssociatedGroupsOutput, bool) bool) error {
+	return c.ListAssociatedGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListAssociatedGroupsPagesWithContext same as ListAssociatedGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) ListAssociatedGroupsPagesWithContext(ctx aws.Context, input *ListAssociatedGroupsInput, fn func(*ListAssociatedGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListAssociatedGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListAssociatedGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListAssociatedGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListGroupResources = "ListGroupResources"
+
+// ListGroupResourcesRequest generates a "aws/request.Request" representing the
+// client's request for the ListGroupResources operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListGroupResources for more information on using the ListGroupResources
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListGroupResourcesRequest method.
+//	req, resp := client.ListGroupResourcesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListGroupResources
+func (c *Synthetics) ListGroupResourcesRequest(input *ListGroupResourcesInput) (req *request.Request, output *ListGroupResourcesOutput) {
+	op := &request.Operation{
+		Name:       opListGroupResources,
+		HTTPMethod: "POST",
+		HTTPPath:   "/group/{groupIdentifier}/resources",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListGroupResourcesInput{}
+	}
+
+	output = &ListGroupResourcesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListGroupResources API operation for Synthetics.
+//
+// This operation returns a list of the ARNs of the canaries that are associated
+// with the specified group.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation ListGroupResources for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListGroupResources
+func (c *Synthetics) ListGroupResources(input *ListGroupResourcesInput) (*ListGroupResourcesOutput, error) {
+	req, out := c.ListGroupResourcesRequest(input)
+	return out, req.Send()
+}
+
+// ListGroupResourcesWithContext is the same as ListGroupResources with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListGroupResources for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) ListGroupResourcesWithContext(ctx aws.Context, input *ListGroupResourcesInput, opts ...request.Option) (*ListGroupResourcesOutput, error) {
+	req, out := c.ListGroupResourcesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListGroupResourcesPages iterates over the pages of a ListGroupResources operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListGroupResources method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListGroupResources operation.
+//	pageNum := 0
+//	err := client.ListGroupResourcesPages(params,
+//	    func(page *synthetics.ListGroupResourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Synthetics) ListGroupResourcesPages(input *ListGroupResourcesInput, fn func(*ListGroupResourcesOutput, bool) bool) error {
+	return c.ListGroupResourcesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListGroupResourcesPagesWithContext same as ListGroupResourcesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) ListGroupResourcesPagesWithContext(ctx aws.Context, input *ListGroupResourcesInput, fn func(*ListGroupResourcesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListGroupResourcesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListGroupResourcesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListGroupResourcesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListGroups = "ListGroups"
+
+// ListGroupsRequest generates a "aws/request.Request" representing the
+// client's request for the ListGroups operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListGroups for more information on using the ListGroups
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListGroupsRequest method.
+//	req, resp := client.ListGroupsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListGroups
+func (c *Synthetics) ListGroupsRequest(input *ListGroupsInput) (req *request.Request, output *ListGroupsOutput) {
+	op := &request.Operation{
+		Name:       opListGroups,
+		HTTPMethod: "POST",
+		HTTPPath:   "/groups",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListGroupsInput{}
+	}
+
+	output = &ListGroupsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListGroups API operation for Synthetics.
+//
+// Returns a list of all groups in the account, displaying their names, unique
+// IDs, and ARNs. The groups from all Regions are returned.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Synthetics's
+// API operation ListGroups for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     An unknown internal error occurred.
+//
+//   - ValidationException
+//     A parameter could not be validated.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListGroups
+func (c *Synthetics) ListGroups(input *ListGroupsInput) (*ListGroupsOutput, error) {
+	req, out := c.ListGroupsRequest(input)
+	return out, req.Send()
+}
+
+// ListGroupsWithContext is the same as ListGroups with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListGroups for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) ListGroupsWithContext(ctx aws.Context, input *ListGroupsInput, opts ...request.Option) (*ListGroupsOutput, error) {
+	req, out := c.ListGroupsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListGroupsPages iterates over the pages of a ListGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListGroups operation.
+//	pageNum := 0
+//	err := client.ListGroupsPages(params,
+//	    func(page *synthetics.ListGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *Synthetics) ListGroupsPages(input *ListGroupsInput, fn func(*ListGroupsOutput, bool) bool) error {
+	return c.ListGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListGroupsPagesWithContext same as ListGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Synthetics) ListGroupsPagesWithContext(ctx aws.Context, input *ListGroupsInput, fn func(*ListGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListTagsForResource = "ListTagsForResource"
 
 // ListTagsForResourceRequest generates a "aws/request.Request" representing the
@@ -914,14 +1813,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListTagsForResource
 func (c *Synthetics) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -942,7 +1840,7 @@ func (c *Synthetics) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 
 // ListTagsForResource API operation for Synthetics.
 //
-// Displays the tags associated with a canary.
+// Displays the tags associated with a canary or group.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -952,14 +1850,21 @@ func (c *Synthetics) ListTagsForResourceRequest(input *ListTagsForResourceInput)
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - BadRequestException
+//     The request was not valid.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - NotFoundException
+//     The specified resource was not found.
+//
+//   - TooManyRequestsException
+//     There were too many simultaneous requests. Try the operation again.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+//   - InternalFailureException
+//     An internal failure occurred. Try the operation again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/ListTagsForResource
 func (c *Synthetics) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -999,14 +1904,13 @@ const opStartCanary = "StartCanary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartCanaryRequest method.
+//	req, resp := client.StartCanaryRequest(params)
 //
-//    // Example sending a request using the StartCanaryRequest method.
-//    req, resp := client.StartCanaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/StartCanary
 func (c *Synthetics) StartCanaryRequest(input *StartCanaryInput) (req *request.Request, output *StartCanaryOutput) {
@@ -1040,17 +1944,18 @@ func (c *Synthetics) StartCanaryRequest(input *StartCanaryInput) (req *request.R
 // API operation StartCanary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - ValidationException
+//     A parameter could not be validated.
 //
-//   * ConflictException
-//   A conflicting operation is already in progress.
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/StartCanary
 func (c *Synthetics) StartCanary(input *StartCanaryInput) (*StartCanaryOutput, error) {
@@ -1090,14 +1995,13 @@ const opStopCanary = "StopCanary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopCanaryRequest method.
+//	req, resp := client.StopCanaryRequest(params)
 //
-//    // Example sending a request using the StopCanaryRequest method.
-//    req, resp := client.StopCanaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/StopCanary
 func (c *Synthetics) StopCanaryRequest(input *StopCanaryInput) (req *request.Request, output *StopCanaryOutput) {
@@ -1119,10 +2023,9 @@ func (c *Synthetics) StopCanaryRequest(input *StopCanaryInput) (req *request.Req
 
 // StopCanary API operation for Synthetics.
 //
-// Stops the canary to prevent all future runs. If the canary is currently running,
-// Synthetics stops waiting for the current run of the specified canary to complete.
-// The run that is in progress completes on its own, publishes metrics, and
-// uploads artifacts, but it is not recorded in Synthetics as a completed run.
+// Stops the canary to prevent all future runs. If the canary is currently running,the
+// run that is in progress completes on its own, publishes metrics, and uploads
+// artifacts, but it is not recorded in Synthetics as a completed run.
 //
 // You can use StartCanary to start it running again with the canary’s current
 // schedule at any point in the future.
@@ -1135,17 +2038,18 @@ func (c *Synthetics) StopCanaryRequest(input *StopCanaryInput) (req *request.Req
 // API operation StopCanary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - ValidationException
+//     A parameter could not be validated.
 //
-//   * ConflictException
-//   A conflicting operation is already in progress.
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/StopCanary
 func (c *Synthetics) StopCanary(input *StopCanaryInput) (*StopCanaryOutput, error) {
@@ -1185,14 +2089,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/TagResource
 func (c *Synthetics) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1214,7 +2117,7 @@ func (c *Synthetics) TagResourceRequest(input *TagResourceInput) (req *request.R
 
 // TagResource API operation for Synthetics.
 //
-// Assigns one or more tags (key-value pairs) to the specified canary.
+// Assigns one or more tags (key-value pairs) to the specified canary or group.
 //
 // Tags can help you organize and categorize your resources. You can also use
 // them to scope user permissions, by granting a user permission to access or
@@ -1223,13 +2126,13 @@ func (c *Synthetics) TagResourceRequest(input *TagResourceInput) (req *request.R
 // Tags don't have any semantic meaning to Amazon Web Services and are interpreted
 // strictly as strings of characters.
 //
-// You can use the TagResource action with a canary that already has tags. If
-// you specify a new tag key for the alarm, this tag is appended to the list
-// of tags associated with the alarm. If you specify a tag key that is already
-// associated with the alarm, the new tag value that you specify replaces the
-// previous value for that tag.
+// You can use the TagResource action with a resource that already has tags.
+// If you specify a new tag key for the resource, this tag is appended to the
+// list of tags associated with the resource. If you specify a tag key that
+// is already associated with the resource, the new tag value that you specify
+// replaces the previous value for that tag.
 //
-// You can associate as many as 50 tags with a canary.
+// You can associate as many as 50 tags with a canary or group.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1239,14 +2142,21 @@ func (c *Synthetics) TagResourceRequest(input *TagResourceInput) (req *request.R
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - BadRequestException
+//     The request was not valid.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - NotFoundException
+//     The specified resource was not found.
+//
+//   - TooManyRequestsException
+//     There were too many simultaneous requests. Try the operation again.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+//   - InternalFailureException
+//     An internal failure occurred. Try the operation again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/TagResource
 func (c *Synthetics) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -1286,14 +2196,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/UntagResource
 func (c *Synthetics) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1315,7 +2224,7 @@ func (c *Synthetics) UntagResourceRequest(input *UntagResourceInput) (req *reque
 
 // UntagResource API operation for Synthetics.
 //
-// Removes one or more tags from the specified canary.
+// Removes one or more tags from the specified resource.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1325,14 +2234,21 @@ func (c *Synthetics) UntagResourceRequest(input *UntagResourceInput) (req *reque
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - BadRequestException
+//     The request was not valid.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - NotFoundException
+//     The specified resource was not found.
+//
+//   - TooManyRequestsException
+//     There were too many simultaneous requests. Try the operation again.
+//
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+//   - InternalFailureException
+//     An internal failure occurred. Try the operation again.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/UntagResource
 func (c *Synthetics) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -1372,14 +2288,13 @@ const opUpdateCanary = "UpdateCanary"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateCanaryRequest method.
+//	req, resp := client.UpdateCanaryRequest(params)
 //
-//    // Example sending a request using the UpdateCanaryRequest method.
-//    req, resp := client.UpdateCanaryRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/UpdateCanary
 func (c *Synthetics) UpdateCanaryRequest(input *UpdateCanaryInput) (req *request.Request, output *UpdateCanaryOutput) {
@@ -1401,8 +2316,7 @@ func (c *Synthetics) UpdateCanaryRequest(input *UpdateCanaryInput) (req *request
 
 // UpdateCanary API operation for Synthetics.
 //
-// Use this operation to change the settings of a canary that has already been
-// created.
+// Updates the configuration of a canary that has already been created.
 //
 // You can't use this operation to update the tags of an existing canary. To
 // change the tags of an existing canary, use TagResource (https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_TagResource.html).
@@ -1415,20 +2329,21 @@ func (c *Synthetics) UpdateCanaryRequest(input *UpdateCanaryInput) (req *request
 // API operation UpdateCanary for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An unknown internal error occurred.
 //
-//   * ValidationException
-//   A parameter could not be validated.
+//   - InternalServerException
+//     An unknown internal error occurred.
 //
-//   * ResourceNotFoundException
-//   One of the specified resources was not found.
+//   - ValidationException
+//     A parameter could not be validated.
 //
-//   * ConflictException
-//   A conflicting operation is already in progress.
+//   - ResourceNotFoundException
+//     One of the specified resources was not found.
 //
-//   * RequestEntityTooLargeException
-//   One of the input resources is larger than is allowed.
+//   - ConflictException
+//     A conflicting operation is already in progress.
+//
+//   - RequestEntityTooLargeException
+//     One of the input resources is larger than is allowed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/synthetics-2017-10-11/UpdateCanary
 func (c *Synthetics) UpdateCanary(input *UpdateCanaryInput) (*UpdateCanaryOutput, error) {
@@ -1539,14 +2454,168 @@ func (s *ArtifactConfigOutput_) SetS3Encryption(v *S3EncryptionConfig) *Artifact
 	return s
 }
 
+type AssociateResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the group. You can specify the group name, the ARN, or the group
+	// ID as the GroupIdentifier.
+	//
+	// GroupIdentifier is a required field
+	GroupIdentifier *string `location:"uri" locationName:"groupIdentifier" min:"1" type:"string" required:"true"`
+
+	// The ARN of the canary that you want to associate with the specified group.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateResourceInput"}
+	if s.GroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupIdentifier"))
+	}
+	if s.GroupIdentifier != nil && len(*s.GroupIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupIdentifier", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupIdentifier sets the GroupIdentifier field's value.
+func (s *AssociateResourceInput) SetGroupIdentifier(v string) *AssociateResourceInput {
+	s.GroupIdentifier = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *AssociateResourceInput) SetResourceArn(v string) *AssociateResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type AssociateResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateResourceOutput) GoString() string {
+	return s.String()
+}
+
+// The request was not valid.
+type BadRequestException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BadRequestException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s BadRequestException) GoString() string {
+	return s.String()
+}
+
+func newErrorBadRequestException(v protocol.ResponseMetadata) error {
+	return &BadRequestException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *BadRequestException) Code() string {
+	return "BadRequestException"
+}
+
+// Message returns the exception's message.
+func (s *BadRequestException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *BadRequestException) OrigErr() error {
+	return nil
+}
+
+func (s *BadRequestException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *BadRequestException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *BadRequestException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // A structure representing a screenshot that is used as a baseline during visual
 // monitoring comparisons made by the canary.
 type BaseScreenshot struct {
 	_ struct{} `type:"structure"`
 
 	// Coordinates that define the part of a screen to ignore during screenshot
-	// comparisons. To obtain the coordinates to use here, use the CloudWatch Logs
-	// console to draw the boundaries on the screen. For more information, see {LINK}
+	// comparisons. To obtain the coordinates to use here, use the CloudWatch console
+	// to draw the boundaries on the screen. For more information, see Editing or
+	// deleting a canary (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/synthetics_canaries_deletion.html)
 	IgnoreCoordinates []*string `type:"list"`
 
 	// The name of the screenshot. This is generated the first time the canary is
@@ -2086,6 +3155,9 @@ type CanaryRunConfigInput struct {
 	// reserved environment variables as the keys for your environment variables.
 	// For more information about reserved keys, see Runtime environment variables
 	// (https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime).
+	//
+	// The environment variables keys and values are not encrypted. Do not store
+	// sensitive information in this field.
 	EnvironmentVariables map[string]*string `type:"map"`
 
 	// The maximum amount of memory available to the canary while it is running,
@@ -2672,7 +3744,10 @@ type CreateCanaryInput struct {
 	Name *string `min:"1" type:"string" required:"true"`
 
 	// A structure that contains the configuration for individual canary runs, such
-	// as timeout value.
+	// as timeout value and environment variables.
+	//
+	// The environment variables keys and values are not encrypted. Do not store
+	// sensitive information in this field.
 	RunConfig *CanaryRunConfigInput `type:"structure"`
 
 	// Specifies the runtime version to use for the canary. For a list of valid
@@ -2897,6 +3972,105 @@ func (s *CreateCanaryOutput) SetCanary(v *Canary) *CreateCanaryOutput {
 	return s
 }
 
+type CreateGroupInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name for the group. It can include any Unicode characters.
+	//
+	// The names for all groups in your account, across all Regions, must be unique.
+	//
+	// Name is a required field
+	Name *string `min:"1" type:"string" required:"true"`
+
+	// A list of key-value pairs to associate with the group. You can associate
+	// as many as 50 tags with a group.
+	//
+	// Tags can help you organize and categorize your resources. You can also use
+	// them to scope user permissions, by granting a user permission to access or
+	// change only the resources that have certain tag values.
+	Tags map[string]*string `min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateGroupInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Tags != nil && len(s.Tags) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetName sets the Name field's value.
+func (s *CreateGroupInput) SetName(v string) *CreateGroupInput {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateGroupInput) SetTags(v map[string]*string) *CreateGroupInput {
+	s.Tags = v
+	return s
+}
+
+type CreateGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains information about the group that was just created.
+	Group *Group `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroup sets the Group field's value.
+func (s *CreateGroupOutput) SetGroup(v *Group) *CreateGroupOutput {
+	s.Group = v
+	return s
+}
+
 type DeleteCanaryInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -2978,6 +4152,78 @@ func (s DeleteCanaryOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DeleteCanaryOutput) GoString() string {
+	return s.String()
+}
+
+type DeleteGroupInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Specifies which group to delete. You can specify the group name, the ARN,
+	// or the group ID as the GroupIdentifier.
+	//
+	// GroupIdentifier is a required field
+	GroupIdentifier *string `location:"uri" locationName:"groupIdentifier" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteGroupInput"}
+	if s.GroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupIdentifier"))
+	}
+	if s.GroupIdentifier != nil && len(*s.GroupIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupIdentifier sets the GroupIdentifier field's value.
+func (s *DeleteGroupInput) SetGroupIdentifier(v string) *DeleteGroupInput {
+	s.GroupIdentifier = &v
+	return s
+}
+
+type DeleteGroupOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteGroupOutput) GoString() string {
 	return s.String()
 }
 
@@ -3086,8 +4332,8 @@ type DescribeCanariesLastRunInput struct {
 	Names []*string `min:"1" type:"list"`
 
 	// A token that indicates that there is more data available. You can use this
-	// token in a subsequent DescribeCanaries operation to retrieve the next set
-	// of results.
+	// token in a subsequent DescribeCanariesLastRun operation to retrieve the next
+	// set of results.
 	NextToken *string `min:"4" type:"string"`
 }
 
@@ -3334,6 +4580,95 @@ func (s *DescribeRuntimeVersionsOutput) SetRuntimeVersions(v []*RuntimeVersion) 
 	return s
 }
 
+type DisassociateResourceInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the group. You can specify the group name, the ARN, or the group
+	// ID as the GroupIdentifier.
+	//
+	// GroupIdentifier is a required field
+	GroupIdentifier *string `location:"uri" locationName:"groupIdentifier" min:"1" type:"string" required:"true"`
+
+	// The ARN of the canary that you want to remove from the specified group.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateResourceInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateResourceInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateResourceInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateResourceInput"}
+	if s.GroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupIdentifier"))
+	}
+	if s.GroupIdentifier != nil && len(*s.GroupIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupIdentifier", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupIdentifier sets the GroupIdentifier field's value.
+func (s *DisassociateResourceInput) SetGroupIdentifier(v string) *DisassociateResourceInput {
+	s.GroupIdentifier = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *DisassociateResourceInput) SetResourceArn(v string) *DisassociateResourceInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type DisassociateResourceOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateResourceOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateResourceOutput) GoString() string {
+	return s.String()
+}
+
 type GetCanaryInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -3386,7 +4721,7 @@ func (s *GetCanaryInput) SetName(v string) *GetCanaryInput {
 type GetCanaryOutput struct {
 	_ struct{} `type:"structure"`
 
-	// A strucure that contains the full information about the canary.
+	// A structure that contains the full information about the canary.
 	Canary *Canary `type:"structure"`
 }
 
@@ -3534,6 +4869,278 @@ func (s *GetCanaryRunsOutput) SetNextToken(v string) *GetCanaryRunsOutput {
 	return s
 }
 
+type GetGroupInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Specifies the group to return information for. You can specify the group
+	// name, the ARN, or the group ID as the GroupIdentifier.
+	//
+	// GroupIdentifier is a required field
+	GroupIdentifier *string `location:"uri" locationName:"groupIdentifier" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetGroupInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetGroupInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetGroupInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetGroupInput"}
+	if s.GroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupIdentifier"))
+	}
+	if s.GroupIdentifier != nil && len(*s.GroupIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupIdentifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupIdentifier sets the GroupIdentifier field's value.
+func (s *GetGroupInput) SetGroupIdentifier(v string) *GetGroupInput {
+	s.GroupIdentifier = &v
+	return s
+}
+
+type GetGroupOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains information about the group.
+	Group *Group `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetGroupOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetGroupOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroup sets the Group field's value.
+func (s *GetGroupOutput) SetGroup(v *Group) *GetGroupOutput {
+	s.Group = v
+	return s
+}
+
+// This structure contains information about one group.
+type Group struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the group.
+	Arn *string `min:"1" type:"string"`
+
+	// The date and time that the group was created.
+	CreatedTime *time.Time `type:"timestamp"`
+
+	// The unique ID of the group.
+	Id *string `min:"1" type:"string"`
+
+	// The date and time that the group was most recently updated.
+	LastModifiedTime *time.Time `type:"timestamp"`
+
+	// The name of the group.
+	Name *string `min:"1" type:"string"`
+
+	// The list of key-value pairs that are associated with the canary.
+	Tags map[string]*string `min:"1" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Group) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Group) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *Group) SetArn(v string) *Group {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *Group) SetCreatedTime(v time.Time) *Group {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *Group) SetId(v string) *Group {
+	s.Id = &v
+	return s
+}
+
+// SetLastModifiedTime sets the LastModifiedTime field's value.
+func (s *Group) SetLastModifiedTime(v time.Time) *Group {
+	s.LastModifiedTime = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Group) SetName(v string) *Group {
+	s.Name = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Group) SetTags(v map[string]*string) *Group {
+	s.Tags = v
+	return s
+}
+
+// A structure containing some information about a group.
+type GroupSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the group.
+	Arn *string `min:"1" type:"string"`
+
+	// The unique ID of the group.
+	Id *string `min:"1" type:"string"`
+
+	// The name of the group.
+	Name *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GroupSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GroupSummary) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *GroupSummary) SetArn(v string) *GroupSummary {
+	s.Arn = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *GroupSummary) SetId(v string) *GroupSummary {
+	s.Id = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *GroupSummary) SetName(v string) *GroupSummary {
+	s.Name = &v
+	return s
+}
+
+// An internal failure occurred. Try the operation again.
+type InternalFailureException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InternalFailureException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InternalFailureException) GoString() string {
+	return s.String()
+}
+
+func newErrorInternalFailureException(v protocol.ResponseMetadata) error {
+	return &InternalFailureException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *InternalFailureException) Code() string {
+	return "InternalFailureException"
+}
+
+// Message returns the exception's message.
+func (s *InternalFailureException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *InternalFailureException) OrigErr() error {
+	return nil
+}
+
+func (s *InternalFailureException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *InternalFailureException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *InternalFailureException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // An unknown internal error occurred.
 type InternalServerException struct {
 	_            struct{}                  `type:"structure"`
@@ -3598,12 +5205,353 @@ func (s *InternalServerException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+type ListAssociatedGroupsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specify this parameter to limit how many groups are returned each time you
+	// use the ListAssociatedGroups operation. If you omit this parameter, the default
+	// of 20 is used.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token that indicates that there is more data available. You can use this
+	// token in a subsequent operation to retrieve the next set of results.
+	NextToken *string `min:"1" type:"string"`
+
+	// The ARN of the canary that you want to view groups for.
+	//
+	// ResourceArn is a required field
+	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAssociatedGroupsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAssociatedGroupsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAssociatedGroupsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAssociatedGroupsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.ResourceArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceArn"))
+	}
+	if s.ResourceArn != nil && len(*s.ResourceArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArn", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAssociatedGroupsInput) SetMaxResults(v int64) *ListAssociatedGroupsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAssociatedGroupsInput) SetNextToken(v string) *ListAssociatedGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *ListAssociatedGroupsInput) SetResourceArn(v string) *ListAssociatedGroupsInput {
+	s.ResourceArn = &v
+	return s
+}
+
+type ListAssociatedGroupsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that contain information about the groups that this
+	// canary is associated with.
+	Groups []*GroupSummary `type:"list"`
+
+	// A token that indicates that there is more data available. You can use this
+	// token in a subsequent ListAssociatedGroups operation to retrieve the next
+	// set of results.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAssociatedGroupsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListAssociatedGroupsOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroups sets the Groups field's value.
+func (s *ListAssociatedGroupsOutput) SetGroups(v []*GroupSummary) *ListAssociatedGroupsOutput {
+	s.Groups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAssociatedGroupsOutput) SetNextToken(v string) *ListAssociatedGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListGroupResourcesInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the group to return information for. You can specify the group
+	// name, the ARN, or the group ID as the GroupIdentifier.
+	//
+	// GroupIdentifier is a required field
+	GroupIdentifier *string `location:"uri" locationName:"groupIdentifier" min:"1" type:"string" required:"true"`
+
+	// Specify this parameter to limit how many canary ARNs are returned each time
+	// you use the ListGroupResources operation. If you omit this parameter, the
+	// default of 20 is used.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token that indicates that there is more data available. You can use this
+	// token in a subsequent operation to retrieve the next set of results.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupResourcesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupResourcesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListGroupResourcesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListGroupResourcesInput"}
+	if s.GroupIdentifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("GroupIdentifier"))
+	}
+	if s.GroupIdentifier != nil && len(*s.GroupIdentifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("GroupIdentifier", 1))
+	}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetGroupIdentifier sets the GroupIdentifier field's value.
+func (s *ListGroupResourcesInput) SetGroupIdentifier(v string) *ListGroupResourcesInput {
+	s.GroupIdentifier = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListGroupResourcesInput) SetMaxResults(v int64) *ListGroupResourcesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGroupResourcesInput) SetNextToken(v string) *ListGroupResourcesInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListGroupResourcesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A token that indicates that there is more data available. You can use this
+	// token in a subsequent ListGroupResources operation to retrieve the next set
+	// of results.
+	NextToken *string `min:"1" type:"string"`
+
+	// An array of ARNs. These ARNs are for the canaries that are associated with
+	// the group.
+	Resources []*string `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupResourcesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupResourcesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGroupResourcesOutput) SetNextToken(v string) *ListGroupResourcesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetResources sets the Resources field's value.
+func (s *ListGroupResourcesOutput) SetResources(v []*string) *ListGroupResourcesOutput {
+	s.Resources = v
+	return s
+}
+
+type ListGroupsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specify this parameter to limit how many groups are returned each time you
+	// use the ListGroups operation. If you omit this parameter, the default of
+	// 20 is used.
+	MaxResults *int64 `min:"1" type:"integer"`
+
+	// A token that indicates that there is more data available. You can use this
+	// token in a subsequent operation to retrieve the next set of results.
+	NextToken *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListGroupsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListGroupsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListGroupsInput) SetMaxResults(v int64) *ListGroupsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGroupsInput) SetNextToken(v string) *ListGroupsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListGroupsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An array of structures that each contain information about one group.
+	Groups []*GroupSummary `type:"list"`
+
+	// A token that indicates that there is more data available. You can use this
+	// token in a subsequent ListGroups operation to retrieve the next set of results.
+	NextToken *string `min:"4" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListGroupsOutput) GoString() string {
+	return s.String()
+}
+
+// SetGroups sets the Groups field's value.
+func (s *ListGroupsOutput) SetGroups(v []*GroupSummary) *ListGroupsOutput {
+	s.Groups = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListGroupsOutput) SetNextToken(v string) *ListGroupsOutput {
+	s.NextToken = &v
+	return s
+}
+
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The ARN of the canary that you want to view tags for.
+	// The ARN of the canary or group that you want to view tags for.
 	//
 	// The ARN format of a canary is arn:aws:synthetics:Region:account-id:canary:canary-name .
+	//
+	// The ARN format of a group is arn:aws:synthetics:Region:account-id:group:group-name
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
@@ -3652,7 +5600,7 @@ func (s *ListTagsForResourceInput) SetResourceArn(v string) *ListTagsForResource
 type ListTagsForResourceOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The list of tag keys and values associated with the canary that you specified.
+	// The list of tag keys and values associated with the resource that you specified.
 	Tags map[string]*string `min:"1" type:"map"`
 }
 
@@ -3678,6 +5626,70 @@ func (s ListTagsForResourceOutput) GoString() string {
 func (s *ListTagsForResourceOutput) SetTags(v map[string]*string) *ListTagsForResourceOutput {
 	s.Tags = v
 	return s
+}
+
+// The specified resource was not found.
+type NotFoundException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NotFoundException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s NotFoundException) GoString() string {
+	return s.String()
+}
+
+func newErrorNotFoundException(v protocol.ResponseMetadata) error {
+	return &NotFoundException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *NotFoundException) Code() string {
+	return "NotFoundException"
+}
+
+// Message returns the exception's message.
+func (s *NotFoundException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *NotFoundException) OrigErr() error {
+	return nil
+}
+
+func (s *NotFoundException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *NotFoundException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *NotFoundException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // One of the input resources is larger than is allowed.
@@ -3932,6 +5944,70 @@ func (s *S3EncryptionConfig) SetKmsKeyArn(v string) *S3EncryptionConfig {
 	return s
 }
 
+// The request exceeded a service quota value.
+type ServiceQuotaExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceQuotaExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ServiceQuotaExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorServiceQuotaExceededException(v protocol.ResponseMetadata) error {
+	return &ServiceQuotaExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ServiceQuotaExceededException) Code() string {
+	return "ServiceQuotaExceededException"
+}
+
+// Message returns the exception's message.
+func (s *ServiceQuotaExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ServiceQuotaExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *ServiceQuotaExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ServiceQuotaExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ServiceQuotaExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type StartCanaryInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -4008,7 +6084,7 @@ type StopCanaryInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
 	// The name of the canary that you want to stop. To find the names of your canaries,
-	// use DescribeCanaries (https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_DescribeCanaries.html).
+	// use ListCanaries (https://docs.aws.amazon.com/AmazonSynthetics/latest/APIReference/API_DescribeCanaries.html).
 	//
 	// Name is a required field
 	Name *string `location:"uri" locationName:"name" min:"1" type:"string" required:"true"`
@@ -4079,14 +6155,16 @@ func (s StopCanaryOutput) GoString() string {
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN of the canary that you're adding tags to.
+	// The ARN of the canary or group that you're adding tags to.
 	//
 	// The ARN format of a canary is arn:aws:synthetics:Region:account-id:canary:canary-name .
+	//
+	// The ARN format of a group is arn:aws:synthetics:Region:account-id:group:group-name
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
 
-	// The list of key-value pairs to associate with the canary.
+	// The list of key-value pairs to associate with the resource.
 	//
 	// Tags is a required field
 	Tags map[string]*string `min:"1" type:"map" required:"true"`
@@ -4166,12 +6244,78 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
+// There were too many simultaneous requests. Try the operation again.
+type TooManyRequestsException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TooManyRequestsException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TooManyRequestsException) GoString() string {
+	return s.String()
+}
+
+func newErrorTooManyRequestsException(v protocol.ResponseMetadata) error {
+	return &TooManyRequestsException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *TooManyRequestsException) Code() string {
+	return "TooManyRequestsException"
+}
+
+// Message returns the exception's message.
+func (s *TooManyRequestsException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *TooManyRequestsException) OrigErr() error {
+	return nil
+}
+
+func (s *TooManyRequestsException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *TooManyRequestsException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *TooManyRequestsException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type UntagResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// The ARN of the canary that you're removing tags from.
+	// The ARN of the canary or group that you're removing tags from.
 	//
 	// The ARN format of a canary is arn:aws:synthetics:Region:account-id:canary:canary-name .
+	//
+	// The ARN format of a group is arn:aws:synthetics:Region:account-id:group:group-name
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `location:"uri" locationName:"resourceArn" min:"1" type:"string" required:"true"`
@@ -4306,6 +6450,9 @@ type UpdateCanaryInput struct {
 
 	// A structure that contains the timeout value that is used for each individual
 	// run of the canary.
+	//
+	// The environment variables keys and values are not encrypted. Do not store
+	// sensitive information in this field.
 	RunConfig *CanaryRunConfigInput `type:"structure"`
 
 	// Specifies the runtime version to use for the canary. For a list of valid
@@ -4569,8 +6716,8 @@ func (s *ValidationException) RequestID() string {
 }
 
 // An object that specifies what screenshots to use as a baseline for visual
-// monitoring by this canary, and optionally the parts of the screenshots to
-// ignore during the visual monitoring comparison.
+// monitoring by this canary. It can optionally also specify parts of the screenshots
+// to ignore during the visual monitoring comparison.
 //
 // Visual monitoring is supported only on canaries running the syn-puppeteer-node-3.2
 // runtime or later. For more information, see Visual monitoring (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Synthetics_Library_SyntheticsLogger_VisualTesting.html)
@@ -4660,8 +6807,8 @@ func (s *VisualReferenceInput_) SetBaseScreenshots(v []*BaseScreenshot) *VisualR
 type VisualReferenceOutput_ struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the canary run that produced the screenshots that are used as the
-	// baseline for visual monitoring comparisons during future runs of this canary.
+	// The ID of the canary run that produced the baseline screenshots that are
+	// used for visual monitoring comparisons by this canary.
 	BaseCanaryRunId *string `min:"1" type:"string"`
 
 	// An array of screenshots that are used as the baseline for comparisons during

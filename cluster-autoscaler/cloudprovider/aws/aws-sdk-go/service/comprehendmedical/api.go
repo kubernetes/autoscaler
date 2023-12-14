@@ -28,14 +28,13 @@ const opDescribeEntitiesDetectionV2Job = "DescribeEntitiesDetectionV2Job"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEntitiesDetectionV2JobRequest method.
+//	req, resp := client.DescribeEntitiesDetectionV2JobRequest(params)
 //
-//    // Example sending a request using the DescribeEntitiesDetectionV2JobRequest method.
-//    req, resp := client.DescribeEntitiesDetectionV2JobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeEntitiesDetectionV2Job
 func (c *ComprehendMedical) DescribeEntitiesDetectionV2JobRequest(input *DescribeEntitiesDetectionV2JobInput) (req *request.Request, output *DescribeEntitiesDetectionV2JobOutput) {
@@ -67,21 +66,22 @@ func (c *ComprehendMedical) DescribeEntitiesDetectionV2JobRequest(input *Describ
 // API operation DescribeEntitiesDetectionV2Job for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeEntitiesDetectionV2Job
 func (c *ComprehendMedical) DescribeEntitiesDetectionV2Job(input *DescribeEntitiesDetectionV2JobInput) (*DescribeEntitiesDetectionV2JobOutput, error) {
@@ -121,14 +121,13 @@ const opDescribeICD10CMInferenceJob = "DescribeICD10CMInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeICD10CMInferenceJobRequest method.
+//	req, resp := client.DescribeICD10CMInferenceJobRequest(params)
 //
-//    // Example sending a request using the DescribeICD10CMInferenceJobRequest method.
-//    req, resp := client.DescribeICD10CMInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeICD10CMInferenceJob
 func (c *ComprehendMedical) DescribeICD10CMInferenceJobRequest(input *DescribeICD10CMInferenceJobInput) (req *request.Request, output *DescribeICD10CMInferenceJobOutput) {
@@ -160,21 +159,22 @@ func (c *ComprehendMedical) DescribeICD10CMInferenceJobRequest(input *DescribeIC
 // API operation DescribeICD10CMInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeICD10CMInferenceJob
 func (c *ComprehendMedical) DescribeICD10CMInferenceJob(input *DescribeICD10CMInferenceJobInput) (*DescribeICD10CMInferenceJobOutput, error) {
@@ -214,14 +214,13 @@ const opDescribePHIDetectionJob = "DescribePHIDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePHIDetectionJobRequest method.
+//	req, resp := client.DescribePHIDetectionJobRequest(params)
 //
-//    // Example sending a request using the DescribePHIDetectionJobRequest method.
-//    req, resp := client.DescribePHIDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribePHIDetectionJob
 func (c *ComprehendMedical) DescribePHIDetectionJobRequest(input *DescribePHIDetectionJobInput) (req *request.Request, output *DescribePHIDetectionJobOutput) {
@@ -253,21 +252,22 @@ func (c *ComprehendMedical) DescribePHIDetectionJobRequest(input *DescribePHIDet
 // API operation DescribePHIDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribePHIDetectionJob
 func (c *ComprehendMedical) DescribePHIDetectionJob(input *DescribePHIDetectionJobInput) (*DescribePHIDetectionJobOutput, error) {
@@ -307,14 +307,13 @@ const opDescribeRxNormInferenceJob = "DescribeRxNormInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeRxNormInferenceJobRequest method.
+//	req, resp := client.DescribeRxNormInferenceJobRequest(params)
 //
-//    // Example sending a request using the DescribeRxNormInferenceJobRequest method.
-//    req, resp := client.DescribeRxNormInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeRxNormInferenceJob
 func (c *ComprehendMedical) DescribeRxNormInferenceJobRequest(input *DescribeRxNormInferenceJobInput) (req *request.Request, output *DescribeRxNormInferenceJobOutput) {
@@ -346,21 +345,22 @@ func (c *ComprehendMedical) DescribeRxNormInferenceJobRequest(input *DescribeRxN
 // API operation DescribeRxNormInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeRxNormInferenceJob
 func (c *ComprehendMedical) DescribeRxNormInferenceJob(input *DescribeRxNormInferenceJobInput) (*DescribeRxNormInferenceJobOutput, error) {
@@ -400,14 +400,13 @@ const opDescribeSNOMEDCTInferenceJob = "DescribeSNOMEDCTInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeSNOMEDCTInferenceJobRequest method.
+//	req, resp := client.DescribeSNOMEDCTInferenceJobRequest(params)
 //
-//    // Example sending a request using the DescribeSNOMEDCTInferenceJobRequest method.
-//    req, resp := client.DescribeSNOMEDCTInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeSNOMEDCTInferenceJob
 func (c *ComprehendMedical) DescribeSNOMEDCTInferenceJobRequest(input *DescribeSNOMEDCTInferenceJobInput) (req *request.Request, output *DescribeSNOMEDCTInferenceJobOutput) {
@@ -439,21 +438,22 @@ func (c *ComprehendMedical) DescribeSNOMEDCTInferenceJobRequest(input *DescribeS
 // API operation DescribeSNOMEDCTInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DescribeSNOMEDCTInferenceJob
 func (c *ComprehendMedical) DescribeSNOMEDCTInferenceJob(input *DescribeSNOMEDCTInferenceJobInput) (*DescribeSNOMEDCTInferenceJobOutput, error) {
@@ -493,14 +493,13 @@ const opDetectEntities = "DetectEntities"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectEntitiesRequest method.
+//	req, resp := client.DetectEntitiesRequest(params)
 //
-//    // Example sending a request using the DetectEntitiesRequest method.
-//    req, resp := client.DetectEntitiesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DetectEntities
 //
@@ -531,7 +530,7 @@ func (c *ComprehendMedical) DetectEntitiesRequest(input *DetectEntitiesInput) (r
 //
 // Inspects the clinical text for a variety of medical entities and returns
 // specific information about them such as entity category, location, and confidence
-// score on that information .
+// score on that information.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -541,29 +540,30 @@ func (c *ComprehendMedical) DetectEntitiesRequest(input *DetectEntitiesInput) (r
 // API operation DetectEntities for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ServiceUnavailableException
-//   The Comprehend Medical; service is temporarily unavailable. Please wait and
-//   then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ServiceUnavailableException
+//     The Amazon Comprehend Medical service is temporarily unavailable. Please
+//     wait and then retry your request.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InvalidEncodingException
-//   The input text was not in valid UTF-8 character encoding. Check your text
-//   then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidEncodingException
+//     The input text was not in valid UTF-8 character encoding. Check your text
+//     then retry your request.
+//
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DetectEntities
 //
@@ -607,14 +607,13 @@ const opDetectEntitiesV2 = "DetectEntitiesV2"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectEntitiesV2Request method.
+//	req, resp := client.DetectEntitiesV2Request(params)
 //
-//    // Example sending a request using the DetectEntitiesV2Request method.
-//    req, resp := client.DetectEntitiesV2Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DetectEntitiesV2
 func (c *ComprehendMedical) DetectEntitiesV2Request(input *DetectEntitiesV2Input) (req *request.Request, output *DetectEntitiesV2Output) {
@@ -656,29 +655,30 @@ func (c *ComprehendMedical) DetectEntitiesV2Request(input *DetectEntitiesV2Input
 // API operation DetectEntitiesV2 for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ServiceUnavailableException
-//   The Comprehend Medical; service is temporarily unavailable. Please wait and
-//   then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ServiceUnavailableException
+//     The Amazon Comprehend Medical service is temporarily unavailable. Please
+//     wait and then retry your request.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InvalidEncodingException
-//   The input text was not in valid UTF-8 character encoding. Check your text
-//   then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidEncodingException
+//     The input text was not in valid UTF-8 character encoding. Check your text
+//     then retry your request.
+//
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DetectEntitiesV2
 func (c *ComprehendMedical) DetectEntitiesV2(input *DetectEntitiesV2Input) (*DetectEntitiesV2Output, error) {
@@ -718,14 +718,13 @@ const opDetectPHI = "DetectPHI"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DetectPHIRequest method.
+//	req, resp := client.DetectPHIRequest(params)
 //
-//    // Example sending a request using the DetectPHIRequest method.
-//    req, resp := client.DetectPHIRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DetectPHI
 func (c *ComprehendMedical) DetectPHIRequest(input *DetectPHIInput) (req *request.Request, output *DetectPHIOutput) {
@@ -759,29 +758,30 @@ func (c *ComprehendMedical) DetectPHIRequest(input *DetectPHIInput) (req *reques
 // API operation DetectPHI for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ServiceUnavailableException
-//   The Comprehend Medical; service is temporarily unavailable. Please wait and
-//   then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ServiceUnavailableException
+//     The Amazon Comprehend Medical service is temporarily unavailable. Please
+//     wait and then retry your request.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InvalidEncodingException
-//   The input text was not in valid UTF-8 character encoding. Check your text
-//   then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidEncodingException
+//     The input text was not in valid UTF-8 character encoding. Check your text
+//     then retry your request.
+//
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/DetectPHI
 func (c *ComprehendMedical) DetectPHI(input *DetectPHIInput) (*DetectPHIOutput, error) {
@@ -821,14 +821,13 @@ const opInferICD10CM = "InferICD10CM"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InferICD10CMRequest method.
+//	req, resp := client.InferICD10CMRequest(params)
 //
-//    // Example sending a request using the InferICD10CMRequest method.
-//    req, resp := client.InferICD10CMRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/InferICD10CM
 func (c *ComprehendMedical) InferICD10CMRequest(input *InferICD10CMInput) (req *request.Request, output *InferICD10CMOutput) {
@@ -862,29 +861,30 @@ func (c *ComprehendMedical) InferICD10CMRequest(input *InferICD10CMInput) (req *
 // API operation InferICD10CM for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ServiceUnavailableException
-//   The Comprehend Medical; service is temporarily unavailable. Please wait and
-//   then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ServiceUnavailableException
+//     The Amazon Comprehend Medical service is temporarily unavailable. Please
+//     wait and then retry your request.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InvalidEncodingException
-//   The input text was not in valid UTF-8 character encoding. Check your text
-//   then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidEncodingException
+//     The input text was not in valid UTF-8 character encoding. Check your text
+//     then retry your request.
+//
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/InferICD10CM
 func (c *ComprehendMedical) InferICD10CM(input *InferICD10CMInput) (*InferICD10CMOutput, error) {
@@ -924,14 +924,13 @@ const opInferRxNorm = "InferRxNorm"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InferRxNormRequest method.
+//	req, resp := client.InferRxNormRequest(params)
 //
-//    // Example sending a request using the InferRxNormRequest method.
-//    req, resp := client.InferRxNormRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/InferRxNorm
 func (c *ComprehendMedical) InferRxNormRequest(input *InferRxNormInput) (req *request.Request, output *InferRxNormOutput) {
@@ -965,29 +964,30 @@ func (c *ComprehendMedical) InferRxNormRequest(input *InferRxNormInput) (req *re
 // API operation InferRxNorm for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ServiceUnavailableException
-//   The Comprehend Medical; service is temporarily unavailable. Please wait and
-//   then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ServiceUnavailableException
+//     The Amazon Comprehend Medical service is temporarily unavailable. Please
+//     wait and then retry your request.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InvalidEncodingException
-//   The input text was not in valid UTF-8 character encoding. Check your text
-//   then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidEncodingException
+//     The input text was not in valid UTF-8 character encoding. Check your text
+//     then retry your request.
+//
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/InferRxNorm
 func (c *ComprehendMedical) InferRxNorm(input *InferRxNormInput) (*InferRxNormOutput, error) {
@@ -1027,14 +1027,13 @@ const opInferSNOMEDCT = "InferSNOMEDCT"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the InferSNOMEDCTRequest method.
+//	req, resp := client.InferSNOMEDCTRequest(params)
 //
-//    // Example sending a request using the InferSNOMEDCTRequest method.
-//    req, resp := client.InferSNOMEDCTRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/InferSNOMEDCT
 func (c *ComprehendMedical) InferSNOMEDCTRequest(input *InferSNOMEDCTInput) (req *request.Request, output *InferSNOMEDCTOutput) {
@@ -1067,29 +1066,30 @@ func (c *ComprehendMedical) InferSNOMEDCTRequest(input *InferSNOMEDCTInput) (req
 // API operation InferSNOMEDCT for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
 //
-//   * ServiceUnavailableException
-//   The Comprehend Medical; service is temporarily unavailable. Please wait and
-//   then retry your request.
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ServiceUnavailableException
+//     The Amazon Comprehend Medical service is temporarily unavailable. Please
+//     wait and then retry your request.
 //
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InvalidEncodingException
-//   The input text was not in valid UTF-8 character encoding. Check your text
-//   then retry your request.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TextSizeLimitExceededException
-//   The size of the text you submitted exceeds the size limit. Reduce the size
-//   of the text or use a smaller document and then retry your request.
+//   - InvalidEncodingException
+//     The input text was not in valid UTF-8 character encoding. Check your text
+//     then retry your request.
+//
+//   - TextSizeLimitExceededException
+//     The size of the text you submitted exceeds the size limit. Reduce the size
+//     of the text or use a smaller document and then retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/InferSNOMEDCT
 func (c *ComprehendMedical) InferSNOMEDCT(input *InferSNOMEDCTInput) (*InferSNOMEDCTOutput, error) {
@@ -1129,14 +1129,13 @@ const opListEntitiesDetectionV2Jobs = "ListEntitiesDetectionV2Jobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListEntitiesDetectionV2JobsRequest method.
+//	req, resp := client.ListEntitiesDetectionV2JobsRequest(params)
 //
-//    // Example sending a request using the ListEntitiesDetectionV2JobsRequest method.
-//    req, resp := client.ListEntitiesDetectionV2JobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListEntitiesDetectionV2Jobs
 func (c *ComprehendMedical) ListEntitiesDetectionV2JobsRequest(input *ListEntitiesDetectionV2JobsInput) (req *request.Request, output *ListEntitiesDetectionV2JobsOutput) {
@@ -1167,21 +1166,22 @@ func (c *ComprehendMedical) ListEntitiesDetectionV2JobsRequest(input *ListEntiti
 // API operation ListEntitiesDetectionV2Jobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ValidationException
-//   The filter that you specified for the operation is invalid. Check the filter
-//   values that you entered and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ValidationException
+//     The filter that you specified for the operation is invalid. Check the filter
+//     values that you entered and try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListEntitiesDetectionV2Jobs
 func (c *ComprehendMedical) ListEntitiesDetectionV2Jobs(input *ListEntitiesDetectionV2JobsInput) (*ListEntitiesDetectionV2JobsOutput, error) {
@@ -1221,14 +1221,13 @@ const opListICD10CMInferenceJobs = "ListICD10CMInferenceJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListICD10CMInferenceJobsRequest method.
+//	req, resp := client.ListICD10CMInferenceJobsRequest(params)
 //
-//    // Example sending a request using the ListICD10CMInferenceJobsRequest method.
-//    req, resp := client.ListICD10CMInferenceJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListICD10CMInferenceJobs
 func (c *ComprehendMedical) ListICD10CMInferenceJobsRequest(input *ListICD10CMInferenceJobsInput) (req *request.Request, output *ListICD10CMInferenceJobsOutput) {
@@ -1259,21 +1258,22 @@ func (c *ComprehendMedical) ListICD10CMInferenceJobsRequest(input *ListICD10CMIn
 // API operation ListICD10CMInferenceJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ValidationException
-//   The filter that you specified for the operation is invalid. Check the filter
-//   values that you entered and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ValidationException
+//     The filter that you specified for the operation is invalid. Check the filter
+//     values that you entered and try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListICD10CMInferenceJobs
 func (c *ComprehendMedical) ListICD10CMInferenceJobs(input *ListICD10CMInferenceJobsInput) (*ListICD10CMInferenceJobsOutput, error) {
@@ -1313,14 +1313,13 @@ const opListPHIDetectionJobs = "ListPHIDetectionJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPHIDetectionJobsRequest method.
+//	req, resp := client.ListPHIDetectionJobsRequest(params)
 //
-//    // Example sending a request using the ListPHIDetectionJobsRequest method.
-//    req, resp := client.ListPHIDetectionJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListPHIDetectionJobs
 func (c *ComprehendMedical) ListPHIDetectionJobsRequest(input *ListPHIDetectionJobsInput) (req *request.Request, output *ListPHIDetectionJobsOutput) {
@@ -1341,8 +1340,8 @@ func (c *ComprehendMedical) ListPHIDetectionJobsRequest(input *ListPHIDetectionJ
 
 // ListPHIDetectionJobs API operation for AWS Comprehend Medical.
 //
-// Gets a list of protected health information (PHI) detection jobs that you
-// have submitted.
+// Gets a list of protected health information (PHI) detection jobs you have
+// submitted.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1352,21 +1351,22 @@ func (c *ComprehendMedical) ListPHIDetectionJobsRequest(input *ListPHIDetectionJ
 // API operation ListPHIDetectionJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ValidationException
-//   The filter that you specified for the operation is invalid. Check the filter
-//   values that you entered and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ValidationException
+//     The filter that you specified for the operation is invalid. Check the filter
+//     values that you entered and try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListPHIDetectionJobs
 func (c *ComprehendMedical) ListPHIDetectionJobs(input *ListPHIDetectionJobsInput) (*ListPHIDetectionJobsOutput, error) {
@@ -1406,14 +1406,13 @@ const opListRxNormInferenceJobs = "ListRxNormInferenceJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListRxNormInferenceJobsRequest method.
+//	req, resp := client.ListRxNormInferenceJobsRequest(params)
 //
-//    // Example sending a request using the ListRxNormInferenceJobsRequest method.
-//    req, resp := client.ListRxNormInferenceJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListRxNormInferenceJobs
 func (c *ComprehendMedical) ListRxNormInferenceJobsRequest(input *ListRxNormInferenceJobsInput) (req *request.Request, output *ListRxNormInferenceJobsOutput) {
@@ -1444,21 +1443,22 @@ func (c *ComprehendMedical) ListRxNormInferenceJobsRequest(input *ListRxNormInfe
 // API operation ListRxNormInferenceJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ValidationException
-//   The filter that you specified for the operation is invalid. Check the filter
-//   values that you entered and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ValidationException
+//     The filter that you specified for the operation is invalid. Check the filter
+//     values that you entered and try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListRxNormInferenceJobs
 func (c *ComprehendMedical) ListRxNormInferenceJobs(input *ListRxNormInferenceJobsInput) (*ListRxNormInferenceJobsOutput, error) {
@@ -1498,14 +1498,13 @@ const opListSNOMEDCTInferenceJobs = "ListSNOMEDCTInferenceJobs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSNOMEDCTInferenceJobsRequest method.
+//	req, resp := client.ListSNOMEDCTInferenceJobsRequest(params)
 //
-//    // Example sending a request using the ListSNOMEDCTInferenceJobsRequest method.
-//    req, resp := client.ListSNOMEDCTInferenceJobsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListSNOMEDCTInferenceJobs
 func (c *ComprehendMedical) ListSNOMEDCTInferenceJobsRequest(input *ListSNOMEDCTInferenceJobsInput) (req *request.Request, output *ListSNOMEDCTInferenceJobsOutput) {
@@ -1536,21 +1535,22 @@ func (c *ComprehendMedical) ListSNOMEDCTInferenceJobsRequest(input *ListSNOMEDCT
 // API operation ListSNOMEDCTInferenceJobs for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ValidationException
-//   The filter that you specified for the operation is invalid. Check the filter
-//   values that you entered and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ValidationException
+//     The filter that you specified for the operation is invalid. Check the filter
+//     values that you entered and try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/ListSNOMEDCTInferenceJobs
 func (c *ComprehendMedical) ListSNOMEDCTInferenceJobs(input *ListSNOMEDCTInferenceJobsInput) (*ListSNOMEDCTInferenceJobsOutput, error) {
@@ -1590,14 +1590,13 @@ const opStartEntitiesDetectionV2Job = "StartEntitiesDetectionV2Job"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartEntitiesDetectionV2JobRequest method.
+//	req, resp := client.StartEntitiesDetectionV2JobRequest(params)
 //
-//    // Example sending a request using the StartEntitiesDetectionV2JobRequest method.
-//    req, resp := client.StartEntitiesDetectionV2JobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartEntitiesDetectionV2Job
 func (c *ComprehendMedical) StartEntitiesDetectionV2JobRequest(input *StartEntitiesDetectionV2JobInput) (req *request.Request, output *StartEntitiesDetectionV2JobOutput) {
@@ -1630,21 +1629,22 @@ func (c *ComprehendMedical) StartEntitiesDetectionV2JobRequest(input *StartEntit
 // API operation StartEntitiesDetectionV2Job for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartEntitiesDetectionV2Job
 func (c *ComprehendMedical) StartEntitiesDetectionV2Job(input *StartEntitiesDetectionV2JobInput) (*StartEntitiesDetectionV2JobOutput, error) {
@@ -1684,14 +1684,13 @@ const opStartICD10CMInferenceJob = "StartICD10CMInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartICD10CMInferenceJobRequest method.
+//	req, resp := client.StartICD10CMInferenceJobRequest(params)
 //
-//    // Example sending a request using the StartICD10CMInferenceJobRequest method.
-//    req, resp := client.StartICD10CMInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartICD10CMInferenceJob
 func (c *ComprehendMedical) StartICD10CMInferenceJobRequest(input *StartICD10CMInferenceJobInput) (req *request.Request, output *StartICD10CMInferenceJobOutput) {
@@ -1724,21 +1723,22 @@ func (c *ComprehendMedical) StartICD10CMInferenceJobRequest(input *StartICD10CMI
 // API operation StartICD10CMInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartICD10CMInferenceJob
 func (c *ComprehendMedical) StartICD10CMInferenceJob(input *StartICD10CMInferenceJobInput) (*StartICD10CMInferenceJobOutput, error) {
@@ -1778,14 +1778,13 @@ const opStartPHIDetectionJob = "StartPHIDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartPHIDetectionJobRequest method.
+//	req, resp := client.StartPHIDetectionJobRequest(params)
 //
-//    // Example sending a request using the StartPHIDetectionJobRequest method.
-//    req, resp := client.StartPHIDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartPHIDetectionJob
 func (c *ComprehendMedical) StartPHIDetectionJobRequest(input *StartPHIDetectionJobInput) (req *request.Request, output *StartPHIDetectionJobOutput) {
@@ -1817,21 +1816,22 @@ func (c *ComprehendMedical) StartPHIDetectionJobRequest(input *StartPHIDetection
 // API operation StartPHIDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartPHIDetectionJob
 func (c *ComprehendMedical) StartPHIDetectionJob(input *StartPHIDetectionJobInput) (*StartPHIDetectionJobOutput, error) {
@@ -1871,14 +1871,13 @@ const opStartRxNormInferenceJob = "StartRxNormInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartRxNormInferenceJobRequest method.
+//	req, resp := client.StartRxNormInferenceJobRequest(params)
 //
-//    // Example sending a request using the StartRxNormInferenceJobRequest method.
-//    req, resp := client.StartRxNormInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartRxNormInferenceJob
 func (c *ComprehendMedical) StartRxNormInferenceJobRequest(input *StartRxNormInferenceJobInput) (req *request.Request, output *StartRxNormInferenceJobOutput) {
@@ -1911,21 +1910,22 @@ func (c *ComprehendMedical) StartRxNormInferenceJobRequest(input *StartRxNormInf
 // API operation StartRxNormInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartRxNormInferenceJob
 func (c *ComprehendMedical) StartRxNormInferenceJob(input *StartRxNormInferenceJobInput) (*StartRxNormInferenceJobOutput, error) {
@@ -1965,14 +1965,13 @@ const opStartSNOMEDCTInferenceJob = "StartSNOMEDCTInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSNOMEDCTInferenceJobRequest method.
+//	req, resp := client.StartSNOMEDCTInferenceJobRequest(params)
 //
-//    // Example sending a request using the StartSNOMEDCTInferenceJobRequest method.
-//    req, resp := client.StartSNOMEDCTInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartSNOMEDCTInferenceJob
 func (c *ComprehendMedical) StartSNOMEDCTInferenceJobRequest(input *StartSNOMEDCTInferenceJobInput) (req *request.Request, output *StartSNOMEDCTInferenceJobOutput) {
@@ -2005,21 +2004,22 @@ func (c *ComprehendMedical) StartSNOMEDCTInferenceJobRequest(input *StartSNOMEDC
 // API operation StartSNOMEDCTInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StartSNOMEDCTInferenceJob
 func (c *ComprehendMedical) StartSNOMEDCTInferenceJob(input *StartSNOMEDCTInferenceJobInput) (*StartSNOMEDCTInferenceJobOutput, error) {
@@ -2059,14 +2059,13 @@ const opStopEntitiesDetectionV2Job = "StopEntitiesDetectionV2Job"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopEntitiesDetectionV2JobRequest method.
+//	req, resp := client.StopEntitiesDetectionV2JobRequest(params)
 //
-//    // Example sending a request using the StopEntitiesDetectionV2JobRequest method.
-//    req, resp := client.StopEntitiesDetectionV2JobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopEntitiesDetectionV2Job
 func (c *ComprehendMedical) StopEntitiesDetectionV2JobRequest(input *StopEntitiesDetectionV2JobInput) (req *request.Request, output *StopEntitiesDetectionV2JobOutput) {
@@ -2097,16 +2096,17 @@ func (c *ComprehendMedical) StopEntitiesDetectionV2JobRequest(input *StopEntitie
 // API operation StopEntitiesDetectionV2Job for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopEntitiesDetectionV2Job
 func (c *ComprehendMedical) StopEntitiesDetectionV2Job(input *StopEntitiesDetectionV2JobInput) (*StopEntitiesDetectionV2JobOutput, error) {
@@ -2146,14 +2146,13 @@ const opStopICD10CMInferenceJob = "StopICD10CMInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopICD10CMInferenceJobRequest method.
+//	req, resp := client.StopICD10CMInferenceJobRequest(params)
 //
-//    // Example sending a request using the StopICD10CMInferenceJobRequest method.
-//    req, resp := client.StopICD10CMInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopICD10CMInferenceJob
 func (c *ComprehendMedical) StopICD10CMInferenceJobRequest(input *StopICD10CMInferenceJobInput) (req *request.Request, output *StopICD10CMInferenceJobOutput) {
@@ -2184,16 +2183,17 @@ func (c *ComprehendMedical) StopICD10CMInferenceJobRequest(input *StopICD10CMInf
 // API operation StopICD10CMInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopICD10CMInferenceJob
 func (c *ComprehendMedical) StopICD10CMInferenceJob(input *StopICD10CMInferenceJobInput) (*StopICD10CMInferenceJobOutput, error) {
@@ -2233,14 +2233,13 @@ const opStopPHIDetectionJob = "StopPHIDetectionJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopPHIDetectionJobRequest method.
+//	req, resp := client.StopPHIDetectionJobRequest(params)
 //
-//    // Example sending a request using the StopPHIDetectionJobRequest method.
-//    req, resp := client.StopPHIDetectionJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopPHIDetectionJob
 func (c *ComprehendMedical) StopPHIDetectionJobRequest(input *StopPHIDetectionJobInput) (req *request.Request, output *StopPHIDetectionJobOutput) {
@@ -2271,16 +2270,17 @@ func (c *ComprehendMedical) StopPHIDetectionJobRequest(input *StopPHIDetectionJo
 // API operation StopPHIDetectionJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopPHIDetectionJob
 func (c *ComprehendMedical) StopPHIDetectionJob(input *StopPHIDetectionJobInput) (*StopPHIDetectionJobOutput, error) {
@@ -2320,14 +2320,13 @@ const opStopRxNormInferenceJob = "StopRxNormInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopRxNormInferenceJobRequest method.
+//	req, resp := client.StopRxNormInferenceJobRequest(params)
 //
-//    // Example sending a request using the StopRxNormInferenceJobRequest method.
-//    req, resp := client.StopRxNormInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopRxNormInferenceJob
 func (c *ComprehendMedical) StopRxNormInferenceJobRequest(input *StopRxNormInferenceJobInput) (req *request.Request, output *StopRxNormInferenceJobOutput) {
@@ -2358,16 +2357,17 @@ func (c *ComprehendMedical) StopRxNormInferenceJobRequest(input *StopRxNormInfer
 // API operation StopRxNormInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopRxNormInferenceJob
 func (c *ComprehendMedical) StopRxNormInferenceJob(input *StopRxNormInferenceJobInput) (*StopRxNormInferenceJobOutput, error) {
@@ -2407,14 +2407,13 @@ const opStopSNOMEDCTInferenceJob = "StopSNOMEDCTInferenceJob"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StopSNOMEDCTInferenceJobRequest method.
+//	req, resp := client.StopSNOMEDCTInferenceJobRequest(params)
 //
-//    // Example sending a request using the StopSNOMEDCTInferenceJobRequest method.
-//    req, resp := client.StopSNOMEDCTInferenceJobRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopSNOMEDCTInferenceJob
 func (c *ComprehendMedical) StopSNOMEDCTInferenceJobRequest(input *StopSNOMEDCTInferenceJobInput) (req *request.Request, output *StopSNOMEDCTInferenceJobOutput) {
@@ -2445,21 +2444,22 @@ func (c *ComprehendMedical) StopSNOMEDCTInferenceJobRequest(input *StopSNOMEDCTI
 // API operation StopSNOMEDCTInferenceJob for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidRequestException
-//   The request that you made is invalid. Check your request to determine why
-//   it's invalid and then retry the request.
 //
-//   * ResourceNotFoundException
-//   The resource identified by the specified Amazon Resource Name (ARN) was not
-//   found. Check the ARN and try your request again.
+//   - InvalidRequestException
+//     The request that you made is invalid. Check your request to determine why
+//     it's invalid and then retry the request.
 //
-//   * TooManyRequestsException
-//   You have made too many requests within a short period of time. Wait for a
-//   short time and then try your request again. Contact customer support for
-//   more information about a service limit increase.
+//   - ResourceNotFoundException
+//     The resource identified by the specified Amazon Resource Name (ARN) was not
+//     found. Check the ARN and try your request again.
 //
-//   * InternalServerException
-//   An internal server error occurred. Retry your request.
+//   - TooManyRequestsException
+//     You have made too many requests within a short period of time. Wait for a
+//     short time and then try your request again. Contact customer support for
+//     more information about a service limit increase.
+//
+//   - InternalServerException
+//     An internal server error occurred. Retry your request.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/comprehendmedical-2018-10-30/StopSNOMEDCTInferenceJob
 func (c *ComprehendMedical) StopSNOMEDCTInferenceJob(input *StopSNOMEDCTInferenceJobInput) (*StopSNOMEDCTInferenceJobOutput, error) {
@@ -2505,7 +2505,7 @@ type Attribute struct {
 	// id unique within this response rather than a global unique identifier.
 	Id *int64 `type:"integer"`
 
-	// The level of confidence that Comprehend Medical; has that this attribute
+	// The level of confidence that Amazon Comprehend Medical has that this attribute
 	// is correctly related to this entity.
 	RelationshipScore *float64 `type:"float"`
 
@@ -2513,8 +2513,8 @@ type Attribute struct {
 	// is OVERLAP, indicating that the entity occurred at the same time as the Date_Expression.
 	RelationshipType *string `type:"string" enum:"RelationshipType"`
 
-	// The level of confidence that Comprehend Medical; has that the segment of
-	// text is correctly recognized as an attribute.
+	// The level of confidence that Amazon Comprehend Medical has that the segment
+	// of text is correctly recognized as an attribute.
 	Score *float64 `type:"float"`
 
 	// The segment of input text extracted as this attribute.
@@ -2610,7 +2610,7 @@ type Characters struct {
 	_ struct{} `type:"structure"`
 
 	// The number of characters present in the input text document as processed
-	// by Comprehend Medical.
+	// by Amazon Comprehend Medical.
 	OriginalTextCharacters *int64 `type:"integer"`
 }
 
@@ -2719,8 +2719,8 @@ func (s *ComprehendMedicalAsyncJobFilter) SetSubmitTimeBefore(v time.Time) *Comp
 type ComprehendMedicalAsyncJobProperties struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resource Name (ARN) that gives Comprehend Medical; read access
-	// to your input data.
+	// The Amazon Resource Name (ARN) that gives Amazon Comprehend Medical read
+	// access to your input data.
 	DataAccessRoleArn *string `min:"20" type:"string"`
 
 	// The time that the detection job completed.
@@ -2876,8 +2876,8 @@ func (s *ComprehendMedicalAsyncJobProperties) SetSubmitTime(v time.Time) *Compre
 type DescribeEntitiesDetectionV2JobInput struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier that Comprehend Medical; generated for the job. The StartEntitiesDetectionV2Job
-	// operation returns this identifier in its response.
+	// The identifier that Amazon Comprehend Medical generated for the job. The
+	// StartEntitiesDetectionV2Job operation returns this identifier in its response.
 	//
 	// JobId is a required field
 	JobId *string `min:"1" type:"string" required:"true"`
@@ -3038,8 +3038,8 @@ func (s *DescribeICD10CMInferenceJobOutput) SetComprehendMedicalAsyncJobProperti
 type DescribePHIDetectionJobInput struct {
 	_ struct{} `type:"structure"`
 
-	// The identifier that Comprehend Medical; generated for the job. The StartPHIDetectionJob
-	// operation returns this identifier in its response.
+	// The identifier that Amazon Comprehend Medical generated for the job. The
+	// StartPHIDetectionJob operation returns this identifier in its response.
 	//
 	// JobId is a required field
 	JobId *string `min:"1" type:"string" required:"true"`
@@ -3282,7 +3282,6 @@ type DetectEntitiesInput struct {
 	_ struct{} `type:"structure"`
 
 	// A UTF-8 text string containing the clinical content being examined for entities.
-	// Each string must contain fewer than 20,000 bytes of characters.
 	//
 	// Text is a required field
 	Text *string `min:"1" type:"string" required:"true"`
@@ -3334,8 +3333,8 @@ type DetectEntitiesOutput struct {
 	// The collection of medical entities extracted from the input text and their
 	// associated information. For each entity, the response provides the entity
 	// text, the entity category, where the entity text begins and ends, and the
-	// level of confidence that Comprehend Medical; has in the detection and analysis.
-	// Attributes and traits of the entity are also returned.
+	// level of confidence that Amazon Comprehend Medical has in the detection and
+	// analysis. Attributes and traits of the entity are also returned.
 	//
 	// Entities is a required field
 	Entities []*Entity `type:"list" required:"true"`
@@ -3402,7 +3401,6 @@ type DetectEntitiesV2Input struct {
 	_ struct{} `type:"structure"`
 
 	// A UTF-8 string containing the clinical content being examined for entities.
-	// Each string must contain fewer than 20,000 bytes of characters.
 	//
 	// Text is a required field
 	Text *string `min:"1" type:"string" required:"true"`
@@ -3521,7 +3519,7 @@ type DetectPHIInput struct {
 	_ struct{} `type:"structure"`
 
 	// A UTF-8 text string containing the clinical content being examined for PHI
-	// entities. Each string must contain fewer than 20,000 bytes of characters.
+	// entities.
 	//
 	// Text is a required field
 	Text *string `min:"1" type:"string" required:"true"`
@@ -3573,7 +3571,7 @@ type DetectPHIOutput struct {
 	// The collection of PHI entities extracted from the input text and their associated
 	// information. For each entity, the response provides the entity text, the
 	// entity category, where the entity text begins and ends, and the level of
-	// confidence that Comprehend Medical; has in its detection.
+	// confidence that Amazon Comprehend Medical has in its detection.
 	//
 	// Entities is a required field
 	Entities []*Entity `type:"list" required:"true"`
@@ -3648,8 +3646,8 @@ type Entity struct {
 	// id unique within this response rather than a global unique identifier.
 	Id *int64 `type:"integer"`
 
-	// The level of confidence that Comprehend Medical; has in the accuracy of the
-	// detection.
+	// The level of confidence that Amazon Comprehend Medical has in the accuracy
+	// of the detection.
 	Score *float64 `type:"float"`
 
 	// The segment of input text extracted as this entity.
@@ -4045,8 +4043,8 @@ type ICD10CMTrait struct {
 	// Provides a name or contextual description about the trait.
 	Name *string `type:"string" enum:"ICD10CMTraitName"`
 
-	// The level of confidence that Comprehend Medical; has that the segment of
-	// text is correctly recognized as a trait.
+	// The level of confidence that Amazon Comprehend Medical has that the segment
+	// of text is correctly recognized as a trait.
 	Score *float64 `type:"float"`
 }
 
@@ -4083,8 +4081,7 @@ func (s *ICD10CMTrait) SetScore(v float64) *ICD10CMTrait {
 type InferICD10CMInput struct {
 	_ struct{} `type:"structure"`
 
-	// The input text used for analysis. The input for InferICD10CM is a string
-	// from 1 to 10000 characters.
+	// The input text used for analysis.
 	//
 	// Text is a required field
 	Text *string `min:"1" type:"string" required:"true"`
@@ -4189,8 +4186,7 @@ func (s *InferICD10CMOutput) SetPaginationToken(v string) *InferICD10CMOutput {
 type InferRxNormInput struct {
 	_ struct{} `type:"structure"`
 
-	// The input text used for analysis. The input for InferRxNorm is a string from
-	// 1 to 10000 characters.
+	// The input text used for analysis.
 	//
 	// Text is a required field
 	Text *string `min:"1" type:"string" required:"true"`
@@ -4295,8 +4291,7 @@ func (s *InferRxNormOutput) SetPaginationToken(v string) *InferRxNormOutput {
 type InferSNOMEDCTInput struct {
 	_ struct{} `type:"structure"`
 
-	// The input text to be analyzed using InferSNOMEDCT. The text should be a string
-	// with 1 to 10000 characters.
+	// The input text to be analyzed using InferSNOMEDCT.
 	//
 	// Text is a required field
 	Text *string `min:"1" type:"string" required:"true"`
@@ -4351,7 +4346,7 @@ type InferSNOMEDCTOutput struct {
 	// The collection of medical concept entities extracted from the input text
 	// and their associated information. For each entity, the response provides
 	// the entity text, the entity category, where the entity text begins and ends,
-	// and the level of confidence that Comprehend Medical has in the detection
+	// and the level of confidence that Amazon Comprehend Medical has in the detection
 	// and analysis. Attributes and traits of the entity are also returned.
 	//
 	// Entities is a required field
@@ -4426,9 +4421,6 @@ type InputDataConfig struct {
 
 	// The URI of the S3 bucket that contains the input data. The bucket must be
 	// in the same region as the API endpoint that you are calling.
-	//
-	// Each file in the document collection must be less than 40 KB. You can store
-	// a maximum of 30 GB in the bucket.
 	//
 	// S3Bucket is a required field
 	S3Bucket *string `min:"3" type:"string" required:"true"`
@@ -5247,9 +5239,9 @@ type OutputDataConfig struct {
 	// S3Bucket is a required field
 	S3Bucket *string `min:"3" type:"string" required:"true"`
 
-	// The path to the output data files in the S3 bucket. Comprehend Medical; creates
-	// an output directory using the job ID so that the output from one job does
-	// not overwrite the output of another.
+	// The path to the output data files in the S3 bucket. Amazon Comprehend Medical
+	// creates an output directory using the job ID so that the output from one
+	// job does not overwrite the output of another.
 	S3Key *string `type:"string"`
 }
 
@@ -5385,8 +5377,8 @@ type RxNormAttribute struct {
 	// is accurately linked to an entity.
 	RelationshipScore *float64 `type:"float"`
 
-	// The level of confidence that Comprehend Medical has that the segment of text
-	// is correctly recognized as an attribute.
+	// The level of confidence that Amazon Comprehend Medical has that the segment
+	// of text is correctly recognized as an attribute.
 	Score *float64 `type:"float"`
 
 	// The segment of input text which corresponds to the detected attribute.
@@ -5710,8 +5702,8 @@ type SNOMEDCTAttribute struct {
 	// id unique within this response rather than a global unique identifier.
 	Id *int64 `type:"integer"`
 
-	// The level of confidence that Comprehend Medical has that this attribute is
-	// correctly related to this entity.
+	// The level of confidence that Amazon Comprehend Medical has that this attribute
+	// is correctly related to this entity.
 	RelationshipScore *float64 `type:"float"`
 
 	// The type of relationship that exists between the entity and the related attribute.
@@ -5721,8 +5713,8 @@ type SNOMEDCTAttribute struct {
 	// the likelihood of the match.
 	SNOMEDCTConcepts []*SNOMEDCTConcept `type:"list"`
 
-	// The level of confidence that Comprehend Medical has that the segment of text
-	// is correctly recognized as an attribute.
+	// The level of confidence that Amazon Comprehend Medical has that the segment
+	// of text is correctly recognized as an attribute.
 	Score *float64 `type:"float"`
 
 	// The segment of input text extracted as this attribute.
@@ -5832,8 +5824,8 @@ type SNOMEDCTConcept struct {
 	// The description of the SNOMED-CT concept.
 	Description *string `min:"1" type:"string"`
 
-	// The level of confidence Comprehend Medical has that the entity should be
-	// linked to the identified SNOMED-CT concept.
+	// The level of confidence Amazon Comprehend Medical has that the entity should
+	// be linked to the identified SNOMED-CT concept.
 	Score *float64 `type:"float"`
 }
 
@@ -5930,8 +5922,8 @@ func (s *SNOMEDCTDetails) SetVersionDate(v string) *SNOMEDCTDetails {
 // The collection of medical entities extracted from the input text and their
 // associated information. For each entity, the response provides the entity
 // text, the entity category, where the entity text begins and ends, and the
-// level of confidence that Comprehend Medical has in the detection and analysis.
-// Attributes and traits of the entity are also returned.
+// level of confidence that Amazon Comprehend Medical has in the detection and
+// analysis. Attributes and traits of the entity are also returned.
 type SNOMEDCTEntity struct {
 	_ struct{} `type:"structure"`
 
@@ -5959,8 +5951,8 @@ type SNOMEDCTEntity struct {
 	// the likelihood of the match.
 	SNOMEDCTConcepts []*SNOMEDCTConcept `type:"list"`
 
-	// The level of confidence that Comprehend Medical has in the accuracy of the
-	// detected entity.
+	// The level of confidence that Amazon Comprehend Medical has in the accuracy
+	// of the detected entity.
 	Score *float64 `type:"float"`
 
 	// The segment of input text extracted as this entity.
@@ -6060,8 +6052,8 @@ type SNOMEDCTTrait struct {
 	// The name or contextual description of a detected trait.
 	Name *string `type:"string" enum:"SNOMEDCTTraitName"`
 
-	// The level of confidence that Comprehend Medical has in the accuracy of a
-	// detected trait.
+	// The level of confidence that Amazon Comprehend Medical has in the accuracy
+	// of a detected trait.
 	Score *float64 `type:"float"`
 }
 
@@ -6095,8 +6087,8 @@ func (s *SNOMEDCTTrait) SetScore(v float64) *SNOMEDCTTrait {
 	return s
 }
 
-// The Comprehend Medical; service is temporarily unavailable. Please wait and
-// then retry your request.
+// The Amazon Comprehend Medical service is temporarily unavailable. Please
+// wait and then retry your request.
 type ServiceUnavailableException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -6164,12 +6156,12 @@ type StartEntitiesDetectionV2JobInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier for the request. If you don't set the client request
-	// token, Comprehend Medical; generates one for you.
+	// token, Amazon Comprehend Medical generates one for you.
 	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the AWS Identity and Access Management
-	// (IAM) role that grants Comprehend Medical; read access to your input data.
-	// For more information, see Role-Based Permissions Required for Asynchronous
+	// (IAM) role that grants Amazon Comprehend Medical read access to your input
+	// data. For more information, see Role-Based Permissions Required for Asynchronous
 	// Operations (https://docs.aws.amazon.com/comprehend/latest/dg/access-control-managing-permissions-med.html#auth-role-permissions-med).
 	//
 	// DataAccessRoleArn is a required field
@@ -6189,7 +6181,7 @@ type StartEntitiesDetectionV2JobInput struct {
 	KMSKey *string `min:"1" type:"string"`
 
 	// The language of the input documents. All documents must be in the same language.
-	// Comprehend Medical; processes files in US English (en).
+	// Amazon Comprehend Medical processes files in US English (en).
 	//
 	// LanguageCode is a required field
 	LanguageCode *string `type:"string" required:"true" enum:"LanguageCode"`
@@ -6340,12 +6332,12 @@ type StartICD10CMInferenceJobInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier for the request. If you don't set the client request
-	// token, Comprehend Medical; generates one.
+	// token, Amazon Comprehend Medical generates one.
 	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the AWS Identity and Access Management
-	// (IAM) role that grants Comprehend Medical; read access to your input data.
-	// For more information, see Role-Based Permissions Required for Asynchronous
+	// (IAM) role that grants Amazon Comprehend Medical read access to your input
+	// data. For more information, see Role-Based Permissions Required for Asynchronous
 	// Operations (https://docs.aws.amazon.com/comprehend/latest/dg/access-control-managing-permissions-med.html#auth-role-permissions-med).
 	//
 	// DataAccessRoleArn is a required field
@@ -6514,12 +6506,12 @@ type StartPHIDetectionJobInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier for the request. If you don't set the client request
-	// token, Comprehend Medical; generates one.
+	// token, Amazon Comprehend Medical generates one.
 	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the AWS Identity and Access Management
-	// (IAM) role that grants Comprehend Medical; read access to your input data.
-	// For more information, see Role-Based Permissions Required for Asynchronous
+	// (IAM) role that grants Amazon Comprehend Medical read access to your input
+	// data. For more information, see Role-Based Permissions Required for Asynchronous
 	// Operations (https://docs.aws.amazon.com/comprehend/latest/dg/access-control-managing-permissions-med.html#auth-role-permissions-med).
 	//
 	// DataAccessRoleArn is a required field
@@ -6688,12 +6680,12 @@ type StartRxNormInferenceJobInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique identifier for the request. If you don't set the client request
-	// token, Comprehend Medical; generates one.
+	// token, Amazon Comprehend Medical generates one.
 	ClientRequestToken *string `min:"1" type:"string" idempotencyToken:"true"`
 
 	// The Amazon Resource Name (ARN) of the AWS Identity and Access Management
-	// (IAM) role that grants Comprehend Medical; read access to your input data.
-	// For more information, see Role-Based Permissions Required for Asynchronous
+	// (IAM) role that grants Amazon Comprehend Medical read access to your input
+	// data. For more information, see Role-Based Permissions Required for Asynchronous
 	// Operations (https://docs.aws.amazon.com/comprehend/latest/dg/access-control-managing-permissions-med.html#auth-role-permissions-med).
 	//
 	// DataAccessRoleArn is a required field
@@ -7572,8 +7564,8 @@ type Trait struct {
 	// Provides a name or contextual description about the trait.
 	Name *string `type:"string" enum:"AttributeName"`
 
-	// The level of confidence that Comprehend Medical; has in the accuracy of this
-	// trait.
+	// The level of confidence that Amazon Comprehend Medical has in the accuracy
+	// of this trait.
 	Score *float64 `type:"float"`
 }
 
@@ -7607,8 +7599,8 @@ func (s *Trait) SetScore(v float64) *Trait {
 	return s
 }
 
-// An attribute that was extracted, but Comprehend Medical; was unable to relate
-// to an entity.
+// An attribute that was extracted, but Amazon Comprehend Medical was unable
+// to relate to an entity.
 type UnmappedAttribute struct {
 	_ struct{} `type:"structure"`
 
@@ -7728,6 +7720,21 @@ const (
 
 	// AttributeNameNegation is a AttributeName enum value
 	AttributeNameNegation = "NEGATION"
+
+	// AttributeNamePertainsToFamily is a AttributeName enum value
+	AttributeNamePertainsToFamily = "PERTAINS_TO_FAMILY"
+
+	// AttributeNameHypothetical is a AttributeName enum value
+	AttributeNameHypothetical = "HYPOTHETICAL"
+
+	// AttributeNameLowConfidence is a AttributeName enum value
+	AttributeNameLowConfidence = "LOW_CONFIDENCE"
+
+	// AttributeNamePastHistory is a AttributeName enum value
+	AttributeNamePastHistory = "PAST_HISTORY"
+
+	// AttributeNameFuture is a AttributeName enum value
+	AttributeNameFuture = "FUTURE"
 )
 
 // AttributeName_Values returns all elements of the AttributeName enum
@@ -7737,6 +7744,11 @@ func AttributeName_Values() []string {
 		AttributeNameSymptom,
 		AttributeNameDiagnosis,
 		AttributeNameNegation,
+		AttributeNamePertainsToFamily,
+		AttributeNameHypothetical,
+		AttributeNameLowConfidence,
+		AttributeNamePastHistory,
+		AttributeNameFuture,
 	}
 }
 
@@ -7854,6 +7866,27 @@ const (
 
 	// EntitySubTypeTimeToTreatmentName is a EntitySubType enum value
 	EntitySubTypeTimeToTreatmentName = "TIME_TO_TREATMENT_NAME"
+
+	// EntitySubTypeAmount is a EntitySubType enum value
+	EntitySubTypeAmount = "AMOUNT"
+
+	// EntitySubTypeGender is a EntitySubType enum value
+	EntitySubTypeGender = "GENDER"
+
+	// EntitySubTypeRaceEthnicity is a EntitySubType enum value
+	EntitySubTypeRaceEthnicity = "RACE_ETHNICITY"
+
+	// EntitySubTypeAllergies is a EntitySubType enum value
+	EntitySubTypeAllergies = "ALLERGIES"
+
+	// EntitySubTypeTobaccoUse is a EntitySubType enum value
+	EntitySubTypeTobaccoUse = "TOBACCO_USE"
+
+	// EntitySubTypeAlcoholConsumption is a EntitySubType enum value
+	EntitySubTypeAlcoholConsumption = "ALCOHOL_CONSUMPTION"
+
+	// EntitySubTypeRecDrugUse is a EntitySubType enum value
+	EntitySubTypeRecDrugUse = "REC_DRUG_USE"
 )
 
 // EntitySubType_Values returns all elements of the EntitySubType enum
@@ -7897,6 +7930,13 @@ func EntitySubType_Values() []string {
 		EntitySubTypeTimeToTestName,
 		EntitySubTypeTimeToProcedureName,
 		EntitySubTypeTimeToTreatmentName,
+		EntitySubTypeAmount,
+		EntitySubTypeGender,
+		EntitySubTypeRaceEthnicity,
+		EntitySubTypeAllergies,
+		EntitySubTypeTobaccoUse,
+		EntitySubTypeAlcoholConsumption,
+		EntitySubTypeRecDrugUse,
 	}
 }
 
@@ -7918,6 +7958,9 @@ const (
 
 	// EntityTypeTimeExpression is a EntityType enum value
 	EntityTypeTimeExpression = "TIME_EXPRESSION"
+
+	// EntityTypeBehavioralEnvironmentalSocial is a EntityType enum value
+	EntityTypeBehavioralEnvironmentalSocial = "BEHAVIORAL_ENVIRONMENTAL_SOCIAL"
 )
 
 // EntityType_Values returns all elements of the EntityType enum
@@ -7929,6 +7972,7 @@ func EntityType_Values() []string {
 		EntityTypeTestTreatmentProcedure,
 		EntityTypeAnatomy,
 		EntityTypeTimeExpression,
+		EntityTypeBehavioralEnvironmentalSocial,
 	}
 }
 
@@ -8002,6 +8046,9 @@ const (
 
 	// ICD10CMRelationshipTypeSystemOrganSite is a ICD10CMRelationshipType enum value
 	ICD10CMRelationshipTypeSystemOrganSite = "SYSTEM_ORGAN_SITE"
+
+	// ICD10CMRelationshipTypeQuality is a ICD10CMRelationshipType enum value
+	ICD10CMRelationshipTypeQuality = "QUALITY"
 )
 
 // ICD10CMRelationshipType_Values returns all elements of the ICD10CMRelationshipType enum
@@ -8009,6 +8056,7 @@ func ICD10CMRelationshipType_Values() []string {
 	return []string{
 		ICD10CMRelationshipTypeOverlap,
 		ICD10CMRelationshipTypeSystemOrganSite,
+		ICD10CMRelationshipTypeQuality,
 	}
 }
 
@@ -8024,6 +8072,15 @@ const (
 
 	// ICD10CMTraitNameSymptom is a ICD10CMTraitName enum value
 	ICD10CMTraitNameSymptom = "SYMPTOM"
+
+	// ICD10CMTraitNamePertainsToFamily is a ICD10CMTraitName enum value
+	ICD10CMTraitNamePertainsToFamily = "PERTAINS_TO_FAMILY"
+
+	// ICD10CMTraitNameHypothetical is a ICD10CMTraitName enum value
+	ICD10CMTraitNameHypothetical = "HYPOTHETICAL"
+
+	// ICD10CMTraitNameLowConfidence is a ICD10CMTraitName enum value
+	ICD10CMTraitNameLowConfidence = "LOW_CONFIDENCE"
 )
 
 // ICD10CMTraitName_Values returns all elements of the ICD10CMTraitName enum
@@ -8033,6 +8090,9 @@ func ICD10CMTraitName_Values() []string {
 		ICD10CMTraitNameDiagnosis,
 		ICD10CMTraitNameSign,
 		ICD10CMTraitNameSymptom,
+		ICD10CMTraitNamePertainsToFamily,
+		ICD10CMTraitNameHypothetical,
+		ICD10CMTraitNameLowConfidence,
 	}
 }
 
@@ -8141,6 +8201,15 @@ const (
 
 	// RelationshipTypeSystemOrganSite is a RelationshipType enum value
 	RelationshipTypeSystemOrganSite = "SYSTEM_ORGAN_SITE"
+
+	// RelationshipTypeAmount is a RelationshipType enum value
+	RelationshipTypeAmount = "AMOUNT"
+
+	// RelationshipTypeUsage is a RelationshipType enum value
+	RelationshipTypeUsage = "USAGE"
+
+	// RelationshipTypeQuality is a RelationshipType enum value
+	RelationshipTypeQuality = "QUALITY"
 )
 
 // RelationshipType_Values returns all elements of the RelationshipType enum
@@ -8165,6 +8234,9 @@ func RelationshipType_Values() []string {
 		RelationshipTypeTestUnit,
 		RelationshipTypeDirection,
 		RelationshipTypeSystemOrganSite,
+		RelationshipTypeAmount,
+		RelationshipTypeUsage,
+		RelationshipTypeQuality,
 	}
 }
 
@@ -8235,12 +8307,16 @@ func RxNormEntityType_Values() []string {
 const (
 	// RxNormTraitNameNegation is a RxNormTraitName enum value
 	RxNormTraitNameNegation = "NEGATION"
+
+	// RxNormTraitNamePastHistory is a RxNormTraitName enum value
+	RxNormTraitNamePastHistory = "PAST_HISTORY"
 )
 
 // RxNormTraitName_Values returns all elements of the RxNormTraitName enum
 func RxNormTraitName_Values() []string {
 	return []string{
 		RxNormTraitNameNegation,
+		RxNormTraitNamePastHistory,
 	}
 }
 
@@ -8338,6 +8414,9 @@ const (
 
 	// SNOMEDCTRelationshipTypeSystemOrganSite is a SNOMEDCTRelationshipType enum value
 	SNOMEDCTRelationshipTypeSystemOrganSite = "SYSTEM_ORGAN_SITE"
+
+	// SNOMEDCTRelationshipTypeTestUnit is a SNOMEDCTRelationshipType enum value
+	SNOMEDCTRelationshipTypeTestUnit = "TEST_UNIT"
 )
 
 // SNOMEDCTRelationshipType_Values returns all elements of the SNOMEDCTRelationshipType enum
@@ -8349,6 +8428,7 @@ func SNOMEDCTRelationshipType_Values() []string {
 		SNOMEDCTRelationshipTypeTestUnits,
 		SNOMEDCTRelationshipTypeDirection,
 		SNOMEDCTRelationshipTypeSystemOrganSite,
+		SNOMEDCTRelationshipTypeTestUnit,
 	}
 }
 
@@ -8364,6 +8444,21 @@ const (
 
 	// SNOMEDCTTraitNameSymptom is a SNOMEDCTTraitName enum value
 	SNOMEDCTTraitNameSymptom = "SYMPTOM"
+
+	// SNOMEDCTTraitNamePertainsToFamily is a SNOMEDCTTraitName enum value
+	SNOMEDCTTraitNamePertainsToFamily = "PERTAINS_TO_FAMILY"
+
+	// SNOMEDCTTraitNameHypothetical is a SNOMEDCTTraitName enum value
+	SNOMEDCTTraitNameHypothetical = "HYPOTHETICAL"
+
+	// SNOMEDCTTraitNameLowConfidence is a SNOMEDCTTraitName enum value
+	SNOMEDCTTraitNameLowConfidence = "LOW_CONFIDENCE"
+
+	// SNOMEDCTTraitNamePastHistory is a SNOMEDCTTraitName enum value
+	SNOMEDCTTraitNamePastHistory = "PAST_HISTORY"
+
+	// SNOMEDCTTraitNameFuture is a SNOMEDCTTraitName enum value
+	SNOMEDCTTraitNameFuture = "FUTURE"
 )
 
 // SNOMEDCTTraitName_Values returns all elements of the SNOMEDCTTraitName enum
@@ -8373,5 +8468,10 @@ func SNOMEDCTTraitName_Values() []string {
 		SNOMEDCTTraitNameDiagnosis,
 		SNOMEDCTTraitNameSign,
 		SNOMEDCTTraitNameSymptom,
+		SNOMEDCTTraitNamePertainsToFamily,
+		SNOMEDCTTraitNameHypothetical,
+		SNOMEDCTTraitNameLowConfidence,
+		SNOMEDCTTraitNamePastHistory,
+		SNOMEDCTTraitNameFuture,
 	}
 }

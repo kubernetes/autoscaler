@@ -30,14 +30,13 @@ const opDeleteLexicon = "DeleteLexicon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteLexiconRequest method.
+//	req, resp := client.DeleteLexiconRequest(params)
 //
-//    // Example sending a request using the DeleteLexiconRequest method.
-//    req, resp := client.DeleteLexiconRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/DeleteLexicon
 func (c *Polly) DeleteLexiconRequest(input *DeleteLexiconInput) (req *request.Request, output *DeleteLexiconOutput) {
@@ -74,16 +73,17 @@ func (c *Polly) DeleteLexiconRequest(input *DeleteLexiconInput) (req *request.Re
 // API operation DeleteLexicon for usage and error information.
 //
 // Returned Error Types:
-//   * LexiconNotFoundException
-//   Amazon Polly can't find the specified lexicon. This could be caused by a
-//   lexicon that is missing, its name is misspelled or specifying a lexicon that
-//   is in a different region.
 //
-//   Verify that the lexicon exists, is in the region (see ListLexicons) and that
-//   you spelled its name is spelled correctly. Then try again.
+//   - LexiconNotFoundException
+//     Amazon Polly can't find the specified lexicon. This could be caused by a
+//     lexicon that is missing, its name is misspelled or specifying a lexicon that
+//     is in a different region.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//     Verify that the lexicon exists, is in the region (see ListLexicons) and that
+//     you spelled its name is spelled correctly. Then try again.
+//
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/DeleteLexicon
 func (c *Polly) DeleteLexicon(input *DeleteLexiconInput) (*DeleteLexiconOutput, error) {
@@ -123,14 +123,13 @@ const opDescribeVoices = "DescribeVoices"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeVoicesRequest method.
+//	req, resp := client.DescribeVoicesRequest(params)
 //
-//    // Example sending a request using the DescribeVoicesRequest method.
-//    req, resp := client.DescribeVoicesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/DescribeVoices
 func (c *Polly) DescribeVoicesRequest(input *DescribeVoicesInput) (req *request.Request, output *DescribeVoicesOutput) {
@@ -177,12 +176,13 @@ func (c *Polly) DescribeVoicesRequest(input *DescribeVoicesInput) (req *request.
 // API operation DescribeVoices for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The NextToken is invalid. Verify that it's spelled correctly, and then try
-//   again.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//   - InvalidNextTokenException
+//     The NextToken is invalid. Verify that it's spelled correctly, and then try
+//     again.
+//
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/DescribeVoices
 func (c *Polly) DescribeVoices(input *DescribeVoicesInput) (*DescribeVoicesOutput, error) {
@@ -222,14 +222,13 @@ const opGetLexicon = "GetLexicon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetLexiconRequest method.
+//	req, resp := client.GetLexiconRequest(params)
 //
-//    // Example sending a request using the GetLexiconRequest method.
-//    req, resp := client.GetLexiconRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/GetLexicon
 func (c *Polly) GetLexiconRequest(input *GetLexiconInput) (req *request.Request, output *GetLexiconOutput) {
@@ -261,16 +260,17 @@ func (c *Polly) GetLexiconRequest(input *GetLexiconInput) (req *request.Request,
 // API operation GetLexicon for usage and error information.
 //
 // Returned Error Types:
-//   * LexiconNotFoundException
-//   Amazon Polly can't find the specified lexicon. This could be caused by a
-//   lexicon that is missing, its name is misspelled or specifying a lexicon that
-//   is in a different region.
 //
-//   Verify that the lexicon exists, is in the region (see ListLexicons) and that
-//   you spelled its name is spelled correctly. Then try again.
+//   - LexiconNotFoundException
+//     Amazon Polly can't find the specified lexicon. This could be caused by a
+//     lexicon that is missing, its name is misspelled or specifying a lexicon that
+//     is in a different region.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//     Verify that the lexicon exists, is in the region (see ListLexicons) and that
+//     you spelled its name is spelled correctly. Then try again.
+//
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/GetLexicon
 func (c *Polly) GetLexicon(input *GetLexiconInput) (*GetLexiconOutput, error) {
@@ -310,14 +310,13 @@ const opGetSpeechSynthesisTask = "GetSpeechSynthesisTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetSpeechSynthesisTaskRequest method.
+//	req, resp := client.GetSpeechSynthesisTaskRequest(params)
 //
-//    // Example sending a request using the GetSpeechSynthesisTaskRequest method.
-//    req, resp := client.GetSpeechSynthesisTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/GetSpeechSynthesisTask
 func (c *Polly) GetSpeechSynthesisTaskRequest(input *GetSpeechSynthesisTaskInput) (req *request.Request, output *GetSpeechSynthesisTaskOutput) {
@@ -351,15 +350,16 @@ func (c *Polly) GetSpeechSynthesisTaskRequest(input *GetSpeechSynthesisTaskInput
 // API operation GetSpeechSynthesisTask for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidTaskIdException
-//   The provided Task ID is not valid. Please provide a valid Task ID and try
-//   again.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//   - InvalidTaskIdException
+//     The provided Task ID is not valid. Please provide a valid Task ID and try
+//     again.
 //
-//   * SynthesisTaskNotFoundException
-//   The Speech Synthesis task with requested Task ID cannot be found.
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
+//
+//   - SynthesisTaskNotFoundException
+//     The Speech Synthesis task with requested Task ID cannot be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/GetSpeechSynthesisTask
 func (c *Polly) GetSpeechSynthesisTask(input *GetSpeechSynthesisTaskInput) (*GetSpeechSynthesisTaskOutput, error) {
@@ -399,14 +399,13 @@ const opListLexicons = "ListLexicons"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListLexiconsRequest method.
+//	req, resp := client.ListLexiconsRequest(params)
 //
-//    // Example sending a request using the ListLexiconsRequest method.
-//    req, resp := client.ListLexiconsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/ListLexicons
 func (c *Polly) ListLexiconsRequest(input *ListLexiconsInput) (req *request.Request, output *ListLexiconsOutput) {
@@ -438,12 +437,13 @@ func (c *Polly) ListLexiconsRequest(input *ListLexiconsInput) (req *request.Requ
 // API operation ListLexicons for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The NextToken is invalid. Verify that it's spelled correctly, and then try
-//   again.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//   - InvalidNextTokenException
+//     The NextToken is invalid. Verify that it's spelled correctly, and then try
+//     again.
+//
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/ListLexicons
 func (c *Polly) ListLexicons(input *ListLexiconsInput) (*ListLexiconsOutput, error) {
@@ -483,14 +483,13 @@ const opListSpeechSynthesisTasks = "ListSpeechSynthesisTasks"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListSpeechSynthesisTasksRequest method.
+//	req, resp := client.ListSpeechSynthesisTasksRequest(params)
 //
-//    // Example sending a request using the ListSpeechSynthesisTasksRequest method.
-//    req, resp := client.ListSpeechSynthesisTasksRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/ListSpeechSynthesisTasks
 func (c *Polly) ListSpeechSynthesisTasksRequest(input *ListSpeechSynthesisTasksInput) (req *request.Request, output *ListSpeechSynthesisTasksOutput) {
@@ -529,12 +528,13 @@ func (c *Polly) ListSpeechSynthesisTasksRequest(input *ListSpeechSynthesisTasksI
 // API operation ListSpeechSynthesisTasks for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidNextTokenException
-//   The NextToken is invalid. Verify that it's spelled correctly, and then try
-//   again.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//   - InvalidNextTokenException
+//     The NextToken is invalid. Verify that it's spelled correctly, and then try
+//     again.
+//
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/ListSpeechSynthesisTasks
 func (c *Polly) ListSpeechSynthesisTasks(input *ListSpeechSynthesisTasksInput) (*ListSpeechSynthesisTasksOutput, error) {
@@ -566,15 +566,14 @@ func (c *Polly) ListSpeechSynthesisTasksWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListSpeechSynthesisTasks operation.
-//    pageNum := 0
-//    err := client.ListSpeechSynthesisTasksPages(params,
-//        func(page *polly.ListSpeechSynthesisTasksOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListSpeechSynthesisTasks operation.
+//	pageNum := 0
+//	err := client.ListSpeechSynthesisTasksPages(params,
+//	    func(page *polly.ListSpeechSynthesisTasksOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *Polly) ListSpeechSynthesisTasksPages(input *ListSpeechSynthesisTasksInput, fn func(*ListSpeechSynthesisTasksOutput, bool) bool) error {
 	return c.ListSpeechSynthesisTasksPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -626,14 +625,13 @@ const opPutLexicon = "PutLexicon"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PutLexiconRequest method.
+//	req, resp := client.PutLexiconRequest(params)
 //
-//    // Example sending a request using the PutLexiconRequest method.
-//    req, resp := client.PutLexiconRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/PutLexicon
 func (c *Polly) PutLexiconRequest(input *PutLexiconInput) (req *request.Request, output *PutLexiconOutput) {
@@ -671,29 +669,30 @@ func (c *Polly) PutLexiconRequest(input *PutLexiconInput) (req *request.Request,
 // API operation PutLexicon for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidLexiconException
-//   Amazon Polly can't find the specified lexicon. Verify that the lexicon's
-//   name is spelled correctly, and then try again.
 //
-//   * UnsupportedPlsAlphabetException
-//   The alphabet specified by the lexicon is not a supported alphabet. Valid
-//   values are x-sampa and ipa.
+//   - InvalidLexiconException
+//     Amazon Polly can't find the specified lexicon. Verify that the lexicon's
+//     name is spelled correctly, and then try again.
 //
-//   * UnsupportedPlsLanguageException
-//   The language specified in the lexicon is unsupported. For a list of supported
-//   languages, see Lexicon Attributes (https://docs.aws.amazon.com/polly/latest/dg/API_LexiconAttributes.html).
+//   - UnsupportedPlsAlphabetException
+//     The alphabet specified by the lexicon is not a supported alphabet. Valid
+//     values are x-sampa and ipa.
 //
-//   * LexiconSizeExceededException
-//   The maximum size of the specified lexicon would be exceeded by this operation.
+//   - UnsupportedPlsLanguageException
+//     The language specified in the lexicon is unsupported. For a list of supported
+//     languages, see Lexicon Attributes (https://docs.aws.amazon.com/polly/latest/dg/API_LexiconAttributes.html).
 //
-//   * MaxLexemeLengthExceededException
-//   The maximum size of the lexeme would be exceeded by this operation.
+//   - LexiconSizeExceededException
+//     The maximum size of the specified lexicon would be exceeded by this operation.
 //
-//   * MaxLexiconsNumberExceededException
-//   The maximum number of lexicons would be exceeded by this operation.
+//   - MaxLexemeLengthExceededException
+//     The maximum size of the lexeme would be exceeded by this operation.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//   - MaxLexiconsNumberExceededException
+//     The maximum number of lexicons would be exceeded by this operation.
+//
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/PutLexicon
 func (c *Polly) PutLexicon(input *PutLexiconInput) (*PutLexiconOutput, error) {
@@ -733,14 +732,13 @@ const opStartSpeechSynthesisTask = "StartSpeechSynthesisTask"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the StartSpeechSynthesisTaskRequest method.
+//	req, resp := client.StartSpeechSynthesisTaskRequest(params)
 //
-//    // Example sending a request using the StartSpeechSynthesisTaskRequest method.
-//    req, resp := client.StartSpeechSynthesisTaskRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/StartSpeechSynthesisTask
 func (c *Polly) StartSpeechSynthesisTaskRequest(input *StartSpeechSynthesisTaskInput) (req *request.Request, output *StartSpeechSynthesisTaskOutput) {
@@ -779,58 +777,59 @@ func (c *Polly) StartSpeechSynthesisTaskRequest(input *StartSpeechSynthesisTaskI
 // API operation StartSpeechSynthesisTask for usage and error information.
 //
 // Returned Error Types:
-//   * TextLengthExceededException
-//   The value of the "Text" parameter is longer than the accepted limits. For
-//   the SynthesizeSpeech API, the limit for input text is a maximum of 6000 characters
-//   total, of which no more than 3000 can be billed characters. For the StartSpeechSynthesisTask
-//   API, the maximum is 200,000 characters, of which no more than 100,000 can
-//   be billed characters. SSML tags are not counted as billed characters.
 //
-//   * InvalidS3BucketException
-//   The provided Amazon S3 bucket name is invalid. Please check your input with
-//   S3 bucket naming requirements and try again.
+//   - TextLengthExceededException
+//     The value of the "Text" parameter is longer than the accepted limits. For
+//     the SynthesizeSpeech API, the limit for input text is a maximum of 6000 characters
+//     total, of which no more than 3000 can be billed characters. For the StartSpeechSynthesisTask
+//     API, the maximum is 200,000 characters, of which no more than 100,000 can
+//     be billed characters. SSML tags are not counted as billed characters.
 //
-//   * InvalidS3KeyException
-//   The provided Amazon S3 key prefix is invalid. Please provide a valid S3 object
-//   key name.
+//   - InvalidS3BucketException
+//     The provided Amazon S3 bucket name is invalid. Please check your input with
+//     S3 bucket naming requirements and try again.
 //
-//   * InvalidSampleRateException
-//   The specified sample rate is not valid.
+//   - InvalidS3KeyException
+//     The provided Amazon S3 key prefix is invalid. Please provide a valid S3 object
+//     key name.
 //
-//   * InvalidSnsTopicArnException
-//   The provided SNS topic ARN is invalid. Please provide a valid SNS topic ARN
-//   and try again.
+//   - InvalidSampleRateException
+//     The specified sample rate is not valid.
 //
-//   * InvalidSsmlException
-//   The SSML you provided is invalid. Verify the SSML syntax, spelling of tags
-//   and values, and then try again.
+//   - InvalidSnsTopicArnException
+//     The provided SNS topic ARN is invalid. Please provide a valid SNS topic ARN
+//     and try again.
 //
-//   * EngineNotSupportedException
-//   This engine is not compatible with the voice that you have designated. Choose
-//   a new voice that is compatible with the engine or change the engine and restart
-//   the operation.
+//   - InvalidSsmlException
+//     The SSML you provided is invalid. Verify the SSML syntax, spelling of tags
+//     and values, and then try again.
 //
-//   * LexiconNotFoundException
-//   Amazon Polly can't find the specified lexicon. This could be caused by a
-//   lexicon that is missing, its name is misspelled or specifying a lexicon that
-//   is in a different region.
+//   - EngineNotSupportedException
+//     This engine is not compatible with the voice that you have designated. Choose
+//     a new voice that is compatible with the engine or change the engine and restart
+//     the operation.
 //
-//   Verify that the lexicon exists, is in the region (see ListLexicons) and that
-//   you spelled its name is spelled correctly. Then try again.
+//   - LexiconNotFoundException
+//     Amazon Polly can't find the specified lexicon. This could be caused by a
+//     lexicon that is missing, its name is misspelled or specifying a lexicon that
+//     is in a different region.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//     Verify that the lexicon exists, is in the region (see ListLexicons) and that
+//     you spelled its name is spelled correctly. Then try again.
 //
-//   * MarksNotSupportedForFormatException
-//   Speech marks are not supported for the OutputFormat selected. Speech marks
-//   are only available for content in json format.
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
-//   * SsmlMarksNotSupportedForTextTypeException
-//   SSML speech marks are not supported for plain text-type input.
+//   - MarksNotSupportedForFormatException
+//     Speech marks are not supported for the OutputFormat selected. Speech marks
+//     are only available for content in json format.
 //
-//   * LanguageNotSupportedException
-//   The language specified is not currently supported by Amazon Polly in this
-//   capacity.
+//   - SsmlMarksNotSupportedForTextTypeException
+//     SSML speech marks are not supported for plain text-type input.
+//
+//   - LanguageNotSupportedException
+//     The language specified is not currently supported by Amazon Polly in this
+//     capacity.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/StartSpeechSynthesisTask
 func (c *Polly) StartSpeechSynthesisTask(input *StartSpeechSynthesisTaskInput) (*StartSpeechSynthesisTaskOutput, error) {
@@ -870,14 +869,13 @@ const opSynthesizeSpeech = "SynthesizeSpeech"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the SynthesizeSpeechRequest method.
+//	req, resp := client.SynthesizeSpeechRequest(params)
 //
-//    // Example sending a request using the SynthesizeSpeechRequest method.
-//    req, resp := client.SynthesizeSpeechRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/SynthesizeSpeech
 func (c *Polly) SynthesizeSpeechRequest(input *SynthesizeSpeechInput) (req *request.Request, output *SynthesizeSpeechOutput) {
@@ -912,46 +910,47 @@ func (c *Polly) SynthesizeSpeechRequest(input *SynthesizeSpeechInput) (req *requ
 // API operation SynthesizeSpeech for usage and error information.
 //
 // Returned Error Types:
-//   * TextLengthExceededException
-//   The value of the "Text" parameter is longer than the accepted limits. For
-//   the SynthesizeSpeech API, the limit for input text is a maximum of 6000 characters
-//   total, of which no more than 3000 can be billed characters. For the StartSpeechSynthesisTask
-//   API, the maximum is 200,000 characters, of which no more than 100,000 can
-//   be billed characters. SSML tags are not counted as billed characters.
 //
-//   * InvalidSampleRateException
-//   The specified sample rate is not valid.
+//   - TextLengthExceededException
+//     The value of the "Text" parameter is longer than the accepted limits. For
+//     the SynthesizeSpeech API, the limit for input text is a maximum of 6000 characters
+//     total, of which no more than 3000 can be billed characters. For the StartSpeechSynthesisTask
+//     API, the maximum is 200,000 characters, of which no more than 100,000 can
+//     be billed characters. SSML tags are not counted as billed characters.
 //
-//   * InvalidSsmlException
-//   The SSML you provided is invalid. Verify the SSML syntax, spelling of tags
-//   and values, and then try again.
+//   - InvalidSampleRateException
+//     The specified sample rate is not valid.
 //
-//   * LexiconNotFoundException
-//   Amazon Polly can't find the specified lexicon. This could be caused by a
-//   lexicon that is missing, its name is misspelled or specifying a lexicon that
-//   is in a different region.
+//   - InvalidSsmlException
+//     The SSML you provided is invalid. Verify the SSML syntax, spelling of tags
+//     and values, and then try again.
 //
-//   Verify that the lexicon exists, is in the region (see ListLexicons) and that
-//   you spelled its name is spelled correctly. Then try again.
+//   - LexiconNotFoundException
+//     Amazon Polly can't find the specified lexicon. This could be caused by a
+//     lexicon that is missing, its name is misspelled or specifying a lexicon that
+//     is in a different region.
 //
-//   * ServiceFailureException
-//   An unknown condition has caused a service failure.
+//     Verify that the lexicon exists, is in the region (see ListLexicons) and that
+//     you spelled its name is spelled correctly. Then try again.
 //
-//   * MarksNotSupportedForFormatException
-//   Speech marks are not supported for the OutputFormat selected. Speech marks
-//   are only available for content in json format.
+//   - ServiceFailureException
+//     An unknown condition has caused a service failure.
 //
-//   * SsmlMarksNotSupportedForTextTypeException
-//   SSML speech marks are not supported for plain text-type input.
+//   - MarksNotSupportedForFormatException
+//     Speech marks are not supported for the OutputFormat selected. Speech marks
+//     are only available for content in json format.
 //
-//   * LanguageNotSupportedException
-//   The language specified is not currently supported by Amazon Polly in this
-//   capacity.
+//   - SsmlMarksNotSupportedForTextTypeException
+//     SSML speech marks are not supported for plain text-type input.
 //
-//   * EngineNotSupportedException
-//   This engine is not compatible with the voice that you have designated. Choose
-//   a new voice that is compatible with the engine or change the engine and restart
-//   the operation.
+//   - LanguageNotSupportedException
+//     The language specified is not currently supported by Amazon Polly in this
+//     capacity.
+//
+//   - EngineNotSupportedException
+//     This engine is not compatible with the voice that you have designated. Choose
+//     a new voice that is compatible with the engine or change the engine and restart
+//     the operation.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/polly-2016-06-10/SynthesizeSpeech
 func (c *Polly) SynthesizeSpeech(input *SynthesizeSpeechInput) (*SynthesizeSpeechOutput, error) {
@@ -1049,8 +1048,8 @@ func (s DeleteLexiconOutput) GoString() string {
 type DescribeVoicesInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// Specifies the engine (standard or neural) used by Amazon Polly when processing
-	// input text for speech synthesis.
+	// Specifies the engine (standard, neural or long-form) used by Amazon Polly
+	// when processing input text for speech synthesis.
 	Engine *string `location:"querystring" locationName:"Engine" type:"string" enum:"Engine"`
 
 	// Boolean value indicating whether to return any bilingual voices that use
@@ -2870,9 +2869,9 @@ func (s *SsmlMarksNotSupportedForTextTypeException) RequestID() string {
 type StartSpeechSynthesisTaskInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the engine (standard or neural) for Amazon Polly to use when processing
-	// input text for speech synthesis. Using a voice that is not supported for
-	// the engine selected will result in an error.
+	// Specifies the engine (standard, neural or long-form) for Amazon Polly to
+	// use when processing input text for speech synthesis. Using a voice that is
+	// not supported for the engine selected will result in an error.
 	Engine *string `type:"string" enum:"Engine"`
 
 	// Optional language code for the Speech Synthesis request. This is only necessary
@@ -2909,7 +2908,7 @@ type StartSpeechSynthesisTaskInput struct {
 	//
 	// The valid values for mp3 and ogg_vorbis are "8000", "16000", "22050", and
 	// "24000". The default value for standard voices is "22050". The default value
-	// for neural voices is "24000".
+	// for neural voices is "24000". The default value for long-form voices is "24000".
 	//
 	// Valid values for pcm are "8000" and "16000" The default value is "16000".
 	SampleRate *string `type:"string"`
@@ -3088,9 +3087,9 @@ type SynthesisTask struct {
 	// Timestamp for the time the synthesis task was started.
 	CreationTime *time.Time `type:"timestamp"`
 
-	// Specifies the engine (standard or neural) for Amazon Polly to use when processing
-	// input text for speech synthesis. Using a voice that is not supported for
-	// the engine selected will result in an error.
+	// Specifies the engine (standard, neural or long-form) for Amazon Polly to
+	// use when processing input text for speech synthesis. Using a voice that is
+	// not supported for the engine selected will result in an error.
 	Engine *string `type:"string" enum:"Engine"`
 
 	// Optional language code for a synthesis task. This is only necessary if using
@@ -3123,7 +3122,7 @@ type SynthesisTask struct {
 	//
 	// The valid values for mp3 and ogg_vorbis are "8000", "16000", "22050", and
 	// "24000". The default value for standard voices is "22050". The default value
-	// for neural voices is "24000".
+	// for neural voices is "24000". The default value for long-form voices is "24000".
 	//
 	// Valid values for pcm are "8000" and "16000" The default value is "16000".
 	SampleRate *string `type:"string"`
@@ -3328,10 +3327,10 @@ func (s *SynthesisTaskNotFoundException) RequestID() string {
 type SynthesizeSpeechInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the engine (standard or neural) for Amazon Polly to use when processing
-	// input text for speech synthesis. For information on Amazon Polly voices and
-	// which voices are available in standard-only, NTTS-only, and both standard
-	// and NTTS formats, see Available Voices (https://docs.aws.amazon.com/polly/latest/dg/voicelist.html).
+	// Specifies the engine (standard, neural or long-form) for Amazon Polly to
+	// use when processing input text for speech synthesis. For information on Amazon
+	// Polly voices and which voices are available for each engine, see Available
+	// Voices (https://docs.aws.amazon.com/polly/latest/dg/voicelist.html).
 	//
 	// NTTS-only voices
 	//
@@ -3339,9 +3338,15 @@ type SynthesizeSpeechInput struct {
 	// and must be set to neural. If the engine is not specified, or is set to standard,
 	// this will result in an error.
 	//
+	// long-form-only voices
+	//
+	// When using long-form-only voices such as Danielle (en-US), this parameter
+	// is required and must be set to long-form. If the engine is not specified,
+	// or is set to standard or neural, this will result in an error.
+	//
 	// Type: String
 	//
-	// Valid Values: standard | neural
+	// Valid Values: standard | neural | long-form
 	//
 	// Required: Yes
 	//
@@ -3382,7 +3387,7 @@ type SynthesizeSpeechInput struct {
 	//
 	// The valid values for mp3 and ogg_vorbis are "8000", "16000", "22050", and
 	// "24000". The default value for standard voices is "22050". The default value
-	// for neural voices is "24000".
+	// for neural voices is "24000". The default value for long-form voices is "24000".
 	//
 	// Valid values for pcm are "8000" and "16000" The default value is "16000".
 	SampleRate *string `type:"string"`
@@ -3788,8 +3793,8 @@ type Voice struct {
 	// readable voice name that you might display in your application.
 	Name *string `type:"string"`
 
-	// Specifies which engines (standard or neural) that are supported by a given
-	// voice.
+	// Specifies which engines (standard, neural or long-form) are supported by
+	// a given voice.
 	SupportedEngines []*string `type:"list" enum:"Engine"`
 }
 
@@ -3859,6 +3864,9 @@ const (
 
 	// EngineNeural is a Engine enum value
 	EngineNeural = "neural"
+
+	// EngineLongForm is a Engine enum value
+	EngineLongForm = "long-form"
 )
 
 // Engine_Values returns all elements of the Engine enum
@@ -3866,6 +3874,7 @@ func Engine_Values() []string {
 	return []string{
 		EngineStandard,
 		EngineNeural,
+		EngineLongForm,
 	}
 }
 
@@ -3984,6 +3993,24 @@ const (
 
 	// LanguageCodeDeAt is a LanguageCode enum value
 	LanguageCodeDeAt = "de-AT"
+
+	// LanguageCodeYueCn is a LanguageCode enum value
+	LanguageCodeYueCn = "yue-CN"
+
+	// LanguageCodeArAe is a LanguageCode enum value
+	LanguageCodeArAe = "ar-AE"
+
+	// LanguageCodeFiFi is a LanguageCode enum value
+	LanguageCodeFiFi = "fi-FI"
+
+	// LanguageCodeEnIe is a LanguageCode enum value
+	LanguageCodeEnIe = "en-IE"
+
+	// LanguageCodeNlBe is a LanguageCode enum value
+	LanguageCodeNlBe = "nl-BE"
+
+	// LanguageCodeFrBe is a LanguageCode enum value
+	LanguageCodeFrBe = "fr-BE"
 )
 
 // LanguageCode_Values returns all elements of the LanguageCode enum
@@ -4022,6 +4049,12 @@ func LanguageCode_Values() []string {
 		LanguageCodeEnZa,
 		LanguageCodeCaEs,
 		LanguageCodeDeAt,
+		LanguageCodeYueCn,
+		LanguageCodeArAe,
+		LanguageCodeFiFi,
+		LanguageCodeEnIe,
+		LanguageCodeNlBe,
+		LanguageCodeFrBe,
 	}
 }
 
@@ -4314,6 +4347,90 @@ const (
 
 	// VoiceIdHannah is a VoiceId enum value
 	VoiceIdHannah = "Hannah"
+
+	// VoiceIdArthur is a VoiceId enum value
+	VoiceIdArthur = "Arthur"
+
+	// VoiceIdDaniel is a VoiceId enum value
+	VoiceIdDaniel = "Daniel"
+
+	// VoiceIdLiam is a VoiceId enum value
+	VoiceIdLiam = "Liam"
+
+	// VoiceIdPedro is a VoiceId enum value
+	VoiceIdPedro = "Pedro"
+
+	// VoiceIdKajal is a VoiceId enum value
+	VoiceIdKajal = "Kajal"
+
+	// VoiceIdHiujin is a VoiceId enum value
+	VoiceIdHiujin = "Hiujin"
+
+	// VoiceIdLaura is a VoiceId enum value
+	VoiceIdLaura = "Laura"
+
+	// VoiceIdElin is a VoiceId enum value
+	VoiceIdElin = "Elin"
+
+	// VoiceIdIda is a VoiceId enum value
+	VoiceIdIda = "Ida"
+
+	// VoiceIdSuvi is a VoiceId enum value
+	VoiceIdSuvi = "Suvi"
+
+	// VoiceIdOla is a VoiceId enum value
+	VoiceIdOla = "Ola"
+
+	// VoiceIdHala is a VoiceId enum value
+	VoiceIdHala = "Hala"
+
+	// VoiceIdAndres is a VoiceId enum value
+	VoiceIdAndres = "Andres"
+
+	// VoiceIdSergio is a VoiceId enum value
+	VoiceIdSergio = "Sergio"
+
+	// VoiceIdRemi is a VoiceId enum value
+	VoiceIdRemi = "Remi"
+
+	// VoiceIdAdriano is a VoiceId enum value
+	VoiceIdAdriano = "Adriano"
+
+	// VoiceIdThiago is a VoiceId enum value
+	VoiceIdThiago = "Thiago"
+
+	// VoiceIdRuth is a VoiceId enum value
+	VoiceIdRuth = "Ruth"
+
+	// VoiceIdStephen is a VoiceId enum value
+	VoiceIdStephen = "Stephen"
+
+	// VoiceIdKazuha is a VoiceId enum value
+	VoiceIdKazuha = "Kazuha"
+
+	// VoiceIdTomoko is a VoiceId enum value
+	VoiceIdTomoko = "Tomoko"
+
+	// VoiceIdNiamh is a VoiceId enum value
+	VoiceIdNiamh = "Niamh"
+
+	// VoiceIdSofie is a VoiceId enum value
+	VoiceIdSofie = "Sofie"
+
+	// VoiceIdLisa is a VoiceId enum value
+	VoiceIdLisa = "Lisa"
+
+	// VoiceIdIsabelle is a VoiceId enum value
+	VoiceIdIsabelle = "Isabelle"
+
+	// VoiceIdZayd is a VoiceId enum value
+	VoiceIdZayd = "Zayd"
+
+	// VoiceIdDanielle is a VoiceId enum value
+	VoiceIdDanielle = "Danielle"
+
+	// VoiceIdGregory is a VoiceId enum value
+	VoiceIdGregory = "Gregory"
 )
 
 // VoiceId_Values returns all elements of the VoiceId enum
@@ -4386,5 +4503,33 @@ func VoiceId_Values() []string {
 		VoiceIdAyanda,
 		VoiceIdArlet,
 		VoiceIdHannah,
+		VoiceIdArthur,
+		VoiceIdDaniel,
+		VoiceIdLiam,
+		VoiceIdPedro,
+		VoiceIdKajal,
+		VoiceIdHiujin,
+		VoiceIdLaura,
+		VoiceIdElin,
+		VoiceIdIda,
+		VoiceIdSuvi,
+		VoiceIdOla,
+		VoiceIdHala,
+		VoiceIdAndres,
+		VoiceIdSergio,
+		VoiceIdRemi,
+		VoiceIdAdriano,
+		VoiceIdThiago,
+		VoiceIdRuth,
+		VoiceIdStephen,
+		VoiceIdKazuha,
+		VoiceIdTomoko,
+		VoiceIdNiamh,
+		VoiceIdSofie,
+		VoiceIdLisa,
+		VoiceIdIsabelle,
+		VoiceIdZayd,
+		VoiceIdDanielle,
+		VoiceIdGregory,
 	}
 }

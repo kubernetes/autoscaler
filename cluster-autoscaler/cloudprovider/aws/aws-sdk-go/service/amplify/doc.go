@@ -4,9 +4,9 @@
 // requests to AWS Amplify.
 //
 // Amplify enables developers to develop and deploy cloud-powered mobile and
-// web apps. The Amplify Console provides a continuous delivery and hosting
-// service for web applications. For more information, see the Amplify Console
-// User Guide (https://docs.aws.amazon.com/amplify/latest/userguide/welcome.html).
+// web apps. Amplify Hosting provides a continuous delivery and hosting service
+// for web applications. For more information, see the Amplify Hosting User
+// Guide (https://docs.aws.amazon.com/amplify/latest/userguide/welcome.html).
 // The Amplify Framework is a comprehensive set of SDKs, libraries, tools, and
 // documentation for client app development. For more information, see the Amplify
 // Framework. (https://docs.amplify.aws/)
@@ -16,7 +16,7 @@
 // See amplify package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/amplify/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact AWS Amplify with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

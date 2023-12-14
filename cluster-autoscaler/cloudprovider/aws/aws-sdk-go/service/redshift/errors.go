@@ -198,11 +198,35 @@ const (
 	// in the Amazon Redshift Cluster Management Guide.
 	ErrCodeClusterSubnetQuotaExceededFault = "ClusterSubnetQuotaExceededFault"
 
+	// ErrCodeConflictPolicyUpdateFault for service response error code
+	// "ConflictPolicyUpdateFault".
+	//
+	// There is a conflict while updating the resource policy.
+	ErrCodeConflictPolicyUpdateFault = "ConflictPolicyUpdateFault"
+
 	// ErrCodeCopyToRegionDisabledFault for service response error code
 	// "CopyToRegionDisabledFault".
 	//
 	// Cross-region snapshot copy was temporarily disabled. Try your request again.
 	ErrCodeCopyToRegionDisabledFault = "CopyToRegionDisabledFault"
+
+	// ErrCodeCustomCnameAssociationFault for service response error code
+	// "CustomCnameAssociationFault".
+	//
+	// An error occurred when an attempt was made to change the custom domain association.
+	ErrCodeCustomCnameAssociationFault = "CustomCnameAssociationFault"
+
+	// ErrCodeCustomDomainAssociationNotFoundFault for service response error code
+	// "CustomDomainAssociationNotFoundFault".
+	//
+	// An error occurred. The custom domain name couldn't be found.
+	ErrCodeCustomDomainAssociationNotFoundFault = "CustomDomainAssociationNotFoundFault"
+
+	// ErrCodeDependentServiceAccessDeniedFault for service response error code
+	// "DependentServiceAccessDenied".
+	//
+	// A dependent service denied access for the integration.
+	ErrCodeDependentServiceAccessDeniedFault = "DependentServiceAccessDenied"
 
 	// ErrCodeDependentServiceRequestThrottlingFault for service response error code
 	// "DependentServiceRequestThrottlingFault".
@@ -339,6 +363,12 @@ const (
 	// bucket specified when enabling logging.
 	ErrCodeInsufficientS3BucketPolicyFault = "InsufficientS3BucketPolicyFault"
 
+	// ErrCodeIntegrationNotFoundFault for service response error code
+	// "IntegrationNotFoundFault".
+	//
+	// The integration can't be found.
+	ErrCodeIntegrationNotFoundFault = "IntegrationNotFoundFault"
+
 	// ErrCodeInvalidAuthenticationProfileRequestFault for service response error code
 	// "InvalidAuthenticationProfileRequestFault".
 	//
@@ -443,6 +473,12 @@ const (
 	// valid namespace.
 	ErrCodeInvalidNamespaceFault = "InvalidNamespaceFault"
 
+	// ErrCodeInvalidPolicyFault for service response error code
+	// "InvalidPolicyFault".
+	//
+	// The resource policy isn't valid.
+	ErrCodeInvalidPolicyFault = "InvalidPolicyFault"
+
 	// ErrCodeInvalidReservedNodeStateFault for service response error code
 	// "InvalidReservedNodeState".
 	//
@@ -536,6 +572,13 @@ const (
 	// The cluster subnet group does not cover all Availability Zones.
 	ErrCodeInvalidVPCNetworkStateFault = "InvalidVPCNetworkStateFault"
 
+	// ErrCodeIpv6CidrBlockNotFoundFault for service response error code
+	// "Ipv6CidrBlockNotFoundFault".
+	//
+	// There are no subnets in your VPC with associated IPv6 CIDR blocks. To use
+	// dual-stack mode, associate an IPv6 CIDR block with each subnet in your VPC.
+	ErrCodeIpv6CidrBlockNotFoundFault = "Ipv6CidrBlockNotFoundFault"
+
 	// ErrCodeLimitExceededFault for service response error code
 	// "LimitExceededFault".
 	//
@@ -562,6 +605,24 @@ const (
 	//
 	// The name of the partner was not found.
 	ErrCodePartnerNotFoundFault = "PartnerNotFound"
+
+	// ErrCodeRedshiftIdcApplicationAlreadyExistsFault for service response error code
+	// "RedshiftIdcApplicationAlreadyExists".
+	//
+	// The application you attempted to add already exists.
+	ErrCodeRedshiftIdcApplicationAlreadyExistsFault = "RedshiftIdcApplicationAlreadyExists"
+
+	// ErrCodeRedshiftIdcApplicationNotExistsFault for service response error code
+	// "RedshiftIdcApplicationNotExists".
+	//
+	// The application you attempted to find doesn't exist.
+	ErrCodeRedshiftIdcApplicationNotExistsFault = "RedshiftIdcApplicationNotExists"
+
+	// ErrCodeRedshiftIdcApplicationQuotaExceededFault for service response error code
+	// "RedshiftIdcApplicationQuotaExceeded".
+	//
+	// The maximum number of Redshift IAM Identity Center applications was exceeded.
+	ErrCodeRedshiftIdcApplicationQuotaExceededFault = "RedshiftIdcApplicationQuotaExceeded"
 
 	// ErrCodeReservedNodeAlreadyExistsFault for service response error code
 	// "ReservedNodeAlreadyExists".

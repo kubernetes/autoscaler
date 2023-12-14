@@ -40,13 +40,14 @@ const (
 // aws.Config parameter to add your extra config.
 //
 // Example:
-//     mySession := session.Must(session.NewSession())
 //
-//     // Create a Athena client from just a session.
-//     svc := athena.New(mySession)
+//	mySession := session.Must(session.NewSession())
 //
-//     // Create a Athena client with additional configuration
-//     svc := athena.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
+//	// Create a Athena client from just a session.
+//	svc := athena.New(mySession)
+//
+//	// Create a Athena client with additional configuration
+//	svc := athena.New(mySession, aws.NewConfig().WithRegion("us-west-2"))
 func New(p client.ConfigProvider, cfgs ...*aws.Config) *Athena {
 	c := p.ClientConfig(EndpointsID, cfgs...)
 	if c.SigningNameDerived || len(c.SigningName) == 0 {

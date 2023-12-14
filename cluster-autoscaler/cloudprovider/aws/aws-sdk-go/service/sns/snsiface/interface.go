@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Simple Notification Service.
-//    func myFunc(svc snsiface.SNSAPI) bool {
-//        // Make svc.AddPermission request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Simple Notification Service.
+//	func myFunc(svc snsiface.SNSAPI) bool {
+//	    // Make svc.AddPermission request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := sns.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := sns.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSNSClient struct {
-//        snsiface.SNSAPI
-//    }
-//    func (m *mockSNSClient) AddPermission(input *sns.AddPermissionInput) (*sns.AddPermissionOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSNSClient struct {
+//	    snsiface.SNSAPI
+//	}
+//	func (m *mockSNSClient) AddPermission(input *sns.AddPermissionInput) (*sns.AddPermissionOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSNSClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSNSClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -103,6 +103,10 @@ type SNSAPI interface {
 	DeleteTopic(*sns.DeleteTopicInput) (*sns.DeleteTopicOutput, error)
 	DeleteTopicWithContext(aws.Context, *sns.DeleteTopicInput, ...request.Option) (*sns.DeleteTopicOutput, error)
 	DeleteTopicRequest(*sns.DeleteTopicInput) (*request.Request, *sns.DeleteTopicOutput)
+
+	GetDataProtectionPolicy(*sns.GetDataProtectionPolicyInput) (*sns.GetDataProtectionPolicyOutput, error)
+	GetDataProtectionPolicyWithContext(aws.Context, *sns.GetDataProtectionPolicyInput, ...request.Option) (*sns.GetDataProtectionPolicyOutput, error)
+	GetDataProtectionPolicyRequest(*sns.GetDataProtectionPolicyInput) (*request.Request, *sns.GetDataProtectionPolicyOutput)
 
 	GetEndpointAttributes(*sns.GetEndpointAttributesInput) (*sns.GetEndpointAttributesOutput, error)
 	GetEndpointAttributesWithContext(aws.Context, *sns.GetEndpointAttributesInput, ...request.Option) (*sns.GetEndpointAttributesOutput, error)
@@ -199,6 +203,10 @@ type SNSAPI interface {
 	PublishBatch(*sns.PublishBatchInput) (*sns.PublishBatchOutput, error)
 	PublishBatchWithContext(aws.Context, *sns.PublishBatchInput, ...request.Option) (*sns.PublishBatchOutput, error)
 	PublishBatchRequest(*sns.PublishBatchInput) (*request.Request, *sns.PublishBatchOutput)
+
+	PutDataProtectionPolicy(*sns.PutDataProtectionPolicyInput) (*sns.PutDataProtectionPolicyOutput, error)
+	PutDataProtectionPolicyWithContext(aws.Context, *sns.PutDataProtectionPolicyInput, ...request.Option) (*sns.PutDataProtectionPolicyOutput, error)
+	PutDataProtectionPolicyRequest(*sns.PutDataProtectionPolicyInput) (*request.Request, *sns.PutDataProtectionPolicyOutput)
 
 	RemovePermission(*sns.RemovePermissionInput) (*sns.RemovePermissionOutput, error)
 	RemovePermissionWithContext(aws.Context, *sns.RemovePermissionInput, ...request.Option) (*sns.RemovePermissionOutput, error)

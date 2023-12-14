@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Service Catalog.
-//    func myFunc(svc servicecatalogiface.ServiceCatalogAPI) bool {
-//        // Make svc.AcceptPortfolioShare request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Service Catalog.
+//	func myFunc(svc servicecatalogiface.ServiceCatalogAPI) bool {
+//	    // Make svc.AcceptPortfolioShare request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := servicecatalog.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := servicecatalog.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockServiceCatalogClient struct {
-//        servicecatalogiface.ServiceCatalogAPI
-//    }
-//    func (m *mockServiceCatalogClient) AcceptPortfolioShare(input *servicecatalog.AcceptPortfolioShareInput) (*servicecatalog.AcceptPortfolioShareOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockServiceCatalogClient struct {
+//	    servicecatalogiface.ServiceCatalogAPI
+//	}
+//	func (m *mockServiceCatalogClient) AcceptPortfolioShare(input *servicecatalog.AcceptPortfolioShareInput) (*servicecatalog.AcceptPortfolioShareOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockServiceCatalogClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockServiceCatalogClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -391,6 +391,18 @@ type ServiceCatalogAPI interface {
 
 	ListTagOptionsPages(*servicecatalog.ListTagOptionsInput, func(*servicecatalog.ListTagOptionsOutput, bool) bool) error
 	ListTagOptionsPagesWithContext(aws.Context, *servicecatalog.ListTagOptionsInput, func(*servicecatalog.ListTagOptionsOutput, bool) bool, ...request.Option) error
+
+	NotifyProvisionProductEngineWorkflowResult(*servicecatalog.NotifyProvisionProductEngineWorkflowResultInput) (*servicecatalog.NotifyProvisionProductEngineWorkflowResultOutput, error)
+	NotifyProvisionProductEngineWorkflowResultWithContext(aws.Context, *servicecatalog.NotifyProvisionProductEngineWorkflowResultInput, ...request.Option) (*servicecatalog.NotifyProvisionProductEngineWorkflowResultOutput, error)
+	NotifyProvisionProductEngineWorkflowResultRequest(*servicecatalog.NotifyProvisionProductEngineWorkflowResultInput) (*request.Request, *servicecatalog.NotifyProvisionProductEngineWorkflowResultOutput)
+
+	NotifyTerminateProvisionedProductEngineWorkflowResult(*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultInput) (*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyTerminateProvisionedProductEngineWorkflowResultWithContext(aws.Context, *servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultInput, ...request.Option) (*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyTerminateProvisionedProductEngineWorkflowResultRequest(*servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultInput) (*request.Request, *servicecatalog.NotifyTerminateProvisionedProductEngineWorkflowResultOutput)
+
+	NotifyUpdateProvisionedProductEngineWorkflowResult(*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultInput) (*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyUpdateProvisionedProductEngineWorkflowResultWithContext(aws.Context, *servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultInput, ...request.Option) (*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultOutput, error)
+	NotifyUpdateProvisionedProductEngineWorkflowResultRequest(*servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultInput) (*request.Request, *servicecatalog.NotifyUpdateProvisionedProductEngineWorkflowResultOutput)
 
 	ProvisionProduct(*servicecatalog.ProvisionProductInput) (*servicecatalog.ProvisionProductOutput, error)
 	ProvisionProductWithContext(aws.Context, *servicecatalog.ProvisionProductInput, ...request.Option) (*servicecatalog.ProvisionProductOutput, error)

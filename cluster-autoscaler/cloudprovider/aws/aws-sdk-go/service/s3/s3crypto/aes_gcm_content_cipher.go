@@ -19,7 +19,7 @@ const (
 // will be fully loaded into memory before encryption or decryption can occur. Caution must be taken to avoid memory
 // allocation failures.
 //
-// deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
+// Deprecated: This feature is in maintenance mode, no new updates will be released. Please see https://docs.aws.amazon.com/general/latest/gr/aws_sdk_cryptography.html for more information.
 func AESGCMContentCipherBuilder(generator CipherDataGenerator) ContentCipherBuilder {
 	return gcmContentCipherBuilder{generator}
 }
@@ -37,11 +37,11 @@ func AESGCMContentCipherBuilderV2(generator CipherDataGeneratorWithCEKAlg) Conte
 // RegisterAESGCMContentCipher registers the AES/GCM content cipher algorithm with the provided CryptoRegistry.
 //
 // Example:
+//
 //	cr := s3crypto.NewCryptoRegistry()
 //	if err := s3crypto.RegisterAESGCMContentCipher(cr); err != nil {
 //		panic(err) // handle error
 //	}
-//
 func RegisterAESGCMContentCipher(registry *CryptoRegistry) error {
 	if registry == nil {
 		return errNilCryptoRegistry

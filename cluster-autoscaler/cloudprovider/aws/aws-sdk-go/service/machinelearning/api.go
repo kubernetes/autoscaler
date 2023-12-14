@@ -28,14 +28,13 @@ const opAddTags = "AddTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AddTagsRequest method.
+//	req, resp := client.AddTagsRequest(params)
 //
-//    // Example sending a request using the AddTagsRequest method.
-//    req, resp := client.AddTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) AddTagsRequest(input *AddTagsInput) (req *request.Request, output *AddTagsOutput) {
 	op := &request.Operation{
 		Name:       opAddTags,
@@ -66,20 +65,20 @@ func (c *MachineLearning) AddTagsRequest(input *AddTagsInput) (req *request.Requ
 // API operation AddTags for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InvalidTagException
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * TagLimitExceededException
+//   - InvalidTagException
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - TagLimitExceededException
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) AddTags(input *AddTagsInput) (*AddTagsOutput, error) {
 	req, out := c.AddTagsRequest(input)
 	return out, req.Send()
@@ -117,14 +116,13 @@ const opCreateBatchPrediction = "CreateBatchPrediction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBatchPredictionRequest method.
+//	req, resp := client.CreateBatchPredictionRequest(params)
 //
-//    // Example sending a request using the CreateBatchPredictionRequest method.
-//    req, resp := client.CreateBatchPredictionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateBatchPredictionRequest(input *CreateBatchPredictionInput) (req *request.Request, output *CreateBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opCreateBatchPrediction,
@@ -166,18 +164,18 @@ func (c *MachineLearning) CreateBatchPredictionRequest(input *CreateBatchPredict
 // API operation CreateBatchPrediction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * IdempotentParameterMismatchException
-//   A second request to use or change an object was not allowed. This can result
-//   from retrying a request using a parameter that was not present in the original
-//   request.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - IdempotentParameterMismatchException
+//     A second request to use or change an object was not allowed. This can result
+//     from retrying a request using a parameter that was not present in the original
+//     request.
 func (c *MachineLearning) CreateBatchPrediction(input *CreateBatchPredictionInput) (*CreateBatchPredictionOutput, error) {
 	req, out := c.CreateBatchPredictionRequest(input)
 	return out, req.Send()
@@ -215,14 +213,13 @@ const opCreateDataSourceFromRDS = "CreateDataSourceFromRDS"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataSourceFromRDSRequest method.
+//	req, resp := client.CreateDataSourceFromRDSRequest(params)
 //
-//    // Example sending a request using the CreateDataSourceFromRDSRequest method.
-//    req, resp := client.CreateDataSourceFromRDSRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateDataSourceFromRDSRequest(input *CreateDataSourceFromRDSInput) (req *request.Request, output *CreateDataSourceFromRDSOutput) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromRDS,
@@ -264,18 +261,18 @@ func (c *MachineLearning) CreateDataSourceFromRDSRequest(input *CreateDataSource
 // API operation CreateDataSourceFromRDS for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * IdempotentParameterMismatchException
-//   A second request to use or change an object was not allowed. This can result
-//   from retrying a request using a parameter that was not present in the original
-//   request.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - IdempotentParameterMismatchException
+//     A second request to use or change an object was not allowed. This can result
+//     from retrying a request using a parameter that was not present in the original
+//     request.
 func (c *MachineLearning) CreateDataSourceFromRDS(input *CreateDataSourceFromRDSInput) (*CreateDataSourceFromRDSOutput, error) {
 	req, out := c.CreateDataSourceFromRDSRequest(input)
 	return out, req.Send()
@@ -313,14 +310,13 @@ const opCreateDataSourceFromRedshift = "CreateDataSourceFromRedshift"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataSourceFromRedshiftRequest method.
+//	req, resp := client.CreateDataSourceFromRedshiftRequest(params)
 //
-//    // Example sending a request using the CreateDataSourceFromRedshiftRequest method.
-//    req, resp := client.CreateDataSourceFromRedshiftRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateDataSourceFromRedshiftRequest(input *CreateDataSourceFromRedshiftInput) (req *request.Request, output *CreateDataSourceFromRedshiftOutput) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromRedshift,
@@ -381,18 +377,18 @@ func (c *MachineLearning) CreateDataSourceFromRedshiftRequest(input *CreateDataS
 // API operation CreateDataSourceFromRedshift for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * IdempotentParameterMismatchException
-//   A second request to use or change an object was not allowed. This can result
-//   from retrying a request using a parameter that was not present in the original
-//   request.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - IdempotentParameterMismatchException
+//     A second request to use or change an object was not allowed. This can result
+//     from retrying a request using a parameter that was not present in the original
+//     request.
 func (c *MachineLearning) CreateDataSourceFromRedshift(input *CreateDataSourceFromRedshiftInput) (*CreateDataSourceFromRedshiftOutput, error) {
 	req, out := c.CreateDataSourceFromRedshiftRequest(input)
 	return out, req.Send()
@@ -430,14 +426,13 @@ const opCreateDataSourceFromS3 = "CreateDataSourceFromS3"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateDataSourceFromS3Request method.
+//	req, resp := client.CreateDataSourceFromS3Request(params)
 //
-//    // Example sending a request using the CreateDataSourceFromS3Request method.
-//    req, resp := client.CreateDataSourceFromS3Request(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateDataSourceFromS3Request(input *CreateDataSourceFromS3Input) (req *request.Request, output *CreateDataSourceFromS3Output) {
 	op := &request.Operation{
 		Name:       opCreateDataSourceFromS3,
@@ -493,18 +488,18 @@ func (c *MachineLearning) CreateDataSourceFromS3Request(input *CreateDataSourceF
 // API operation CreateDataSourceFromS3 for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * IdempotentParameterMismatchException
-//   A second request to use or change an object was not allowed. This can result
-//   from retrying a request using a parameter that was not present in the original
-//   request.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - IdempotentParameterMismatchException
+//     A second request to use or change an object was not allowed. This can result
+//     from retrying a request using a parameter that was not present in the original
+//     request.
 func (c *MachineLearning) CreateDataSourceFromS3(input *CreateDataSourceFromS3Input) (*CreateDataSourceFromS3Output, error) {
 	req, out := c.CreateDataSourceFromS3Request(input)
 	return out, req.Send()
@@ -542,14 +537,13 @@ const opCreateEvaluation = "CreateEvaluation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateEvaluationRequest method.
+//	req, resp := client.CreateEvaluationRequest(params)
 //
-//    // Example sending a request using the CreateEvaluationRequest method.
-//    req, resp := client.CreateEvaluationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateEvaluationRequest(input *CreateEvaluationInput) (req *request.Request, output *CreateEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opCreateEvaluation,
@@ -593,18 +587,18 @@ func (c *MachineLearning) CreateEvaluationRequest(input *CreateEvaluationInput) 
 // API operation CreateEvaluation for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * IdempotentParameterMismatchException
-//   A second request to use or change an object was not allowed. This can result
-//   from retrying a request using a parameter that was not present in the original
-//   request.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - IdempotentParameterMismatchException
+//     A second request to use or change an object was not allowed. This can result
+//     from retrying a request using a parameter that was not present in the original
+//     request.
 func (c *MachineLearning) CreateEvaluation(input *CreateEvaluationInput) (*CreateEvaluationOutput, error) {
 	req, out := c.CreateEvaluationRequest(input)
 	return out, req.Send()
@@ -642,14 +636,13 @@ const opCreateMLModel = "CreateMLModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateMLModelRequest method.
+//	req, resp := client.CreateMLModelRequest(params)
 //
-//    // Example sending a request using the CreateMLModelRequest method.
-//    req, resp := client.CreateMLModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateMLModelRequest(input *CreateMLModelInput) (req *request.Request, output *CreateMLModelOutput) {
 	op := &request.Operation{
 		Name:       opCreateMLModel,
@@ -694,18 +687,18 @@ func (c *MachineLearning) CreateMLModelRequest(input *CreateMLModelInput) (req *
 // API operation CreateMLModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * IdempotentParameterMismatchException
-//   A second request to use or change an object was not allowed. This can result
-//   from retrying a request using a parameter that was not present in the original
-//   request.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - IdempotentParameterMismatchException
+//     A second request to use or change an object was not allowed. This can result
+//     from retrying a request using a parameter that was not present in the original
+//     request.
 func (c *MachineLearning) CreateMLModel(input *CreateMLModelInput) (*CreateMLModelOutput, error) {
 	req, out := c.CreateMLModelRequest(input)
 	return out, req.Send()
@@ -743,14 +736,13 @@ const opCreateRealtimeEndpoint = "CreateRealtimeEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateRealtimeEndpointRequest method.
+//	req, resp := client.CreateRealtimeEndpointRequest(params)
 //
-//    // Example sending a request using the CreateRealtimeEndpointRequest method.
-//    req, resp := client.CreateRealtimeEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) CreateRealtimeEndpointRequest(input *CreateRealtimeEndpointInput) (req *request.Request, output *CreateRealtimeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opCreateRealtimeEndpoint,
@@ -781,16 +773,16 @@ func (c *MachineLearning) CreateRealtimeEndpointRequest(input *CreateRealtimeEnd
 // API operation CreateRealtimeEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) CreateRealtimeEndpoint(input *CreateRealtimeEndpointInput) (*CreateRealtimeEndpointOutput, error) {
 	req, out := c.CreateRealtimeEndpointRequest(input)
 	return out, req.Send()
@@ -828,14 +820,13 @@ const opDeleteBatchPrediction = "DeleteBatchPrediction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBatchPredictionRequest method.
+//	req, resp := client.DeleteBatchPredictionRequest(params)
 //
-//    // Example sending a request using the DeleteBatchPredictionRequest method.
-//    req, resp := client.DeleteBatchPredictionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DeleteBatchPredictionRequest(input *DeleteBatchPredictionInput) (req *request.Request, output *DeleteBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteBatchPrediction,
@@ -869,16 +860,16 @@ func (c *MachineLearning) DeleteBatchPredictionRequest(input *DeleteBatchPredict
 // API operation DeleteBatchPrediction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DeleteBatchPrediction(input *DeleteBatchPredictionInput) (*DeleteBatchPredictionOutput, error) {
 	req, out := c.DeleteBatchPredictionRequest(input)
 	return out, req.Send()
@@ -916,14 +907,13 @@ const opDeleteDataSource = "DeleteDataSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteDataSourceRequest method.
+//	req, resp := client.DeleteDataSourceRequest(params)
 //
-//    // Example sending a request using the DeleteDataSourceRequest method.
-//    req, resp := client.DeleteDataSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DeleteDataSourceRequest(input *DeleteDataSourceInput) (req *request.Request, output *DeleteDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opDeleteDataSource,
@@ -957,16 +947,16 @@ func (c *MachineLearning) DeleteDataSourceRequest(input *DeleteDataSourceInput) 
 // API operation DeleteDataSource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DeleteDataSource(input *DeleteDataSourceInput) (*DeleteDataSourceOutput, error) {
 	req, out := c.DeleteDataSourceRequest(input)
 	return out, req.Send()
@@ -1004,14 +994,13 @@ const opDeleteEvaluation = "DeleteEvaluation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteEvaluationRequest method.
+//	req, resp := client.DeleteEvaluationRequest(params)
 //
-//    // Example sending a request using the DeleteEvaluationRequest method.
-//    req, resp := client.DeleteEvaluationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DeleteEvaluationRequest(input *DeleteEvaluationInput) (req *request.Request, output *DeleteEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opDeleteEvaluation,
@@ -1045,16 +1034,16 @@ func (c *MachineLearning) DeleteEvaluationRequest(input *DeleteEvaluationInput) 
 // API operation DeleteEvaluation for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DeleteEvaluation(input *DeleteEvaluationInput) (*DeleteEvaluationOutput, error) {
 	req, out := c.DeleteEvaluationRequest(input)
 	return out, req.Send()
@@ -1092,14 +1081,13 @@ const opDeleteMLModel = "DeleteMLModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteMLModelRequest method.
+//	req, resp := client.DeleteMLModelRequest(params)
 //
-//    // Example sending a request using the DeleteMLModelRequest method.
-//    req, resp := client.DeleteMLModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DeleteMLModelRequest(input *DeleteMLModelInput) (req *request.Request, output *DeleteMLModelOutput) {
 	op := &request.Operation{
 		Name:       opDeleteMLModel,
@@ -1133,16 +1121,16 @@ func (c *MachineLearning) DeleteMLModelRequest(input *DeleteMLModelInput) (req *
 // API operation DeleteMLModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DeleteMLModel(input *DeleteMLModelInput) (*DeleteMLModelOutput, error) {
 	req, out := c.DeleteMLModelRequest(input)
 	return out, req.Send()
@@ -1180,14 +1168,13 @@ const opDeleteRealtimeEndpoint = "DeleteRealtimeEndpoint"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteRealtimeEndpointRequest method.
+//	req, resp := client.DeleteRealtimeEndpointRequest(params)
 //
-//    // Example sending a request using the DeleteRealtimeEndpointRequest method.
-//    req, resp := client.DeleteRealtimeEndpointRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DeleteRealtimeEndpointRequest(input *DeleteRealtimeEndpointInput) (req *request.Request, output *DeleteRealtimeEndpointOutput) {
 	op := &request.Operation{
 		Name:       opDeleteRealtimeEndpoint,
@@ -1216,16 +1203,16 @@ func (c *MachineLearning) DeleteRealtimeEndpointRequest(input *DeleteRealtimeEnd
 // API operation DeleteRealtimeEndpoint for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DeleteRealtimeEndpoint(input *DeleteRealtimeEndpointInput) (*DeleteRealtimeEndpointOutput, error) {
 	req, out := c.DeleteRealtimeEndpointRequest(input)
 	return out, req.Send()
@@ -1263,14 +1250,13 @@ const opDeleteTags = "DeleteTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTagsRequest method.
+//	req, resp := client.DeleteTagsRequest(params)
 //
-//    // Example sending a request using the DeleteTagsRequest method.
-//    req, resp := client.DeleteTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DeleteTagsRequest(input *DeleteTagsInput) (req *request.Request, output *DeleteTagsOutput) {
 	op := &request.Operation{
 		Name:       opDeleteTags,
@@ -1302,18 +1288,18 @@ func (c *MachineLearning) DeleteTagsRequest(input *DeleteTagsInput) (req *reques
 // API operation DeleteTags for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InvalidTagException
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidTagException
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DeleteTags(input *DeleteTagsInput) (*DeleteTagsOutput, error) {
 	req, out := c.DeleteTagsRequest(input)
 	return out, req.Send()
@@ -1351,14 +1337,13 @@ const opDescribeBatchPredictions = "DescribeBatchPredictions"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeBatchPredictionsRequest method.
+//	req, resp := client.DescribeBatchPredictionsRequest(params)
 //
-//    // Example sending a request using the DescribeBatchPredictionsRequest method.
-//    req, resp := client.DescribeBatchPredictionsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DescribeBatchPredictionsRequest(input *DescribeBatchPredictionsInput) (req *request.Request, output *DescribeBatchPredictionsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeBatchPredictions,
@@ -1394,13 +1379,13 @@ func (c *MachineLearning) DescribeBatchPredictionsRequest(input *DescribeBatchPr
 // API operation DescribeBatchPredictions for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DescribeBatchPredictions(input *DescribeBatchPredictionsInput) (*DescribeBatchPredictionsOutput, error) {
 	req, out := c.DescribeBatchPredictionsRequest(input)
 	return out, req.Send()
@@ -1430,15 +1415,14 @@ func (c *MachineLearning) DescribeBatchPredictionsWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeBatchPredictions operation.
-//    pageNum := 0
-//    err := client.DescribeBatchPredictionsPages(params,
-//        func(page *machinelearning.DescribeBatchPredictionsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeBatchPredictions operation.
+//	pageNum := 0
+//	err := client.DescribeBatchPredictionsPages(params,
+//	    func(page *machinelearning.DescribeBatchPredictionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MachineLearning) DescribeBatchPredictionsPages(input *DescribeBatchPredictionsInput, fn func(*DescribeBatchPredictionsOutput, bool) bool) error {
 	return c.DescribeBatchPredictionsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1490,14 +1474,13 @@ const opDescribeDataSources = "DescribeDataSources"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeDataSourcesRequest method.
+//	req, resp := client.DescribeDataSourcesRequest(params)
 //
-//    // Example sending a request using the DescribeDataSourcesRequest method.
-//    req, resp := client.DescribeDataSourcesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DescribeDataSourcesRequest(input *DescribeDataSourcesInput) (req *request.Request, output *DescribeDataSourcesOutput) {
 	op := &request.Operation{
 		Name:       opDescribeDataSources,
@@ -1532,13 +1515,13 @@ func (c *MachineLearning) DescribeDataSourcesRequest(input *DescribeDataSourcesI
 // API operation DescribeDataSources for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DescribeDataSources(input *DescribeDataSourcesInput) (*DescribeDataSourcesOutput, error) {
 	req, out := c.DescribeDataSourcesRequest(input)
 	return out, req.Send()
@@ -1568,15 +1551,14 @@ func (c *MachineLearning) DescribeDataSourcesWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeDataSources operation.
-//    pageNum := 0
-//    err := client.DescribeDataSourcesPages(params,
-//        func(page *machinelearning.DescribeDataSourcesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeDataSources operation.
+//	pageNum := 0
+//	err := client.DescribeDataSourcesPages(params,
+//	    func(page *machinelearning.DescribeDataSourcesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MachineLearning) DescribeDataSourcesPages(input *DescribeDataSourcesInput, fn func(*DescribeDataSourcesOutput, bool) bool) error {
 	return c.DescribeDataSourcesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1628,14 +1610,13 @@ const opDescribeEvaluations = "DescribeEvaluations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeEvaluationsRequest method.
+//	req, resp := client.DescribeEvaluationsRequest(params)
 //
-//    // Example sending a request using the DescribeEvaluationsRequest method.
-//    req, resp := client.DescribeEvaluationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DescribeEvaluationsRequest(input *DescribeEvaluationsInput) (req *request.Request, output *DescribeEvaluationsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeEvaluations,
@@ -1671,13 +1652,13 @@ func (c *MachineLearning) DescribeEvaluationsRequest(input *DescribeEvaluationsI
 // API operation DescribeEvaluations for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DescribeEvaluations(input *DescribeEvaluationsInput) (*DescribeEvaluationsOutput, error) {
 	req, out := c.DescribeEvaluationsRequest(input)
 	return out, req.Send()
@@ -1707,15 +1688,14 @@ func (c *MachineLearning) DescribeEvaluationsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeEvaluations operation.
-//    pageNum := 0
-//    err := client.DescribeEvaluationsPages(params,
-//        func(page *machinelearning.DescribeEvaluationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeEvaluations operation.
+//	pageNum := 0
+//	err := client.DescribeEvaluationsPages(params,
+//	    func(page *machinelearning.DescribeEvaluationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MachineLearning) DescribeEvaluationsPages(input *DescribeEvaluationsInput, fn func(*DescribeEvaluationsOutput, bool) bool) error {
 	return c.DescribeEvaluationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1767,14 +1747,13 @@ const opDescribeMLModels = "DescribeMLModels"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeMLModelsRequest method.
+//	req, resp := client.DescribeMLModelsRequest(params)
 //
-//    // Example sending a request using the DescribeMLModelsRequest method.
-//    req, resp := client.DescribeMLModelsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DescribeMLModelsRequest(input *DescribeMLModelsInput) (req *request.Request, output *DescribeMLModelsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeMLModels,
@@ -1809,13 +1788,13 @@ func (c *MachineLearning) DescribeMLModelsRequest(input *DescribeMLModelsInput) 
 // API operation DescribeMLModels for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DescribeMLModels(input *DescribeMLModelsInput) (*DescribeMLModelsOutput, error) {
 	req, out := c.DescribeMLModelsRequest(input)
 	return out, req.Send()
@@ -1845,15 +1824,14 @@ func (c *MachineLearning) DescribeMLModelsWithContext(ctx aws.Context, input *De
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a DescribeMLModels operation.
-//    pageNum := 0
-//    err := client.DescribeMLModelsPages(params,
-//        func(page *machinelearning.DescribeMLModelsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a DescribeMLModels operation.
+//	pageNum := 0
+//	err := client.DescribeMLModelsPages(params,
+//	    func(page *machinelearning.DescribeMLModelsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MachineLearning) DescribeMLModelsPages(input *DescribeMLModelsInput, fn func(*DescribeMLModelsOutput, bool) bool) error {
 	return c.DescribeMLModelsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1905,14 +1883,13 @@ const opDescribeTags = "DescribeTags"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeTagsRequest method.
+//	req, resp := client.DescribeTagsRequest(params)
 //
-//    // Example sending a request using the DescribeTagsRequest method.
-//    req, resp := client.DescribeTagsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) DescribeTagsRequest(input *DescribeTagsInput) (req *request.Request, output *DescribeTagsOutput) {
 	op := &request.Operation{
 		Name:       opDescribeTags,
@@ -1941,16 +1918,16 @@ func (c *MachineLearning) DescribeTagsRequest(input *DescribeTagsInput) (req *re
 // API operation DescribeTags for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) DescribeTags(input *DescribeTagsInput) (*DescribeTagsOutput, error) {
 	req, out := c.DescribeTagsRequest(input)
 	return out, req.Send()
@@ -1988,14 +1965,13 @@ const opGetBatchPrediction = "GetBatchPrediction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBatchPredictionRequest method.
+//	req, resp := client.GetBatchPredictionRequest(params)
 //
-//    // Example sending a request using the GetBatchPredictionRequest method.
-//    req, resp := client.GetBatchPredictionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) GetBatchPredictionRequest(input *GetBatchPredictionInput) (req *request.Request, output *GetBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opGetBatchPrediction,
@@ -2025,16 +2001,16 @@ func (c *MachineLearning) GetBatchPredictionRequest(input *GetBatchPredictionInp
 // API operation GetBatchPrediction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) GetBatchPrediction(input *GetBatchPredictionInput) (*GetBatchPredictionOutput, error) {
 	req, out := c.GetBatchPredictionRequest(input)
 	return out, req.Send()
@@ -2072,14 +2048,13 @@ const opGetDataSource = "GetDataSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetDataSourceRequest method.
+//	req, resp := client.GetDataSourceRequest(params)
 //
-//    // Example sending a request using the GetDataSourceRequest method.
-//    req, resp := client.GetDataSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) GetDataSourceRequest(input *GetDataSourceInput) (req *request.Request, output *GetDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opGetDataSource,
@@ -2113,16 +2088,16 @@ func (c *MachineLearning) GetDataSourceRequest(input *GetDataSourceInput) (req *
 // API operation GetDataSource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) GetDataSource(input *GetDataSourceInput) (*GetDataSourceOutput, error) {
 	req, out := c.GetDataSourceRequest(input)
 	return out, req.Send()
@@ -2160,14 +2135,13 @@ const opGetEvaluation = "GetEvaluation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetEvaluationRequest method.
+//	req, resp := client.GetEvaluationRequest(params)
 //
-//    // Example sending a request using the GetEvaluationRequest method.
-//    req, resp := client.GetEvaluationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) GetEvaluationRequest(input *GetEvaluationInput) (req *request.Request, output *GetEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opGetEvaluation,
@@ -2197,16 +2171,16 @@ func (c *MachineLearning) GetEvaluationRequest(input *GetEvaluationInput) (req *
 // API operation GetEvaluation for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) GetEvaluation(input *GetEvaluationInput) (*GetEvaluationOutput, error) {
 	req, out := c.GetEvaluationRequest(input)
 	return out, req.Send()
@@ -2244,14 +2218,13 @@ const opGetMLModel = "GetMLModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetMLModelRequest method.
+//	req, resp := client.GetMLModelRequest(params)
 //
-//    // Example sending a request using the GetMLModelRequest method.
-//    req, resp := client.GetMLModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) GetMLModelRequest(input *GetMLModelInput) (req *request.Request, output *GetMLModelOutput) {
 	op := &request.Operation{
 		Name:       opGetMLModel,
@@ -2283,16 +2256,16 @@ func (c *MachineLearning) GetMLModelRequest(input *GetMLModelInput) (req *reques
 // API operation GetMLModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) GetMLModel(input *GetMLModelInput) (*GetMLModelOutput, error) {
 	req, out := c.GetMLModelRequest(input)
 	return out, req.Send()
@@ -2330,14 +2303,13 @@ const opPredict = "Predict"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the PredictRequest method.
+//	req, resp := client.PredictRequest(params)
 //
-//    // Example sending a request using the PredictRequest method.
-//    req, resp := client.PredictRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) PredictRequest(input *PredictInput) (req *request.Request, output *PredictOutput) {
 	op := &request.Operation{
 		Name:       opPredict,
@@ -2369,23 +2341,23 @@ func (c *MachineLearning) PredictRequest(input *PredictInput) (req *request.Requ
 // API operation Predict for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * LimitExceededException
-//   The subscriber exceeded the maximum number of operations. This exception
-//   can occur when listing objects such as DataSource.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - LimitExceededException
+//     The subscriber exceeded the maximum number of operations. This exception
+//     can occur when listing objects such as DataSource.
 //
-//   * PredictorNotMountedException
-//   The exception is thrown when a predict request is made to an unmounted MLModel.
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 //
+//   - PredictorNotMountedException
+//     The exception is thrown when a predict request is made to an unmounted MLModel.
 func (c *MachineLearning) Predict(input *PredictInput) (*PredictOutput, error) {
 	req, out := c.PredictRequest(input)
 	return out, req.Send()
@@ -2423,14 +2395,13 @@ const opUpdateBatchPrediction = "UpdateBatchPrediction"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBatchPredictionRequest method.
+//	req, resp := client.UpdateBatchPredictionRequest(params)
 //
-//    // Example sending a request using the UpdateBatchPredictionRequest method.
-//    req, resp := client.UpdateBatchPredictionRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) UpdateBatchPredictionRequest(input *UpdateBatchPredictionInput) (req *request.Request, output *UpdateBatchPredictionOutput) {
 	op := &request.Operation{
 		Name:       opUpdateBatchPrediction,
@@ -2462,16 +2433,16 @@ func (c *MachineLearning) UpdateBatchPredictionRequest(input *UpdateBatchPredict
 // API operation UpdateBatchPrediction for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) UpdateBatchPrediction(input *UpdateBatchPredictionInput) (*UpdateBatchPredictionOutput, error) {
 	req, out := c.UpdateBatchPredictionRequest(input)
 	return out, req.Send()
@@ -2509,14 +2480,13 @@ const opUpdateDataSource = "UpdateDataSource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateDataSourceRequest method.
+//	req, resp := client.UpdateDataSourceRequest(params)
 //
-//    // Example sending a request using the UpdateDataSourceRequest method.
-//    req, resp := client.UpdateDataSourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) UpdateDataSourceRequest(input *UpdateDataSourceInput) (req *request.Request, output *UpdateDataSourceOutput) {
 	op := &request.Operation{
 		Name:       opUpdateDataSource,
@@ -2548,16 +2518,16 @@ func (c *MachineLearning) UpdateDataSourceRequest(input *UpdateDataSourceInput) 
 // API operation UpdateDataSource for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) UpdateDataSource(input *UpdateDataSourceInput) (*UpdateDataSourceOutput, error) {
 	req, out := c.UpdateDataSourceRequest(input)
 	return out, req.Send()
@@ -2595,14 +2565,13 @@ const opUpdateEvaluation = "UpdateEvaluation"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateEvaluationRequest method.
+//	req, resp := client.UpdateEvaluationRequest(params)
 //
-//    // Example sending a request using the UpdateEvaluationRequest method.
-//    req, resp := client.UpdateEvaluationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) UpdateEvaluationRequest(input *UpdateEvaluationInput) (req *request.Request, output *UpdateEvaluationOutput) {
 	op := &request.Operation{
 		Name:       opUpdateEvaluation,
@@ -2634,16 +2603,16 @@ func (c *MachineLearning) UpdateEvaluationRequest(input *UpdateEvaluationInput) 
 // API operation UpdateEvaluation for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) UpdateEvaluation(input *UpdateEvaluationInput) (*UpdateEvaluationOutput, error) {
 	req, out := c.UpdateEvaluationRequest(input)
 	return out, req.Send()
@@ -2681,14 +2650,13 @@ const opUpdateMLModel = "UpdateMLModel"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateMLModelRequest method.
+//	req, resp := client.UpdateMLModelRequest(params)
 //
-//    // Example sending a request using the UpdateMLModelRequest method.
-//    req, resp := client.UpdateMLModelRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 func (c *MachineLearning) UpdateMLModelRequest(input *UpdateMLModelInput) (req *request.Request, output *UpdateMLModelOutput) {
 	op := &request.Operation{
 		Name:       opUpdateMLModel,
@@ -2720,16 +2688,16 @@ func (c *MachineLearning) UpdateMLModelRequest(input *UpdateMLModelInput) (req *
 // API operation UpdateMLModel for usage and error information.
 //
 // Returned Error Types:
-//   * InvalidInputException
-//   An error on the client occurred. Typically, the cause is an invalid input
-//   value.
 //
-//   * ResourceNotFoundException
-//   A specified resource cannot be located.
+//   - InvalidInputException
+//     An error on the client occurred. Typically, the cause is an invalid input
+//     value.
 //
-//   * InternalServerException
-//   An error on the server occurred when trying to process a request.
+//   - ResourceNotFoundException
+//     A specified resource cannot be located.
 //
+//   - InternalServerException
+//     An error on the server occurred when trying to process a request.
 func (c *MachineLearning) UpdateMLModel(input *UpdateMLModelInput) (*UpdateMLModelOutput, error) {
 	req, out := c.UpdateMLModelRequest(input)
 	return out, req.Send()
@@ -7822,15 +7790,15 @@ func (s *MLModel) SetTrainingParameters(v map[string]*string) *MLModel {
 // Measurements of how well the MLModel performed on known observations. One
 // of the following metrics is returned, based on the type of the MLModel:
 //
-//    * BinaryAUC: The binary MLModel uses the Area Under the Curve (AUC) technique
-//    to measure performance.
+//   - BinaryAUC: The binary MLModel uses the Area Under the Curve (AUC) technique
+//     to measure performance.
 //
-//    * RegressionRMSE: The regression MLModel uses the Root Mean Square Error
-//    (RMSE) technique to measure performance. RMSE measures the difference
-//    between predicted and actual values for a single variable.
+//   - RegressionRMSE: The regression MLModel uses the Root Mean Square Error
+//     (RMSE) technique to measure performance. RMSE measures the difference
+//     between predicted and actual values for a single variable.
 //
-//    * MulticlassAvgFScore: The multiclass MLModel uses the F1 score technique
-//    to measure performance.
+//   - MulticlassAvgFScore: The multiclass MLModel uses the F1 score technique
+//     to measure performance.
 //
 // For more information about performance metrics, please see the Amazon Machine
 // Learning Developer Guide (https://docs.aws.amazon.com/machine-learning/latest/dg).
@@ -7982,15 +7950,16 @@ func (s *PredictOutput) SetPrediction(v *Prediction) *PredictOutput {
 
 // The output from a Predict operation:
 //
-//    * Details - Contains the following attributes: DetailsAttributes.PREDICTIVE_MODEL_TYPE
-//    - REGRESSION | BINARY | MULTICLASS DetailsAttributes.ALGORITHM - SGD
+//   - Details - Contains the following attributes: DetailsAttributes.PREDICTIVE_MODEL_TYPE
 //
-//    * PredictedLabel - Present for either a BINARY or MULTICLASS MLModel request.
+//   - REGRESSION | BINARY | MULTICLASS DetailsAttributes.ALGORITHM - SGD
 //
-//    * PredictedScores - Contains the raw classification score corresponding
-//    to each label.
+//   - PredictedLabel - Present for either a BINARY or MULTICLASS MLModel request.
 //
-//    * PredictedValue - Present for a REGRESSION MLModel request.
+//   - PredictedScores - Contains the raw classification score corresponding
+//     to each label.
+//
+//   - PredictedValue - Present for a REGRESSION MLModel request.
 type Prediction struct {
 	_ struct{} `type:"structure"`
 
@@ -8481,8 +8450,12 @@ type RDSDatabaseCredentials struct {
 	// instance. The password should have sufficient permissions to execute the
 	// RDSSelectQuery query.
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RDSDatabaseCredentials's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"8" type:"string" required:"true"`
+	Password *string `min:"8" type:"string" required:"true" sensitive:"true"`
 
 	// The username to be used by Amazon ML to connect to database on an Amazon
 	// RDS instance. The username should have sufficient permissions to execute
@@ -8999,8 +8972,12 @@ type RedshiftDatabaseCredentials struct {
 	// a RedshiftSelectSqlQuery query. The password should be valid for an Amazon
 	// Redshift USER (https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_USER.html).
 	//
+	// Password is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by RedshiftDatabaseCredentials's
+	// String and GoString methods.
+	//
 	// Password is a required field
-	Password *string `min:"8" type:"string" required:"true"`
+	Password *string `min:"8" type:"string" required:"true" sensitive:"true"`
 
 	// A username to be used by Amazon Machine Learning (Amazon ML)to connect to
 	// a database on an Amazon Redshift cluster. The username should have sufficient
@@ -9871,9 +9848,9 @@ func (s *UpdateMLModelOutput) SetMLModelId(v string) *UpdateMLModelOutput {
 // The function used to train an MLModel. Training choices supported by Amazon
 // ML include the following:
 //
-//    * SGD - Stochastic Gradient Descent.
+//   - SGD - Stochastic Gradient Descent.
 //
-//    * RandomForest - Random forest of decision trees.
+//   - RandomForest - Random forest of decision trees.
 const (
 	// AlgorithmSgd is a Algorithm enum value
 	AlgorithmSgd = "sgd"
@@ -9888,23 +9865,23 @@ func Algorithm_Values() []string {
 
 // A list of the variables to use in searching or filtering BatchPrediction.
 //
-//    * CreatedAt - Sets the search criteria to BatchPrediction creation date.
+//   - CreatedAt - Sets the search criteria to BatchPrediction creation date.
 //
-//    * Status - Sets the search criteria to BatchPrediction status.
+//   - Status - Sets the search criteria to BatchPrediction status.
 //
-//    * Name - Sets the search criteria to the contents of BatchPrediction Name.
+//   - Name - Sets the search criteria to the contents of BatchPrediction Name.
 //
-//    * IAMUser - Sets the search criteria to the user account that invoked
-//    the BatchPrediction creation.
+//   - IAMUser - Sets the search criteria to the user account that invoked
+//     the BatchPrediction creation.
 //
-//    * MLModelId - Sets the search criteria to the MLModel used in the BatchPrediction.
+//   - MLModelId - Sets the search criteria to the MLModel used in the BatchPrediction.
 //
-//    * DataSourceId - Sets the search criteria to the DataSource used in the
-//    BatchPrediction.
+//   - DataSourceId - Sets the search criteria to the DataSource used in the
+//     BatchPrediction.
 //
-//    * DataURI - Sets the search criteria to the data file(s) used in the BatchPrediction.
-//    The URL can identify either a file or an Amazon Simple Storage Service
-//    (Amazon S3) bucket or directory.
+//   - DataURI - Sets the search criteria to the data file(s) used in the BatchPrediction.
+//     The URL can identify either a file or an Amazon Simple Storage Service
+//     (Amazon S3) bucket or directory.
 const (
 	// BatchPredictionFilterVariableCreatedAt is a BatchPredictionFilterVariable enum value
 	BatchPredictionFilterVariableCreatedAt = "CreatedAt"
@@ -9947,18 +9924,18 @@ func BatchPredictionFilterVariable_Values() []string {
 
 // A list of the variables to use in searching or filtering DataSource.
 //
-//    * CreatedAt - Sets the search criteria to DataSource creation date.
+//   - CreatedAt - Sets the search criteria to DataSource creation date.
 //
-//    * Status - Sets the search criteria to DataSource status.
+//   - Status - Sets the search criteria to DataSource status.
 //
-//    * Name - Sets the search criteria to the contents of DataSource Name.
+//   - Name - Sets the search criteria to the contents of DataSource Name.
 //
-//    * DataUri - Sets the search criteria to the URI of data files used to
-//    create the DataSource. The URI can identify either a file or an Amazon
-//    Simple Storage Service (Amazon S3) bucket or directory.
+//   - DataUri - Sets the search criteria to the URI of data files used to
+//     create the DataSource. The URI can identify either a file or an Amazon
+//     Simple Storage Service (Amazon S3) bucket or directory.
 //
-//    * IAMUser - Sets the search criteria to the user account that invoked
-//    the DataSource creation.
+//   - IAMUser - Sets the search criteria to the user account that invoked
+//     the DataSource creation.
 //
 // Note: The variable names should match the variable names in the DataSource.
 const (
@@ -9995,9 +9972,9 @@ func DataSourceFilterVariable_Values() []string {
 
 // Contains the key values of DetailsMap:
 //
-//    * PredictiveModelType - Indicates the type of the MLModel.
+//   - PredictiveModelType - Indicates the type of the MLModel.
 //
-//    * Algorithm - Indicates the algorithm that was used for the MLModel.
+//   - Algorithm - Indicates the algorithm that was used for the MLModel.
 const (
 	// DetailsAttributesPredictiveModelType is a DetailsAttributes enum value
 	DetailsAttributesPredictiveModelType = "PredictiveModelType"
@@ -10016,15 +9993,15 @@ func DetailsAttributes_Values() []string {
 
 // Object status with the following possible values:
 //
-//    * PENDING
+//   - PENDING
 //
-//    * INPROGRESS
+//   - INPROGRESS
 //
-//    * FAILED
+//   - FAILED
 //
-//    * COMPLETED
+//   - COMPLETED
 //
-//    * DELETED
+//   - DELETED
 const (
 	// EntityStatusPending is a EntityStatus enum value
 	EntityStatusPending = "PENDING"
@@ -10055,22 +10032,22 @@ func EntityStatus_Values() []string {
 
 // A list of the variables to use in searching or filtering Evaluation.
 //
-//    * CreatedAt - Sets the search criteria to Evaluation creation date.
+//   - CreatedAt - Sets the search criteria to Evaluation creation date.
 //
-//    * Status - Sets the search criteria to Evaluation status.
+//   - Status - Sets the search criteria to Evaluation status.
 //
-//    * Name - Sets the search criteria to the contents of Evaluation Name.
+//   - Name - Sets the search criteria to the contents of Evaluation Name.
 //
-//    * IAMUser - Sets the search criteria to the user account that invoked
-//    an evaluation.
+//   - IAMUser - Sets the search criteria to the user account that invoked
+//     an evaluation.
 //
-//    * MLModelId - Sets the search criteria to the Predictor that was evaluated.
+//   - MLModelId - Sets the search criteria to the Predictor that was evaluated.
 //
-//    * DataSourceId - Sets the search criteria to the DataSource used in evaluation.
+//   - DataSourceId - Sets the search criteria to the DataSource used in evaluation.
 //
-//    * DataUri - Sets the search criteria to the data file(s) used in evaluation.
-//    The URL can identify either a file or an Amazon Simple Storage Service
-//    (Amazon S3) bucket or directory.
+//   - DataUri - Sets the search criteria to the data file(s) used in evaluation.
+//     The URL can identify either a file or an Amazon Simple Storage Service
+//     (Amazon S3) bucket or directory.
 const (
 	// EvaluationFilterVariableCreatedAt is a EvaluationFilterVariable enum value
 	EvaluationFilterVariableCreatedAt = "CreatedAt"
@@ -10206,9 +10183,9 @@ func RealtimeEndpointStatus_Values() []string {
 // The sort order specified in a listing condition. Possible values include
 // the following:
 //
-//    * asc - Present the information in ascending order (from A-Z).
+//   - asc - Present the information in ascending order (from A-Z).
 //
-//    * dsc - Present the information in descending order (from Z-A).
+//   - dsc - Present the information in descending order (from Z-A).
 const (
 	// SortOrderAsc is a SortOrder enum value
 	SortOrderAsc = "asc"

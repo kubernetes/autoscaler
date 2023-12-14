@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Recycle Bin.
-//    func myFunc(svc recyclebiniface.RecycleBinAPI) bool {
-//        // Make svc.CreateRule request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Recycle Bin.
+//	func myFunc(svc recyclebiniface.RecycleBinAPI) bool {
+//	    // Make svc.CreateRule request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := recyclebin.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := recyclebin.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockRecycleBinClient struct {
-//        recyclebiniface.RecycleBinAPI
-//    }
-//    func (m *mockRecycleBinClient) CreateRule(input *recyclebin.CreateRuleInput) (*recyclebin.CreateRuleOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockRecycleBinClient struct {
+//	    recyclebiniface.RecycleBinAPI
+//	}
+//	func (m *mockRecycleBinClient) CreateRule(input *recyclebin.CreateRuleInput) (*recyclebin.CreateRuleOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockRecycleBinClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockRecycleBinClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -83,9 +83,17 @@ type RecycleBinAPI interface {
 	ListTagsForResourceWithContext(aws.Context, *recyclebin.ListTagsForResourceInput, ...request.Option) (*recyclebin.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*recyclebin.ListTagsForResourceInput) (*request.Request, *recyclebin.ListTagsForResourceOutput)
 
+	LockRule(*recyclebin.LockRuleInput) (*recyclebin.LockRuleOutput, error)
+	LockRuleWithContext(aws.Context, *recyclebin.LockRuleInput, ...request.Option) (*recyclebin.LockRuleOutput, error)
+	LockRuleRequest(*recyclebin.LockRuleInput) (*request.Request, *recyclebin.LockRuleOutput)
+
 	TagResource(*recyclebin.TagResourceInput) (*recyclebin.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *recyclebin.TagResourceInput, ...request.Option) (*recyclebin.TagResourceOutput, error)
 	TagResourceRequest(*recyclebin.TagResourceInput) (*request.Request, *recyclebin.TagResourceOutput)
+
+	UnlockRule(*recyclebin.UnlockRuleInput) (*recyclebin.UnlockRuleOutput, error)
+	UnlockRuleWithContext(aws.Context, *recyclebin.UnlockRuleInput, ...request.Option) (*recyclebin.UnlockRuleOutput, error)
+	UnlockRuleRequest(*recyclebin.UnlockRuleInput) (*request.Request, *recyclebin.UnlockRuleOutput)
 
 	UntagResource(*recyclebin.UntagResourceInput) (*recyclebin.UntagResourceOutput, error)
 	UntagResourceWithContext(aws.Context, *recyclebin.UntagResourceInput, ...request.Option) (*recyclebin.UntagResourceOutput, error)

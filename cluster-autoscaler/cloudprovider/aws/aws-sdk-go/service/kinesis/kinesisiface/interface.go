@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Kinesis.
-//    func myFunc(svc kinesisiface.KinesisAPI) bool {
-//        // Make svc.AddTagsToStream request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Kinesis.
+//	func myFunc(svc kinesisiface.KinesisAPI) bool {
+//	    // Make svc.AddTagsToStream request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := kinesis.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := kinesis.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockKinesisClient struct {
-//        kinesisiface.KinesisAPI
-//    }
-//    func (m *mockKinesisClient) AddTagsToStream(input *kinesis.AddTagsToStreamInput) (*kinesis.AddTagsToStreamOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockKinesisClient struct {
+//	    kinesisiface.KinesisAPI
+//	}
+//	func (m *mockKinesisClient) AddTagsToStream(input *kinesis.AddTagsToStreamInput) (*kinesis.AddTagsToStreamOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockKinesisClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockKinesisClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -71,6 +71,10 @@ type KinesisAPI interface {
 	DecreaseStreamRetentionPeriod(*kinesis.DecreaseStreamRetentionPeriodInput) (*kinesis.DecreaseStreamRetentionPeriodOutput, error)
 	DecreaseStreamRetentionPeriodWithContext(aws.Context, *kinesis.DecreaseStreamRetentionPeriodInput, ...request.Option) (*kinesis.DecreaseStreamRetentionPeriodOutput, error)
 	DecreaseStreamRetentionPeriodRequest(*kinesis.DecreaseStreamRetentionPeriodInput) (*request.Request, *kinesis.DecreaseStreamRetentionPeriodOutput)
+
+	DeleteResourcePolicy(*kinesis.DeleteResourcePolicyInput) (*kinesis.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(aws.Context, *kinesis.DeleteResourcePolicyInput, ...request.Option) (*kinesis.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(*kinesis.DeleteResourcePolicyInput) (*request.Request, *kinesis.DeleteResourcePolicyOutput)
 
 	DeleteStream(*kinesis.DeleteStreamInput) (*kinesis.DeleteStreamOutput, error)
 	DeleteStreamWithContext(aws.Context, *kinesis.DeleteStreamInput, ...request.Option) (*kinesis.DeleteStreamOutput, error)
@@ -110,6 +114,10 @@ type KinesisAPI interface {
 	GetRecords(*kinesis.GetRecordsInput) (*kinesis.GetRecordsOutput, error)
 	GetRecordsWithContext(aws.Context, *kinesis.GetRecordsInput, ...request.Option) (*kinesis.GetRecordsOutput, error)
 	GetRecordsRequest(*kinesis.GetRecordsInput) (*request.Request, *kinesis.GetRecordsOutput)
+
+	GetResourcePolicy(*kinesis.GetResourcePolicyInput) (*kinesis.GetResourcePolicyOutput, error)
+	GetResourcePolicyWithContext(aws.Context, *kinesis.GetResourcePolicyInput, ...request.Option) (*kinesis.GetResourcePolicyOutput, error)
+	GetResourcePolicyRequest(*kinesis.GetResourcePolicyInput) (*request.Request, *kinesis.GetResourcePolicyOutput)
 
 	GetShardIterator(*kinesis.GetShardIteratorInput) (*kinesis.GetShardIteratorOutput, error)
 	GetShardIteratorWithContext(aws.Context, *kinesis.GetShardIteratorInput, ...request.Option) (*kinesis.GetShardIteratorOutput, error)
@@ -152,6 +160,10 @@ type KinesisAPI interface {
 	PutRecords(*kinesis.PutRecordsInput) (*kinesis.PutRecordsOutput, error)
 	PutRecordsWithContext(aws.Context, *kinesis.PutRecordsInput, ...request.Option) (*kinesis.PutRecordsOutput, error)
 	PutRecordsRequest(*kinesis.PutRecordsInput) (*request.Request, *kinesis.PutRecordsOutput)
+
+	PutResourcePolicy(*kinesis.PutResourcePolicyInput) (*kinesis.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(aws.Context, *kinesis.PutResourcePolicyInput, ...request.Option) (*kinesis.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(*kinesis.PutResourcePolicyInput) (*request.Request, *kinesis.PutResourcePolicyOutput)
 
 	RegisterStreamConsumer(*kinesis.RegisterStreamConsumerInput) (*kinesis.RegisterStreamConsumerOutput, error)
 	RegisterStreamConsumerWithContext(aws.Context, *kinesis.RegisterStreamConsumerInput, ...request.Option) (*kinesis.RegisterStreamConsumerOutput, error)

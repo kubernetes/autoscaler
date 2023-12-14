@@ -28,14 +28,13 @@ const opConfigureLogs = "ConfigureLogs"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ConfigureLogsRequest method.
+//	req, resp := client.ConfigureLogsRequest(params)
 //
-//    // Example sending a request using the ConfigureLogsRequest method.
-//    req, resp := client.ConfigureLogsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ConfigureLogs
 func (c *MediaPackageVod) ConfigureLogsRequest(input *ConfigureLogsInput) (req *request.Request, output *ConfigureLogsOutput) {
@@ -56,7 +55,7 @@ func (c *MediaPackageVod) ConfigureLogsRequest(input *ConfigureLogsInput) (req *
 
 // ConfigureLogs API operation for AWS Elemental MediaPackage VOD.
 //
-// Changes the packaging group's properities to configure log subscription
+// # Changes the packaging group's properities to configure log subscription
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -66,17 +65,18 @@ func (c *MediaPackageVod) ConfigureLogsRequest(input *ConfigureLogsInput) (req *
 // API operation ConfigureLogs for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ConfigureLogs
 func (c *MediaPackageVod) ConfigureLogs(input *ConfigureLogsInput) (*ConfigureLogsOutput, error) {
@@ -116,14 +116,13 @@ const opCreateAsset = "CreateAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateAssetRequest method.
+//	req, resp := client.CreateAssetRequest(params)
 //
-//    // Example sending a request using the CreateAssetRequest method.
-//    req, resp := client.CreateAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/CreateAsset
 func (c *MediaPackageVod) CreateAssetRequest(input *CreateAssetInput) (req *request.Request, output *CreateAssetOutput) {
@@ -154,17 +153,18 @@ func (c *MediaPackageVod) CreateAssetRequest(input *CreateAssetInput) (req *requ
 // API operation CreateAsset for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/CreateAsset
 func (c *MediaPackageVod) CreateAsset(input *CreateAssetInput) (*CreateAssetOutput, error) {
@@ -204,14 +204,13 @@ const opCreatePackagingConfiguration = "CreatePackagingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePackagingConfigurationRequest method.
+//	req, resp := client.CreatePackagingConfigurationRequest(params)
 //
-//    // Example sending a request using the CreatePackagingConfigurationRequest method.
-//    req, resp := client.CreatePackagingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/CreatePackagingConfiguration
 func (c *MediaPackageVod) CreatePackagingConfigurationRequest(input *CreatePackagingConfigurationInput) (req *request.Request, output *CreatePackagingConfigurationOutput) {
@@ -242,17 +241,18 @@ func (c *MediaPackageVod) CreatePackagingConfigurationRequest(input *CreatePacka
 // API operation CreatePackagingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/CreatePackagingConfiguration
 func (c *MediaPackageVod) CreatePackagingConfiguration(input *CreatePackagingConfigurationInput) (*CreatePackagingConfigurationOutput, error) {
@@ -292,14 +292,13 @@ const opCreatePackagingGroup = "CreatePackagingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePackagingGroupRequest method.
+//	req, resp := client.CreatePackagingGroupRequest(params)
 //
-//    // Example sending a request using the CreatePackagingGroupRequest method.
-//    req, resp := client.CreatePackagingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/CreatePackagingGroup
 func (c *MediaPackageVod) CreatePackagingGroupRequest(input *CreatePackagingGroupInput) (req *request.Request, output *CreatePackagingGroupOutput) {
@@ -330,17 +329,18 @@ func (c *MediaPackageVod) CreatePackagingGroupRequest(input *CreatePackagingGrou
 // API operation CreatePackagingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/CreatePackagingGroup
 func (c *MediaPackageVod) CreatePackagingGroup(input *CreatePackagingGroupInput) (*CreatePackagingGroupOutput, error) {
@@ -380,14 +380,13 @@ const opDeleteAsset = "DeleteAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteAssetRequest method.
+//	req, resp := client.DeleteAssetRequest(params)
 //
-//    // Example sending a request using the DeleteAssetRequest method.
-//    req, resp := client.DeleteAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DeleteAsset
 func (c *MediaPackageVod) DeleteAssetRequest(input *DeleteAssetInput) (req *request.Request, output *DeleteAssetOutput) {
@@ -419,17 +418,18 @@ func (c *MediaPackageVod) DeleteAssetRequest(input *DeleteAssetInput) (req *requ
 // API operation DeleteAsset for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DeleteAsset
 func (c *MediaPackageVod) DeleteAsset(input *DeleteAssetInput) (*DeleteAssetOutput, error) {
@@ -469,14 +469,13 @@ const opDeletePackagingConfiguration = "DeletePackagingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePackagingConfigurationRequest method.
+//	req, resp := client.DeletePackagingConfigurationRequest(params)
 //
-//    // Example sending a request using the DeletePackagingConfigurationRequest method.
-//    req, resp := client.DeletePackagingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DeletePackagingConfiguration
 func (c *MediaPackageVod) DeletePackagingConfigurationRequest(input *DeletePackagingConfigurationInput) (req *request.Request, output *DeletePackagingConfigurationOutput) {
@@ -508,17 +507,18 @@ func (c *MediaPackageVod) DeletePackagingConfigurationRequest(input *DeletePacka
 // API operation DeletePackagingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DeletePackagingConfiguration
 func (c *MediaPackageVod) DeletePackagingConfiguration(input *DeletePackagingConfigurationInput) (*DeletePackagingConfigurationOutput, error) {
@@ -558,14 +558,13 @@ const opDeletePackagingGroup = "DeletePackagingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePackagingGroupRequest method.
+//	req, resp := client.DeletePackagingGroupRequest(params)
 //
-//    // Example sending a request using the DeletePackagingGroupRequest method.
-//    req, resp := client.DeletePackagingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DeletePackagingGroup
 func (c *MediaPackageVod) DeletePackagingGroupRequest(input *DeletePackagingGroupInput) (req *request.Request, output *DeletePackagingGroupOutput) {
@@ -597,17 +596,18 @@ func (c *MediaPackageVod) DeletePackagingGroupRequest(input *DeletePackagingGrou
 // API operation DeletePackagingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DeletePackagingGroup
 func (c *MediaPackageVod) DeletePackagingGroup(input *DeletePackagingGroupInput) (*DeletePackagingGroupOutput, error) {
@@ -647,14 +647,13 @@ const opDescribeAsset = "DescribeAsset"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribeAssetRequest method.
+//	req, resp := client.DescribeAssetRequest(params)
 //
-//    // Example sending a request using the DescribeAssetRequest method.
-//    req, resp := client.DescribeAssetRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DescribeAsset
 func (c *MediaPackageVod) DescribeAssetRequest(input *DescribeAssetInput) (req *request.Request, output *DescribeAssetOutput) {
@@ -685,17 +684,18 @@ func (c *MediaPackageVod) DescribeAssetRequest(input *DescribeAssetInput) (req *
 // API operation DescribeAsset for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DescribeAsset
 func (c *MediaPackageVod) DescribeAsset(input *DescribeAssetInput) (*DescribeAssetOutput, error) {
@@ -735,14 +735,13 @@ const opDescribePackagingConfiguration = "DescribePackagingConfiguration"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackagingConfigurationRequest method.
+//	req, resp := client.DescribePackagingConfigurationRequest(params)
 //
-//    // Example sending a request using the DescribePackagingConfigurationRequest method.
-//    req, resp := client.DescribePackagingConfigurationRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DescribePackagingConfiguration
 func (c *MediaPackageVod) DescribePackagingConfigurationRequest(input *DescribePackagingConfigurationInput) (req *request.Request, output *DescribePackagingConfigurationOutput) {
@@ -773,17 +772,18 @@ func (c *MediaPackageVod) DescribePackagingConfigurationRequest(input *DescribeP
 // API operation DescribePackagingConfiguration for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DescribePackagingConfiguration
 func (c *MediaPackageVod) DescribePackagingConfiguration(input *DescribePackagingConfigurationInput) (*DescribePackagingConfigurationOutput, error) {
@@ -823,14 +823,13 @@ const opDescribePackagingGroup = "DescribePackagingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DescribePackagingGroupRequest method.
+//	req, resp := client.DescribePackagingGroupRequest(params)
 //
-//    // Example sending a request using the DescribePackagingGroupRequest method.
-//    req, resp := client.DescribePackagingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DescribePackagingGroup
 func (c *MediaPackageVod) DescribePackagingGroupRequest(input *DescribePackagingGroupInput) (req *request.Request, output *DescribePackagingGroupOutput) {
@@ -861,17 +860,18 @@ func (c *MediaPackageVod) DescribePackagingGroupRequest(input *DescribePackaging
 // API operation DescribePackagingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/DescribePackagingGroup
 func (c *MediaPackageVod) DescribePackagingGroup(input *DescribePackagingGroupInput) (*DescribePackagingGroupOutput, error) {
@@ -911,14 +911,13 @@ const opListAssets = "ListAssets"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListAssetsRequest method.
+//	req, resp := client.ListAssetsRequest(params)
 //
-//    // Example sending a request using the ListAssetsRequest method.
-//    req, resp := client.ListAssetsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListAssets
 func (c *MediaPackageVod) ListAssetsRequest(input *ListAssetsInput) (req *request.Request, output *ListAssetsOutput) {
@@ -955,17 +954,18 @@ func (c *MediaPackageVod) ListAssetsRequest(input *ListAssetsInput) (req *reques
 // API operation ListAssets for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListAssets
 func (c *MediaPackageVod) ListAssets(input *ListAssetsInput) (*ListAssetsOutput, error) {
@@ -997,15 +997,14 @@ func (c *MediaPackageVod) ListAssetsWithContext(ctx aws.Context, input *ListAsse
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListAssets operation.
-//    pageNum := 0
-//    err := client.ListAssetsPages(params,
-//        func(page *mediapackagevod.ListAssetsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListAssets operation.
+//	pageNum := 0
+//	err := client.ListAssetsPages(params,
+//	    func(page *mediapackagevod.ListAssetsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaPackageVod) ListAssetsPages(input *ListAssetsInput, fn func(*ListAssetsOutput, bool) bool) error {
 	return c.ListAssetsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1057,14 +1056,13 @@ const opListPackagingConfigurations = "ListPackagingConfigurations"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackagingConfigurationsRequest method.
+//	req, resp := client.ListPackagingConfigurationsRequest(params)
 //
-//    // Example sending a request using the ListPackagingConfigurationsRequest method.
-//    req, resp := client.ListPackagingConfigurationsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListPackagingConfigurations
 func (c *MediaPackageVod) ListPackagingConfigurationsRequest(input *ListPackagingConfigurationsInput) (req *request.Request, output *ListPackagingConfigurationsOutput) {
@@ -1101,17 +1099,18 @@ func (c *MediaPackageVod) ListPackagingConfigurationsRequest(input *ListPackagin
 // API operation ListPackagingConfigurations for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListPackagingConfigurations
 func (c *MediaPackageVod) ListPackagingConfigurations(input *ListPackagingConfigurationsInput) (*ListPackagingConfigurationsOutput, error) {
@@ -1143,15 +1142,14 @@ func (c *MediaPackageVod) ListPackagingConfigurationsWithContext(ctx aws.Context
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackagingConfigurations operation.
-//    pageNum := 0
-//    err := client.ListPackagingConfigurationsPages(params,
-//        func(page *mediapackagevod.ListPackagingConfigurationsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackagingConfigurations operation.
+//	pageNum := 0
+//	err := client.ListPackagingConfigurationsPages(params,
+//	    func(page *mediapackagevod.ListPackagingConfigurationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaPackageVod) ListPackagingConfigurationsPages(input *ListPackagingConfigurationsInput, fn func(*ListPackagingConfigurationsOutput, bool) bool) error {
 	return c.ListPackagingConfigurationsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1203,14 +1201,13 @@ const opListPackagingGroups = "ListPackagingGroups"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPackagingGroupsRequest method.
+//	req, resp := client.ListPackagingGroupsRequest(params)
 //
-//    // Example sending a request using the ListPackagingGroupsRequest method.
-//    req, resp := client.ListPackagingGroupsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListPackagingGroups
 func (c *MediaPackageVod) ListPackagingGroupsRequest(input *ListPackagingGroupsInput) (req *request.Request, output *ListPackagingGroupsOutput) {
@@ -1247,17 +1244,18 @@ func (c *MediaPackageVod) ListPackagingGroupsRequest(input *ListPackagingGroupsI
 // API operation ListPackagingGroups for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListPackagingGroups
 func (c *MediaPackageVod) ListPackagingGroups(input *ListPackagingGroupsInput) (*ListPackagingGroupsOutput, error) {
@@ -1289,15 +1287,14 @@ func (c *MediaPackageVod) ListPackagingGroupsWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPackagingGroups operation.
-//    pageNum := 0
-//    err := client.ListPackagingGroupsPages(params,
-//        func(page *mediapackagevod.ListPackagingGroupsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPackagingGroups operation.
+//	pageNum := 0
+//	err := client.ListPackagingGroupsPages(params,
+//	    func(page *mediapackagevod.ListPackagingGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *MediaPackageVod) ListPackagingGroupsPages(input *ListPackagingGroupsInput, fn func(*ListPackagingGroupsOutput, bool) bool) error {
 	return c.ListPackagingGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -1349,14 +1346,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/ListTagsForResource
 func (c *MediaPackageVod) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -1423,14 +1419,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/TagResource
 func (c *MediaPackageVod) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -1499,14 +1494,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/UntagResource
 func (c *MediaPackageVod) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -1575,14 +1569,13 @@ const opUpdatePackagingGroup = "UpdatePackagingGroup"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePackagingGroupRequest method.
+//	req, resp := client.UpdatePackagingGroupRequest(params)
 //
-//    // Example sending a request using the UpdatePackagingGroupRequest method.
-//    req, resp := client.UpdatePackagingGroupRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/UpdatePackagingGroup
 func (c *MediaPackageVod) UpdatePackagingGroupRequest(input *UpdatePackagingGroupInput) (req *request.Request, output *UpdatePackagingGroupOutput) {
@@ -1614,17 +1607,18 @@ func (c *MediaPackageVod) UpdatePackagingGroupRequest(input *UpdatePackagingGrou
 // API operation UpdatePackagingGroup for usage and error information.
 //
 // Returned Error Types:
-//   * UnprocessableEntityException
 //
-//   * InternalServerErrorException
+//   - UnprocessableEntityException
 //
-//   * ForbiddenException
+//   - InternalServerErrorException
 //
-//   * NotFoundException
+//   - ForbiddenException
 //
-//   * ServiceUnavailableException
+//   - NotFoundException
 //
-//   * TooManyRequestsException
+//   - ServiceUnavailableException
+//
+//   - TooManyRequestsException
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/mediapackage-vod-2018-11-07/UpdatePackagingGroup
 func (c *MediaPackageVod) UpdatePackagingGroup(input *UpdatePackagingGroupInput) (*UpdatePackagingGroupOutput, error) {
@@ -2018,6 +2012,8 @@ type ConfigureLogsOutput struct {
 	// CDN Authorization credentials
 	Authorization *Authorization `locationName:"authorization" type:"structure"`
 
+	CreatedAt *string `locationName:"createdAt" type:"string"`
+
 	DomainName *string `locationName:"domainName" type:"string"`
 
 	// Configure egress access logging.
@@ -2056,6 +2052,12 @@ func (s *ConfigureLogsOutput) SetArn(v string) *ConfigureLogsOutput {
 // SetAuthorization sets the Authorization field's value.
 func (s *ConfigureLogsOutput) SetAuthorization(v *Authorization) *ConfigureLogsOutput {
 	s.Authorization = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *ConfigureLogsOutput) SetCreatedAt(v string) *ConfigureLogsOutput {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -2404,6 +2406,8 @@ type CreatePackagingConfigurationOutput struct {
 	// A CMAF packaging configuration.
 	CmafPackage *CmafPackage `locationName:"cmafPackage" type:"structure"`
 
+	CreatedAt *string `locationName:"createdAt" type:"string"`
+
 	// A Dynamic Adaptive Streaming over HTTP (DASH) packaging configuration.
 	DashPackage *DashPackage `locationName:"dashPackage" type:"structure"`
 
@@ -2448,6 +2452,12 @@ func (s *CreatePackagingConfigurationOutput) SetArn(v string) *CreatePackagingCo
 // SetCmafPackage sets the CmafPackage field's value.
 func (s *CreatePackagingConfigurationOutput) SetCmafPackage(v *CmafPackage) *CreatePackagingConfigurationOutput {
 	s.CmafPackage = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CreatePackagingConfigurationOutput) SetCreatedAt(v string) *CreatePackagingConfigurationOutput {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -2571,6 +2581,8 @@ type CreatePackagingGroupOutput struct {
 	// CDN Authorization credentials
 	Authorization *Authorization `locationName:"authorization" type:"structure"`
 
+	CreatedAt *string `locationName:"createdAt" type:"string"`
+
 	DomainName *string `locationName:"domainName" type:"string"`
 
 	// Configure egress access logging.
@@ -2609,6 +2621,12 @@ func (s *CreatePackagingGroupOutput) SetArn(v string) *CreatePackagingGroupOutpu
 // SetAuthorization sets the Authorization field's value.
 func (s *CreatePackagingGroupOutput) SetAuthorization(v *Authorization) *CreatePackagingGroupOutput {
 	s.Authorization = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *CreatePackagingGroupOutput) SetCreatedAt(v string) *CreatePackagingGroupOutput {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -2792,6 +2810,9 @@ type DashPackage struct {
 	// your assets during content playback.
 	IncludeEncoderConfigurationInSegments *bool `locationName:"includeEncoderConfigurationInSegments" type:"boolean"`
 
+	// When enabled, an I-Frame only stream will be included in the output.
+	IncludeIframeOnlyStream *bool `locationName:"includeIframeOnlyStream" type:"boolean"`
+
 	// A list of triggers that controls when the outgoing Dynamic Adaptive Streaming
 	// over HTTP (DASH)Media Presentation Description (MPD) will be partitioned
 	// into multiple periods. If empty, the content will notbe partitioned into
@@ -2863,6 +2884,12 @@ func (s *DashPackage) SetEncryption(v *DashEncryption) *DashPackage {
 // SetIncludeEncoderConfigurationInSegments sets the IncludeEncoderConfigurationInSegments field's value.
 func (s *DashPackage) SetIncludeEncoderConfigurationInSegments(v bool) *DashPackage {
 	s.IncludeEncoderConfigurationInSegments = &v
+	return s
+}
+
+// SetIncludeIframeOnlyStream sets the IncludeIframeOnlyStream field's value.
+func (s *DashPackage) SetIncludeIframeOnlyStream(v bool) *DashPackage {
+	s.IncludeIframeOnlyStream = &v
 	return s
 }
 
@@ -3288,6 +3315,8 @@ type DescribePackagingConfigurationOutput struct {
 	// A CMAF packaging configuration.
 	CmafPackage *CmafPackage `locationName:"cmafPackage" type:"structure"`
 
+	CreatedAt *string `locationName:"createdAt" type:"string"`
+
 	// A Dynamic Adaptive Streaming over HTTP (DASH) packaging configuration.
 	DashPackage *DashPackage `locationName:"dashPackage" type:"structure"`
 
@@ -3332,6 +3361,12 @@ func (s *DescribePackagingConfigurationOutput) SetArn(v string) *DescribePackagi
 // SetCmafPackage sets the CmafPackage field's value.
 func (s *DescribePackagingConfigurationOutput) SetCmafPackage(v *CmafPackage) *DescribePackagingConfigurationOutput {
 	s.CmafPackage = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *DescribePackagingConfigurationOutput) SetCreatedAt(v string) *DescribePackagingConfigurationOutput {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -3421,10 +3456,14 @@ func (s *DescribePackagingGroupInput) SetId(v string) *DescribePackagingGroupInp
 type DescribePackagingGroupOutput struct {
 	_ struct{} `type:"structure"`
 
+	ApproximateAssetCount *int64 `locationName:"approximateAssetCount" type:"integer"`
+
 	Arn *string `locationName:"arn" type:"string"`
 
 	// CDN Authorization credentials
 	Authorization *Authorization `locationName:"authorization" type:"structure"`
+
+	CreatedAt *string `locationName:"createdAt" type:"string"`
 
 	DomainName *string `locationName:"domainName" type:"string"`
 
@@ -3455,6 +3494,12 @@ func (s DescribePackagingGroupOutput) GoString() string {
 	return s.String()
 }
 
+// SetApproximateAssetCount sets the ApproximateAssetCount field's value.
+func (s *DescribePackagingGroupOutput) SetApproximateAssetCount(v int64) *DescribePackagingGroupOutput {
+	s.ApproximateAssetCount = &v
+	return s
+}
+
 // SetArn sets the Arn field's value.
 func (s *DescribePackagingGroupOutput) SetArn(v string) *DescribePackagingGroupOutput {
 	s.Arn = &v
@@ -3464,6 +3509,12 @@ func (s *DescribePackagingGroupOutput) SetArn(v string) *DescribePackagingGroupO
 // SetAuthorization sets the Authorization field's value.
 func (s *DescribePackagingGroupOutput) SetAuthorization(v *Authorization) *DescribePackagingGroupOutput {
 	s.Authorization = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *DescribePackagingGroupOutput) SetCreatedAt(v string) *DescribePackagingGroupOutput {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -3572,6 +3623,74 @@ func (s *EgressEndpoint) SetStatus(v string) *EgressEndpoint {
 // SetUrl sets the Url field's value.
 func (s *EgressEndpoint) SetUrl(v string) *EgressEndpoint {
 	s.Url = &v
+	return s
+}
+
+// Use encryptionContractConfiguration to configure one or more content encryption
+// keys for your endpoints that use SPEKE 2.0. The encryption contract defines
+// which content keys are used to encrypt the audio and video tracks in your
+// stream. To configure the encryption contract, specify which audio and video
+// encryption presets to use.Note the following considerations when using encryptionContractConfiguration:encryptionContractConfiguration
+// can be used for DASH endpoints that use SPEKE 2.0. SPEKE 2.0 relies on the
+// CPIX 2.3 specification.You must disable key rotation for this endpoint by
+// setting keyRotationIntervalSeconds to 0.
+type EncryptionContractConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// A collection of audio encryption presets.
+	//
+	// PresetSpeke20Audio is a required field
+	PresetSpeke20Audio *string `locationName:"presetSpeke20Audio" type:"string" required:"true" enum:"PresetSpeke20Audio"`
+
+	// A collection of video encryption presets.
+	//
+	// PresetSpeke20Video is a required field
+	PresetSpeke20Video *string `locationName:"presetSpeke20Video" type:"string" required:"true" enum:"PresetSpeke20Video"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EncryptionContractConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s EncryptionContractConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *EncryptionContractConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "EncryptionContractConfiguration"}
+	if s.PresetSpeke20Audio == nil {
+		invalidParams.Add(request.NewErrParamRequired("PresetSpeke20Audio"))
+	}
+	if s.PresetSpeke20Video == nil {
+		invalidParams.Add(request.NewErrParamRequired("PresetSpeke20Video"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPresetSpeke20Audio sets the PresetSpeke20Audio field's value.
+func (s *EncryptionContractConfiguration) SetPresetSpeke20Audio(v string) *EncryptionContractConfiguration {
+	s.PresetSpeke20Audio = &v
+	return s
+}
+
+// SetPresetSpeke20Video sets the PresetSpeke20Video field's value.
+func (s *EncryptionContractConfiguration) SetPresetSpeke20Video(v string) *EncryptionContractConfiguration {
+	s.PresetSpeke20Video = &v
 	return s
 }
 
@@ -4548,6 +4667,9 @@ type PackagingConfiguration struct {
 	// A CMAF packaging configuration.
 	CmafPackage *CmafPackage `locationName:"cmafPackage" type:"structure"`
 
+	// The time the PackagingConfiguration was created.
+	CreatedAt *string `locationName:"createdAt" type:"string"`
+
 	// A Dynamic Adaptive Streaming over HTTP (DASH) packaging configuration.
 	DashPackage *DashPackage `locationName:"dashPackage" type:"structure"`
 
@@ -4597,6 +4719,12 @@ func (s *PackagingConfiguration) SetCmafPackage(v *CmafPackage) *PackagingConfig
 	return s
 }
 
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *PackagingConfiguration) SetCreatedAt(v string) *PackagingConfiguration {
+	s.CreatedAt = &v
+	return s
+}
+
 // SetDashPackage sets the DashPackage field's value.
 func (s *PackagingConfiguration) SetDashPackage(v *DashPackage) *PackagingConfiguration {
 	s.DashPackage = v
@@ -4637,11 +4765,17 @@ func (s *PackagingConfiguration) SetTags(v map[string]*string) *PackagingConfigu
 type PackagingGroup struct {
 	_ struct{} `type:"structure"`
 
+	// The approximate asset count of the PackagingGroup.
+	ApproximateAssetCount *int64 `locationName:"approximateAssetCount" type:"integer"`
+
 	// The ARN of the PackagingGroup.
 	Arn *string `locationName:"arn" type:"string"`
 
 	// CDN Authorization credentials
 	Authorization *Authorization `locationName:"authorization" type:"structure"`
+
+	// The time the PackagingGroup was created.
+	CreatedAt *string `locationName:"createdAt" type:"string"`
 
 	// The fully qualified domain name for Assets in the PackagingGroup.
 	DomainName *string `locationName:"domainName" type:"string"`
@@ -4674,6 +4808,12 @@ func (s PackagingGroup) GoString() string {
 	return s.String()
 }
 
+// SetApproximateAssetCount sets the ApproximateAssetCount field's value.
+func (s *PackagingGroup) SetApproximateAssetCount(v int64) *PackagingGroup {
+	s.ApproximateAssetCount = &v
+	return s
+}
+
 // SetArn sets the Arn field's value.
 func (s *PackagingGroup) SetArn(v string) *PackagingGroup {
 	s.Arn = &v
@@ -4683,6 +4823,12 @@ func (s *PackagingGroup) SetArn(v string) *PackagingGroup {
 // SetAuthorization sets the Authorization field's value.
 func (s *PackagingGroup) SetAuthorization(v *Authorization) *PackagingGroup {
 	s.Authorization = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *PackagingGroup) SetCreatedAt(v string) *PackagingGroup {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -4778,6 +4924,16 @@ func (s *ServiceUnavailableException) RequestID() string {
 type SpekeKeyProvider struct {
 	_ struct{} `type:"structure"`
 
+	// Use encryptionContractConfiguration to configure one or more content encryption
+	// keys for your endpoints that use SPEKE 2.0. The encryption contract defines
+	// which content keys are used to encrypt the audio and video tracks in your
+	// stream. To configure the encryption contract, specify which audio and video
+	// encryption presets to use.Note the following considerations when using encryptionContractConfiguration:encryptionContractConfiguration
+	// can be used for DASH endpoints that use SPEKE 2.0. SPEKE 2.0 relies on the
+	// CPIX 2.3 specification.You must disable key rotation for this endpoint by
+	// setting keyRotationIntervalSeconds to 0.
+	EncryptionContractConfiguration *EncryptionContractConfiguration `locationName:"encryptionContractConfiguration" type:"structure"`
+
 	// An Amazon Resource Name (ARN) of an IAM role that AWS ElementalMediaPackage
 	// will assume when accessing the key provider service.
 	//
@@ -4825,11 +4981,22 @@ func (s *SpekeKeyProvider) Validate() error {
 	if s.Url == nil {
 		invalidParams.Add(request.NewErrParamRequired("Url"))
 	}
+	if s.EncryptionContractConfiguration != nil {
+		if err := s.EncryptionContractConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("EncryptionContractConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetEncryptionContractConfiguration sets the EncryptionContractConfiguration field's value.
+func (s *SpekeKeyProvider) SetEncryptionContractConfiguration(v *EncryptionContractConfiguration) *SpekeKeyProvider {
+	s.EncryptionContractConfiguration = v
+	return s
 }
 
 // SetRoleArn sets the RoleArn field's value.
@@ -5252,10 +5419,14 @@ func (s *UpdatePackagingGroupInput) SetId(v string) *UpdatePackagingGroupInput {
 type UpdatePackagingGroupOutput struct {
 	_ struct{} `type:"structure"`
 
+	ApproximateAssetCount *int64 `locationName:"approximateAssetCount" type:"integer"`
+
 	Arn *string `locationName:"arn" type:"string"`
 
 	// CDN Authorization credentials
 	Authorization *Authorization `locationName:"authorization" type:"structure"`
+
+	CreatedAt *string `locationName:"createdAt" type:"string"`
 
 	DomainName *string `locationName:"domainName" type:"string"`
 
@@ -5286,6 +5457,12 @@ func (s UpdatePackagingGroupOutput) GoString() string {
 	return s.String()
 }
 
+// SetApproximateAssetCount sets the ApproximateAssetCount field's value.
+func (s *UpdatePackagingGroupOutput) SetApproximateAssetCount(v int64) *UpdatePackagingGroupOutput {
+	s.ApproximateAssetCount = &v
+	return s
+}
+
 // SetArn sets the Arn field's value.
 func (s *UpdatePackagingGroupOutput) SetArn(v string) *UpdatePackagingGroupOutput {
 	s.Arn = &v
@@ -5295,6 +5472,12 @@ func (s *UpdatePackagingGroupOutput) SetArn(v string) *UpdatePackagingGroupOutpu
 // SetAuthorization sets the Authorization field's value.
 func (s *UpdatePackagingGroupOutput) SetAuthorization(v *Authorization) *UpdatePackagingGroupOutput {
 	s.Authorization = v
+	return s
+}
+
+// SetCreatedAt sets the CreatedAt field's value.
+func (s *UpdatePackagingGroupOutput) SetCreatedAt(v string) *UpdatePackagingGroupOutput {
+	s.CreatedAt = &v
 	return s
 }
 
@@ -5383,6 +5566,82 @@ const (
 func PeriodTriggersElement_Values() []string {
 	return []string{
 		PeriodTriggersElementAds,
+	}
+}
+
+const (
+	// PresetSpeke20AudioPresetAudio1 is a PresetSpeke20Audio enum value
+	PresetSpeke20AudioPresetAudio1 = "PRESET-AUDIO-1"
+
+	// PresetSpeke20AudioPresetAudio2 is a PresetSpeke20Audio enum value
+	PresetSpeke20AudioPresetAudio2 = "PRESET-AUDIO-2"
+
+	// PresetSpeke20AudioPresetAudio3 is a PresetSpeke20Audio enum value
+	PresetSpeke20AudioPresetAudio3 = "PRESET-AUDIO-3"
+
+	// PresetSpeke20AudioShared is a PresetSpeke20Audio enum value
+	PresetSpeke20AudioShared = "SHARED"
+
+	// PresetSpeke20AudioUnencrypted is a PresetSpeke20Audio enum value
+	PresetSpeke20AudioUnencrypted = "UNENCRYPTED"
+)
+
+// PresetSpeke20Audio_Values returns all elements of the PresetSpeke20Audio enum
+func PresetSpeke20Audio_Values() []string {
+	return []string{
+		PresetSpeke20AudioPresetAudio1,
+		PresetSpeke20AudioPresetAudio2,
+		PresetSpeke20AudioPresetAudio3,
+		PresetSpeke20AudioShared,
+		PresetSpeke20AudioUnencrypted,
+	}
+}
+
+const (
+	// PresetSpeke20VideoPresetVideo1 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo1 = "PRESET-VIDEO-1"
+
+	// PresetSpeke20VideoPresetVideo2 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo2 = "PRESET-VIDEO-2"
+
+	// PresetSpeke20VideoPresetVideo3 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo3 = "PRESET-VIDEO-3"
+
+	// PresetSpeke20VideoPresetVideo4 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo4 = "PRESET-VIDEO-4"
+
+	// PresetSpeke20VideoPresetVideo5 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo5 = "PRESET-VIDEO-5"
+
+	// PresetSpeke20VideoPresetVideo6 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo6 = "PRESET-VIDEO-6"
+
+	// PresetSpeke20VideoPresetVideo7 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo7 = "PRESET-VIDEO-7"
+
+	// PresetSpeke20VideoPresetVideo8 is a PresetSpeke20Video enum value
+	PresetSpeke20VideoPresetVideo8 = "PRESET-VIDEO-8"
+
+	// PresetSpeke20VideoShared is a PresetSpeke20Video enum value
+	PresetSpeke20VideoShared = "SHARED"
+
+	// PresetSpeke20VideoUnencrypted is a PresetSpeke20Video enum value
+	PresetSpeke20VideoUnencrypted = "UNENCRYPTED"
+)
+
+// PresetSpeke20Video_Values returns all elements of the PresetSpeke20Video enum
+func PresetSpeke20Video_Values() []string {
+	return []string{
+		PresetSpeke20VideoPresetVideo1,
+		PresetSpeke20VideoPresetVideo2,
+		PresetSpeke20VideoPresetVideo3,
+		PresetSpeke20VideoPresetVideo4,
+		PresetSpeke20VideoPresetVideo5,
+		PresetSpeke20VideoPresetVideo6,
+		PresetSpeke20VideoPresetVideo7,
+		PresetSpeke20VideoPresetVideo8,
+		PresetSpeke20VideoShared,
+		PresetSpeke20VideoUnencrypted,
 	}
 }
 

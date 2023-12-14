@@ -23,43 +23,47 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Personalize Runtime.
-//    func myFunc(svc personalizeruntimeiface.PersonalizeRuntimeAPI) bool {
-//        // Make svc.GetPersonalizedRanking request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Personalize Runtime.
+//	func myFunc(svc personalizeruntimeiface.PersonalizeRuntimeAPI) bool {
+//	    // Make svc.GetActionRecommendations request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := personalizeruntime.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := personalizeruntime.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockPersonalizeRuntimeClient struct {
-//        personalizeruntimeiface.PersonalizeRuntimeAPI
-//    }
-//    func (m *mockPersonalizeRuntimeClient) GetPersonalizedRanking(input *personalizeruntime.GetPersonalizedRankingInput) (*personalizeruntime.GetPersonalizedRankingOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockPersonalizeRuntimeClient struct {
+//	    personalizeruntimeiface.PersonalizeRuntimeAPI
+//	}
+//	func (m *mockPersonalizeRuntimeClient) GetActionRecommendations(input *personalizeruntime.GetActionRecommendationsInput) (*personalizeruntime.GetActionRecommendationsOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockPersonalizeRuntimeClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockPersonalizeRuntimeClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type PersonalizeRuntimeAPI interface {
+	GetActionRecommendations(*personalizeruntime.GetActionRecommendationsInput) (*personalizeruntime.GetActionRecommendationsOutput, error)
+	GetActionRecommendationsWithContext(aws.Context, *personalizeruntime.GetActionRecommendationsInput, ...request.Option) (*personalizeruntime.GetActionRecommendationsOutput, error)
+	GetActionRecommendationsRequest(*personalizeruntime.GetActionRecommendationsInput) (*request.Request, *personalizeruntime.GetActionRecommendationsOutput)
+
 	GetPersonalizedRanking(*personalizeruntime.GetPersonalizedRankingInput) (*personalizeruntime.GetPersonalizedRankingOutput, error)
 	GetPersonalizedRankingWithContext(aws.Context, *personalizeruntime.GetPersonalizedRankingInput, ...request.Option) (*personalizeruntime.GetPersonalizedRankingOutput, error)
 	GetPersonalizedRankingRequest(*personalizeruntime.GetPersonalizedRankingInput) (*request.Request, *personalizeruntime.GetPersonalizedRankingOutput)

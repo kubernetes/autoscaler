@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // AWS Outposts.
-//    func myFunc(svc outpostsiface.OutpostsAPI) bool {
-//        // Make svc.CancelOrder request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// AWS Outposts.
+//	func myFunc(svc outpostsiface.OutpostsAPI) bool {
+//	    // Make svc.CancelOrder request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := outposts.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := outposts.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockOutpostsClient struct {
-//        outpostsiface.OutpostsAPI
-//    }
-//    func (m *mockOutpostsClient) CancelOrder(input *outposts.CancelOrderInput) (*outposts.CancelOrderOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockOutpostsClient struct {
+//	    outpostsiface.OutpostsAPI
+//	}
+//	func (m *mockOutpostsClient) CancelOrder(input *outposts.CancelOrderInput) (*outposts.CancelOrderOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockOutpostsClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockOutpostsClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -87,6 +87,10 @@ type OutpostsAPI interface {
 	GetCatalogItem(*outposts.GetCatalogItemInput) (*outposts.GetCatalogItemOutput, error)
 	GetCatalogItemWithContext(aws.Context, *outposts.GetCatalogItemInput, ...request.Option) (*outposts.GetCatalogItemOutput, error)
 	GetCatalogItemRequest(*outposts.GetCatalogItemInput) (*request.Request, *outposts.GetCatalogItemOutput)
+
+	GetConnection(*outposts.GetConnectionInput) (*outposts.GetConnectionOutput, error)
+	GetConnectionWithContext(aws.Context, *outposts.GetConnectionInput, ...request.Option) (*outposts.GetConnectionOutput, error)
+	GetConnectionRequest(*outposts.GetConnectionInput) (*request.Request, *outposts.GetConnectionOutput)
 
 	GetOrder(*outposts.GetOrderInput) (*outposts.GetOrderOutput, error)
 	GetOrderWithContext(aws.Context, *outposts.GetOrderInput, ...request.Option) (*outposts.GetOrderOutput, error)
@@ -149,6 +153,10 @@ type OutpostsAPI interface {
 	ListTagsForResource(*outposts.ListTagsForResourceInput) (*outposts.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *outposts.ListTagsForResourceInput, ...request.Option) (*outposts.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*outposts.ListTagsForResourceInput) (*request.Request, *outposts.ListTagsForResourceOutput)
+
+	StartConnection(*outposts.StartConnectionInput) (*outposts.StartConnectionOutput, error)
+	StartConnectionWithContext(aws.Context, *outposts.StartConnectionInput, ...request.Option) (*outposts.StartConnectionOutput, error)
+	StartConnectionRequest(*outposts.StartConnectionInput) (*request.Request, *outposts.StartConnectionOutput)
 
 	TagResource(*outposts.TagResourceInput) (*outposts.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *outposts.TagResourceInput, ...request.Option) (*outposts.TagResourceOutput, error)

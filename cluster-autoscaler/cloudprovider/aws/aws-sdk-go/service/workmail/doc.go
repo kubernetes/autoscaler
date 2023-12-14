@@ -3,22 +3,22 @@
 // Package workmail provides the client and types for making API
 // requests to Amazon WorkMail.
 //
-// Amazon WorkMail is a secure, managed business email and calendaring service
-// with support for existing desktop and mobile email clients. You can access
-// your email, contacts, and calendars using Microsoft Outlook, your browser,
-// or other native iOS and Android email applications. You can integrate WorkMail
+// WorkMail is a secure, managed business email and calendaring service with
+// support for existing desktop and mobile email clients. You can access your
+// email, contacts, and calendars using Microsoft Outlook, your browser, or
+// other native iOS and Android email applications. You can integrate WorkMail
 // with your existing corporate directory and control both the keys that encrypt
 // your data and the location in which your data is stored.
 //
 // The WorkMail API is designed for the following scenarios:
 //
-//    * Listing and describing organizations
+//   - Listing and describing organizations
 //
-//    * Managing users
+//   - Managing users
 //
-//    * Managing groups
+//   - Managing groups
 //
-//    * Managing resources
+//   - Managing resources
 //
 // All WorkMail API operations are Amazon-authenticated and certificate-signed.
 // They not only require the use of the AWS SDK, but also allow for the exclusive
@@ -36,7 +36,7 @@
 // See workmail package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/workmail/
 //
-// Using the Client
+// # Using the Client
 //
 // To contact Amazon WorkMail with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.

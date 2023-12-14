@@ -23,37 +23,37 @@ import (
 // can be stubbed out for unit testing your code with the SDK without needing
 // to inject custom request handlers into the SDK's request pipeline.
 //
-//    // myFunc uses an SDK service client to make a request to
-//    // Amazon Simple Systems Manager (SSM).
-//    func myFunc(svc ssmiface.SSMAPI) bool {
-//        // Make svc.AddTagsToResource request
-//    }
+//	// myFunc uses an SDK service client to make a request to
+//	// Amazon Simple Systems Manager (SSM).
+//	func myFunc(svc ssmiface.SSMAPI) bool {
+//	    // Make svc.AddTagsToResource request
+//	}
 //
-//    func main() {
-//        sess := session.New()
-//        svc := ssm.New(sess)
+//	func main() {
+//	    sess := session.New()
+//	    svc := ssm.New(sess)
 //
-//        myFunc(svc)
-//    }
+//	    myFunc(svc)
+//	}
 //
 // In your _test.go file:
 //
-//    // Define a mock struct to be used in your unit tests of myFunc.
-//    type mockSSMClient struct {
-//        ssmiface.SSMAPI
-//    }
-//    func (m *mockSSMClient) AddTagsToResource(input *ssm.AddTagsToResourceInput) (*ssm.AddTagsToResourceOutput, error) {
-//        // mock response/functionality
-//    }
+//	// Define a mock struct to be used in your unit tests of myFunc.
+//	type mockSSMClient struct {
+//	    ssmiface.SSMAPI
+//	}
+//	func (m *mockSSMClient) AddTagsToResource(input *ssm.AddTagsToResourceInput) (*ssm.AddTagsToResourceOutput, error) {
+//	    // mock response/functionality
+//	}
 //
-//    func TestMyFunc(t *testing.T) {
-//        // Setup Test
-//        mockSvc := &mockSSMClient{}
+//	func TestMyFunc(t *testing.T) {
+//	    // Setup Test
+//	    mockSvc := &mockSSMClient{}
 //
-//        myfunc(mockSvc)
+//	    myfunc(mockSvc)
 //
-//        // Verify myFunc's functionality
-//    }
+//	    // Verify myFunc's functionality
+//	}
 //
 // It is important to note that this interface will have breaking changes
 // when the service model is updated and adds new API operations, paginators,
@@ -132,6 +132,10 @@ type SSMAPI interface {
 	DeleteMaintenanceWindowWithContext(aws.Context, *ssm.DeleteMaintenanceWindowInput, ...request.Option) (*ssm.DeleteMaintenanceWindowOutput, error)
 	DeleteMaintenanceWindowRequest(*ssm.DeleteMaintenanceWindowInput) (*request.Request, *ssm.DeleteMaintenanceWindowOutput)
 
+	DeleteOpsItem(*ssm.DeleteOpsItemInput) (*ssm.DeleteOpsItemOutput, error)
+	DeleteOpsItemWithContext(aws.Context, *ssm.DeleteOpsItemInput, ...request.Option) (*ssm.DeleteOpsItemOutput, error)
+	DeleteOpsItemRequest(*ssm.DeleteOpsItemInput) (*request.Request, *ssm.DeleteOpsItemOutput)
+
 	DeleteOpsMetadata(*ssm.DeleteOpsMetadataInput) (*ssm.DeleteOpsMetadataOutput, error)
 	DeleteOpsMetadataWithContext(aws.Context, *ssm.DeleteOpsMetadataInput, ...request.Option) (*ssm.DeleteOpsMetadataOutput, error)
 	DeleteOpsMetadataRequest(*ssm.DeleteOpsMetadataInput) (*request.Request, *ssm.DeleteOpsMetadataOutput)
@@ -151,6 +155,10 @@ type SSMAPI interface {
 	DeleteResourceDataSync(*ssm.DeleteResourceDataSyncInput) (*ssm.DeleteResourceDataSyncOutput, error)
 	DeleteResourceDataSyncWithContext(aws.Context, *ssm.DeleteResourceDataSyncInput, ...request.Option) (*ssm.DeleteResourceDataSyncOutput, error)
 	DeleteResourceDataSyncRequest(*ssm.DeleteResourceDataSyncInput) (*request.Request, *ssm.DeleteResourceDataSyncOutput)
+
+	DeleteResourcePolicy(*ssm.DeleteResourcePolicyInput) (*ssm.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyWithContext(aws.Context, *ssm.DeleteResourcePolicyInput, ...request.Option) (*ssm.DeleteResourcePolicyOutput, error)
+	DeleteResourcePolicyRequest(*ssm.DeleteResourcePolicyInput) (*request.Request, *ssm.DeleteResourcePolicyOutput)
 
 	DeregisterManagedInstance(*ssm.DeregisterManagedInstanceInput) (*ssm.DeregisterManagedInstanceOutput, error)
 	DeregisterManagedInstanceWithContext(aws.Context, *ssm.DeregisterManagedInstanceInput, ...request.Option) (*ssm.DeregisterManagedInstanceOutput, error)
@@ -491,6 +499,13 @@ type SSMAPI interface {
 	GetPatchBaselineForPatchGroupWithContext(aws.Context, *ssm.GetPatchBaselineForPatchGroupInput, ...request.Option) (*ssm.GetPatchBaselineForPatchGroupOutput, error)
 	GetPatchBaselineForPatchGroupRequest(*ssm.GetPatchBaselineForPatchGroupInput) (*request.Request, *ssm.GetPatchBaselineForPatchGroupOutput)
 
+	GetResourcePolicies(*ssm.GetResourcePoliciesInput) (*ssm.GetResourcePoliciesOutput, error)
+	GetResourcePoliciesWithContext(aws.Context, *ssm.GetResourcePoliciesInput, ...request.Option) (*ssm.GetResourcePoliciesOutput, error)
+	GetResourcePoliciesRequest(*ssm.GetResourcePoliciesInput) (*request.Request, *ssm.GetResourcePoliciesOutput)
+
+	GetResourcePoliciesPages(*ssm.GetResourcePoliciesInput, func(*ssm.GetResourcePoliciesOutput, bool) bool) error
+	GetResourcePoliciesPagesWithContext(aws.Context, *ssm.GetResourcePoliciesInput, func(*ssm.GetResourcePoliciesOutput, bool) bool, ...request.Option) error
+
 	GetServiceSetting(*ssm.GetServiceSettingInput) (*ssm.GetServiceSettingOutput, error)
 	GetServiceSettingWithContext(aws.Context, *ssm.GetServiceSettingInput, ...request.Option) (*ssm.GetServiceSettingOutput, error)
 	GetServiceSettingRequest(*ssm.GetServiceSettingInput) (*request.Request, *ssm.GetServiceSettingOutput)
@@ -617,6 +632,10 @@ type SSMAPI interface {
 	PutParameter(*ssm.PutParameterInput) (*ssm.PutParameterOutput, error)
 	PutParameterWithContext(aws.Context, *ssm.PutParameterInput, ...request.Option) (*ssm.PutParameterOutput, error)
 	PutParameterRequest(*ssm.PutParameterInput) (*request.Request, *ssm.PutParameterOutput)
+
+	PutResourcePolicy(*ssm.PutResourcePolicyInput) (*ssm.PutResourcePolicyOutput, error)
+	PutResourcePolicyWithContext(aws.Context, *ssm.PutResourcePolicyInput, ...request.Option) (*ssm.PutResourcePolicyOutput, error)
+	PutResourcePolicyRequest(*ssm.PutResourcePolicyInput) (*request.Request, *ssm.PutResourcePolicyOutput)
 
 	RegisterDefaultPatchBaseline(*ssm.RegisterDefaultPatchBaselineInput) (*ssm.RegisterDefaultPatchBaselineOutput, error)
 	RegisterDefaultPatchBaselineWithContext(aws.Context, *ssm.RegisterDefaultPatchBaselineInput, ...request.Option) (*ssm.RegisterDefaultPatchBaselineOutput, error)

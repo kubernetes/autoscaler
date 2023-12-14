@@ -29,14 +29,13 @@ const opAssociateBrowserSettings = "AssociateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateBrowserSettingsRequest method.
+//	req, resp := client.AssociateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the AssociateBrowserSettingsRequest method.
-//    req, resp := client.AssociateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateBrowserSettings
 func (c *WorkSpacesWeb) AssociateBrowserSettingsRequest(input *AssociateBrowserSettingsInput) (req *request.Request, output *AssociateBrowserSettingsOutput) {
@@ -67,23 +66,24 @@ func (c *WorkSpacesWeb) AssociateBrowserSettingsRequest(input *AssociateBrowserS
 // API operation AssociateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateBrowserSettings
 func (c *WorkSpacesWeb) AssociateBrowserSettings(input *AssociateBrowserSettingsInput) (*AssociateBrowserSettingsOutput, error) {
@@ -107,6 +107,100 @@ func (c *WorkSpacesWeb) AssociateBrowserSettingsWithContext(ctx aws.Context, inp
 	return out, req.Send()
 }
 
+const opAssociateIpAccessSettings = "AssociateIpAccessSettings"
+
+// AssociateIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateIpAccessSettings for more information on using the AssociateIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateIpAccessSettingsRequest method.
+//	req, resp := client.AssociateIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateIpAccessSettings
+func (c *WorkSpacesWeb) AssociateIpAccessSettingsRequest(input *AssociateIpAccessSettingsInput) (req *request.Request, output *AssociateIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opAssociateIpAccessSettings,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/portals/{portalArn+}/ipAccessSettings",
+	}
+
+	if input == nil {
+		input = &AssociateIpAccessSettingsInput{}
+	}
+
+	output = &AssociateIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AssociateIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Associates an IP access settings resource with a web portal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation AssociateIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateIpAccessSettings
+func (c *WorkSpacesWeb) AssociateIpAccessSettings(input *AssociateIpAccessSettingsInput) (*AssociateIpAccessSettingsOutput, error) {
+	req, out := c.AssociateIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// AssociateIpAccessSettingsWithContext is the same as AssociateIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) AssociateIpAccessSettingsWithContext(ctx aws.Context, input *AssociateIpAccessSettingsInput, opts ...request.Option) (*AssociateIpAccessSettingsOutput, error) {
+	req, out := c.AssociateIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opAssociateNetworkSettings = "AssociateNetworkSettings"
 
 // AssociateNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -123,14 +217,13 @@ const opAssociateNetworkSettings = "AssociateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateNetworkSettingsRequest method.
+//	req, resp := client.AssociateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the AssociateNetworkSettingsRequest method.
-//    req, resp := client.AssociateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateNetworkSettings
 func (c *WorkSpacesWeb) AssociateNetworkSettingsRequest(input *AssociateNetworkSettingsInput) (req *request.Request, output *AssociateNetworkSettingsOutput) {
@@ -161,23 +254,24 @@ func (c *WorkSpacesWeb) AssociateNetworkSettingsRequest(input *AssociateNetworkS
 // API operation AssociateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateNetworkSettings
 func (c *WorkSpacesWeb) AssociateNetworkSettings(input *AssociateNetworkSettingsInput) (*AssociateNetworkSettingsOutput, error) {
@@ -217,14 +311,13 @@ const opAssociateTrustStore = "AssociateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateTrustStoreRequest method.
+//	req, resp := client.AssociateTrustStoreRequest(params)
 //
-//    // Example sending a request using the AssociateTrustStoreRequest method.
-//    req, resp := client.AssociateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateTrustStore
 func (c *WorkSpacesWeb) AssociateTrustStoreRequest(input *AssociateTrustStoreInput) (req *request.Request, output *AssociateTrustStoreOutput) {
@@ -255,20 +348,21 @@ func (c *WorkSpacesWeb) AssociateTrustStoreRequest(input *AssociateTrustStoreInp
 // API operation AssociateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateTrustStore
 func (c *WorkSpacesWeb) AssociateTrustStore(input *AssociateTrustStoreInput) (*AssociateTrustStoreOutput, error) {
@@ -292,6 +386,100 @@ func (c *WorkSpacesWeb) AssociateTrustStoreWithContext(ctx aws.Context, input *A
 	return out, req.Send()
 }
 
+const opAssociateUserAccessLoggingSettings = "AssociateUserAccessLoggingSettings"
+
+// AssociateUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the AssociateUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AssociateUserAccessLoggingSettings for more information on using the AssociateUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AssociateUserAccessLoggingSettingsRequest method.
+//	req, resp := client.AssociateUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) AssociateUserAccessLoggingSettingsRequest(input *AssociateUserAccessLoggingSettingsInput) (req *request.Request, output *AssociateUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opAssociateUserAccessLoggingSettings,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/portals/{portalArn+}/userAccessLoggingSettings",
+	}
+
+	if input == nil {
+		input = &AssociateUserAccessLoggingSettingsInput{}
+	}
+
+	output = &AssociateUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AssociateUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Associates a user access logging settings resource with a web portal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation AssociateUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) AssociateUserAccessLoggingSettings(input *AssociateUserAccessLoggingSettingsInput) (*AssociateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.AssociateUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// AssociateUserAccessLoggingSettingsWithContext is the same as AssociateUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AssociateUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) AssociateUserAccessLoggingSettingsWithContext(ctx aws.Context, input *AssociateUserAccessLoggingSettingsInput, opts ...request.Option) (*AssociateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.AssociateUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opAssociateUserSettings = "AssociateUserSettings"
 
 // AssociateUserSettingsRequest generates a "aws/request.Request" representing the
@@ -308,14 +496,13 @@ const opAssociateUserSettings = "AssociateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the AssociateUserSettingsRequest method.
+//	req, resp := client.AssociateUserSettingsRequest(params)
 //
-//    // Example sending a request using the AssociateUserSettingsRequest method.
-//    req, resp := client.AssociateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateUserSettings
 func (c *WorkSpacesWeb) AssociateUserSettingsRequest(input *AssociateUserSettingsInput) (req *request.Request, output *AssociateUserSettingsOutput) {
@@ -346,23 +533,24 @@ func (c *WorkSpacesWeb) AssociateUserSettingsRequest(input *AssociateUserSetting
 // API operation AssociateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/AssociateUserSettings
 func (c *WorkSpacesWeb) AssociateUserSettings(input *AssociateUserSettingsInput) (*AssociateUserSettingsOutput, error) {
@@ -402,14 +590,13 @@ const opCreateBrowserSettings = "CreateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateBrowserSettingsRequest method.
+//	req, resp := client.CreateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the CreateBrowserSettingsRequest method.
-//    req, resp := client.CreateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateBrowserSettings
 func (c *WorkSpacesWeb) CreateBrowserSettingsRequest(input *CreateBrowserSettingsInput) (req *request.Request, output *CreateBrowserSettingsOutput) {
@@ -442,26 +629,27 @@ func (c *WorkSpacesWeb) CreateBrowserSettingsRequest(input *CreateBrowserSetting
 // API operation CreateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateBrowserSettings
 func (c *WorkSpacesWeb) CreateBrowserSettings(input *CreateBrowserSettingsInput) (*CreateBrowserSettingsOutput, error) {
@@ -501,14 +689,13 @@ const opCreateIdentityProvider = "CreateIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateIdentityProviderRequest method.
+//	req, resp := client.CreateIdentityProviderRequest(params)
 //
-//    // Example sending a request using the CreateIdentityProviderRequest method.
-//    req, resp := client.CreateIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateIdentityProvider
 func (c *WorkSpacesWeb) CreateIdentityProviderRequest(input *CreateIdentityProviderInput) (req *request.Request, output *CreateIdentityProviderOutput) {
@@ -540,26 +727,27 @@ func (c *WorkSpacesWeb) CreateIdentityProviderRequest(input *CreateIdentityProvi
 // API operation CreateIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateIdentityProvider
 func (c *WorkSpacesWeb) CreateIdentityProvider(input *CreateIdentityProviderInput) (*CreateIdentityProviderOutput, error) {
@@ -583,6 +771,101 @@ func (c *WorkSpacesWeb) CreateIdentityProviderWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opCreateIpAccessSettings = "CreateIpAccessSettings"
+
+// CreateIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the CreateIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateIpAccessSettings for more information on using the CreateIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateIpAccessSettingsRequest method.
+//	req, resp := client.CreateIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateIpAccessSettings
+func (c *WorkSpacesWeb) CreateIpAccessSettingsRequest(input *CreateIpAccessSettingsInput) (req *request.Request, output *CreateIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opCreateIpAccessSettings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/ipAccessSettings",
+	}
+
+	if input == nil {
+		input = &CreateIpAccessSettingsInput{}
+	}
+
+	output = &CreateIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Creates an IP access settings resource that can be associated with a web
+// portal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation CreateIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateIpAccessSettings
+func (c *WorkSpacesWeb) CreateIpAccessSettings(input *CreateIpAccessSettingsInput) (*CreateIpAccessSettingsOutput, error) {
+	req, out := c.CreateIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// CreateIpAccessSettingsWithContext is the same as CreateIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) CreateIpAccessSettingsWithContext(ctx aws.Context, input *CreateIpAccessSettingsInput, opts ...request.Option) (*CreateIpAccessSettingsOutput, error) {
+	req, out := c.CreateIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateNetworkSettings = "CreateNetworkSettings"
 
 // CreateNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -599,14 +882,13 @@ const opCreateNetworkSettings = "CreateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateNetworkSettingsRequest method.
+//	req, resp := client.CreateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the CreateNetworkSettingsRequest method.
-//    req, resp := client.CreateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateNetworkSettings
 func (c *WorkSpacesWeb) CreateNetworkSettingsRequest(input *CreateNetworkSettingsInput) (req *request.Request, output *CreateNetworkSettingsOutput) {
@@ -639,23 +921,24 @@ func (c *WorkSpacesWeb) CreateNetworkSettingsRequest(input *CreateNetworkSetting
 // API operation CreateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateNetworkSettings
 func (c *WorkSpacesWeb) CreateNetworkSettings(input *CreateNetworkSettingsInput) (*CreateNetworkSettingsOutput, error) {
@@ -695,14 +978,13 @@ const opCreatePortal = "CreatePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreatePortalRequest method.
+//	req, resp := client.CreatePortalRequest(params)
 //
-//    // Example sending a request using the CreatePortalRequest method.
-//    req, resp := client.CreatePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreatePortal
 func (c *WorkSpacesWeb) CreatePortalRequest(input *CreatePortalInput) (req *request.Request, output *CreatePortalOutput) {
@@ -733,26 +1015,27 @@ func (c *WorkSpacesWeb) CreatePortalRequest(input *CreatePortalInput) (req *requ
 // API operation CreatePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreatePortal
 func (c *WorkSpacesWeb) CreatePortal(input *CreatePortalInput) (*CreatePortalOutput, error) {
@@ -792,14 +1075,13 @@ const opCreateTrustStore = "CreateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateTrustStoreRequest method.
+//	req, resp := client.CreateTrustStoreRequest(params)
 //
-//    // Example sending a request using the CreateTrustStoreRequest method.
-//    req, resp := client.CreateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateTrustStore
 func (c *WorkSpacesWeb) CreateTrustStoreRequest(input *CreateTrustStoreInput) (req *request.Request, output *CreateTrustStoreOutput) {
@@ -835,23 +1117,24 @@ func (c *WorkSpacesWeb) CreateTrustStoreRequest(input *CreateTrustStoreInput) (r
 // API operation CreateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateTrustStore
 func (c *WorkSpacesWeb) CreateTrustStore(input *CreateTrustStoreInput) (*CreateTrustStoreOutput, error) {
@@ -875,6 +1158,101 @@ func (c *WorkSpacesWeb) CreateTrustStoreWithContext(ctx aws.Context, input *Crea
 	return out, req.Send()
 }
 
+const opCreateUserAccessLoggingSettings = "CreateUserAccessLoggingSettings"
+
+// CreateUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the CreateUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateUserAccessLoggingSettings for more information on using the CreateUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateUserAccessLoggingSettingsRequest method.
+//	req, resp := client.CreateUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) CreateUserAccessLoggingSettingsRequest(input *CreateUserAccessLoggingSettingsInput) (req *request.Request, output *CreateUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opCreateUserAccessLoggingSettings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/userAccessLoggingSettings",
+	}
+
+	if input == nil {
+		input = &CreateUserAccessLoggingSettingsInput{}
+	}
+
+	output = &CreateUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Creates a user access logging settings resource that can be associated with
+// a web portal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation CreateUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) CreateUserAccessLoggingSettings(input *CreateUserAccessLoggingSettingsInput) (*CreateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.CreateUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// CreateUserAccessLoggingSettingsWithContext is the same as CreateUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) CreateUserAccessLoggingSettingsWithContext(ctx aws.Context, input *CreateUserAccessLoggingSettingsInput, opts ...request.Option) (*CreateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.CreateUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCreateUserSettings = "CreateUserSettings"
 
 // CreateUserSettingsRequest generates a "aws/request.Request" representing the
@@ -891,14 +1269,13 @@ const opCreateUserSettings = "CreateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the CreateUserSettingsRequest method.
+//	req, resp := client.CreateUserSettingsRequest(params)
 //
-//    // Example sending a request using the CreateUserSettingsRequest method.
-//    req, resp := client.CreateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateUserSettings
 func (c *WorkSpacesWeb) CreateUserSettingsRequest(input *CreateUserSettingsInput) (req *request.Request, output *CreateUserSettingsOutput) {
@@ -931,23 +1308,24 @@ func (c *WorkSpacesWeb) CreateUserSettingsRequest(input *CreateUserSettingsInput
 // API operation CreateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/CreateUserSettings
 func (c *WorkSpacesWeb) CreateUserSettings(input *CreateUserSettingsInput) (*CreateUserSettingsOutput, error) {
@@ -987,14 +1365,13 @@ const opDeleteBrowserSettings = "DeleteBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteBrowserSettingsRequest method.
+//	req, resp := client.DeleteBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteBrowserSettingsRequest method.
-//    req, resp := client.DeleteBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteBrowserSettings
 func (c *WorkSpacesWeb) DeleteBrowserSettingsRequest(input *DeleteBrowserSettingsInput) (req *request.Request, output *DeleteBrowserSettingsOutput) {
@@ -1026,20 +1403,21 @@ func (c *WorkSpacesWeb) DeleteBrowserSettingsRequest(input *DeleteBrowserSetting
 // API operation DeleteBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteBrowserSettings
 func (c *WorkSpacesWeb) DeleteBrowserSettings(input *DeleteBrowserSettingsInput) (*DeleteBrowserSettingsOutput, error) {
@@ -1079,14 +1457,13 @@ const opDeleteIdentityProvider = "DeleteIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteIdentityProviderRequest method.
+//	req, resp := client.DeleteIdentityProviderRequest(params)
 //
-//    // Example sending a request using the DeleteIdentityProviderRequest method.
-//    req, resp := client.DeleteIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteIdentityProvider
 func (c *WorkSpacesWeb) DeleteIdentityProviderRequest(input *DeleteIdentityProviderInput) (req *request.Request, output *DeleteIdentityProviderOutput) {
@@ -1118,20 +1495,21 @@ func (c *WorkSpacesWeb) DeleteIdentityProviderRequest(input *DeleteIdentityProvi
 // API operation DeleteIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteIdentityProvider
 func (c *WorkSpacesWeb) DeleteIdentityProvider(input *DeleteIdentityProviderInput) (*DeleteIdentityProviderOutput, error) {
@@ -1155,6 +1533,98 @@ func (c *WorkSpacesWeb) DeleteIdentityProviderWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opDeleteIpAccessSettings = "DeleteIpAccessSettings"
+
+// DeleteIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteIpAccessSettings for more information on using the DeleteIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteIpAccessSettingsRequest method.
+//	req, resp := client.DeleteIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteIpAccessSettings
+func (c *WorkSpacesWeb) DeleteIpAccessSettingsRequest(input *DeleteIpAccessSettingsInput) (req *request.Request, output *DeleteIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opDeleteIpAccessSettings,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/ipAccessSettings/{ipAccessSettingsArn+}",
+	}
+
+	if input == nil {
+		input = &DeleteIpAccessSettingsInput{}
+	}
+
+	output = &DeleteIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Deletes IP access settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation DeleteIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteIpAccessSettings
+func (c *WorkSpacesWeb) DeleteIpAccessSettings(input *DeleteIpAccessSettingsInput) (*DeleteIpAccessSettingsOutput, error) {
+	req, out := c.DeleteIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// DeleteIpAccessSettingsWithContext is the same as DeleteIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) DeleteIpAccessSettingsWithContext(ctx aws.Context, input *DeleteIpAccessSettingsInput, opts ...request.Option) (*DeleteIpAccessSettingsOutput, error) {
+	req, out := c.DeleteIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteNetworkSettings = "DeleteNetworkSettings"
 
 // DeleteNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -1171,14 +1641,13 @@ const opDeleteNetworkSettings = "DeleteNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteNetworkSettingsRequest method.
+//	req, resp := client.DeleteNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteNetworkSettingsRequest method.
-//    req, resp := client.DeleteNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteNetworkSettings
 func (c *WorkSpacesWeb) DeleteNetworkSettingsRequest(input *DeleteNetworkSettingsInput) (req *request.Request, output *DeleteNetworkSettingsOutput) {
@@ -1210,20 +1679,21 @@ func (c *WorkSpacesWeb) DeleteNetworkSettingsRequest(input *DeleteNetworkSetting
 // API operation DeleteNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteNetworkSettings
 func (c *WorkSpacesWeb) DeleteNetworkSettings(input *DeleteNetworkSettingsInput) (*DeleteNetworkSettingsOutput, error) {
@@ -1263,14 +1733,13 @@ const opDeletePortal = "DeletePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeletePortalRequest method.
+//	req, resp := client.DeletePortalRequest(params)
 //
-//    // Example sending a request using the DeletePortalRequest method.
-//    req, resp := client.DeletePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeletePortal
 func (c *WorkSpacesWeb) DeletePortalRequest(input *DeletePortalInput) (req *request.Request, output *DeletePortalOutput) {
@@ -1302,20 +1771,21 @@ func (c *WorkSpacesWeb) DeletePortalRequest(input *DeletePortalInput) (req *requ
 // API operation DeletePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeletePortal
 func (c *WorkSpacesWeb) DeletePortal(input *DeletePortalInput) (*DeletePortalOutput, error) {
@@ -1355,14 +1825,13 @@ const opDeleteTrustStore = "DeleteTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteTrustStoreRequest method.
+//	req, resp := client.DeleteTrustStoreRequest(params)
 //
-//    // Example sending a request using the DeleteTrustStoreRequest method.
-//    req, resp := client.DeleteTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteTrustStore
 func (c *WorkSpacesWeb) DeleteTrustStoreRequest(input *DeleteTrustStoreInput) (req *request.Request, output *DeleteTrustStoreOutput) {
@@ -1394,20 +1863,21 @@ func (c *WorkSpacesWeb) DeleteTrustStoreRequest(input *DeleteTrustStoreInput) (r
 // API operation DeleteTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteTrustStore
 func (c *WorkSpacesWeb) DeleteTrustStore(input *DeleteTrustStoreInput) (*DeleteTrustStoreOutput, error) {
@@ -1431,6 +1901,98 @@ func (c *WorkSpacesWeb) DeleteTrustStoreWithContext(ctx aws.Context, input *Dele
 	return out, req.Send()
 }
 
+const opDeleteUserAccessLoggingSettings = "DeleteUserAccessLoggingSettings"
+
+// DeleteUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteUserAccessLoggingSettings for more information on using the DeleteUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteUserAccessLoggingSettingsRequest method.
+//	req, resp := client.DeleteUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteUserAccessLoggingSettings
+func (c *WorkSpacesWeb) DeleteUserAccessLoggingSettingsRequest(input *DeleteUserAccessLoggingSettingsInput) (req *request.Request, output *DeleteUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opDeleteUserAccessLoggingSettings,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/userAccessLoggingSettings/{userAccessLoggingSettingsArn+}",
+	}
+
+	if input == nil {
+		input = &DeleteUserAccessLoggingSettingsInput{}
+	}
+
+	output = &DeleteUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Deletes user access logging settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation DeleteUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteUserAccessLoggingSettings
+func (c *WorkSpacesWeb) DeleteUserAccessLoggingSettings(input *DeleteUserAccessLoggingSettingsInput) (*DeleteUserAccessLoggingSettingsOutput, error) {
+	req, out := c.DeleteUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// DeleteUserAccessLoggingSettingsWithContext is the same as DeleteUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) DeleteUserAccessLoggingSettingsWithContext(ctx aws.Context, input *DeleteUserAccessLoggingSettingsInput, opts ...request.Option) (*DeleteUserAccessLoggingSettingsOutput, error) {
+	req, out := c.DeleteUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDeleteUserSettings = "DeleteUserSettings"
 
 // DeleteUserSettingsRequest generates a "aws/request.Request" representing the
@@ -1447,14 +2009,13 @@ const opDeleteUserSettings = "DeleteUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DeleteUserSettingsRequest method.
+//	req, resp := client.DeleteUserSettingsRequest(params)
 //
-//    // Example sending a request using the DeleteUserSettingsRequest method.
-//    req, resp := client.DeleteUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteUserSettings
 func (c *WorkSpacesWeb) DeleteUserSettingsRequest(input *DeleteUserSettingsInput) (req *request.Request, output *DeleteUserSettingsOutput) {
@@ -1486,20 +2047,21 @@ func (c *WorkSpacesWeb) DeleteUserSettingsRequest(input *DeleteUserSettingsInput
 // API operation DeleteUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ConflictException
-//   There is a conflict.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DeleteUserSettings
 func (c *WorkSpacesWeb) DeleteUserSettings(input *DeleteUserSettingsInput) (*DeleteUserSettingsOutput, error) {
@@ -1539,14 +2101,13 @@ const opDisassociateBrowserSettings = "DisassociateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateBrowserSettingsRequest method.
+//	req, resp := client.DisassociateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the DisassociateBrowserSettingsRequest method.
-//    req, resp := client.DisassociateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateBrowserSettings
 func (c *WorkSpacesWeb) DisassociateBrowserSettingsRequest(input *DisassociateBrowserSettingsInput) (req *request.Request, output *DisassociateBrowserSettingsOutput) {
@@ -1578,20 +2139,21 @@ func (c *WorkSpacesWeb) DisassociateBrowserSettingsRequest(input *DisassociateBr
 // API operation DisassociateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateBrowserSettings
 func (c *WorkSpacesWeb) DisassociateBrowserSettings(input *DisassociateBrowserSettingsInput) (*DisassociateBrowserSettingsOutput, error) {
@@ -1615,6 +2177,98 @@ func (c *WorkSpacesWeb) DisassociateBrowserSettingsWithContext(ctx aws.Context, 
 	return out, req.Send()
 }
 
+const opDisassociateIpAccessSettings = "DisassociateIpAccessSettings"
+
+// DisassociateIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the DisassociateIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisassociateIpAccessSettings for more information on using the DisassociateIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DisassociateIpAccessSettingsRequest method.
+//	req, resp := client.DisassociateIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateIpAccessSettings
+func (c *WorkSpacesWeb) DisassociateIpAccessSettingsRequest(input *DisassociateIpAccessSettingsInput) (req *request.Request, output *DisassociateIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opDisassociateIpAccessSettings,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/portals/{portalArn+}/ipAccessSettings",
+	}
+
+	if input == nil {
+		input = &DisassociateIpAccessSettingsInput{}
+	}
+
+	output = &DisassociateIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DisassociateIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Disassociates IP access settings from a web portal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation DisassociateIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateIpAccessSettings
+func (c *WorkSpacesWeb) DisassociateIpAccessSettings(input *DisassociateIpAccessSettingsInput) (*DisassociateIpAccessSettingsOutput, error) {
+	req, out := c.DisassociateIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// DisassociateIpAccessSettingsWithContext is the same as DisassociateIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisassociateIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) DisassociateIpAccessSettingsWithContext(ctx aws.Context, input *DisassociateIpAccessSettingsInput, opts ...request.Option) (*DisassociateIpAccessSettingsOutput, error) {
+	req, out := c.DisassociateIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDisassociateNetworkSettings = "DisassociateNetworkSettings"
 
 // DisassociateNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -1631,14 +2285,13 @@ const opDisassociateNetworkSettings = "DisassociateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateNetworkSettingsRequest method.
+//	req, resp := client.DisassociateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the DisassociateNetworkSettingsRequest method.
-//    req, resp := client.DisassociateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateNetworkSettings
 func (c *WorkSpacesWeb) DisassociateNetworkSettingsRequest(input *DisassociateNetworkSettingsInput) (req *request.Request, output *DisassociateNetworkSettingsOutput) {
@@ -1670,20 +2323,21 @@ func (c *WorkSpacesWeb) DisassociateNetworkSettingsRequest(input *DisassociateNe
 // API operation DisassociateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateNetworkSettings
 func (c *WorkSpacesWeb) DisassociateNetworkSettings(input *DisassociateNetworkSettingsInput) (*DisassociateNetworkSettingsOutput, error) {
@@ -1723,14 +2377,13 @@ const opDisassociateTrustStore = "DisassociateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateTrustStoreRequest method.
+//	req, resp := client.DisassociateTrustStoreRequest(params)
 //
-//    // Example sending a request using the DisassociateTrustStoreRequest method.
-//    req, resp := client.DisassociateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateTrustStore
 func (c *WorkSpacesWeb) DisassociateTrustStoreRequest(input *DisassociateTrustStoreInput) (req *request.Request, output *DisassociateTrustStoreOutput) {
@@ -1762,20 +2415,21 @@ func (c *WorkSpacesWeb) DisassociateTrustStoreRequest(input *DisassociateTrustSt
 // API operation DisassociateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateTrustStore
 func (c *WorkSpacesWeb) DisassociateTrustStore(input *DisassociateTrustStoreInput) (*DisassociateTrustStoreOutput, error) {
@@ -1799,6 +2453,98 @@ func (c *WorkSpacesWeb) DisassociateTrustStoreWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opDisassociateUserAccessLoggingSettings = "DisassociateUserAccessLoggingSettings"
+
+// DisassociateUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the DisassociateUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DisassociateUserAccessLoggingSettings for more information on using the DisassociateUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DisassociateUserAccessLoggingSettingsRequest method.
+//	req, resp := client.DisassociateUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) DisassociateUserAccessLoggingSettingsRequest(input *DisassociateUserAccessLoggingSettingsInput) (req *request.Request, output *DisassociateUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opDisassociateUserAccessLoggingSettings,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/portals/{portalArn+}/userAccessLoggingSettings",
+	}
+
+	if input == nil {
+		input = &DisassociateUserAccessLoggingSettingsInput{}
+	}
+
+	output = &DisassociateUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DisassociateUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Disassociates user access logging settings from a web portal.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation DisassociateUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) DisassociateUserAccessLoggingSettings(input *DisassociateUserAccessLoggingSettingsInput) (*DisassociateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.DisassociateUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// DisassociateUserAccessLoggingSettingsWithContext is the same as DisassociateUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DisassociateUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) DisassociateUserAccessLoggingSettingsWithContext(ctx aws.Context, input *DisassociateUserAccessLoggingSettingsInput, opts ...request.Option) (*DisassociateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.DisassociateUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDisassociateUserSettings = "DisassociateUserSettings"
 
 // DisassociateUserSettingsRequest generates a "aws/request.Request" representing the
@@ -1815,14 +2561,13 @@ const opDisassociateUserSettings = "DisassociateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the DisassociateUserSettingsRequest method.
+//	req, resp := client.DisassociateUserSettingsRequest(params)
 //
-//    // Example sending a request using the DisassociateUserSettingsRequest method.
-//    req, resp := client.DisassociateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateUserSettings
 func (c *WorkSpacesWeb) DisassociateUserSettingsRequest(input *DisassociateUserSettingsInput) (req *request.Request, output *DisassociateUserSettingsOutput) {
@@ -1854,20 +2599,21 @@ func (c *WorkSpacesWeb) DisassociateUserSettingsRequest(input *DisassociateUserS
 // API operation DisassociateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/DisassociateUserSettings
 func (c *WorkSpacesWeb) DisassociateUserSettings(input *DisassociateUserSettingsInput) (*DisassociateUserSettingsOutput, error) {
@@ -1907,14 +2653,13 @@ const opGetBrowserSettings = "GetBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetBrowserSettingsRequest method.
+//	req, resp := client.GetBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the GetBrowserSettingsRequest method.
-//    req, resp := client.GetBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetBrowserSettings
 func (c *WorkSpacesWeb) GetBrowserSettingsRequest(input *GetBrowserSettingsInput) (req *request.Request, output *GetBrowserSettingsOutput) {
@@ -1945,20 +2690,21 @@ func (c *WorkSpacesWeb) GetBrowserSettingsRequest(input *GetBrowserSettingsInput
 // API operation GetBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetBrowserSettings
 func (c *WorkSpacesWeb) GetBrowserSettings(input *GetBrowserSettingsInput) (*GetBrowserSettingsOutput, error) {
@@ -1998,14 +2744,13 @@ const opGetIdentityProvider = "GetIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetIdentityProviderRequest method.
+//	req, resp := client.GetIdentityProviderRequest(params)
 //
-//    // Example sending a request using the GetIdentityProviderRequest method.
-//    req, resp := client.GetIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetIdentityProvider
 func (c *WorkSpacesWeb) GetIdentityProviderRequest(input *GetIdentityProviderInput) (req *request.Request, output *GetIdentityProviderOutput) {
@@ -2036,20 +2781,21 @@ func (c *WorkSpacesWeb) GetIdentityProviderRequest(input *GetIdentityProviderInp
 // API operation GetIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetIdentityProvider
 func (c *WorkSpacesWeb) GetIdentityProvider(input *GetIdentityProviderInput) (*GetIdentityProviderOutput, error) {
@@ -2073,6 +2819,97 @@ func (c *WorkSpacesWeb) GetIdentityProviderWithContext(ctx aws.Context, input *G
 	return out, req.Send()
 }
 
+const opGetIpAccessSettings = "GetIpAccessSettings"
+
+// GetIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the GetIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetIpAccessSettings for more information on using the GetIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetIpAccessSettingsRequest method.
+//	req, resp := client.GetIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetIpAccessSettings
+func (c *WorkSpacesWeb) GetIpAccessSettingsRequest(input *GetIpAccessSettingsInput) (req *request.Request, output *GetIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opGetIpAccessSettings,
+		HTTPMethod: "GET",
+		HTTPPath:   "/ipAccessSettings/{ipAccessSettingsArn+}",
+	}
+
+	if input == nil {
+		input = &GetIpAccessSettingsInput{}
+	}
+
+	output = &GetIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Gets the IP access settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation GetIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetIpAccessSettings
+func (c *WorkSpacesWeb) GetIpAccessSettings(input *GetIpAccessSettingsInput) (*GetIpAccessSettingsOutput, error) {
+	req, out := c.GetIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// GetIpAccessSettingsWithContext is the same as GetIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) GetIpAccessSettingsWithContext(ctx aws.Context, input *GetIpAccessSettingsInput, opts ...request.Option) (*GetIpAccessSettingsOutput, error) {
+	req, out := c.GetIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetNetworkSettings = "GetNetworkSettings"
 
 // GetNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -2089,14 +2926,13 @@ const opGetNetworkSettings = "GetNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetNetworkSettingsRequest method.
+//	req, resp := client.GetNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the GetNetworkSettingsRequest method.
-//    req, resp := client.GetNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetNetworkSettings
 func (c *WorkSpacesWeb) GetNetworkSettingsRequest(input *GetNetworkSettingsInput) (req *request.Request, output *GetNetworkSettingsOutput) {
@@ -2127,20 +2963,21 @@ func (c *WorkSpacesWeb) GetNetworkSettingsRequest(input *GetNetworkSettingsInput
 // API operation GetNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetNetworkSettings
 func (c *WorkSpacesWeb) GetNetworkSettings(input *GetNetworkSettingsInput) (*GetNetworkSettingsOutput, error) {
@@ -2180,14 +3017,13 @@ const opGetPortal = "GetPortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPortalRequest method.
+//	req, resp := client.GetPortalRequest(params)
 //
-//    // Example sending a request using the GetPortalRequest method.
-//    req, resp := client.GetPortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortal
 func (c *WorkSpacesWeb) GetPortalRequest(input *GetPortalInput) (req *request.Request, output *GetPortalOutput) {
@@ -2218,20 +3054,21 @@ func (c *WorkSpacesWeb) GetPortalRequest(input *GetPortalInput) (req *request.Re
 // API operation GetPortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortal
 func (c *WorkSpacesWeb) GetPortal(input *GetPortalInput) (*GetPortalOutput, error) {
@@ -2271,14 +3108,13 @@ const opGetPortalServiceProviderMetadata = "GetPortalServiceProviderMetadata"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetPortalServiceProviderMetadataRequest method.
+//	req, resp := client.GetPortalServiceProviderMetadataRequest(params)
 //
-//    // Example sending a request using the GetPortalServiceProviderMetadataRequest method.
-//    req, resp := client.GetPortalServiceProviderMetadataRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortalServiceProviderMetadata
 func (c *WorkSpacesWeb) GetPortalServiceProviderMetadataRequest(input *GetPortalServiceProviderMetadataInput) (req *request.Request, output *GetPortalServiceProviderMetadataOutput) {
@@ -2309,20 +3145,21 @@ func (c *WorkSpacesWeb) GetPortalServiceProviderMetadataRequest(input *GetPortal
 // API operation GetPortalServiceProviderMetadata for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetPortalServiceProviderMetadata
 func (c *WorkSpacesWeb) GetPortalServiceProviderMetadata(input *GetPortalServiceProviderMetadataInput) (*GetPortalServiceProviderMetadataOutput, error) {
@@ -2362,14 +3199,13 @@ const opGetTrustStore = "GetTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrustStoreRequest method.
+//	req, resp := client.GetTrustStoreRequest(params)
 //
-//    // Example sending a request using the GetTrustStoreRequest method.
-//    req, resp := client.GetTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStore
 func (c *WorkSpacesWeb) GetTrustStoreRequest(input *GetTrustStoreInput) (req *request.Request, output *GetTrustStoreOutput) {
@@ -2400,20 +3236,21 @@ func (c *WorkSpacesWeb) GetTrustStoreRequest(input *GetTrustStoreInput) (req *re
 // API operation GetTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStore
 func (c *WorkSpacesWeb) GetTrustStore(input *GetTrustStoreInput) (*GetTrustStoreOutput, error) {
@@ -2453,14 +3290,13 @@ const opGetTrustStoreCertificate = "GetTrustStoreCertificate"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetTrustStoreCertificateRequest method.
+//	req, resp := client.GetTrustStoreCertificateRequest(params)
 //
-//    // Example sending a request using the GetTrustStoreCertificateRequest method.
-//    req, resp := client.GetTrustStoreCertificateRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStoreCertificate
 func (c *WorkSpacesWeb) GetTrustStoreCertificateRequest(input *GetTrustStoreCertificateInput) (req *request.Request, output *GetTrustStoreCertificateOutput) {
@@ -2491,20 +3327,21 @@ func (c *WorkSpacesWeb) GetTrustStoreCertificateRequest(input *GetTrustStoreCert
 // API operation GetTrustStoreCertificate for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetTrustStoreCertificate
 func (c *WorkSpacesWeb) GetTrustStoreCertificate(input *GetTrustStoreCertificateInput) (*GetTrustStoreCertificateOutput, error) {
@@ -2528,6 +3365,97 @@ func (c *WorkSpacesWeb) GetTrustStoreCertificateWithContext(ctx aws.Context, inp
 	return out, req.Send()
 }
 
+const opGetUserAccessLoggingSettings = "GetUserAccessLoggingSettings"
+
+// GetUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the GetUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetUserAccessLoggingSettings for more information on using the GetUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetUserAccessLoggingSettingsRequest method.
+//	req, resp := client.GetUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetUserAccessLoggingSettings
+func (c *WorkSpacesWeb) GetUserAccessLoggingSettingsRequest(input *GetUserAccessLoggingSettingsInput) (req *request.Request, output *GetUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opGetUserAccessLoggingSettings,
+		HTTPMethod: "GET",
+		HTTPPath:   "/userAccessLoggingSettings/{userAccessLoggingSettingsArn+}",
+	}
+
+	if input == nil {
+		input = &GetUserAccessLoggingSettingsInput{}
+	}
+
+	output = &GetUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Gets user access logging settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation GetUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetUserAccessLoggingSettings
+func (c *WorkSpacesWeb) GetUserAccessLoggingSettings(input *GetUserAccessLoggingSettingsInput) (*GetUserAccessLoggingSettingsOutput, error) {
+	req, out := c.GetUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// GetUserAccessLoggingSettingsWithContext is the same as GetUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) GetUserAccessLoggingSettingsWithContext(ctx aws.Context, input *GetUserAccessLoggingSettingsInput, opts ...request.Option) (*GetUserAccessLoggingSettingsOutput, error) {
+	req, out := c.GetUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opGetUserSettings = "GetUserSettings"
 
 // GetUserSettingsRequest generates a "aws/request.Request" representing the
@@ -2544,14 +3472,13 @@ const opGetUserSettings = "GetUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the GetUserSettingsRequest method.
+//	req, resp := client.GetUserSettingsRequest(params)
 //
-//    // Example sending a request using the GetUserSettingsRequest method.
-//    req, resp := client.GetUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetUserSettings
 func (c *WorkSpacesWeb) GetUserSettingsRequest(input *GetUserSettingsInput) (req *request.Request, output *GetUserSettingsOutput) {
@@ -2582,20 +3509,21 @@ func (c *WorkSpacesWeb) GetUserSettingsRequest(input *GetUserSettingsInput) (req
 // API operation GetUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/GetUserSettings
 func (c *WorkSpacesWeb) GetUserSettings(input *GetUserSettingsInput) (*GetUserSettingsOutput, error) {
@@ -2635,14 +3563,13 @@ const opListBrowserSettings = "ListBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListBrowserSettingsRequest method.
+//	req, resp := client.ListBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the ListBrowserSettingsRequest method.
-//    req, resp := client.ListBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListBrowserSettings
 func (c *WorkSpacesWeb) ListBrowserSettingsRequest(input *ListBrowserSettingsInput) (req *request.Request, output *ListBrowserSettingsOutput) {
@@ -2679,17 +3606,18 @@ func (c *WorkSpacesWeb) ListBrowserSettingsRequest(input *ListBrowserSettingsInp
 // API operation ListBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListBrowserSettings
 func (c *WorkSpacesWeb) ListBrowserSettings(input *ListBrowserSettingsInput) (*ListBrowserSettingsOutput, error) {
@@ -2721,15 +3649,14 @@ func (c *WorkSpacesWeb) ListBrowserSettingsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListBrowserSettings operation.
-//    pageNum := 0
-//    err := client.ListBrowserSettingsPages(params,
-//        func(page *workspacesweb.ListBrowserSettingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListBrowserSettings operation.
+//	pageNum := 0
+//	err := client.ListBrowserSettingsPages(params,
+//	    func(page *workspacesweb.ListBrowserSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListBrowserSettingsPages(input *ListBrowserSettingsInput, fn func(*ListBrowserSettingsOutput, bool) bool) error {
 	return c.ListBrowserSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2781,14 +3708,13 @@ const opListIdentityProviders = "ListIdentityProviders"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListIdentityProvidersRequest method.
+//	req, resp := client.ListIdentityProvidersRequest(params)
 //
-//    // Example sending a request using the ListIdentityProvidersRequest method.
-//    req, resp := client.ListIdentityProvidersRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListIdentityProviders
 func (c *WorkSpacesWeb) ListIdentityProvidersRequest(input *ListIdentityProvidersInput) (req *request.Request, output *ListIdentityProvidersOutput) {
@@ -2825,17 +3751,18 @@ func (c *WorkSpacesWeb) ListIdentityProvidersRequest(input *ListIdentityProvider
 // API operation ListIdentityProviders for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListIdentityProviders
 func (c *WorkSpacesWeb) ListIdentityProviders(input *ListIdentityProvidersInput) (*ListIdentityProvidersOutput, error) {
@@ -2867,15 +3794,14 @@ func (c *WorkSpacesWeb) ListIdentityProvidersWithContext(ctx aws.Context, input 
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListIdentityProviders operation.
-//    pageNum := 0
-//    err := client.ListIdentityProvidersPages(params,
-//        func(page *workspacesweb.ListIdentityProvidersOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListIdentityProviders operation.
+//	pageNum := 0
+//	err := client.ListIdentityProvidersPages(params,
+//	    func(page *workspacesweb.ListIdentityProvidersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListIdentityProvidersPages(input *ListIdentityProvidersInput, fn func(*ListIdentityProvidersOutput, bool) bool) error {
 	return c.ListIdentityProvidersPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -2911,6 +3837,151 @@ func (c *WorkSpacesWeb) ListIdentityProvidersPagesWithContext(ctx aws.Context, i
 	return p.Err()
 }
 
+const opListIpAccessSettings = "ListIpAccessSettings"
+
+// ListIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the ListIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListIpAccessSettings for more information on using the ListIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListIpAccessSettingsRequest method.
+//	req, resp := client.ListIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListIpAccessSettings
+func (c *WorkSpacesWeb) ListIpAccessSettingsRequest(input *ListIpAccessSettingsInput) (req *request.Request, output *ListIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opListIpAccessSettings,
+		HTTPMethod: "GET",
+		HTTPPath:   "/ipAccessSettings",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListIpAccessSettingsInput{}
+	}
+
+	output = &ListIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Retrieves a list of IP access settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation ListIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListIpAccessSettings
+func (c *WorkSpacesWeb) ListIpAccessSettings(input *ListIpAccessSettingsInput) (*ListIpAccessSettingsOutput, error) {
+	req, out := c.ListIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// ListIpAccessSettingsWithContext is the same as ListIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) ListIpAccessSettingsWithContext(ctx aws.Context, input *ListIpAccessSettingsInput, opts ...request.Option) (*ListIpAccessSettingsOutput, error) {
+	req, out := c.ListIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListIpAccessSettingsPages iterates over the pages of a ListIpAccessSettings operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListIpAccessSettings method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListIpAccessSettings operation.
+//	pageNum := 0
+//	err := client.ListIpAccessSettingsPages(params,
+//	    func(page *workspacesweb.ListIpAccessSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *WorkSpacesWeb) ListIpAccessSettingsPages(input *ListIpAccessSettingsInput, fn func(*ListIpAccessSettingsOutput, bool) bool) error {
+	return c.ListIpAccessSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListIpAccessSettingsPagesWithContext same as ListIpAccessSettingsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) ListIpAccessSettingsPagesWithContext(ctx aws.Context, input *ListIpAccessSettingsInput, fn func(*ListIpAccessSettingsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListIpAccessSettingsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListIpAccessSettingsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListIpAccessSettingsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListNetworkSettings = "ListNetworkSettings"
 
 // ListNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -2927,14 +3998,13 @@ const opListNetworkSettings = "ListNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListNetworkSettingsRequest method.
+//	req, resp := client.ListNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the ListNetworkSettingsRequest method.
-//    req, resp := client.ListNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListNetworkSettings
 func (c *WorkSpacesWeb) ListNetworkSettingsRequest(input *ListNetworkSettingsInput) (req *request.Request, output *ListNetworkSettingsOutput) {
@@ -2971,17 +4041,18 @@ func (c *WorkSpacesWeb) ListNetworkSettingsRequest(input *ListNetworkSettingsInp
 // API operation ListNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListNetworkSettings
 func (c *WorkSpacesWeb) ListNetworkSettings(input *ListNetworkSettingsInput) (*ListNetworkSettingsOutput, error) {
@@ -3013,15 +4084,14 @@ func (c *WorkSpacesWeb) ListNetworkSettingsWithContext(ctx aws.Context, input *L
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListNetworkSettings operation.
-//    pageNum := 0
-//    err := client.ListNetworkSettingsPages(params,
-//        func(page *workspacesweb.ListNetworkSettingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListNetworkSettings operation.
+//	pageNum := 0
+//	err := client.ListNetworkSettingsPages(params,
+//	    func(page *workspacesweb.ListNetworkSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListNetworkSettingsPages(input *ListNetworkSettingsInput, fn func(*ListNetworkSettingsOutput, bool) bool) error {
 	return c.ListNetworkSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3073,14 +4143,13 @@ const opListPortals = "ListPortals"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListPortalsRequest method.
+//	req, resp := client.ListPortalsRequest(params)
 //
-//    // Example sending a request using the ListPortalsRequest method.
-//    req, resp := client.ListPortalsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListPortals
 func (c *WorkSpacesWeb) ListPortalsRequest(input *ListPortalsInput) (req *request.Request, output *ListPortalsOutput) {
@@ -3117,17 +4186,18 @@ func (c *WorkSpacesWeb) ListPortalsRequest(input *ListPortalsInput) (req *reques
 // API operation ListPortals for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListPortals
 func (c *WorkSpacesWeb) ListPortals(input *ListPortalsInput) (*ListPortalsOutput, error) {
@@ -3159,15 +4229,14 @@ func (c *WorkSpacesWeb) ListPortalsWithContext(ctx aws.Context, input *ListPorta
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListPortals operation.
-//    pageNum := 0
-//    err := client.ListPortalsPages(params,
-//        func(page *workspacesweb.ListPortalsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListPortals operation.
+//	pageNum := 0
+//	err := client.ListPortalsPages(params,
+//	    func(page *workspacesweb.ListPortalsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListPortalsPages(input *ListPortalsInput, fn func(*ListPortalsOutput, bool) bool) error {
 	return c.ListPortalsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3219,14 +4288,13 @@ const opListTagsForResource = "ListTagsForResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTagsForResourceRequest method.
+//	req, resp := client.ListTagsForResourceRequest(params)
 //
-//    // Example sending a request using the ListTagsForResourceRequest method.
-//    req, resp := client.ListTagsForResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTagsForResource
 func (c *WorkSpacesWeb) ListTagsForResourceRequest(input *ListTagsForResourceInput) (req *request.Request, output *ListTagsForResourceOutput) {
@@ -3257,20 +4325,21 @@ func (c *WorkSpacesWeb) ListTagsForResourceRequest(input *ListTagsForResourceInp
 // API operation ListTagsForResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTagsForResource
 func (c *WorkSpacesWeb) ListTagsForResource(input *ListTagsForResourceInput) (*ListTagsForResourceOutput, error) {
@@ -3310,14 +4379,13 @@ const opListTrustStoreCertificates = "ListTrustStoreCertificates"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrustStoreCertificatesRequest method.
+//	req, resp := client.ListTrustStoreCertificatesRequest(params)
 //
-//    // Example sending a request using the ListTrustStoreCertificatesRequest method.
-//    req, resp := client.ListTrustStoreCertificatesRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStoreCertificates
 func (c *WorkSpacesWeb) ListTrustStoreCertificatesRequest(input *ListTrustStoreCertificatesInput) (req *request.Request, output *ListTrustStoreCertificatesOutput) {
@@ -3354,20 +4422,21 @@ func (c *WorkSpacesWeb) ListTrustStoreCertificatesRequest(input *ListTrustStoreC
 // API operation ListTrustStoreCertificates for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStoreCertificates
 func (c *WorkSpacesWeb) ListTrustStoreCertificates(input *ListTrustStoreCertificatesInput) (*ListTrustStoreCertificatesOutput, error) {
@@ -3399,15 +4468,14 @@ func (c *WorkSpacesWeb) ListTrustStoreCertificatesWithContext(ctx aws.Context, i
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTrustStoreCertificates operation.
-//    pageNum := 0
-//    err := client.ListTrustStoreCertificatesPages(params,
-//        func(page *workspacesweb.ListTrustStoreCertificatesOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTrustStoreCertificates operation.
+//	pageNum := 0
+//	err := client.ListTrustStoreCertificatesPages(params,
+//	    func(page *workspacesweb.ListTrustStoreCertificatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListTrustStoreCertificatesPages(input *ListTrustStoreCertificatesInput, fn func(*ListTrustStoreCertificatesOutput, bool) bool) error {
 	return c.ListTrustStoreCertificatesPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3459,14 +4527,13 @@ const opListTrustStores = "ListTrustStores"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListTrustStoresRequest method.
+//	req, resp := client.ListTrustStoresRequest(params)
 //
-//    // Example sending a request using the ListTrustStoresRequest method.
-//    req, resp := client.ListTrustStoresRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStores
 func (c *WorkSpacesWeb) ListTrustStoresRequest(input *ListTrustStoresInput) (req *request.Request, output *ListTrustStoresOutput) {
@@ -3503,17 +4570,18 @@ func (c *WorkSpacesWeb) ListTrustStoresRequest(input *ListTrustStoresInput) (req
 // API operation ListTrustStores for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListTrustStores
 func (c *WorkSpacesWeb) ListTrustStores(input *ListTrustStoresInput) (*ListTrustStoresOutput, error) {
@@ -3545,15 +4613,14 @@ func (c *WorkSpacesWeb) ListTrustStoresWithContext(ctx aws.Context, input *ListT
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListTrustStores operation.
-//    pageNum := 0
-//    err := client.ListTrustStoresPages(params,
-//        func(page *workspacesweb.ListTrustStoresOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListTrustStores operation.
+//	pageNum := 0
+//	err := client.ListTrustStoresPages(params,
+//	    func(page *workspacesweb.ListTrustStoresOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListTrustStoresPages(input *ListTrustStoresInput, fn func(*ListTrustStoresOutput, bool) bool) error {
 	return c.ListTrustStoresPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3589,6 +4656,151 @@ func (c *WorkSpacesWeb) ListTrustStoresPagesWithContext(ctx aws.Context, input *
 	return p.Err()
 }
 
+const opListUserAccessLoggingSettings = "ListUserAccessLoggingSettings"
+
+// ListUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the ListUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListUserAccessLoggingSettings for more information on using the ListUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListUserAccessLoggingSettingsRequest method.
+//	req, resp := client.ListUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListUserAccessLoggingSettings
+func (c *WorkSpacesWeb) ListUserAccessLoggingSettingsRequest(input *ListUserAccessLoggingSettingsInput) (req *request.Request, output *ListUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opListUserAccessLoggingSettings,
+		HTTPMethod: "GET",
+		HTTPPath:   "/userAccessLoggingSettings",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListUserAccessLoggingSettingsInput{}
+	}
+
+	output = &ListUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Retrieves a list of user access logging settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation ListUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListUserAccessLoggingSettings
+func (c *WorkSpacesWeb) ListUserAccessLoggingSettings(input *ListUserAccessLoggingSettingsInput) (*ListUserAccessLoggingSettingsOutput, error) {
+	req, out := c.ListUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// ListUserAccessLoggingSettingsWithContext is the same as ListUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) ListUserAccessLoggingSettingsWithContext(ctx aws.Context, input *ListUserAccessLoggingSettingsInput, opts ...request.Option) (*ListUserAccessLoggingSettingsOutput, error) {
+	req, out := c.ListUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListUserAccessLoggingSettingsPages iterates over the pages of a ListUserAccessLoggingSettings operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListUserAccessLoggingSettings method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListUserAccessLoggingSettings operation.
+//	pageNum := 0
+//	err := client.ListUserAccessLoggingSettingsPages(params,
+//	    func(page *workspacesweb.ListUserAccessLoggingSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *WorkSpacesWeb) ListUserAccessLoggingSettingsPages(input *ListUserAccessLoggingSettingsInput, fn func(*ListUserAccessLoggingSettingsOutput, bool) bool) error {
+	return c.ListUserAccessLoggingSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListUserAccessLoggingSettingsPagesWithContext same as ListUserAccessLoggingSettingsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) ListUserAccessLoggingSettingsPagesWithContext(ctx aws.Context, input *ListUserAccessLoggingSettingsInput, fn func(*ListUserAccessLoggingSettingsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListUserAccessLoggingSettingsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListUserAccessLoggingSettingsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListUserAccessLoggingSettingsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListUserSettings = "ListUserSettings"
 
 // ListUserSettingsRequest generates a "aws/request.Request" representing the
@@ -3605,14 +4817,13 @@ const opListUserSettings = "ListUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the ListUserSettingsRequest method.
+//	req, resp := client.ListUserSettingsRequest(params)
 //
-//    // Example sending a request using the ListUserSettingsRequest method.
-//    req, resp := client.ListUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListUserSettings
 func (c *WorkSpacesWeb) ListUserSettingsRequest(input *ListUserSettingsInput) (req *request.Request, output *ListUserSettingsOutput) {
@@ -3649,17 +4860,18 @@ func (c *WorkSpacesWeb) ListUserSettingsRequest(input *ListUserSettingsInput) (r
 // API operation ListUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/ListUserSettings
 func (c *WorkSpacesWeb) ListUserSettings(input *ListUserSettingsInput) (*ListUserSettingsOutput, error) {
@@ -3691,15 +4903,14 @@ func (c *WorkSpacesWeb) ListUserSettingsWithContext(ctx aws.Context, input *List
 //
 // Note: This operation can generate multiple requests to a service.
 //
-//    // Example iterating over at most 3 pages of a ListUserSettings operation.
-//    pageNum := 0
-//    err := client.ListUserSettingsPages(params,
-//        func(page *workspacesweb.ListUserSettingsOutput, lastPage bool) bool {
-//            pageNum++
-//            fmt.Println(page)
-//            return pageNum <= 3
-//        })
-//
+//	// Example iterating over at most 3 pages of a ListUserSettings operation.
+//	pageNum := 0
+//	err := client.ListUserSettingsPages(params,
+//	    func(page *workspacesweb.ListUserSettingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
 func (c *WorkSpacesWeb) ListUserSettingsPages(input *ListUserSettingsInput, fn func(*ListUserSettingsOutput, bool) bool) error {
 	return c.ListUserSettingsPagesWithContext(aws.BackgroundContext(), input, fn)
 }
@@ -3751,14 +4962,13 @@ const opTagResource = "TagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the TagResourceRequest method.
+//	req, resp := client.TagResourceRequest(params)
 //
-//    // Example sending a request using the TagResourceRequest method.
-//    req, resp := client.TagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/TagResource
 func (c *WorkSpacesWeb) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
@@ -3790,23 +5000,24 @@ func (c *WorkSpacesWeb) TagResourceRequest(input *TagResourceInput) (req *reques
 // API operation TagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * TooManyTagsException
-//   There are too many tags.
+//   - ValidationException
+//     There is a validation error.
+//
+//   - TooManyTagsException
+//     There are too many tags.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/TagResource
 func (c *WorkSpacesWeb) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3846,14 +5057,13 @@ const opUntagResource = "UntagResource"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UntagResourceRequest method.
+//	req, resp := client.UntagResourceRequest(params)
 //
-//    // Example sending a request using the UntagResourceRequest method.
-//    req, resp := client.UntagResourceRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UntagResource
 func (c *WorkSpacesWeb) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
@@ -3885,20 +5095,21 @@ func (c *WorkSpacesWeb) UntagResourceRequest(input *UntagResourceInput) (req *re
 // API operation UntagResource for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UntagResource
 func (c *WorkSpacesWeb) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3938,14 +5149,13 @@ const opUpdateBrowserSettings = "UpdateBrowserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateBrowserSettingsRequest method.
+//	req, resp := client.UpdateBrowserSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateBrowserSettingsRequest method.
-//    req, resp := client.UpdateBrowserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateBrowserSettings
 func (c *WorkSpacesWeb) UpdateBrowserSettingsRequest(input *UpdateBrowserSettingsInput) (req *request.Request, output *UpdateBrowserSettingsOutput) {
@@ -3976,20 +5186,21 @@ func (c *WorkSpacesWeb) UpdateBrowserSettingsRequest(input *UpdateBrowserSetting
 // API operation UpdateBrowserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateBrowserSettings
 func (c *WorkSpacesWeb) UpdateBrowserSettings(input *UpdateBrowserSettingsInput) (*UpdateBrowserSettingsOutput, error) {
@@ -4029,14 +5240,13 @@ const opUpdateIdentityProvider = "UpdateIdentityProvider"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateIdentityProviderRequest method.
+//	req, resp := client.UpdateIdentityProviderRequest(params)
 //
-//    // Example sending a request using the UpdateIdentityProviderRequest method.
-//    req, resp := client.UpdateIdentityProviderRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateIdentityProvider
 func (c *WorkSpacesWeb) UpdateIdentityProviderRequest(input *UpdateIdentityProviderInput) (req *request.Request, output *UpdateIdentityProviderOutput) {
@@ -4067,20 +5277,21 @@ func (c *WorkSpacesWeb) UpdateIdentityProviderRequest(input *UpdateIdentityProvi
 // API operation UpdateIdentityProvider for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateIdentityProvider
 func (c *WorkSpacesWeb) UpdateIdentityProvider(input *UpdateIdentityProviderInput) (*UpdateIdentityProviderOutput, error) {
@@ -4104,6 +5315,97 @@ func (c *WorkSpacesWeb) UpdateIdentityProviderWithContext(ctx aws.Context, input
 	return out, req.Send()
 }
 
+const opUpdateIpAccessSettings = "UpdateIpAccessSettings"
+
+// UpdateIpAccessSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateIpAccessSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateIpAccessSettings for more information on using the UpdateIpAccessSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateIpAccessSettingsRequest method.
+//	req, resp := client.UpdateIpAccessSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateIpAccessSettings
+func (c *WorkSpacesWeb) UpdateIpAccessSettingsRequest(input *UpdateIpAccessSettingsInput) (req *request.Request, output *UpdateIpAccessSettingsOutput) {
+	op := &request.Operation{
+		Name:       opUpdateIpAccessSettings,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/ipAccessSettings/{ipAccessSettingsArn+}",
+	}
+
+	if input == nil {
+		input = &UpdateIpAccessSettingsInput{}
+	}
+
+	output = &UpdateIpAccessSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateIpAccessSettings API operation for Amazon WorkSpaces Web.
+//
+// Updates IP access settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation UpdateIpAccessSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateIpAccessSettings
+func (c *WorkSpacesWeb) UpdateIpAccessSettings(input *UpdateIpAccessSettingsInput) (*UpdateIpAccessSettingsOutput, error) {
+	req, out := c.UpdateIpAccessSettingsRequest(input)
+	return out, req.Send()
+}
+
+// UpdateIpAccessSettingsWithContext is the same as UpdateIpAccessSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateIpAccessSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) UpdateIpAccessSettingsWithContext(ctx aws.Context, input *UpdateIpAccessSettingsInput, opts ...request.Option) (*UpdateIpAccessSettingsOutput, error) {
+	req, out := c.UpdateIpAccessSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateNetworkSettings = "UpdateNetworkSettings"
 
 // UpdateNetworkSettingsRequest generates a "aws/request.Request" representing the
@@ -4120,14 +5422,13 @@ const opUpdateNetworkSettings = "UpdateNetworkSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateNetworkSettingsRequest method.
+//	req, resp := client.UpdateNetworkSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateNetworkSettingsRequest method.
-//    req, resp := client.UpdateNetworkSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateNetworkSettings
 func (c *WorkSpacesWeb) UpdateNetworkSettingsRequest(input *UpdateNetworkSettingsInput) (req *request.Request, output *UpdateNetworkSettingsOutput) {
@@ -4158,20 +5459,21 @@ func (c *WorkSpacesWeb) UpdateNetworkSettingsRequest(input *UpdateNetworkSetting
 // API operation UpdateNetworkSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateNetworkSettings
 func (c *WorkSpacesWeb) UpdateNetworkSettings(input *UpdateNetworkSettingsInput) (*UpdateNetworkSettingsOutput, error) {
@@ -4211,14 +5513,13 @@ const opUpdatePortal = "UpdatePortal"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdatePortalRequest method.
+//	req, resp := client.UpdatePortalRequest(params)
 //
-//    // Example sending a request using the UpdatePortalRequest method.
-//    req, resp := client.UpdatePortalRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdatePortal
 func (c *WorkSpacesWeb) UpdatePortalRequest(input *UpdatePortalInput) (req *request.Request, output *UpdatePortalOutput) {
@@ -4249,20 +5550,24 @@ func (c *WorkSpacesWeb) UpdatePortalRequest(input *UpdatePortalInput) (req *requ
 // API operation UpdatePortal for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+//   - ConflictException
+//     There is a conflict.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdatePortal
 func (c *WorkSpacesWeb) UpdatePortal(input *UpdatePortalInput) (*UpdatePortalOutput, error) {
@@ -4302,14 +5607,13 @@ const opUpdateTrustStore = "UpdateTrustStore"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateTrustStoreRequest method.
+//	req, resp := client.UpdateTrustStoreRequest(params)
 //
-//    // Example sending a request using the UpdateTrustStoreRequest method.
-//    req, resp := client.UpdateTrustStoreRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateTrustStore
 func (c *WorkSpacesWeb) UpdateTrustStoreRequest(input *UpdateTrustStoreInput) (req *request.Request, output *UpdateTrustStoreOutput) {
@@ -4340,23 +5644,24 @@ func (c *WorkSpacesWeb) UpdateTrustStoreRequest(input *UpdateTrustStoreInput) (r
 // API operation UpdateTrustStore for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ServiceQuotaExceededException
-//   The service quota has been exceeded.
+//   - ThrottlingException
+//     There is a throttling error.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ServiceQuotaExceededException
+//     The service quota has been exceeded.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateTrustStore
 func (c *WorkSpacesWeb) UpdateTrustStore(input *UpdateTrustStoreInput) (*UpdateTrustStoreOutput, error) {
@@ -4380,6 +5685,97 @@ func (c *WorkSpacesWeb) UpdateTrustStoreWithContext(ctx aws.Context, input *Upda
 	return out, req.Send()
 }
 
+const opUpdateUserAccessLoggingSettings = "UpdateUserAccessLoggingSettings"
+
+// UpdateUserAccessLoggingSettingsRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateUserAccessLoggingSettings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateUserAccessLoggingSettings for more information on using the UpdateUserAccessLoggingSettings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateUserAccessLoggingSettingsRequest method.
+//	req, resp := client.UpdateUserAccessLoggingSettingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) UpdateUserAccessLoggingSettingsRequest(input *UpdateUserAccessLoggingSettingsInput) (req *request.Request, output *UpdateUserAccessLoggingSettingsOutput) {
+	op := &request.Operation{
+		Name:       opUpdateUserAccessLoggingSettings,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/userAccessLoggingSettings/{userAccessLoggingSettingsArn+}",
+	}
+
+	if input == nil {
+		input = &UpdateUserAccessLoggingSettingsInput{}
+	}
+
+	output = &UpdateUserAccessLoggingSettingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateUserAccessLoggingSettings API operation for Amazon WorkSpaces Web.
+//
+// Updates the user access logging settings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon WorkSpaces Web's
+// API operation UpdateUserAccessLoggingSettings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     There is an internal server error.
+//
+//   - ResourceNotFoundException
+//     The resource cannot be found.
+//
+//   - AccessDeniedException
+//     Access is denied.
+//
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateUserAccessLoggingSettings
+func (c *WorkSpacesWeb) UpdateUserAccessLoggingSettings(input *UpdateUserAccessLoggingSettingsInput) (*UpdateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.UpdateUserAccessLoggingSettingsRequest(input)
+	return out, req.Send()
+}
+
+// UpdateUserAccessLoggingSettingsWithContext is the same as UpdateUserAccessLoggingSettings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateUserAccessLoggingSettings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *WorkSpacesWeb) UpdateUserAccessLoggingSettingsWithContext(ctx aws.Context, input *UpdateUserAccessLoggingSettingsInput, opts ...request.Option) (*UpdateUserAccessLoggingSettingsOutput, error) {
+	req, out := c.UpdateUserAccessLoggingSettingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUpdateUserSettings = "UpdateUserSettings"
 
 // UpdateUserSettingsRequest generates a "aws/request.Request" representing the
@@ -4396,14 +5792,13 @@ const opUpdateUserSettings = "UpdateUserSettings"
 // This method is useful when you want to inject custom logic or configuration
 // into the SDK's request lifecycle. Such as custom headers, or retry logic.
 //
+//	// Example sending a request using the UpdateUserSettingsRequest method.
+//	req, resp := client.UpdateUserSettingsRequest(params)
 //
-//    // Example sending a request using the UpdateUserSettingsRequest method.
-//    req, resp := client.UpdateUserSettingsRequest(params)
-//
-//    err := req.Send()
-//    if err == nil { // resp is now filled
-//        fmt.Println(resp)
-//    }
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateUserSettings
 func (c *WorkSpacesWeb) UpdateUserSettingsRequest(input *UpdateUserSettingsInput) (req *request.Request, output *UpdateUserSettingsOutput) {
@@ -4434,20 +5829,21 @@ func (c *WorkSpacesWeb) UpdateUserSettingsRequest(input *UpdateUserSettingsInput
 // API operation UpdateUserSettings for usage and error information.
 //
 // Returned Error Types:
-//   * InternalServerException
-//   There is an internal server error.
 //
-//   * ResourceNotFoundException
-//   The resource cannot be found.
+//   - InternalServerException
+//     There is an internal server error.
 //
-//   * AccessDeniedException
-//   Access is denied.
+//   - ResourceNotFoundException
+//     The resource cannot be found.
 //
-//   * ThrottlingException
-//   There is a throttling error.
+//   - AccessDeniedException
+//     Access is denied.
 //
-//   * ValidationException
-//   There is a validation error.
+//   - ThrottlingException
+//     There is a throttling error.
+//
+//   - ValidationException
+//     There is a validation error.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/workspaces-web-2020-07-08/UpdateUserSettings
 func (c *WorkSpacesWeb) UpdateUserSettings(input *UpdateUserSettingsInput) (*UpdateUserSettingsOutput, error) {
@@ -4641,6 +6037,116 @@ func (s *AssociateBrowserSettingsOutput) SetBrowserSettingsArn(v string) *Associ
 
 // SetPortalArn sets the PortalArn field's value.
 func (s *AssociateBrowserSettingsOutput) SetPortalArn(v string) *AssociateBrowserSettingsOutput {
+	s.PortalArn = &v
+	return s
+}
+
+type AssociateIpAccessSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the IP access settings.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `location:"querystring" locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+
+	// The ARN of the web portal.
+	//
+	// PortalArn is a required field
+	PortalArn *string `location:"uri" locationName:"portalArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateIpAccessSettingsInput"}
+	if s.IpAccessSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpAccessSettingsArn"))
+	}
+	if s.IpAccessSettingsArn != nil && len(*s.IpAccessSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("IpAccessSettingsArn", 20))
+	}
+	if s.PortalArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PortalArn"))
+	}
+	if s.PortalArn != nil && len(*s.PortalArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("PortalArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *AssociateIpAccessSettingsInput) SetIpAccessSettingsArn(v string) *AssociateIpAccessSettingsInput {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+// SetPortalArn sets the PortalArn field's value.
+func (s *AssociateIpAccessSettingsInput) SetPortalArn(v string) *AssociateIpAccessSettingsInput {
+	s.PortalArn = &v
+	return s
+}
+
+type AssociateIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the IP access settings resource.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+
+	// The ARN of the web portal.
+	//
+	// PortalArn is a required field
+	PortalArn *string `locationName:"portalArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *AssociateIpAccessSettingsOutput) SetIpAccessSettingsArn(v string) *AssociateIpAccessSettingsOutput {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+// SetPortalArn sets the PortalArn field's value.
+func (s *AssociateIpAccessSettingsOutput) SetPortalArn(v string) *AssociateIpAccessSettingsOutput {
 	s.PortalArn = &v
 	return s
 }
@@ -4865,6 +6371,116 @@ func (s *AssociateTrustStoreOutput) SetTrustStoreArn(v string) *AssociateTrustSt
 	return s
 }
 
+type AssociateUserAccessLoggingSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the web portal.
+	//
+	// PortalArn is a required field
+	PortalArn *string `location:"uri" locationName:"portalArn" min:"20" type:"string" required:"true"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `location:"querystring" locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AssociateUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AssociateUserAccessLoggingSettingsInput"}
+	if s.PortalArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PortalArn"))
+	}
+	if s.PortalArn != nil && len(*s.PortalArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("PortalArn", 20))
+	}
+	if s.UserAccessLoggingSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserAccessLoggingSettingsArn"))
+	}
+	if s.UserAccessLoggingSettingsArn != nil && len(*s.UserAccessLoggingSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("UserAccessLoggingSettingsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPortalArn sets the PortalArn field's value.
+func (s *AssociateUserAccessLoggingSettingsInput) SetPortalArn(v string) *AssociateUserAccessLoggingSettingsInput {
+	s.PortalArn = &v
+	return s
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *AssociateUserAccessLoggingSettingsInput) SetUserAccessLoggingSettingsArn(v string) *AssociateUserAccessLoggingSettingsInput {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
+type AssociateUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the web portal.
+	//
+	// PortalArn is a required field
+	PortalArn *string `locationName:"portalArn" min:"20" type:"string" required:"true"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociateUserAccessLoggingSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetPortalArn sets the PortalArn field's value.
+func (s *AssociateUserAccessLoggingSettingsOutput) SetPortalArn(v string) *AssociateUserAccessLoggingSettingsOutput {
+	s.PortalArn = &v
+	return s
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *AssociateUserAccessLoggingSettingsOutput) SetUserAccessLoggingSettingsArn(v string) *AssociateUserAccessLoggingSettingsOutput {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
 type AssociateUserSettingsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -5039,7 +6655,9 @@ type BrowserSettingsSummary struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the browser settings.
-	BrowserSettingsArn *string `locationName:"browserSettingsArn" min:"20" type:"string"`
+	//
+	// BrowserSettingsArn is a required field
+	BrowserSettingsArn *string `locationName:"browserSettingsArn" min:"20" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -5280,6 +6898,150 @@ func (s *ConflictException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ConflictException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// Specifies a single cookie or set of cookies in an end user's browser.
+type CookieSpecification struct {
+	_ struct{} `type:"structure"`
+
+	// The domain of the cookie.
+	//
+	// Domain is a required field
+	Domain *string `locationName:"domain" type:"string" required:"true"`
+
+	// The name of the cookie.
+	Name *string `locationName:"name" type:"string"`
+
+	// The path of the cookie.
+	Path *string `locationName:"path" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CookieSpecification) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CookieSpecification) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CookieSpecification) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CookieSpecification"}
+	if s.Domain == nil {
+		invalidParams.Add(request.NewErrParamRequired("Domain"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDomain sets the Domain field's value.
+func (s *CookieSpecification) SetDomain(v string) *CookieSpecification {
+	s.Domain = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CookieSpecification) SetName(v string) *CookieSpecification {
+	s.Name = &v
+	return s
+}
+
+// SetPath sets the Path field's value.
+func (s *CookieSpecification) SetPath(v string) *CookieSpecification {
+	s.Path = &v
+	return s
+}
+
+// The configuration that specifies which cookies should be synchronized from
+// the end user's local browser to the remote browser.
+type CookieSynchronizationConfiguration struct {
+	_ struct{} `type:"structure" sensitive:"true"`
+
+	// The list of cookie specifications that are allowed to be synchronized to
+	// the remote browser.
+	//
+	// Allowlist is a required field
+	Allowlist []*CookieSpecification `locationName:"allowlist" type:"list" required:"true"`
+
+	// The list of cookie specifications that are blocked from being synchronized
+	// to the remote browser.
+	Blocklist []*CookieSpecification `locationName:"blocklist" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CookieSynchronizationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CookieSynchronizationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CookieSynchronizationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CookieSynchronizationConfiguration"}
+	if s.Allowlist == nil {
+		invalidParams.Add(request.NewErrParamRequired("Allowlist"))
+	}
+	if s.Allowlist != nil {
+		for i, v := range s.Allowlist {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Allowlist", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Blocklist != nil {
+		for i, v := range s.Blocklist {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Blocklist", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAllowlist sets the Allowlist field's value.
+func (s *CookieSynchronizationConfiguration) SetAllowlist(v []*CookieSpecification) *CookieSynchronizationConfiguration {
+	s.Allowlist = v
+	return s
+}
+
+// SetBlocklist sets the Blocklist field's value.
+func (s *CookieSynchronizationConfiguration) SetBlocklist(v []*CookieSpecification) *CookieSynchronizationConfiguration {
+	s.Blocklist = v
+	return s
 }
 
 type CreateBrowserSettingsInput struct {
@@ -5599,6 +7361,193 @@ func (s *CreateIdentityProviderOutput) SetIdentityProviderArn(v string) *CreateI
 	return s
 }
 
+type CreateIpAccessSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Additional encryption context of the IP access settings.
+	AdditionalEncryptionContext map[string]*string `locationName:"additionalEncryptionContext" type:"map"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. Idempotency ensures that an API request completes only once.
+	// With an idempotent request, if the original request completes successfully,
+	// subsequent retries with the same client token returns the result from the
+	// original successful request.
+	//
+	// If you do not specify a client token, one is automatically generated by the
+	// AWS SDK.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The custom managed key of the IP access settings.
+	CustomerManagedKey *string `locationName:"customerManagedKey" min:"20" type:"string"`
+
+	// The description of the IP access settings.
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateIpAccessSettingsInput's
+	// String and GoString methods.
+	Description *string `locationName:"description" min:"1" type:"string" sensitive:"true"`
+
+	// The display name of the IP access settings.
+	//
+	// DisplayName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateIpAccessSettingsInput's
+	// String and GoString methods.
+	DisplayName *string `locationName:"displayName" min:"1" type:"string" sensitive:"true"`
+
+	// The IP rules of the IP access settings.
+	//
+	// IpRules is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateIpAccessSettingsInput's
+	// String and GoString methods.
+	//
+	// IpRules is a required field
+	IpRules []*IpRule `locationName:"ipRules" min:"1" type:"list" required:"true" sensitive:"true"`
+
+	// The tags to add to the browser settings resource. A tag is a key-value pair.
+	Tags []*Tag `locationName:"tags" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateIpAccessSettingsInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.CustomerManagedKey != nil && len(*s.CustomerManagedKey) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomerManagedKey", 20))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.DisplayName != nil && len(*s.DisplayName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DisplayName", 1))
+	}
+	if s.IpRules == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpRules"))
+	}
+	if s.IpRules != nil && len(s.IpRules) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IpRules", 1))
+	}
+	if s.IpRules != nil {
+		for i, v := range s.IpRules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "IpRules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAdditionalEncryptionContext sets the AdditionalEncryptionContext field's value.
+func (s *CreateIpAccessSettingsInput) SetAdditionalEncryptionContext(v map[string]*string) *CreateIpAccessSettingsInput {
+	s.AdditionalEncryptionContext = v
+	return s
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateIpAccessSettingsInput) SetClientToken(v string) *CreateIpAccessSettingsInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetCustomerManagedKey sets the CustomerManagedKey field's value.
+func (s *CreateIpAccessSettingsInput) SetCustomerManagedKey(v string) *CreateIpAccessSettingsInput {
+	s.CustomerManagedKey = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateIpAccessSettingsInput) SetDescription(v string) *CreateIpAccessSettingsInput {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *CreateIpAccessSettingsInput) SetDisplayName(v string) *CreateIpAccessSettingsInput {
+	s.DisplayName = &v
+	return s
+}
+
+// SetIpRules sets the IpRules field's value.
+func (s *CreateIpAccessSettingsInput) SetIpRules(v []*IpRule) *CreateIpAccessSettingsInput {
+	s.IpRules = v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateIpAccessSettingsInput) SetTags(v []*Tag) *CreateIpAccessSettingsInput {
+	s.Tags = v
+	return s
+}
+
+type CreateIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the IP access settings resource.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *CreateIpAccessSettingsOutput) SetIpAccessSettingsArn(v string) *CreateIpAccessSettingsOutput {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
 type CreateNetworkSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5762,6 +7711,21 @@ type CreatePortalInput struct {
 	// The additional encryption context of the portal.
 	AdditionalEncryptionContext map[string]*string `locationName:"additionalEncryptionContext" type:"map"`
 
+	// The type of authentication integration points used when signing into the
+	// web portal. Defaults to Standard.
+	//
+	// Standard web portals are authenticated directly through your identity provider.
+	// You need to call CreateIdentityProvider to integrate your identity provider
+	// with your web portal. User and group access to your web portal is controlled
+	// through your identity provider.
+	//
+	// IAM_Identity_Center web portals are authenticated through AWS IAM Identity
+	// Center (successor to AWS Single Sign-On). They provide additional features,
+	// such as IdP-initiated authentication. Identity sources (including external
+	// identity provider integration), plus user and group access to your web portal,
+	// can be configured in the IAM Identity Center.
+	AuthenticationType *string `locationName:"authenticationType" type:"string" enum:"AuthenticationType"`
+
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
 	// of the request. Idempotency ensures that an API request completes only once.
 	// With an idempotent request, if the original request completes successfully,
@@ -5837,6 +7801,12 @@ func (s *CreatePortalInput) Validate() error {
 // SetAdditionalEncryptionContext sets the AdditionalEncryptionContext field's value.
 func (s *CreatePortalInput) SetAdditionalEncryptionContext(v map[string]*string) *CreatePortalInput {
 	s.AdditionalEncryptionContext = v
+	return s
+}
+
+// SetAuthenticationType sets the AuthenticationType field's value.
+func (s *CreatePortalInput) SetAuthenticationType(v string) *CreatePortalInput {
+	s.AuthenticationType = &v
 	return s
 }
 
@@ -6026,7 +7996,7 @@ func (s *CreateTrustStoreOutput) SetTrustStoreArn(v string) *CreateTrustStoreOut
 	return s
 }
 
-type CreateUserSettingsInput struct {
+type CreateUserAccessLoggingSettingsInput struct {
 	_ struct{} `type:"structure"`
 
 	// A unique, case-sensitive identifier that you provide to ensure the idempotency
@@ -6039,11 +8009,146 @@ type CreateUserSettingsInput struct {
 	// AWS SDK.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
 
+	// The ARN of the Kinesis stream.
+	//
+	// KinesisStreamArn is a required field
+	KinesisStreamArn *string `locationName:"kinesisStreamArn" min:"20" type:"string" required:"true"`
+
+	// The tags to add to the user settings resource. A tag is a key-value pair.
+	Tags []*Tag `locationName:"tags" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateUserAccessLoggingSettingsInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.KinesisStreamArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("KinesisStreamArn"))
+	}
+	if s.KinesisStreamArn != nil && len(*s.KinesisStreamArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("KinesisStreamArn", 20))
+	}
+	if s.Tags != nil {
+		for i, v := range s.Tags {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Tags", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateUserAccessLoggingSettingsInput) SetClientToken(v string) *CreateUserAccessLoggingSettingsInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetKinesisStreamArn sets the KinesisStreamArn field's value.
+func (s *CreateUserAccessLoggingSettingsInput) SetKinesisStreamArn(v string) *CreateUserAccessLoggingSettingsInput {
+	s.KinesisStreamArn = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateUserAccessLoggingSettingsInput) SetTags(v []*Tag) *CreateUserAccessLoggingSettingsInput {
+	s.Tags = v
+	return s
+}
+
+type CreateUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateUserAccessLoggingSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *CreateUserAccessLoggingSettingsOutput) SetUserAccessLoggingSettingsArn(v string) *CreateUserAccessLoggingSettingsOutput {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
+type CreateUserSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The additional encryption context of the user settings.
+	AdditionalEncryptionContext map[string]*string `locationName:"additionalEncryptionContext" type:"map"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. Idempotency ensures that an API request completes only once.
+	// With an idempotent request, if the original request completes successfully,
+	// subsequent retries with the same client token returns the result from the
+	// original successful request.
+	//
+	// If you do not specify a client token, one is automatically generated by the
+	// AWS SDK.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The configuration that specifies which cookies should be synchronized from
+	// the end user's local browser to the remote browser.
+	//
+	// CookieSynchronizationConfiguration is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by CreateUserSettingsInput's
+	// String and GoString methods.
+	CookieSynchronizationConfiguration *CookieSynchronizationConfiguration `locationName:"cookieSynchronizationConfiguration" type:"structure" sensitive:"true"`
+
 	// Specifies whether the user can copy text from the streaming session to the
 	// local device.
 	//
 	// CopyAllowed is a required field
 	CopyAllowed *string `locationName:"copyAllowed" type:"string" required:"true" enum:"EnabledType"`
+
+	// The customer managed key used to encrypt sensitive information in the user
+	// settings.
+	CustomerManagedKey *string `locationName:"customerManagedKey" min:"20" type:"string"`
 
 	// The amount of time that a streaming session remains active after users disconnect.
 	DisconnectTimeoutInMinutes *int64 `locationName:"disconnectTimeoutInMinutes" min:"1" type:"integer"`
@@ -6106,6 +8211,9 @@ func (s *CreateUserSettingsInput) Validate() error {
 	if s.CopyAllowed == nil {
 		invalidParams.Add(request.NewErrParamRequired("CopyAllowed"))
 	}
+	if s.CustomerManagedKey != nil && len(*s.CustomerManagedKey) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("CustomerManagedKey", 20))
+	}
 	if s.DisconnectTimeoutInMinutes != nil && *s.DisconnectTimeoutInMinutes < 1 {
 		invalidParams.Add(request.NewErrParamMinValue("DisconnectTimeoutInMinutes", 1))
 	}
@@ -6120,6 +8228,11 @@ func (s *CreateUserSettingsInput) Validate() error {
 	}
 	if s.UploadAllowed == nil {
 		invalidParams.Add(request.NewErrParamRequired("UploadAllowed"))
+	}
+	if s.CookieSynchronizationConfiguration != nil {
+		if err := s.CookieSynchronizationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("CookieSynchronizationConfiguration", err.(request.ErrInvalidParams))
+		}
 	}
 	if s.Tags != nil {
 		for i, v := range s.Tags {
@@ -6138,15 +8251,33 @@ func (s *CreateUserSettingsInput) Validate() error {
 	return nil
 }
 
+// SetAdditionalEncryptionContext sets the AdditionalEncryptionContext field's value.
+func (s *CreateUserSettingsInput) SetAdditionalEncryptionContext(v map[string]*string) *CreateUserSettingsInput {
+	s.AdditionalEncryptionContext = v
+	return s
+}
+
 // SetClientToken sets the ClientToken field's value.
 func (s *CreateUserSettingsInput) SetClientToken(v string) *CreateUserSettingsInput {
 	s.ClientToken = &v
 	return s
 }
 
+// SetCookieSynchronizationConfiguration sets the CookieSynchronizationConfiguration field's value.
+func (s *CreateUserSettingsInput) SetCookieSynchronizationConfiguration(v *CookieSynchronizationConfiguration) *CreateUserSettingsInput {
+	s.CookieSynchronizationConfiguration = v
+	return s
+}
+
 // SetCopyAllowed sets the CopyAllowed field's value.
 func (s *CreateUserSettingsInput) SetCopyAllowed(v string) *CreateUserSettingsInput {
 	s.CopyAllowed = &v
+	return s
+}
+
+// SetCustomerManagedKey sets the CustomerManagedKey field's value.
+func (s *CreateUserSettingsInput) SetCustomerManagedKey(v string) *CreateUserSettingsInput {
+	s.CustomerManagedKey = &v
 	return s
 }
 
@@ -6367,6 +8498,77 @@ func (s DeleteIdentityProviderOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteIpAccessSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the IP access settings.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `location:"uri" locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteIpAccessSettingsInput"}
+	if s.IpAccessSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpAccessSettingsArn"))
+	}
+	if s.IpAccessSettingsArn != nil && len(*s.IpAccessSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("IpAccessSettingsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *DeleteIpAccessSettingsInput) SetIpAccessSettingsArn(v string) *DeleteIpAccessSettingsInput {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+type DeleteIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteNetworkSettingsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6580,6 +8782,77 @@ func (s DeleteTrustStoreOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteUserAccessLoggingSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `location:"uri" locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteUserAccessLoggingSettingsInput"}
+	if s.UserAccessLoggingSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserAccessLoggingSettingsArn"))
+	}
+	if s.UserAccessLoggingSettingsArn != nil && len(*s.UserAccessLoggingSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("UserAccessLoggingSettingsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *DeleteUserAccessLoggingSettingsInput) SetUserAccessLoggingSettingsArn(v string) *DeleteUserAccessLoggingSettingsInput {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
+type DeleteUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteUserAccessLoggingSettingsOutput) GoString() string {
+	return s.String()
+}
+
 type DeleteUserSettingsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6722,6 +8995,77 @@ func (s DisassociateBrowserSettingsOutput) GoString() string {
 	return s.String()
 }
 
+type DisassociateIpAccessSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the web portal.
+	//
+	// PortalArn is a required field
+	PortalArn *string `location:"uri" locationName:"portalArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateIpAccessSettingsInput"}
+	if s.PortalArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PortalArn"))
+	}
+	if s.PortalArn != nil && len(*s.PortalArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("PortalArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPortalArn sets the PortalArn field's value.
+func (s *DisassociateIpAccessSettingsInput) SetPortalArn(v string) *DisassociateIpAccessSettingsInput {
+	s.PortalArn = &v
+	return s
+}
+
+type DisassociateIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
 type DisassociateNetworkSettingsInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -6861,6 +9205,77 @@ func (s DisassociateTrustStoreOutput) String() string {
 // be included in the string output. The member name will be present, but the
 // value will be replaced with "sensitive".
 func (s DisassociateTrustStoreOutput) GoString() string {
+	return s.String()
+}
+
+type DisassociateUserAccessLoggingSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the web portal.
+	//
+	// PortalArn is a required field
+	PortalArn *string `location:"uri" locationName:"portalArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DisassociateUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DisassociateUserAccessLoggingSettingsInput"}
+	if s.PortalArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PortalArn"))
+	}
+	if s.PortalArn != nil && len(*s.PortalArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("PortalArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPortalArn sets the PortalArn field's value.
+func (s *DisassociateUserAccessLoggingSettingsInput) SetPortalArn(v string) *DisassociateUserAccessLoggingSettingsInput {
+	s.PortalArn = &v
+	return s
+}
+
+type DisassociateUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DisassociateUserAccessLoggingSettingsOutput) GoString() string {
 	return s.String()
 }
 
@@ -7092,6 +9507,86 @@ func (s GetIdentityProviderOutput) GoString() string {
 // SetIdentityProvider sets the IdentityProvider field's value.
 func (s *GetIdentityProviderOutput) SetIdentityProvider(v *IdentityProvider) *GetIdentityProviderOutput {
 	s.IdentityProvider = v
+	return s
+}
+
+type GetIpAccessSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the IP access settings.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `location:"uri" locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetIpAccessSettingsInput"}
+	if s.IpAccessSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpAccessSettingsArn"))
+	}
+	if s.IpAccessSettingsArn != nil && len(*s.IpAccessSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("IpAccessSettingsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *GetIpAccessSettingsInput) SetIpAccessSettingsArn(v string) *GetIpAccessSettingsInput {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+type GetIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IP access settings.
+	IpAccessSettings *IpAccessSettings `locationName:"ipAccessSettings" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpAccessSettings sets the IpAccessSettings field's value.
+func (s *GetIpAccessSettingsOutput) SetIpAccessSettings(v *IpAccessSettings) *GetIpAccessSettingsOutput {
+	s.IpAccessSettings = v
 	return s
 }
 
@@ -7419,7 +9914,9 @@ type GetTrustStoreCertificateOutput struct {
 	Certificate *Certificate `locationName:"certificate" type:"structure"`
 
 	// The ARN of the trust store certificate.
-	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string"`
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -7529,6 +10026,86 @@ func (s GetTrustStoreOutput) GoString() string {
 // SetTrustStore sets the TrustStore field's value.
 func (s *GetTrustStoreOutput) SetTrustStore(v *TrustStore) *GetTrustStoreOutput {
 	s.TrustStore = v
+	return s
+}
+
+type GetUserAccessLoggingSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `location:"uri" locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetUserAccessLoggingSettingsInput"}
+	if s.UserAccessLoggingSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserAccessLoggingSettingsArn"))
+	}
+	if s.UserAccessLoggingSettingsArn != nil && len(*s.UserAccessLoggingSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("UserAccessLoggingSettingsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *GetUserAccessLoggingSettingsInput) SetUserAccessLoggingSettingsArn(v string) *GetUserAccessLoggingSettingsInput {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
+type GetUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The user access logging settings.
+	UserAccessLoggingSettings *UserAccessLoggingSettings `locationName:"userAccessLoggingSettings" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetUserAccessLoggingSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetUserAccessLoggingSettings sets the UserAccessLoggingSettings field's value.
+func (s *GetUserAccessLoggingSettingsOutput) SetUserAccessLoggingSettings(v *UserAccessLoggingSettings) *GetUserAccessLoggingSettingsOutput {
+	s.UserAccessLoggingSettings = v
 	return s
 }
 
@@ -7702,7 +10279,9 @@ type IdentityProviderSummary struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the identity provider.
-	IdentityProviderArn *string `locationName:"identityProviderArn" min:"20" type:"string"`
+	//
+	// IdentityProviderArn is a required field
+	IdentityProviderArn *string `locationName:"identityProviderArn" min:"20" type:"string" required:"true"`
 
 	// The identity provider name.
 	//
@@ -7816,6 +10395,234 @@ func (s *InternalServerException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *InternalServerException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// The IP access settings resource that can be associated with a web portal.
+type IpAccessSettings struct {
+	_ struct{} `type:"structure"`
+
+	// A list of web portal ARNs that this IP access settings resource is associated
+	// with.
+	AssociatedPortalArns []*string `locationName:"associatedPortalArns" type:"list"`
+
+	// The creation date timestamp of the IP access settings.
+	CreationDate *time.Time `locationName:"creationDate" type:"timestamp"`
+
+	// The description of the IP access settings.
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpAccessSettings's
+	// String and GoString methods.
+	Description *string `locationName:"description" min:"1" type:"string" sensitive:"true"`
+
+	// The display name of the IP access settings.
+	//
+	// DisplayName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpAccessSettings's
+	// String and GoString methods.
+	DisplayName *string `locationName:"displayName" min:"1" type:"string" sensitive:"true"`
+
+	// The ARN of the IP access settings resource.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+
+	// The IP rules of the IP access settings.
+	//
+	// IpRules is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpAccessSettings's
+	// String and GoString methods.
+	IpRules []*IpRule `locationName:"ipRules" min:"1" type:"list" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpAccessSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpAccessSettings) GoString() string {
+	return s.String()
+}
+
+// SetAssociatedPortalArns sets the AssociatedPortalArns field's value.
+func (s *IpAccessSettings) SetAssociatedPortalArns(v []*string) *IpAccessSettings {
+	s.AssociatedPortalArns = v
+	return s
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *IpAccessSettings) SetCreationDate(v time.Time) *IpAccessSettings {
+	s.CreationDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *IpAccessSettings) SetDescription(v string) *IpAccessSettings {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *IpAccessSettings) SetDisplayName(v string) *IpAccessSettings {
+	s.DisplayName = &v
+	return s
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *IpAccessSettings) SetIpAccessSettingsArn(v string) *IpAccessSettings {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+// SetIpRules sets the IpRules field's value.
+func (s *IpAccessSettings) SetIpRules(v []*IpRule) *IpAccessSettings {
+	s.IpRules = v
+	return s
+}
+
+// The summary of IP access settings.
+type IpAccessSettingsSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The creation date timestamp of the IP access settings.
+	CreationDate *time.Time `locationName:"creationDate" type:"timestamp"`
+
+	// The description of the IP access settings.
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpAccessSettingsSummary's
+	// String and GoString methods.
+	Description *string `locationName:"description" min:"1" type:"string" sensitive:"true"`
+
+	// The display name of the IP access settings.
+	//
+	// DisplayName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpAccessSettingsSummary's
+	// String and GoString methods.
+	DisplayName *string `locationName:"displayName" min:"1" type:"string" sensitive:"true"`
+
+	// The ARN of IP access settings.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpAccessSettingsSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpAccessSettingsSummary) GoString() string {
+	return s.String()
+}
+
+// SetCreationDate sets the CreationDate field's value.
+func (s *IpAccessSettingsSummary) SetCreationDate(v time.Time) *IpAccessSettingsSummary {
+	s.CreationDate = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *IpAccessSettingsSummary) SetDescription(v string) *IpAccessSettingsSummary {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *IpAccessSettingsSummary) SetDisplayName(v string) *IpAccessSettingsSummary {
+	s.DisplayName = &v
+	return s
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *IpAccessSettingsSummary) SetIpAccessSettingsArn(v string) *IpAccessSettingsSummary {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+// The IP rules of the IP access settings.
+type IpRule struct {
+	_ struct{} `type:"structure"`
+
+	// The description of the IP rule.
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpRule's
+	// String and GoString methods.
+	Description *string `locationName:"description" min:"1" type:"string" sensitive:"true"`
+
+	// The IP range of the IP rule.
+	//
+	// IpRange is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by IpRule's
+	// String and GoString methods.
+	//
+	// IpRange is a required field
+	IpRange *string `locationName:"ipRange" type:"string" required:"true" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpRule) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s IpRule) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *IpRule) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "IpRule"}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.IpRange == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpRange"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *IpRule) SetDescription(v string) *IpRule {
+	s.Description = &v
+	return s
+}
+
+// SetIpRange sets the IpRange field's value.
+func (s *IpRule) SetIpRange(v string) *IpRule {
+	s.IpRange = &v
+	return s
 }
 
 type ListBrowserSettingsInput struct {
@@ -8023,6 +10830,102 @@ func (s *ListIdentityProvidersOutput) SetIdentityProviders(v []*IdentityProvider
 
 // SetNextToken sets the NextToken field's value.
 func (s *ListIdentityProvidersOutput) SetNextToken(v string) *ListIdentityProvidersOutput {
+	s.NextToken = &v
+	return s
+}
+
+type ListIpAccessSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The maximum number of results to be included in the next page.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListIpAccessSettingsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListIpAccessSettingsInput) SetMaxResults(v int64) *ListIpAccessSettingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIpAccessSettingsInput) SetNextToken(v string) *ListIpAccessSettingsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IP access settings.
+	IpAccessSettings []*IpAccessSettingsSummary `locationName:"ipAccessSettings" type:"list"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpAccessSettings sets the IpAccessSettings field's value.
+func (s *ListIpAccessSettingsOutput) SetIpAccessSettings(v []*IpAccessSettingsSummary) *ListIpAccessSettingsOutput {
+	s.IpAccessSettings = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListIpAccessSettingsOutput) SetNextToken(v string) *ListIpAccessSettingsOutput {
 	s.NextToken = &v
 	return s
 }
@@ -8382,7 +11285,9 @@ type ListTrustStoreCertificatesOutput struct {
 	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
 
 	// The ARN of the trust store.
-	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string"`
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -8514,6 +11419,102 @@ func (s *ListTrustStoresOutput) SetNextToken(v string) *ListTrustStoresOutput {
 // SetTrustStores sets the TrustStores field's value.
 func (s *ListTrustStoresOutput) SetTrustStores(v []*TrustStoreSummary) *ListTrustStoresOutput {
 	s.TrustStores = v
+	return s
+}
+
+type ListUserAccessLoggingSettingsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The maximum number of results to be included in the next page.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListUserAccessLoggingSettingsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListUserAccessLoggingSettingsInput) SetMaxResults(v int64) *ListUserAccessLoggingSettingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListUserAccessLoggingSettingsInput) SetNextToken(v string) *ListUserAccessLoggingSettingsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The pagination token used to retrieve the next page of results for this operation.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// The user access logging settings.
+	UserAccessLoggingSettings []*UserAccessLoggingSettingsSummary `locationName:"userAccessLoggingSettings" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListUserAccessLoggingSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListUserAccessLoggingSettingsOutput) SetNextToken(v string) *ListUserAccessLoggingSettingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetUserAccessLoggingSettings sets the UserAccessLoggingSettings field's value.
+func (s *ListUserAccessLoggingSettingsOutput) SetUserAccessLoggingSettings(v []*UserAccessLoggingSettingsSummary) *ListUserAccessLoggingSettingsOutput {
+	s.UserAccessLoggingSettings = v
 	return s
 }
 
@@ -8693,7 +11694,9 @@ type NetworkSettingsSummary struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the network settings.
-	NetworkSettingsArn *string `locationName:"networkSettingsArn" min:"20" type:"string"`
+	//
+	// NetworkSettingsArn is a required field
+	NetworkSettingsArn *string `locationName:"networkSettingsArn" min:"20" type:"string" required:"true"`
 
 	// The VPC ID of the network settings.
 	VpcId *string `locationName:"vpcId" min:"1" type:"string"`
@@ -8733,6 +11736,21 @@ func (s *NetworkSettingsSummary) SetVpcId(v string) *NetworkSettingsSummary {
 type Portal struct {
 	_ struct{} `type:"structure"`
 
+	// The type of authentication integration points used when signing into the
+	// web portal. Defaults to Standard.
+	//
+	// Standard web portals are authenticated directly through your identity provider.
+	// You need to call CreateIdentityProvider to integrate your identity provider
+	// with your web portal. User and group access to your web portal is controlled
+	// through your identity provider.
+	//
+	// IAM_Identity_Center web portals are authenticated through AWS IAM Identity
+	// Center (successor to AWS Single Sign-On). They provide additional features,
+	// such as IdP-initiated authentication. Identity sources (including external
+	// identity provider integration), plus user and group access to your web portal,
+	// can be configured in the IAM Identity Center.
+	AuthenticationType *string `locationName:"authenticationType" type:"string" enum:"AuthenticationType"`
+
 	// The ARN of the browser settings that is associated with this web portal.
 	BrowserSettingsArn *string `locationName:"browserSettingsArn" min:"20" type:"string"`
 
@@ -8749,11 +11767,16 @@ type Portal struct {
 	// String and GoString methods.
 	DisplayName *string `locationName:"displayName" min:"1" type:"string" sensitive:"true"`
 
+	// The ARN of the IP access settings.
+	IpAccessSettingsArn *string `locationName:"ipAccessSettingsArn" min:"20" type:"string"`
+
 	// The ARN of the network settings that is associated with the web portal.
 	NetworkSettingsArn *string `locationName:"networkSettingsArn" min:"20" type:"string"`
 
 	// The ARN of the web portal.
-	PortalArn *string `locationName:"portalArn" min:"20" type:"string"`
+	//
+	// PortalArn is a required field
+	PortalArn *string `locationName:"portalArn" min:"20" type:"string" required:"true"`
 
 	// The endpoint URL of the web portal that users access in order to start streaming
 	// sessions.
@@ -8771,7 +11794,11 @@ type Portal struct {
 	// The ARN of the trust store that is associated with the web portal.
 	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string"`
 
-	// The ARN of the trust store that is associated with the web portal.
+	// The ARN of the user access logging settings that is associated with the web
+	// portal.
+	UserAccessLoggingSettingsArn *string `locationName:"userAccessLoggingSettingsArn" min:"20" type:"string"`
+
+	// The ARN of the user settings that is associated with the web portal.
 	UserSettingsArn *string `locationName:"userSettingsArn" min:"20" type:"string"`
 }
 
@@ -8791,6 +11818,12 @@ func (s Portal) String() string {
 // value will be replaced with "sensitive".
 func (s Portal) GoString() string {
 	return s.String()
+}
+
+// SetAuthenticationType sets the AuthenticationType field's value.
+func (s *Portal) SetAuthenticationType(v string) *Portal {
+	s.AuthenticationType = &v
+	return s
 }
 
 // SetBrowserSettingsArn sets the BrowserSettingsArn field's value.
@@ -8814,6 +11847,12 @@ func (s *Portal) SetCreationDate(v time.Time) *Portal {
 // SetDisplayName sets the DisplayName field's value.
 func (s *Portal) SetDisplayName(v string) *Portal {
 	s.DisplayName = &v
+	return s
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *Portal) SetIpAccessSettingsArn(v string) *Portal {
+	s.IpAccessSettingsArn = &v
 	return s
 }
 
@@ -8859,6 +11898,12 @@ func (s *Portal) SetTrustStoreArn(v string) *Portal {
 	return s
 }
 
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *Portal) SetUserAccessLoggingSettingsArn(v string) *Portal {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
 // SetUserSettingsArn sets the UserSettingsArn field's value.
 func (s *Portal) SetUserSettingsArn(v string) *Portal {
 	s.UserSettingsArn = &v
@@ -8868,6 +11913,21 @@ func (s *Portal) SetUserSettingsArn(v string) *Portal {
 // The summary of the portal.
 type PortalSummary struct {
 	_ struct{} `type:"structure"`
+
+	// The type of authentication integration points used when signing into the
+	// web portal. Defaults to Standard.
+	//
+	// Standard web portals are authenticated directly through your identity provider.
+	// You need to call CreateIdentityProvider to integrate your identity provider
+	// with your web portal. User and group access to your web portal is controlled
+	// through your identity provider.
+	//
+	// IAM_Identity_Center web portals are authenticated through AWS IAM Identity
+	// Center (successor to AWS Single Sign-On). They provide additional features,
+	// such as IdP-initiated authentication. Identity sources (including external
+	// identity provider integration), plus user and group access to your web portal,
+	// can be configured in the IAM Identity Center.
+	AuthenticationType *string `locationName:"authenticationType" type:"string" enum:"AuthenticationType"`
 
 	// The ARN of the browser settings that is associated with the web portal.
 	BrowserSettingsArn *string `locationName:"browserSettingsArn" min:"20" type:"string"`
@@ -8885,11 +11945,16 @@ type PortalSummary struct {
 	// String and GoString methods.
 	DisplayName *string `locationName:"displayName" min:"1" type:"string" sensitive:"true"`
 
+	// The ARN of the IP access settings.
+	IpAccessSettingsArn *string `locationName:"ipAccessSettingsArn" min:"20" type:"string"`
+
 	// The ARN of the network settings that is associated with the web portal.
 	NetworkSettingsArn *string `locationName:"networkSettingsArn" min:"20" type:"string"`
 
 	// The ARN of the web portal.
-	PortalArn *string `locationName:"portalArn" min:"20" type:"string"`
+	//
+	// PortalArn is a required field
+	PortalArn *string `locationName:"portalArn" min:"20" type:"string" required:"true"`
 
 	// The endpoint URL of the web portal that users access in order to start streaming
 	// sessions.
@@ -8903,6 +11968,10 @@ type PortalSummary struct {
 
 	// The ARN of the trust that is associated with this web portal.
 	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string"`
+
+	// The ARN of the user access logging settings that is associated with the web
+	// portal.
+	UserAccessLoggingSettingsArn *string `locationName:"userAccessLoggingSettingsArn" min:"20" type:"string"`
 
 	// The ARN of the user settings that is associated with the web portal.
 	UserSettingsArn *string `locationName:"userSettingsArn" min:"20" type:"string"`
@@ -8926,6 +11995,12 @@ func (s PortalSummary) GoString() string {
 	return s.String()
 }
 
+// SetAuthenticationType sets the AuthenticationType field's value.
+func (s *PortalSummary) SetAuthenticationType(v string) *PortalSummary {
+	s.AuthenticationType = &v
+	return s
+}
+
 // SetBrowserSettingsArn sets the BrowserSettingsArn field's value.
 func (s *PortalSummary) SetBrowserSettingsArn(v string) *PortalSummary {
 	s.BrowserSettingsArn = &v
@@ -8947,6 +12022,12 @@ func (s *PortalSummary) SetCreationDate(v time.Time) *PortalSummary {
 // SetDisplayName sets the DisplayName field's value.
 func (s *PortalSummary) SetDisplayName(v string) *PortalSummary {
 	s.DisplayName = &v
+	return s
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *PortalSummary) SetIpAccessSettingsArn(v string) *PortalSummary {
+	s.IpAccessSettingsArn = &v
 	return s
 }
 
@@ -8983,6 +12064,12 @@ func (s *PortalSummary) SetRendererType(v string) *PortalSummary {
 // SetTrustStoreArn sets the TrustStoreArn field's value.
 func (s *PortalSummary) SetTrustStoreArn(v string) *PortalSummary {
 	s.TrustStoreArn = &v
+	return s
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *PortalSummary) SetUserAccessLoggingSettingsArn(v string) *PortalSummary {
+	s.UserAccessLoggingSettingsArn = &v
 	return s
 }
 
@@ -9477,7 +12564,9 @@ type TrustStore struct {
 	AssociatedPortalArns []*string `locationName:"associatedPortalArns" type:"list"`
 
 	// The ARN of the trust store.
-	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string"`
+	//
+	// TrustStoreArn is a required field
+	TrustStoreArn *string `locationName:"trustStoreArn" min:"20" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -9901,6 +12990,165 @@ func (s *UpdateIdentityProviderOutput) SetIdentityProvider(v *IdentityProvider) 
 	return s
 }
 
+type UpdateIpAccessSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. Idempotency ensures that an API request completes only once.
+	// With an idempotent request, if the original request completes successfully,
+	// subsequent retries with the same client token return the result from the
+	// original successful request.
+	//
+	// If you do not specify a client token, one is automatically generated by the
+	// AWS SDK.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The description of the IP access settings.
+	//
+	// Description is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateIpAccessSettingsInput's
+	// String and GoString methods.
+	Description *string `locationName:"description" min:"1" type:"string" sensitive:"true"`
+
+	// The display name of the IP access settings.
+	//
+	// DisplayName is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateIpAccessSettingsInput's
+	// String and GoString methods.
+	DisplayName *string `locationName:"displayName" min:"1" type:"string" sensitive:"true"`
+
+	// The ARN of the IP access settings.
+	//
+	// IpAccessSettingsArn is a required field
+	IpAccessSettingsArn *string `location:"uri" locationName:"ipAccessSettingsArn" min:"20" type:"string" required:"true"`
+
+	// The updated IP rules of the IP access settings.
+	//
+	// IpRules is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateIpAccessSettingsInput's
+	// String and GoString methods.
+	IpRules []*IpRule `locationName:"ipRules" min:"1" type:"list" sensitive:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateIpAccessSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateIpAccessSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateIpAccessSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateIpAccessSettingsInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.Description != nil && len(*s.Description) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Description", 1))
+	}
+	if s.DisplayName != nil && len(*s.DisplayName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DisplayName", 1))
+	}
+	if s.IpAccessSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("IpAccessSettingsArn"))
+	}
+	if s.IpAccessSettingsArn != nil && len(*s.IpAccessSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("IpAccessSettingsArn", 20))
+	}
+	if s.IpRules != nil && len(s.IpRules) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IpRules", 1))
+	}
+	if s.IpRules != nil {
+		for i, v := range s.IpRules {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "IpRules", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateIpAccessSettingsInput) SetClientToken(v string) *UpdateIpAccessSettingsInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *UpdateIpAccessSettingsInput) SetDescription(v string) *UpdateIpAccessSettingsInput {
+	s.Description = &v
+	return s
+}
+
+// SetDisplayName sets the DisplayName field's value.
+func (s *UpdateIpAccessSettingsInput) SetDisplayName(v string) *UpdateIpAccessSettingsInput {
+	s.DisplayName = &v
+	return s
+}
+
+// SetIpAccessSettingsArn sets the IpAccessSettingsArn field's value.
+func (s *UpdateIpAccessSettingsInput) SetIpAccessSettingsArn(v string) *UpdateIpAccessSettingsInput {
+	s.IpAccessSettingsArn = &v
+	return s
+}
+
+// SetIpRules sets the IpRules field's value.
+func (s *UpdateIpAccessSettingsInput) SetIpRules(v []*IpRule) *UpdateIpAccessSettingsInput {
+	s.IpRules = v
+	return s
+}
+
+type UpdateIpAccessSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IP access settings.
+	//
+	// IpAccessSettings is a required field
+	IpAccessSettings *IpAccessSettings `locationName:"ipAccessSettings" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateIpAccessSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateIpAccessSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetIpAccessSettings sets the IpAccessSettings field's value.
+func (s *UpdateIpAccessSettingsOutput) SetIpAccessSettings(v *IpAccessSettings) *UpdateIpAccessSettingsOutput {
+	s.IpAccessSettings = v
+	return s
+}
+
 type UpdateNetworkSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10044,6 +13292,21 @@ func (s *UpdateNetworkSettingsOutput) SetNetworkSettings(v *NetworkSettings) *Up
 type UpdatePortalInput struct {
 	_ struct{} `type:"structure"`
 
+	// The type of authentication integration points used when signing into the
+	// web portal. Defaults to Standard.
+	//
+	// Standard web portals are authenticated directly through your identity provider.
+	// You need to call CreateIdentityProvider to integrate your identity provider
+	// with your web portal. User and group access to your web portal is controlled
+	// through your identity provider.
+	//
+	// IAM_Identity_Center web portals are authenticated through AWS IAM Identity
+	// Center (successor to AWS Single Sign-On). They provide additional features,
+	// such as IdP-initiated authentication. Identity sources (including external
+	// identity provider integration), plus user and group access to your web portal,
+	// can be configured in the IAM Identity Center.
+	AuthenticationType *string `locationName:"authenticationType" type:"string" enum:"AuthenticationType"`
+
 	// The name of the web portal. This is not visible to users who log into the
 	// web portal.
 	//
@@ -10093,6 +13356,12 @@ func (s *UpdatePortalInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAuthenticationType sets the AuthenticationType field's value.
+func (s *UpdatePortalInput) SetAuthenticationType(v string) *UpdatePortalInput {
+	s.AuthenticationType = &v
+	return s
 }
 
 // SetDisplayName sets the DisplayName field's value.
@@ -10257,6 +13526,119 @@ func (s *UpdateTrustStoreOutput) SetTrustStoreArn(v string) *UpdateTrustStoreOut
 	return s
 }
 
+type UpdateUserAccessLoggingSettingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// A unique, case-sensitive identifier that you provide to ensure the idempotency
+	// of the request. Idempotency ensures that an API request completes only once.
+	// With an idempotent request, if the original request completes successfully,
+	// subsequent retries with the same client token return the result from the
+	// original successful request.
+	//
+	// If you do not specify a client token, one is automatically generated by the
+	// AWS SDK.
+	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The ARN of the Kinesis stream.
+	KinesisStreamArn *string `locationName:"kinesisStreamArn" min:"20" type:"string"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `location:"uri" locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateUserAccessLoggingSettingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateUserAccessLoggingSettingsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateUserAccessLoggingSettingsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateUserAccessLoggingSettingsInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.KinesisStreamArn != nil && len(*s.KinesisStreamArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("KinesisStreamArn", 20))
+	}
+	if s.UserAccessLoggingSettingsArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("UserAccessLoggingSettingsArn"))
+	}
+	if s.UserAccessLoggingSettingsArn != nil && len(*s.UserAccessLoggingSettingsArn) < 20 {
+		invalidParams.Add(request.NewErrParamMinLen("UserAccessLoggingSettingsArn", 20))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *UpdateUserAccessLoggingSettingsInput) SetClientToken(v string) *UpdateUserAccessLoggingSettingsInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetKinesisStreamArn sets the KinesisStreamArn field's value.
+func (s *UpdateUserAccessLoggingSettingsInput) SetKinesisStreamArn(v string) *UpdateUserAccessLoggingSettingsInput {
+	s.KinesisStreamArn = &v
+	return s
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *UpdateUserAccessLoggingSettingsInput) SetUserAccessLoggingSettingsArn(v string) *UpdateUserAccessLoggingSettingsInput {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
+type UpdateUserAccessLoggingSettingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The user access logging settings.
+	//
+	// UserAccessLoggingSettings is a required field
+	UserAccessLoggingSettings *UserAccessLoggingSettings `locationName:"userAccessLoggingSettings" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateUserAccessLoggingSettingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateUserAccessLoggingSettingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetUserAccessLoggingSettings sets the UserAccessLoggingSettings field's value.
+func (s *UpdateUserAccessLoggingSettingsOutput) SetUserAccessLoggingSettings(v *UserAccessLoggingSettings) *UpdateUserAccessLoggingSettingsOutput {
+	s.UserAccessLoggingSettings = v
+	return s
+}
+
 type UpdateUserSettingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -10269,6 +13651,16 @@ type UpdateUserSettingsInput struct {
 	// If you do not specify a client token, one is automatically generated by the
 	// AWS SDK.
 	ClientToken *string `locationName:"clientToken" min:"1" type:"string" idempotencyToken:"true"`
+
+	// The configuration that specifies which cookies should be synchronized from
+	// the end user's local browser to the remote browser.
+	//
+	// If the allowlist and blocklist are empty, the configuration becomes null.
+	//
+	// CookieSynchronizationConfiguration is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UpdateUserSettingsInput's
+	// String and GoString methods.
+	CookieSynchronizationConfiguration *CookieSynchronizationConfiguration `locationName:"cookieSynchronizationConfiguration" type:"structure" sensitive:"true"`
 
 	// Specifies whether the user can copy text from the streaming session to the
 	// local device.
@@ -10335,6 +13727,11 @@ func (s *UpdateUserSettingsInput) Validate() error {
 	if s.UserSettingsArn != nil && len(*s.UserSettingsArn) < 20 {
 		invalidParams.Add(request.NewErrParamMinLen("UserSettingsArn", 20))
 	}
+	if s.CookieSynchronizationConfiguration != nil {
+		if err := s.CookieSynchronizationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("CookieSynchronizationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -10345,6 +13742,12 @@ func (s *UpdateUserSettingsInput) Validate() error {
 // SetClientToken sets the ClientToken field's value.
 func (s *UpdateUserSettingsInput) SetClientToken(v string) *UpdateUserSettingsInput {
 	s.ClientToken = &v
+	return s
+}
+
+// SetCookieSynchronizationConfiguration sets the CookieSynchronizationConfiguration field's value.
+func (s *UpdateUserSettingsInput) SetCookieSynchronizationConfiguration(v *CookieSynchronizationConfiguration) *UpdateUserSettingsInput {
+	s.CookieSynchronizationConfiguration = v
 	return s
 }
 
@@ -10429,6 +13832,103 @@ func (s *UpdateUserSettingsOutput) SetUserSettings(v *UserSettings) *UpdateUserS
 	return s
 }
 
+// A user access logging settings resource that can be associated with a web
+// portal.
+type UserAccessLoggingSettings struct {
+	_ struct{} `type:"structure"`
+
+	// A list of web portal ARNs that this user access logging settings is associated
+	// with.
+	AssociatedPortalArns []*string `locationName:"associatedPortalArns" type:"list"`
+
+	// The ARN of the Kinesis stream.
+	KinesisStreamArn *string `locationName:"kinesisStreamArn" min:"20" type:"string"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UserAccessLoggingSettings) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UserAccessLoggingSettings) GoString() string {
+	return s.String()
+}
+
+// SetAssociatedPortalArns sets the AssociatedPortalArns field's value.
+func (s *UserAccessLoggingSettings) SetAssociatedPortalArns(v []*string) *UserAccessLoggingSettings {
+	s.AssociatedPortalArns = v
+	return s
+}
+
+// SetKinesisStreamArn sets the KinesisStreamArn field's value.
+func (s *UserAccessLoggingSettings) SetKinesisStreamArn(v string) *UserAccessLoggingSettings {
+	s.KinesisStreamArn = &v
+	return s
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *UserAccessLoggingSettings) SetUserAccessLoggingSettingsArn(v string) *UserAccessLoggingSettings {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
+// The summary of user access logging settings.
+type UserAccessLoggingSettingsSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the Kinesis stream.
+	KinesisStreamArn *string `locationName:"kinesisStreamArn" min:"20" type:"string"`
+
+	// The ARN of the user access logging settings.
+	//
+	// UserAccessLoggingSettingsArn is a required field
+	UserAccessLoggingSettingsArn *string `locationName:"userAccessLoggingSettingsArn" min:"20" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UserAccessLoggingSettingsSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UserAccessLoggingSettingsSummary) GoString() string {
+	return s.String()
+}
+
+// SetKinesisStreamArn sets the KinesisStreamArn field's value.
+func (s *UserAccessLoggingSettingsSummary) SetKinesisStreamArn(v string) *UserAccessLoggingSettingsSummary {
+	s.KinesisStreamArn = &v
+	return s
+}
+
+// SetUserAccessLoggingSettingsArn sets the UserAccessLoggingSettingsArn field's value.
+func (s *UserAccessLoggingSettingsSummary) SetUserAccessLoggingSettingsArn(v string) *UserAccessLoggingSettingsSummary {
+	s.UserAccessLoggingSettingsArn = &v
+	return s
+}
+
 // A user settings resource that can be associated with a web portal. Once associated
 // with a web portal, user settings control how users can transfer data between
 // a streaming session and the their local devices.
@@ -10437,6 +13937,14 @@ type UserSettings struct {
 
 	// A list of web portal ARNs that this user settings is associated with.
 	AssociatedPortalArns []*string `locationName:"associatedPortalArns" type:"list"`
+
+	// The configuration that specifies which cookies should be synchronized from
+	// the end user's local browser to the remote browser.
+	//
+	// CookieSynchronizationConfiguration is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UserSettings's
+	// String and GoString methods.
+	CookieSynchronizationConfiguration *CookieSynchronizationConfiguration `locationName:"cookieSynchronizationConfiguration" type:"structure" sensitive:"true"`
 
 	// Specifies whether the user can copy text from the streaming session to the
 	// local device.
@@ -10494,6 +14002,12 @@ func (s *UserSettings) SetAssociatedPortalArns(v []*string) *UserSettings {
 	return s
 }
 
+// SetCookieSynchronizationConfiguration sets the CookieSynchronizationConfiguration field's value.
+func (s *UserSettings) SetCookieSynchronizationConfiguration(v *CookieSynchronizationConfiguration) *UserSettings {
+	s.CookieSynchronizationConfiguration = v
+	return s
+}
+
 // SetCopyAllowed sets the CopyAllowed field's value.
 func (s *UserSettings) SetCopyAllowed(v string) *UserSettings {
 	s.CopyAllowed = &v
@@ -10546,6 +14060,14 @@ func (s *UserSettings) SetUserSettingsArn(v string) *UserSettings {
 type UserSettingsSummary struct {
 	_ struct{} `type:"structure"`
 
+	// The configuration that specifies which cookies should be synchronized from
+	// the end user's local browser to the remote browser.
+	//
+	// CookieSynchronizationConfiguration is a sensitive parameter and its value will be
+	// replaced with "sensitive" in string returned by UserSettingsSummary's
+	// String and GoString methods.
+	CookieSynchronizationConfiguration *CookieSynchronizationConfiguration `locationName:"cookieSynchronizationConfiguration" type:"structure" sensitive:"true"`
+
 	// Specifies whether the user can copy text from the streaming session to the
 	// local device.
 	CopyAllowed *string `locationName:"copyAllowed" type:"string" enum:"EnabledType"`
@@ -10573,7 +14095,9 @@ type UserSettingsSummary struct {
 	UploadAllowed *string `locationName:"uploadAllowed" type:"string" enum:"EnabledType"`
 
 	// The ARN of the user settings.
-	UserSettingsArn *string `locationName:"userSettingsArn" min:"20" type:"string"`
+	//
+	// UserSettingsArn is a required field
+	UserSettingsArn *string `locationName:"userSettingsArn" min:"20" type:"string" required:"true"`
 }
 
 // String returns the string representation.
@@ -10592,6 +14116,12 @@ func (s UserSettingsSummary) String() string {
 // value will be replaced with "sensitive".
 func (s UserSettingsSummary) GoString() string {
 	return s.String()
+}
+
+// SetCookieSynchronizationConfiguration sets the CookieSynchronizationConfiguration field's value.
+func (s *UserSettingsSummary) SetCookieSynchronizationConfiguration(v *CookieSynchronizationConfiguration) *UserSettingsSummary {
+	s.CookieSynchronizationConfiguration = v
+	return s
 }
 
 // SetCopyAllowed sets the CopyAllowed field's value.
@@ -10755,6 +14285,22 @@ func (s *ValidationExceptionField) SetMessage(v string) *ValidationExceptionFiel
 func (s *ValidationExceptionField) SetName(v string) *ValidationExceptionField {
 	s.Name = &v
 	return s
+}
+
+const (
+	// AuthenticationTypeStandard is a AuthenticationType enum value
+	AuthenticationTypeStandard = "Standard"
+
+	// AuthenticationTypeIamIdentityCenter is a AuthenticationType enum value
+	AuthenticationTypeIamIdentityCenter = "IAM_Identity_Center"
+)
+
+// AuthenticationType_Values returns all elements of the AuthenticationType enum
+func AuthenticationType_Values() []string {
+	return []string{
+		AuthenticationTypeStandard,
+		AuthenticationTypeIamIdentityCenter,
+	}
 }
 
 const (
