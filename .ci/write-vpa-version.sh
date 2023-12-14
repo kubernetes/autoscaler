@@ -14,5 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+src_dir="$(readlink -f "$(dirname "${0}")/..")"
 new_version=$(cat -)
-sed -i s/'^\(const VerticalPodAutoscalerVersion = "\).*"'/\\1${new_version}'"'/ vertical-pod-autoscaler/common/version.go
+sed -i s/'^\(const VerticalPodAutoscalerVersion = "\).*"'/\\1${new_version}'"'/ ${src_dir}/vertical-pod-autoscaler/common/version.go

@@ -14,4 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cat ../vertical-pod-autoscaler/common/version.go | grep 'const VerticalPodAutoscalerVersion' | cut -d " " -f 4 | tr -d '"'
+src_dir=$(readlink -f "$(dirname "${0}")/..")
+
+cat ${src_dir}/vertical-pod-autoscaler/common/version.go | grep 'const VerticalPodAutoscalerVersion' | cut -d " " -f 4 | tr -d '"'
