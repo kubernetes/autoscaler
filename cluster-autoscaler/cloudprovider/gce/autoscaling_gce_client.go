@@ -308,69 +308,99 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 
 func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
 	registerRequest("instance_group_managers", "list_managed_instances")
-	gceInstances, err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Do()
+	b := newInstanceListBuilder(migRef)
+	err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Pages(context.Background(), b.loadPage)
 	if err != nil {
 		klog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
 		return nil, err
 	}
-	infos := []cloudprovider.Instance{}
-	errorCodeCounts := make(map[string]int)
-	errorLoggingQuota := klogx.NewLoggingQuota(100)
-	for _, gceInstance := range gceInstances.ManagedInstances {
+	return b.build(), nil
+}
+
+type instanceListBuilder struct {
+	migRef            GceRef
+	errorCodeCounts   map[string]int
+	errorLoggingQuota *klogx.Quota
+	infos             []cloudprovider.Instance
+}
+
+func newInstanceListBuilder(migRef GceRef) *instanceListBuilder {
+	return &instanceListBuilder{
+		migRef:            migRef,
+		errorCodeCounts:   make(map[string]int),
+		errorLoggingQuota: klogx.NewLoggingQuota(100),
+	}
+}
+
+func (i *instanceListBuilder) loadPage(page *gce.InstanceGroupManagersListManagedInstancesResponse) error {
+	if i.infos == nil {
+		i.infos = make([]cloudprovider.Instance, 0, len(page.ManagedInstances))
+	}
+	for _, gceInstance := range page.ManagedInstances {
 		ref, err := ParseInstanceUrlRef(gceInstance.Instance)
 		if err != nil {
 			klog.Errorf("Received error while parsing of the instance url: %v", err)
 			continue
 		}
-
-		instance := cloudprovider.Instance{
-			Id: ref.ToProviderId(),
-			Status: &cloudprovider.InstanceStatus{
-				State: getInstanceState(gceInstance.CurrentAction),
-			},
-		}
-
-		if instance.Status.State == cloudprovider.InstanceCreating {
-			var errorInfo *cloudprovider.InstanceErrorInfo
-			errorMessages := []string{}
-			lastAttemptErrors := getLastAttemptErrors(gceInstance)
-			for _, instanceError := range lastAttemptErrors {
-				errorCodeCounts[instanceError.Code]++
-				if newErrorInfo := GetErrorInfo(instanceError.Code, instanceError.Message, gceInstance.InstanceStatus, errorInfo); newErrorInfo != nil {
-					// override older error
-					errorInfo = newErrorInfo
-				} else {
-					// no error
-					continue
-				}
-
-				if instanceError.Message != "" {
-					errorMessages = append(errorMessages, instanceError.Message)
-				}
-			}
-			if errorInfo != nil {
-				errorInfo.ErrorMessage = strings.Join(errorMessages, "; ")
-				instance.Status.ErrorInfo = errorInfo
-			}
-
-			if len(lastAttemptErrors) > 0 {
-				gceInstanceJSONBytes, err := gceInstance.MarshalJSON()
-				var gceInstanceJSON string
-				if err != nil {
-					gceInstanceJSON = fmt.Sprintf("Got error from MarshalJSON; %v", err)
-				} else {
-					gceInstanceJSON = string(gceInstanceJSONBytes)
-				}
-				klogx.V(4).UpTo(errorLoggingQuota).Infof("Got GCE instance which is being created and has lastAttemptErrors; gceInstance=%v; errorInfo=%#v", gceInstanceJSON, errorInfo)
-			}
-		}
-		infos = append(infos, instance)
+		instance := i.gceInstanceToInstance(ref, gceInstance)
+		i.infos = append(i.infos, instance)
 	}
-	klogx.V(4).Over(errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -errorLoggingQuota.Left())
-	if len(errorCodeCounts) > 0 {
-		klog.Warningf("Spotted following instance creation error codes: %#v", errorCodeCounts)
+	return nil
+}
+
+func (i *instanceListBuilder) gceInstanceToInstance(ref GceRef, gceInstance *gce.ManagedInstance) cloudprovider.Instance {
+	instance := cloudprovider.Instance{
+		Id: ref.ToProviderId(),
+		Status: &cloudprovider.InstanceStatus{
+			State: getInstanceState(gceInstance.CurrentAction),
+		},
 	}
-	return infos, nil
+
+	if instance.Status.State != cloudprovider.InstanceCreating {
+		return instance
+	}
+
+	var errorInfo *cloudprovider.InstanceErrorInfo
+	errorMessages := []string{}
+	lastAttemptErrors := getLastAttemptErrors(gceInstance)
+	for _, instanceError := range lastAttemptErrors {
+		i.errorCodeCounts[instanceError.Code]++
+		if newErrorInfo := GetErrorInfo(instanceError.Code, instanceError.Message, gceInstance.InstanceStatus, errorInfo); newErrorInfo != nil {
+			// override older error
+			errorInfo = newErrorInfo
+		} else {
+			// no error
+			continue
+		}
+		if instanceError.Message != "" {
+			errorMessages = append(errorMessages, instanceError.Message)
+		}
+	}
+	if errorInfo != nil {
+		errorInfo.ErrorMessage = strings.Join(errorMessages, "; ")
+		instance.Status.ErrorInfo = errorInfo
+	}
+
+	if len(lastAttemptErrors) > 0 {
+		gceInstanceJSONBytes, err := gceInstance.MarshalJSON()
+		var gceInstanceJSON string
+		if err != nil {
+			gceInstanceJSON = fmt.Sprintf("Got error from MarshalJSON; %v", err)
+		} else {
+			gceInstanceJSON = string(gceInstanceJSONBytes)
+		}
+		klogx.V(4).UpTo(i.errorLoggingQuota).Infof("Got GCE instance which is being created and has lastAttemptErrors; gceInstance=%v; errorInfo=%#v", gceInstanceJSON, errorInfo)
+	}
+
+	return instance
+}
+
+func (i *instanceListBuilder) build() []cloudprovider.Instance {
+	klogx.V(4).Over(i.errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -i.errorLoggingQuota.Left())
+	if len(i.errorCodeCounts) > 0 {
+		klog.Warningf("Spotted following instance creation error codes: %#v", i.errorCodeCounts)
+	}
+	return i.infos
 }
 
 // GetErrorInfo maps the error code, error message and instance status to CA instance error info

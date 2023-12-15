@@ -234,9 +234,10 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 	g := newTestAutoscalingGceClient(t, "project1", server.URL, "")
 
 	testCases := []struct {
-		name          string
-		lmiResponse   gce_api.InstanceGroupManagersListManagedInstancesResponse
-		wantInstances []cloudprovider.Instance
+		name             string
+		lmiResponse      gce_api.InstanceGroupManagersListManagedInstancesResponse
+		lmiPageResponses map[string]gce_api.InstanceGroupManagersListManagedInstancesResponse
+		wantInstances    []cloudprovider.Instance
 	}{
 		{
 			name: "all instances good",
@@ -265,6 +266,153 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 				},
 				{
 					Id:     "gce://myprojid/myzone/myinst_42",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+			},
+		},
+		{
+			name: "paginated response",
+			lmiResponse: gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 2),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 42),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+				},
+				NextPageToken: "foo",
+			},
+			lmiPageResponses: map[string]gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				"foo": {
+					ManagedInstances: []*gce_api.ManagedInstance{
+						{
+							Instance:      fmt.Sprintf(goodInstanceUrlTempl, 123),
+							CurrentAction: "CREATING",
+							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+						},
+						{
+							Instance:      fmt.Sprintf(goodInstanceUrlTempl, 456),
+							CurrentAction: "CREATING",
+							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+						},
+					},
+				},
+			},
+			wantInstances: []cloudprovider.Instance{
+				{
+					Id:     "gce://myprojid/myzone/myinst_2",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_42",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_123",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_456",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+			},
+		},
+		{
+			name: "paginated response, more pages",
+			lmiResponse: gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				ManagedInstances: []*gce_api.ManagedInstance{
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 2),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+					{
+						Instance:      fmt.Sprintf(goodInstanceUrlTempl, 42),
+						CurrentAction: "CREATING",
+						LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+							Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+						},
+					},
+				},
+				NextPageToken: "foo",
+			},
+			lmiPageResponses: map[string]gce_api.InstanceGroupManagersListManagedInstancesResponse{
+				"foo": {
+					ManagedInstances: []*gce_api.ManagedInstance{
+						{
+							Instance:      fmt.Sprintf(goodInstanceUrlTempl, 123),
+							CurrentAction: "CREATING",
+							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+						},
+						{
+							Instance:      fmt.Sprintf(goodInstanceUrlTempl, 456),
+							CurrentAction: "CREATING",
+							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+						},
+					},
+					NextPageToken: "bar",
+				},
+				"bar": {
+					ManagedInstances: []*gce_api.ManagedInstance{
+						{
+							Instance:      fmt.Sprintf(goodInstanceUrlTempl, 789),
+							CurrentAction: "CREATING",
+							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+						},
+						{
+							Instance:      fmt.Sprintf(goodInstanceUrlTempl, 666),
+							CurrentAction: "CREATING",
+							LastAttempt: &gce_api.ManagedInstanceLastAttempt{
+								Errors: &gce_api.ManagedInstanceLastAttemptErrors{},
+							},
+						},
+					},
+				},
+			},
+			wantInstances: []cloudprovider.Instance{
+				{
+					Id:     "gce://myprojid/myzone/myinst_2",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_42",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_123",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_456",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_789",
+					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
+				},
+				{
+					Id:     "gce://myprojid/myzone/myinst_666",
 					Status: &cloudprovider.InstanceStatus{State: cloudprovider.InstanceCreating},
 				},
 			},
@@ -329,6 +477,11 @@ func TestFetchMigInstancesInstanceUrlHandling(t *testing.T) {
 			b, err := json.Marshal(tc.lmiResponse)
 			assert.NoError(t, err)
 			server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances").Return(string(b)).Times(1)
+			for token, response := range tc.lmiPageResponses {
+				b, err := json.Marshal(response)
+				assert.NoError(t, err)
+				server.On("handle", "/projects/zones/instanceGroupManagers/listManagedInstances", token).Return(string(b)).Times(1)
+			}
 			gotInstances, err := g.FetchMigInstances(GceRef{})
 			assert.NoError(t, err)
 			if diff := cmp.Diff(tc.wantInstances, gotInstances, cmpopts.EquateErrors()); diff != "" {
