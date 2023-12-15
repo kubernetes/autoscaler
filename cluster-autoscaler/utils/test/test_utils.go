@@ -426,8 +426,14 @@ func NewHttpServerMock(fields ...HttpServerMockField) *HttpServerMock {
 
 func (l *HttpServerMock) handle(req *http.Request, w http.ResponseWriter, serverMock *HttpServerMock) string {
 	url := req.URL.Path
+	query := req.URL.Query()
 	var response string
-	args := l.Called(url)
+	var args mock.Arguments
+	if query.Has("pageToken") {
+		args = l.Called(url, query.Get("pageToken"))
+	} else {
+		args = l.Called(url)
+	}
 	for i, field := range l.fields {
 		switch field {
 		case MockFieldResponse:
