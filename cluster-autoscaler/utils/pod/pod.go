@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 const (
@@ -31,8 +32,11 @@ const (
 // IsDaemonSetPod returns true if the Pod should be considered as Pod managed by a DaemonSet
 func IsDaemonSetPod(pod *apiv1.Pod) bool {
 	controllerRef := metav1.GetControllerOf(pod)
-	if controllerRef != nil && controllerRef.APIVersion == "apps/v1" && controllerRef.Kind == "DaemonSet" {
-		return true
+	if controllerRef != nil {
+		groupVersionKind := schema.FromAPIVersionAndKind(controllerRef.APIVersion, controllerRef.Kind)
+		if groupVersionKind.Group == "apps" && groupVersionKind.Kind == "DaemonSet" {
+			return true
+		}
 	}
 
 	return pod.Annotations[DaemonSetPodAnnotationKey] == "true"
