@@ -16,6 +16,7 @@ For the cluster autoscaler parameters, use the `--cloud-provider=externalgrpc` f
 | key | path to file containing the tls key, if using mTLS | no | none |
 | cert | path to file containing the tls certificate, if using mTLS | no | none |
 | cacert | path to file containing the CA certificate, if using mTLS | no | none |
+| grpc_timeout | timeout of invoking a grpc call | no | 5s |
 
 The use of mTLS is recommended, since simple, non-authenticated calls to the external gRPC cloud provider service will result in the creation / deletion of nodes.
 

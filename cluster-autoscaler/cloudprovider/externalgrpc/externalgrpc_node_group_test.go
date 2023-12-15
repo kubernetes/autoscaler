@@ -70,8 +70,9 @@ func TestCloudProvider_Nodes(t *testing.T) {
 	).Once()
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	instances, err := ng1.Nodes()
@@ -106,8 +107,9 @@ func TestCloudProvider_Nodes(t *testing.T) {
 	).Once()
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	_, err = ng2.Nodes()
@@ -147,13 +149,15 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	).Once()
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	nodeInfo1, err := ng1.TemplateNodeInfo()
@@ -182,8 +186,9 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	).Once()
 
 	ng3 := NodeGroup{
-		id:     "nodeGroup3",
-		client: client,
+		id:          "nodeGroup3",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	nodeInfo3, err := ng3.TemplateNodeInfo()
@@ -203,8 +208,9 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	).Once()
 
 	ng4 := NodeGroup{
-		id:     "nodeGroup4",
-		client: client,
+		id:          "nodeGroup4",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	_, err = ng4.TemplateNodeInfo()
@@ -223,8 +229,9 @@ func TestCloudProvider_TemplateNodeInfo(t *testing.T) {
 	).Once()
 
 	ng5 := NodeGroup{
-		id:     "nodeGroup5",
-		client: client,
+		id:          "nodeGroup5",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	_, err = ng5.TemplateNodeInfo()
@@ -256,8 +263,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	)
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 	defaultsOpts := config.NodeGroupAutoscalingOptions{
 		ScaleDownUtilizationThreshold:    0.6,
@@ -286,8 +294,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	)
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	opts, err = ng2.GetOptions(defaultsOpts)
@@ -305,8 +314,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	)
 
 	ng3 := NodeGroup{
-		id:     "nodeGroup3",
-		client: client,
+		id:          "nodeGroup3",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	opts, err = ng3.GetOptions(defaultsOpts)
@@ -324,8 +334,9 @@ func TestCloudProvider_GetOptions(t *testing.T) {
 	)
 
 	ng4 := NodeGroup{
-		id:     "nodeGroup4",
-		client: client,
+		id:          "nodeGroup4",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	_, err = ng4.GetOptions(defaultsOpts)
@@ -350,8 +361,9 @@ func TestCloudProvider_TargetSize(t *testing.T) {
 	).Once()
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	size, err := ng1.TargetSize()
@@ -369,8 +381,9 @@ func TestCloudProvider_TargetSize(t *testing.T) {
 	).Once()
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	_, err = ng2.TargetSize()
@@ -392,8 +405,9 @@ func TestCloudProvider_IncreaseSize(t *testing.T) {
 	).Once()
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	err := ng1.IncreaseSize(1)
@@ -410,8 +424,9 @@ func TestCloudProvider_IncreaseSize(t *testing.T) {
 	).Once()
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	err = ng2.IncreaseSize(1)
@@ -433,8 +448,9 @@ func TestCloudProvider_DecreaseSize(t *testing.T) {
 	).Once()
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	err := ng1.DecreaseTargetSize(1)
@@ -451,8 +467,9 @@ func TestCloudProvider_DecreaseSize(t *testing.T) {
 	).Once()
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	err = ng2.DecreaseTargetSize(1)
@@ -482,8 +499,9 @@ func TestCloudProvider_DeleteNodes(t *testing.T) {
 	).Once()
 
 	ng1 := NodeGroup{
-		id:     "nodeGroup1",
-		client: client,
+		id:          "nodeGroup1",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	err := ng1.DeleteNodes(nodes)
@@ -500,8 +518,9 @@ func TestCloudProvider_DeleteNodes(t *testing.T) {
 	).Once()
 
 	ng2 := NodeGroup{
-		id:     "nodeGroup2",
-		client: client,
+		id:          "nodeGroup2",
+		client:      client,
+		grpcTimeout: defaultGRPCTimeout,
 	}
 
 	err = ng2.DeleteNodes(nodes)
