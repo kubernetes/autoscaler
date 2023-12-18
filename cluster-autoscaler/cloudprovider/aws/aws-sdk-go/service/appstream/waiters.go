@@ -34,17 +34,17 @@ func (c *AppStream) WaitUntilFleetStartedWithContext(ctx aws.Context, input *Des
 			{
 				State:   request.SuccessWaiterState,
 				Matcher: request.PathAllWaiterMatch, Argument: "Fleets[].State",
-				Expected: "ACTIVE",
+				Expected: "RUNNING",
 			},
 			{
 				State:   request.FailureWaiterState,
 				Matcher: request.PathAnyWaiterMatch, Argument: "Fleets[].State",
-				Expected: "PENDING_DEACTIVATE",
+				Expected: "STOPPING",
 			},
 			{
 				State:   request.FailureWaiterState,
 				Matcher: request.PathAnyWaiterMatch, Argument: "Fleets[].State",
-				Expected: "INACTIVE",
+				Expected: "STOPPED",
 			},
 		},
 		Logger: c.Config.Logger,
@@ -90,17 +90,17 @@ func (c *AppStream) WaitUntilFleetStoppedWithContext(ctx aws.Context, input *Des
 			{
 				State:   request.SuccessWaiterState,
 				Matcher: request.PathAllWaiterMatch, Argument: "Fleets[].State",
-				Expected: "INACTIVE",
+				Expected: "STOPPED",
 			},
 			{
 				State:   request.FailureWaiterState,
 				Matcher: request.PathAnyWaiterMatch, Argument: "Fleets[].State",
-				Expected: "PENDING_ACTIVATE",
+				Expected: "STARTING",
 			},
 			{
 				State:   request.FailureWaiterState,
 				Matcher: request.PathAnyWaiterMatch, Argument: "Fleets[].State",
-				Expected: "ACTIVE",
+				Expected: "RUNNING",
 			},
 		},
 		Logger: c.Config.Logger,

@@ -63,8 +63,8 @@ func (c *Shield) AssociateDRTLogBucketRequest(input *AssociateDRTLogBucketInput)
 // 10 Amazon S3 buckets with your subscription.
 //
 // To use the services of the SRT and make an AssociateDRTLogBucket request,
-// you must be subscribed to the Business Support plan (https://docs.aws.amazon.com/premiumsupport/business-support/)
-// or the Enterprise Support plan (https://docs.aws.amazon.com/premiumsupport/enterprise-support/).
+// you must be subscribed to the Business Support plan (http://aws.amazon.com/premiumsupport/business-support/)
+// or the Enterprise Support plan (http://aws.amazon.com/premiumsupport/enterprise-support/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -84,7 +84,7 @@ func (c *Shield) AssociateDRTLogBucketRequest(input *AssociateDRTLogBucketInput)
 //     occur.
 //
 //   - NoAssociatedRoleException
-//     The ARN of the role that you specifed does not exist.
+//     The ARN of the role that you specified does not exist.
 //
 //   - LimitsExceededException
 //     Exception that indicates that the operation would exceed a limit.
@@ -200,8 +200,8 @@ func (c *Shield) AssociateDRTRoleRequest(input *AssociateDRTRoleInput) (req *req
 // Amazon Web Services service (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_passrole.html).
 //
 // To use the services of the SRT and make an AssociateDRTRole request, you
-// must be subscribed to the Business Support plan (https://docs.aws.amazon.com/premiumsupport/business-support/)
-// or the Enterprise Support plan (https://docs.aws.amazon.com/premiumsupport/enterprise-support/).
+// must be subscribed to the Business Support plan (http://aws.amazon.com/premiumsupport/business-support/)
+// or the Enterprise Support plan (http://aws.amazon.com/premiumsupport/enterprise-support/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -525,9 +525,11 @@ func (c *Shield) CreateProtectionRequest(input *CreateProtectionInput) (req *req
 // CreateProtection API operation for AWS Shield.
 //
 // Enables Shield Advanced for a specific Amazon Web Services resource. The
-// resource can be an Amazon CloudFront distribution, Elastic Load Balancing
-// load balancer, Global Accelerator accelerator, Elastic IP Address, or an
-// Amazon Route 53 hosted zone.
+// resource can be an Amazon CloudFront distribution, Amazon Route 53 hosted
+// zone, Global Accelerator standard accelerator, Elastic IP Address, Application
+// Load Balancer, or a Classic Load Balancer. You can protect Amazon EC2 instances
+// and Network Load Balancers by association with protected Amazon EC2 Elastic
+// IP addresses.
 //
 // You can add protection to only a single resource with each CreateProtection
 // request. You can add protection to multiple resources at once through the
@@ -746,9 +748,13 @@ func (c *Shield) CreateSubscriptionRequest(input *CreateSubscriptionInput) (req 
 //
 // Activates Shield Advanced for an account.
 //
-// When you initally create a subscription, your subscription is set to be automatically
-// renewed at the end of the existing subscription period. You can change this
-// by submitting an UpdateSubscription request.
+// For accounts that are members of an Organizations organization, Shield Advanced
+// subscriptions are billed against the organization's payer account, regardless
+// of whether the payer account itself is subscribed.
+//
+// When you initially create a subscription, your subscription is set to be
+// automatically renewed at the end of the existing subscription period. You
+// can change this by submitting an UpdateSubscription request.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1716,8 +1722,8 @@ func (c *Shield) DisableApplicationLayerAutomaticResponseRequest(input *DisableA
 // DisableApplicationLayerAutomaticResponse API operation for AWS Shield.
 //
 // Disable the Shield Advanced automatic application layer DDoS mitigation feature
-// for the resource. This stops Shield Advanced from creating, verifying, and
-// applying WAF rules for attacks that it detects for the resource.
+// for the protected resource. This stops Shield Advanced from creating, verifying,
+// and applying WAF rules for attacks that it detects for the resource.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1933,7 +1939,7 @@ func (c *Shield) DisassociateDRTLogBucketRequest(input *DisassociateDRTLogBucket
 //     occur.
 //
 //   - NoAssociatedRoleException
-//     The ARN of the role that you specifed does not exist.
+//     The ARN of the role that you specified does not exist.
 //
 //   - AccessDeniedForDependencyException
 //     In order to grant the necessary access to the Shield Response Team (SRT)
@@ -2216,9 +2222,10 @@ func (c *Shield) EnableApplicationLayerAutomaticResponseRequest(input *EnableApp
 // EnableApplicationLayerAutomaticResponse API operation for AWS Shield.
 //
 // Enable the Shield Advanced automatic application layer DDoS mitigation for
-// the resource.
+// the protected resource.
 //
-// This feature is available for Amazon CloudFront distributions only.
+// This feature is available for Amazon CloudFront distributions and Application
+// Load Balancers only.
 //
 // This causes Shield Advanced to create, verify, and apply WAF rules for DDoS
 // attacks that it detects for the resource. Shield Advanced applies the rules
@@ -2235,10 +2242,10 @@ func (c *Shield) EnableApplicationLayerAutomaticResponseRequest(input *EnableApp
 // associate the web ACL through the Shield Advanced console at https://console.aws.amazon.com/wafv2/shieldv2#/
 // (https://console.aws.amazon.com/wafv2/shieldv2#/). For more information,
 // see Getting Started with Shield Advanced (https://docs.aws.amazon.com/waf/latest/developerguide/getting-started-ddos.html).
-//
-// You can also do this through the WAF console or the WAF API, but you must
-// manage Shield Advanced automatic mitigation through Shield Advanced. For
-// information about WAF, see WAF Developer Guide (https://docs.aws.amazon.com/waf/latest/developerguide/).
+// You can also associate the web ACL to the resource through the WAF console
+// or the WAF API, but you must manage Shield Advanced automatic mitigation
+// through Shield Advanced. For information about WAF, see WAF Developer Guide
+// (https://docs.aws.amazon.com/waf/latest/developerguide/).
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2667,7 +2674,9 @@ func (c *Shield) ListProtectionGroupsRequest(input *ListProtectionGroupsInput) (
 
 // ListProtectionGroups API operation for AWS Shield.
 //
-// Retrieves the ProtectionGroup objects for the account.
+// Retrieves ProtectionGroup objects for the account. You can retrieve all protection
+// groups or you can provide filtering criteria and retrieve just the subset
+// of protection groups that match the criteria.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2813,7 +2822,9 @@ func (c *Shield) ListProtectionsRequest(input *ListProtectionsInput) (req *reque
 
 // ListProtections API operation for AWS Shield.
 //
-// Lists all Protection objects for the account.
+// Retrieves Protection objects for the account. You can retrieve all protections
+// or you can provide filtering criteria and retrieve just the subset of protections
+// that match the criteria.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3666,6 +3677,10 @@ func (c *Shield) UpdateSubscriptionRequest(input *UpdateSubscriptionInput) (req 
 //
 // Updates the details of an existing subscription. Only enter values for parameters
 // you want to change. Empty parameters are not updated.
+//
+// For accounts that are members of an Organizations organization, Shield Advanced
+// subscriptions are billed against the organization's payer account, regardless
+// of whether the payer account itself is subscribed.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -4966,7 +4981,7 @@ type CreateProtectionInput struct {
 	//
 	//    * For an Amazon CloudFront distribution: arn:aws:cloudfront::account-id:distribution/distribution-id
 	//
-	//    * For an Global Accelerator accelerator: arn:aws:globalaccelerator::account-id:accelerator/accelerator-id
+	//    * For an Global Accelerator standard accelerator: arn:aws:globalaccelerator::account-id:accelerator/accelerator-id
 	//
 	//    * For Amazon Route 53: arn:aws:route53:::hostedzone/hosted-zone-id
 	//
@@ -5364,7 +5379,7 @@ func (s *DescribeAttackInput) SetAttackId(v string) *DescribeAttackInput {
 type DescribeAttackOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The attack that is described.
+	// The attack that you requested.
 	Attack *AttackDetail `type:"structure"`
 }
 
@@ -5422,7 +5437,7 @@ type DescribeAttackStatisticsOutput struct {
 	// DataItems is a required field
 	DataItems []*AttackStatisticsDataItem `type:"list" required:"true"`
 
-	// The time range.
+	// The time range of the attack.
 	//
 	// TimeRange is a required field
 	TimeRange *TimeRange `type:"structure" required:"true"`
@@ -5665,15 +5680,14 @@ func (s *DescribeProtectionGroupOutput) SetProtectionGroup(v *ProtectionGroup) *
 type DescribeProtectionInput struct {
 	_ struct{} `type:"structure"`
 
-	// The unique identifier (ID) for the Protection object that is described. When
-	// submitting the DescribeProtection request you must provide either the ResourceArn
-	// or the ProtectionID, but not both.
+	// The unique identifier (ID) for the Protection object to describe. You must
+	// provide either the ResourceArn of the protected resource or the ProtectionID
+	// of the protection, but not both.
 	ProtectionId *string `min:"36" type:"string"`
 
-	// The ARN (Amazon Resource Name) of the Amazon Web Services resource for the
-	// Protection object that is described. When submitting the DescribeProtection
-	// request you must provide either the ResourceArn or the ProtectionID, but
-	// not both.
+	// The ARN (Amazon Resource Name) of the protected Amazon Web Services resource.
+	// You must provide either the ResourceArn of the protected resource or the
+	// ProtectionID of the protection, but not both.
 	ResourceArn *string `min:"1" type:"string"`
 }
 
@@ -5726,7 +5740,7 @@ func (s *DescribeProtectionInput) SetResourceArn(v string) *DescribeProtectionIn
 type DescribeProtectionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// The Protection object that is described.
+	// The Protection that you requested.
 	Protection *Protection `type:"structure"`
 }
 
@@ -5810,7 +5824,7 @@ func (s *DescribeSubscriptionOutput) SetSubscription(v *Subscription) *DescribeS
 type DisableApplicationLayerAutomaticResponseInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ARN (Amazon Resource Name) of the resource.
+	// The ARN (Amazon Resource Name) of the protected resource.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `min:"1" type:"string" required:"true"`
@@ -6216,7 +6230,7 @@ type EnableApplicationLayerAutomaticResponseInput struct {
 	// Action is a required field
 	Action *ResponseAction `type:"structure" required:"true"`
 
-	// The ARN (Amazon Resource Name) of the resource.
+	// The ARN (Amazon Resource Name) of the protected resource.
 	//
 	// ResourceArn is a required field
 	ResourceArn *string `min:"1" type:"string" required:"true"`
@@ -6389,6 +6403,169 @@ func (s GetSubscriptionStateOutput) GoString() string {
 // SetSubscriptionState sets the SubscriptionState field's value.
 func (s *GetSubscriptionStateOutput) SetSubscriptionState(v string) *GetSubscriptionStateOutput {
 	s.SubscriptionState = &v
+	return s
+}
+
+// Narrows the set of protections that the call retrieves. You can retrieve
+// a single protection by providing its name or the ARN (Amazon Resource Name)
+// of its protected resource. You can also retrieve all protections for a specific
+// resource type. You can provide up to one criteria per filter type. Shield
+// Advanced returns protections that exactly match all of the filter criteria
+// that you provide.
+type InclusionProtectionFilters struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the protection that you want to retrieve.
+	ProtectionNames []*string `min:"1" type:"list"`
+
+	// The ARN (Amazon Resource Name) of the resource whose protection you want
+	// to retrieve.
+	ResourceArns []*string `min:"1" type:"list"`
+
+	// The type of protected resource whose protections you want to retrieve.
+	ResourceTypes []*string `min:"1" type:"list" enum:"ProtectedResourceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InclusionProtectionFilters) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InclusionProtectionFilters) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InclusionProtectionFilters) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InclusionProtectionFilters"}
+	if s.ProtectionNames != nil && len(s.ProtectionNames) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProtectionNames", 1))
+	}
+	if s.ResourceArns != nil && len(s.ResourceArns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceArns", 1))
+	}
+	if s.ResourceTypes != nil && len(s.ResourceTypes) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceTypes", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetProtectionNames sets the ProtectionNames field's value.
+func (s *InclusionProtectionFilters) SetProtectionNames(v []*string) *InclusionProtectionFilters {
+	s.ProtectionNames = v
+	return s
+}
+
+// SetResourceArns sets the ResourceArns field's value.
+func (s *InclusionProtectionFilters) SetResourceArns(v []*string) *InclusionProtectionFilters {
+	s.ResourceArns = v
+	return s
+}
+
+// SetResourceTypes sets the ResourceTypes field's value.
+func (s *InclusionProtectionFilters) SetResourceTypes(v []*string) *InclusionProtectionFilters {
+	s.ResourceTypes = v
+	return s
+}
+
+// Narrows the set of protection groups that the call retrieves. You can retrieve
+// a single protection group by its name and you can retrieve all protection
+// groups that are configured with a specific pattern, aggregation, or resource
+// type. You can provide up to one criteria per filter type. Shield Advanced
+// returns the protection groups that exactly match all of the search criteria
+// that you provide.
+type InclusionProtectionGroupFilters struct {
+	_ struct{} `type:"structure"`
+
+	// The aggregation setting of the protection groups that you want to retrieve.
+	Aggregations []*string `min:"1" type:"list" enum:"ProtectionGroupAggregation"`
+
+	// The pattern specification of the protection groups that you want to retrieve.
+	Patterns []*string `min:"1" type:"list" enum:"ProtectionGroupPattern"`
+
+	// The ID of the protection group that you want to retrieve.
+	ProtectionGroupIds []*string `min:"1" type:"list"`
+
+	// The resource type configuration of the protection groups that you want to
+	// retrieve. In the protection group configuration, you specify the resource
+	// type when you set the group's Pattern to BY_RESOURCE_TYPE.
+	ResourceTypes []*string `min:"1" type:"list" enum:"ProtectedResourceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InclusionProtectionGroupFilters) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InclusionProtectionGroupFilters) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InclusionProtectionGroupFilters) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InclusionProtectionGroupFilters"}
+	if s.Aggregations != nil && len(s.Aggregations) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Aggregations", 1))
+	}
+	if s.Patterns != nil && len(s.Patterns) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Patterns", 1))
+	}
+	if s.ProtectionGroupIds != nil && len(s.ProtectionGroupIds) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProtectionGroupIds", 1))
+	}
+	if s.ResourceTypes != nil && len(s.ResourceTypes) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ResourceTypes", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAggregations sets the Aggregations field's value.
+func (s *InclusionProtectionGroupFilters) SetAggregations(v []*string) *InclusionProtectionGroupFilters {
+	s.Aggregations = v
+	return s
+}
+
+// SetPatterns sets the Patterns field's value.
+func (s *InclusionProtectionGroupFilters) SetPatterns(v []*string) *InclusionProtectionGroupFilters {
+	s.Patterns = v
+	return s
+}
+
+// SetProtectionGroupIds sets the ProtectionGroupIds field's value.
+func (s *InclusionProtectionGroupFilters) SetProtectionGroupIds(v []*string) *InclusionProtectionGroupFilters {
+	s.ProtectionGroupIds = v
+	return s
+}
+
+// SetResourceTypes sets the ResourceTypes field's value.
+func (s *InclusionProtectionGroupFilters) SetResourceTypes(v []*string) *InclusionProtectionGroupFilters {
+	s.ResourceTypes = v
 	return s
 }
 
@@ -6997,6 +7174,14 @@ func (s *ListAttacksOutput) SetNextToken(v string) *ListAttacksOutput {
 type ListProtectionGroupsInput struct {
 	_ struct{} `type:"structure"`
 
+	// Narrows the set of protection groups that the call retrieves. You can retrieve
+	// a single protection group by its name and you can retrieve all protection
+	// groups that are configured with specific pattern or aggregation settings.
+	// You can provide up to one criteria per filter type. Shield Advanced returns
+	// the protection groups that exactly match all of the search criteria that
+	// you provide.
+	InclusionFilters *InclusionProtectionGroupFilters `type:"structure"`
+
 	// The greatest number of objects that you want Shield Advanced to return to
 	// the list request. Shield Advanced might return fewer objects than you indicate
 	// in this setting, even if more objects are available. If there are more objects
@@ -7048,11 +7233,22 @@ func (s *ListProtectionGroupsInput) Validate() error {
 	if s.NextToken != nil && len(*s.NextToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
 	}
+	if s.InclusionFilters != nil {
+		if err := s.InclusionFilters.Validate(); err != nil {
+			invalidParams.AddNested("InclusionFilters", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetInclusionFilters sets the InclusionFilters field's value.
+func (s *ListProtectionGroupsInput) SetInclusionFilters(v *InclusionProtectionGroupFilters) *ListProtectionGroupsInput {
+	s.InclusionFilters = v
+	return s
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -7122,6 +7318,14 @@ func (s *ListProtectionGroupsOutput) SetProtectionGroups(v []*ProtectionGroup) *
 type ListProtectionsInput struct {
 	_ struct{} `type:"structure"`
 
+	// Narrows the set of protections that the call retrieves. You can retrieve
+	// a single protection by providing its name or the ARN (Amazon Resource Name)
+	// of its protected resource. You can also retrieve all protections for a specific
+	// resource type. You can provide up to one criteria per filter type. Shield
+	// Advanced returns protections that exactly match all of the filter criteria
+	// that you provide.
+	InclusionFilters *InclusionProtectionFilters `type:"structure"`
+
 	// The greatest number of objects that you want Shield Advanced to return to
 	// the list request. Shield Advanced might return fewer objects than you indicate
 	// in this setting, even if more objects are available. If there are more objects
@@ -7173,11 +7377,22 @@ func (s *ListProtectionsInput) Validate() error {
 	if s.NextToken != nil && len(*s.NextToken) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
 	}
+	if s.InclusionFilters != nil {
+		if err := s.InclusionFilters.Validate(); err != nil {
+			invalidParams.AddNested("InclusionFilters", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetInclusionFilters sets the InclusionFilters field's value.
+func (s *ListProtectionsInput) SetInclusionFilters(v *InclusionProtectionFilters) *ListProtectionsInput {
+	s.InclusionFilters = v
+	return s
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -7570,7 +7785,7 @@ func (s *Mitigation) SetMitigationName(v string) *Mitigation {
 	return s
 }
 
-// The ARN of the role that you specifed does not exist.
+// The ARN of the role that you specified does not exist.
 type NoAssociatedRoleException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7806,7 +8021,7 @@ type ProtectionGroup struct {
 	// Aggregation is a required field
 	Aggregation *string `type:"string" required:"true" enum:"ProtectionGroupAggregation"`
 
-	// The Amazon Resource Names (ARNs) of the resources to include in the protection
+	// The ARNs (Amazon Resource Names) of the resources to include in the protection
 	// group. You must set this when you set Pattern to ARBITRARY and you must not
 	// set it for any other Pattern setting.
 	//
@@ -7815,7 +8030,7 @@ type ProtectionGroup struct {
 
 	// The criteria to use to choose the protected resources for inclusion in the
 	// group. You can include all resources that have protections, provide a list
-	// of resource Amazon Resource Names (ARNs), or include all resources of a specified
+	// of resource ARNs (Amazon Resource Names), or include all resources of a specified
 	// resource type.
 	//
 	// Pattern is a required field

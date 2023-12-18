@@ -71,36 +71,40 @@ func (c *RAM) AcceptResourceShareInvitationRequest(input *AcceptResourceShareInv
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ResourceShareInvitationArnNotFoundException
-//     The specified Amazon Resource Name (ARN) for an invitation was not found.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     for an invitation was not found.
 //
 //   - ResourceShareInvitationAlreadyAcceptedException
-//     The specified invitation was already accepted.
+//     The operation failed because the specified invitation was already accepted.
 //
 //   - ResourceShareInvitationAlreadyRejectedException
-//     The specified invitation was already rejected.
+//     The operation failed because the specified invitation was already rejected.
 //
 //   - ResourceShareInvitationExpiredException
-//     The specified invitation is expired.
+//     The operation failed because the specified invitation is past its expiration
+//     date and time.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AcceptResourceShareInvitation
 func (c *RAM) AcceptResourceShareInvitation(input *AcceptResourceShareInvitationInput) (*AcceptResourceShareInvitationOutput, error) {
@@ -182,46 +186,52 @@ func (c *RAM) AssociateResourceShareRequest(input *AssociateResourceShareInput) 
 // Returned Error Types:
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidStateTransitionException
-//     The requested state transition is not valid.
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
 //
 //   - ResourceShareLimitExceededException
-//     This request would exceed the limit for resource shares for your account.
+//     The operation failed because it would exceed the limit for resource shares
+//     for your account. To view the limits for your Amazon Web Services account,
+//     see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidStateTransitionException
-//     The requested state transition is not valid.
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - ThrottlingException
-//     You exceeded the rate at which you are allowed to perform this operation.
-//     Please try again later.
+//     The operation failed because it exceeded the rate at which you are allowed
+//     to perform this operation. Please try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AssociateResourceShare
 func (c *RAM) AssociateResourceShare(input *AssociateResourceShareInput) (*AssociateResourceShareOutput, error) {
@@ -304,25 +314,27 @@ func (c *RAM) AssociateResourceSharePermissionRequest(input *AssociateResourceSh
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/AssociateResourceSharePermission
 func (c *RAM) AssociateResourceSharePermission(input *AssociateResourceSharePermissionInput) (*AssociateResourceSharePermissionOutput, error) {
@@ -341,6 +353,243 @@ func (c *RAM) AssociateResourceSharePermission(input *AssociateResourceSharePerm
 // for more information on using Contexts.
 func (c *RAM) AssociateResourceSharePermissionWithContext(ctx aws.Context, input *AssociateResourceSharePermissionInput, opts ...request.Option) (*AssociateResourceSharePermissionOutput, error) {
 	req, out := c.AssociateResourceSharePermissionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreatePermission = "CreatePermission"
+
+// CreatePermissionRequest generates a "aws/request.Request" representing the
+// client's request for the CreatePermission operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreatePermission for more information on using the CreatePermission
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreatePermissionRequest method.
+//	req, resp := client.CreatePermissionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreatePermission
+func (c *RAM) CreatePermissionRequest(input *CreatePermissionInput) (req *request.Request, output *CreatePermissionOutput) {
+	op := &request.Operation{
+		Name:       opCreatePermission,
+		HTTPMethod: "POST",
+		HTTPPath:   "/createpermission",
+	}
+
+	if input == nil {
+		input = &CreatePermissionInput{}
+	}
+
+	output = &CreatePermissionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreatePermission API operation for AWS Resource Access Manager.
+//
+// Creates a customer managed permission for a specified resource type that
+// you can attach to resource shares. It is created in the Amazon Web Services
+// Region in which you call the operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation CreatePermission for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - InvalidPolicyException
+//     The operation failed because a policy you specified isn't valid.
+//
+//   - OperationNotPermittedException
+//     The operation failed because the requested operation isn't permitted.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - PermissionAlreadyExistsException
+//     The operation failed because a permission with the specified name already
+//     exists in the requested Amazon Web Services Region. Choose a different name.
+//
+//   - MalformedPolicyTemplateException
+//     The operation failed because the policy template that you provided isn't
+//     valid.
+//
+//   - InvalidClientTokenException
+//     The operation failed because the specified client token isn't valid.
+//
+//   - PermissionLimitExceededException
+//     The operation failed because it would exceed the maximum number of permissions
+//     you can create in each Amazon Web Services Region. To view the limits for
+//     your Amazon Web Services account, see the RAM page in the Service Quotas
+//     console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
+//
+//   - IdempotentParameterMismatchException
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreatePermission
+func (c *RAM) CreatePermission(input *CreatePermissionInput) (*CreatePermissionOutput, error) {
+	req, out := c.CreatePermissionRequest(input)
+	return out, req.Send()
+}
+
+// CreatePermissionWithContext is the same as CreatePermission with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreatePermission for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) CreatePermissionWithContext(ctx aws.Context, input *CreatePermissionInput, opts ...request.Option) (*CreatePermissionOutput, error) {
+	req, out := c.CreatePermissionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreatePermissionVersion = "CreatePermissionVersion"
+
+// CreatePermissionVersionRequest generates a "aws/request.Request" representing the
+// client's request for the CreatePermissionVersion operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreatePermissionVersion for more information on using the CreatePermissionVersion
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreatePermissionVersionRequest method.
+//	req, resp := client.CreatePermissionVersionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreatePermissionVersion
+func (c *RAM) CreatePermissionVersionRequest(input *CreatePermissionVersionInput) (req *request.Request, output *CreatePermissionVersionOutput) {
+	op := &request.Operation{
+		Name:       opCreatePermissionVersion,
+		HTTPMethod: "POST",
+		HTTPPath:   "/createpermissionversion",
+	}
+
+	if input == nil {
+		input = &CreatePermissionVersionInput{}
+	}
+
+	output = &CreatePermissionVersionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreatePermissionVersion API operation for AWS Resource Access Manager.
+//
+// Creates a new version of the specified customer managed permission. The new
+// version is automatically set as the default version of the customer managed
+// permission. New resource shares automatically use the default permission.
+// Existing resource shares continue to use their original permission versions,
+// but you can use ReplacePermissionAssociations to update them.
+//
+// If the specified customer managed permission already has the maximum of 5
+// versions, then you must delete one of the existing versions before you can
+// create a new one.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation CreatePermissionVersion for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - InvalidPolicyException
+//     The operation failed because a policy you specified isn't valid.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
+//   - MalformedPolicyTemplateException
+//     The operation failed because the policy template that you provided isn't
+//     valid.
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - InvalidClientTokenException
+//     The operation failed because the specified client token isn't valid.
+//
+//   - IdempotentParameterMismatchException
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
+//
+//   - PermissionVersionsLimitExceededException
+//     The operation failed because it would exceed the limit for the number of
+//     versions you can have for a permission. To view the limits for your Amazon
+//     Web Services account, see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreatePermissionVersion
+func (c *RAM) CreatePermissionVersion(input *CreatePermissionVersionInput) (*CreatePermissionVersionOutput, error) {
+	req, out := c.CreatePermissionVersionRequest(input)
+	return out, req.Send()
+}
+
+// CreatePermissionVersionWithContext is the same as CreatePermissionVersion with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreatePermissionVersion for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) CreatePermissionVersionWithContext(ctx aws.Context, input *CreatePermissionVersionInput, opts ...request.Option) (*CreatePermissionVersionOutput, error) {
+	req, out := c.CreatePermissionVersionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -409,39 +658,49 @@ func (c *RAM) CreateResourceShareRequest(input *CreateResourceShareInput) (req *
 // Returned Error Types:
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 //   - InvalidStateTransitionException
-//     The requested state transition is not valid.
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ResourceShareLimitExceededException
-//     This request would exceed the limit for resource shares for your account.
+//     The operation failed because it would exceed the limit for resource shares
+//     for your account. To view the limits for your Amazon Web Services account,
+//     see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
 //
 //   - TagPolicyViolationException
-//     The specified tag key is a reserved word and can't be used.
+//     The operation failed because the specified tag key is a reserved word and
+//     can't be used.
+//
+//   - TagLimitExceededException
+//     The operation failed because it would exceed the limit for tags for your
+//     Amazon Web Services account.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/CreateResourceShare
 func (c *RAM) CreateResourceShare(input *CreateResourceShareInput) (*CreateResourceShareOutput, error) {
@@ -460,6 +719,219 @@ func (c *RAM) CreateResourceShare(input *CreateResourceShareInput) (*CreateResou
 // for more information on using Contexts.
 func (c *RAM) CreateResourceShareWithContext(ctx aws.Context, input *CreateResourceShareInput, opts ...request.Option) (*CreateResourceShareOutput, error) {
 	req, out := c.CreateResourceShareRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeletePermission = "DeletePermission"
+
+// DeletePermissionRequest generates a "aws/request.Request" representing the
+// client's request for the DeletePermission operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeletePermission for more information on using the DeletePermission
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeletePermissionRequest method.
+//	req, resp := client.DeletePermissionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeletePermission
+func (c *RAM) DeletePermissionRequest(input *DeletePermissionInput) (req *request.Request, output *DeletePermissionOutput) {
+	op := &request.Operation{
+		Name:       opDeletePermission,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/deletepermission",
+	}
+
+	if input == nil {
+		input = &DeletePermissionInput{}
+	}
+
+	output = &DeletePermissionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeletePermission API operation for AWS Resource Access Manager.
+//
+// Deletes the specified customer managed permission in the Amazon Web Services
+// Region in which you call this operation. You can delete a customer managed
+// permission only if it isn't attached to any resource share. The operation
+// deletes all versions associated with the customer managed permission.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation DeletePermission for usage and error information.
+//
+// Returned Error Types:
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - OperationNotPermittedException
+//     The operation failed because the requested operation isn't permitted.
+//
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
+//   - InvalidClientTokenException
+//     The operation failed because the specified client token isn't valid.
+//
+//   - IdempotentParameterMismatchException
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeletePermission
+func (c *RAM) DeletePermission(input *DeletePermissionInput) (*DeletePermissionOutput, error) {
+	req, out := c.DeletePermissionRequest(input)
+	return out, req.Send()
+}
+
+// DeletePermissionWithContext is the same as DeletePermission with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeletePermission for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) DeletePermissionWithContext(ctx aws.Context, input *DeletePermissionInput, opts ...request.Option) (*DeletePermissionOutput, error) {
+	req, out := c.DeletePermissionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeletePermissionVersion = "DeletePermissionVersion"
+
+// DeletePermissionVersionRequest generates a "aws/request.Request" representing the
+// client's request for the DeletePermissionVersion operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeletePermissionVersion for more information on using the DeletePermissionVersion
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeletePermissionVersionRequest method.
+//	req, resp := client.DeletePermissionVersionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeletePermissionVersion
+func (c *RAM) DeletePermissionVersionRequest(input *DeletePermissionVersionInput) (req *request.Request, output *DeletePermissionVersionOutput) {
+	op := &request.Operation{
+		Name:       opDeletePermissionVersion,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/deletepermissionversion",
+	}
+
+	if input == nil {
+		input = &DeletePermissionVersionInput{}
+	}
+
+	output = &DeletePermissionVersionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeletePermissionVersion API operation for AWS Resource Access Manager.
+//
+// Deletes one version of a customer managed permission. The version you specify
+// must not be attached to any resource share and must not be the default version
+// for the permission.
+//
+// If a customer managed permission has the maximum of 5 versions, then you
+// must delete at least one version before you can create another.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation DeletePermissionVersion for usage and error information.
+//
+// Returned Error Types:
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - OperationNotPermittedException
+//     The operation failed because the requested operation isn't permitted.
+//
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
+//   - InvalidClientTokenException
+//     The operation failed because the specified client token isn't valid.
+//
+//   - IdempotentParameterMismatchException
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeletePermissionVersion
+func (c *RAM) DeletePermissionVersion(input *DeletePermissionVersionInput) (*DeletePermissionVersionOutput, error) {
+	req, out := c.DeletePermissionVersionRequest(input)
+	return out, req.Send()
+}
+
+// DeletePermissionVersionWithContext is the same as DeletePermissionVersion with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeletePermissionVersion for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) DeletePermissionVersionWithContext(ctx aws.Context, input *DeletePermissionVersionInput, opts ...request.Option) (*DeletePermissionVersionOutput, error) {
+	req, out := c.DeletePermissionVersionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -508,9 +980,11 @@ func (c *RAM) DeleteResourceShareRequest(input *DeleteResourceShareInput) (req *
 
 // DeleteResourceShare API operation for AWS Resource Access Manager.
 //
-// Deletes the specified resource share. This doesn't delete any of the resources
-// that were associated with the resource share; it only stops the sharing of
-// those resources outside of the Amazon Web Services account that created them.
+// Deletes the specified resource share.
+//
+// This doesn't delete any of the resources that were associated with the resource
+// share; it only stops the sharing of those resources through this resource
+// share.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -522,33 +996,36 @@ func (c *RAM) DeleteResourceShareRequest(input *DeleteResourceShareInput) (req *
 // Returned Error Types:
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 //   - InvalidStateTransitionException
-//     The requested state transition is not valid.
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DeleteResourceShare
 func (c *RAM) DeleteResourceShare(input *DeleteResourceShareInput) (*DeleteResourceShareOutput, error) {
@@ -615,8 +1092,8 @@ func (c *RAM) DisassociateResourceShareRequest(input *DisassociateResourceShareI
 
 // DisassociateResourceShare API operation for AWS Resource Access Manager.
 //
-// Disassociates the specified principals or resources from the specified resource
-// share.
+// Removes the specified principals or resources from participating in the specified
+// resource share.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -628,36 +1105,41 @@ func (c *RAM) DisassociateResourceShareRequest(input *DisassociateResourceShareI
 // Returned Error Types:
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 //   - ResourceShareLimitExceededException
-//     This request would exceed the limit for resource shares for your account.
+//     The operation failed because it would exceed the limit for resource shares
+//     for your account. To view the limits for your Amazon Web Services account,
+//     see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidStateTransitionException
-//     The requested state transition is not valid.
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DisassociateResourceShare
 func (c *RAM) DisassociateResourceShare(input *DisassociateResourceShareInput) (*DisassociateResourceShareOutput, error) {
@@ -724,10 +1206,10 @@ func (c *RAM) DisassociateResourceSharePermissionRequest(input *DisassociateReso
 
 // DisassociateResourceSharePermission API operation for AWS Resource Access Manager.
 //
-// Disassociates an RAM permission from a resource share. Permission changes
-// take effect immediately. You can remove a RAM permission from a resource
-// share only if there are currently no resources of the relevant resource type
-// currently attached to the resource share.
+// Removes a managed permission from a resource share. Permission changes take
+// effect immediately. You can remove a managed permission from a resource share
+// only if there are currently no resources of the relevant resource type currently
+// attached to the resource share.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -739,28 +1221,31 @@ func (c *RAM) DisassociateResourceSharePermissionRequest(input *DisassociateReso
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - InvalidStateTransitionException
-//     The requested state transition is not valid.
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/DisassociateResourceSharePermission
 func (c *RAM) DisassociateResourceSharePermission(input *DisassociateResourceSharePermissionInput) (*DisassociateResourceSharePermissionOutput, error) {
@@ -827,15 +1312,18 @@ func (c *RAM) EnableSharingWithAwsOrganizationRequest(input *EnableSharingWithAw
 
 // EnableSharingWithAwsOrganization API operation for AWS Resource Access Manager.
 //
-// Enables resource sharing within your organization in Organizations. Calling
-// this operation enables RAM to retrieve information about the organization
+// Enables resource sharing within your organization in Organizations. This
+// operation creates a service-linked role called AWSServiceRoleForResourceAccessManager
+// that has the IAM managed policy named AWSResourceAccessManagerServiceRolePolicy
+// attached. This role permits RAM to retrieve information about the organization
 // and its structure. This lets you share resources with all of the accounts
-// in an organization by specifying the organization's ID, or all of the accounts
-// in an organizational unit (OU) by specifying the OU's ID. Until you enable
-// sharing within the organization, you can specify only individual Amazon Web
-// Services accounts, or for supported resource types, IAM users and roles.
+// in the calling account's organization by specifying the organization ID,
+// or all of the accounts in an organizational unit (OU) by specifying the OU
+// ID. Until you enable sharing within the organization, you can specify only
+// individual Amazon Web Services accounts, or for supported resource types,
+// IAM roles and users.
 //
-// You must call this operation from an IAM user or role in the organization's
+// You must call this operation from an IAM role or user in the organization's
 // management account.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -848,13 +1336,14 @@ func (c *RAM) EnableSharingWithAwsOrganizationRequest(input *EnableSharingWithAw
 // Returned Error Types:
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/EnableSharingWithAwsOrganization
 func (c *RAM) EnableSharingWithAwsOrganization(input *EnableSharingWithAwsOrganizationInput) (*EnableSharingWithAwsOrganizationOutput, error) {
@@ -921,7 +1410,7 @@ func (c *RAM) GetPermissionRequest(input *GetPermissionInput) (req *request.Requ
 
 // GetPermission API operation for AWS Resource Access Manager.
 //
-// Gets the contents of an RAM permission in JSON format.
+// Retrieves the contents of a managed permission in JSON format.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -933,22 +1422,24 @@ func (c *RAM) GetPermissionRequest(input *GetPermissionInput) (req *request.Requ
 // Returned Error Types:
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetPermission
 func (c *RAM) GetPermission(input *GetPermissionInput) (*GetPermissionOutput, error) {
@@ -1034,22 +1525,27 @@ func (c *RAM) GetResourcePoliciesRequest(input *GetResourcePoliciesInput) (req *
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ResourceArnNotFoundException
-//     The specified Amazon Resource Name (ARN) was not found.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     was not found.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourcePolicies
 func (c *RAM) GetResourcePolicies(input *GetResourcePoliciesInput) (*GetResourcePoliciesOutput, error) {
@@ -1173,8 +1669,8 @@ func (c *RAM) GetResourceShareAssociationsRequest(input *GetResourceShareAssocia
 
 // GetResourceShareAssociations API operation for AWS Resource Access Manager.
 //
-// Retrieves the resource and principal associations for resource shares that
-// you own.
+// Retrieves the lists of resources and principals that associated for resource
+// shares that you own.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1186,25 +1682,29 @@ func (c *RAM) GetResourceShareAssociationsRequest(input *GetResourceShareAssocia
 // Returned Error Types:
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShareAssociations
 func (c *RAM) GetResourceShareAssociations(input *GetResourceShareAssociationsInput) (*GetResourceShareAssociationsOutput, error) {
@@ -1340,28 +1840,33 @@ func (c *RAM) GetResourceShareInvitationsRequest(input *GetResourceShareInvitati
 // Returned Error Types:
 //
 //   - ResourceShareInvitationArnNotFoundException
-//     The specified Amazon Resource Name (ARN) for an invitation was not found.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     for an invitation was not found.
 //
 //   - InvalidMaxResultsException
-//     The specified value for MaxResults is not valid.
+//     The operation failed because the specified value for MaxResults isn't valid.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShareInvitations
 func (c *RAM) GetResourceShareInvitations(input *GetResourceShareInvitationsInput) (*GetResourceShareInvitationsOutput, error) {
@@ -1498,22 +2003,26 @@ func (c *RAM) GetResourceSharesRequest(input *GetResourceSharesInput) (req *requ
 // Returned Error Types:
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/GetResourceShares
 func (c *RAM) GetResourceShares(input *GetResourceSharesInput) (*GetResourceSharesOutput, error) {
@@ -1651,31 +2160,37 @@ func (c *RAM) ListPendingInvitationResourcesRequest(input *ListPendingInvitation
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - ResourceShareInvitationArnNotFoundException
-//     The specified Amazon Resource Name (ARN) for an invitation was not found.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     for an invitation was not found.
 //
 //   - MissingRequiredParameterException
-//     A required input parameter is missing.
+//     The operation failed because a required input parameter is missing.
 //
 //   - ResourceShareInvitationAlreadyRejectedException
-//     The specified invitation was already rejected.
+//     The operation failed because the specified invitation was already rejected.
 //
 //   - ResourceShareInvitationExpiredException
-//     The specified invitation is expired.
+//     The operation failed because the specified invitation is past its expiration
+//     date and time.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPendingInvitationResources
 func (c *RAM) ListPendingInvitationResources(input *ListPendingInvitationResourcesInput) (*ListPendingInvitationResourcesOutput, error) {
@@ -1750,6 +2265,160 @@ func (c *RAM) ListPendingInvitationResourcesPagesWithContext(ctx aws.Context, in
 	return p.Err()
 }
 
+const opListPermissionAssociations = "ListPermissionAssociations"
+
+// ListPermissionAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the ListPermissionAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListPermissionAssociations for more information on using the ListPermissionAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListPermissionAssociationsRequest method.
+//	req, resp := client.ListPermissionAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissionAssociations
+func (c *RAM) ListPermissionAssociationsRequest(input *ListPermissionAssociationsInput) (req *request.Request, output *ListPermissionAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opListPermissionAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/listpermissionassociations",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListPermissionAssociationsInput{}
+	}
+
+	output = &ListPermissionAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListPermissionAssociations API operation for AWS Resource Access Manager.
+//
+// Lists information about the managed permission and its associations to any
+// resource shares that use this managed permission. This lets you see which
+// resource shares use which versions of the specified managed permission.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation ListPermissionAssociations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - InvalidNextTokenException
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissionAssociations
+func (c *RAM) ListPermissionAssociations(input *ListPermissionAssociationsInput) (*ListPermissionAssociationsOutput, error) {
+	req, out := c.ListPermissionAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// ListPermissionAssociationsWithContext is the same as ListPermissionAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListPermissionAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) ListPermissionAssociationsWithContext(ctx aws.Context, input *ListPermissionAssociationsInput, opts ...request.Option) (*ListPermissionAssociationsOutput, error) {
+	req, out := c.ListPermissionAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListPermissionAssociationsPages iterates over the pages of a ListPermissionAssociations operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListPermissionAssociations method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListPermissionAssociations operation.
+//	pageNum := 0
+//	err := client.ListPermissionAssociationsPages(params,
+//	    func(page *ram.ListPermissionAssociationsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *RAM) ListPermissionAssociationsPages(input *ListPermissionAssociationsInput, fn func(*ListPermissionAssociationsOutput, bool) bool) error {
+	return c.ListPermissionAssociationsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListPermissionAssociationsPagesWithContext same as ListPermissionAssociationsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) ListPermissionAssociationsPagesWithContext(ctx aws.Context, input *ListPermissionAssociationsInput, fn func(*ListPermissionAssociationsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListPermissionAssociationsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListPermissionAssociationsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListPermissionAssociationsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListPermissionVersions = "ListPermissionVersions"
 
 // ListPermissionVersionsRequest generates a "aws/request.Request" representing the
@@ -1811,25 +2480,29 @@ func (c *RAM) ListPermissionVersionsRequest(input *ListPermissionVersionsInput) 
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissionVersions
 func (c *RAM) ListPermissionVersions(input *ListPermissionVersionsInput) (*ListPermissionVersionsOutput, error) {
@@ -1966,19 +2639,22 @@ func (c *RAM) ListPermissionsRequest(input *ListPermissionsInput) (req *request.
 // Returned Error Types:
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPermissions
 func (c *RAM) ListPermissions(input *ListPermissionsInput) (*ListPermissionsOutput, error) {
@@ -2115,22 +2791,26 @@ func (c *RAM) ListPrincipalsRequest(input *ListPrincipalsInput) (req *request.Re
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListPrincipals
 func (c *RAM) ListPrincipals(input *ListPrincipalsInput) (*ListPrincipalsOutput, error) {
@@ -2205,6 +2885,155 @@ func (c *RAM) ListPrincipalsPagesWithContext(ctx aws.Context, input *ListPrincip
 	return p.Err()
 }
 
+const opListReplacePermissionAssociationsWork = "ListReplacePermissionAssociationsWork"
+
+// ListReplacePermissionAssociationsWorkRequest generates a "aws/request.Request" representing the
+// client's request for the ListReplacePermissionAssociationsWork operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListReplacePermissionAssociationsWork for more information on using the ListReplacePermissionAssociationsWork
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListReplacePermissionAssociationsWorkRequest method.
+//	req, resp := client.ListReplacePermissionAssociationsWorkRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListReplacePermissionAssociationsWork
+func (c *RAM) ListReplacePermissionAssociationsWorkRequest(input *ListReplacePermissionAssociationsWorkInput) (req *request.Request, output *ListReplacePermissionAssociationsWorkOutput) {
+	op := &request.Operation{
+		Name:       opListReplacePermissionAssociationsWork,
+		HTTPMethod: "POST",
+		HTTPPath:   "/listreplacepermissionassociationswork",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListReplacePermissionAssociationsWorkInput{}
+	}
+
+	output = &ListReplacePermissionAssociationsWorkOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListReplacePermissionAssociationsWork API operation for AWS Resource Access Manager.
+//
+// Retrieves the current status of the asynchronous tasks performed by RAM when
+// you perform the ReplacePermissionAssociationsWork operation.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation ListReplacePermissionAssociationsWork for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - InvalidNextTokenException
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListReplacePermissionAssociationsWork
+func (c *RAM) ListReplacePermissionAssociationsWork(input *ListReplacePermissionAssociationsWorkInput) (*ListReplacePermissionAssociationsWorkOutput, error) {
+	req, out := c.ListReplacePermissionAssociationsWorkRequest(input)
+	return out, req.Send()
+}
+
+// ListReplacePermissionAssociationsWorkWithContext is the same as ListReplacePermissionAssociationsWork with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListReplacePermissionAssociationsWork for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) ListReplacePermissionAssociationsWorkWithContext(ctx aws.Context, input *ListReplacePermissionAssociationsWorkInput, opts ...request.Option) (*ListReplacePermissionAssociationsWorkOutput, error) {
+	req, out := c.ListReplacePermissionAssociationsWorkRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListReplacePermissionAssociationsWorkPages iterates over the pages of a ListReplacePermissionAssociationsWork operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListReplacePermissionAssociationsWork method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListReplacePermissionAssociationsWork operation.
+//	pageNum := 0
+//	err := client.ListReplacePermissionAssociationsWorkPages(params,
+//	    func(page *ram.ListReplacePermissionAssociationsWorkOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *RAM) ListReplacePermissionAssociationsWorkPages(input *ListReplacePermissionAssociationsWorkInput, fn func(*ListReplacePermissionAssociationsWorkOutput, bool) bool) error {
+	return c.ListReplacePermissionAssociationsWorkPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListReplacePermissionAssociationsWorkPagesWithContext same as ListReplacePermissionAssociationsWorkPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) ListReplacePermissionAssociationsWorkPagesWithContext(ctx aws.Context, input *ListReplacePermissionAssociationsWorkInput, fn func(*ListReplacePermissionAssociationsWorkOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListReplacePermissionAssociationsWorkInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListReplacePermissionAssociationsWorkRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListReplacePermissionAssociationsWorkOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opListResourceSharePermissions = "ListResourceSharePermissions"
 
 // ListResourceSharePermissionsRequest generates a "aws/request.Request" representing the
@@ -2266,25 +3095,29 @@ func (c *RAM) ListResourceSharePermissionsRequest(input *ListResourceSharePermis
 // Returned Error Types:
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResourceSharePermissions
 func (c *RAM) ListResourceSharePermissions(input *ListResourceSharePermissionsInput) (*ListResourceSharePermissionsOutput, error) {
@@ -2420,16 +3253,19 @@ func (c *RAM) ListResourceTypesRequest(input *ListResourceTypesInput) (req *requ
 // Returned Error Types:
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResourceTypes
 func (c *RAM) ListResourceTypes(input *ListResourceTypesInput) (*ListResourceTypesOutput, error) {
@@ -2566,25 +3402,29 @@ func (c *RAM) ListResourcesRequest(input *ListResourcesInput) (req *request.Requ
 // Returned Error Types:
 //
 //   - InvalidResourceTypeException
-//     The specified resource type is not valid.
+//     The operation failed because the specified resource type isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidNextTokenException
-//     The specified value for NextToken is not valid.
+//     The operation failed because the specified value for NextToken isn't valid.
+//     You must specify a value you received in the NextToken response of a previous
+//     call to this operation.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ListResources
 func (c *RAM) ListResources(input *ListResourcesInput) (*ListResourcesOutput, error) {
@@ -2659,6 +3499,131 @@ func (c *RAM) ListResourcesPagesWithContext(ctx aws.Context, input *ListResource
 	return p.Err()
 }
 
+const opPromotePermissionCreatedFromPolicy = "PromotePermissionCreatedFromPolicy"
+
+// PromotePermissionCreatedFromPolicyRequest generates a "aws/request.Request" representing the
+// client's request for the PromotePermissionCreatedFromPolicy operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PromotePermissionCreatedFromPolicy for more information on using the PromotePermissionCreatedFromPolicy
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PromotePermissionCreatedFromPolicyRequest method.
+//	req, resp := client.PromotePermissionCreatedFromPolicyRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/PromotePermissionCreatedFromPolicy
+func (c *RAM) PromotePermissionCreatedFromPolicyRequest(input *PromotePermissionCreatedFromPolicyInput) (req *request.Request, output *PromotePermissionCreatedFromPolicyOutput) {
+	op := &request.Operation{
+		Name:       opPromotePermissionCreatedFromPolicy,
+		HTTPMethod: "POST",
+		HTTPPath:   "/promotepermissioncreatedfrompolicy",
+	}
+
+	if input == nil {
+		input = &PromotePermissionCreatedFromPolicyInput{}
+	}
+
+	output = &PromotePermissionCreatedFromPolicyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PromotePermissionCreatedFromPolicy API operation for AWS Resource Access Manager.
+//
+// When you attach a resource-based policy to a resource, RAM automatically
+// creates a resource share of featureSet=CREATED_FROM_POLICY with a managed
+// permission that has the same IAM permissions as the original resource-based
+// policy. However, this type of managed permission is visible to only the resource
+// share owner, and the associated resource share can't be modified by using
+// RAM.
+//
+// This operation creates a separate, fully manageable customer managed permission
+// that has the same IAM permissions as the original resource-based policy.
+// You can associate this customer managed permission to any resource shares.
+//
+// Before you use PromoteResourceShareCreatedFromPolicy, you should first run
+// this operation to ensure that you have an appropriate customer managed permission
+// that can be associated with the promoted resource share.
+//
+//   - The original CREATED_FROM_POLICY policy isn't deleted, and resource
+//     shares using that original policy aren't automatically updated.
+//
+//   - You can't modify a CREATED_FROM_POLICY resource share so you can't associate
+//     the new customer managed permission by using ReplacePermsissionAssociations.
+//     However, if you use PromoteResourceShareCreatedFromPolicy, that operation
+//     automatically associates the fully manageable customer managed permission
+//     to the newly promoted STANDARD resource share.
+//
+//   - After you promote a resource share, if the original CREATED_FROM_POLICY
+//     managed permission has no other associations to A resource share, then
+//     RAM automatically deletes it.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation PromotePermissionCreatedFromPolicy for usage and error information.
+//
+// Returned Error Types:
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - OperationNotPermittedException
+//     The operation failed because the requested operation isn't permitted.
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - MissingRequiredParameterException
+//     The operation failed because a required input parameter is missing.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/PromotePermissionCreatedFromPolicy
+func (c *RAM) PromotePermissionCreatedFromPolicy(input *PromotePermissionCreatedFromPolicyInput) (*PromotePermissionCreatedFromPolicyOutput, error) {
+	req, out := c.PromotePermissionCreatedFromPolicyRequest(input)
+	return out, req.Send()
+}
+
+// PromotePermissionCreatedFromPolicyWithContext is the same as PromotePermissionCreatedFromPolicy with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PromotePermissionCreatedFromPolicy for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) PromotePermissionCreatedFromPolicyWithContext(ctx aws.Context, input *PromotePermissionCreatedFromPolicyInput, opts ...request.Option) (*PromotePermissionCreatedFromPolicyOutput, error) {
+	req, out := c.PromotePermissionCreatedFromPolicyRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPromoteResourceShareCreatedFromPolicy = "PromoteResourceShareCreatedFromPolicy"
 
 // PromoteResourceShareCreatedFromPolicyRequest generates a "aws/request.Request" representing the
@@ -2702,15 +3667,23 @@ func (c *RAM) PromoteResourceShareCreatedFromPolicyRequest(input *PromoteResourc
 
 // PromoteResourceShareCreatedFromPolicy API operation for AWS Resource Access Manager.
 //
-// When you attach a resource-based permission policy to a resource, it automatically
-// creates a resource share. However, resource shares created this way are visible
-// only to the resource share owner, and the resource share can't be modified
-// in RAM.
+// When you attach a resource-based policy to a resource, RAM automatically
+// creates a resource share of featureSet=CREATED_FROM_POLICY with a managed
+// permission that has the same IAM permissions as the original resource-based
+// policy. However, this type of managed permission is visible to only the resource
+// share owner, and the associated resource share can't be modified by using
+// RAM.
 //
-// You can use this operation to promote the resource share to a full RAM resource
-// share. When you promote a resource share, you can then manage the resource
-// share in RAM and it becomes visible to all of the principals you shared it
-// with.
+// This operation promotes the resource share to a STANDARD resource share that
+// is fully manageable in RAM. When you promote a resource share, you can then
+// manage the resource share in RAM and it becomes visible to all of the principals
+// you shared it with.
+//
+// Before you perform this operation, you should first run PromotePermissionCreatedFromPolicyto
+// ensure that you have an appropriate customer managed permission that can
+// be associated with this resource share after its is promoted. If this operation
+// can't find a managed permission that exactly matches the existing CREATED_FROM_POLICY
+// permission, then this operation fails.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2722,28 +3695,42 @@ func (c *RAM) PromoteResourceShareCreatedFromPolicyRequest(input *PromoteResourc
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - ResourceShareLimitExceededException
-//     This request would exceed the limit for resource shares for your account.
+//     The operation failed because it would exceed the limit for resource shares
+//     for your account. To view the limits for your Amazon Web Services account,
+//     see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - MissingRequiredParameterException
-//     A required input parameter is missing.
+//     The operation failed because a required input parameter is missing.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
+//
+//   - InvalidStateTransitionException
+//     The operation failed because the requested operation isn't valid for the
+//     resource share in its current state.
+//
+//   - UnmatchedPolicyPermissionException
+//     There isn't an existing managed permission defined in RAM that has the same
+//     IAM permissions as the resource-based policy attached to the resource. You
+//     should first run PromotePermissionCreatedFromPolicy to create that managed
+//     permission.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/PromoteResourceShareCreatedFromPolicy
 func (c *RAM) PromoteResourceShareCreatedFromPolicy(input *PromoteResourceShareCreatedFromPolicyInput) (*PromoteResourceShareCreatedFromPolicyOutput, error) {
@@ -2823,36 +3810,40 @@ func (c *RAM) RejectResourceShareInvitationRequest(input *RejectResourceShareInv
 // Returned Error Types:
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ResourceShareInvitationArnNotFoundException
-//     The specified Amazon Resource Name (ARN) for an invitation was not found.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     for an invitation was not found.
 //
 //   - ResourceShareInvitationAlreadyAcceptedException
-//     The specified invitation was already accepted.
+//     The operation failed because the specified invitation was already accepted.
 //
 //   - ResourceShareInvitationAlreadyRejectedException
-//     The specified invitation was already rejected.
+//     The operation failed because the specified invitation was already rejected.
 //
 //   - ResourceShareInvitationExpiredException
-//     The specified invitation is expired.
+//     The operation failed because the specified invitation is past its expiration
+//     date and time.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/RejectResourceShareInvitation
 func (c *RAM) RejectResourceShareInvitation(input *RejectResourceShareInvitationInput) (*RejectResourceShareInvitationOutput, error) {
@@ -2871,6 +3862,231 @@ func (c *RAM) RejectResourceShareInvitation(input *RejectResourceShareInvitation
 // for more information on using Contexts.
 func (c *RAM) RejectResourceShareInvitationWithContext(ctx aws.Context, input *RejectResourceShareInvitationInput, opts ...request.Option) (*RejectResourceShareInvitationOutput, error) {
 	req, out := c.RejectResourceShareInvitationRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opReplacePermissionAssociations = "ReplacePermissionAssociations"
+
+// ReplacePermissionAssociationsRequest generates a "aws/request.Request" representing the
+// client's request for the ReplacePermissionAssociations operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ReplacePermissionAssociations for more information on using the ReplacePermissionAssociations
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ReplacePermissionAssociationsRequest method.
+//	req, resp := client.ReplacePermissionAssociationsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ReplacePermissionAssociations
+func (c *RAM) ReplacePermissionAssociationsRequest(input *ReplacePermissionAssociationsInput) (req *request.Request, output *ReplacePermissionAssociationsOutput) {
+	op := &request.Operation{
+		Name:       opReplacePermissionAssociations,
+		HTTPMethod: "POST",
+		HTTPPath:   "/replacepermissionassociations",
+	}
+
+	if input == nil {
+		input = &ReplacePermissionAssociationsInput{}
+	}
+
+	output = &ReplacePermissionAssociationsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ReplacePermissionAssociations API operation for AWS Resource Access Manager.
+//
+// Updates all resource shares that use a managed permission to a different
+// managed permission. This operation always applies the default version of
+// the target managed permission. You can optionally specify that the update
+// applies to only resource shares that currently use a specified version. This
+// enables you to update to the latest version, without changing the which managed
+// permission is used.
+//
+// You can use this operation to update all of your resource shares to use the
+// current default version of the permission by specifying the same value for
+// the fromPermissionArn and toPermissionArn parameters.
+//
+// You can use the optional fromPermissionVersion parameter to update only those
+// resources that use a specified version of the managed permission to the new
+// managed permission.
+//
+// To successfully perform this operation, you must have permission to update
+// the resource-based policy on all affected resource types.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation ReplacePermissionAssociations for usage and error information.
+//
+// Returned Error Types:
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - OperationNotPermittedException
+//     The operation failed because the requested operation isn't permitted.
+//
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
+//   - InvalidClientTokenException
+//     The operation failed because the specified client token isn't valid.
+//
+//   - IdempotentParameterMismatchException
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/ReplacePermissionAssociations
+func (c *RAM) ReplacePermissionAssociations(input *ReplacePermissionAssociationsInput) (*ReplacePermissionAssociationsOutput, error) {
+	req, out := c.ReplacePermissionAssociationsRequest(input)
+	return out, req.Send()
+}
+
+// ReplacePermissionAssociationsWithContext is the same as ReplacePermissionAssociations with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ReplacePermissionAssociations for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) ReplacePermissionAssociationsWithContext(ctx aws.Context, input *ReplacePermissionAssociationsInput, opts ...request.Option) (*ReplacePermissionAssociationsOutput, error) {
+	req, out := c.ReplacePermissionAssociationsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opSetDefaultPermissionVersion = "SetDefaultPermissionVersion"
+
+// SetDefaultPermissionVersionRequest generates a "aws/request.Request" representing the
+// client's request for the SetDefaultPermissionVersion operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See SetDefaultPermissionVersion for more information on using the SetDefaultPermissionVersion
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the SetDefaultPermissionVersionRequest method.
+//	req, resp := client.SetDefaultPermissionVersionRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/SetDefaultPermissionVersion
+func (c *RAM) SetDefaultPermissionVersionRequest(input *SetDefaultPermissionVersionInput) (req *request.Request, output *SetDefaultPermissionVersionOutput) {
+	op := &request.Operation{
+		Name:       opSetDefaultPermissionVersion,
+		HTTPMethod: "POST",
+		HTTPPath:   "/setdefaultpermissionversion",
+	}
+
+	if input == nil {
+		input = &SetDefaultPermissionVersionInput{}
+	}
+
+	output = &SetDefaultPermissionVersionOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// SetDefaultPermissionVersion API operation for AWS Resource Access Manager.
+//
+// Designates the specified version number as the default version for the specified
+// customer managed permission. New resource shares automatically use this new
+// default permission. Existing resource shares continue to use their original
+// permission version, but you can use ReplacePermissionAssociations to update
+// them.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Resource Access Manager's
+// API operation SetDefaultPermissionVersion for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InvalidParameterException
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
+//
+//   - ServerInternalException
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
+//
+//   - ServiceUnavailableException
+//     The operation failed because the service isn't available. Try again later.
+//
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
+//   - InvalidClientTokenException
+//     The operation failed because the specified client token isn't valid.
+//
+//   - IdempotentParameterMismatchException
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/SetDefaultPermissionVersion
+func (c *RAM) SetDefaultPermissionVersion(input *SetDefaultPermissionVersionInput) (*SetDefaultPermissionVersionOutput, error) {
+	req, out := c.SetDefaultPermissionVersionRequest(input)
+	return out, req.Send()
+}
+
+// SetDefaultPermissionVersionWithContext is the same as SetDefaultPermissionVersion with the addition of
+// the ability to pass a context and additional request options.
+//
+// See SetDefaultPermissionVersion for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RAM) SetDefaultPermissionVersionWithContext(ctx aws.Context, input *SetDefaultPermissionVersionInput, opts ...request.Option) (*SetDefaultPermissionVersionOutput, error) {
+	req, out := c.SetDefaultPermissionVersionRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2920,9 +4136,12 @@ func (c *RAM) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 
 // TagResource API operation for AWS Resource Access Manager.
 //
-// Adds the specified tag keys and values to the specified resource share. The
-// tags are attached only to the resource share, not to the resources that are
-// in the resource share.
+// Adds the specified tag keys and values to a resource share or managed permission.
+// If you choose a resource share, the tags are attached to only the resource
+// share, not to the resources that are in the resource share.
+//
+// The tags on a managed permission are the same for all versions of the managed
+// permission.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2934,28 +4153,33 @@ func (c *RAM) TagResourceRequest(input *TagResourceInput) (req *request.Request,
 // Returned Error Types:
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - TagLimitExceededException
-//     This request would exceed the limit for tags for your account.
+//     The operation failed because it would exceed the limit for tags for your
+//     Amazon Web Services account.
 //
 //   - ResourceArnNotFoundException
-//     The specified Amazon Resource Name (ARN) was not found.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     was not found.
 //
 //   - TagPolicyViolationException
-//     The specified tag key is a reserved word and can't be used.
+//     The operation failed because the specified tag key is a reserved word and
+//     can't be used.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/TagResource
 func (c *RAM) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
@@ -3024,7 +4248,7 @@ func (c *RAM) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 // UntagResource API operation for AWS Resource Access Manager.
 //
 // Removes the specified tag key and value pairs from the specified resource
-// share.
+// share or managed permission.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -3035,14 +4259,22 @@ func (c *RAM) UntagResourceRequest(input *UntagResourceInput) (req *request.Requ
 //
 // Returned Error Types:
 //
+//   - UnknownResourceException
+//     The operation failed because a specified resource couldn't be found.
+//
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
+//
+//   - MalformedArnException
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/UntagResource
 func (c *RAM) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
@@ -3121,33 +4353,35 @@ func (c *RAM) UpdateResourceShareRequest(input *UpdateResourceShareInput) (req *
 // Returned Error Types:
 //
 //   - IdempotentParameterMismatchException
-//     The client token input parameter was matched one used with a previous call
-//     to the operation, but at least one of the other input parameters is different
-//     from the previous call.
+//     The operation failed because the client token input parameter matched one
+//     that was used with a previous call to the operation, but at least one of
+//     the other input parameters is different from the previous call.
 //
 //   - MissingRequiredParameterException
-//     A required input parameter is missing.
+//     The operation failed because a required input parameter is missing.
 //
 //   - UnknownResourceException
-//     A specified resource was not found.
+//     The operation failed because a specified resource couldn't be found.
 //
 //   - MalformedArnException
-//     The format of an Amazon Resource Name (ARN) is not valid.
+//     The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+//     has a format that isn't valid.
 //
 //   - InvalidClientTokenException
-//     The client token is not valid.
+//     The operation failed because the specified client token isn't valid.
 //
 //   - InvalidParameterException
-//     A parameter is not valid.
+//     The operation failed because a parameter you specified isn't valid.
 //
 //   - OperationNotPermittedException
-//     The requested operation is not permitted.
+//     The operation failed because the requested operation isn't permitted.
 //
 //   - ServerInternalException
-//     The service could not respond to the request due to an internal problem.
+//     The operation failed because the service could not respond to the request
+//     due to an internal problem. Try again later.
 //
 //   - ServiceUnavailableException
-//     The service is not available.
+//     The operation failed because the service isn't available. Try again later.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/ram-2018-01-04/UpdateResourceShare
 func (c *RAM) UpdateResourceShare(input *UpdateResourceShareInput) (*UpdateResourceShareOutput, error) {
@@ -3183,9 +4417,12 @@ type AcceptResourceShareInvitationInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the invitation that you want to accept.
 	//
 	// ResourceShareInvitationArn is a required field
@@ -3290,6 +4527,9 @@ type AssociateResourceShareInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
 	// Specifies a list of principals to whom you want to the resource share. This
@@ -3302,7 +4542,7 @@ type AssociateResourceShareInput struct {
 	//
 	//    * An Amazon Web Services account ID, for example: 123456789012
 	//
-	//    * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 	//
 	//    * An ARN of an organizational unit (OU) in Organizations, for example:
@@ -3322,11 +4562,15 @@ type AssociateResourceShareInput struct {
 	// add only principals.
 	ResourceArns []*string `locationName:"resourceArns" type:"list"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share that you want to add principals or resources to.
 	//
 	// ResourceShareArn is a required field
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string" required:"true"`
+
+	// Specifies from which source accounts the service principal has access to
+	// the resources in this resource share.
+	Sources []*string `locationName:"sources" type:"list"`
 }
 
 // String returns the string representation.
@@ -3381,6 +4625,12 @@ func (s *AssociateResourceShareInput) SetResourceArns(v []*string) *AssociateRes
 // SetResourceShareArn sets the ResourceShareArn field's value.
 func (s *AssociateResourceShareInput) SetResourceShareArn(v string) *AssociateResourceShareInput {
 	s.ResourceShareArn = &v
+	return s
+}
+
+// SetSources sets the Sources field's value.
+func (s *AssociateResourceShareInput) SetSources(v []*string) *AssociateResourceShareInput {
+	s.Sources = v
 	return s
 }
 
@@ -3439,9 +4689,12 @@ type AssociateResourceSharePermissionInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the RAM permission to associate with the resource share. To find the ARN
 	// for a permission, use either the ListPermissions operation or go to the Permissions
 	// library (https://console.aws.amazon.com/ram/home#Permissions:) page in the
@@ -3452,15 +4705,20 @@ type AssociateResourceSharePermissionInput struct {
 	PermissionArn *string `locationName:"permissionArn" type:"string" required:"true"`
 
 	// Specifies the version of the RAM permission to associate with the resource
-	// share. If you don't specify this parameter, the operation uses the version
-	// designated as the default. You can use the ListPermissionVersions operation
-	// to discover the available versions of a permission.
+	// share. You can specify only the version that is currently set as the default
+	// version for the permission. If you also set the replace pararameter to true,
+	// then this operation updates an outdated version of the permission to the
+	// current default version.
+	//
+	// You don't need to specify this parameter because the default behavior is
+	// to use the version that is currently set as the default version for the permission.
+	// This parameter is supported for backwards compatibility.
 	PermissionVersion *int64 `locationName:"permissionVersion" type:"integer"`
 
-	// Specifies whether the specified permission should replace or add to the existing
-	// permission associated with the resource share. Use true to replace the current
-	// permissions. Use false to add the permission to the current permission. The
-	// default value is false.
+	// Specifies whether the specified permission should replace the existing permission
+	// associated with the resource share. Use true to replace the current permissions.
+	// Use false to add the permission to a resource share that currently doesn't
+	// have a permission. The default value is false.
 	//
 	// A resource share can have only one permission per resource type. If a resource
 	// share already has a permission for the specified resource type and you don't
@@ -3468,7 +4726,7 @@ type AssociateResourceSharePermissionInput struct {
 	// accidental overwriting of a permission.
 	Replace *bool `locationName:"replace" type:"boolean"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share to which you want to add or replace permissions.
 	//
 	// ResourceShareArn is a required field
@@ -3583,6 +4841,461 @@ func (s *AssociateResourceSharePermissionOutput) SetReturnValue(v bool) *Associa
 	return s
 }
 
+// An object that describes a managed permission associated with a resource
+// share.
+type AssociatedPermission struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the associated managed permission.
+	Arn *string `locationName:"arn" type:"string"`
+
+	// Indicates whether the associated resource share is using the default version
+	// of the permission.
+	DefaultVersion *bool `locationName:"defaultVersion" type:"boolean"`
+
+	// Indicates what features are available for this resource share. This parameter
+	// can have one of the following values:
+	//
+	//    * STANDARD – A resource share that supports all functionality. These
+	//    resource shares are visible to all principals you share the resource share
+	//    with. You can modify these resource shares in RAM using the console or
+	//    APIs. This resource share might have been created by RAM, or it might
+	//    have been CREATED_FROM_POLICY and then promoted.
+	//
+	//    * CREATED_FROM_POLICY – The customer manually shared a resource by attaching
+	//    a resource-based policy. That policy did not match any existing managed
+	//    permissions, so RAM created this customer managed permission automatically
+	//    on the customer's behalf based on the attached policy document. This type
+	//    of resource share is visible only to the Amazon Web Services account that
+	//    created it. You can't modify it in RAM unless you promote it. For more
+	//    information, see PromoteResourceShareCreatedFromPolicy.
+	//
+	//    * PROMOTING_TO_STANDARD – This resource share was originally CREATED_FROM_POLICY,
+	//    but the customer ran the PromoteResourceShareCreatedFromPolicy and that
+	//    operation is still in progress. This value changes to STANDARD when complete.
+	FeatureSet *string `locationName:"featureSet" type:"string" enum:"PermissionFeatureSet"`
+
+	// The date and time when the association between the permission and the resource
+	// share was last updated.
+	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp"`
+
+	// The version of the permission currently associated with the resource share.
+	PermissionVersion *string `locationName:"permissionVersion" type:"string"`
+
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of a resource share associated with this permission.
+	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
+
+	// The resource type to which this permission applies.
+	ResourceType *string `locationName:"resourceType" type:"string"`
+
+	// The current status of the association between the permission and the resource
+	// share. The following are the possible values:
+	//
+	//    * ATTACHABLE – This permission or version can be associated with resource
+	//    shares.
+	//
+	//    * UNATTACHABLE – This permission or version can't currently be associated
+	//    with resource shares.
+	//
+	//    * DELETING – This permission or version is in the process of being deleted.
+	//
+	//    * DELETED – This permission or version is deleted.
+	Status *string `locationName:"status" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociatedPermission) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AssociatedPermission) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *AssociatedPermission) SetArn(v string) *AssociatedPermission {
+	s.Arn = &v
+	return s
+}
+
+// SetDefaultVersion sets the DefaultVersion field's value.
+func (s *AssociatedPermission) SetDefaultVersion(v bool) *AssociatedPermission {
+	s.DefaultVersion = &v
+	return s
+}
+
+// SetFeatureSet sets the FeatureSet field's value.
+func (s *AssociatedPermission) SetFeatureSet(v string) *AssociatedPermission {
+	s.FeatureSet = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *AssociatedPermission) SetLastUpdatedTime(v time.Time) *AssociatedPermission {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetPermissionVersion sets the PermissionVersion field's value.
+func (s *AssociatedPermission) SetPermissionVersion(v string) *AssociatedPermission {
+	s.PermissionVersion = &v
+	return s
+}
+
+// SetResourceShareArn sets the ResourceShareArn field's value.
+func (s *AssociatedPermission) SetResourceShareArn(v string) *AssociatedPermission {
+	s.ResourceShareArn = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *AssociatedPermission) SetResourceType(v string) *AssociatedPermission {
+	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *AssociatedPermission) SetStatus(v string) *AssociatedPermission {
+	s.Status = &v
+	return s
+}
+
+type CreatePermissionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Specifies the name of the customer managed permission. The name must be unique
+	// within the Amazon Web Services Region.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// A string in JSON format string that contains the following elements of a
+	// resource-based policy:
+	//
+	//    * Effect: must be set to ALLOW.
+	//
+	//    * Action: specifies the actions that are allowed by this customer managed
+	//    permission. The list must contain only actions that are supported by the
+	//    specified resource type. For a list of all actions supported by each resource
+	//    type, see Actions, resources, and condition keys for Amazon Web Services
+	//    services (https://docs.aws.amazon.com/service-authorization/latest/reference/reference_policies_actions-resources-contextkeys.html)
+	//    in the Identity and Access Management User Guide.
+	//
+	//    * Condition: (optional) specifies conditional parameters that must evaluate
+	//    to true when a user attempts an action for that action to be allowed.
+	//    For more information about the Condition element, see IAM policies: Condition
+	//    element (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition.html)
+	//    in the Identity and Access Management User Guide.
+	//
+	// This template can't include either the Resource or Principal elements. Those
+	// are both filled in by RAM when it instantiates the resource-based policy
+	// on each resource shared using this managed permission. The Resource comes
+	// from the ARN of the specific resource that you are sharing. The Principal
+	// comes from the list of identities added to the resource share.
+	//
+	// PolicyTemplate is a required field
+	PolicyTemplate *string `locationName:"policyTemplate" type:"string" required:"true"`
+
+	// Specifies the name of the resource type that this customer managed permission
+	// applies to.
+	//
+	// The format is <service-code>:<resource-type> and is not case sensitive. For
+	// example, to specify an Amazon EC2 Subnet, you can use the string ec2:subnet.
+	// To see the list of valid values for this parameter, query the ListResourceTypes
+	// operation.
+	//
+	// ResourceType is a required field
+	ResourceType *string `locationName:"resourceType" type:"string" required:"true"`
+
+	// Specifies a list of one or more tag key and value pairs to attach to the
+	// permission.
+	Tags []*Tag `locationName:"tags" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreatePermissionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreatePermissionInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.PolicyTemplate == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyTemplate"))
+	}
+	if s.ResourceType == nil {
+		invalidParams.Add(request.NewErrParamRequired("ResourceType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreatePermissionInput) SetClientToken(v string) *CreatePermissionInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreatePermissionInput) SetName(v string) *CreatePermissionInput {
+	s.Name = &v
+	return s
+}
+
+// SetPolicyTemplate sets the PolicyTemplate field's value.
+func (s *CreatePermissionInput) SetPolicyTemplate(v string) *CreatePermissionInput {
+	s.PolicyTemplate = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *CreatePermissionInput) SetResourceType(v string) *CreatePermissionInput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreatePermissionInput) SetTags(v []*Tag) *CreatePermissionInput {
+	s.Tags = v
+	return s
+}
+
+type CreatePermissionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// A structure with information about this customer managed permission.
+	Permission *ResourceSharePermissionSummary `locationName:"permission" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreatePermissionOutput) SetClientToken(v string) *CreatePermissionOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *CreatePermissionOutput) SetPermission(v *ResourceSharePermissionSummary) *CreatePermissionOutput {
+	s.Permission = v
+	return s
+}
+
+type CreatePermissionVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the customer managed permission you're creating a new version for.
+	//
+	// PermissionArn is a required field
+	PermissionArn *string `locationName:"permissionArn" type:"string" required:"true"`
+
+	// A string in JSON format string that contains the following elements of a
+	// resource-based policy:
+	//
+	//    * Effect: must be set to ALLOW.
+	//
+	//    * Action: specifies the actions that are allowed by this customer managed
+	//    permission. The list must contain only actions that are supported by the
+	//    specified resource type. For a list of all actions supported by each resource
+	//    type, see Actions, resources, and condition keys for Amazon Web Services
+	//    services (https://docs.aws.amazon.com/service-authorization/latest/reference/reference_policies_actions-resources-contextkeys.html)
+	//    in the Identity and Access Management User Guide.
+	//
+	//    * Condition: (optional) specifies conditional parameters that must evaluate
+	//    to true when a user attempts an action for that action to be allowed.
+	//    For more information about the Condition element, see IAM policies: Condition
+	//    element (https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition.html)
+	//    in the Identity and Access Management User Guide.
+	//
+	// This template can't include either the Resource or Principal elements. Those
+	// are both filled in by RAM when it instantiates the resource-based policy
+	// on each resource shared using this managed permission. The Resource comes
+	// from the ARN of the specific resource that you are sharing. The Principal
+	// comes from the list of identities added to the resource share.
+	//
+	// PolicyTemplate is a required field
+	PolicyTemplate *string `locationName:"policyTemplate" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreatePermissionVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreatePermissionVersionInput"}
+	if s.PermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionArn"))
+	}
+	if s.PolicyTemplate == nil {
+		invalidParams.Add(request.NewErrParamRequired("PolicyTemplate"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreatePermissionVersionInput) SetClientToken(v string) *CreatePermissionVersionInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermissionArn sets the PermissionArn field's value.
+func (s *CreatePermissionVersionInput) SetPermissionArn(v string) *CreatePermissionVersionInput {
+	s.PermissionArn = &v
+	return s
+}
+
+// SetPolicyTemplate sets the PolicyTemplate field's value.
+func (s *CreatePermissionVersionInput) SetPolicyTemplate(v string) *CreatePermissionVersionInput {
+	s.PolicyTemplate = &v
+	return s
+}
+
+type CreatePermissionVersionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Information about a RAM managed permission.
+	Permission *ResourceSharePermissionDetail `locationName:"permission" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreatePermissionVersionOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreatePermissionVersionOutput) SetClientToken(v string) *CreatePermissionVersionOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *CreatePermissionVersionOutput) SetPermission(v *ResourceSharePermissionDetail) *CreatePermissionVersionOutput {
+	s.Permission = v
+	return s
+}
+
 type CreateResourceShareInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3602,6 +5315,9 @@ type CreateResourceShareInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
 	// Specifies the name of the resource share.
@@ -3623,7 +5339,7 @@ type CreateResourceShareInput struct {
 	//
 	//    * An Amazon Web Services account ID, for example: 123456789012
 	//
-	//    * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 	//
 	//    * An ARN of an organizational unit (OU) in Organizations, for example:
@@ -3641,6 +5357,10 @@ type CreateResourceShareInput struct {
 	// Specifies a list of one or more ARNs of the resources to associate with the
 	// resource share.
 	ResourceArns []*string `locationName:"resourceArns" type:"list"`
+
+	// Specifies from which source accounts the service principal has access to
+	// the resources in this resource share.
+	Sources []*string `locationName:"sources" type:"list"`
 
 	// Specifies one or more tags to attach to the resource share itself. It doesn't
 	// attach the tags to the resources associated with the resource share.
@@ -3714,6 +5434,12 @@ func (s *CreateResourceShareInput) SetResourceArns(v []*string) *CreateResourceS
 	return s
 }
 
+// SetSources sets the Sources field's value.
+func (s *CreateResourceShareInput) SetSources(v []*string) *CreateResourceShareInput {
+	s.Sources = v
+	return s
+}
+
 // SetTags sets the Tags field's value.
 func (s *CreateResourceShareInput) SetTags(v []*Tag) *CreateResourceShareInput {
 	s.Tags = v
@@ -3763,6 +5489,271 @@ func (s *CreateResourceShareOutput) SetResourceShare(v *ResourceShare) *CreateRe
 	return s
 }
 
+type DeletePermissionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `location:"querystring" locationName:"clientToken" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the customer managed permission that you want to delete.
+	//
+	// PermissionArn is a required field
+	PermissionArn *string `location:"querystring" locationName:"permissionArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeletePermissionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeletePermissionInput"}
+	if s.PermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeletePermissionInput) SetClientToken(v string) *DeletePermissionInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermissionArn sets the PermissionArn field's value.
+func (s *DeletePermissionInput) SetPermissionArn(v string) *DeletePermissionInput {
+	s.PermissionArn = &v
+	return s
+}
+
+type DeletePermissionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// This operation is performed asynchronously, and this response parameter indicates
+	// the current status.
+	PermissionStatus *string `locationName:"permissionStatus" type:"string" enum:"PermissionStatus"`
+
+	// A boolean that indicates whether the delete operations succeeded.
+	ReturnValue *bool `locationName:"returnValue" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeletePermissionOutput) SetClientToken(v string) *DeletePermissionOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermissionStatus sets the PermissionStatus field's value.
+func (s *DeletePermissionOutput) SetPermissionStatus(v string) *DeletePermissionOutput {
+	s.PermissionStatus = &v
+	return s
+}
+
+// SetReturnValue sets the ReturnValue field's value.
+func (s *DeletePermissionOutput) SetReturnValue(v bool) *DeletePermissionOutput {
+	s.ReturnValue = &v
+	return s
+}
+
+type DeletePermissionVersionInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `location:"querystring" locationName:"clientToken" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the permission with the version you want to delete.
+	//
+	// PermissionArn is a required field
+	PermissionArn *string `location:"querystring" locationName:"permissionArn" type:"string" required:"true"`
+
+	// Specifies the version number to delete.
+	//
+	// You can't delete the default version for a customer managed permission.
+	//
+	// You can't delete a version if it's the only version of the permission. You
+	// must either first create another version, or delete the permission completely.
+	//
+	// You can't delete a version if it is attached to any resource shares. If the
+	// version is the default, you must first use SetDefaultPermissionVersion to
+	// set a different version as the default for the customer managed permission,
+	// and then use AssociateResourceSharePermission to update your resource shares
+	// to use the new default version.
+	//
+	// PermissionVersion is a required field
+	PermissionVersion *int64 `location:"querystring" locationName:"permissionVersion" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeletePermissionVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeletePermissionVersionInput"}
+	if s.PermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionArn"))
+	}
+	if s.PermissionVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionVersion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeletePermissionVersionInput) SetClientToken(v string) *DeletePermissionVersionInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermissionArn sets the PermissionArn field's value.
+func (s *DeletePermissionVersionInput) SetPermissionArn(v string) *DeletePermissionVersionInput {
+	s.PermissionArn = &v
+	return s
+}
+
+// SetPermissionVersion sets the PermissionVersion field's value.
+func (s *DeletePermissionVersionInput) SetPermissionVersion(v int64) *DeletePermissionVersionInput {
+	s.PermissionVersion = &v
+	return s
+}
+
+type DeletePermissionVersionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// This operation is performed asynchronously, and this response parameter indicates
+	// the current status.
+	PermissionStatus *string `locationName:"permissionStatus" type:"string" enum:"PermissionStatus"`
+
+	// A boolean value that indicates whether the operation is successful.
+	ReturnValue *bool `locationName:"returnValue" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeletePermissionVersionOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *DeletePermissionVersionOutput) SetClientToken(v string) *DeletePermissionVersionOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermissionStatus sets the PermissionStatus field's value.
+func (s *DeletePermissionVersionOutput) SetPermissionStatus(v string) *DeletePermissionVersionOutput {
+	s.PermissionStatus = &v
+	return s
+}
+
+// SetReturnValue sets the ReturnValue field's value.
+func (s *DeletePermissionVersionOutput) SetReturnValue(v bool) *DeletePermissionVersionOutput {
+	s.ReturnValue = &v
+	return s
+}
+
 type DeleteResourceShareInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -3775,9 +5766,12 @@ type DeleteResourceShareInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `location:"querystring" locationName:"clientToken" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share to delete.
 	//
 	// ResourceShareArn is a required field
@@ -3883,6 +5877,9 @@ type DisassociateResourceShareInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
 	// Specifies a list of one or more principals that no longer are to have access
@@ -3892,7 +5889,7 @@ type DisassociateResourceShareInput struct {
 	//
 	//    * An Amazon Web Services account ID, for example: 123456789012
 	//
-	//    * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 	//
 	//    * An ARN of an organizational unit (OU) in Organizations, for example:
@@ -3910,14 +5907,18 @@ type DisassociateResourceShareInput struct {
 	// Specifies a list of Amazon Resource Names (ARNs) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// for one or more resources that you want to remove from the resource share.
 	// After the operation runs, these resources are no longer shared with principals
-	// outside of the Amazon Web Services account that created the resources.
+	// associated with the resource share.
 	ResourceArns []*string `locationName:"resourceArns" type:"list"`
 
-	// Specifies Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the resource share that you want to remove resources from.
+	// Specifies Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the resource share that you want to remove resources or principals from.
 	//
 	// ResourceShareArn is a required field
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string" required:"true"`
+
+	// Specifies from which source accounts the service principal no longer has
+	// access to the resources in this resource share.
+	Sources []*string `locationName:"sources" type:"list"`
 }
 
 // String returns the string representation.
@@ -3975,6 +5976,12 @@ func (s *DisassociateResourceShareInput) SetResourceShareArn(v string) *Disassoc
 	return s
 }
 
+// SetSources sets the Sources field's value.
+func (s *DisassociateResourceShareInput) SetSources(v []*string) *DisassociateResourceShareInput {
+	s.Sources = v
+	return s
+}
+
 type DisassociateResourceShareOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3984,8 +5991,8 @@ type DisassociateResourceShareOutput struct {
 	// must also have the same values that you used in the first call.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	// An array of objects that contain information about the updated associations
-	// for this resource share.
+	// An array of objects with information about the updated associations for this
+	// resource share.
 	ResourceShareAssociations []*ResourceShareAssociation `locationName:"resourceShareAssociations" type:"list"`
 }
 
@@ -4031,17 +6038,20 @@ type DisassociateResourceSharePermissionInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the permission to disassociate from the resource share. Changes to permissions
-	// take effect immediately.
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the managed permission to disassociate from the resource share. Changes
+	// to permissions take effect immediately.
 	//
 	// PermissionArn is a required field
 	PermissionArn *string `locationName:"permissionArn" type:"string" required:"true"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the resource share from which you want to disassociate a permission.
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the resource share that you want to remove the managed permission from.
 	//
 	// ResourceShareArn is a required field
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string" required:"true"`
@@ -4200,7 +6210,7 @@ func (s *EnableSharingWithAwsOrganizationOutput) SetReturnValue(v bool) *EnableS
 type GetPermissionInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the permission whose contents you want to retrieve. To find the ARN for
 	// a permission, use either the ListPermissions operation or go to the Permissions
 	// library (https://console.aws.amazon.com/ram/home#Permissions:) page in the
@@ -4210,8 +6220,10 @@ type GetPermissionInput struct {
 	// PermissionArn is a required field
 	PermissionArn *string `locationName:"permissionArn" type:"string" required:"true"`
 
-	// Specifies identifier for the version of the RAM permission to retrieve. If
-	// you don't specify this parameter, the operation retrieves the default version.
+	// Specifies the version number of the RAM permission to retrieve. If you don't
+	// specify this parameter, the operation retrieves the default version.
+	//
+	// To see the list of available versions, use ListPermissionVersions.
 	PermissionVersion *int64 `locationName:"permissionVersion" type:"integer"`
 }
 
@@ -4261,7 +6273,7 @@ func (s *GetPermissionInput) SetPermissionVersion(v int64) *GetPermissionInput {
 type GetPermissionOutput struct {
 	_ struct{} `type:"structure"`
 
-	// An object that contains information about the permission.
+	// An object with details about the permission.
 	Permission *ResourceSharePermissionDetail `locationName:"permission" type:"structure"`
 }
 
@@ -4425,17 +6437,15 @@ func (s *GetResourcePoliciesOutput) SetPolicies(v []*string) *GetResourcePolicie
 type GetResourceShareAssociationsInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies that you want to retrieve only associations with this status.
+	// Specifies that you want to retrieve only associations that have this status.
 	AssociationStatus *string `locationName:"associationStatus" type:"string" enum:"ResourceShareAssociationStatus"`
 
 	// Specifies whether you want to retrieve the associations that involve a specified
 	// resource or principal.
 	//
-	//    * PRINCIPAL – list the principals that are associated with the specified
-	//    resource share.
+	//    * PRINCIPAL – list the principals whose associations you want to see.
 	//
-	//    * RESOURCE – list the resources that are associated with the specified
-	//    resource share.
+	//    * RESOURCE – list the resources whose associations you want to see.
 	//
 	// AssociationType is a required field
 	AssociationType *string `locationName:"associationType" type:"string" required:"true" enum:"ResourceShareAssociationType"`
@@ -4460,14 +6470,14 @@ type GetResourceShareAssociationsInput struct {
 
 	// Specifies the ID of the principal whose resource shares you want to retrieve.
 	// This can be an Amazon Web Services account ID, an organization ID, an organizational
-	// unit ID, or the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of an individual IAM user or role.
+	// unit ID, or the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of an individual IAM role or user.
 	//
 	// You cannot specify this parameter if the association type is RESOURCE.
 	Principal *string `locationName:"principal" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the resource whose resource shares you want to retrieve.
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of a resource whose resource shares you want to retrieve.
 	//
 	// You cannot specify this parameter if the association type is PRINCIPAL.
 	ResourceArn *string `locationName:"resourceArn" type:"string"`
@@ -4752,8 +6762,12 @@ type GetResourceSharesInput struct {
 	NextToken *string `locationName:"nextToken" type:"string"`
 
 	// Specifies that you want to retrieve details of only those resource shares
-	// that use the RAM permission with this Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// that use the managed permission with this Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	PermissionArn *string `locationName:"permissionArn" type:"string"`
+
+	// Specifies that you want to retrieve details for only those resource shares
+	// that use the specified version of the managed permission.
+	PermissionVersion *int64 `locationName:"permissionVersion" type:"integer"`
 
 	// Specifies that you want to retrieve details of only those resource shares
 	// that match the following:
@@ -4837,6 +6851,12 @@ func (s *GetResourceSharesInput) SetPermissionArn(v string) *GetResourceSharesIn
 	return s
 }
 
+// SetPermissionVersion sets the PermissionVersion field's value.
+func (s *GetResourceSharesInput) SetPermissionVersion(v int64) *GetResourceSharesInput {
+	s.PermissionVersion = &v
+	return s
+}
+
 // SetResourceOwner sets the ResourceOwner field's value.
 func (s *GetResourceSharesInput) SetResourceOwner(v string) *GetResourceSharesInput {
 	s.ResourceOwner = &v
@@ -4905,9 +6925,9 @@ func (s *GetResourceSharesOutput) SetResourceShares(v []*ResourceShare) *GetReso
 	return s
 }
 
-// The client token input parameter was matched one used with a previous call
-// to the operation, but at least one of the other input parameters is different
-// from the previous call.
+// The operation failed because the client token input parameter matched one
+// that was used with a previous call to the operation, but at least one of
+// the other input parameters is different from the previous call.
 type IdempotentParameterMismatchException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -4971,7 +6991,7 @@ func (s *IdempotentParameterMismatchException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The client token is not valid.
+// The operation failed because the specified client token isn't valid.
 type InvalidClientTokenException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5035,7 +7055,7 @@ func (s *InvalidClientTokenException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified value for MaxResults is not valid.
+// The operation failed because the specified value for MaxResults isn't valid.
 type InvalidMaxResultsException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5099,7 +7119,9 @@ func (s *InvalidMaxResultsException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified value for NextToken is not valid.
+// The operation failed because the specified value for NextToken isn't valid.
+// You must specify a value you received in the NextToken response of a previous
+// call to this operation.
 type InvalidNextTokenException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5163,7 +7185,7 @@ func (s *InvalidNextTokenException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// A parameter is not valid.
+// The operation failed because a parameter you specified isn't valid.
 type InvalidParameterException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5227,7 +7249,71 @@ func (s *InvalidParameterException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified resource type is not valid.
+// The operation failed because a policy you specified isn't valid.
+type InvalidPolicyException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvalidPolicyException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s InvalidPolicyException) GoString() string {
+	return s.String()
+}
+
+func newErrorInvalidPolicyException(v protocol.ResponseMetadata) error {
+	return &InvalidPolicyException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *InvalidPolicyException) Code() string {
+	return "InvalidPolicyException"
+}
+
+// Message returns the exception's message.
+func (s *InvalidPolicyException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *InvalidPolicyException) OrigErr() error {
+	return nil
+}
+
+func (s *InvalidPolicyException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *InvalidPolicyException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *InvalidPolicyException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The operation failed because the specified resource type isn't valid.
 type InvalidResourceTypeException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5291,7 +7377,8 @@ func (s *InvalidResourceTypeException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The requested state transition is not valid.
+// The operation failed because the requested operation isn't valid for the
+// resource share in its current state.
 type InvalidStateTransitionException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -5390,7 +7477,7 @@ type ListPendingInvitationResourcesInput struct {
 	// The default value is ALL.
 	ResourceRegionScope *string `locationName:"resourceRegionScope" type:"string" enum:"ResourceRegionScopeFilter"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the invitation. You can use GetResourceShareInvitations to find the ARN
 	// of the invitation.
 	//
@@ -5501,6 +7588,180 @@ func (s *ListPendingInvitationResourcesOutput) SetResources(v []*Resource) *List
 	return s
 }
 
+type ListPermissionAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies that you want to list only those associations with resource shares
+	// that match this status.
+	AssociationStatus *string `locationName:"associationStatus" type:"string" enum:"ResourceShareAssociationStatus"`
+
+	// When true, specifies that you want to list only those associations with resource
+	// shares that use the default version of the specified managed permission.
+	//
+	// When false (the default value), lists associations with resource shares that
+	// use any version of the specified managed permission.
+	DefaultVersion *bool `locationName:"defaultVersion" type:"boolean"`
+
+	// Specifies that you want to list only those associations with resource shares
+	// that have a featureSet with this value.
+	FeatureSet *string `locationName:"featureSet" type:"string" enum:"PermissionFeatureSet"`
+
+	// Specifies the total number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// that is specific to the operation. If additional items exist beyond the number
+	// you specify, the NextToken response element is returned with a value (not
+	// null). Include the specified value as the NextToken request parameter in
+	// the next call to the operation to get the next part of the results. Note
+	// that the service might return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the managed permission.
+	PermissionArn *string `locationName:"permissionArn" type:"string"`
+
+	// Specifies that you want to list only those associations with resource shares
+	// that use this version of the managed permission. If you don't provide a value
+	// for this parameter, then the operation returns information about associations
+	// with resource shares that use any version of the managed permission.
+	PermissionVersion *int64 `locationName:"permissionVersion" type:"integer"`
+
+	// Specifies that you want to list only those associations with resource shares
+	// that include at least one resource of this resource type.
+	ResourceType *string `locationName:"resourceType" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPermissionAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPermissionAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListPermissionAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListPermissionAssociationsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAssociationStatus sets the AssociationStatus field's value.
+func (s *ListPermissionAssociationsInput) SetAssociationStatus(v string) *ListPermissionAssociationsInput {
+	s.AssociationStatus = &v
+	return s
+}
+
+// SetDefaultVersion sets the DefaultVersion field's value.
+func (s *ListPermissionAssociationsInput) SetDefaultVersion(v bool) *ListPermissionAssociationsInput {
+	s.DefaultVersion = &v
+	return s
+}
+
+// SetFeatureSet sets the FeatureSet field's value.
+func (s *ListPermissionAssociationsInput) SetFeatureSet(v string) *ListPermissionAssociationsInput {
+	s.FeatureSet = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListPermissionAssociationsInput) SetMaxResults(v int64) *ListPermissionAssociationsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPermissionAssociationsInput) SetNextToken(v string) *ListPermissionAssociationsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPermissionArn sets the PermissionArn field's value.
+func (s *ListPermissionAssociationsInput) SetPermissionArn(v string) *ListPermissionAssociationsInput {
+	s.PermissionArn = &v
+	return s
+}
+
+// SetPermissionVersion sets the PermissionVersion field's value.
+func (s *ListPermissionAssociationsInput) SetPermissionVersion(v int64) *ListPermissionAssociationsInput {
+	s.PermissionVersion = &v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *ListPermissionAssociationsInput) SetResourceType(v string) *ListPermissionAssociationsInput {
+	s.ResourceType = &v
+	return s
+}
+
+type ListPermissionAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// A structure with information about this customer managed permission.
+	Permissions []*AssociatedPermission `locationName:"permissions" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPermissionAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListPermissionAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListPermissionAssociationsOutput) SetNextToken(v string) *ListPermissionAssociationsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetPermissions sets the Permissions field's value.
+func (s *ListPermissionAssociationsOutput) SetPermissions(v []*AssociatedPermission) *ListPermissionAssociationsOutput {
+	s.Permissions = v
+	return s
+}
+
 type ListPermissionVersionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5522,7 +7783,7 @@ type ListPermissionVersionsInput struct {
 	// of results.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the RAM permission whose versions you want to list. You can use the permissionVersion
 	// parameter on the AssociateResourceSharePermission operation to specify a
 	// non-default version to attach.
@@ -5648,9 +7909,23 @@ type ListPermissionsInput struct {
 	// of results.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	// Specifies that you want to list permissions for only the specified resource
-	// type. For example, to list only permissions that apply to EC2 subnets, specify
-	// ec2:Subnet. You can use the ListResourceTypes operation to get the specific
+	// Specifies that you want to list only permissions of this type:
+	//
+	//    * AWS – returns only Amazon Web Services managed permissions.
+	//
+	//    * LOCAL – returns only customer managed permissions
+	//
+	//    * ALL – returns both Amazon Web Services managed permissions and customer
+	//    managed permissions.
+	//
+	// If you don't specify this parameter, the default is All.
+	PermissionType *string `locationName:"permissionType" type:"string" enum:"PermissionTypeFilter"`
+
+	// Specifies that you want to list only those permissions that apply to the
+	// specified resource type. This parameter is not case sensitive.
+	//
+	// For example, to list only permissions that apply to Amazon EC2 subnets, specify
+	// ec2:subnet. You can use the ListResourceTypes operation to get the specific
 	// string required.
 	ResourceType *string `locationName:"resourceType" type:"string"`
 }
@@ -5695,6 +7970,12 @@ func (s *ListPermissionsInput) SetMaxResults(v int64) *ListPermissionsInput {
 // SetNextToken sets the NextToken field's value.
 func (s *ListPermissionsInput) SetNextToken(v string) *ListPermissionsInput {
 	s.NextToken = &v
+	return s
+}
+
+// SetPermissionType sets the PermissionType field's value.
+func (s *ListPermissionsInput) SetPermissionType(v string) *ListPermissionsInput {
+	s.PermissionType = &v
 	return s
 }
 
@@ -5775,7 +8056,7 @@ type ListPrincipalsInput struct {
 	//
 	//    * An Amazon Web Services account ID, for example: 123456789012
 	//
-	//    * An Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    * An Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of an organization in Organizations, for example: organizations::123456789012:organization/o-exampleorgid
 	//
 	//    * An ARN of an organizational unit (OU) in Organizations, for example:
@@ -5791,7 +8072,7 @@ type ListPrincipalsInput struct {
 	Principals []*string `locationName:"principals" type:"list"`
 
 	// Specifies that you want to list principal information for the resource share
-	// with the specified Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// with the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	ResourceArn *string `locationName:"resourceArn" type:"string"`
 
 	// Specifies that you want to list information for only resource shares that
@@ -5936,6 +8217,135 @@ func (s *ListPrincipalsOutput) SetPrincipals(v []*Principal) *ListPrincipalsOutp
 	return s
 }
 
+type ListReplacePermissionAssociationsWorkInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies the total number of results that you want included on each page
+	// of the response. If you do not include this parameter, it defaults to a value
+	// that is specific to the operation. If additional items exist beyond the number
+	// you specify, the NextToken response element is returned with a value (not
+	// null). Include the specified value as the NextToken request parameter in
+	// the next call to the operation to get the next part of the results. Note
+	// that the service might return fewer results than the maximum even when there
+	// are more results available. You should check NextToken after every operation
+	// to ensure that you receive all of the results.
+	MaxResults *int64 `locationName:"maxResults" min:"1" type:"integer"`
+
+	// Specifies that you want to receive the next page of results. Valid only if
+	// you received a NextToken response in the previous request. If you did, it
+	// indicates that more output is available. Set this parameter to the value
+	// provided by the previous call's NextToken response to request the next page
+	// of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// Specifies that you want to see only the details about requests with a status
+	// that matches this value.
+	Status *string `locationName:"status" type:"string" enum:"ReplacePermissionAssociationsWorkStatus"`
+
+	// A list of IDs. These values come from the idfield of the replacePermissionAssociationsWorkstructure
+	// returned by the ReplacePermissionAssociations operation.
+	WorkIds []*string `locationName:"workIds" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplacePermissionAssociationsWorkInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplacePermissionAssociationsWorkInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListReplacePermissionAssociationsWorkInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListReplacePermissionAssociationsWorkInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListReplacePermissionAssociationsWorkInput) SetMaxResults(v int64) *ListReplacePermissionAssociationsWorkInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReplacePermissionAssociationsWorkInput) SetNextToken(v string) *ListReplacePermissionAssociationsWorkInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ListReplacePermissionAssociationsWorkInput) SetStatus(v string) *ListReplacePermissionAssociationsWorkInput {
+	s.Status = &v
+	return s
+}
+
+// SetWorkIds sets the WorkIds field's value.
+func (s *ListReplacePermissionAssociationsWorkInput) SetWorkIds(v []*string) *ListReplacePermissionAssociationsWorkInput {
+	s.WorkIds = v
+	return s
+}
+
+type ListReplacePermissionAssociationsWorkOutput struct {
+	_ struct{} `type:"structure"`
+
+	// If present, this value indicates that more output is available than is included
+	// in the current response. Use this value in the NextToken request parameter
+	// in a subsequent call to the operation to get the next part of the output.
+	// You should repeat this until the NextToken response element comes back as
+	// null. This indicates that this is the last page of results.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// An array of data structures that provide details of the matching work IDs.
+	ReplacePermissionAssociationsWorks []*ReplacePermissionAssociationsWork `locationName:"replacePermissionAssociationsWorks" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplacePermissionAssociationsWorkOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListReplacePermissionAssociationsWorkOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListReplacePermissionAssociationsWorkOutput) SetNextToken(v string) *ListReplacePermissionAssociationsWorkOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReplacePermissionAssociationsWorks sets the ReplacePermissionAssociationsWorks field's value.
+func (s *ListReplacePermissionAssociationsWorkOutput) SetReplacePermissionAssociationsWorks(v []*ReplacePermissionAssociationsWork) *ListReplacePermissionAssociationsWorkOutput {
+	s.ReplacePermissionAssociationsWorks = v
+	return s
+}
+
 type ListResourceSharePermissionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5957,7 +8367,7 @@ type ListResourceSharePermissionsInput struct {
 	// of results.
 	NextToken *string `locationName:"nextToken" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share for which you want to retrieve the associated permissions.
 	//
 	// ResourceShareArn is a required field
@@ -6380,7 +8790,8 @@ func (s *ListResourcesOutput) SetResources(v []*Resource) *ListResourcesOutput {
 	return s
 }
 
-// The format of an Amazon Resource Name (ARN) is not valid.
+// The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// has a format that isn't valid.
 type MalformedArnException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -6444,7 +8855,72 @@ func (s *MalformedArnException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// A required input parameter is missing.
+// The operation failed because the policy template that you provided isn't
+// valid.
+type MalformedPolicyTemplateException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MalformedPolicyTemplateException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MalformedPolicyTemplateException) GoString() string {
+	return s.String()
+}
+
+func newErrorMalformedPolicyTemplateException(v protocol.ResponseMetadata) error {
+	return &MalformedPolicyTemplateException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *MalformedPolicyTemplateException) Code() string {
+	return "MalformedPolicyTemplateException"
+}
+
+// Message returns the exception's message.
+func (s *MalformedPolicyTemplateException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *MalformedPolicyTemplateException) OrigErr() error {
+	return nil
+}
+
+func (s *MalformedPolicyTemplateException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *MalformedPolicyTemplateException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *MalformedPolicyTemplateException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The operation failed because a required input parameter is missing.
 type MissingRequiredParameterException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -6508,7 +8984,7 @@ func (s *MissingRequiredParameterException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The requested operation is not permitted.
+// The operation failed because the requested operation isn't permitted.
 type OperationNotPermittedException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -6572,6 +9048,204 @@ func (s *OperationNotPermittedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// The operation failed because a permission with the specified name already
+// exists in the requested Amazon Web Services Region. Choose a different name.
+type PermissionAlreadyExistsException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionAlreadyExistsException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionAlreadyExistsException) GoString() string {
+	return s.String()
+}
+
+func newErrorPermissionAlreadyExistsException(v protocol.ResponseMetadata) error {
+	return &PermissionAlreadyExistsException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *PermissionAlreadyExistsException) Code() string {
+	return "PermissionAlreadyExistsException"
+}
+
+// Message returns the exception's message.
+func (s *PermissionAlreadyExistsException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *PermissionAlreadyExistsException) OrigErr() error {
+	return nil
+}
+
+func (s *PermissionAlreadyExistsException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *PermissionAlreadyExistsException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *PermissionAlreadyExistsException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The operation failed because it would exceed the maximum number of permissions
+// you can create in each Amazon Web Services Region. To view the limits for
+// your Amazon Web Services account, see the RAM page in the Service Quotas
+// console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
+type PermissionLimitExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionLimitExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionLimitExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorPermissionLimitExceededException(v protocol.ResponseMetadata) error {
+	return &PermissionLimitExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *PermissionLimitExceededException) Code() string {
+	return "PermissionLimitExceededException"
+}
+
+// Message returns the exception's message.
+func (s *PermissionLimitExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *PermissionLimitExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *PermissionLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *PermissionLimitExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *PermissionLimitExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The operation failed because it would exceed the limit for the number of
+// versions you can have for a permission. To view the limits for your Amazon
+// Web Services account, see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
+type PermissionVersionsLimitExceededException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionVersionsLimitExceededException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PermissionVersionsLimitExceededException) GoString() string {
+	return s.String()
+}
+
+func newErrorPermissionVersionsLimitExceededException(v protocol.ResponseMetadata) error {
+	return &PermissionVersionsLimitExceededException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *PermissionVersionsLimitExceededException) Code() string {
+	return "PermissionVersionsLimitExceededException"
+}
+
+// Message returns the exception's message.
+func (s *PermissionVersionsLimitExceededException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *PermissionVersionsLimitExceededException) OrigErr() error {
+	return nil
+}
+
+func (s *PermissionVersionsLimitExceededException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *PermissionVersionsLimitExceededException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *PermissionVersionsLimitExceededException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 // Describes a principal for use with Resource Access Manager.
 type Principal struct {
 	_ struct{} `type:"structure"`
@@ -6579,17 +9253,22 @@ type Principal struct {
 	// The date and time when the principal was associated with the resource share.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
-	// Indicates whether the principal belongs to the same organization in Organizations
-	// as the Amazon Web Services account that owns the resource share.
+	// Indicates the relationship between the Amazon Web Services account the principal
+	// belongs to and the account that owns the resource share:
+	//
+	//    * True – The two accounts belong to same organization.
+	//
+	//    * False – The two accounts do not belong to the same organization.
 	External *bool `locationName:"external" type:"boolean"`
 
-	// The ID of the principal.
+	// The ID of the principal that can be associated with a resource share.
 	Id *string `locationName:"id" type:"string"`
 
-	// The date and time when the association was last updated.
+	// The date and time when the association between the resource share and the
+	// principal was last updated.
 	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of a resource share the principal is associated with.
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 }
@@ -6642,10 +9321,136 @@ func (s *Principal) SetResourceShareArn(v string) *Principal {
 	return s
 }
 
+type PromotePermissionCreatedFromPolicyInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Specifies a name for the promoted customer managed permission.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the CREATED_FROM_POLICY permission that you want to promote. You can get
+	// this Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// by calling the ListResourceSharePermissions operation.
+	//
+	// PermissionArn is a required field
+	PermissionArn *string `locationName:"permissionArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromotePermissionCreatedFromPolicyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromotePermissionCreatedFromPolicyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PromotePermissionCreatedFromPolicyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PromotePermissionCreatedFromPolicyInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.PermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *PromotePermissionCreatedFromPolicyInput) SetClientToken(v string) *PromotePermissionCreatedFromPolicyInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *PromotePermissionCreatedFromPolicyInput) SetName(v string) *PromotePermissionCreatedFromPolicyInput {
+	s.Name = &v
+	return s
+}
+
+// SetPermissionArn sets the PermissionArn field's value.
+func (s *PromotePermissionCreatedFromPolicyInput) SetPermissionArn(v string) *PromotePermissionCreatedFromPolicyInput {
+	s.PermissionArn = &v
+	return s
+}
+
+type PromotePermissionCreatedFromPolicyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Information about an RAM permission.
+	Permission *ResourceSharePermissionSummary `locationName:"permission" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromotePermissionCreatedFromPolicyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PromotePermissionCreatedFromPolicyOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *PromotePermissionCreatedFromPolicyOutput) SetClientToken(v string) *PromotePermissionCreatedFromPolicyOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermission sets the Permission field's value.
+func (s *PromotePermissionCreatedFromPolicyOutput) SetPermission(v *ResourceSharePermissionSummary) *PromotePermissionCreatedFromPolicyOutput {
+	s.Permission = v
+	return s
+}
+
 type PromoteResourceShareCreatedFromPolicyInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share to promote.
 	//
 	// ResourceShareArn is a required field
@@ -6733,9 +9538,12 @@ type RejectResourceShareInvitationInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the invitation that you want to reject.
 	//
 	// ResourceShareInvitationArn is a required field
@@ -6828,21 +9636,281 @@ func (s *RejectResourceShareInvitationOutput) SetResourceShareInvitation(v *Reso
 	return s
 }
 
+type ReplacePermissionAssociationsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the managed permission that you want to replace.
+	//
+	// FromPermissionArn is a required field
+	FromPermissionArn *string `locationName:"fromPermissionArn" type:"string" required:"true"`
+
+	// Specifies that you want to updated the permissions for only those resource
+	// shares that use the specified version of the managed permission.
+	FromPermissionVersion *int64 `locationName:"fromPermissionVersion" type:"integer"`
+
+	// Specifies the ARN of the managed permission that you want to associate with
+	// resource shares in place of the one specified by fromPerssionArn and fromPermissionVersion.
+	//
+	// The operation always associates the version that is currently the default
+	// for the specified managed permission.
+	//
+	// ToPermissionArn is a required field
+	ToPermissionArn *string `locationName:"toPermissionArn" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplacePermissionAssociationsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplacePermissionAssociationsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ReplacePermissionAssociationsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ReplacePermissionAssociationsInput"}
+	if s.FromPermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("FromPermissionArn"))
+	}
+	if s.ToPermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("ToPermissionArn"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ReplacePermissionAssociationsInput) SetClientToken(v string) *ReplacePermissionAssociationsInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetFromPermissionArn sets the FromPermissionArn field's value.
+func (s *ReplacePermissionAssociationsInput) SetFromPermissionArn(v string) *ReplacePermissionAssociationsInput {
+	s.FromPermissionArn = &v
+	return s
+}
+
+// SetFromPermissionVersion sets the FromPermissionVersion field's value.
+func (s *ReplacePermissionAssociationsInput) SetFromPermissionVersion(v int64) *ReplacePermissionAssociationsInput {
+	s.FromPermissionVersion = &v
+	return s
+}
+
+// SetToPermissionArn sets the ToPermissionArn field's value.
+func (s *ReplacePermissionAssociationsInput) SetToPermissionArn(v string) *ReplacePermissionAssociationsInput {
+	s.ToPermissionArn = &v
+	return s
+}
+
+type ReplacePermissionAssociationsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Specifies a data structure that you can use to track the asynchronous tasks
+	// that RAM performs to complete this operation. You can use the ListReplacePermissionAssociationsWork
+	// operation and pass the id value returned in this structure.
+	ReplacePermissionAssociationsWork *ReplacePermissionAssociationsWork `locationName:"replacePermissionAssociationsWork" type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplacePermissionAssociationsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplacePermissionAssociationsOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *ReplacePermissionAssociationsOutput) SetClientToken(v string) *ReplacePermissionAssociationsOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetReplacePermissionAssociationsWork sets the ReplacePermissionAssociationsWork field's value.
+func (s *ReplacePermissionAssociationsOutput) SetReplacePermissionAssociationsWork(v *ReplacePermissionAssociationsWork) *ReplacePermissionAssociationsOutput {
+	s.ReplacePermissionAssociationsWork = v
+	return s
+}
+
+// A structure that represents the background work that RAM performs when you
+// invoke the ReplacePermissionAssociations operation.
+type ReplacePermissionAssociationsWork struct {
+	_ struct{} `type:"structure"`
+
+	// The date and time when this asynchronous background task was created.
+	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
+
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the managed permission that this background task is replacing.
+	FromPermissionArn *string `locationName:"fromPermissionArn" type:"string"`
+
+	// The version of the managed permission that this background task is replacing.
+	FromPermissionVersion *string `locationName:"fromPermissionVersion" type:"string"`
+
+	// The unique identifier for the background task associated with one ReplacePermissionAssociations
+	// request.
+	Id *string `locationName:"id" type:"string"`
+
+	// The date and time when the status of this background task was last updated.
+	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp"`
+
+	// Specifies the current status of the background tasks for the specified ID.
+	// The output is one of the following strings:
+	//
+	//    * IN_PROGRESS
+	//
+	//    * COMPLETED
+	//
+	//    * FAILED
+	Status *string `locationName:"status" type:"string" enum:"ReplacePermissionAssociationsWorkStatus"`
+
+	// Specifies the reason for a FAILED status. This field is present only when
+	// there status is FAILED.
+	StatusMessage *string `locationName:"statusMessage" type:"string"`
+
+	// The ARN of the managed permission that this background task is associating
+	// with the resource shares in place of the managed permission and version specified
+	// in fromPermissionArn and fromPermissionVersion.
+	ToPermissionArn *string `locationName:"toPermissionArn" type:"string"`
+
+	// The version of the managed permission that this background task is associating
+	// with the resource shares. This is always the version that is currently the
+	// default for this managed permission.
+	ToPermissionVersion *string `locationName:"toPermissionVersion" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplacePermissionAssociationsWork) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReplacePermissionAssociationsWork) GoString() string {
+	return s.String()
+}
+
+// SetCreationTime sets the CreationTime field's value.
+func (s *ReplacePermissionAssociationsWork) SetCreationTime(v time.Time) *ReplacePermissionAssociationsWork {
+	s.CreationTime = &v
+	return s
+}
+
+// SetFromPermissionArn sets the FromPermissionArn field's value.
+func (s *ReplacePermissionAssociationsWork) SetFromPermissionArn(v string) *ReplacePermissionAssociationsWork {
+	s.FromPermissionArn = &v
+	return s
+}
+
+// SetFromPermissionVersion sets the FromPermissionVersion field's value.
+func (s *ReplacePermissionAssociationsWork) SetFromPermissionVersion(v string) *ReplacePermissionAssociationsWork {
+	s.FromPermissionVersion = &v
+	return s
+}
+
+// SetId sets the Id field's value.
+func (s *ReplacePermissionAssociationsWork) SetId(v string) *ReplacePermissionAssociationsWork {
+	s.Id = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *ReplacePermissionAssociationsWork) SetLastUpdatedTime(v time.Time) *ReplacePermissionAssociationsWork {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ReplacePermissionAssociationsWork) SetStatus(v string) *ReplacePermissionAssociationsWork {
+	s.Status = &v
+	return s
+}
+
+// SetStatusMessage sets the StatusMessage field's value.
+func (s *ReplacePermissionAssociationsWork) SetStatusMessage(v string) *ReplacePermissionAssociationsWork {
+	s.StatusMessage = &v
+	return s
+}
+
+// SetToPermissionArn sets the ToPermissionArn field's value.
+func (s *ReplacePermissionAssociationsWork) SetToPermissionArn(v string) *ReplacePermissionAssociationsWork {
+	s.ToPermissionArn = &v
+	return s
+}
+
+// SetToPermissionVersion sets the ToPermissionVersion field's value.
+func (s *ReplacePermissionAssociationsWork) SetToPermissionVersion(v string) *ReplacePermissionAssociationsWork {
+	s.ToPermissionVersion = &v
+	return s
+}
+
 // Describes a resource associated with a resource share in RAM.
 type Resource struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource.
 	Arn *string `locationName:"arn" type:"string"`
 
 	// The date and time when the resource was associated with the resource share.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
-	// The date an time when the association was last updated.
+	// The date an time when the association between the resource and the resource
+	// share was last updated.
 	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource group. This value is available only if the resource is part
 	// of a resource group.
 	ResourceGroupArn *string `locationName:"resourceGroupArn" type:"string"`
@@ -6856,7 +9924,7 @@ type Resource struct {
 	//    Region.
 	ResourceRegionScope *string `locationName:"resourceRegionScope" type:"string" enum:"ResourceRegionScope"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share this resource is associated with.
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 
@@ -6866,7 +9934,9 @@ type Resource struct {
 	// A message about the status of the resource.
 	StatusMessage *string `locationName:"statusMessage" type:"string"`
 
-	// The resource type. This takes the form of: service-code:resource-code
+	// The resource type. This takes the form of: service-code:resource-code, and
+	// is case-insensitive. For example, an Amazon EC2 Subnet would be represented
+	// by the string ec2:subnet.
 	Type *string `locationName:"type" type:"string"`
 }
 
@@ -6942,7 +10012,8 @@ func (s *Resource) SetType(v string) *Resource {
 	return s
 }
 
-// The specified Amazon Resource Name (ARN) was not found.
+// The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// was not found.
 type ResourceArnNotFoundException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7012,26 +10083,37 @@ type ResourceShare struct {
 
 	// Indicates whether principals outside your organization in Organizations can
 	// be associated with a resource share.
+	//
+	//    * True – the resource share can be shared with any Amazon Web Services
+	//    account.
+	//
+	//    * False – the resource share can be shared with only accounts in the
+	//    same organization as the account that owns the resource share.
 	AllowExternalPrincipals *bool `locationName:"allowExternalPrincipals" type:"boolean"`
 
 	// The date and time when the resource share was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
-	// Indicates how the resource share was created. Possible values include:
+	// Indicates what features are available for this resource share. This parameter
+	// can have one of the following values:
 	//
-	//    * CREATED_FROM_POLICY - Indicates that the resource share was created
-	//    from an Identity and Access Management (IAM) resource-based permission
-	//    policy attached to the resource. This type of resource share is visible
-	//    only to the Amazon Web Services account that created it. You can't modify
-	//    it in RAM unless you promote it. For more information, see PromoteResourceShareCreatedFromPolicy.
+	//    * STANDARD – A resource share that supports all functionality. These
+	//    resource shares are visible to all principals you share the resource share
+	//    with. You can modify these resource shares in RAM using the console or
+	//    APIs. This resource share might have been created by RAM, or it might
+	//    have been CREATED_FROM_POLICY and then promoted.
 	//
-	//    * PROMOTING_TO_STANDARD - The resource share is in the process of being
-	//    promoted. For more information, see PromoteResourceShareCreatedFromPolicy.
+	//    * CREATED_FROM_POLICY – The customer manually shared a resource by attaching
+	//    a resource-based policy. That policy did not match any existing managed
+	//    permissions, so RAM created this customer managed permission automatically
+	//    on the customer's behalf based on the attached policy document. This type
+	//    of resource share is visible only to the Amazon Web Services account that
+	//    created it. You can't modify it in RAM unless you promote it. For more
+	//    information, see PromoteResourceShareCreatedFromPolicy.
 	//
-	//    * STANDARD - Indicates that the resource share was created in RAM using
-	//    the console or APIs. These resource shares are visible to all principals
-	//    you share the resource share with. You can modify these resource shares
-	//    in RAM using the console or APIs.
+	//    * PROMOTING_TO_STANDARD – This resource share was originally CREATED_FROM_POLICY,
+	//    but the customer ran the PromoteResourceShareCreatedFromPolicy and that
+	//    operation is still in progress. This value changes to STANDARD when complete.
 	FeatureSet *string `locationName:"featureSet" type:"string" enum:"ResourceShareFeatureSet"`
 
 	// The date and time when the resource share was last updated.
@@ -7043,7 +10125,7 @@ type ResourceShare struct {
 	// The ID of the Amazon Web Services account that owns the resource share.
 	OwningAccountId *string `locationName:"owningAccountId" type:"string"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 
@@ -7135,18 +10217,18 @@ func (s *ResourceShare) SetTags(v []*Tag) *ResourceShare {
 	return s
 }
 
-// Describes an association with a resource share and either a principal or
-// a resource.
+// Describes an association between a resource share and either a principal
+// or a resource.
 type ResourceShareAssociation struct {
 	_ struct{} `type:"structure"`
 
 	// The associated entity. This can be either of the following:
 	//
-	//    * For a resource association, this is the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    * For a resource association, this is the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of the resource.
 	//
 	//    * For principal associations, this is one of the following: The ID of
-	//    an Amazon Web Services account The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	//    an Amazon Web Services account The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	//    of an organization in Organizations The ARN of an organizational unit
 	//    (OU) in Organizations The ARN of an IAM role The ARN of an IAM user
 	AssociatedEntity *string `locationName:"associatedEntity" type:"string"`
@@ -7164,7 +10246,7 @@ type ResourceShareAssociation struct {
 	// The date and time when the association was last updated.
 	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share.
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 
@@ -7261,11 +10343,11 @@ type ResourceShareInvitation struct {
 	// The ID of the Amazon Web Services account that received the invitation.
 	ReceiverAccountId *string `locationName:"receiverAccountId" type:"string"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the IAM user or role that received the invitation.
 	ReceiverArn *string `locationName:"receiverArn" type:"string"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share
 	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 
@@ -7275,7 +10357,7 @@ type ResourceShareInvitation struct {
 	// Deprecated: This member has been deprecated. Use ListPendingInvitationResources.
 	ResourceShareAssociations []*ResourceShareAssociation `locationName:"resourceShareAssociations" deprecated:"true" type:"list"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the invitation.
 	ResourceShareInvitationArn *string `locationName:"resourceShareInvitationArn" type:"string"`
 
@@ -7361,7 +10443,7 @@ func (s *ResourceShareInvitation) SetStatus(v string) *ResourceShareInvitation {
 	return s
 }
 
-// The specified invitation was already accepted.
+// The operation failed because the specified invitation was already accepted.
 type ResourceShareInvitationAlreadyAcceptedException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7425,7 +10507,7 @@ func (s *ResourceShareInvitationAlreadyAcceptedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified invitation was already rejected.
+// The operation failed because the specified invitation was already rejected.
 type ResourceShareInvitationAlreadyRejectedException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7489,7 +10571,8 @@ func (s *ResourceShareInvitationAlreadyRejectedException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified Amazon Resource Name (ARN) for an invitation was not found.
+// The operation failed because the specified Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+// for an invitation was not found.
 type ResourceShareInvitationArnNotFoundException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7553,7 +10636,8 @@ func (s *ResourceShareInvitationArnNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified invitation is expired.
+// The operation failed because the specified invitation is past its expiration
+// date and time.
 type ResourceShareInvitationExpiredException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7617,7 +10701,9 @@ func (s *ResourceShareInvitationExpiredException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// This request would exceed the limit for resource shares for your account.
+// The operation failed because it would exceed the limit for resource shares
+// for your account. To view the limits for your Amazon Web Services account,
+// see the RAM page in the Service Quotas console (https://console.aws.amazon.com/servicequotas/home/services/ram/quotas).
 type ResourceShareLimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7681,22 +10767,44 @@ func (s *ResourceShareLimitExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// Information about an RAM permission.
+// Information about a RAM managed permission.
 type ResourceSharePermissionDetail struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of this RAM permission.
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of this RAM managed permission.
 	Arn *string `locationName:"arn" type:"string"`
 
 	// The date and time when the permission was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
-	// Specifies whether the version of the permission represented in this structure
+	// Specifies whether the version of the permission represented in this response
 	// is the default version for this permission.
 	DefaultVersion *bool `locationName:"defaultVersion" type:"boolean"`
 
-	// Specifies whether the version of the permission represented in this structure
+	// Indicates what features are available for this resource share. This parameter
+	// can have one of the following values:
+	//
+	//    * STANDARD – A resource share that supports all functionality. These
+	//    resource shares are visible to all principals you share the resource share
+	//    with. You can modify these resource shares in RAM using the console or
+	//    APIs. This resource share might have been created by RAM, or it might
+	//    have been CREATED_FROM_POLICY and then promoted.
+	//
+	//    * CREATED_FROM_POLICY – The customer manually shared a resource by attaching
+	//    a resource-based policy. That policy did not match any existing managed
+	//    permissions, so RAM created this customer managed permission automatically
+	//    on the customer's behalf based on the attached policy document. This type
+	//    of resource share is visible only to the Amazon Web Services account that
+	//    created it. You can't modify it in RAM unless you promote it. For more
+	//    information, see PromoteResourceShareCreatedFromPolicy.
+	//
+	//    * PROMOTING_TO_STANDARD – This resource share was originally CREATED_FROM_POLICY,
+	//    but the customer ran the PromoteResourceShareCreatedFromPolicy and that
+	//    operation is still in progress. This value changes to STANDARD when complete.
+	FeatureSet *string `locationName:"featureSet" type:"string" enum:"PermissionFeatureSet"`
+
+	// Specifies whether the version of the permission represented in this response
 	// is the default version for all resources of this resource type.
 	IsResourceTypeDefault *bool `locationName:"isResourceTypeDefault" type:"boolean"`
 
@@ -7711,10 +10819,38 @@ type ResourceSharePermissionDetail struct {
 	// operations to which the principal is granted or denied access.
 	Permission *string `locationName:"permission" type:"string"`
 
+	// The type of managed permission. This can be one of the following values:
+	//
+	//    * AWS_MANAGED – Amazon Web Services created and manages this managed
+	//    permission. You can associate it with your resource shares, but you can't
+	//    modify it.
+	//
+	//    * CUSTOMER_MANAGED – You, or another principal in your account created
+	//    this managed permission. You can associate it with your resource shares
+	//    and create new versions that have different permissions.
+	PermissionType *string `locationName:"permissionType" type:"string" enum:"PermissionType"`
+
 	// The resource type to which this permission applies.
 	ResourceType *string `locationName:"resourceType" type:"string"`
 
-	// The version of the permission represented in this structure.
+	// The current status of the association between the permission and the resource
+	// share. The following are the possible values:
+	//
+	//    * ATTACHABLE – This permission or version can be associated with resource
+	//    shares.
+	//
+	//    * UNATTACHABLE – This permission or version can't currently be associated
+	//    with resource shares.
+	//
+	//    * DELETING – This permission or version is in the process of being deleted.
+	//
+	//    * DELETED – This permission or version is deleted.
+	Status *string `locationName:"status" type:"string" enum:"PermissionStatus"`
+
+	// The tag key and value pairs attached to the resource share.
+	Tags []*Tag `locationName:"tags" type:"list"`
+
+	// The version of the permission described in this response.
 	Version *string `locationName:"version" type:"string"`
 }
 
@@ -7754,6 +10890,12 @@ func (s *ResourceSharePermissionDetail) SetDefaultVersion(v bool) *ResourceShare
 	return s
 }
 
+// SetFeatureSet sets the FeatureSet field's value.
+func (s *ResourceSharePermissionDetail) SetFeatureSet(v string) *ResourceSharePermissionDetail {
+	s.FeatureSet = &v
+	return s
+}
+
 // SetIsResourceTypeDefault sets the IsResourceTypeDefault field's value.
 func (s *ResourceSharePermissionDetail) SetIsResourceTypeDefault(v bool) *ResourceSharePermissionDetail {
 	s.IsResourceTypeDefault = &v
@@ -7778,9 +10920,27 @@ func (s *ResourceSharePermissionDetail) SetPermission(v string) *ResourceSharePe
 	return s
 }
 
+// SetPermissionType sets the PermissionType field's value.
+func (s *ResourceSharePermissionDetail) SetPermissionType(v string) *ResourceSharePermissionDetail {
+	s.PermissionType = &v
+	return s
+}
+
 // SetResourceType sets the ResourceType field's value.
 func (s *ResourceSharePermissionDetail) SetResourceType(v string) *ResourceSharePermissionDetail {
 	s.ResourceType = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *ResourceSharePermissionDetail) SetStatus(v string) *ResourceSharePermissionDetail {
+	s.Status = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *ResourceSharePermissionDetail) SetTags(v []*Tag) *ResourceSharePermissionDetail {
+	s.Tags = v
 	return s
 }
 
@@ -7790,39 +10950,76 @@ func (s *ResourceSharePermissionDetail) SetVersion(v string) *ResourceSharePermi
 	return s
 }
 
-// Information about an RAM permission that is associated with a resource share
-// and any of its resources of a specified type.
+// Information about an RAM permission.
 type ResourceSharePermissionSummary struct {
 	_ struct{} `type:"structure"`
 
-	// The Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// The Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the permission you want information about.
 	Arn *string `locationName:"arn" type:"string"`
 
 	// The date and time when the permission was created.
 	CreationTime *time.Time `locationName:"creationTime" type:"timestamp"`
 
-	// Specifies whether the version of the permission represented in this structure
-	// is the default version for this permission.
+	// Specifies whether the version of the managed permission used by this resource
+	// share is the default version for this managed permission.
 	DefaultVersion *bool `locationName:"defaultVersion" type:"boolean"`
 
-	// Specifies whether the version of the permission represented in this structure
-	// is the default version for all resources of this resource type.
+	// Indicates what features are available for this resource share. This parameter
+	// can have one of the following values:
+	//
+	//    * STANDARD – A resource share that supports all functionality. These
+	//    resource shares are visible to all principals you share the resource share
+	//    with. You can modify these resource shares in RAM using the console or
+	//    APIs. This resource share might have been created by RAM, or it might
+	//    have been CREATED_FROM_POLICY and then promoted.
+	//
+	//    * CREATED_FROM_POLICY – The customer manually shared a resource by attaching
+	//    a resource-based policy. That policy did not match any existing managed
+	//    permissions, so RAM created this customer managed permission automatically
+	//    on the customer's behalf based on the attached policy document. This type
+	//    of resource share is visible only to the Amazon Web Services account that
+	//    created it. You can't modify it in RAM unless you promote it. For more
+	//    information, see PromoteResourceShareCreatedFromPolicy.
+	//
+	//    * PROMOTING_TO_STANDARD – This resource share was originally CREATED_FROM_POLICY,
+	//    but the customer ran the PromoteResourceShareCreatedFromPolicy and that
+	//    operation is still in progress. This value changes to STANDARD when complete.
+	FeatureSet *string `locationName:"featureSet" type:"string" enum:"PermissionFeatureSet"`
+
+	// Specifies whether the managed permission associated with this resource share
+	// is the default managed permission for all resources of this resource type.
 	IsResourceTypeDefault *bool `locationName:"isResourceTypeDefault" type:"boolean"`
 
 	// The date and time when the permission was last updated.
 	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp"`
 
-	// The name of this permission.
+	// The name of this managed permission.
 	Name *string `locationName:"name" type:"string"`
 
-	// The type of resource to which this permission applies.
+	// The type of managed permission. This can be one of the following values:
+	//
+	//    * AWS_MANAGED – Amazon Web Services created and manages this managed
+	//    permission. You can associate it with your resource shares, but you can't
+	//    modify it.
+	//
+	//    * CUSTOMER_MANAGED – You, or another principal in your account created
+	//    this managed permission. You can associate it with your resource shares
+	//    and create new versions that have different permissions.
+	PermissionType *string `locationName:"permissionType" type:"string" enum:"PermissionType"`
+
+	// The type of resource to which this permission applies. This takes the form
+	// of: service-code:resource-code, and is case-insensitive. For example, an
+	// Amazon EC2 Subnet would be represented by the string ec2:subnet.
 	ResourceType *string `locationName:"resourceType" type:"string"`
 
 	// The current status of the permission.
 	Status *string `locationName:"status" type:"string"`
 
-	// The version of the permission represented in this structure.
+	// A list of the tag key value pairs currently attached to the permission.
+	Tags []*Tag `locationName:"tags" type:"list"`
+
+	// The version of the permission associated with this resource share.
 	Version *string `locationName:"version" type:"string"`
 }
 
@@ -7862,6 +11059,12 @@ func (s *ResourceSharePermissionSummary) SetDefaultVersion(v bool) *ResourceShar
 	return s
 }
 
+// SetFeatureSet sets the FeatureSet field's value.
+func (s *ResourceSharePermissionSummary) SetFeatureSet(v string) *ResourceSharePermissionSummary {
+	s.FeatureSet = &v
+	return s
+}
+
 // SetIsResourceTypeDefault sets the IsResourceTypeDefault field's value.
 func (s *ResourceSharePermissionSummary) SetIsResourceTypeDefault(v bool) *ResourceSharePermissionSummary {
 	s.IsResourceTypeDefault = &v
@@ -7880,6 +11083,12 @@ func (s *ResourceSharePermissionSummary) SetName(v string) *ResourceSharePermiss
 	return s
 }
 
+// SetPermissionType sets the PermissionType field's value.
+func (s *ResourceSharePermissionSummary) SetPermissionType(v string) *ResourceSharePermissionSummary {
+	s.PermissionType = &v
+	return s
+}
+
 // SetResourceType sets the ResourceType field's value.
 func (s *ResourceSharePermissionSummary) SetResourceType(v string) *ResourceSharePermissionSummary {
 	s.ResourceType = &v
@@ -7892,13 +11101,20 @@ func (s *ResourceSharePermissionSummary) SetStatus(v string) *ResourceSharePermi
 	return s
 }
 
+// SetTags sets the Tags field's value.
+func (s *ResourceSharePermissionSummary) SetTags(v []*Tag) *ResourceSharePermissionSummary {
+	s.Tags = v
+	return s
+}
+
 // SetVersion sets the Version field's value.
 func (s *ResourceSharePermissionSummary) SetVersion(v string) *ResourceSharePermissionSummary {
 	s.Version = &v
 	return s
 }
 
-// The service could not respond to the request due to an internal problem.
+// The operation failed because the service could not respond to the request
+// due to an internal problem. Try again later.
 type ServerInternalException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -7976,7 +11192,9 @@ type ServiceNameAndResourceType struct {
 	//    Region.
 	ResourceRegionScope *string `locationName:"resourceRegionScope" type:"string" enum:"ResourceRegionScope"`
 
-	// The type of the resource.
+	// The type of the resource. This takes the form of: service-code:resource-code,
+	// and is case-insensitive. For example, an Amazon EC2 Subnet would be represented
+	// by the string ec2:subnet.
 	ResourceType *string `locationName:"resourceType" type:"string"`
 
 	// The name of the Amazon Web Services service to which resources of this type
@@ -8020,7 +11238,7 @@ func (s *ServiceNameAndResourceType) SetServiceName(v string) *ServiceNameAndRes
 	return s
 }
 
-// The service is not available.
+// The operation failed because the service isn't available. Try again later.
 type ServiceUnavailableException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -8082,6 +11300,132 @@ func (s *ServiceUnavailableException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ServiceUnavailableException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+type SetDefaultPermissionVersionInput struct {
+	_ struct{} `type:"structure"`
+
+	// Specifies a unique, case-sensitive identifier that you provide to ensure
+	// the idempotency of the request. This lets you safely retry the request without
+	// accidentally performing the same operation a second time. Passing the same
+	// value to a later call to an operation requires that you also pass the same
+	// value for all other parameters. We recommend that you use a UUID type of
+	// value. (https://wikipedia.org/wiki/Universally_unique_identifier).
+	//
+	// If you don't provide this value, then Amazon Web Services generates a random
+	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the customer managed permission whose default version you want to change.
+	//
+	// PermissionArn is a required field
+	PermissionArn *string `locationName:"permissionArn" type:"string" required:"true"`
+
+	// Specifies the version number that you want to designate as the default for
+	// customer managed permission. To see a list of all available version numbers,
+	// use ListPermissionVersions.
+	//
+	// PermissionVersion is a required field
+	PermissionVersion *int64 `locationName:"permissionVersion" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SetDefaultPermissionVersionInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SetDefaultPermissionVersionInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SetDefaultPermissionVersionInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SetDefaultPermissionVersionInput"}
+	if s.PermissionArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionArn"))
+	}
+	if s.PermissionVersion == nil {
+		invalidParams.Add(request.NewErrParamRequired("PermissionVersion"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *SetDefaultPermissionVersionInput) SetClientToken(v string) *SetDefaultPermissionVersionInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetPermissionArn sets the PermissionArn field's value.
+func (s *SetDefaultPermissionVersionInput) SetPermissionArn(v string) *SetDefaultPermissionVersionInput {
+	s.PermissionArn = &v
+	return s
+}
+
+// SetPermissionVersion sets the PermissionVersion field's value.
+func (s *SetDefaultPermissionVersionInput) SetPermissionVersion(v int64) *SetDefaultPermissionVersionInput {
+	s.PermissionVersion = &v
+	return s
+}
+
+type SetDefaultPermissionVersionOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The idempotency identifier associated with this request. If you want to repeat
+	// the same operation in an idempotent manner then you must include this value
+	// in the clientToken request parameter of that later call. All other parameters
+	// must also have the same values that you used in the first call.
+	ClientToken *string `locationName:"clientToken" type:"string"`
+
+	// A boolean value that indicates whether the operation was successful.
+	ReturnValue *bool `locationName:"returnValue" type:"boolean"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SetDefaultPermissionVersionOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SetDefaultPermissionVersionOutput) GoString() string {
+	return s.String()
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *SetDefaultPermissionVersionOutput) SetClientToken(v string) *SetDefaultPermissionVersionOutput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetReturnValue sets the ReturnValue field's value.
+func (s *SetDefaultPermissionVersionOutput) SetReturnValue(v bool) *SetDefaultPermissionVersionOutput {
+	s.ReturnValue = &v
+	return s
 }
 
 // A structure containing a tag. A tag is metadata that you can attach to your
@@ -8177,7 +11521,8 @@ func (s *TagFilter) SetTagValues(v []*string) *TagFilter {
 	return s
 }
 
-// This request would exceed the limit for tags for your account.
+// The operation failed because it would exceed the limit for tags for your
+// Amazon Web Services account.
 type TagLimitExceededException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -8241,7 +11586,8 @@ func (s *TagLimitExceededException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// The specified tag key is a reserved word and can't be used.
+// The operation failed because the specified tag key is a reserved word and
+// can't be used.
 type TagPolicyViolationException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -8308,11 +11654,15 @@ func (s *TagPolicyViolationException) RequestID() string {
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
-	// of the resource share that you want to add tags to.
-	//
-	// ResourceShareArn is a required field
-	ResourceShareArn *string `locationName:"resourceShareArn" type:"string" required:"true"`
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the managed permission that you want to add tags to. You must specify
+	// either resourceArn, or resourceShareArn, but not both.
+	ResourceArn *string `locationName:"resourceArn" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the resource share that you want to add tags to. You must specify either
+	// resourceShareArn, or resourceArn, but not both.
+	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 
 	// A list of one or more tag key and value pairs. The tag key must be present
 	// and not be an empty string. The tag value must be present but can be an empty
@@ -8343,9 +11693,6 @@ func (s TagResourceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *TagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "TagResourceInput"}
-	if s.ResourceShareArn == nil {
-		invalidParams.Add(request.NewErrParamRequired("ResourceShareArn"))
-	}
 	if s.Tags == nil {
 		invalidParams.Add(request.NewErrParamRequired("Tags"))
 	}
@@ -8354,6 +11701,12 @@ func (s *TagResourceInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *TagResourceInput) SetResourceArn(v string) *TagResourceInput {
+	s.ResourceArn = &v
+	return s
 }
 
 // SetResourceShareArn sets the ResourceShareArn field's value.
@@ -8390,8 +11743,8 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
-// You exceeded the rate at which you are allowed to perform this operation.
-// Please try again later.
+// The operation failed because it exceeded the rate at which you are allowed
+// to perform this operation. Please try again later.
 type ThrottlingException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -8455,7 +11808,7 @@ func (s *ThrottlingException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
-// A specified resource was not found.
+// The operation failed because a specified resource couldn't be found.
 type UnknownResourceException struct {
 	_            struct{}                  `type:"structure"`
 	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
@@ -8519,15 +11872,86 @@ func (s *UnknownResourceException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// There isn't an existing managed permission defined in RAM that has the same
+// IAM permissions as the resource-based policy attached to the resource. You
+// should first run PromotePermissionCreatedFromPolicy to create that managed
+// permission.
+type UnmatchedPolicyPermissionException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnmatchedPolicyPermissionException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnmatchedPolicyPermissionException) GoString() string {
+	return s.String()
+}
+
+func newErrorUnmatchedPolicyPermissionException(v protocol.ResponseMetadata) error {
+	return &UnmatchedPolicyPermissionException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *UnmatchedPolicyPermissionException) Code() string {
+	return "UnmatchedPolicyPermissionException"
+}
+
+// Message returns the exception's message.
+func (s *UnmatchedPolicyPermissionException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *UnmatchedPolicyPermissionException) OrigErr() error {
+	return nil
+}
+
+func (s *UnmatchedPolicyPermissionException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *UnmatchedPolicyPermissionException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *UnmatchedPolicyPermissionException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type UntagResourceInput struct {
 	_ struct{} `type:"structure"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// of the managed permission that you want to remove tags from. You must specify
+	// either resourceArn, or resourceShareArn, but not both.
+	ResourceArn *string `locationName:"resourceArn" type:"string"`
+
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share that you want to remove tags from. The tags are removed
-	// from the resource share, not the resources in the resource share.
-	//
-	// ResourceShareArn is a required field
-	ResourceShareArn *string `locationName:"resourceShareArn" type:"string" required:"true"`
+	// from the resource share, not the resources in the resource share. You must
+	// specify either resourceShareArn, or resourceArn, but not both.
+	ResourceShareArn *string `locationName:"resourceShareArn" type:"string"`
 
 	// Specifies a list of one or more tag keys that you want to remove.
 	//
@@ -8556,9 +11980,6 @@ func (s UntagResourceInput) GoString() string {
 // Validate inspects the fields of the type to determine if they are valid.
 func (s *UntagResourceInput) Validate() error {
 	invalidParams := request.ErrInvalidParams{Context: "UntagResourceInput"}
-	if s.ResourceShareArn == nil {
-		invalidParams.Add(request.NewErrParamRequired("ResourceShareArn"))
-	}
 	if s.TagKeys == nil {
 		invalidParams.Add(request.NewErrParamRequired("TagKeys"))
 	}
@@ -8567,6 +11988,12 @@ func (s *UntagResourceInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetResourceArn sets the ResourceArn field's value.
+func (s *UntagResourceInput) SetResourceArn(v string) *UntagResourceInput {
+	s.ResourceArn = &v
+	return s
 }
 
 // SetResourceShareArn sets the ResourceShareArn field's value.
@@ -8619,12 +12046,15 @@ type UpdateResourceShareInput struct {
 	//
 	// If you don't provide this value, then Amazon Web Services generates a random
 	// one for you.
+	//
+	// If you retry the operation with the same ClientToken, but with different
+	// parameters, the retry fails with an IdempotentParameterMismatch error.
 	ClientToken *string `locationName:"clientToken" type:"string"`
 
 	// If specified, the new name that you want to attach to the resource share.
 	Name *string `locationName:"name" type:"string"`
 
-	// Specifies the Amazon Resoure Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
+	// Specifies the Amazon Resource Name (ARN) (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html)
 	// of the resource share that you want to modify.
 	//
 	// ResourceShareArn is a required field
@@ -8727,6 +12157,106 @@ func (s *UpdateResourceShareOutput) SetClientToken(v string) *UpdateResourceShar
 func (s *UpdateResourceShareOutput) SetResourceShare(v *ResourceShare) *UpdateResourceShareOutput {
 	s.ResourceShare = v
 	return s
+}
+
+const (
+	// PermissionFeatureSetCreatedFromPolicy is a PermissionFeatureSet enum value
+	PermissionFeatureSetCreatedFromPolicy = "CREATED_FROM_POLICY"
+
+	// PermissionFeatureSetPromotingToStandard is a PermissionFeatureSet enum value
+	PermissionFeatureSetPromotingToStandard = "PROMOTING_TO_STANDARD"
+
+	// PermissionFeatureSetStandard is a PermissionFeatureSet enum value
+	PermissionFeatureSetStandard = "STANDARD"
+)
+
+// PermissionFeatureSet_Values returns all elements of the PermissionFeatureSet enum
+func PermissionFeatureSet_Values() []string {
+	return []string{
+		PermissionFeatureSetCreatedFromPolicy,
+		PermissionFeatureSetPromotingToStandard,
+		PermissionFeatureSetStandard,
+	}
+}
+
+const (
+	// PermissionStatusAttachable is a PermissionStatus enum value
+	PermissionStatusAttachable = "ATTACHABLE"
+
+	// PermissionStatusUnattachable is a PermissionStatus enum value
+	PermissionStatusUnattachable = "UNATTACHABLE"
+
+	// PermissionStatusDeleting is a PermissionStatus enum value
+	PermissionStatusDeleting = "DELETING"
+
+	// PermissionStatusDeleted is a PermissionStatus enum value
+	PermissionStatusDeleted = "DELETED"
+)
+
+// PermissionStatus_Values returns all elements of the PermissionStatus enum
+func PermissionStatus_Values() []string {
+	return []string{
+		PermissionStatusAttachable,
+		PermissionStatusUnattachable,
+		PermissionStatusDeleting,
+		PermissionStatusDeleted,
+	}
+}
+
+const (
+	// PermissionTypeCustomerManaged is a PermissionType enum value
+	PermissionTypeCustomerManaged = "CUSTOMER_MANAGED"
+
+	// PermissionTypeAwsManaged is a PermissionType enum value
+	PermissionTypeAwsManaged = "AWS_MANAGED"
+)
+
+// PermissionType_Values returns all elements of the PermissionType enum
+func PermissionType_Values() []string {
+	return []string{
+		PermissionTypeCustomerManaged,
+		PermissionTypeAwsManaged,
+	}
+}
+
+const (
+	// PermissionTypeFilterAll is a PermissionTypeFilter enum value
+	PermissionTypeFilterAll = "ALL"
+
+	// PermissionTypeFilterAwsManaged is a PermissionTypeFilter enum value
+	PermissionTypeFilterAwsManaged = "AWS_MANAGED"
+
+	// PermissionTypeFilterCustomerManaged is a PermissionTypeFilter enum value
+	PermissionTypeFilterCustomerManaged = "CUSTOMER_MANAGED"
+)
+
+// PermissionTypeFilter_Values returns all elements of the PermissionTypeFilter enum
+func PermissionTypeFilter_Values() []string {
+	return []string{
+		PermissionTypeFilterAll,
+		PermissionTypeFilterAwsManaged,
+		PermissionTypeFilterCustomerManaged,
+	}
+}
+
+const (
+	// ReplacePermissionAssociationsWorkStatusInProgress is a ReplacePermissionAssociationsWorkStatus enum value
+	ReplacePermissionAssociationsWorkStatusInProgress = "IN_PROGRESS"
+
+	// ReplacePermissionAssociationsWorkStatusCompleted is a ReplacePermissionAssociationsWorkStatus enum value
+	ReplacePermissionAssociationsWorkStatusCompleted = "COMPLETED"
+
+	// ReplacePermissionAssociationsWorkStatusFailed is a ReplacePermissionAssociationsWorkStatus enum value
+	ReplacePermissionAssociationsWorkStatusFailed = "FAILED"
+)
+
+// ReplacePermissionAssociationsWorkStatus_Values returns all elements of the ReplacePermissionAssociationsWorkStatus enum
+func ReplacePermissionAssociationsWorkStatus_Values() []string {
+	return []string{
+		ReplacePermissionAssociationsWorkStatusInProgress,
+		ReplacePermissionAssociationsWorkStatusCompleted,
+		ReplacePermissionAssociationsWorkStatusFailed,
+	}
 }
 
 const (

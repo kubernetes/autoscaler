@@ -176,6 +176,10 @@ func (c *CloudWatchEvidently) CreateExperimentRequest(input *CreateExperimentInp
 // collects experiment data and analyzes it by statistical methods, and provides
 // clear recommendations about which variations perform better.
 //
+// You can optionally specify a segment to have the experiment consider only
+// certain audience types in the experiment, such as using only user sessions
+// from a certain location or who use a certain internet browser.
+//
 // Don't use this operation to update an existing experiment. Instead, use UpdateExperiment
 // (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_UpdateExperiment.html).
 //
@@ -510,6 +514,110 @@ func (c *CloudWatchEvidently) CreateProject(input *CreateProjectInput) (*CreateP
 // for more information on using Contexts.
 func (c *CloudWatchEvidently) CreateProjectWithContext(ctx aws.Context, input *CreateProjectInput, opts ...request.Option) (*CreateProjectOutput, error) {
 	req, out := c.CreateProjectRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateSegment = "CreateSegment"
+
+// CreateSegmentRequest generates a "aws/request.Request" representing the
+// client's request for the CreateSegment operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateSegment for more information on using the CreateSegment
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateSegmentRequest method.
+//	req, resp := client.CreateSegmentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/CreateSegment
+func (c *CloudWatchEvidently) CreateSegmentRequest(input *CreateSegmentInput) (req *request.Request, output *CreateSegmentOutput) {
+	op := &request.Operation{
+		Name:       opCreateSegment,
+		HTTPMethod: "POST",
+		HTTPPath:   "/segments",
+	}
+
+	if input == nil {
+		input = &CreateSegmentInput{}
+	}
+
+	output = &CreateSegmentOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateSegment API operation for Amazon CloudWatch Evidently.
+//
+// Use this operation to define a segment of your audience. A segment is a portion
+// of your audience that share one or more characteristics. Examples could be
+// Chrome browser users, users in Europe, or Firefox browser users in Europe
+// who also fit other criteria that your application collects, such as age.
+//
+// Using a segment in an experiment limits that experiment to evaluate only
+// the users who match the segment criteria. Using one or more segments in a
+// launch allows you to define different traffic splits for the different audience
+// segments.
+//
+// For more information about segment pattern syntax, see Segment rule pattern
+// syntax (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html#CloudWatch-Evidently-segments-syntax.html).
+//
+// The pattern that you define for a segment is matched against the value of
+// evaluationContext, which is passed into Evidently in the EvaluateFeature
+// (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html)
+// operation, when Evidently assigns a feature variation to a user.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudWatch Evidently's
+// API operation CreateSegment for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     The value of a parameter in the request caused an error.
+//
+//   - ConflictException
+//     A resource was in an inconsistent state during an update or a deletion.
+//
+//   - ServiceQuotaExceededException
+//     The request would cause a service quota to be exceeded.
+//
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/CreateSegment
+func (c *CloudWatchEvidently) CreateSegment(input *CreateSegmentInput) (*CreateSegmentOutput, error) {
+	req, out := c.CreateSegmentRequest(input)
+	return out, req.Send()
+}
+
+// CreateSegmentWithContext is the same as CreateSegment with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateSegment for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) CreateSegmentWithContext(ctx aws.Context, input *CreateSegmentInput, opts ...request.Option) (*CreateSegmentOutput, error) {
+	req, out := c.CreateSegmentRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -893,6 +1001,99 @@ func (c *CloudWatchEvidently) DeleteProjectWithContext(ctx aws.Context, input *D
 	return out, req.Send()
 }
 
+const opDeleteSegment = "DeleteSegment"
+
+// DeleteSegmentRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteSegment operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteSegment for more information on using the DeleteSegment
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteSegmentRequest method.
+//	req, resp := client.DeleteSegmentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/DeleteSegment
+func (c *CloudWatchEvidently) DeleteSegmentRequest(input *DeleteSegmentInput) (req *request.Request, output *DeleteSegmentOutput) {
+	op := &request.Operation{
+		Name:       opDeleteSegment,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/segments/{segment}",
+	}
+
+	if input == nil {
+		input = &DeleteSegmentInput{}
+	}
+
+	output = &DeleteSegmentOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteSegment API operation for Amazon CloudWatch Evidently.
+//
+// Deletes a segment. You can't delete a segment that is being used in a launch
+// or experiment, even if that launch or experiment is not currently running.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudWatch Evidently's
+// API operation DeleteSegment for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     The request was denied because of request throttling. Retry the request.
+//
+//   - ValidationException
+//     The value of a parameter in the request caused an error.
+//
+//   - ConflictException
+//     A resource was in an inconsistent state during an update or a deletion.
+//
+//   - ResourceNotFoundException
+//     The request references a resource that does not exist.
+//
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/DeleteSegment
+func (c *CloudWatchEvidently) DeleteSegment(input *DeleteSegmentInput) (*DeleteSegmentOutput, error) {
+	req, out := c.DeleteSegmentRequest(input)
+	return out, req.Send()
+}
+
+// DeleteSegmentWithContext is the same as DeleteSegment with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteSegment for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) DeleteSegmentWithContext(ctx aws.Context, input *DeleteSegmentInput, opts ...request.Option) (*DeleteSegmentOutput, error) {
+	req, out := c.DeleteSegmentRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opEvaluateFeature = "EvaluateFeature"
 
 // EvaluateFeatureRequest generates a "aws/request.Request" representing the
@@ -946,18 +1147,29 @@ func (c *CloudWatchEvidently) EvaluateFeatureRequest(input *EvaluateFeatureInput
 // entityID matches an override rule, the user is served the variation specified
 // by that rule.
 //
-// Next, if there is a launch of the feature, the user might be assigned to
-// a variation in the launch. The chance of this depends on the percentage of
-// users that are allocated to that launch. If the user is enrolled in the launch,
-// the variation they are served depends on the allocation of the various feature
-// variations used for the launch.
+// If there is a current launch with this feature that uses segment overrides,
+// and if the user session's evaluationContext matches a segment rule defined
+// in a segment override, the configuration in the segment overrides is used.
+// For more information about segments, see CreateSegment (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateSegment.html)
+// and Use segments to focus your audience (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html).
+//
+// If there is a launch with no segment overrides, the user might be assigned
+// to a variation in the launch. The chance of this depends on the percentage
+// of users that are allocated to that launch. If the user is enrolled in the
+// launch, the variation they are served depends on the allocation of the various
+// feature variations used for the launch.
 //
 // If the user is not assigned to a launch, and there is an ongoing experiment
 // for this feature, the user might be assigned to a variation in the experiment.
 // The chance of this depends on the percentage of users that are allocated
-// to that experiment. If the user is enrolled in the experiment, the variation
-// they are served depends on the allocation of the various feature variations
-// used for the experiment.
+// to that experiment.
+//
+// If the experiment uses a segment, then only user sessions with evaluationContext
+// values that match the segment rule are used in the experiment.
+//
+// If the user is enrolled in the experiment, the variation they are served
+// depends on the allocation of the various feature variations used for the
+// experiment.
 //
 // If the user is not assigned to a launch or experiment, they are served the
 // default variation.
@@ -1140,7 +1352,11 @@ func (c *CloudWatchEvidently) GetExperimentResultsRequest(input *GetExperimentRe
 //
 // Retrieves the results of a running or completed experiment. No results are
 // available until there have been 100 events for each variation and at least
-// 10 minutes have passed since the start of the experiment.
+// 10 minutes have passed since the start of the experiment. To increase the
+// statistical power, Evidently performs an additional offline p-value analysis
+// at the end of the experiment. Offline p-value analysis can detect statistical
+// significance in some cases where the anytime p-values used during the experiment
+// do not find statistical significance.
 //
 // Experiment results are available up to 63 days after the start of the experiment.
 // They are not available after that because of CloudWatch data retention policies.
@@ -1453,6 +1669,95 @@ func (c *CloudWatchEvidently) GetProject(input *GetProjectInput) (*GetProjectOut
 // for more information on using Contexts.
 func (c *CloudWatchEvidently) GetProjectWithContext(ctx aws.Context, input *GetProjectInput, opts ...request.Option) (*GetProjectOutput, error) {
 	req, out := c.GetProjectRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opGetSegment = "GetSegment"
+
+// GetSegmentRequest generates a "aws/request.Request" representing the
+// client's request for the GetSegment operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See GetSegment for more information on using the GetSegment
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the GetSegmentRequest method.
+//	req, resp := client.GetSegmentRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/GetSegment
+func (c *CloudWatchEvidently) GetSegmentRequest(input *GetSegmentInput) (req *request.Request, output *GetSegmentOutput) {
+	op := &request.Operation{
+		Name:       opGetSegment,
+		HTTPMethod: "GET",
+		HTTPPath:   "/segments/{segment}",
+	}
+
+	if input == nil {
+		input = &GetSegmentInput{}
+	}
+
+	output = &GetSegmentOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// GetSegment API operation for Amazon CloudWatch Evidently.
+//
+// Returns information about the specified segment. Specify the segment you
+// want to view by specifying its ARN.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudWatch Evidently's
+// API operation GetSegment for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     The request was denied because of request throttling. Retry the request.
+//
+//   - ValidationException
+//     The value of a parameter in the request caused an error.
+//
+//   - ResourceNotFoundException
+//     The request references a resource that does not exist.
+//
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/GetSegment
+func (c *CloudWatchEvidently) GetSegment(input *GetSegmentInput) (*GetSegmentOutput, error) {
+	req, out := c.GetSegmentRequest(input)
+	return out, req.Send()
+}
+
+// GetSegmentWithContext is the same as GetSegment with the addition of
+// the ability to pass a context and additional request options.
+//
+// See GetSegment for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) GetSegmentWithContext(ctx aws.Context, input *GetSegmentInput, opts ...request.Option) (*GetSegmentOutput, error) {
+	req, out := c.GetSegmentRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2024,6 +2329,295 @@ func (c *CloudWatchEvidently) ListProjectsPagesWithContext(ctx aws.Context, inpu
 
 	for p.Next() {
 		if !fn(p.Page().(*ListProjectsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListSegmentReferences = "ListSegmentReferences"
+
+// ListSegmentReferencesRequest generates a "aws/request.Request" representing the
+// client's request for the ListSegmentReferences operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListSegmentReferences for more information on using the ListSegmentReferences
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListSegmentReferencesRequest method.
+//	req, resp := client.ListSegmentReferencesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/ListSegmentReferences
+func (c *CloudWatchEvidently) ListSegmentReferencesRequest(input *ListSegmentReferencesInput) (req *request.Request, output *ListSegmentReferencesOutput) {
+	op := &request.Operation{
+		Name:       opListSegmentReferences,
+		HTTPMethod: "GET",
+		HTTPPath:   "/segments/{segment}/references",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListSegmentReferencesInput{}
+	}
+
+	output = &ListSegmentReferencesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListSegmentReferences API operation for Amazon CloudWatch Evidently.
+//
+// Use this operation to find which experiments or launches are using a specified
+// segment.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudWatch Evidently's
+// API operation ListSegmentReferences for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     The request was denied because of request throttling. Retry the request.
+//
+//   - ValidationException
+//     The value of a parameter in the request caused an error.
+//
+//   - ResourceNotFoundException
+//     The request references a resource that does not exist.
+//
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/ListSegmentReferences
+func (c *CloudWatchEvidently) ListSegmentReferences(input *ListSegmentReferencesInput) (*ListSegmentReferencesOutput, error) {
+	req, out := c.ListSegmentReferencesRequest(input)
+	return out, req.Send()
+}
+
+// ListSegmentReferencesWithContext is the same as ListSegmentReferences with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListSegmentReferences for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) ListSegmentReferencesWithContext(ctx aws.Context, input *ListSegmentReferencesInput, opts ...request.Option) (*ListSegmentReferencesOutput, error) {
+	req, out := c.ListSegmentReferencesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListSegmentReferencesPages iterates over the pages of a ListSegmentReferences operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListSegmentReferences method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListSegmentReferences operation.
+//	pageNum := 0
+//	err := client.ListSegmentReferencesPages(params,
+//	    func(page *cloudwatchevidently.ListSegmentReferencesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *CloudWatchEvidently) ListSegmentReferencesPages(input *ListSegmentReferencesInput, fn func(*ListSegmentReferencesOutput, bool) bool) error {
+	return c.ListSegmentReferencesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListSegmentReferencesPagesWithContext same as ListSegmentReferencesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) ListSegmentReferencesPagesWithContext(ctx aws.Context, input *ListSegmentReferencesInput, fn func(*ListSegmentReferencesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListSegmentReferencesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListSegmentReferencesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListSegmentReferencesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opListSegments = "ListSegments"
+
+// ListSegmentsRequest generates a "aws/request.Request" representing the
+// client's request for the ListSegments operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListSegments for more information on using the ListSegments
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListSegmentsRequest method.
+//	req, resp := client.ListSegmentsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/ListSegments
+func (c *CloudWatchEvidently) ListSegmentsRequest(input *ListSegmentsInput) (req *request.Request, output *ListSegmentsOutput) {
+	op := &request.Operation{
+		Name:       opListSegments,
+		HTTPMethod: "GET",
+		HTTPPath:   "/segments",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"nextToken"},
+			OutputTokens:    []string{"nextToken"},
+			LimitToken:      "maxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &ListSegmentsInput{}
+	}
+
+	output = &ListSegmentsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListSegments API operation for Amazon CloudWatch Evidently.
+//
+// Returns a list of audience segments that you have created in your account
+// in this Region.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudWatch Evidently's
+// API operation ListSegments for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     The request was denied because of request throttling. Retry the request.
+//
+//   - ValidationException
+//     The value of a parameter in the request caused an error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/ListSegments
+func (c *CloudWatchEvidently) ListSegments(input *ListSegmentsInput) (*ListSegmentsOutput, error) {
+	req, out := c.ListSegmentsRequest(input)
+	return out, req.Send()
+}
+
+// ListSegmentsWithContext is the same as ListSegments with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListSegments for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) ListSegmentsWithContext(ctx aws.Context, input *ListSegmentsInput, opts ...request.Option) (*ListSegmentsOutput, error) {
+	req, out := c.ListSegmentsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// ListSegmentsPages iterates over the pages of a ListSegments operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See ListSegments method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a ListSegments operation.
+//	pageNum := 0
+//	err := client.ListSegmentsPages(params,
+//	    func(page *cloudwatchevidently.ListSegmentsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *CloudWatchEvidently) ListSegmentsPages(input *ListSegmentsInput, fn func(*ListSegmentsOutput, bool) bool) error {
+	return c.ListSegmentsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// ListSegmentsPagesWithContext same as ListSegmentsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) ListSegmentsPagesWithContext(ctx aws.Context, input *ListSegmentsInput, fn func(*ListSegmentsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *ListSegmentsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.ListSegmentsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*ListSegmentsOutput), !p.HasNextPage()) {
 			break
 		}
 	}
@@ -2688,6 +3282,93 @@ func (c *CloudWatchEvidently) TagResourceWithContext(ctx aws.Context, input *Tag
 	return out, req.Send()
 }
 
+const opTestSegmentPattern = "TestSegmentPattern"
+
+// TestSegmentPatternRequest generates a "aws/request.Request" representing the
+// client's request for the TestSegmentPattern operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See TestSegmentPattern for more information on using the TestSegmentPattern
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the TestSegmentPatternRequest method.
+//	req, resp := client.TestSegmentPatternRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/TestSegmentPattern
+func (c *CloudWatchEvidently) TestSegmentPatternRequest(input *TestSegmentPatternInput) (req *request.Request, output *TestSegmentPatternOutput) {
+	op := &request.Operation{
+		Name:       opTestSegmentPattern,
+		HTTPMethod: "POST",
+		HTTPPath:   "/test-segment-pattern",
+	}
+
+	if input == nil {
+		input = &TestSegmentPatternInput{}
+	}
+
+	output = &TestSegmentPatternOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// TestSegmentPattern API operation for Amazon CloudWatch Evidently.
+//
+// Use this operation to test a rules pattern that you plan to use to create
+// an audience segment. For more information about segments, see CreateSegment
+// (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_CreateSegment.html).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon CloudWatch Evidently's
+// API operation TestSegmentPattern for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ThrottlingException
+//     The request was denied because of request throttling. Retry the request.
+//
+//   - ValidationException
+//     The value of a parameter in the request caused an error.
+//
+//   - AccessDeniedException
+//     You do not have sufficient permissions to perform this action.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/evidently-2021-02-01/TestSegmentPattern
+func (c *CloudWatchEvidently) TestSegmentPattern(input *TestSegmentPatternInput) (*TestSegmentPatternOutput, error) {
+	req, out := c.TestSegmentPatternRequest(input)
+	return out, req.Send()
+}
+
+// TestSegmentPatternWithContext is the same as TestSegmentPattern with the addition of
+// the ability to pass a context and additional request options.
+//
+// See TestSegmentPattern for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CloudWatchEvidently) TestSegmentPatternWithContext(ctx aws.Context, input *TestSegmentPatternInput, opts ...request.Option) (*TestSegmentPatternOutput, error) {
+	req, out := c.TestSegmentPatternRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opUntagResource = "UntagResource"
 
 // UntagResourceRequest generates a "aws/request.Request" representing the
@@ -3114,6 +3795,9 @@ func (c *CloudWatchEvidently) UpdateProjectRequest(input *UpdateProjectInput) (r
 //
 //   - ValidationException
 //     The value of a parameter in the request caused an error.
+//
+//   - ConflictException
+//     A resource was in an inconsistent state during an update or a deletion.
 //
 //   - ServiceQuotaExceededException
 //     The request would cause a service quota to be exceeded.
@@ -3609,6 +4293,11 @@ type CreateExperimentInput struct {
 	// to allocate 10% of the available audience.
 	SamplingRate *int64 `locationName:"samplingRate" type:"long"`
 
+	// Specifies an audience segment to use in the experiment. When a segment is
+	// used in an experiment, only user sessions that match the segment pattern
+	// are used in the experiment.
+	Segment *string `locationName:"segment" type:"string"`
+
 	// Assigns one or more tags (key-value pairs) to the experiment.
 	//
 	// Tags can help you organize and categorize your resources. You can also use
@@ -3618,9 +4307,9 @@ type CreateExperimentInput struct {
 	// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
 	// strictly as strings of characters.
 	//
-	//    <p>You can associate as many as 50 tags with an experiment.</p> <p>For
-	//    more information, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html">Tagging
-	//    Amazon Web Services resources</a>.</p>
+	// You can associate as many as 50 tags with an experiment.
+	//
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// An array of structures that describe the configuration of each feature variation
@@ -3746,6 +4435,12 @@ func (s *CreateExperimentInput) SetSamplingRate(v int64) *CreateExperimentInput 
 	return s
 }
 
+// SetSegment sets the Segment field's value.
+func (s *CreateExperimentInput) SetSegment(v string) *CreateExperimentInput {
+	s.Segment = &v
+	return s
+}
+
 // SetTags sets the Tags field's value.
 func (s *CreateExperimentInput) SetTags(v map[string]*string) *CreateExperimentInput {
 	s.Tags = v
@@ -3812,6 +4507,9 @@ type CreateFeatureInput struct {
 	// Each user is specified by a key-value pair . For each key, specify a user
 	// by entering their user ID, account ID, or some other identifier. For the
 	// value, specify the name of the variation that they are to be served.
+	//
+	// This parameter is limited to 2500 overrides or a total of 40KB. The 40KB
+	// limit includes an overhead of 6 bytes per override.
 	EntityOverrides map[string]*string `locationName:"entityOverrides" type:"map"`
 
 	// Specify ALL_RULES to activate the traffic allocation specified by any ongoing
@@ -3838,9 +4536,9 @@ type CreateFeatureInput struct {
 	// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
 	// strictly as strings of characters.
 	//
-	//    <p>You can associate as many as 50 tags with a feature.</p> <p>For more
-	//    information, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html">Tagging
-	//    Amazon Web Services resources</a>.</p>
+	// You can associate as many as 50 tags with a feature.
+	//
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `locationName:"tags" type:"map"`
 
 	// An array of structures that contain the configuration of the feature's different
@@ -4017,7 +4715,7 @@ type CreateLaunchInput struct {
 	// When Evidently assigns a particular user session to a launch, it must use
 	// a randomization ID to determine which variation the user session is served.
 	// This randomization ID is a combination of the entity ID and randomizationSalt.
-	// If you omit randomizationSalt, Evidently uses the launch name as the randomizationsSalt.
+	// If you omit randomizationSalt, Evidently uses the launch name as the randomizationSalt.
 	RandomizationSalt *string `locationName:"randomizationSalt" type:"string"`
 
 	// An array of structures that define the traffic allocation percentages among
@@ -4033,9 +4731,9 @@ type CreateLaunchInput struct {
 	// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
 	// strictly as strings of characters.
 	//
-	//    <p>You can associate as many as 50 tags with a launch.</p> <p>For more
-	//    information, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html">Tagging
-	//    Amazon Web Services resources</a>.</p>
+	// You can associate as many as 50 tags with a launch.
+	//
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
@@ -4194,6 +4892,20 @@ func (s *CreateLaunchOutput) SetLaunch(v *Launch) *CreateLaunchOutput {
 type CreateProjectInput struct {
 	_ struct{} `type:"structure"`
 
+	// Use this parameter if the project will use client-side evaluation powered
+	// by AppConfig. Client-side evaluation allows your application to assign variations
+	// to user sessions locally instead of by calling the EvaluateFeature (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html)
+	// operation. This mitigates the latency and availability risks that come with
+	// an API call. For more information, see Client-side evaluation - powered by
+	// AppConfig. (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-client-side-evaluation.html)
+	//
+	// This parameter is a structure that contains information about the AppConfig
+	// application and environment that will be used as for client-side evaluation.
+	//
+	// To create a project that uses client-side evaluation, you must have the evidently:ExportProjectAsConfiguration
+	// permission.
+	AppConfigResource *ProjectAppConfigResourceConfig `locationName:"appConfigResource" type:"structure"`
+
 	// A structure that contains information about where Evidently is to store evaluation
 	// events for longer term storage, if you choose to do so. If you choose not
 	// to store these events, Evidently deletes them after using them to produce
@@ -4217,9 +4929,9 @@ type CreateProjectInput struct {
 	// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
 	// strictly as strings of characters.
 	//
-	//    <p>You can associate as many as 50 tags with a project.</p> <p>For more
-	//    information, see <a href="https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html">Tagging
-	//    Amazon Web Services resources</a>.</p>
+	// You can associate as many as 50 tags with a project.
+	//
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
 	Tags map[string]*string `locationName:"tags" type:"map"`
 }
 
@@ -4260,6 +4972,12 @@ func (s *CreateProjectInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAppConfigResource sets the AppConfigResource field's value.
+func (s *CreateProjectInput) SetAppConfigResource(v *ProjectAppConfigResourceConfig) *CreateProjectInput {
+	s.AppConfigResource = v
+	return s
 }
 
 // SetDataDelivery sets the DataDelivery field's value.
@@ -4316,6 +5034,136 @@ func (s CreateProjectOutput) GoString() string {
 // SetProject sets the Project field's value.
 func (s *CreateProjectOutput) SetProject(v *Project) *CreateProjectOutput {
 	s.Project = v
+	return s
+}
+
+type CreateSegmentInput struct {
+	_ struct{} `type:"structure"`
+
+	// An optional description for this segment.
+	Description *string `locationName:"description" type:"string"`
+
+	// A name for the segment.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The pattern to use for the segment. For more information about pattern syntax,
+	// see Segment rule pattern syntax (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html#CloudWatch-Evidently-segments-syntax.html).
+	//
+	// Pattern is a required field
+	Pattern *string `locationName:"pattern" min:"1" type:"string" required:"true"`
+
+	// Assigns one or more tags (key-value pairs) to the segment.
+	//
+	// Tags can help you organize and categorize your resources. You can also use
+	// them to scope user permissions by granting a user permission to access or
+	// change only resources with certain tag values.
+	//
+	// Tags don't have any semantic meaning to Amazon Web Services and are interpreted
+	// strictly as strings of characters.
+	//
+	// You can associate as many as 50 tags with a segment.
+	//
+	// For more information, see Tagging Amazon Web Services resources (https://docs.aws.amazon.com/general/latest/gr/aws_tagging.html).
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSegmentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSegmentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateSegmentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateSegmentInput"}
+	if s.Name == nil {
+		invalidParams.Add(request.NewErrParamRequired("Name"))
+	}
+	if s.Name != nil && len(*s.Name) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Name", 1))
+	}
+	if s.Pattern == nil {
+		invalidParams.Add(request.NewErrParamRequired("Pattern"))
+	}
+	if s.Pattern != nil && len(*s.Pattern) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Pattern", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDescription sets the Description field's value.
+func (s *CreateSegmentInput) SetDescription(v string) *CreateSegmentInput {
+	s.Description = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *CreateSegmentInput) SetName(v string) *CreateSegmentInput {
+	s.Name = &v
+	return s
+}
+
+// SetPattern sets the Pattern field's value.
+func (s *CreateSegmentInput) SetPattern(v string) *CreateSegmentInput {
+	s.Pattern = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *CreateSegmentInput) SetTags(v map[string]*string) *CreateSegmentInput {
+	s.Tags = v
+	return s
+}
+
+type CreateSegmentOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains the complete information about the segment that
+	// was just created.
+	//
+	// Segment is a required field
+	Segment *Segment `locationName:"segment" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSegmentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateSegmentOutput) GoString() string {
+	return s.String()
+}
+
+// SetSegment sets the Segment field's value.
+func (s *CreateSegmentOutput) SetSegment(v *Segment) *CreateSegmentOutput {
+	s.Segment = v
 	return s
 }
 
@@ -4654,6 +5502,77 @@ func (s DeleteProjectOutput) GoString() string {
 	return s.String()
 }
 
+type DeleteSegmentInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Specifies the segment to delete.
+	//
+	// Segment is a required field
+	Segment *string `location:"uri" locationName:"segment" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteSegmentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteSegmentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteSegmentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteSegmentInput"}
+	if s.Segment == nil {
+		invalidParams.Add(request.NewErrParamRequired("Segment"))
+	}
+	if s.Segment != nil && len(*s.Segment) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Segment", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSegment sets the Segment field's value.
+func (s *DeleteSegmentInput) SetSegment(v string) *DeleteSegmentInput {
+	s.Segment = &v
+	return s
+}
+
+type DeleteSegmentOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteSegmentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteSegmentOutput) GoString() string {
+	return s.String()
+}
+
 type EvaluateFeatureInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4663,8 +5582,13 @@ type EvaluateFeatureInput struct {
 	// EntityId is a required field
 	EntityId *string `locationName:"entityId" min:"1" type:"string" required:"true"`
 
-	// A JSON block of attributes that you can optionally pass in. This JSON block
-	// is included in the evaluation events sent to Evidently from the user session.
+	// A JSON object of attributes that you can optionally pass in as part of the
+	// evaluation event sent to Evidently from the user session. Evidently can use
+	// this value to match user sessions with defined audience segments. For more
+	// information, see Use segments to focus your audience (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html).
+	//
+	// If you include this parameter, the value must be a JSON object. A JSON array
+	// is not supported.
 	EvaluationContext *string `locationName:"evaluationContext" type:"string"`
 
 	// The name of the feature being evaluated.
@@ -5174,6 +6098,10 @@ type Experiment struct {
 	// analysis of the experiment.
 	Schedule *ExperimentSchedule `locationName:"schedule" type:"structure"`
 
+	// The audience segment being used for the experiment, if a segment is being
+	// used.
+	Segment *string `locationName:"segment" type:"string"`
+
 	// The current state of the experiment.
 	//
 	// Status is a required field
@@ -5283,6 +6211,12 @@ func (s *Experiment) SetSamplingRate(v int64) *Experiment {
 // SetSchedule sets the Schedule field's value.
 func (s *Experiment) SetSchedule(v *ExperimentSchedule) *Experiment {
 	s.Schedule = v
+	return s
+}
+
+// SetSegment sets the Segment field's value.
+func (s *Experiment) SetSegment(v string) *Experiment {
+	s.Segment = &v
 	return s
 }
 
@@ -6439,6 +7373,88 @@ func (s *GetProjectOutput) SetProject(v *Project) *GetProjectOutput {
 	return s
 }
 
+type GetSegmentInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The ARN of the segment to return information for.
+	//
+	// Segment is a required field
+	Segment *string `location:"uri" locationName:"segment" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSegmentInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSegmentInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *GetSegmentInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "GetSegmentInput"}
+	if s.Segment == nil {
+		invalidParams.Add(request.NewErrParamRequired("Segment"))
+	}
+	if s.Segment != nil && len(*s.Segment) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Segment", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSegment sets the Segment field's value.
+func (s *GetSegmentInput) SetSegment(v string) *GetSegmentInput {
+	s.Segment = &v
+	return s
+}
+
+type GetSegmentOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A structure that contains the complete information about the segment.
+	//
+	// Segment is a required field
+	Segment *Segment `locationName:"segment" type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSegmentOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s GetSegmentOutput) GoString() string {
+	return s.String()
+}
+
+// SetSegment sets the Segment field's value.
+func (s *GetSegmentOutput) SetSegment(v *Segment) *GetSegmentOutput {
+	s.Segment = v
+	return s
+}
+
 // Unexpected error while processing the request. Retry the request.
 type InternalServerException struct {
 	_            struct{}                  `type:"structure"`
@@ -7339,6 +8355,238 @@ func (s *ListProjectsOutput) SetProjects(v []*ProjectSummary) *ListProjectsOutpu
 	return s
 }
 
+type ListSegmentReferencesInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The maximum number of results to include in the response. If you omit this,
+	// the default of 50 is used.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token to use when requesting the next set of results. You received this
+	// token from a previous ListSegmentReferences operation.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+
+	// The ARN of the segment that you want to view information for.
+	//
+	// Segment is a required field
+	Segment *string `location:"uri" locationName:"segment" type:"string" required:"true"`
+
+	// Specifies whether to return information about launches or experiments that
+	// use this segment.
+	//
+	// Type is a required field
+	Type *string `location:"querystring" locationName:"type" type:"string" required:"true" enum:"SegmentReferenceResourceType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentReferencesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentReferencesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListSegmentReferencesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListSegmentReferencesInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+	if s.Segment == nil {
+		invalidParams.Add(request.NewErrParamRequired("Segment"))
+	}
+	if s.Segment != nil && len(*s.Segment) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Segment", 1))
+	}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListSegmentReferencesInput) SetMaxResults(v int64) *ListSegmentReferencesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListSegmentReferencesInput) SetNextToken(v string) *ListSegmentReferencesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSegment sets the Segment field's value.
+func (s *ListSegmentReferencesInput) SetSegment(v string) *ListSegmentReferencesInput {
+	s.Segment = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ListSegmentReferencesInput) SetType(v string) *ListSegmentReferencesInput {
+	s.Type = &v
+	return s
+}
+
+type ListSegmentReferencesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use in a subsequent ListSegmentReferences operation to return
+	// the next set of results.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// An array of structures, where each structure contains information about one
+	// experiment or launch that uses this segment.
+	ReferencedBy []*RefResource `locationName:"referencedBy" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentReferencesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentReferencesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListSegmentReferencesOutput) SetNextToken(v string) *ListSegmentReferencesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReferencedBy sets the ReferencedBy field's value.
+func (s *ListSegmentReferencesOutput) SetReferencedBy(v []*RefResource) *ListSegmentReferencesOutput {
+	s.ReferencedBy = v
+	return s
+}
+
+type ListSegmentsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The maximum number of results to include in the response. If you omit this,
+	// the default of 50 is used.
+	MaxResults *int64 `location:"querystring" locationName:"maxResults" min:"1" type:"integer"`
+
+	// The token to use when requesting the next set of results. You received this
+	// token from a previous ListSegments operation.
+	NextToken *string `location:"querystring" locationName:"nextToken" min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListSegmentsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListSegmentsInput"}
+	if s.MaxResults != nil && *s.MaxResults < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("MaxResults", 1))
+	}
+	if s.NextToken != nil && len(*s.NextToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("NextToken", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListSegmentsInput) SetMaxResults(v int64) *ListSegmentsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListSegmentsInput) SetNextToken(v string) *ListSegmentsInput {
+	s.NextToken = &v
+	return s
+}
+
+type ListSegmentsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The token to use in a subsequent ListSegments operation to return the next
+	// set of results.
+	NextToken *string `locationName:"nextToken" min:"1" type:"string"`
+
+	// An array of structures that contain information about the segments in this
+	// Region.
+	Segments []*Segment `locationName:"segments" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListSegmentsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListSegmentsOutput) SetNextToken(v string) *ListSegmentsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetSegments sets the Segments field's value.
+func (s *ListSegmentsOutput) SetSegments(v []*Segment) *ListSegmentsOutput {
+	s.Segments = v
+	return s
+}
+
 type ListTagsForResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -7925,6 +9173,10 @@ type Project struct {
 	// The number of ongoing launches currently in the project.
 	ActiveLaunchCount *int64 `locationName:"activeLaunchCount" type:"long"`
 
+	// This structure defines the configuration of how your application integrates
+	// with AppConfig to run client-side evaluation.
+	AppConfigResource *ProjectAppConfigResource `locationName:"appConfigResource" type:"structure"`
+
 	// The name or ARN of the project.
 	//
 	// Arn is a required field
@@ -8002,6 +9254,12 @@ func (s *Project) SetActiveLaunchCount(v int64) *Project {
 	return s
 }
 
+// SetAppConfigResource sets the AppConfigResource field's value.
+func (s *Project) SetAppConfigResource(v *ProjectAppConfigResource) *Project {
+	s.AppConfigResource = v
+	return s
+}
+
 // SetArn sets the Arn field's value.
 func (s *Project) SetArn(v string) *Project {
 	s.Arn = &v
@@ -8065,6 +9323,115 @@ func (s *Project) SetStatus(v string) *Project {
 // SetTags sets the Tags field's value.
 func (s *Project) SetTags(v map[string]*string) *Project {
 	s.Tags = v
+	return s
+}
+
+// This is a structure that defines the configuration of how your application
+// integrates with AppConfig to run client-side evaluation.
+type ProjectAppConfigResource struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the AppConfig application to use for client-side evaluation.
+	//
+	// ApplicationId is a required field
+	ApplicationId *string `locationName:"applicationId" type:"string" required:"true"`
+
+	// The ID of the AppConfig profile to use for client-side evaluation.
+	//
+	// ConfigurationProfileId is a required field
+	ConfigurationProfileId *string `locationName:"configurationProfileId" type:"string" required:"true"`
+
+	// The ID of the AppConfig environment to use for client-side evaluation. This
+	// must be an environment that is within the application that you specify for
+	// applicationId.
+	//
+	// EnvironmentId is a required field
+	EnvironmentId *string `locationName:"environmentId" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ProjectAppConfigResource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ProjectAppConfigResource) GoString() string {
+	return s.String()
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *ProjectAppConfigResource) SetApplicationId(v string) *ProjectAppConfigResource {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetConfigurationProfileId sets the ConfigurationProfileId field's value.
+func (s *ProjectAppConfigResource) SetConfigurationProfileId(v string) *ProjectAppConfigResource {
+	s.ConfigurationProfileId = &v
+	return s
+}
+
+// SetEnvironmentId sets the EnvironmentId field's value.
+func (s *ProjectAppConfigResource) SetEnvironmentId(v string) *ProjectAppConfigResource {
+	s.EnvironmentId = &v
+	return s
+}
+
+// Use this parameter to configure client-side evaluation for your project.
+// Client-side evaluation allows your application to assign variations to user
+// sessions locally instead of by calling the EvaluateFeature (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html)
+// operation to assign the variations. This mitigates the latency and availability
+// risks that come with an API call.
+//
+// ProjectAppConfigResource is a structure that defines the configuration of
+// how your application integrates with AppConfig to run client-side evaluation.
+type ProjectAppConfigResourceConfig struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the AppConfig application to use for client-side evaluation.
+	ApplicationId *string `locationName:"applicationId" type:"string"`
+
+	// The ID of the AppConfig environment to use for client-side evaluation. This
+	// must be an environment that is within the application that you specify for
+	// applicationId.
+	EnvironmentId *string `locationName:"environmentId" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ProjectAppConfigResourceConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ProjectAppConfigResourceConfig) GoString() string {
+	return s.String()
+}
+
+// SetApplicationId sets the ApplicationId field's value.
+func (s *ProjectAppConfigResourceConfig) SetApplicationId(v string) *ProjectAppConfigResourceConfig {
+	s.ApplicationId = &v
+	return s
+}
+
+// SetEnvironmentId sets the EnvironmentId field's value.
+func (s *ProjectAppConfigResourceConfig) SetEnvironmentId(v string) *ProjectAppConfigResourceConfig {
+	s.EnvironmentId = &v
 	return s
 }
 
@@ -8486,6 +9853,98 @@ func (s *PutProjectEventsResultEntry) SetEventId(v string) *PutProjectEventsResu
 	return s
 }
 
+// A structure that contains information about one experiment or launch that
+// uses the specified segment.
+type RefResource struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the experiment or launch.
+	Arn *string `locationName:"arn" type:"string"`
+
+	// The day and time that this experiment or launch ended.
+	EndTime *string `locationName:"endTime" type:"string"`
+
+	// The day and time that this experiment or launch was most recently updated.
+	LastUpdatedOn *string `locationName:"lastUpdatedOn" type:"string"`
+
+	// The name of the experiment or launch.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" type:"string" required:"true"`
+
+	// The day and time that this experiment or launch started.
+	StartTime *string `locationName:"startTime" type:"string"`
+
+	// The status of the experiment or launch.
+	Status *string `locationName:"status" type:"string"`
+
+	// Specifies whether the resource that this structure contains information about
+	// is an experiment or a launch.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RefResource) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RefResource) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *RefResource) SetArn(v string) *RefResource {
+	s.Arn = &v
+	return s
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *RefResource) SetEndTime(v string) *RefResource {
+	s.EndTime = &v
+	return s
+}
+
+// SetLastUpdatedOn sets the LastUpdatedOn field's value.
+func (s *RefResource) SetLastUpdatedOn(v string) *RefResource {
+	s.LastUpdatedOn = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *RefResource) SetName(v string) *RefResource {
+	s.Name = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *RefResource) SetStartTime(v string) *RefResource {
+	s.StartTime = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *RefResource) SetStatus(v string) *RefResource {
+	s.Status = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *RefResource) SetType(v string) *RefResource {
+	s.Type = &v
+	return s
+}
+
 // The request references a resource that does not exist.
 type ResourceNotFoundException struct {
 	_            struct{}                  `type:"structure"`
@@ -8665,7 +10124,26 @@ type ScheduledSplit struct {
 	// step of a launch. This is a set of key-value pairs. The keys are variation
 	// names. The values represent the percentage of traffic to allocate to that
 	// variation during this step.
+	//
+	// The values is expressed in thousandths of a percent, so assigning a weight
+	// of 50000 assigns 50% of traffic to that variation.
+	//
+	// If the sum of the weights for all the variations in a segment override does
+	// not add up to 100,000, then the remaining traffic that matches this segment
+	// is not assigned by this segment override, and instead moves on to the next
+	// segment override or the default traffic split.
 	GroupWeights map[string]*int64 `locationName:"groupWeights" type:"map"`
+
+	// Use this parameter to specify different traffic splits for one or more audience
+	// segments. A segment is a portion of your audience that share one or more
+	// characteristics. Examples could be Chrome browser users, users in Europe,
+	// or Firefox browser users in Europe who also fit other criteria that your
+	// application collects, such as age.
+	//
+	// This parameter is an array of up to six segment override objects. Each of
+	// these objects specifies a segment that you have already created, and defines
+	// the traffic split for that segment.
+	SegmentOverrides []*SegmentOverride `locationName:"segmentOverrides" type:"list"`
 
 	// The date and time that this step of the launch starts.
 	//
@@ -8697,6 +10175,12 @@ func (s *ScheduledSplit) SetGroupWeights(v map[string]*int64) *ScheduledSplit {
 	return s
 }
 
+// SetSegmentOverrides sets the SegmentOverrides field's value.
+func (s *ScheduledSplit) SetSegmentOverrides(v []*SegmentOverride) *ScheduledSplit {
+	s.SegmentOverrides = v
+	return s
+}
+
 // SetStartTime sets the StartTime field's value.
 func (s *ScheduledSplit) SetStartTime(v time.Time) *ScheduledSplit {
 	s.StartTime = &v
@@ -8713,8 +10197,27 @@ type ScheduledSplitConfig struct {
 	// names. The values represent the percentage of traffic to allocate to that
 	// variation during this step.
 	//
+	// The values is expressed in thousandths of a percent, so assigning a weight
+	// of 50000 assigns 50% of traffic to that variation.
+	//
+	// If the sum of the weights for all the variations in a segment override does
+	// not add up to 100,000, then the remaining traffic that matches this segment
+	// is not assigned by this segment override, and instead moves on to the next
+	// segment override or the default traffic split.
+	//
 	// GroupWeights is a required field
 	GroupWeights map[string]*int64 `locationName:"groupWeights" type:"map" required:"true"`
+
+	// Use this parameter to specify different traffic splits for one or more audience
+	// segments. A segment is a portion of your audience that share one or more
+	// characteristics. Examples could be Chrome browser users, users in Europe,
+	// or Firefox browser users in Europe who also fit other criteria that your
+	// application collects, such as age.
+	//
+	// This parameter is an array of up to six segment override objects. Each of
+	// these objects specifies a segment that you have already created, and defines
+	// the traffic split for that segment.
+	SegmentOverrides []*SegmentOverride `locationName:"segmentOverrides" type:"list"`
 
 	// The date and time that this step of the launch starts.
 	//
@@ -8749,6 +10252,16 @@ func (s *ScheduledSplitConfig) Validate() error {
 	if s.StartTime == nil {
 		invalidParams.Add(request.NewErrParamRequired("StartTime"))
 	}
+	if s.SegmentOverrides != nil {
+		for i, v := range s.SegmentOverrides {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "SegmentOverrides", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -8759,6 +10272,12 @@ func (s *ScheduledSplitConfig) Validate() error {
 // SetGroupWeights sets the GroupWeights field's value.
 func (s *ScheduledSplitConfig) SetGroupWeights(v map[string]*int64) *ScheduledSplitConfig {
 	s.GroupWeights = v
+	return s
+}
+
+// SetSegmentOverrides sets the SegmentOverrides field's value.
+func (s *ScheduledSplitConfig) SetSegmentOverrides(v []*SegmentOverride) *ScheduledSplitConfig {
+	s.SegmentOverrides = v
 	return s
 }
 
@@ -8865,6 +10384,208 @@ func (s ScheduledSplitsLaunchDefinition) GoString() string {
 // SetSteps sets the Steps field's value.
 func (s *ScheduledSplitsLaunchDefinition) SetSteps(v []*ScheduledSplit) *ScheduledSplitsLaunchDefinition {
 	s.Steps = v
+	return s
+}
+
+// This structure contains information about one audience segment. You can use
+// segments in your experiments and launches to narrow the user sessions used
+// for experiment or launch to only the user sessions that match one or more
+// criteria.
+type Segment struct {
+	_ struct{} `type:"structure"`
+
+	// The ARN of the segment.
+	//
+	// Arn is a required field
+	Arn *string `locationName:"arn" type:"string" required:"true"`
+
+	// The date and time that this segment was created.
+	//
+	// CreatedTime is a required field
+	CreatedTime *time.Time `locationName:"createdTime" type:"timestamp" required:"true"`
+
+	// The customer-created description for this segment.
+	Description *string `locationName:"description" type:"string"`
+
+	// The number of experiments that this segment is used in. This count includes
+	// all current experiments, not just those that are currently running.
+	ExperimentCount *int64 `locationName:"experimentCount" type:"long"`
+
+	// The date and time that this segment was most recently updated.
+	//
+	// LastUpdatedTime is a required field
+	LastUpdatedTime *time.Time `locationName:"lastUpdatedTime" type:"timestamp" required:"true"`
+
+	// The number of launches that this segment is used in. This count includes
+	// all current launches, not just those that are currently running.
+	LaunchCount *int64 `locationName:"launchCount" type:"long"`
+
+	// The name of the segment.
+	//
+	// Name is a required field
+	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The pattern that defines the attributes to use to evalute whether a user
+	// session will be in the segment. For more information about the pattern syntax,
+	// see Segment rule pattern syntax (https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch-Evidently-segments.html).
+	//
+	// Pattern is a required field
+	Pattern *string `locationName:"pattern" min:"1" type:"string" required:"true"`
+
+	// The list of tag keys and values associated with this launch.
+	Tags map[string]*string `locationName:"tags" type:"map"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Segment) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s Segment) GoString() string {
+	return s.String()
+}
+
+// SetArn sets the Arn field's value.
+func (s *Segment) SetArn(v string) *Segment {
+	s.Arn = &v
+	return s
+}
+
+// SetCreatedTime sets the CreatedTime field's value.
+func (s *Segment) SetCreatedTime(v time.Time) *Segment {
+	s.CreatedTime = &v
+	return s
+}
+
+// SetDescription sets the Description field's value.
+func (s *Segment) SetDescription(v string) *Segment {
+	s.Description = &v
+	return s
+}
+
+// SetExperimentCount sets the ExperimentCount field's value.
+func (s *Segment) SetExperimentCount(v int64) *Segment {
+	s.ExperimentCount = &v
+	return s
+}
+
+// SetLastUpdatedTime sets the LastUpdatedTime field's value.
+func (s *Segment) SetLastUpdatedTime(v time.Time) *Segment {
+	s.LastUpdatedTime = &v
+	return s
+}
+
+// SetLaunchCount sets the LaunchCount field's value.
+func (s *Segment) SetLaunchCount(v int64) *Segment {
+	s.LaunchCount = &v
+	return s
+}
+
+// SetName sets the Name field's value.
+func (s *Segment) SetName(v string) *Segment {
+	s.Name = &v
+	return s
+}
+
+// SetPattern sets the Pattern field's value.
+func (s *Segment) SetPattern(v string) *Segment {
+	s.Pattern = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *Segment) SetTags(v map[string]*string) *Segment {
+	s.Tags = v
+	return s
+}
+
+// This structure specifies a segment that you have already created, and defines
+// the traffic split for that segment to be used in a launch.
+type SegmentOverride struct {
+	_ struct{} `type:"structure"`
+
+	// A number indicating the order to use to evaluate segment overrides, if there
+	// are more than one. Segment overrides with lower numbers are evaluated first.
+	//
+	// EvaluationOrder is a required field
+	EvaluationOrder *int64 `locationName:"evaluationOrder" type:"long" required:"true"`
+
+	// The ARN of the segment to use.
+	//
+	// Segment is a required field
+	Segment *string `locationName:"segment" type:"string" required:"true"`
+
+	// The traffic allocation percentages among the feature variations to assign
+	// to this segment. This is a set of key-value pairs. The keys are variation
+	// names. The values represent the amount of traffic to allocate to that variation
+	// for this segment. This is expressed in thousandths of a percent, so a weight
+	// of 50000 represents 50% of traffic.
+	//
+	// Weights is a required field
+	Weights map[string]*int64 `locationName:"weights" type:"map" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SegmentOverride) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SegmentOverride) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *SegmentOverride) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "SegmentOverride"}
+	if s.EvaluationOrder == nil {
+		invalidParams.Add(request.NewErrParamRequired("EvaluationOrder"))
+	}
+	if s.Segment == nil {
+		invalidParams.Add(request.NewErrParamRequired("Segment"))
+	}
+	if s.Weights == nil {
+		invalidParams.Add(request.NewErrParamRequired("Weights"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetEvaluationOrder sets the EvaluationOrder field's value.
+func (s *SegmentOverride) SetEvaluationOrder(v int64) *SegmentOverride {
+	s.EvaluationOrder = &v
+	return s
+}
+
+// SetSegment sets the Segment field's value.
+func (s *SegmentOverride) SetSegment(v string) *SegmentOverride {
+	s.Segment = &v
+	return s
+}
+
+// SetWeights sets the Weights field's value.
+func (s *SegmentOverride) SetWeights(v map[string]*int64) *SegmentOverride {
+	s.Weights = v
 	return s
 }
 
@@ -9537,6 +11258,102 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
+type TestSegmentPatternInput struct {
+	_ struct{} `type:"structure"`
+
+	// The pattern to test.
+	//
+	// Pattern is a required field
+	Pattern *string `locationName:"pattern" min:"1" type:"string" required:"true"`
+
+	// A sample evaluationContext JSON block to test against the specified pattern.
+	//
+	// Payload is a required field
+	Payload *string `locationName:"payload" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TestSegmentPatternInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TestSegmentPatternInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *TestSegmentPatternInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "TestSegmentPatternInput"}
+	if s.Pattern == nil {
+		invalidParams.Add(request.NewErrParamRequired("Pattern"))
+	}
+	if s.Pattern != nil && len(*s.Pattern) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Pattern", 1))
+	}
+	if s.Payload == nil {
+		invalidParams.Add(request.NewErrParamRequired("Payload"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetPattern sets the Pattern field's value.
+func (s *TestSegmentPatternInput) SetPattern(v string) *TestSegmentPatternInput {
+	s.Pattern = &v
+	return s
+}
+
+// SetPayload sets the Payload field's value.
+func (s *TestSegmentPatternInput) SetPayload(v string) *TestSegmentPatternInput {
+	s.Payload = &v
+	return s
+}
+
+type TestSegmentPatternOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Returns true if the pattern matches the payload.
+	//
+	// Match is a required field
+	Match *bool `locationName:"match" type:"boolean" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TestSegmentPatternOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s TestSegmentPatternOutput) GoString() string {
+	return s.String()
+}
+
+// SetMatch sets the Match field's value.
+func (s *TestSegmentPatternOutput) SetMatch(v bool) *TestSegmentPatternOutput {
+	s.Match = &v
+	return s
+}
+
 // The request was denied because of request throttling. Retry the request.
 type ThrottlingException struct {
 	_            struct{}                  `type:"structure"`
@@ -9874,6 +11691,10 @@ type UpdateExperimentInput struct {
 	// randomizationSalt.
 	RandomizationSalt *string `locationName:"randomizationSalt" type:"string"`
 
+	// Removes a segment from being used in an experiment. You can't use this parameter
+	// if the experiment is currently running.
+	RemoveSegment *bool `locationName:"removeSegment" type:"boolean"`
+
 	// The portion of the available audience that you want to allocate to this experiment,
 	// in thousandths of a percent. The available audience is the total audience
 	// minus the audience that you have allocated to overrides or current launches
@@ -9882,6 +11703,11 @@ type UpdateExperimentInput struct {
 	// This is represented in thousandths of a percent. For example, specify 20,000
 	// to allocate 20% of the available audience.
 	SamplingRate *int64 `locationName:"samplingRate" type:"long"`
+
+	// Adds an audience segment to an experiment. When a segment is used in an experiment,
+	// only user sessions that match the segment pattern are used in the experiment.
+	// You can't use this parameter if the experiment is currently running.
+	Segment *string `locationName:"segment" type:"string"`
 
 	// An array of structures that define the variations being tested in the experiment.
 	Treatments []*TreatmentConfig `locationName:"treatments" type:"list"`
@@ -9991,9 +11817,21 @@ func (s *UpdateExperimentInput) SetRandomizationSalt(v string) *UpdateExperiment
 	return s
 }
 
+// SetRemoveSegment sets the RemoveSegment field's value.
+func (s *UpdateExperimentInput) SetRemoveSegment(v bool) *UpdateExperimentInput {
+	s.RemoveSegment = &v
+	return s
+}
+
 // SetSamplingRate sets the SamplingRate field's value.
 func (s *UpdateExperimentInput) SetSamplingRate(v int64) *UpdateExperimentInput {
 	s.SamplingRate = &v
+	return s
+}
+
+// SetSegment sets the Segment field's value.
+func (s *UpdateExperimentInput) SetSegment(v string) *UpdateExperimentInput {
+	s.Segment = &v
 	return s
 }
 
@@ -10059,6 +11897,9 @@ type UpdateFeatureInput struct {
 	// Each user is specified by a key-value pair . For each key, specify a user
 	// by entering their user ID, account ID, or some other identifier. For the
 	// value, specify the name of the variation that they are to be served.
+	//
+	// This parameter is limited to 2500 overrides or a total of 40KB. The 40KB
+	// limit includes an overhead of 6 bytes per override.
 	EntityOverrides map[string]*string `locationName:"entityOverrides" type:"map"`
 
 	// Specify ALL_RULES to activate the traffic allocation specified by any ongoing
@@ -10516,6 +12357,16 @@ func (s *UpdateProjectDataDeliveryOutput) SetProject(v *Project) *UpdateProjectD
 type UpdateProjectInput struct {
 	_ struct{} `type:"structure"`
 
+	// Use this parameter if the project will use client-side evaluation powered
+	// by AppConfig. Client-side evaluation allows your application to assign variations
+	// to user sessions locally instead of by calling the EvaluateFeature (https://docs.aws.amazon.com/cloudwatchevidently/latest/APIReference/API_EvaluateFeature.html)
+	// operation. This mitigates the latency and availability risks that come with
+	// an API call. allows you to
+	//
+	// This parameter is a structure that contains information about the AppConfig
+	// application that will be used for client-side evaluation.
+	AppConfigResource *ProjectAppConfigResourceConfig `locationName:"appConfigResource" type:"structure"`
+
 	// An optional description of the project.
 	Description *string `locationName:"description" type:"string"`
 
@@ -10557,6 +12408,12 @@ func (s *UpdateProjectInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAppConfigResource sets the AppConfigResource field's value.
+func (s *UpdateProjectInput) SetAppConfigResource(v *ProjectAppConfigResourceConfig) *UpdateProjectInput {
+	s.AppConfigResource = v
+	return s
 }
 
 // SetDescription sets the Description field's value.
@@ -11173,6 +13030,22 @@ func ProjectStatus_Values() []string {
 	return []string{
 		ProjectStatusAvailable,
 		ProjectStatusUpdating,
+	}
+}
+
+const (
+	// SegmentReferenceResourceTypeExperiment is a SegmentReferenceResourceType enum value
+	SegmentReferenceResourceTypeExperiment = "EXPERIMENT"
+
+	// SegmentReferenceResourceTypeLaunch is a SegmentReferenceResourceType enum value
+	SegmentReferenceResourceTypeLaunch = "LAUNCH"
+)
+
+// SegmentReferenceResourceType_Values returns all elements of the SegmentReferenceResourceType enum
+func SegmentReferenceResourceType_Values() []string {
+	return []string{
+		SegmentReferenceResourceTypeExperiment,
+		SegmentReferenceResourceTypeLaunch,
 	}
 }
 

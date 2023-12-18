@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Managed Blockchain.
 //	func myFunc(svc managedblockchainiface.ManagedBlockchainAPI) bool {
-//	    // Make svc.CreateMember request
+//	    // Make svc.CreateAccessor request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockManagedBlockchainClient struct {
 //	    managedblockchainiface.ManagedBlockchainAPI
 //	}
-//	func (m *mockManagedBlockchainClient) CreateMember(input *managedblockchain.CreateMemberInput) (*managedblockchain.CreateMemberOutput, error) {
+//	func (m *mockManagedBlockchainClient) CreateAccessor(input *managedblockchain.CreateAccessorInput) (*managedblockchain.CreateAccessorOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type ManagedBlockchainAPI interface {
+	CreateAccessor(*managedblockchain.CreateAccessorInput) (*managedblockchain.CreateAccessorOutput, error)
+	CreateAccessorWithContext(aws.Context, *managedblockchain.CreateAccessorInput, ...request.Option) (*managedblockchain.CreateAccessorOutput, error)
+	CreateAccessorRequest(*managedblockchain.CreateAccessorInput) (*request.Request, *managedblockchain.CreateAccessorOutput)
+
 	CreateMember(*managedblockchain.CreateMemberInput) (*managedblockchain.CreateMemberOutput, error)
 	CreateMemberWithContext(aws.Context, *managedblockchain.CreateMemberInput, ...request.Option) (*managedblockchain.CreateMemberOutput, error)
 	CreateMemberRequest(*managedblockchain.CreateMemberInput) (*request.Request, *managedblockchain.CreateMemberOutput)
@@ -76,6 +80,10 @@ type ManagedBlockchainAPI interface {
 	CreateProposalWithContext(aws.Context, *managedblockchain.CreateProposalInput, ...request.Option) (*managedblockchain.CreateProposalOutput, error)
 	CreateProposalRequest(*managedblockchain.CreateProposalInput) (*request.Request, *managedblockchain.CreateProposalOutput)
 
+	DeleteAccessor(*managedblockchain.DeleteAccessorInput) (*managedblockchain.DeleteAccessorOutput, error)
+	DeleteAccessorWithContext(aws.Context, *managedblockchain.DeleteAccessorInput, ...request.Option) (*managedblockchain.DeleteAccessorOutput, error)
+	DeleteAccessorRequest(*managedblockchain.DeleteAccessorInput) (*request.Request, *managedblockchain.DeleteAccessorOutput)
+
 	DeleteMember(*managedblockchain.DeleteMemberInput) (*managedblockchain.DeleteMemberOutput, error)
 	DeleteMemberWithContext(aws.Context, *managedblockchain.DeleteMemberInput, ...request.Option) (*managedblockchain.DeleteMemberOutput, error)
 	DeleteMemberRequest(*managedblockchain.DeleteMemberInput) (*request.Request, *managedblockchain.DeleteMemberOutput)
@@ -83,6 +91,10 @@ type ManagedBlockchainAPI interface {
 	DeleteNode(*managedblockchain.DeleteNodeInput) (*managedblockchain.DeleteNodeOutput, error)
 	DeleteNodeWithContext(aws.Context, *managedblockchain.DeleteNodeInput, ...request.Option) (*managedblockchain.DeleteNodeOutput, error)
 	DeleteNodeRequest(*managedblockchain.DeleteNodeInput) (*request.Request, *managedblockchain.DeleteNodeOutput)
+
+	GetAccessor(*managedblockchain.GetAccessorInput) (*managedblockchain.GetAccessorOutput, error)
+	GetAccessorWithContext(aws.Context, *managedblockchain.GetAccessorInput, ...request.Option) (*managedblockchain.GetAccessorOutput, error)
+	GetAccessorRequest(*managedblockchain.GetAccessorInput) (*request.Request, *managedblockchain.GetAccessorOutput)
 
 	GetMember(*managedblockchain.GetMemberInput) (*managedblockchain.GetMemberOutput, error)
 	GetMemberWithContext(aws.Context, *managedblockchain.GetMemberInput, ...request.Option) (*managedblockchain.GetMemberOutput, error)
@@ -99,6 +111,13 @@ type ManagedBlockchainAPI interface {
 	GetProposal(*managedblockchain.GetProposalInput) (*managedblockchain.GetProposalOutput, error)
 	GetProposalWithContext(aws.Context, *managedblockchain.GetProposalInput, ...request.Option) (*managedblockchain.GetProposalOutput, error)
 	GetProposalRequest(*managedblockchain.GetProposalInput) (*request.Request, *managedblockchain.GetProposalOutput)
+
+	ListAccessors(*managedblockchain.ListAccessorsInput) (*managedblockchain.ListAccessorsOutput, error)
+	ListAccessorsWithContext(aws.Context, *managedblockchain.ListAccessorsInput, ...request.Option) (*managedblockchain.ListAccessorsOutput, error)
+	ListAccessorsRequest(*managedblockchain.ListAccessorsInput) (*request.Request, *managedblockchain.ListAccessorsOutput)
+
+	ListAccessorsPages(*managedblockchain.ListAccessorsInput, func(*managedblockchain.ListAccessorsOutput, bool) bool) error
+	ListAccessorsPagesWithContext(aws.Context, *managedblockchain.ListAccessorsInput, func(*managedblockchain.ListAccessorsOutput, bool) bool, ...request.Option) error
 
 	ListInvitations(*managedblockchain.ListInvitationsInput) (*managedblockchain.ListInvitationsOutput, error)
 	ListInvitationsWithContext(aws.Context, *managedblockchain.ListInvitationsInput, ...request.Option) (*managedblockchain.ListInvitationsOutput, error)

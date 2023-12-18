@@ -24,6 +24,9 @@ type Loader struct {
 	// Allows ignoring API models that are unsupported by the SDK without
 	// failing the load of other supported APIs.
 	IgnoreUnsupportedAPIs bool
+
+	// Set to true to strictly enforce usage of the serviceId for the package naming
+	StrictServiceId bool
 }
 
 // Load loads the API model files from disk returning the map of API package.
@@ -33,6 +36,7 @@ func (l Loader) Load(modelPaths []string) (APIs, error) {
 	for _, modelPath := range modelPaths {
 		a, err := loadAPI(modelPath, l.BaseImport, func(a *API) {
 			a.IgnoreUnsupportedAPIs = l.IgnoreUnsupportedAPIs
+			a.StrictServiceId = l.StrictServiceId
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to load API, %v, %v", modelPath, err)
@@ -66,6 +70,10 @@ func loadAPI(modelPath, baseImport string, opts ...func(*API)) (*API, error) {
 		BaseCrosslinkURL: "https://docs.aws.amazon.com",
 	}
 
+	for _, opt := range opts {
+		opt(a)
+	}
+
 	modelFile := filepath.Base(modelPath)
 	modelDir := filepath.Dir(modelPath)
 	err := attachModelFiles(modelDir,
@@ -78,10 +86,6 @@ func loadAPI(modelPath, baseImport string, opts ...func(*API)) (*API, error) {
 	)
 	if err != nil {
 		return nil, err
-	}
-
-	for _, opt := range opts {
-		opt(a)
 	}
 
 	if err = a.Setup(); err != nil {
@@ -119,11 +123,11 @@ func attachModelFiles(modelPath string, modelFiles ...modelLoader) error {
 // pattern passed in. Returns the path of the model file to be loaded. Includes
 // all versions of a service model.
 //
-//	e.g:
-//	models/apis/*/*/api-2.json
+//   e.g:
+//   models/apis/*/*/api-2.json
 //
-//	Or with specific model file:
-//	models/apis/service/version/api-2.json
+//   Or with specific model file:
+//   models/apis/service/version/api-2.json
 func ExpandModelGlobPath(globs ...string) ([]string, error) {
 	modelPaths := []string{}
 
@@ -146,7 +150,7 @@ func ExpandModelGlobPath(globs ...string) ([]string, error) {
 // Uses the third from last path element to determine unique service. Only one
 // service version will be included.
 //
-//	models/apis/service/version/api-2.json
+//   models/apis/service/version/api-2.json
 func TrimModelServiceVersions(modelPaths []string) (include, exclude []string) {
 	sort.Strings(modelPaths)
 

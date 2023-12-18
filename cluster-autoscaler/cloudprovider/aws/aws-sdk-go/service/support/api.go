@@ -64,7 +64,7 @@ func (c *Support) AddAttachmentsToSetRequest(input *AddAttachmentsToSetInput) (r
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -170,7 +170,7 @@ func (c *Support) AddCommunicationToCaseRequest(input *AddCommunicationToCaseInp
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -288,7 +288,7 @@ func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Reques
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -389,7 +389,7 @@ func (c *Support) DescribeAttachmentRequest(input *DescribeAttachmentInput) (req
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -503,7 +503,7 @@ func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -659,7 +659,7 @@ func (c *Support) DescribeCommunicationsRequest(input *DescribeCommunicationsInp
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -751,6 +751,99 @@ func (c *Support) DescribeCommunicationsPagesWithContext(ctx aws.Context, input 
 	return p.Err()
 }
 
+const opDescribeCreateCaseOptions = "DescribeCreateCaseOptions"
+
+// DescribeCreateCaseOptionsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeCreateCaseOptions operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeCreateCaseOptions for more information on using the DescribeCreateCaseOptions
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeCreateCaseOptionsRequest method.
+//	req, resp := client.DescribeCreateCaseOptionsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeCreateCaseOptions
+func (c *Support) DescribeCreateCaseOptionsRequest(input *DescribeCreateCaseOptionsInput) (req *request.Request, output *DescribeCreateCaseOptionsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeCreateCaseOptions,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeCreateCaseOptionsInput{}
+	}
+
+	output = &DescribeCreateCaseOptionsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeCreateCaseOptions API operation for AWS Support.
+//
+// Returns a list of CreateCaseOption types along with the corresponding supported
+// hours and language availability. You can specify the language categoryCode,
+// issueType and serviceCode used to retrieve the CreateCaseOptions.
+//
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
+//
+//   - If you call the Amazon Web Services Support API from an account that
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeCreateCaseOptions for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerError
+//     An internal server error occurred.
+//
+//   - ThrottlingException
+//     You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+//     operations.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeCreateCaseOptions
+func (c *Support) DescribeCreateCaseOptions(input *DescribeCreateCaseOptionsInput) (*DescribeCreateCaseOptionsOutput, error) {
+	req, out := c.DescribeCreateCaseOptionsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeCreateCaseOptionsWithContext is the same as DescribeCreateCaseOptions with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeCreateCaseOptions for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Support) DescribeCreateCaseOptionsWithContext(ctx aws.Context, input *DescribeCreateCaseOptionsInput, opts ...request.Option) (*DescribeCreateCaseOptionsOutput, error) {
+	req, out := c.DescribeCreateCaseOptionsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opDescribeServices = "DescribeServices"
 
 // DescribeServicesRequest generates a "aws/request.Request" representing the
@@ -811,7 +904,7 @@ func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -899,7 +992,7 @@ func (c *Support) DescribeSeverityLevelsRequest(input *DescribeSeverityLevelsInp
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -931,6 +1024,99 @@ func (c *Support) DescribeSeverityLevels(input *DescribeSeverityLevelsInput) (*D
 // for more information on using Contexts.
 func (c *Support) DescribeSeverityLevelsWithContext(ctx aws.Context, input *DescribeSeverityLevelsInput, opts ...request.Option) (*DescribeSeverityLevelsOutput, error) {
 	req, out := c.DescribeSeverityLevelsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDescribeSupportedLanguages = "DescribeSupportedLanguages"
+
+// DescribeSupportedLanguagesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeSupportedLanguages operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeSupportedLanguages for more information on using the DescribeSupportedLanguages
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeSupportedLanguagesRequest method.
+//	req, resp := client.DescribeSupportedLanguagesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeSupportedLanguages
+func (c *Support) DescribeSupportedLanguagesRequest(input *DescribeSupportedLanguagesInput) (req *request.Request, output *DescribeSupportedLanguagesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeSupportedLanguages,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DescribeSupportedLanguagesInput{}
+	}
+
+	output = &DescribeSupportedLanguagesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeSupportedLanguages API operation for AWS Support.
+//
+// Returns a list of supported languages for a specified categoryCode, issueType
+// and serviceCode. The returned supported languages will include a ISO 639-1
+// code for the language, and the language display name.
+//
+//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
+//     plan to use the Amazon Web Services Support API.
+//
+//   - If you call the Amazon Web Services Support API from an account that
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     the SubscriptionRequiredException error message appears. For information
+//     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Support's
+// API operation DescribeSupportedLanguages for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerError
+//     An internal server error occurred.
+//
+//   - ThrottlingException
+//     You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+//     operations.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeSupportedLanguages
+func (c *Support) DescribeSupportedLanguages(input *DescribeSupportedLanguagesInput) (*DescribeSupportedLanguagesOutput, error) {
+	req, out := c.DescribeSupportedLanguagesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeSupportedLanguagesWithContext is the same as DescribeSupportedLanguages with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeSupportedLanguages for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Support) DescribeSupportedLanguagesWithContext(ctx aws.Context, input *DescribeSupportedLanguagesInput, opts ...request.Option) (*DescribeSupportedLanguagesOutput, error) {
+	req, out := c.DescribeSupportedLanguagesRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -992,9 +1178,16 @@ func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *Descr
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//
+// To call the Trusted Advisor operations in the Amazon Web Services Support
+// API, you must use the US East (N. Virginia) endpoint. Currently, the US West
+// (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor
+// operations. For more information, see About the Amazon Web Services Support
+// API (https://docs.aws.amazon.com/awssupport/latest/user/about-support-api.html#endpoint)
+// in the Amazon Web Services Support User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1004,8 +1197,13 @@ func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *Descr
 // API operation DescribeTrustedAdvisorCheckRefreshStatuses for usage and error information.
 //
 // Returned Error Types:
+//
 //   - InternalServerError
 //     An internal server error occurred.
+//
+//   - ThrottlingException
+//     You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+//     operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckRefreshStatuses
 func (c *Support) DescribeTrustedAdvisorCheckRefreshStatuses(input *DescribeTrustedAdvisorCheckRefreshStatusesInput) (*DescribeTrustedAdvisorCheckRefreshStatusesOutput, error) {
@@ -1098,9 +1296,16 @@ func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTruste
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//
+// To call the Trusted Advisor operations in the Amazon Web Services Support
+// API, you must use the US East (N. Virginia) endpoint. Currently, the US West
+// (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor
+// operations. For more information, see About the Amazon Web Services Support
+// API (https://docs.aws.amazon.com/awssupport/latest/user/about-support-api.html#endpoint)
+// in the Amazon Web Services Support User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1110,8 +1315,13 @@ func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTruste
 // API operation DescribeTrustedAdvisorCheckResult for usage and error information.
 //
 // Returned Error Types:
+//
 //   - InternalServerError
 //     An internal server error occurred.
+//
+//   - ThrottlingException
+//     You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+//     operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckResult
 func (c *Support) DescribeTrustedAdvisorCheckResult(input *DescribeTrustedAdvisorCheckResultInput) (*DescribeTrustedAdvisorCheckResultOutput, error) {
@@ -1188,9 +1398,16 @@ func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTru
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//
+// To call the Trusted Advisor operations in the Amazon Web Services Support
+// API, you must use the US East (N. Virginia) endpoint. Currently, the US West
+// (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor
+// operations. For more information, see About the Amazon Web Services Support
+// API (https://docs.aws.amazon.com/awssupport/latest/user/about-support-api.html#endpoint)
+// in the Amazon Web Services Support User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1200,8 +1417,13 @@ func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTru
 // API operation DescribeTrustedAdvisorCheckSummaries for usage and error information.
 //
 // Returned Error Types:
+//
 //   - InternalServerError
 //     An internal server error occurred.
+//
+//   - ThrottlingException
+//     You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+//     operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorCheckSummaries
 func (c *Support) DescribeTrustedAdvisorCheckSummaries(input *DescribeTrustedAdvisorCheckSummariesInput) (*DescribeTrustedAdvisorCheckSummariesOutput, error) {
@@ -1270,21 +1492,29 @@ func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvi
 //
 // Returns information about all available Trusted Advisor checks, including
 // the name, ID, category, description, and metadata. You must specify a language
-// code. The Amazon Web Services Support API currently supports English ("en")
-// and Japanese ("ja"). The response contains a TrustedAdvisorCheckDescription
-// object for each check. You must set the Amazon Web Services Region to us-east-1.
+// code.
+//
+// The response contains a TrustedAdvisorCheckDescription object for each check.
+// You must set the Amazon Web Services Region to us-east-1.
 //
 //   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
 //   - The names and descriptions for Trusted Advisor checks are subject to
 //     change. We recommend that you specify the check ID in your code to uniquely
 //     identify a check.
+//
+// To call the Trusted Advisor operations in the Amazon Web Services Support
+// API, you must use the US East (N. Virginia) endpoint. Currently, the US West
+// (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor
+// operations. For more information, see About the Amazon Web Services Support
+// API (https://docs.aws.amazon.com/awssupport/latest/user/about-support-api.html#endpoint)
+// in the Amazon Web Services Support User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1294,8 +1524,13 @@ func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvi
 // API operation DescribeTrustedAdvisorChecks for usage and error information.
 //
 // Returned Error Types:
+//
 //   - InternalServerError
 //     An internal server error occurred.
+//
+//   - ThrottlingException
+//     You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+//     operations.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/support-2013-04-15/DescribeTrustedAdvisorChecks
 func (c *Support) DescribeTrustedAdvisorChecks(input *DescribeTrustedAdvisorChecksInput) (*DescribeTrustedAdvisorChecksOutput, error) {
@@ -1374,9 +1609,16 @@ func (c *Support) RefreshTrustedAdvisorCheckRequest(input *RefreshTrustedAdvisor
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
+//
+// To call the Trusted Advisor operations in the Amazon Web Services Support
+// API, you must use the US East (N. Virginia) endpoint. Currently, the US West
+// (Oregon) and Europe (Ireland) endpoints don't support the Trusted Advisor
+// operations. For more information, see About the Amazon Web Services Support
+// API (https://docs.aws.amazon.com/awssupport/latest/user/about-support-api.html#endpoint)
+// in the Amazon Web Services Support User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1461,7 +1703,7 @@ func (c *Support) ResolveCaseRequest(input *ResolveCaseInput) (req *request.Requ
 //     plan to use the Amazon Web Services Support API.
 //
 //   - If you call the Amazon Web Services Support API from an account that
-//     does not have a Business, Enterprise On-Ramp, or Enterprise Support plan,
+//     doesn't have a Business, Enterprise On-Ramp, or Enterprise Support plan,
 //     the SubscriptionRequiredException error message appears. For information
 //     about changing your support plan, see Amazon Web Services Support (http://aws.amazon.com/premiumsupport/).
 //
@@ -2218,10 +2460,11 @@ func (s *CaseCreationLimitExceeded) RequestID() string {
 //   - displayId - The identifier for the case on pages in the Amazon Web Services
 //     Support Center.
 //
-//   - language - The ISO 639-1 code for the language in which Amazon Web Services
-//     provides support. Amazon Web Services Support currently supports English
-//     ("en") and Japanese ("ja"). Language parameters must be passed explicitly
-//     for operations that take them.
+//   - language - The language in which Amazon Web Services Support handles
+//     the case. Amazon Web Services Support currently supports Chinese (“zh”),
+//     English ("en"), Japanese ("ja") and Korean (“ko”). You must specify
+//     the ISO 639-1 code for the language parameter if you want support in that
+//     language.
 //
 //   - nextToken - A resumption point for pagination.
 //
@@ -2261,10 +2504,10 @@ type CaseDetails struct {
 	// This is a numeric string.
 	DisplayId *string `locationName:"displayId" type:"string"`
 
-	// The ISO 639-1 code for the language in which Amazon Web Services provides
-	// support. Amazon Web Services Support currently supports English ("en") and
-	// Japanese ("ja"). Language parameters must be passed explicitly for operations
-	// that take them.
+	// The language in which Amazon Web Services Support handles the case. Amazon
+	// Web Services Support currently supports Chinese (“zh”), English ("en"),
+	// Japanese ("ja") and Korean (“ko”). You must specify the ISO 639-1 code
+	// for the language parameter if you want support in that language.
 	Language *string `locationName:"language" type:"string"`
 
 	// The five most recent communications between you and Amazon Web Services Support
@@ -2522,9 +2765,9 @@ type Communication struct {
 	CaseId *string `locationName:"caseId" type:"string"`
 
 	// The identity of the account that submitted, or responded to, the support
-	// case. Customer entries include the role or IAM user as well as the email
-	// address. For example, "AdminRole (Role) <janedoe@example.com>. Entries from
-	// the Amazon Web Services Support team display "Amazon Web Services," and don't
+	// case. Customer entries include the IAM role as well as the email address
+	// (for example, "AdminRole (Role) <janedoe@example.com>). Entries from the
+	// Amazon Web Services Support team display "Amazon Web Services," and don't
 	// show an email address.
 	SubmittedBy *string `locationName:"submittedBy" type:"string"`
 
@@ -2580,6 +2823,72 @@ func (s *Communication) SetTimeCreated(v string) *Communication {
 	return s
 }
 
+// A JSON-formatted object that contains the CommunicationTypeOptions for creating
+// a case for a certain communication channel. It is contained in the response
+// from a DescribeCreateCaseOptions request. CommunicationTypeOptions contains
+// the following fields:
+//
+//   - datesWithoutSupport - A JSON-formatted list containing date and time
+//     ranges for periods without support in UTC time. Date and time format is
+//     RFC 3339 : 'yyyy-MM-dd'T'HH:mm:ss.SSSZZ'.
+//
+//   - supportedHours - A JSON-formatted list containing time ranges when support
+//     are available. Time format is RFC 3339 : 'HH:mm:ss.SSS'.
+//
+//   - type - A string value indicating the communication type that the aforementioned
+//     rules apply to. At the moment the type value can assume one of 3 values
+//     at the moment chat, web and call.
+type CommunicationTypeOptions struct {
+	_ struct{} `type:"structure"`
+
+	// A JSON-formatted list containing date and time ranges for periods without
+	// support
+	DatesWithoutSupport []*DateInterval `locationName:"datesWithoutSupport" type:"list"`
+
+	// A JSON-formatted list containing time ranges when support is available.
+	SupportedHours []*SupportedHour `locationName:"supportedHours" type:"list"`
+
+	// A string value indicating the communication type. At the moment the type
+	// value can assume one of 3 values at the moment chat, web and call.
+	Type *string `locationName:"type" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CommunicationTypeOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CommunicationTypeOptions) GoString() string {
+	return s.String()
+}
+
+// SetDatesWithoutSupport sets the DatesWithoutSupport field's value.
+func (s *CommunicationTypeOptions) SetDatesWithoutSupport(v []*DateInterval) *CommunicationTypeOptions {
+	s.DatesWithoutSupport = v
+	return s
+}
+
+// SetSupportedHours sets the SupportedHours field's value.
+func (s *CommunicationTypeOptions) SetSupportedHours(v []*SupportedHour) *CommunicationTypeOptions {
+	s.SupportedHours = v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *CommunicationTypeOptions) SetType(v string) *CommunicationTypeOptions {
+	s.Type = &v
+	return s
+}
+
 type CreateCaseInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2609,9 +2918,10 @@ type CreateCaseInput struct {
 	// If you don't specify a value, the default is technical.
 	IssueType *string `locationName:"issueType" type:"string"`
 
-	// The language in which Amazon Web Services Support handles the case. You must
-	// specify the ISO 639-1 code for the language parameter if you want support
-	// in that language. Currently, English ("en") and Japanese ("ja") are supported.
+	// The language in which Amazon Web Services Support handles the case. Amazon
+	// Web Services Support currently supports Chinese (“zh”), English ("en"),
+	// Japanese ("ja") and Korean (“ko”). You must specify the ISO 639-1 code
+	// for the language parameter if you want support in that language.
 	Language *string `locationName:"language" type:"string"`
 
 	// The code for the Amazon Web Services service. You can use the DescribeServices
@@ -2760,6 +3070,48 @@ func (s CreateCaseOutput) GoString() string {
 // SetCaseId sets the CaseId field's value.
 func (s *CreateCaseOutput) SetCaseId(v string) *CreateCaseOutput {
 	s.CaseId = &v
+	return s
+}
+
+// Date and time (UTC) format in RFC 3339 : 'yyyy-MM-dd'T'HH:mm:ss.SSSZZ'.
+type DateInterval struct {
+	_ struct{} `type:"structure"`
+
+	// End Date Time (UTC). RFC 3339 format : 'yyyy-MM-dd'T'HH:mm:ss.SSSZZ'.
+	EndDateTime *string `locationName:"endDateTime" min:"8" type:"string"`
+
+	// A JSON object containing start and date time (UTC). Date and time format
+	// is RFC 3339 : 'yyyy-MM-dd'T'HH:mm:ss.SSSZZ'.
+	StartDateTime *string `locationName:"startDateTime" min:"8" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DateInterval) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DateInterval) GoString() string {
+	return s.String()
+}
+
+// SetEndDateTime sets the EndDateTime field's value.
+func (s *DateInterval) SetEndDateTime(v string) *DateInterval {
+	s.EndDateTime = &v
+	return s
+}
+
+// SetStartDateTime sets the StartDateTime field's value.
+func (s *DateInterval) SetStartDateTime(v string) *DateInterval {
+	s.StartDateTime = &v
 	return s
 }
 
@@ -2941,10 +3293,10 @@ type DescribeCasesInput struct {
 	// response. By default, resolved cases aren't included.
 	IncludeResolvedCases *bool `locationName:"includeResolvedCases" type:"boolean"`
 
-	// The ISO 639-1 code for the language in which Amazon Web Services provides
-	// support. Amazon Web Services Support currently supports English ("en") and
-	// Japanese ("ja"). Language parameters must be passed explicitly for operations
-	// that take them.
+	// The language in which Amazon Web Services Support handles the case. Amazon
+	// Web Services Support currently supports Chinese (“zh”), English ("en"),
+	// Japanese ("ja") and Korean (“ko”). You must specify the ISO 639-1 code
+	// for the language parameter if you want support in that language.
 	Language *string `locationName:"language" type:"string"`
 
 	// The maximum number of results to return before paginating.
@@ -3211,13 +3563,155 @@ func (s *DescribeCommunicationsOutput) SetNextToken(v string) *DescribeCommunica
 	return s
 }
 
+type DescribeCreateCaseOptionsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The category of problem for the support case. You also use the DescribeServices
+	// operation to get the category code for a service. Each Amazon Web Services
+	// service defines its own set of category codes.
+	//
+	// CategoryCode is a required field
+	CategoryCode *string `locationName:"categoryCode" type:"string" required:"true"`
+
+	// The type of issue for the case. You can specify customer-service or technical.
+	// If you don't specify a value, the default is technical.
+	//
+	// IssueType is a required field
+	IssueType *string `locationName:"issueType" type:"string" required:"true"`
+
+	// The language in which Amazon Web Services Support handles the case. Amazon
+	// Web Services Support currently supports Chinese (“zh”), English ("en"),
+	// Japanese ("ja") and Korean (“ko”). You must specify the ISO 639-1 code
+	// for the language parameter if you want support in that language.
+	//
+	// Language is a required field
+	Language *string `locationName:"language" type:"string" required:"true"`
+
+	// The code for the Amazon Web Services service. You can use the DescribeServices
+	// operation to get the possible serviceCode values.
+	//
+	// ServiceCode is a required field
+	ServiceCode *string `locationName:"serviceCode" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCreateCaseOptionsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCreateCaseOptionsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeCreateCaseOptionsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeCreateCaseOptionsInput"}
+	if s.CategoryCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("CategoryCode"))
+	}
+	if s.IssueType == nil {
+		invalidParams.Add(request.NewErrParamRequired("IssueType"))
+	}
+	if s.Language == nil {
+		invalidParams.Add(request.NewErrParamRequired("Language"))
+	}
+	if s.ServiceCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceCode"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCategoryCode sets the CategoryCode field's value.
+func (s *DescribeCreateCaseOptionsInput) SetCategoryCode(v string) *DescribeCreateCaseOptionsInput {
+	s.CategoryCode = &v
+	return s
+}
+
+// SetIssueType sets the IssueType field's value.
+func (s *DescribeCreateCaseOptionsInput) SetIssueType(v string) *DescribeCreateCaseOptionsInput {
+	s.IssueType = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *DescribeCreateCaseOptionsInput) SetLanguage(v string) *DescribeCreateCaseOptionsInput {
+	s.Language = &v
+	return s
+}
+
+// SetServiceCode sets the ServiceCode field's value.
+func (s *DescribeCreateCaseOptionsInput) SetServiceCode(v string) *DescribeCreateCaseOptionsInput {
+	s.ServiceCode = &v
+	return s
+}
+
+type DescribeCreateCaseOptionsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A JSON-formatted array that contains the available communication type options,
+	// along with the available support timeframes for the given inputs.
+	CommunicationTypes []*CommunicationTypeOptions `locationName:"communicationTypes" min:"1" type:"list"`
+
+	// Language availability can be any of the following:
+	//
+	//    * available
+	//
+	//    * best_effort
+	//
+	//    * unavailable
+	LanguageAvailability *string `locationName:"languageAvailability" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCreateCaseOptionsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeCreateCaseOptionsOutput) GoString() string {
+	return s.String()
+}
+
+// SetCommunicationTypes sets the CommunicationTypes field's value.
+func (s *DescribeCreateCaseOptionsOutput) SetCommunicationTypes(v []*CommunicationTypeOptions) *DescribeCreateCaseOptionsOutput {
+	s.CommunicationTypes = v
+	return s
+}
+
+// SetLanguageAvailability sets the LanguageAvailability field's value.
+func (s *DescribeCreateCaseOptionsOutput) SetLanguageAvailability(v string) *DescribeCreateCaseOptionsOutput {
+	s.LanguageAvailability = &v
+	return s
+}
+
 type DescribeServicesInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ISO 639-1 code for the language in which Amazon Web Services provides
-	// support. Amazon Web Services Support currently supports English ("en") and
-	// Japanese ("ja"). Language parameters must be passed explicitly for operations
-	// that take them.
+	// The language in which Amazon Web Services Support handles the case. Amazon
+	// Web Services Support currently supports Chinese (“zh”), English ("en"),
+	// Japanese ("ja") and Korean (“ko”). You must specify the ISO 639-1 code
+	// for the language parameter if you want support in that language.
 	Language *string `locationName:"language" type:"string"`
 
 	// A JSON-formatted list of service codes available for Amazon Web Services
@@ -3291,10 +3785,10 @@ func (s *DescribeServicesOutput) SetServices(v []*Service) *DescribeServicesOutp
 type DescribeSeverityLevelsInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ISO 639-1 code for the language in which Amazon Web Services provides
-	// support. Amazon Web Services Support currently supports English ("en") and
-	// Japanese ("ja"). Language parameters must be passed explicitly for operations
-	// that take them.
+	// The language in which Amazon Web Services Support handles the case. Amazon
+	// Web Services Support currently supports Chinese (“zh”), English ("en"),
+	// Japanese ("ja") and Korean (“ko”). You must specify the ISO 639-1 code
+	// for the language parameter if you want support in that language.
 	Language *string `locationName:"language" type:"string"`
 }
 
@@ -3352,6 +3846,117 @@ func (s DescribeSeverityLevelsOutput) GoString() string {
 // SetSeverityLevels sets the SeverityLevels field's value.
 func (s *DescribeSeverityLevelsOutput) SetSeverityLevels(v []*SeverityLevel) *DescribeSeverityLevelsOutput {
 	s.SeverityLevels = v
+	return s
+}
+
+type DescribeSupportedLanguagesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The category of problem for the support case. You also use the DescribeServices
+	// operation to get the category code for a service. Each Amazon Web Services
+	// service defines its own set of category codes.
+	//
+	// CategoryCode is a required field
+	CategoryCode *string `locationName:"categoryCode" type:"string" required:"true"`
+
+	// The type of issue for the case. You can specify customer-service or technical.
+	//
+	// IssueType is a required field
+	IssueType *string `locationName:"issueType" min:"9" type:"string" required:"true"`
+
+	// The code for the Amazon Web Services service. You can use the DescribeServices
+	// operation to get the possible serviceCode values.
+	//
+	// ServiceCode is a required field
+	ServiceCode *string `locationName:"serviceCode" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSupportedLanguagesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSupportedLanguagesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeSupportedLanguagesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeSupportedLanguagesInput"}
+	if s.CategoryCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("CategoryCode"))
+	}
+	if s.IssueType == nil {
+		invalidParams.Add(request.NewErrParamRequired("IssueType"))
+	}
+	if s.IssueType != nil && len(*s.IssueType) < 9 {
+		invalidParams.Add(request.NewErrParamMinLen("IssueType", 9))
+	}
+	if s.ServiceCode == nil {
+		invalidParams.Add(request.NewErrParamRequired("ServiceCode"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetCategoryCode sets the CategoryCode field's value.
+func (s *DescribeSupportedLanguagesInput) SetCategoryCode(v string) *DescribeSupportedLanguagesInput {
+	s.CategoryCode = &v
+	return s
+}
+
+// SetIssueType sets the IssueType field's value.
+func (s *DescribeSupportedLanguagesInput) SetIssueType(v string) *DescribeSupportedLanguagesInput {
+	s.IssueType = &v
+	return s
+}
+
+// SetServiceCode sets the ServiceCode field's value.
+func (s *DescribeSupportedLanguagesInput) SetServiceCode(v string) *DescribeSupportedLanguagesInput {
+	s.ServiceCode = &v
+	return s
+}
+
+type DescribeSupportedLanguagesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A JSON-formatted array that contains the available ISO 639-1 language codes.
+	SupportedLanguages []*SupportedLanguage `locationName:"supportedLanguages" type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSupportedLanguagesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeSupportedLanguagesOutput) GoString() string {
+	return s.String()
+}
+
+// SetSupportedLanguages sets the SupportedLanguages field's value.
+func (s *DescribeSupportedLanguagesOutput) SetSupportedLanguages(v []*SupportedLanguage) *DescribeSupportedLanguagesOutput {
+	s.SupportedLanguages = v
 	return s
 }
 
@@ -3447,10 +4052,33 @@ type DescribeTrustedAdvisorCheckResultInput struct {
 	// CheckId is a required field
 	CheckId *string `locationName:"checkId" type:"string" required:"true"`
 
-	// The ISO 639-1 code for the language in which Amazon Web Services provides
-	// support. Amazon Web Services Support currently supports English ("en") and
-	// Japanese ("ja"). Language parameters must be passed explicitly for operations
-	// that take them.
+	// The ISO 639-1 code for the language that you want your check results to appear
+	// in.
+	//
+	// The Amazon Web Services Support API currently supports the following languages
+	// for Trusted Advisor:
+	//
+	//    * Chinese, Simplified - zh
+	//
+	//    * Chinese, Traditional - zh_TW
+	//
+	//    * English - en
+	//
+	//    * French - fr
+	//
+	//    * German - de
+	//
+	//    * Indonesian - id
+	//
+	//    * Italian - it
+	//
+	//    * Japanese - ja
+	//
+	//    * Korean - ko
+	//
+	//    * Portuguese, Brazilian - pt_BR
+	//
+	//    * Spanish - es
 	Language *string `locationName:"language" type:"string"`
 }
 
@@ -3614,10 +4242,32 @@ func (s *DescribeTrustedAdvisorCheckSummariesOutput) SetSummaries(v []*TrustedAd
 type DescribeTrustedAdvisorChecksInput struct {
 	_ struct{} `type:"structure"`
 
-	// The ISO 639-1 code for the language in which Amazon Web Services provides
-	// support. Amazon Web Services Support currently supports English ("en") and
-	// Japanese ("ja"). Language parameters must be passed explicitly for operations
-	// that take them.
+	// The ISO 639-1 code for the language that you want your checks to appear in.
+	//
+	// The Amazon Web Services Support API currently supports the following languages
+	// for Trusted Advisor:
+	//
+	//    * Chinese, Simplified - zh
+	//
+	//    * Chinese, Traditional - zh_TW
+	//
+	//    * English - en
+	//
+	//    * French - fr
+	//
+	//    * German - de
+	//
+	//    * Indonesian - id
+	//
+	//    * Italian - it
+	//
+	//    * Japanese - ja
+	//
+	//    * Korean - ko
+	//
+	//    * Portuguese, Brazilian - pt_BR
+	//
+	//    * Spanish - es
 	//
 	// Language is a required field
 	Language *string `locationName:"language" type:"string" required:"true"`
@@ -4076,6 +4726,164 @@ func (s *SeverityLevel) SetCode(v string) *SeverityLevel {
 func (s *SeverityLevel) SetName(v string) *SeverityLevel {
 	s.Name = &v
 	return s
+}
+
+// Time range object with startTime and endTime range in RFC 3339 format. 'HH:mm:ss.SSS'.
+type SupportedHour struct {
+	_ struct{} `type:"structure"`
+
+	// End Time. RFC 3339 format 'HH:mm:ss.SSS'.
+	EndTime *string `locationName:"endTime" type:"string"`
+
+	// Start Time. RFC 3339 format 'HH:mm:ss.SSS'.
+	StartTime *string `locationName:"startTime" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SupportedHour) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SupportedHour) GoString() string {
+	return s.String()
+}
+
+// SetEndTime sets the EndTime field's value.
+func (s *SupportedHour) SetEndTime(v string) *SupportedHour {
+	s.EndTime = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *SupportedHour) SetStartTime(v string) *SupportedHour {
+	s.StartTime = &v
+	return s
+}
+
+// A JSON-formatted object that contains the available ISO 639-1 language code,
+// language name and langauge display value. The language code is what should
+// be used in the CreateCase call.
+type SupportedLanguage struct {
+	_ struct{} `type:"structure"`
+
+	// 2 digit ISO 639-1 code. e.g. en
+	Code *string `locationName:"code" type:"string"`
+
+	// Language display value e.g. ENGLISH
+	Display *string `locationName:"display" type:"string"`
+
+	// Full language description e.g. ENGLISH
+	Language *string `locationName:"language" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SupportedLanguage) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s SupportedLanguage) GoString() string {
+	return s.String()
+}
+
+// SetCode sets the Code field's value.
+func (s *SupportedLanguage) SetCode(v string) *SupportedLanguage {
+	s.Code = &v
+	return s
+}
+
+// SetDisplay sets the Display field's value.
+func (s *SupportedLanguage) SetDisplay(v string) *SupportedLanguage {
+	s.Display = &v
+	return s
+}
+
+// SetLanguage sets the Language field's value.
+func (s *SupportedLanguage) SetLanguage(v string) *SupportedLanguage {
+	s.Language = &v
+	return s
+}
+
+// You have exceeded the maximum allowed TPS (Transactions Per Second) for the
+// operations.
+type ThrottlingException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ThrottlingException) GoString() string {
+	return s.String()
+}
+
+func newErrorThrottlingException(v protocol.ResponseMetadata) error {
+	return &ThrottlingException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ThrottlingException) Code() string {
+	return "ThrottlingException"
+}
+
+// Message returns the exception's message.
+func (s *ThrottlingException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ThrottlingException) OrigErr() error {
+	return nil
+}
+
+func (s *ThrottlingException) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ThrottlingException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ThrottlingException) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 // The container for summary information that relates to the category of the

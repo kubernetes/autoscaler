@@ -4,6 +4,7 @@ package recyclebin
 
 import (
 	"fmt"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/aws-sdk-go/aws/awsutil"
@@ -165,6 +166,9 @@ func (c *RecycleBin) DeleteRuleRequest(input *DeleteRuleInput) (req *request.Req
 //
 //   - ValidationException
 //     One or more of the parameters in the request is not valid.
+//
+//   - ConflictException
+//     The specified retention rule lock request can't be completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/DeleteRule
 func (c *RecycleBin) DeleteRule(input *DeleteRuleInput) (*DeleteRuleOutput, error) {
@@ -497,6 +501,94 @@ func (c *RecycleBin) ListTagsForResourceWithContext(ctx aws.Context, input *List
 	return out, req.Send()
 }
 
+const opLockRule = "LockRule"
+
+// LockRuleRequest generates a "aws/request.Request" representing the
+// client's request for the LockRule operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See LockRule for more information on using the LockRule
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the LockRuleRequest method.
+//	req, resp := client.LockRuleRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/LockRule
+func (c *RecycleBin) LockRuleRequest(input *LockRuleInput) (req *request.Request, output *LockRuleOutput) {
+	op := &request.Operation{
+		Name:       opLockRule,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/rules/{identifier}/lock",
+	}
+
+	if input == nil {
+		input = &LockRuleInput{}
+	}
+
+	output = &LockRuleOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// LockRule API operation for Amazon Recycle Bin.
+//
+// Locks a retention rule. A locked retention rule can't be modified or deleted.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Recycle Bin's
+// API operation LockRule for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
+//
+//   - ConflictException
+//     The specified retention rule lock request can't be completed.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/LockRule
+func (c *RecycleBin) LockRule(input *LockRuleInput) (*LockRuleOutput, error) {
+	req, out := c.LockRuleRequest(input)
+	return out, req.Send()
+}
+
+// LockRuleWithContext is the same as LockRule with the addition of
+// the ability to pass a context and additional request options.
+//
+// See LockRule for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RecycleBin) LockRuleWithContext(ctx aws.Context, input *LockRuleInput, opts ...request.Option) (*LockRuleOutput, error) {
+	req, out := c.LockRuleRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opTagResource = "TagResource"
 
 // TagResourceRequest generates a "aws/request.Request" representing the
@@ -582,6 +674,95 @@ func (c *RecycleBin) TagResource(input *TagResourceInput) (*TagResourceOutput, e
 // for more information on using Contexts.
 func (c *RecycleBin) TagResourceWithContext(ctx aws.Context, input *TagResourceInput, opts ...request.Option) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUnlockRule = "UnlockRule"
+
+// UnlockRuleRequest generates a "aws/request.Request" representing the
+// client's request for the UnlockRule operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UnlockRule for more information on using the UnlockRule
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UnlockRuleRequest method.
+//	req, resp := client.UnlockRuleRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UnlockRule
+func (c *RecycleBin) UnlockRuleRequest(input *UnlockRuleInput) (req *request.Request, output *UnlockRuleOutput) {
+	op := &request.Operation{
+		Name:       opUnlockRule,
+		HTTPMethod: "PATCH",
+		HTTPPath:   "/rules/{identifier}/unlock",
+	}
+
+	if input == nil {
+		input = &UnlockRuleInput{}
+	}
+
+	output = &UnlockRuleOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UnlockRule API operation for Amazon Recycle Bin.
+//
+// Unlocks a retention rule. After a retention rule is unlocked, it can be modified
+// or deleted only after the unlock delay period expires.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Recycle Bin's
+// API operation UnlockRule for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalServerException
+//     The service could not respond to the request due to an internal problem.
+//
+//   - ResourceNotFoundException
+//     The specified resource was not found.
+//
+//   - ValidationException
+//     One or more of the parameters in the request is not valid.
+//
+//   - ConflictException
+//     The specified retention rule lock request can't be completed.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UnlockRule
+func (c *RecycleBin) UnlockRule(input *UnlockRuleInput) (*UnlockRuleOutput, error) {
+	req, out := c.UnlockRuleRequest(input)
+	return out, req.Send()
+}
+
+// UnlockRuleWithContext is the same as UnlockRule with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UnlockRule for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *RecycleBin) UnlockRuleWithContext(ctx aws.Context, input *UnlockRuleInput, opts ...request.Option) (*UnlockRuleOutput, error) {
+	req, out := c.UnlockRuleRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -716,8 +897,10 @@ func (c *RecycleBin) UpdateRuleRequest(input *UpdateRuleInput) (req *request.Req
 
 // UpdateRule API operation for Amazon Recycle Bin.
 //
-// Updates an existing Recycle Bin retention rule. For more information, see
-// Update Recycle Bin retention rules (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin-working-with-rules.html#recycle-bin-update-rule)
+// Updates an existing Recycle Bin retention rule. You can update a retention
+// rule's description, resource tags, and retention period at any time after
+// creation. You can't update a retention rule's resource type after creation.
+// For more information, see Update Recycle Bin retention rules (https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recycle-bin-working-with-rules.html#recycle-bin-update-rule)
 // in the Amazon Elastic Compute Cloud User Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
@@ -737,6 +920,9 @@ func (c *RecycleBin) UpdateRuleRequest(input *UpdateRuleInput) (req *request.Req
 //
 //   - ResourceNotFoundException
 //     The specified resource was not found.
+//
+//   - ConflictException
+//     The specified retention rule lock request can't be completed.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/rbin-2021-06-15/UpdateRule
 func (c *RecycleBin) UpdateRule(input *UpdateRuleInput) (*UpdateRuleOutput, error) {
@@ -760,11 +946,81 @@ func (c *RecycleBin) UpdateRuleWithContext(ctx aws.Context, input *UpdateRuleInp
 	return out, req.Send()
 }
 
+// The specified retention rule lock request can't be completed.
+type ConflictException struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"Message" type:"string"`
+
+	// The reason for the exception.
+	Reason *string `type:"string" enum:"ConflictExceptionReason"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ConflictException) GoString() string {
+	return s.String()
+}
+
+func newErrorConflictException(v protocol.ResponseMetadata) error {
+	return &ConflictException{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ConflictException) Code() string {
+	return "ConflictException"
+}
+
+// Message returns the exception's message.
+func (s *ConflictException) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ConflictException) OrigErr() error {
+	return nil
+}
+
+func (s *ConflictException) Error() string {
+	return fmt.Sprintf("%s: %s\n%s", s.Code(), s.Message(), s.String())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ConflictException) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ConflictException) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
 type CreateRuleInput struct {
 	_ struct{} `type:"structure"`
 
 	// The retention rule description.
 	Description *string `type:"string"`
+
+	// Information about the retention rule lock configuration.
+	LockConfiguration *LockConfiguration `type:"structure"`
 
 	// Specifies the resource tags to use to identify resources that are to be retained
 	// by a tag-level retention rule. For tag-level retention rules, only deleted
@@ -826,6 +1082,11 @@ func (s *CreateRuleInput) Validate() error {
 	if s.RetentionPeriod == nil {
 		invalidParams.Add(request.NewErrParamRequired("RetentionPeriod"))
 	}
+	if s.LockConfiguration != nil {
+		if err := s.LockConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("LockConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ResourceTags != nil {
 		for i, v := range s.ResourceTags {
 			if v == nil {
@@ -864,6 +1125,12 @@ func (s *CreateRuleInput) SetDescription(v string) *CreateRuleInput {
 	return s
 }
 
+// SetLockConfiguration sets the LockConfiguration field's value.
+func (s *CreateRuleInput) SetLockConfiguration(v *LockConfiguration) *CreateRuleInput {
+	s.LockConfiguration = v
+	return s
+}
+
 // SetResourceTags sets the ResourceTags field's value.
 func (s *CreateRuleInput) SetResourceTags(v []*ResourceTag) *CreateRuleInput {
 	s.ResourceTags = v
@@ -896,6 +1163,25 @@ type CreateRuleOutput struct {
 
 	// The unique ID of the retention rule.
 	Identifier *string `type:"string"`
+
+	// Information about the retention rule lock configuration.
+	LockConfiguration *LockConfiguration `type:"structure"`
+
+	// The lock state for the retention rule.
+	//
+	//    * locked - The retention rule is locked and can't be modified or deleted.
+	//
+	//    * pending_unlock - The retention rule has been unlocked but it is still
+	//    within the unlock delay period. The retention rule can be modified or
+	//    deleted only after the unlock delay period has expired.
+	//
+	//    * unlocked - The retention rule is unlocked and it can be modified or
+	//    deleted by any user with the required permissions.
+	//
+	//    * null - The retention rule has never been locked. Once a retention rule
+	//    has been locked, it can transition between the locked and unlocked states
+	//    only; it can never transition back to null.
+	LockState *string `type:"string" enum:"LockState"`
 
 	// Information about the resource tags used to identify resources that are retained
 	// by the retention rule.
@@ -943,6 +1229,18 @@ func (s *CreateRuleOutput) SetDescription(v string) *CreateRuleOutput {
 // SetIdentifier sets the Identifier field's value.
 func (s *CreateRuleOutput) SetIdentifier(v string) *CreateRuleOutput {
 	s.Identifier = &v
+	return s
+}
+
+// SetLockConfiguration sets the LockConfiguration field's value.
+func (s *CreateRuleOutput) SetLockConfiguration(v *LockConfiguration) *CreateRuleOutput {
+	s.LockConfiguration = v
+	return s
+}
+
+// SetLockState sets the LockState field's value.
+func (s *CreateRuleOutput) SetLockState(v string) *CreateRuleOutput {
+	s.LockState = &v
 	return s
 }
 
@@ -1105,6 +1403,30 @@ type GetRuleOutput struct {
 	// The unique ID of the retention rule.
 	Identifier *string `type:"string"`
 
+	// Information about the retention rule lock configuration.
+	LockConfiguration *LockConfiguration `type:"structure"`
+
+	// The date and time at which the unlock delay is set to expire. Only returned
+	// for retention rules that have been unlocked and that are still within the
+	// unlock delay period.
+	LockEndTime *time.Time `type:"timestamp"`
+
+	// The lock state for the retention rule.
+	//
+	//    * locked - The retention rule is locked and can't be modified or deleted.
+	//
+	//    * pending_unlock - The retention rule has been unlocked but it is still
+	//    within the unlock delay period. The retention rule can be modified or
+	//    deleted only after the unlock delay period has expired.
+	//
+	//    * unlocked - The retention rule is unlocked and it can be modified or
+	//    deleted by any user with the required permissions.
+	//
+	//    * null - The retention rule has never been locked. Once a retention rule
+	//    has been locked, it can transition between the locked and unlocked states
+	//    only; it can never transition back to null.
+	LockState *string `type:"string" enum:"LockState"`
+
 	// Information about the resource tags used to identify resources that are retained
 	// by the retention rule.
 	ResourceTags []*ResourceTag `type:"list"`
@@ -1148,6 +1470,24 @@ func (s *GetRuleOutput) SetDescription(v string) *GetRuleOutput {
 // SetIdentifier sets the Identifier field's value.
 func (s *GetRuleOutput) SetIdentifier(v string) *GetRuleOutput {
 	s.Identifier = &v
+	return s
+}
+
+// SetLockConfiguration sets the LockConfiguration field's value.
+func (s *GetRuleOutput) SetLockConfiguration(v *LockConfiguration) *GetRuleOutput {
+	s.LockConfiguration = v
+	return s
+}
+
+// SetLockEndTime sets the LockEndTime field's value.
+func (s *GetRuleOutput) SetLockEndTime(v time.Time) *GetRuleOutput {
+	s.LockEndTime = &v
+	return s
+}
+
+// SetLockState sets the LockState field's value.
+func (s *GetRuleOutput) SetLockState(v string) *GetRuleOutput {
+	s.LockState = &v
 	return s
 }
 
@@ -1242,6 +1582,10 @@ func (s *InternalServerException) RequestID() string {
 type ListRulesInput struct {
 	_ struct{} `type:"structure"`
 
+	// The lock state of the retention rules to list. Only retention rules with
+	// the specified lock state are returned.
+	LockState *string `type:"string" enum:"LockState"`
+
 	// The maximum number of results to return with a single call. To retrieve the
 	// remaining results, make another call with the returned NextToken value.
 	MaxResults *int64 `min:"1" type:"integer"`
@@ -1305,6 +1649,12 @@ func (s *ListRulesInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetLockState sets the LockState field's value.
+func (s *ListRulesInput) SetLockState(v string) *ListRulesInput {
+	s.LockState = &v
+	return s
 }
 
 // SetMaxResults sets the MaxResults field's value.
@@ -1449,6 +1799,236 @@ func (s ListTagsForResourceOutput) GoString() string {
 // SetTags sets the Tags field's value.
 func (s *ListTagsForResourceOutput) SetTags(v []*Tag) *ListTagsForResourceOutput {
 	s.Tags = v
+	return s
+}
+
+// Information about a retention rule lock configuration.
+type LockConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the retention rule unlock delay.
+	//
+	// UnlockDelay is a required field
+	UnlockDelay *UnlockDelay `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LockConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LockConfiguration"}
+	if s.UnlockDelay == nil {
+		invalidParams.Add(request.NewErrParamRequired("UnlockDelay"))
+	}
+	if s.UnlockDelay != nil {
+		if err := s.UnlockDelay.Validate(); err != nil {
+			invalidParams.AddNested("UnlockDelay", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetUnlockDelay sets the UnlockDelay field's value.
+func (s *LockConfiguration) SetUnlockDelay(v *UnlockDelay) *LockConfiguration {
+	s.UnlockDelay = v
+	return s
+}
+
+type LockRuleInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique ID of the retention rule.
+	//
+	// Identifier is a required field
+	Identifier *string `location:"uri" locationName:"identifier" type:"string" required:"true"`
+
+	// Information about the retention rule lock configuration.
+	//
+	// LockConfiguration is a required field
+	LockConfiguration *LockConfiguration `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockRuleInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockRuleInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *LockRuleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "LockRuleInput"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+	if s.LockConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("LockConfiguration"))
+	}
+	if s.LockConfiguration != nil {
+		if err := s.LockConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("LockConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *LockRuleInput) SetIdentifier(v string) *LockRuleInput {
+	s.Identifier = &v
+	return s
+}
+
+// SetLockConfiguration sets the LockConfiguration field's value.
+func (s *LockRuleInput) SetLockConfiguration(v *LockConfiguration) *LockRuleInput {
+	s.LockConfiguration = v
+	return s
+}
+
+type LockRuleOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The retention rule description.
+	Description *string `type:"string"`
+
+	// The unique ID of the retention rule.
+	Identifier *string `type:"string"`
+
+	// Information about the retention rule lock configuration.
+	LockConfiguration *LockConfiguration `type:"structure"`
+
+	// The lock state for the retention rule.
+	//
+	//    * locked - The retention rule is locked and can't be modified or deleted.
+	//
+	//    * pending_unlock - The retention rule has been unlocked but it is still
+	//    within the unlock delay period. The retention rule can be modified or
+	//    deleted only after the unlock delay period has expired.
+	//
+	//    * unlocked - The retention rule is unlocked and it can be modified or
+	//    deleted by any user with the required permissions.
+	//
+	//    * null - The retention rule has never been locked. Once a retention rule
+	//    has been locked, it can transition between the locked and unlocked states
+	//    only; it can never transition back to null.
+	LockState *string `type:"string" enum:"LockState"`
+
+	// Information about the resource tags used to identify resources that are retained
+	// by the retention rule.
+	ResourceTags []*ResourceTag `type:"list"`
+
+	// The resource type retained by the retention rule.
+	ResourceType *string `type:"string" enum:"ResourceType"`
+
+	// Information about the retention period for which the retention rule is to
+	// retain resources.
+	RetentionPeriod *RetentionPeriod `type:"structure"`
+
+	// The state of the retention rule. Only retention rules that are in the available
+	// state retain resources.
+	Status *string `type:"string" enum:"RuleStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockRuleOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s LockRuleOutput) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *LockRuleOutput) SetDescription(v string) *LockRuleOutput {
+	s.Description = &v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *LockRuleOutput) SetIdentifier(v string) *LockRuleOutput {
+	s.Identifier = &v
+	return s
+}
+
+// SetLockConfiguration sets the LockConfiguration field's value.
+func (s *LockRuleOutput) SetLockConfiguration(v *LockConfiguration) *LockRuleOutput {
+	s.LockConfiguration = v
+	return s
+}
+
+// SetLockState sets the LockState field's value.
+func (s *LockRuleOutput) SetLockState(v string) *LockRuleOutput {
+	s.LockState = &v
+	return s
+}
+
+// SetResourceTags sets the ResourceTags field's value.
+func (s *LockRuleOutput) SetResourceTags(v []*ResourceTag) *LockRuleOutput {
+	s.ResourceTags = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *LockRuleOutput) SetResourceType(v string) *LockRuleOutput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetRetentionPeriod sets the RetentionPeriod field's value.
+func (s *LockRuleOutput) SetRetentionPeriod(v *RetentionPeriod) *LockRuleOutput {
+	s.RetentionPeriod = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *LockRuleOutput) SetStatus(v string) *LockRuleOutput {
+	s.Status = &v
 	return s
 }
 
@@ -1653,6 +2233,22 @@ type RuleSummary struct {
 	// The unique ID of the retention rule.
 	Identifier *string `type:"string"`
 
+	// The lock state for the retention rule.
+	//
+	//    * locked - The retention rule is locked and can't be modified or deleted.
+	//
+	//    * pending_unlock - The retention rule has been unlocked but it is still
+	//    within the unlock delay period. The retention rule can be modified or
+	//    deleted only after the unlock delay period has expired.
+	//
+	//    * unlocked - The retention rule is unlocked and it can be modified or
+	//    deleted by any user with the required permissions.
+	//
+	//    * null - The retention rule has never been locked. Once a retention rule
+	//    has been locked, it can transition between the locked and unlocked states
+	//    only; it can never transition back to null.
+	LockState *string `type:"string" enum:"LockState"`
+
 	// Information about the retention period for which the retention rule is to
 	// retain resources.
 	RetentionPeriod *RetentionPeriod `type:"structure"`
@@ -1685,6 +2281,12 @@ func (s *RuleSummary) SetDescription(v string) *RuleSummary {
 // SetIdentifier sets the Identifier field's value.
 func (s *RuleSummary) SetIdentifier(v string) *RuleSummary {
 	s.Identifier = &v
+	return s
+}
+
+// SetLockState sets the LockState field's value.
+func (s *RuleSummary) SetLockState(v string) *RuleSummary {
+	s.LockState = &v
 	return s
 }
 
@@ -1921,6 +2523,244 @@ func (s TagResourceOutput) GoString() string {
 	return s.String()
 }
 
+// Information about the retention rule unlock delay. The unlock delay is the
+// period after which a retention rule can be modified or edited after it has
+// been unlocked by a user with the required permissions. The retention rule
+// can't be modified or deleted during the unlock delay.
+type UnlockDelay struct {
+	_ struct{} `type:"structure"`
+
+	// The unit of time in which to measure the unlock delay. Currently, the unlock
+	// delay can be measure only in days.
+	//
+	// UnlockDelayUnit is a required field
+	UnlockDelayUnit *string `type:"string" required:"true" enum:"UnlockDelayUnit"`
+
+	// The unlock delay period, measured in the unit specified for UnlockDelayUnit.
+	//
+	// UnlockDelayValue is a required field
+	UnlockDelayValue *int64 `min:"7" type:"integer" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnlockDelay) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnlockDelay) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UnlockDelay) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UnlockDelay"}
+	if s.UnlockDelayUnit == nil {
+		invalidParams.Add(request.NewErrParamRequired("UnlockDelayUnit"))
+	}
+	if s.UnlockDelayValue == nil {
+		invalidParams.Add(request.NewErrParamRequired("UnlockDelayValue"))
+	}
+	if s.UnlockDelayValue != nil && *s.UnlockDelayValue < 7 {
+		invalidParams.Add(request.NewErrParamMinValue("UnlockDelayValue", 7))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetUnlockDelayUnit sets the UnlockDelayUnit field's value.
+func (s *UnlockDelay) SetUnlockDelayUnit(v string) *UnlockDelay {
+	s.UnlockDelayUnit = &v
+	return s
+}
+
+// SetUnlockDelayValue sets the UnlockDelayValue field's value.
+func (s *UnlockDelay) SetUnlockDelayValue(v int64) *UnlockDelay {
+	s.UnlockDelayValue = &v
+	return s
+}
+
+type UnlockRuleInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique ID of the retention rule.
+	//
+	// Identifier is a required field
+	Identifier *string `location:"uri" locationName:"identifier" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnlockRuleInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnlockRuleInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UnlockRuleInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UnlockRuleInput"}
+	if s.Identifier == nil {
+		invalidParams.Add(request.NewErrParamRequired("Identifier"))
+	}
+	if s.Identifier != nil && len(*s.Identifier) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Identifier", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *UnlockRuleInput) SetIdentifier(v string) *UnlockRuleInput {
+	s.Identifier = &v
+	return s
+}
+
+type UnlockRuleOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The retention rule description.
+	Description *string `type:"string"`
+
+	// The unique ID of the retention rule.
+	Identifier *string `type:"string"`
+
+	// Information about the retention rule lock configuration.
+	LockConfiguration *LockConfiguration `type:"structure"`
+
+	// The date and time at which the unlock delay is set to expire. Only returned
+	// for retention rules that have been unlocked and that are still within the
+	// unlock delay period.
+	LockEndTime *time.Time `type:"timestamp"`
+
+	// The lock state for the retention rule.
+	//
+	//    * locked - The retention rule is locked and can't be modified or deleted.
+	//
+	//    * pending_unlock - The retention rule has been unlocked but it is still
+	//    within the unlock delay period. The retention rule can be modified or
+	//    deleted only after the unlock delay period has expired.
+	//
+	//    * unlocked - The retention rule is unlocked and it can be modified or
+	//    deleted by any user with the required permissions.
+	//
+	//    * null - The retention rule has never been locked. Once a retention rule
+	//    has been locked, it can transition between the locked and unlocked states
+	//    only; it can never transition back to null.
+	LockState *string `type:"string" enum:"LockState"`
+
+	// Information about the resource tags used to identify resources that are retained
+	// by the retention rule.
+	ResourceTags []*ResourceTag `type:"list"`
+
+	// The resource type retained by the retention rule.
+	ResourceType *string `type:"string" enum:"ResourceType"`
+
+	// Information about the retention period for which the retention rule is to
+	// retain resources.
+	RetentionPeriod *RetentionPeriod `type:"structure"`
+
+	// The state of the retention rule. Only retention rules that are in the available
+	// state retain resources.
+	Status *string `type:"string" enum:"RuleStatus"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnlockRuleOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UnlockRuleOutput) GoString() string {
+	return s.String()
+}
+
+// SetDescription sets the Description field's value.
+func (s *UnlockRuleOutput) SetDescription(v string) *UnlockRuleOutput {
+	s.Description = &v
+	return s
+}
+
+// SetIdentifier sets the Identifier field's value.
+func (s *UnlockRuleOutput) SetIdentifier(v string) *UnlockRuleOutput {
+	s.Identifier = &v
+	return s
+}
+
+// SetLockConfiguration sets the LockConfiguration field's value.
+func (s *UnlockRuleOutput) SetLockConfiguration(v *LockConfiguration) *UnlockRuleOutput {
+	s.LockConfiguration = v
+	return s
+}
+
+// SetLockEndTime sets the LockEndTime field's value.
+func (s *UnlockRuleOutput) SetLockEndTime(v time.Time) *UnlockRuleOutput {
+	s.LockEndTime = &v
+	return s
+}
+
+// SetLockState sets the LockState field's value.
+func (s *UnlockRuleOutput) SetLockState(v string) *UnlockRuleOutput {
+	s.LockState = &v
+	return s
+}
+
+// SetResourceTags sets the ResourceTags field's value.
+func (s *UnlockRuleOutput) SetResourceTags(v []*ResourceTag) *UnlockRuleOutput {
+	s.ResourceTags = v
+	return s
+}
+
+// SetResourceType sets the ResourceType field's value.
+func (s *UnlockRuleOutput) SetResourceType(v string) *UnlockRuleOutput {
+	s.ResourceType = &v
+	return s
+}
+
+// SetRetentionPeriod sets the RetentionPeriod field's value.
+func (s *UnlockRuleOutput) SetRetentionPeriod(v *RetentionPeriod) *UnlockRuleOutput {
+	s.RetentionPeriod = v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *UnlockRuleOutput) SetStatus(v string) *UnlockRuleOutput {
+	s.Status = &v
+	return s
+}
+
 type UntagResourceInput struct {
 	_ struct{} `type:"structure" nopayload:"true"`
 
@@ -2034,9 +2874,9 @@ type UpdateRuleInput struct {
 	// rule is created, even if the resources are not tagged.
 	ResourceTags []*ResourceTag `type:"list"`
 
-	// The resource type to be retained by the retention rule. Currently, only Amazon
-	// EBS snapshots and EBS-backed AMIs are supported. To retain snapshots, specify
-	// EBS_SNAPSHOT. To retain EBS-backed AMIs, specify EC2_IMAGE.
+	//
+	// This parameter is currently not supported. You can't update a retention rule's
+	// resource type after creation.
 	ResourceType *string `type:"string" enum:"ResourceType"`
 
 	// Information about the retention period for which the retention rule is to
@@ -2132,6 +2972,27 @@ type UpdateRuleOutput struct {
 	// The unique ID of the retention rule.
 	Identifier *string `type:"string"`
 
+	// The date and time at which the unlock delay is set to expire. Only returned
+	// for retention rules that have been unlocked and that are still within the
+	// unlock delay period.
+	LockEndTime *time.Time `type:"timestamp"`
+
+	// The lock state for the retention rule.
+	//
+	//    * locked - The retention rule is locked and can't be modified or deleted.
+	//
+	//    * pending_unlock - The retention rule has been unlocked but it is still
+	//    within the unlock delay period. The retention rule can be modified or
+	//    deleted only after the unlock delay period has expired.
+	//
+	//    * unlocked - The retention rule is unlocked and it can be modified or
+	//    deleted by any user with the required permissions.
+	//
+	//    * null - The retention rule has never been locked. Once a retention rule
+	//    has been locked, it can transition between the locked and unlocked states
+	//    only; it can never transition back to null.
+	LockState *string `type:"string" enum:"LockState"`
+
 	// Information about the resource tags used to identify resources that are retained
 	// by the retention rule.
 	ResourceTags []*ResourceTag `type:"list"`
@@ -2175,6 +3036,18 @@ func (s *UpdateRuleOutput) SetDescription(v string) *UpdateRuleOutput {
 // SetIdentifier sets the Identifier field's value.
 func (s *UpdateRuleOutput) SetIdentifier(v string) *UpdateRuleOutput {
 	s.Identifier = &v
+	return s
+}
+
+// SetLockEndTime sets the LockEndTime field's value.
+func (s *UpdateRuleOutput) SetLockEndTime(v time.Time) *UpdateRuleOutput {
+	s.LockEndTime = &v
+	return s
+}
+
+// SetLockState sets the LockState field's value.
+func (s *UpdateRuleOutput) SetLockState(v string) *UpdateRuleOutput {
+	s.LockState = &v
 	return s
 }
 
@@ -2270,6 +3143,38 @@ func (s *ValidationException) RequestID() string {
 }
 
 const (
+	// ConflictExceptionReasonInvalidRuleState is a ConflictExceptionReason enum value
+	ConflictExceptionReasonInvalidRuleState = "INVALID_RULE_STATE"
+)
+
+// ConflictExceptionReason_Values returns all elements of the ConflictExceptionReason enum
+func ConflictExceptionReason_Values() []string {
+	return []string{
+		ConflictExceptionReasonInvalidRuleState,
+	}
+}
+
+const (
+	// LockStateLocked is a LockState enum value
+	LockStateLocked = "locked"
+
+	// LockStatePendingUnlock is a LockState enum value
+	LockStatePendingUnlock = "pending_unlock"
+
+	// LockStateUnlocked is a LockState enum value
+	LockStateUnlocked = "unlocked"
+)
+
+// LockState_Values returns all elements of the LockState enum
+func LockState_Values() []string {
+	return []string{
+		LockStateLocked,
+		LockStatePendingUnlock,
+		LockStateUnlocked,
+	}
+}
+
+const (
 	// ResourceNotFoundExceptionReasonRuleNotFound is a ResourceNotFoundExceptionReason enum value
 	ResourceNotFoundExceptionReasonRuleNotFound = "RULE_NOT_FOUND"
 )
@@ -2334,6 +3239,18 @@ const (
 func ServiceQuotaExceededExceptionReason_Values() []string {
 	return []string{
 		ServiceQuotaExceededExceptionReasonServiceQuotaExceeded,
+	}
+}
+
+const (
+	// UnlockDelayUnitDays is a UnlockDelayUnit enum value
+	UnlockDelayUnitDays = "DAYS"
+)
+
+// UnlockDelayUnit_Values returns all elements of the UnlockDelayUnit enum
+func UnlockDelayUnit_Values() []string {
+	return []string{
+		UnlockDelayUnitDays,
 	}
 }
 

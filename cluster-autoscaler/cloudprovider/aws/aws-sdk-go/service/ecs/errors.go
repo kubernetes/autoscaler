@@ -34,8 +34,8 @@ const (
 	//
 	// These errors are usually caused by a client action. This client action might
 	// be using an action or resource on behalf of a user that doesn't have permissions
-	// to use the action or resource,. Or, it might be specifying an identifier
-	// that isn't valid.
+	// to use the action or resource. Or, it might be specifying an identifier that
+	// isn't valid.
 	ErrCodeClientException = "ClientException"
 
 	// ErrCodeClusterContainsContainerInstancesException for service response error code
@@ -67,6 +67,20 @@ const (
 	// with ListClusters. Amazon ECS clusters are Region specific.
 	ErrCodeClusterNotFoundException = "ClusterNotFoundException"
 
+	// ErrCodeConflictException for service response error code
+	// "ConflictException".
+	//
+	// The RunTask request could not be processed due to conflicts. The provided
+	// clientToken is already in use with a different RunTask request. The resourceIds
+	// are the existing task ARNs which are already associated with the clientToken.
+	//
+	// To fix this issue:
+	//
+	//    * Run RunTask with a unique clientToken.
+	//
+	//    * Run RunTask with the clientToken and the original set of parameters
+	ErrCodeConflictException = "ConflictException"
+
 	// ErrCodeInvalidParameterException for service response error code
 	// "InvalidParameterException".
 	//
@@ -88,6 +102,12 @@ const (
 	// with an update. This could be because the agent running on the container
 	// instance is a previous or custom version that doesn't use our version information.
 	ErrCodeMissingVersionException = "MissingVersionException"
+
+	// ErrCodeNamespaceNotFoundException for service response error code
+	// "NamespaceNotFoundException".
+	//
+	// The specified namespace wasn't found.
+	ErrCodeNamespaceNotFoundException = "NamespaceNotFoundException"
 
 	// ErrCodeNoUpdateAvailableException for service response error code
 	// "NoUpdateAvailableException".
@@ -153,7 +173,7 @@ const (
 	//    * The SSM agent is not installed or is not running
 	//
 	//    * There is an interface Amazon VPC endpoint for Amazon ECS, but there
-	//    is not one for for Systems Manager Session Manager
+	//    is not one for Systems Manager Session Manager
 	//
 	// For information about how to troubleshoot the issues, see Troubleshooting
 	// issues with ECS Exec (https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html)
@@ -202,9 +222,11 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"ClusterContainsServicesException":               newErrorClusterContainsServicesException,
 	"ClusterContainsTasksException":                  newErrorClusterContainsTasksException,
 	"ClusterNotFoundException":                       newErrorClusterNotFoundException,
+	"ConflictException":                              newErrorConflictException,
 	"InvalidParameterException":                      newErrorInvalidParameterException,
 	"LimitExceededException":                         newErrorLimitExceededException,
 	"MissingVersionException":                        newErrorMissingVersionException,
+	"NamespaceNotFoundException":                     newErrorNamespaceNotFoundException,
 	"NoUpdateAvailableException":                     newErrorNoUpdateAvailableException,
 	"PlatformTaskDefinitionIncompatibilityException": newErrorPlatformTaskDefinitionIncompatibilityException,
 	"PlatformUnknownException":                       newErrorPlatformUnknownException,

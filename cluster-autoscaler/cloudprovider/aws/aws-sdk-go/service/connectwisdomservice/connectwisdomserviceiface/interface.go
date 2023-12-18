@@ -76,6 +76,10 @@ type ConnectWisdomServiceAPI interface {
 	CreateKnowledgeBaseWithContext(aws.Context, *connectwisdomservice.CreateKnowledgeBaseInput, ...request.Option) (*connectwisdomservice.CreateKnowledgeBaseOutput, error)
 	CreateKnowledgeBaseRequest(*connectwisdomservice.CreateKnowledgeBaseInput) (*request.Request, *connectwisdomservice.CreateKnowledgeBaseOutput)
 
+	CreateQuickResponse(*connectwisdomservice.CreateQuickResponseInput) (*connectwisdomservice.CreateQuickResponseOutput, error)
+	CreateQuickResponseWithContext(aws.Context, *connectwisdomservice.CreateQuickResponseInput, ...request.Option) (*connectwisdomservice.CreateQuickResponseOutput, error)
+	CreateQuickResponseRequest(*connectwisdomservice.CreateQuickResponseInput) (*request.Request, *connectwisdomservice.CreateQuickResponseOutput)
+
 	CreateSession(*connectwisdomservice.CreateSessionInput) (*connectwisdomservice.CreateSessionOutput, error)
 	CreateSessionWithContext(aws.Context, *connectwisdomservice.CreateSessionInput, ...request.Option) (*connectwisdomservice.CreateSessionOutput, error)
 	CreateSessionRequest(*connectwisdomservice.CreateSessionInput) (*request.Request, *connectwisdomservice.CreateSessionOutput)
@@ -92,9 +96,17 @@ type ConnectWisdomServiceAPI interface {
 	DeleteContentWithContext(aws.Context, *connectwisdomservice.DeleteContentInput, ...request.Option) (*connectwisdomservice.DeleteContentOutput, error)
 	DeleteContentRequest(*connectwisdomservice.DeleteContentInput) (*request.Request, *connectwisdomservice.DeleteContentOutput)
 
+	DeleteImportJob(*connectwisdomservice.DeleteImportJobInput) (*connectwisdomservice.DeleteImportJobOutput, error)
+	DeleteImportJobWithContext(aws.Context, *connectwisdomservice.DeleteImportJobInput, ...request.Option) (*connectwisdomservice.DeleteImportJobOutput, error)
+	DeleteImportJobRequest(*connectwisdomservice.DeleteImportJobInput) (*request.Request, *connectwisdomservice.DeleteImportJobOutput)
+
 	DeleteKnowledgeBase(*connectwisdomservice.DeleteKnowledgeBaseInput) (*connectwisdomservice.DeleteKnowledgeBaseOutput, error)
 	DeleteKnowledgeBaseWithContext(aws.Context, *connectwisdomservice.DeleteKnowledgeBaseInput, ...request.Option) (*connectwisdomservice.DeleteKnowledgeBaseOutput, error)
 	DeleteKnowledgeBaseRequest(*connectwisdomservice.DeleteKnowledgeBaseInput) (*request.Request, *connectwisdomservice.DeleteKnowledgeBaseOutput)
+
+	DeleteQuickResponse(*connectwisdomservice.DeleteQuickResponseInput) (*connectwisdomservice.DeleteQuickResponseOutput, error)
+	DeleteQuickResponseWithContext(aws.Context, *connectwisdomservice.DeleteQuickResponseInput, ...request.Option) (*connectwisdomservice.DeleteQuickResponseOutput, error)
+	DeleteQuickResponseRequest(*connectwisdomservice.DeleteQuickResponseInput) (*request.Request, *connectwisdomservice.DeleteQuickResponseOutput)
 
 	GetAssistant(*connectwisdomservice.GetAssistantInput) (*connectwisdomservice.GetAssistantOutput, error)
 	GetAssistantWithContext(aws.Context, *connectwisdomservice.GetAssistantInput, ...request.Option) (*connectwisdomservice.GetAssistantOutput, error)
@@ -112,9 +124,17 @@ type ConnectWisdomServiceAPI interface {
 	GetContentSummaryWithContext(aws.Context, *connectwisdomservice.GetContentSummaryInput, ...request.Option) (*connectwisdomservice.GetContentSummaryOutput, error)
 	GetContentSummaryRequest(*connectwisdomservice.GetContentSummaryInput) (*request.Request, *connectwisdomservice.GetContentSummaryOutput)
 
+	GetImportJob(*connectwisdomservice.GetImportJobInput) (*connectwisdomservice.GetImportJobOutput, error)
+	GetImportJobWithContext(aws.Context, *connectwisdomservice.GetImportJobInput, ...request.Option) (*connectwisdomservice.GetImportJobOutput, error)
+	GetImportJobRequest(*connectwisdomservice.GetImportJobInput) (*request.Request, *connectwisdomservice.GetImportJobOutput)
+
 	GetKnowledgeBase(*connectwisdomservice.GetKnowledgeBaseInput) (*connectwisdomservice.GetKnowledgeBaseOutput, error)
 	GetKnowledgeBaseWithContext(aws.Context, *connectwisdomservice.GetKnowledgeBaseInput, ...request.Option) (*connectwisdomservice.GetKnowledgeBaseOutput, error)
 	GetKnowledgeBaseRequest(*connectwisdomservice.GetKnowledgeBaseInput) (*request.Request, *connectwisdomservice.GetKnowledgeBaseOutput)
+
+	GetQuickResponse(*connectwisdomservice.GetQuickResponseInput) (*connectwisdomservice.GetQuickResponseOutput, error)
+	GetQuickResponseWithContext(aws.Context, *connectwisdomservice.GetQuickResponseInput, ...request.Option) (*connectwisdomservice.GetQuickResponseOutput, error)
+	GetQuickResponseRequest(*connectwisdomservice.GetQuickResponseInput) (*request.Request, *connectwisdomservice.GetQuickResponseOutput)
 
 	GetRecommendations(*connectwisdomservice.GetRecommendationsInput) (*connectwisdomservice.GetRecommendationsOutput, error)
 	GetRecommendationsWithContext(aws.Context, *connectwisdomservice.GetRecommendationsInput, ...request.Option) (*connectwisdomservice.GetRecommendationsOutput, error)
@@ -145,12 +165,26 @@ type ConnectWisdomServiceAPI interface {
 	ListContentsPages(*connectwisdomservice.ListContentsInput, func(*connectwisdomservice.ListContentsOutput, bool) bool) error
 	ListContentsPagesWithContext(aws.Context, *connectwisdomservice.ListContentsInput, func(*connectwisdomservice.ListContentsOutput, bool) bool, ...request.Option) error
 
+	ListImportJobs(*connectwisdomservice.ListImportJobsInput) (*connectwisdomservice.ListImportJobsOutput, error)
+	ListImportJobsWithContext(aws.Context, *connectwisdomservice.ListImportJobsInput, ...request.Option) (*connectwisdomservice.ListImportJobsOutput, error)
+	ListImportJobsRequest(*connectwisdomservice.ListImportJobsInput) (*request.Request, *connectwisdomservice.ListImportJobsOutput)
+
+	ListImportJobsPages(*connectwisdomservice.ListImportJobsInput, func(*connectwisdomservice.ListImportJobsOutput, bool) bool) error
+	ListImportJobsPagesWithContext(aws.Context, *connectwisdomservice.ListImportJobsInput, func(*connectwisdomservice.ListImportJobsOutput, bool) bool, ...request.Option) error
+
 	ListKnowledgeBases(*connectwisdomservice.ListKnowledgeBasesInput) (*connectwisdomservice.ListKnowledgeBasesOutput, error)
 	ListKnowledgeBasesWithContext(aws.Context, *connectwisdomservice.ListKnowledgeBasesInput, ...request.Option) (*connectwisdomservice.ListKnowledgeBasesOutput, error)
 	ListKnowledgeBasesRequest(*connectwisdomservice.ListKnowledgeBasesInput) (*request.Request, *connectwisdomservice.ListKnowledgeBasesOutput)
 
 	ListKnowledgeBasesPages(*connectwisdomservice.ListKnowledgeBasesInput, func(*connectwisdomservice.ListKnowledgeBasesOutput, bool) bool) error
 	ListKnowledgeBasesPagesWithContext(aws.Context, *connectwisdomservice.ListKnowledgeBasesInput, func(*connectwisdomservice.ListKnowledgeBasesOutput, bool) bool, ...request.Option) error
+
+	ListQuickResponses(*connectwisdomservice.ListQuickResponsesInput) (*connectwisdomservice.ListQuickResponsesOutput, error)
+	ListQuickResponsesWithContext(aws.Context, *connectwisdomservice.ListQuickResponsesInput, ...request.Option) (*connectwisdomservice.ListQuickResponsesOutput, error)
+	ListQuickResponsesRequest(*connectwisdomservice.ListQuickResponsesInput) (*request.Request, *connectwisdomservice.ListQuickResponsesOutput)
+
+	ListQuickResponsesPages(*connectwisdomservice.ListQuickResponsesInput, func(*connectwisdomservice.ListQuickResponsesOutput, bool) bool) error
+	ListQuickResponsesPagesWithContext(aws.Context, *connectwisdomservice.ListQuickResponsesInput, func(*connectwisdomservice.ListQuickResponsesOutput, bool) bool, ...request.Option) error
 
 	ListTagsForResource(*connectwisdomservice.ListTagsForResourceInput) (*connectwisdomservice.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *connectwisdomservice.ListTagsForResourceInput, ...request.Option) (*connectwisdomservice.ListTagsForResourceOutput, error)
@@ -178,6 +212,13 @@ type ConnectWisdomServiceAPI interface {
 	SearchContentPages(*connectwisdomservice.SearchContentInput, func(*connectwisdomservice.SearchContentOutput, bool) bool) error
 	SearchContentPagesWithContext(aws.Context, *connectwisdomservice.SearchContentInput, func(*connectwisdomservice.SearchContentOutput, bool) bool, ...request.Option) error
 
+	SearchQuickResponses(*connectwisdomservice.SearchQuickResponsesInput) (*connectwisdomservice.SearchQuickResponsesOutput, error)
+	SearchQuickResponsesWithContext(aws.Context, *connectwisdomservice.SearchQuickResponsesInput, ...request.Option) (*connectwisdomservice.SearchQuickResponsesOutput, error)
+	SearchQuickResponsesRequest(*connectwisdomservice.SearchQuickResponsesInput) (*request.Request, *connectwisdomservice.SearchQuickResponsesOutput)
+
+	SearchQuickResponsesPages(*connectwisdomservice.SearchQuickResponsesInput, func(*connectwisdomservice.SearchQuickResponsesOutput, bool) bool) error
+	SearchQuickResponsesPagesWithContext(aws.Context, *connectwisdomservice.SearchQuickResponsesInput, func(*connectwisdomservice.SearchQuickResponsesOutput, bool) bool, ...request.Option) error
+
 	SearchSessions(*connectwisdomservice.SearchSessionsInput) (*connectwisdomservice.SearchSessionsOutput, error)
 	SearchSessionsWithContext(aws.Context, *connectwisdomservice.SearchSessionsInput, ...request.Option) (*connectwisdomservice.SearchSessionsOutput, error)
 	SearchSessionsRequest(*connectwisdomservice.SearchSessionsInput) (*request.Request, *connectwisdomservice.SearchSessionsOutput)
@@ -188,6 +229,10 @@ type ConnectWisdomServiceAPI interface {
 	StartContentUpload(*connectwisdomservice.StartContentUploadInput) (*connectwisdomservice.StartContentUploadOutput, error)
 	StartContentUploadWithContext(aws.Context, *connectwisdomservice.StartContentUploadInput, ...request.Option) (*connectwisdomservice.StartContentUploadOutput, error)
 	StartContentUploadRequest(*connectwisdomservice.StartContentUploadInput) (*request.Request, *connectwisdomservice.StartContentUploadOutput)
+
+	StartImportJob(*connectwisdomservice.StartImportJobInput) (*connectwisdomservice.StartImportJobOutput, error)
+	StartImportJobWithContext(aws.Context, *connectwisdomservice.StartImportJobInput, ...request.Option) (*connectwisdomservice.StartImportJobOutput, error)
+	StartImportJobRequest(*connectwisdomservice.StartImportJobInput) (*request.Request, *connectwisdomservice.StartImportJobOutput)
 
 	TagResource(*connectwisdomservice.TagResourceInput) (*connectwisdomservice.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *connectwisdomservice.TagResourceInput, ...request.Option) (*connectwisdomservice.TagResourceOutput, error)
@@ -204,6 +249,10 @@ type ConnectWisdomServiceAPI interface {
 	UpdateKnowledgeBaseTemplateUri(*connectwisdomservice.UpdateKnowledgeBaseTemplateUriInput) (*connectwisdomservice.UpdateKnowledgeBaseTemplateUriOutput, error)
 	UpdateKnowledgeBaseTemplateUriWithContext(aws.Context, *connectwisdomservice.UpdateKnowledgeBaseTemplateUriInput, ...request.Option) (*connectwisdomservice.UpdateKnowledgeBaseTemplateUriOutput, error)
 	UpdateKnowledgeBaseTemplateUriRequest(*connectwisdomservice.UpdateKnowledgeBaseTemplateUriInput) (*request.Request, *connectwisdomservice.UpdateKnowledgeBaseTemplateUriOutput)
+
+	UpdateQuickResponse(*connectwisdomservice.UpdateQuickResponseInput) (*connectwisdomservice.UpdateQuickResponseOutput, error)
+	UpdateQuickResponseWithContext(aws.Context, *connectwisdomservice.UpdateQuickResponseInput, ...request.Option) (*connectwisdomservice.UpdateQuickResponseOutput, error)
+	UpdateQuickResponseRequest(*connectwisdomservice.UpdateQuickResponseInput) (*request.Request, *connectwisdomservice.UpdateQuickResponseOutput)
 }
 
 var _ ConnectWisdomServiceAPI = (*connectwisdomservice.ConnectWisdomService)(nil)

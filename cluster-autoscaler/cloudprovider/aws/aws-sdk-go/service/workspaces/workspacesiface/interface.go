@@ -68,6 +68,10 @@ type WorkSpacesAPI interface {
 	AssociateIpGroupsWithContext(aws.Context, *workspaces.AssociateIpGroupsInput, ...request.Option) (*workspaces.AssociateIpGroupsOutput, error)
 	AssociateIpGroupsRequest(*workspaces.AssociateIpGroupsInput) (*request.Request, *workspaces.AssociateIpGroupsOutput)
 
+	AssociateWorkspaceApplication(*workspaces.AssociateWorkspaceApplicationInput) (*workspaces.AssociateWorkspaceApplicationOutput, error)
+	AssociateWorkspaceApplicationWithContext(aws.Context, *workspaces.AssociateWorkspaceApplicationInput, ...request.Option) (*workspaces.AssociateWorkspaceApplicationOutput, error)
+	AssociateWorkspaceApplicationRequest(*workspaces.AssociateWorkspaceApplicationInput) (*request.Request, *workspaces.AssociateWorkspaceApplicationOutput)
+
 	AuthorizeIpRules(*workspaces.AuthorizeIpRulesInput) (*workspaces.AuthorizeIpRulesOutput, error)
 	AuthorizeIpRulesWithContext(aws.Context, *workspaces.AuthorizeIpRulesInput, ...request.Option) (*workspaces.AuthorizeIpRulesOutput, error)
 	AuthorizeIpRulesRequest(*workspaces.AuthorizeIpRulesInput) (*request.Request, *workspaces.AuthorizeIpRulesOutput)
@@ -88,6 +92,10 @@ type WorkSpacesAPI interface {
 	CreateIpGroupWithContext(aws.Context, *workspaces.CreateIpGroupInput, ...request.Option) (*workspaces.CreateIpGroupOutput, error)
 	CreateIpGroupRequest(*workspaces.CreateIpGroupInput) (*request.Request, *workspaces.CreateIpGroupOutput)
 
+	CreateStandbyWorkspaces(*workspaces.CreateStandbyWorkspacesInput) (*workspaces.CreateStandbyWorkspacesOutput, error)
+	CreateStandbyWorkspacesWithContext(aws.Context, *workspaces.CreateStandbyWorkspacesInput, ...request.Option) (*workspaces.CreateStandbyWorkspacesOutput, error)
+	CreateStandbyWorkspacesRequest(*workspaces.CreateStandbyWorkspacesInput) (*request.Request, *workspaces.CreateStandbyWorkspacesOutput)
+
 	CreateTags(*workspaces.CreateTagsInput) (*workspaces.CreateTagsOutput, error)
 	CreateTagsWithContext(aws.Context, *workspaces.CreateTagsInput, ...request.Option) (*workspaces.CreateTagsOutput, error)
 	CreateTagsRequest(*workspaces.CreateTagsInput) (*request.Request, *workspaces.CreateTagsOutput)
@@ -99,6 +107,10 @@ type WorkSpacesAPI interface {
 	CreateWorkspaceBundle(*workspaces.CreateWorkspaceBundleInput) (*workspaces.CreateWorkspaceBundleOutput, error)
 	CreateWorkspaceBundleWithContext(aws.Context, *workspaces.CreateWorkspaceBundleInput, ...request.Option) (*workspaces.CreateWorkspaceBundleOutput, error)
 	CreateWorkspaceBundleRequest(*workspaces.CreateWorkspaceBundleInput) (*request.Request, *workspaces.CreateWorkspaceBundleOutput)
+
+	CreateWorkspaceImage(*workspaces.CreateWorkspaceImageInput) (*workspaces.CreateWorkspaceImageOutput, error)
+	CreateWorkspaceImageWithContext(aws.Context, *workspaces.CreateWorkspaceImageInput, ...request.Option) (*workspaces.CreateWorkspaceImageOutput, error)
+	CreateWorkspaceImageRequest(*workspaces.CreateWorkspaceImageInput) (*request.Request, *workspaces.CreateWorkspaceImageOutput)
 
 	CreateWorkspaces(*workspaces.CreateWorkspacesInput) (*workspaces.CreateWorkspacesOutput, error)
 	CreateWorkspacesWithContext(aws.Context, *workspaces.CreateWorkspacesInput, ...request.Option) (*workspaces.CreateWorkspacesOutput, error)
@@ -132,6 +144,10 @@ type WorkSpacesAPI interface {
 	DeleteWorkspaceImageWithContext(aws.Context, *workspaces.DeleteWorkspaceImageInput, ...request.Option) (*workspaces.DeleteWorkspaceImageOutput, error)
 	DeleteWorkspaceImageRequest(*workspaces.DeleteWorkspaceImageInput) (*request.Request, *workspaces.DeleteWorkspaceImageOutput)
 
+	DeployWorkspaceApplications(*workspaces.DeployWorkspaceApplicationsInput) (*workspaces.DeployWorkspaceApplicationsOutput, error)
+	DeployWorkspaceApplicationsWithContext(aws.Context, *workspaces.DeployWorkspaceApplicationsInput, ...request.Option) (*workspaces.DeployWorkspaceApplicationsOutput, error)
+	DeployWorkspaceApplicationsRequest(*workspaces.DeployWorkspaceApplicationsInput) (*request.Request, *workspaces.DeployWorkspaceApplicationsOutput)
+
 	DeregisterWorkspaceDirectory(*workspaces.DeregisterWorkspaceDirectoryInput) (*workspaces.DeregisterWorkspaceDirectoryOutput, error)
 	DeregisterWorkspaceDirectoryWithContext(aws.Context, *workspaces.DeregisterWorkspaceDirectoryInput, ...request.Option) (*workspaces.DeregisterWorkspaceDirectoryOutput, error)
 	DeregisterWorkspaceDirectoryRequest(*workspaces.DeregisterWorkspaceDirectoryInput) (*request.Request, *workspaces.DeregisterWorkspaceDirectoryOutput)
@@ -143,6 +159,24 @@ type WorkSpacesAPI interface {
 	DescribeAccountModifications(*workspaces.DescribeAccountModificationsInput) (*workspaces.DescribeAccountModificationsOutput, error)
 	DescribeAccountModificationsWithContext(aws.Context, *workspaces.DescribeAccountModificationsInput, ...request.Option) (*workspaces.DescribeAccountModificationsOutput, error)
 	DescribeAccountModificationsRequest(*workspaces.DescribeAccountModificationsInput) (*request.Request, *workspaces.DescribeAccountModificationsOutput)
+
+	DescribeApplicationAssociations(*workspaces.DescribeApplicationAssociationsInput) (*workspaces.DescribeApplicationAssociationsOutput, error)
+	DescribeApplicationAssociationsWithContext(aws.Context, *workspaces.DescribeApplicationAssociationsInput, ...request.Option) (*workspaces.DescribeApplicationAssociationsOutput, error)
+	DescribeApplicationAssociationsRequest(*workspaces.DescribeApplicationAssociationsInput) (*request.Request, *workspaces.DescribeApplicationAssociationsOutput)
+
+	DescribeApplicationAssociationsPages(*workspaces.DescribeApplicationAssociationsInput, func(*workspaces.DescribeApplicationAssociationsOutput, bool) bool) error
+	DescribeApplicationAssociationsPagesWithContext(aws.Context, *workspaces.DescribeApplicationAssociationsInput, func(*workspaces.DescribeApplicationAssociationsOutput, bool) bool, ...request.Option) error
+
+	DescribeApplications(*workspaces.DescribeApplicationsInput) (*workspaces.DescribeApplicationsOutput, error)
+	DescribeApplicationsWithContext(aws.Context, *workspaces.DescribeApplicationsInput, ...request.Option) (*workspaces.DescribeApplicationsOutput, error)
+	DescribeApplicationsRequest(*workspaces.DescribeApplicationsInput) (*request.Request, *workspaces.DescribeApplicationsOutput)
+
+	DescribeApplicationsPages(*workspaces.DescribeApplicationsInput, func(*workspaces.DescribeApplicationsOutput, bool) bool) error
+	DescribeApplicationsPagesWithContext(aws.Context, *workspaces.DescribeApplicationsInput, func(*workspaces.DescribeApplicationsOutput, bool) bool, ...request.Option) error
+
+	DescribeBundleAssociations(*workspaces.DescribeBundleAssociationsInput) (*workspaces.DescribeBundleAssociationsOutput, error)
+	DescribeBundleAssociationsWithContext(aws.Context, *workspaces.DescribeBundleAssociationsInput, ...request.Option) (*workspaces.DescribeBundleAssociationsOutput, error)
+	DescribeBundleAssociationsRequest(*workspaces.DescribeBundleAssociationsInput) (*request.Request, *workspaces.DescribeBundleAssociationsOutput)
 
 	DescribeClientBranding(*workspaces.DescribeClientBrandingInput) (*workspaces.DescribeClientBrandingOutput, error)
 	DescribeClientBrandingWithContext(aws.Context, *workspaces.DescribeClientBrandingInput, ...request.Option) (*workspaces.DescribeClientBrandingOutput, error)
@@ -164,6 +198,10 @@ type WorkSpacesAPI interface {
 	DescribeConnectionAliasesWithContext(aws.Context, *workspaces.DescribeConnectionAliasesInput, ...request.Option) (*workspaces.DescribeConnectionAliasesOutput, error)
 	DescribeConnectionAliasesRequest(*workspaces.DescribeConnectionAliasesInput) (*request.Request, *workspaces.DescribeConnectionAliasesOutput)
 
+	DescribeImageAssociations(*workspaces.DescribeImageAssociationsInput) (*workspaces.DescribeImageAssociationsOutput, error)
+	DescribeImageAssociationsWithContext(aws.Context, *workspaces.DescribeImageAssociationsInput, ...request.Option) (*workspaces.DescribeImageAssociationsOutput, error)
+	DescribeImageAssociationsRequest(*workspaces.DescribeImageAssociationsInput) (*request.Request, *workspaces.DescribeImageAssociationsOutput)
+
 	DescribeIpGroups(*workspaces.DescribeIpGroupsInput) (*workspaces.DescribeIpGroupsOutput, error)
 	DescribeIpGroupsWithContext(aws.Context, *workspaces.DescribeIpGroupsInput, ...request.Option) (*workspaces.DescribeIpGroupsOutput, error)
 	DescribeIpGroupsRequest(*workspaces.DescribeIpGroupsInput) (*request.Request, *workspaces.DescribeIpGroupsOutput)
@@ -171,6 +209,10 @@ type WorkSpacesAPI interface {
 	DescribeTags(*workspaces.DescribeTagsInput) (*workspaces.DescribeTagsOutput, error)
 	DescribeTagsWithContext(aws.Context, *workspaces.DescribeTagsInput, ...request.Option) (*workspaces.DescribeTagsOutput, error)
 	DescribeTagsRequest(*workspaces.DescribeTagsInput) (*request.Request, *workspaces.DescribeTagsOutput)
+
+	DescribeWorkspaceAssociations(*workspaces.DescribeWorkspaceAssociationsInput) (*workspaces.DescribeWorkspaceAssociationsOutput, error)
+	DescribeWorkspaceAssociationsWithContext(aws.Context, *workspaces.DescribeWorkspaceAssociationsInput, ...request.Option) (*workspaces.DescribeWorkspaceAssociationsOutput, error)
+	DescribeWorkspaceAssociationsRequest(*workspaces.DescribeWorkspaceAssociationsInput) (*request.Request, *workspaces.DescribeWorkspaceAssociationsOutput)
 
 	DescribeWorkspaceBundles(*workspaces.DescribeWorkspaceBundlesInput) (*workspaces.DescribeWorkspaceBundlesOutput, error)
 	DescribeWorkspaceBundlesWithContext(aws.Context, *workspaces.DescribeWorkspaceBundlesInput, ...request.Option) (*workspaces.DescribeWorkspaceBundlesOutput, error)
@@ -217,6 +259,10 @@ type WorkSpacesAPI interface {
 	DisassociateIpGroupsWithContext(aws.Context, *workspaces.DisassociateIpGroupsInput, ...request.Option) (*workspaces.DisassociateIpGroupsOutput, error)
 	DisassociateIpGroupsRequest(*workspaces.DisassociateIpGroupsInput) (*request.Request, *workspaces.DisassociateIpGroupsOutput)
 
+	DisassociateWorkspaceApplication(*workspaces.DisassociateWorkspaceApplicationInput) (*workspaces.DisassociateWorkspaceApplicationOutput, error)
+	DisassociateWorkspaceApplicationWithContext(aws.Context, *workspaces.DisassociateWorkspaceApplicationInput, ...request.Option) (*workspaces.DisassociateWorkspaceApplicationOutput, error)
+	DisassociateWorkspaceApplicationRequest(*workspaces.DisassociateWorkspaceApplicationInput) (*request.Request, *workspaces.DisassociateWorkspaceApplicationOutput)
+
 	ImportClientBranding(*workspaces.ImportClientBrandingInput) (*workspaces.ImportClientBrandingOutput, error)
 	ImportClientBrandingWithContext(aws.Context, *workspaces.ImportClientBrandingInput, ...request.Option) (*workspaces.ImportClientBrandingOutput, error)
 	ImportClientBrandingRequest(*workspaces.ImportClientBrandingInput) (*request.Request, *workspaces.ImportClientBrandingOutput)
@@ -237,9 +283,17 @@ type WorkSpacesAPI interface {
 	ModifyAccountWithContext(aws.Context, *workspaces.ModifyAccountInput, ...request.Option) (*workspaces.ModifyAccountOutput, error)
 	ModifyAccountRequest(*workspaces.ModifyAccountInput) (*request.Request, *workspaces.ModifyAccountOutput)
 
+	ModifyCertificateBasedAuthProperties(*workspaces.ModifyCertificateBasedAuthPropertiesInput) (*workspaces.ModifyCertificateBasedAuthPropertiesOutput, error)
+	ModifyCertificateBasedAuthPropertiesWithContext(aws.Context, *workspaces.ModifyCertificateBasedAuthPropertiesInput, ...request.Option) (*workspaces.ModifyCertificateBasedAuthPropertiesOutput, error)
+	ModifyCertificateBasedAuthPropertiesRequest(*workspaces.ModifyCertificateBasedAuthPropertiesInput) (*request.Request, *workspaces.ModifyCertificateBasedAuthPropertiesOutput)
+
 	ModifyClientProperties(*workspaces.ModifyClientPropertiesInput) (*workspaces.ModifyClientPropertiesOutput, error)
 	ModifyClientPropertiesWithContext(aws.Context, *workspaces.ModifyClientPropertiesInput, ...request.Option) (*workspaces.ModifyClientPropertiesOutput, error)
 	ModifyClientPropertiesRequest(*workspaces.ModifyClientPropertiesInput) (*request.Request, *workspaces.ModifyClientPropertiesOutput)
+
+	ModifySamlProperties(*workspaces.ModifySamlPropertiesInput) (*workspaces.ModifySamlPropertiesOutput, error)
+	ModifySamlPropertiesWithContext(aws.Context, *workspaces.ModifySamlPropertiesInput, ...request.Option) (*workspaces.ModifySamlPropertiesOutput, error)
+	ModifySamlPropertiesRequest(*workspaces.ModifySamlPropertiesInput) (*request.Request, *workspaces.ModifySamlPropertiesOutput)
 
 	ModifySelfservicePermissions(*workspaces.ModifySelfservicePermissionsInput) (*workspaces.ModifySelfservicePermissionsOutput, error)
 	ModifySelfservicePermissionsWithContext(aws.Context, *workspaces.ModifySelfservicePermissionsInput, ...request.Option) (*workspaces.ModifySelfservicePermissionsOutput, error)
