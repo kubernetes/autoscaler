@@ -10,12 +10,12 @@
 // together and also see breakdowns by the browsers and devices that your customers
 // use.
 //
-//	<p>You can use the collected data to quickly identify and debug client-side
-//	performance issues. CloudWatch RUM helps you visualize anomalies in your
-//	application performance and find relevant debugging data such as error
-//	messages, stack traces, and user sessions. You can also use RUM to understand
-//	the range of end-user impact including the number of users, geolocations,
-//	and browsers used.</p>
+// You can use the collected data to quickly identify and debug client-side
+// performance issues. CloudWatch RUM helps you visualize anomalies in your
+// application performance and find relevant debugging data such as error messages,
+// stack traces, and user sessions. You can also use RUM to understand the range
+// of end-user impact including the number of users, geolocations, and browsers
+// used.
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/rum-2018-05-10 for more information on this service.
 //

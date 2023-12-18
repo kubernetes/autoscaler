@@ -285,6 +285,103 @@ func (c *ElasticsearchService) AssociatePackageWithContext(ctx aws.Context, inpu
 	return out, req.Send()
 }
 
+const opAuthorizeVpcEndpointAccess = "AuthorizeVpcEndpointAccess"
+
+// AuthorizeVpcEndpointAccessRequest generates a "aws/request.Request" representing the
+// client's request for the AuthorizeVpcEndpointAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See AuthorizeVpcEndpointAccess for more information on using the AuthorizeVpcEndpointAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the AuthorizeVpcEndpointAccessRequest method.
+//	req, resp := client.AuthorizeVpcEndpointAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) AuthorizeVpcEndpointAccessRequest(input *AuthorizeVpcEndpointAccessInput) (req *request.Request, output *AuthorizeVpcEndpointAccessOutput) {
+	op := &request.Operation{
+		Name:       opAuthorizeVpcEndpointAccess,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/authorizeVpcEndpointAccess",
+	}
+
+	if input == nil {
+		input = &AuthorizeVpcEndpointAccessInput{}
+	}
+
+	output = &AuthorizeVpcEndpointAccessOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// AuthorizeVpcEndpointAccess API operation for Amazon Elasticsearch Service.
+//
+// Provides access to an Amazon OpenSearch Service domain through the use of
+// an interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation AuthorizeVpcEndpointAccess for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) AuthorizeVpcEndpointAccess(input *AuthorizeVpcEndpointAccessInput) (*AuthorizeVpcEndpointAccessOutput, error) {
+	req, out := c.AuthorizeVpcEndpointAccessRequest(input)
+	return out, req.Send()
+}
+
+// AuthorizeVpcEndpointAccessWithContext is the same as AuthorizeVpcEndpointAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See AuthorizeVpcEndpointAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) AuthorizeVpcEndpointAccessWithContext(ctx aws.Context, input *AuthorizeVpcEndpointAccessInput, opts ...request.Option) (*AuthorizeVpcEndpointAccessOutput, error) {
+	req, out := c.AuthorizeVpcEndpointAccessRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opCancelElasticsearchServiceSoftwareUpdate = "CancelElasticsearchServiceSoftwareUpdate"
 
 // CancelElasticsearchServiceSoftwareUpdateRequest generates a "aws/request.Request" representing the
@@ -662,6 +759,102 @@ func (c *ElasticsearchService) CreatePackage(input *CreatePackageInput) (*Create
 // for more information on using Contexts.
 func (c *ElasticsearchService) CreatePackageWithContext(ctx aws.Context, input *CreatePackageInput, opts ...request.Option) (*CreatePackageOutput, error) {
 	req, out := c.CreatePackageRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateVpcEndpoint = "CreateVpcEndpoint"
+
+// CreateVpcEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the CreateVpcEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateVpcEndpoint for more information on using the CreateVpcEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the CreateVpcEndpointRequest method.
+//	req, resp := client.CreateVpcEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) CreateVpcEndpointRequest(input *CreateVpcEndpointInput) (req *request.Request, output *CreateVpcEndpointOutput) {
+	op := &request.Operation{
+		Name:       opCreateVpcEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints",
+	}
+
+	if input == nil {
+		input = &CreateVpcEndpointInput{}
+	}
+
+	output = &CreateVpcEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateVpcEndpoint API operation for Amazon Elasticsearch Service.
+//
+// Creates an Amazon OpenSearch Service-managed VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation CreateVpcEndpoint for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - LimitExceededException
+//     An exception for trying to create more than allowed resources or sub-resources.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) CreateVpcEndpoint(input *CreateVpcEndpointInput) (*CreateVpcEndpointOutput, error) {
+	req, out := c.CreateVpcEndpointRequest(input)
+	return out, req.Send()
+}
+
+// CreateVpcEndpointWithContext is the same as CreateVpcEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateVpcEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) CreateVpcEndpointWithContext(ctx aws.Context, input *CreateVpcEndpointInput, opts ...request.Option) (*CreateVpcEndpointOutput, error) {
+	req, out := c.CreateVpcEndpointRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -1098,6 +1291,94 @@ func (c *ElasticsearchService) DeletePackage(input *DeletePackageInput) (*Delete
 // for more information on using Contexts.
 func (c *ElasticsearchService) DeletePackageWithContext(ctx aws.Context, input *DeletePackageInput, opts ...request.Option) (*DeletePackageOutput, error) {
 	req, out := c.DeletePackageRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteVpcEndpoint = "DeleteVpcEndpoint"
+
+// DeleteVpcEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteVpcEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteVpcEndpoint for more information on using the DeleteVpcEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DeleteVpcEndpointRequest method.
+//	req, resp := client.DeleteVpcEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) DeleteVpcEndpointRequest(input *DeleteVpcEndpointInput) (req *request.Request, output *DeleteVpcEndpointOutput) {
+	op := &request.Operation{
+		Name:       opDeleteVpcEndpoint,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints/{VpcEndpointId}",
+	}
+
+	if input == nil {
+		input = &DeleteVpcEndpointInput{}
+	}
+
+	output = &DeleteVpcEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteVpcEndpoint API operation for Amazon Elasticsearch Service.
+//
+// Deletes an Amazon OpenSearch Service-managed interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation DeleteVpcEndpoint for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) DeleteVpcEndpoint(input *DeleteVpcEndpointInput) (*DeleteVpcEndpointOutput, error) {
+	req, out := c.DeleteVpcEndpointRequest(input)
+	return out, req.Send()
+}
+
+// DeleteVpcEndpointWithContext is the same as DeleteVpcEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteVpcEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) DeleteVpcEndpointWithContext(ctx aws.Context, input *DeleteVpcEndpointInput, opts ...request.Option) (*DeleteVpcEndpointOutput, error) {
+	req, out := c.DeleteVpcEndpointRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2415,6 +2696,94 @@ func (c *ElasticsearchService) DescribeReservedElasticsearchInstancesPagesWithCo
 	}
 
 	return p.Err()
+}
+
+const opDescribeVpcEndpoints = "DescribeVpcEndpoints"
+
+// DescribeVpcEndpointsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeVpcEndpoints operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeVpcEndpoints for more information on using the DescribeVpcEndpoints
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeVpcEndpointsRequest method.
+//	req, resp := client.DescribeVpcEndpointsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) DescribeVpcEndpointsRequest(input *DescribeVpcEndpointsInput) (req *request.Request, output *DescribeVpcEndpointsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeVpcEndpoints,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints/describe",
+	}
+
+	if input == nil {
+		input = &DescribeVpcEndpointsInput{}
+	}
+
+	output = &DescribeVpcEndpointsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeVpcEndpoints API operation for Amazon Elasticsearch Service.
+//
+// Describes one or more Amazon OpenSearch Service-managed VPC endpoints.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation DescribeVpcEndpoints for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) DescribeVpcEndpoints(input *DescribeVpcEndpointsInput) (*DescribeVpcEndpointsOutput, error) {
+	req, out := c.DescribeVpcEndpointsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeVpcEndpointsWithContext is the same as DescribeVpcEndpoints with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeVpcEndpoints for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) DescribeVpcEndpointsWithContext(ctx aws.Context, input *DescribeVpcEndpointsInput, opts ...request.Option) (*DescribeVpcEndpointsOutput, error) {
+	req, out := c.DescribeVpcEndpointsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
 }
 
 const opDissociatePackage = "DissociatePackage"
@@ -3756,6 +4125,269 @@ func (c *ElasticsearchService) ListTagsWithContext(ctx aws.Context, input *ListT
 	return out, req.Send()
 }
 
+const opListVpcEndpointAccess = "ListVpcEndpointAccess"
+
+// ListVpcEndpointAccessRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcEndpointAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcEndpointAccess for more information on using the ListVpcEndpointAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcEndpointAccessRequest method.
+//	req, resp := client.ListVpcEndpointAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) ListVpcEndpointAccessRequest(input *ListVpcEndpointAccessInput) (req *request.Request, output *ListVpcEndpointAccessOutput) {
+	op := &request.Operation{
+		Name:       opListVpcEndpointAccess,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/listVpcEndpointAccess",
+	}
+
+	if input == nil {
+		input = &ListVpcEndpointAccessInput{}
+	}
+
+	output = &ListVpcEndpointAccessOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcEndpointAccess API operation for Amazon Elasticsearch Service.
+//
+// Retrieves information about each principal that is allowed to access a given
+// Amazon OpenSearch Service domain through the use of an interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation ListVpcEndpointAccess for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) ListVpcEndpointAccess(input *ListVpcEndpointAccessInput) (*ListVpcEndpointAccessOutput, error) {
+	req, out := c.ListVpcEndpointAccessRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcEndpointAccessWithContext is the same as ListVpcEndpointAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcEndpointAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) ListVpcEndpointAccessWithContext(ctx aws.Context, input *ListVpcEndpointAccessInput, opts ...request.Option) (*ListVpcEndpointAccessOutput, error) {
+	req, out := c.ListVpcEndpointAccessRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListVpcEndpoints = "ListVpcEndpoints"
+
+// ListVpcEndpointsRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcEndpoints operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcEndpoints for more information on using the ListVpcEndpoints
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcEndpointsRequest method.
+//	req, resp := client.ListVpcEndpointsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) ListVpcEndpointsRequest(input *ListVpcEndpointsInput) (req *request.Request, output *ListVpcEndpointsOutput) {
+	op := &request.Operation{
+		Name:       opListVpcEndpoints,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints",
+	}
+
+	if input == nil {
+		input = &ListVpcEndpointsInput{}
+	}
+
+	output = &ListVpcEndpointsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcEndpoints API operation for Amazon Elasticsearch Service.
+//
+// Retrieves all Amazon OpenSearch Service-managed VPC endpoints in the current
+// account and Region.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation ListVpcEndpoints for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) ListVpcEndpoints(input *ListVpcEndpointsInput) (*ListVpcEndpointsOutput, error) {
+	req, out := c.ListVpcEndpointsRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcEndpointsWithContext is the same as ListVpcEndpoints with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcEndpoints for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) ListVpcEndpointsWithContext(ctx aws.Context, input *ListVpcEndpointsInput, opts ...request.Option) (*ListVpcEndpointsOutput, error) {
+	req, out := c.ListVpcEndpointsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opListVpcEndpointsForDomain = "ListVpcEndpointsForDomain"
+
+// ListVpcEndpointsForDomainRequest generates a "aws/request.Request" representing the
+// client's request for the ListVpcEndpointsForDomain operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See ListVpcEndpointsForDomain for more information on using the ListVpcEndpointsForDomain
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the ListVpcEndpointsForDomainRequest method.
+//	req, resp := client.ListVpcEndpointsForDomainRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) ListVpcEndpointsForDomainRequest(input *ListVpcEndpointsForDomainInput) (req *request.Request, output *ListVpcEndpointsForDomainOutput) {
+	op := &request.Operation{
+		Name:       opListVpcEndpointsForDomain,
+		HTTPMethod: "GET",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/vpcEndpoints",
+	}
+
+	if input == nil {
+		input = &ListVpcEndpointsForDomainInput{}
+	}
+
+	output = &ListVpcEndpointsForDomainOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListVpcEndpointsForDomain API operation for Amazon Elasticsearch Service.
+//
+// Retrieves all Amazon OpenSearch Service-managed VPC endpoints associated
+// with a particular domain.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation ListVpcEndpointsForDomain for usage and error information.
+//
+// Returned Error Types:
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) ListVpcEndpointsForDomain(input *ListVpcEndpointsForDomainInput) (*ListVpcEndpointsForDomainOutput, error) {
+	req, out := c.ListVpcEndpointsForDomainRequest(input)
+	return out, req.Send()
+}
+
+// ListVpcEndpointsForDomainWithContext is the same as ListVpcEndpointsForDomain with the addition of
+// the ability to pass a context and additional request options.
+//
+// See ListVpcEndpointsForDomain for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) ListVpcEndpointsForDomainWithContext(ctx aws.Context, input *ListVpcEndpointsForDomainInput, opts ...request.Option) (*ListVpcEndpointsForDomainOutput, error) {
+	req, out := c.ListVpcEndpointsForDomainRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opPurchaseReservedElasticsearchInstanceOffering = "PurchaseReservedElasticsearchInstanceOffering"
 
 // PurchaseReservedElasticsearchInstanceOfferingRequest generates a "aws/request.Request" representing the
@@ -4014,6 +4646,100 @@ func (c *ElasticsearchService) RemoveTags(input *RemoveTagsInput) (*RemoveTagsOu
 // for more information on using Contexts.
 func (c *ElasticsearchService) RemoveTagsWithContext(ctx aws.Context, input *RemoveTagsInput, opts ...request.Option) (*RemoveTagsOutput, error) {
 	req, out := c.RemoveTagsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opRevokeVpcEndpointAccess = "RevokeVpcEndpointAccess"
+
+// RevokeVpcEndpointAccessRequest generates a "aws/request.Request" representing the
+// client's request for the RevokeVpcEndpointAccess operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See RevokeVpcEndpointAccess for more information on using the RevokeVpcEndpointAccess
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the RevokeVpcEndpointAccessRequest method.
+//	req, resp := client.RevokeVpcEndpointAccessRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) RevokeVpcEndpointAccessRequest(input *RevokeVpcEndpointAccessInput) (req *request.Request, output *RevokeVpcEndpointAccessOutput) {
+	op := &request.Operation{
+		Name:       opRevokeVpcEndpointAccess,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/domain/{DomainName}/revokeVpcEndpointAccess",
+	}
+
+	if input == nil {
+		input = &RevokeVpcEndpointAccessInput{}
+	}
+
+	output = &RevokeVpcEndpointAccessOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Swap(restjson.UnmarshalHandler.Name, protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// RevokeVpcEndpointAccess API operation for Amazon Elasticsearch Service.
+//
+// Revokes access to an Amazon OpenSearch Service domain that was provided through
+// an interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation RevokeVpcEndpointAccess for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) RevokeVpcEndpointAccess(input *RevokeVpcEndpointAccessInput) (*RevokeVpcEndpointAccessOutput, error) {
+	req, out := c.RevokeVpcEndpointAccessRequest(input)
+	return out, req.Send()
+}
+
+// RevokeVpcEndpointAccessWithContext is the same as RevokeVpcEndpointAccess with the addition of
+// the ability to pass a context and additional request options.
+//
+// See RevokeVpcEndpointAccess for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) RevokeVpcEndpointAccessWithContext(ctx aws.Context, input *RevokeVpcEndpointAccessInput, opts ...request.Option) (*RevokeVpcEndpointAccessOutput, error) {
+	req, out := c.RevokeVpcEndpointAccessRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -4295,6 +5021,102 @@ func (c *ElasticsearchService) UpdatePackage(input *UpdatePackageInput) (*Update
 // for more information on using Contexts.
 func (c *ElasticsearchService) UpdatePackageWithContext(ctx aws.Context, input *UpdatePackageInput, opts ...request.Option) (*UpdatePackageOutput, error) {
 	req, out := c.UpdatePackageRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opUpdateVpcEndpoint = "UpdateVpcEndpoint"
+
+// UpdateVpcEndpointRequest generates a "aws/request.Request" representing the
+// client's request for the UpdateVpcEndpoint operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See UpdateVpcEndpoint for more information on using the UpdateVpcEndpoint
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the UpdateVpcEndpointRequest method.
+//	req, resp := client.UpdateVpcEndpointRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+func (c *ElasticsearchService) UpdateVpcEndpointRequest(input *UpdateVpcEndpointInput) (req *request.Request, output *UpdateVpcEndpointOutput) {
+	op := &request.Operation{
+		Name:       opUpdateVpcEndpoint,
+		HTTPMethod: "POST",
+		HTTPPath:   "/2015-01-01/es/vpcEndpoints/update",
+	}
+
+	if input == nil {
+		input = &UpdateVpcEndpointInput{}
+	}
+
+	output = &UpdateVpcEndpointOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// UpdateVpcEndpoint API operation for Amazon Elasticsearch Service.
+//
+// Modifies an Amazon OpenSearch Service-managed interface VPC endpoint.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon Elasticsearch Service's
+// API operation UpdateVpcEndpoint for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ResourceNotFoundException
+//     An exception for accessing or deleting a resource that does not exist. Gives
+//     http status code of 400.
+//
+//   - DisabledOperationException
+//     An error occured because the client wanted to access a not supported operation.
+//     Gives http status code of 409.
+//
+//   - InternalException
+//     The request processing has failed because of an unknown error, exception
+//     or failure (the failure is internal to the service) . Gives http status code
+//     of 500.
+//
+//   - ValidationException
+//     An exception for missing / invalid input fields. Gives http status code of
+//     400.
+//
+//   - ConflictException
+//     An error occurred because the client attempts to remove a resource that is
+//     currently in use. Returns HTTP status code 409.
+//
+//   - BaseException
+//     An error occurred while processing the request.
+func (c *ElasticsearchService) UpdateVpcEndpoint(input *UpdateVpcEndpointInput) (*UpdateVpcEndpointOutput, error) {
+	req, out := c.UpdateVpcEndpointRequest(input)
+	return out, req.Send()
+}
+
+// UpdateVpcEndpointWithContext is the same as UpdateVpcEndpoint with the addition of
+// the ability to pass a context and additional request options.
+//
+// See UpdateVpcEndpoint for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *ElasticsearchService) UpdateVpcEndpointWithContext(ctx aws.Context, input *UpdateVpcEndpointInput, opts ...request.Option) (*UpdateVpcEndpointOutput, error) {
+	req, out := c.UpdateVpcEndpointRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -5098,6 +5920,151 @@ func (s AssociatePackageOutput) GoString() string {
 // SetDomainPackageDetails sets the DomainPackageDetails field's value.
 func (s *AssociatePackageOutput) SetDomainPackageDetails(v *DomainPackageDetails) *AssociatePackageOutput {
 	s.DomainPackageDetails = v
+	return s
+}
+
+// Container for request parameters to the AuthorizeVpcEndpointAccess operation.
+// Specifies the account to be permitted to manage VPC endpoints against the
+// domain.
+type AuthorizeVpcEndpointAccessInput struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID to grant access to.
+	//
+	// Account is a required field
+	Account *string `type:"string" required:"true"`
+
+	// The name of the OpenSearch Service domain to provide access to.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AuthorizeVpcEndpointAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AuthorizeVpcEndpointAccessInput"}
+	if s.Account == nil {
+		invalidParams.Add(request.NewErrParamRequired("Account"))
+	}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccount sets the Account field's value.
+func (s *AuthorizeVpcEndpointAccessInput) SetAccount(v string) *AuthorizeVpcEndpointAccessInput {
+	s.Account = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *AuthorizeVpcEndpointAccessInput) SetDomainName(v string) *AuthorizeVpcEndpointAccessInput {
+	s.DomainName = &v
+	return s
+}
+
+// Container for response parameters to the AuthorizeVpcEndpointAccess operation.
+// Contains the account ID and the type of the account being authorized to access
+// the VPC endpoint.
+type AuthorizeVpcEndpointAccessOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the account or service that was provided access to the
+	// domain.
+	//
+	// AuthorizedPrincipal is a required field
+	AuthorizedPrincipal *AuthorizedPrincipal `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizeVpcEndpointAccessOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedPrincipal sets the AuthorizedPrincipal field's value.
+func (s *AuthorizeVpcEndpointAccessOutput) SetAuthorizedPrincipal(v *AuthorizedPrincipal) *AuthorizeVpcEndpointAccessOutput {
+	s.AuthorizedPrincipal = v
+	return s
+}
+
+// Information about an account or service that has access to an Amazon OpenSearch
+// Service domain through the use of an interface VPC endpoint.
+type AuthorizedPrincipal struct {
+	_ struct{} `type:"structure"`
+
+	// The IAM principal that is allowed access to the domain.
+	Principal *string `type:"string"`
+
+	// The type of principal.
+	PrincipalType *string `type:"string" enum:"PrincipalType"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedPrincipal) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthorizedPrincipal) GoString() string {
+	return s.String()
+}
+
+// SetPrincipal sets the Principal field's value.
+func (s *AuthorizedPrincipal) SetPrincipal(v string) *AuthorizedPrincipal {
+	s.Principal = &v
+	return s
+}
+
+// SetPrincipalType sets the PrincipalType field's value.
+func (s *AuthorizedPrincipal) SetPrincipalType(v string) *AuthorizedPrincipal {
+	s.PrincipalType = &v
 	return s
 }
 
@@ -6729,6 +7696,117 @@ func (s *CreatePackageOutput) SetPackageDetails(v *PackageDetails) *CreatePackag
 	return s
 }
 
+// Container for the parameters to the CreateVpcEndpointRequest operation.
+type CreateVpcEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique, case-sensitive identifier to ensure idempotency of the request.
+	ClientToken *string `min:"1" type:"string"`
+
+	// The Amazon Resource Name (ARN) of the domain to grant access to.
+	//
+	// DomainArn is a required field
+	DomainArn *string `min:"1" type:"string" required:"true"`
+
+	// Options to specify the subnets and security groups for the endpoint.
+	//
+	// VpcOptions is a required field
+	VpcOptions *VPCOptions `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateVpcEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateVpcEndpointInput"}
+	if s.ClientToken != nil && len(*s.ClientToken) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ClientToken", 1))
+	}
+	if s.DomainArn == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainArn"))
+	}
+	if s.DomainArn != nil && len(*s.DomainArn) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainArn", 1))
+	}
+	if s.VpcOptions == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcOptions"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetClientToken sets the ClientToken field's value.
+func (s *CreateVpcEndpointInput) SetClientToken(v string) *CreateVpcEndpointInput {
+	s.ClientToken = &v
+	return s
+}
+
+// SetDomainArn sets the DomainArn field's value.
+func (s *CreateVpcEndpointInput) SetDomainArn(v string) *CreateVpcEndpointInput {
+	s.DomainArn = &v
+	return s
+}
+
+// SetVpcOptions sets the VpcOptions field's value.
+func (s *CreateVpcEndpointInput) SetVpcOptions(v *VPCOptions) *CreateVpcEndpointInput {
+	s.VpcOptions = v
+	return s
+}
+
+// Container for response parameters to the CreateVpcEndpoint operation. Contains
+// the configuration and status of the VPC Endpoint being created.
+type CreateVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the newly created VPC endpoint.
+	//
+	// VpcEndpoint is a required field
+	VpcEndpoint *VpcEndpoint `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s CreateVpcEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpoint sets the VpcEndpoint field's value.
+func (s *CreateVpcEndpointOutput) SetVpcEndpoint(v *VpcEndpoint) *CreateVpcEndpointOutput {
+	s.VpcEndpoint = v
+	return s
+}
+
 // Container for the parameters to the DeleteElasticsearchDomain operation.
 // Specifies the name of the Elasticsearch domain that you want to delete.
 type DeleteElasticsearchDomainInput struct {
@@ -7106,6 +8184,92 @@ func (s DeletePackageOutput) GoString() string {
 // SetPackageDetails sets the PackageDetails field's value.
 func (s *DeletePackageOutput) SetPackageDetails(v *PackageDetails) *DeletePackageOutput {
 	s.PackageDetails = v
+	return s
+}
+
+// Deletes an Amazon OpenSearch Service-managed interface VPC endpoint.
+type DeleteVpcEndpointInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The unique identifier of the endpoint to be deleted.
+	//
+	// VpcEndpointId is a required field
+	VpcEndpointId *string `location:"uri" locationName:"VpcEndpointId" min:"5" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteVpcEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteVpcEndpointInput"}
+	if s.VpcEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcEndpointId"))
+	}
+	if s.VpcEndpointId != nil && len(*s.VpcEndpointId) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcEndpointId", 5))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *DeleteVpcEndpointInput) SetVpcEndpointId(v string) *DeleteVpcEndpointInput {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// Container for response parameters to the DeleteVpcEndpoint operation. Contains
+// the summarized detail of the VPC Endpoint being deleted.
+type DeleteVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the deleted endpoint, including its current status (DELETING
+	// or DELETE_FAILED).
+	//
+	// VpcEndpointSummary is a required field
+	VpcEndpointSummary *VpcEndpointSummary `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DeleteVpcEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpointSummary sets the VpcEndpointSummary field's value.
+func (s *DeleteVpcEndpointOutput) SetVpcEndpointSummary(v *VpcEndpointSummary) *DeleteVpcEndpointOutput {
+	s.VpcEndpointSummary = v
 	return s
 }
 
@@ -7957,8 +9121,8 @@ type DescribePackagesFilter struct {
 	// Any field from PackageDetails.
 	Name *string `type:"string" enum:"DescribePackagesFilterName"`
 
-	// A list of values for the specified field.
-	Value []*string `type:"list"`
+	// A non-empty list of values for the specified field.
+	Value []*string `min:"1" type:"list"`
 }
 
 // String returns the string representation.
@@ -7977,6 +9141,19 @@ func (s DescribePackagesFilter) String() string {
 // value will be replaced with "sensitive".
 func (s DescribePackagesFilter) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribePackagesFilter) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribePackagesFilter"}
+	if s.Value != nil && len(s.Value) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Value", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetName sets the Name field's value.
@@ -8022,6 +9199,26 @@ func (s DescribePackagesInput) String() string {
 // value will be replaced with "sensitive".
 func (s DescribePackagesInput) GoString() string {
 	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribePackagesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribePackagesInput"}
+	if s.Filters != nil {
+		for i, v := range s.Filters {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Filters", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
 }
 
 // SetFilters sets the Filters field's value.
@@ -8268,6 +9465,102 @@ func (s *DescribeReservedElasticsearchInstancesOutput) SetNextToken(v string) *D
 // SetReservedElasticsearchInstances sets the ReservedElasticsearchInstances field's value.
 func (s *DescribeReservedElasticsearchInstancesOutput) SetReservedElasticsearchInstances(v []*ReservedElasticsearchInstance) *DescribeReservedElasticsearchInstancesOutput {
 	s.ReservedElasticsearchInstances = v
+	return s
+}
+
+// Container for request parameters to the DescribeVpcEndpoints operation. Specifies
+// the list of VPC endpoints to be described.
+type DescribeVpcEndpointsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The unique identifiers of the endpoints to get information about.
+	//
+	// VpcEndpointIds is a required field
+	VpcEndpointIds []*string `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DescribeVpcEndpointsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DescribeVpcEndpointsInput"}
+	if s.VpcEndpointIds == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcEndpointIds"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVpcEndpointIds sets the VpcEndpointIds field's value.
+func (s *DescribeVpcEndpointsInput) SetVpcEndpointIds(v []*string) *DescribeVpcEndpointsInput {
+	s.VpcEndpointIds = v
+	return s
+}
+
+// Container for response parameters to the DescribeVpcEndpoints operation.
+// Returns a list containing configuration details and status of the VPC Endpoints
+// as well as a list containing error responses of the endpoints that could
+// not be described
+type DescribeVpcEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Any errors associated with the request.
+	//
+	// VpcEndpointErrors is a required field
+	VpcEndpointErrors []*VpcEndpointError `type:"list" required:"true"`
+
+	// Information about each requested VPC endpoint.
+	//
+	// VpcEndpoints is a required field
+	VpcEndpoints []*VpcEndpoint `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeVpcEndpointsOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpointErrors sets the VpcEndpointErrors field's value.
+func (s *DescribeVpcEndpointsOutput) SetVpcEndpointErrors(v []*VpcEndpointError) *DescribeVpcEndpointsOutput {
+	s.VpcEndpointErrors = v
+	return s
+}
+
+// SetVpcEndpoints sets the VpcEndpoints field's value.
+func (s *DescribeVpcEndpointsOutput) SetVpcEndpoints(v []*VpcEndpoint) *DescribeVpcEndpointsOutput {
+	s.VpcEndpoints = v
 	return s
 }
 
@@ -8898,8 +10191,11 @@ type EBSOptions struct {
 	// Specifies whether EBS-based storage is enabled.
 	EBSEnabled *bool `type:"boolean"`
 
-	// Specifies the IOPD for a Provisioned IOPS EBS volume (SSD).
+	// Specifies the IOPS for Provisioned IOPS And GP3 EBS volume (SSD).
 	Iops *int64 `type:"integer"`
+
+	// Specifies the Throughput for GP3 EBS volume (SSD).
+	Throughput *int64 `type:"integer"`
 
 	// Integer to specify the size of an EBS volume.
 	VolumeSize *int64 `type:"integer"`
@@ -8935,6 +10231,12 @@ func (s *EBSOptions) SetEBSEnabled(v bool) *EBSOptions {
 // SetIops sets the Iops field's value.
 func (s *EBSOptions) SetIops(v int64) *EBSOptions {
 	s.Iops = &v
+	return s
+}
+
+// SetThroughput sets the Throughput field's value.
+func (s *EBSOptions) SetThroughput(v int64) *EBSOptions {
+	s.Throughput = &v
 	return s
 }
 
@@ -11396,6 +12698,298 @@ func (s *ListTagsOutput) SetTagList(v []*Tag) *ListTagsOutput {
 	return s
 }
 
+// Retrieves information about each principal that is allowed to access a given
+// Amazon OpenSearch Service domain through the use of an interface VPC endpoint
+type ListVpcEndpointAccessInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// The name of the OpenSearch Service domain to retrieve access information
+	// for.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListVpcEndpointAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListVpcEndpointAccessInput"}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *ListVpcEndpointAccessInput) SetDomainName(v string) *ListVpcEndpointAccessInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointAccessInput) SetNextToken(v string) *ListVpcEndpointAccessInput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for response parameters to the ListVpcEndpointAccess operation.
+// Returns a list of accounts id and account type authorized to manage VPC endpoints.
+type ListVpcEndpointAccessOutput struct {
+	_ struct{} `type:"structure"`
+
+	// List of AuthorizedPrincipal describing the details of the permissions to
+	// manage VPC endpoints against the specified domain.
+	//
+	// AuthorizedPrincipalList is a required field
+	AuthorizedPrincipalList []*AuthorizedPrincipal `type:"list" required:"true"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	//
+	// NextToken is a required field
+	NextToken *string `type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointAccessOutput) GoString() string {
+	return s.String()
+}
+
+// SetAuthorizedPrincipalList sets the AuthorizedPrincipalList field's value.
+func (s *ListVpcEndpointAccessOutput) SetAuthorizedPrincipalList(v []*AuthorizedPrincipal) *ListVpcEndpointAccessOutput {
+	s.AuthorizedPrincipalList = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointAccessOutput) SetNextToken(v string) *ListVpcEndpointAccessOutput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for request parameters to the ListVpcEndpointsForDomain operation.
+// Specifies the domain whose VPC endpoints will be listed.
+type ListVpcEndpointsForDomainInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Name of the ElasticSearch domain whose VPC endpoints are to be listed.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListVpcEndpointsForDomainInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListVpcEndpointsForDomainInput"}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *ListVpcEndpointsForDomainInput) SetDomainName(v string) *ListVpcEndpointsForDomainInput {
+	s.DomainName = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsForDomainInput) SetNextToken(v string) *ListVpcEndpointsForDomainInput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for response parameters to the ListVpcEndpointsForDomain operation.
+// Returns a list containing summarized details of the VPC endpoints.
+type ListVpcEndpointsForDomainOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about each endpoint associated with the domain.
+	//
+	// NextToken is a required field
+	NextToken *string `type:"string" required:"true"`
+
+	// Provides list of VpcEndpointSummary summarizing details of the VPC endpoints.
+	//
+	// VpcEndpointSummaryList is a required field
+	VpcEndpointSummaryList []*VpcEndpointSummary `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsForDomainOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsForDomainOutput) SetNextToken(v string) *ListVpcEndpointsForDomainOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVpcEndpointSummaryList sets the VpcEndpointSummaryList field's value.
+func (s *ListVpcEndpointsForDomainOutput) SetVpcEndpointSummaryList(v []*VpcEndpointSummary) *ListVpcEndpointsForDomainOutput {
+	s.VpcEndpointSummaryList = v
+	return s
+}
+
+// Container for request parameters to the ListVpcEndpoints operation.
+type ListVpcEndpointsInput struct {
+	_ struct{} `type:"structure" nopayload:"true"`
+
+	// Identifier to allow retrieval of paginated results.
+	NextToken *string `location:"querystring" locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsInput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsInput) SetNextToken(v string) *ListVpcEndpointsInput {
+	s.NextToken = &v
+	return s
+}
+
+// Container for response parameters to the ListVpcEndpoints operation. Returns
+// a list containing summarized details of the VPC endpoints.
+type ListVpcEndpointsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Provides an identifier to allow retrieval of paginated results.
+	//
+	// NextToken is a required field
+	NextToken *string `type:"string" required:"true"`
+
+	// Information about each endpoint.
+	//
+	// VpcEndpointSummaryList is a required field
+	VpcEndpointSummaryList []*VpcEndpointSummary `type:"list" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ListVpcEndpointsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListVpcEndpointsOutput) SetNextToken(v string) *ListVpcEndpointsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetVpcEndpointSummaryList sets the VpcEndpointSummaryList field's value.
+func (s *ListVpcEndpointsOutput) SetVpcEndpointSummaryList(v []*VpcEndpointSummary) *ListVpcEndpointsOutput {
+	s.VpcEndpointSummaryList = v
+	return s
+}
+
 // Log Publishing option that is set for given domain. Attributes and their
 // details:
 //
@@ -12753,6 +14347,95 @@ func (s *ResourceNotFoundException) RequestID() string {
 	return s.RespMetadata.RequestID
 }
 
+// Revokes access to an Amazon OpenSearch Service domain that was provided through
+// an interface VPC endpoint.
+type RevokeVpcEndpointAccessInput struct {
+	_ struct{} `type:"structure"`
+
+	// The account ID to revoke access from.
+	//
+	// Account is a required field
+	Account *string `type:"string" required:"true"`
+
+	// The name of the OpenSearch Service domain.
+	//
+	// DomainName is a required field
+	DomainName *string `location:"uri" locationName:"DomainName" min:"3" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *RevokeVpcEndpointAccessInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "RevokeVpcEndpointAccessInput"}
+	if s.Account == nil {
+		invalidParams.Add(request.NewErrParamRequired("Account"))
+	}
+	if s.DomainName == nil {
+		invalidParams.Add(request.NewErrParamRequired("DomainName"))
+	}
+	if s.DomainName != nil && len(*s.DomainName) < 3 {
+		invalidParams.Add(request.NewErrParamMinLen("DomainName", 3))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAccount sets the Account field's value.
+func (s *RevokeVpcEndpointAccessInput) SetAccount(v string) *RevokeVpcEndpointAccessInput {
+	s.Account = &v
+	return s
+}
+
+// SetDomainName sets the DomainName field's value.
+func (s *RevokeVpcEndpointAccessInput) SetDomainName(v string) *RevokeVpcEndpointAccessInput {
+	s.DomainName = &v
+	return s
+}
+
+// Container for response parameters to the RevokeVpcEndpointAccess operation.
+// The response body for this operation is empty.
+type RevokeVpcEndpointAccessOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RevokeVpcEndpointAccessOutput) GoString() string {
+	return s.String()
+}
+
 // Specifies the SAML Identity Provider's information.
 type SAMLIdp struct {
 	_ struct{} `type:"structure"`
@@ -13334,8 +15017,8 @@ type StorageType struct {
 
 	// SubType of the given storage type. List of available sub-storage options:
 	// For "instance" storageType we wont have any storageSubType, in case of "ebs"
-	// storageType we will have following valid storageSubTypes standard gp2 io1
-	// Refer VolumeType for more information regarding above EBS storage options.
+	// storageType we will have following valid storageSubTypes standard gp2 gp3
+	// io1 Refer VolumeType for more information regarding above EBS storage options.
 	StorageSubTypeName *string `type:"string"`
 
 	// List of limits that are applicable for given storage type.
@@ -13395,7 +15078,10 @@ type StorageTypeLimit struct {
 	// applicable. MaximumIops Maximum amount of Iops that is applicable for given
 	// storage type.It can be empty if it is not applicable. MinimumIops Minimum
 	// amount of Iops that is applicable for given storage type.It can be empty
-	// if it is not applicable.
+	// if it is not applicable. MaximumThroughput Maximum amount of Throughput that
+	// is applicable for given storage type.It can be empty if it is not applicable.
+	// MinimumThroughput Minimum amount of Throughput that is applicable for given
+	// storage type.It can be empty if it is not applicable.
 	LimitName *string `type:"string"`
 
 	// Values for the StorageTypeLimit$LimitName .
@@ -13876,6 +15562,104 @@ func (s UpdatePackageOutput) GoString() string {
 // SetPackageDetails sets the PackageDetails field's value.
 func (s *UpdatePackageOutput) SetPackageDetails(v *PackageDetails) *UpdatePackageOutput {
 	s.PackageDetails = v
+	return s
+}
+
+// Modifies an Amazon OpenSearch Service-managed interface VPC endpoint.
+type UpdateVpcEndpointInput struct {
+	_ struct{} `type:"structure"`
+
+	// Unique identifier of the VPC endpoint to be updated.
+	//
+	// VpcEndpointId is a required field
+	VpcEndpointId *string `min:"5" type:"string" required:"true"`
+
+	// The security groups and/or subnets to add, remove, or modify.
+	//
+	// VpcOptions is a required field
+	VpcOptions *VPCOptions `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *UpdateVpcEndpointInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "UpdateVpcEndpointInput"}
+	if s.VpcEndpointId == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcEndpointId"))
+	}
+	if s.VpcEndpointId != nil && len(*s.VpcEndpointId) < 5 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcEndpointId", 5))
+	}
+	if s.VpcOptions == nil {
+		invalidParams.Add(request.NewErrParamRequired("VpcOptions"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *UpdateVpcEndpointInput) SetVpcEndpointId(v string) *UpdateVpcEndpointInput {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// SetVpcOptions sets the VpcOptions field's value.
+func (s *UpdateVpcEndpointInput) SetVpcOptions(v *VPCOptions) *UpdateVpcEndpointInput {
+	s.VpcOptions = v
+	return s
+}
+
+// Contains the configuration and status of the VPC endpoint being updated.
+type UpdateVpcEndpointOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The endpoint to be updated.
+	//
+	// VpcEndpoint is a required field
+	VpcEndpoint *VpcEndpoint `type:"structure" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s UpdateVpcEndpointOutput) GoString() string {
+	return s.String()
+}
+
+// SetVpcEndpoint sets the VpcEndpoint field's value.
+func (s *UpdateVpcEndpointOutput) SetVpcEndpoint(v *VpcEndpoint) *UpdateVpcEndpointOutput {
+	s.VpcEndpoint = v
 	return s
 }
 
@@ -14377,6 +16161,195 @@ func (s *ValidationException) StatusCode() int {
 // RequestID returns the service's response RequestID for request.
 func (s *ValidationException) RequestID() string {
 	return s.RespMetadata.RequestID
+}
+
+// The connection endpoint for connecting to an Amazon OpenSearch Service domain
+// through a proxy.
+type VpcEndpoint struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the domain associated with the endpoint.
+	DomainArn *string `min:"1" type:"string"`
+
+	// The connection endpoint ID for connecting to the domain.
+	Endpoint *string `type:"string"`
+
+	// The current status of the endpoint.
+	Status *string `type:"string" enum:"VpcEndpointStatus"`
+
+	// The unique identifier of the endpoint.
+	VpcEndpointId *string `min:"5" type:"string"`
+
+	// The creator of the endpoint.
+	VpcEndpointOwner *string `type:"string"`
+
+	// Options to specify the subnets and security groups for an Amazon OpenSearch
+	// Service VPC endpoint.
+	VpcOptions *VPCDerivedInfo `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpoint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpoint) GoString() string {
+	return s.String()
+}
+
+// SetDomainArn sets the DomainArn field's value.
+func (s *VpcEndpoint) SetDomainArn(v string) *VpcEndpoint {
+	s.DomainArn = &v
+	return s
+}
+
+// SetEndpoint sets the Endpoint field's value.
+func (s *VpcEndpoint) SetEndpoint(v string) *VpcEndpoint {
+	s.Endpoint = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VpcEndpoint) SetStatus(v string) *VpcEndpoint {
+	s.Status = &v
+	return s
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *VpcEndpoint) SetVpcEndpointId(v string) *VpcEndpoint {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// SetVpcEndpointOwner sets the VpcEndpointOwner field's value.
+func (s *VpcEndpoint) SetVpcEndpointOwner(v string) *VpcEndpoint {
+	s.VpcEndpointOwner = &v
+	return s
+}
+
+// SetVpcOptions sets the VpcOptions field's value.
+func (s *VpcEndpoint) SetVpcOptions(v *VPCDerivedInfo) *VpcEndpoint {
+	s.VpcOptions = v
+	return s
+}
+
+// Error information when attempting to describe an Amazon OpenSearch Service-managed
+// VPC endpoint.
+type VpcEndpointError struct {
+	_ struct{} `type:"structure"`
+
+	// The code associated with the error.
+	ErrorCode *string `type:"string" enum:"VpcEndpointErrorCode"`
+
+	// A message describing the error.
+	ErrorMessage *string `type:"string"`
+
+	// The unique identifier of the endpoint.
+	VpcEndpointId *string `min:"5" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointError) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointError) GoString() string {
+	return s.String()
+}
+
+// SetErrorCode sets the ErrorCode field's value.
+func (s *VpcEndpointError) SetErrorCode(v string) *VpcEndpointError {
+	s.ErrorCode = &v
+	return s
+}
+
+// SetErrorMessage sets the ErrorMessage field's value.
+func (s *VpcEndpointError) SetErrorMessage(v string) *VpcEndpointError {
+	s.ErrorMessage = &v
+	return s
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *VpcEndpointError) SetVpcEndpointId(v string) *VpcEndpointError {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// Summary information for an Amazon OpenSearch Service-managed VPC endpoint.
+type VpcEndpointSummary struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the domain associated with the endpoint.
+	DomainArn *string `min:"1" type:"string"`
+
+	// The current status of the endpoint.
+	Status *string `type:"string" enum:"VpcEndpointStatus"`
+
+	// The unique identifier of the endpoint.
+	VpcEndpointId *string `min:"5" type:"string"`
+
+	// The creator of the endpoint.
+	VpcEndpointOwner *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointSummary) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s VpcEndpointSummary) GoString() string {
+	return s.String()
+}
+
+// SetDomainArn sets the DomainArn field's value.
+func (s *VpcEndpointSummary) SetDomainArn(v string) *VpcEndpointSummary {
+	s.DomainArn = &v
+	return s
+}
+
+// SetStatus sets the Status field's value.
+func (s *VpcEndpointSummary) SetStatus(v string) *VpcEndpointSummary {
+	s.Status = &v
+	return s
+}
+
+// SetVpcEndpointId sets the VpcEndpointId field's value.
+func (s *VpcEndpointSummary) SetVpcEndpointId(v string) *VpcEndpointSummary {
+	s.VpcEndpointId = &v
+	return s
+}
+
+// SetVpcEndpointOwner sets the VpcEndpointOwner field's value.
+func (s *VpcEndpointSummary) SetVpcEndpointOwner(v string) *VpcEndpointSummary {
+	s.VpcEndpointOwner = &v
+	return s
 }
 
 // Specifies the zone awareness configuration for the domain cluster, such as
@@ -15051,6 +17024,27 @@ func PackageType_Values() []string {
 	}
 }
 
+// Specifies the type of AWS account permitted to manage VPC endpoints.:
+//
+//   - AWS_ACCOUNT: Indicates that the account is owned by an AWS user.
+//
+//   - AWS_SERVICE: Indicates the the account is owned by an AWS service.
+const (
+	// PrincipalTypeAwsAccount is a PrincipalType enum value
+	PrincipalTypeAwsAccount = "AWS_ACCOUNT"
+
+	// PrincipalTypeAwsService is a PrincipalType enum value
+	PrincipalTypeAwsService = "AWS_SERVICE"
+)
+
+// PrincipalType_Values returns all elements of the PrincipalType enum
+func PrincipalType_Values() []string {
+	return []string{
+		PrincipalTypeAwsAccount,
+		PrincipalTypeAwsService,
+	}
+}
+
 const (
 	// ReservedElasticsearchInstancePaymentOptionAllUpfront is a ReservedElasticsearchInstancePaymentOption enum value
 	ReservedElasticsearchInstancePaymentOptionAllUpfront = "ALL_UPFRONT"
@@ -15203,7 +17197,7 @@ func UpgradeStep_Values() []string {
 	}
 }
 
-// The type of EBS volume, standard, gp2, or io1. See Configuring EBS-based
+// The type of EBS volume, standard, gp2, gp3 or io1. See Configuring EBS-based
 // Storage (http://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-createupdatedomains.html#es-createdomain-configure-ebs)for
 // more information.
 const (
@@ -15215,6 +17209,9 @@ const (
 
 	// VolumeTypeIo1 is a VolumeType enum value
 	VolumeTypeIo1 = "io1"
+
+	// VolumeTypeGp3 is a VolumeType enum value
+	VolumeTypeGp3 = "gp3"
 )
 
 // VolumeType_Values returns all elements of the VolumeType enum
@@ -15223,5 +17220,81 @@ func VolumeType_Values() []string {
 		VolumeTypeStandard,
 		VolumeTypeGp2,
 		VolumeTypeIo1,
+		VolumeTypeGp3,
+	}
+}
+
+// Specifies the error code of the failure encountered while describing the
+// VPC endpoint:
+//
+//   - ENDPOINT_NOT_FOUND: Indicates that the requested VPC endpoint does not
+//     exist.
+//
+//   - SERVER_ERROR: Indicates the describe endpoint operation failed due to
+//     an internal server error.
+const (
+	// VpcEndpointErrorCodeEndpointNotFound is a VpcEndpointErrorCode enum value
+	VpcEndpointErrorCodeEndpointNotFound = "ENDPOINT_NOT_FOUND"
+
+	// VpcEndpointErrorCodeServerError is a VpcEndpointErrorCode enum value
+	VpcEndpointErrorCodeServerError = "SERVER_ERROR"
+)
+
+// VpcEndpointErrorCode_Values returns all elements of the VpcEndpointErrorCode enum
+func VpcEndpointErrorCode_Values() []string {
+	return []string{
+		VpcEndpointErrorCodeEndpointNotFound,
+		VpcEndpointErrorCodeServerError,
+	}
+}
+
+// Specifies the current status of the VPC endpoint:
+//
+//   - CREATING: Indicates that the VPC endpoint is currently being created.
+//
+//   - CREATE_FAILED: Indicates that the VPC endpoint creation failed.
+//
+//   - ACTIVE: Indicates that the VPC endpoint is currently active.
+//
+//   - UPDATING: Indicates that the VPC endpoint is currently being updated.
+//
+//   - UPDATE_FAILED: Indicates that the VPC endpoint update failed.
+//
+//   - DELETING: Indicates that the VPC endpoint is currently being deleted.
+//
+//   - DELETE_FAILED: Indicates that the VPC endpoint deletion failed.
+const (
+	// VpcEndpointStatusCreating is a VpcEndpointStatus enum value
+	VpcEndpointStatusCreating = "CREATING"
+
+	// VpcEndpointStatusCreateFailed is a VpcEndpointStatus enum value
+	VpcEndpointStatusCreateFailed = "CREATE_FAILED"
+
+	// VpcEndpointStatusActive is a VpcEndpointStatus enum value
+	VpcEndpointStatusActive = "ACTIVE"
+
+	// VpcEndpointStatusUpdating is a VpcEndpointStatus enum value
+	VpcEndpointStatusUpdating = "UPDATING"
+
+	// VpcEndpointStatusUpdateFailed is a VpcEndpointStatus enum value
+	VpcEndpointStatusUpdateFailed = "UPDATE_FAILED"
+
+	// VpcEndpointStatusDeleting is a VpcEndpointStatus enum value
+	VpcEndpointStatusDeleting = "DELETING"
+
+	// VpcEndpointStatusDeleteFailed is a VpcEndpointStatus enum value
+	VpcEndpointStatusDeleteFailed = "DELETE_FAILED"
+)
+
+// VpcEndpointStatus_Values returns all elements of the VpcEndpointStatus enum
+func VpcEndpointStatus_Values() []string {
+	return []string{
+		VpcEndpointStatusCreating,
+		VpcEndpointStatusCreateFailed,
+		VpcEndpointStatusActive,
+		VpcEndpointStatusUpdating,
+		VpcEndpointStatusUpdateFailed,
+		VpcEndpointStatusDeleting,
+		VpcEndpointStatusDeleteFailed,
 	}
 }

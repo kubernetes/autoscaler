@@ -8,11 +8,45 @@ import (
 
 const (
 
+	// ErrCodeInvalidPolicyRevisionIdException for service response error code
+	// "InvalidPolicyRevisionIdException".
+	//
+	// A policy revision id was provided which does not match the latest policy
+	// revision. This exception is also if a policy revision id of 0 is provided
+	// via PutResourcePolicy and a policy with the same name already exists.
+	ErrCodeInvalidPolicyRevisionIdException = "InvalidPolicyRevisionIdException"
+
 	// ErrCodeInvalidRequestException for service response error code
 	// "InvalidRequestException".
 	//
 	// The request is missing required parameters or has invalid parameters.
 	ErrCodeInvalidRequestException = "InvalidRequestException"
+
+	// ErrCodeLockoutPreventionException for service response error code
+	// "LockoutPreventionException".
+	//
+	// The provided resource policy would prevent the caller of this request from
+	// calling PutResourcePolicy in the future.
+	ErrCodeLockoutPreventionException = "LockoutPreventionException"
+
+	// ErrCodeMalformedPolicyDocumentException for service response error code
+	// "MalformedPolicyDocumentException".
+	//
+	// Invalid policy document provided in request.
+	ErrCodeMalformedPolicyDocumentException = "MalformedPolicyDocumentException"
+
+	// ErrCodePolicyCountLimitExceededException for service response error code
+	// "PolicyCountLimitExceededException".
+	//
+	// Exceeded the maximum number of resource policies for a target Amazon Web
+	// Services account.
+	ErrCodePolicyCountLimitExceededException = "PolicyCountLimitExceededException"
+
+	// ErrCodePolicySizeLimitExceededException for service response error code
+	// "PolicySizeLimitExceededException".
+	//
+	// Exceeded the maximum size for a resource policy.
+	ErrCodePolicySizeLimitExceededException = "PolicySizeLimitExceededException"
 
 	// ErrCodeResourceNotFoundException for service response error code
 	// "ResourceNotFoundException".
@@ -41,9 +75,14 @@ const (
 )
 
 var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
-	"InvalidRequestException":    newErrorInvalidRequestException,
-	"ResourceNotFoundException":  newErrorResourceNotFoundException,
-	"RuleLimitExceededException": newErrorRuleLimitExceededException,
-	"ThrottledException":         newErrorThrottledException,
-	"TooManyTagsException":       newErrorTooManyTagsException,
+	"InvalidPolicyRevisionIdException":  newErrorInvalidPolicyRevisionIdException,
+	"InvalidRequestException":           newErrorInvalidRequestException,
+	"LockoutPreventionException":        newErrorLockoutPreventionException,
+	"MalformedPolicyDocumentException":  newErrorMalformedPolicyDocumentException,
+	"PolicyCountLimitExceededException": newErrorPolicyCountLimitExceededException,
+	"PolicySizeLimitExceededException":  newErrorPolicySizeLimitExceededException,
+	"ResourceNotFoundException":         newErrorResourceNotFoundException,
+	"RuleLimitExceededException":        newErrorRuleLimitExceededException,
+	"ThrottledException":                newErrorThrottledException,
+	"TooManyTagsException":              newErrorTooManyTagsException,
 }

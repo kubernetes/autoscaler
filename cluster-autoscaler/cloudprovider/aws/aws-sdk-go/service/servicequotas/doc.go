@@ -3,10 +3,10 @@
 // Package servicequotas provides the client and types for making API
 // requests to Service Quotas.
 //
-// With Service Quotas, you can view and manage your quotas easily as your AWS
-// workloads grow. Quotas, also referred to as limits, are the maximum number
-// of resources that you can create in your AWS account. For more information,
-// see the Service Quotas User Guide (https://docs.aws.amazon.com/servicequotas/latest/userguide/).
+// With Service Quotas, you can view and manage your quotas easily as your Amazon
+// Web Services workloads grow. Quotas, also referred to as limits, are the
+// maximum number of resources that you can create in your Amazon Web Services
+// account. For more information, see the Service Quotas User Guide (https://docs.aws.amazon.com/servicequotas/latest/userguide/).
 //
 // See https://docs.aws.amazon.com/goto/WebAPI/service-quotas-2019-06-24 for more information on this service.
 //

@@ -1298,6 +1298,12 @@ func (c *MemoryDB) DescribeACLsRequest(input *DescribeACLsInput) (req *request.R
 		Name:       opDescribeACLs,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1348,6 +1354,57 @@ func (c *MemoryDB) DescribeACLsWithContext(ctx aws.Context, input *DescribeACLsI
 	return out, req.Send()
 }
 
+// DescribeACLsPages iterates over the pages of a DescribeACLs operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeACLs method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeACLs operation.
+//	pageNum := 0
+//	err := client.DescribeACLsPages(params,
+//	    func(page *memorydb.DescribeACLsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeACLsPages(input *DescribeACLsInput, fn func(*DescribeACLsOutput, bool) bool) error {
+	return c.DescribeACLsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeACLsPagesWithContext same as DescribeACLsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeACLsPagesWithContext(ctx aws.Context, input *DescribeACLsInput, fn func(*DescribeACLsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeACLsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeACLsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeACLsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeClusters = "DescribeClusters"
 
 // DescribeClustersRequest generates a "aws/request.Request" representing the
@@ -1378,6 +1435,12 @@ func (c *MemoryDB) DescribeClustersRequest(input *DescribeClustersInput) (req *r
 		Name:       opDescribeClusters,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1433,6 +1496,57 @@ func (c *MemoryDB) DescribeClustersWithContext(ctx aws.Context, input *DescribeC
 	return out, req.Send()
 }
 
+// DescribeClustersPages iterates over the pages of a DescribeClusters operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeClusters method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeClusters operation.
+//	pageNum := 0
+//	err := client.DescribeClustersPages(params,
+//	    func(page *memorydb.DescribeClustersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeClustersPages(input *DescribeClustersInput, fn func(*DescribeClustersOutput, bool) bool) error {
+	return c.DescribeClustersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeClustersPagesWithContext same as DescribeClustersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeClustersPagesWithContext(ctx aws.Context, input *DescribeClustersInput, fn func(*DescribeClustersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeClustersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeClustersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeClustersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeEngineVersions = "DescribeEngineVersions"
 
 // DescribeEngineVersionsRequest generates a "aws/request.Request" representing the
@@ -1463,6 +1577,12 @@ func (c *MemoryDB) DescribeEngineVersionsRequest(input *DescribeEngineVersionsIn
 		Name:       opDescribeEngineVersions,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1515,6 +1635,57 @@ func (c *MemoryDB) DescribeEngineVersionsWithContext(ctx aws.Context, input *Des
 	return out, req.Send()
 }
 
+// DescribeEngineVersionsPages iterates over the pages of a DescribeEngineVersions operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeEngineVersions method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeEngineVersions operation.
+//	pageNum := 0
+//	err := client.DescribeEngineVersionsPages(params,
+//	    func(page *memorydb.DescribeEngineVersionsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeEngineVersionsPages(input *DescribeEngineVersionsInput, fn func(*DescribeEngineVersionsOutput, bool) bool) error {
+	return c.DescribeEngineVersionsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeEngineVersionsPagesWithContext same as DescribeEngineVersionsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeEngineVersionsPagesWithContext(ctx aws.Context, input *DescribeEngineVersionsInput, fn func(*DescribeEngineVersionsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeEngineVersionsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeEngineVersionsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeEngineVersionsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeEvents = "DescribeEvents"
 
 // DescribeEventsRequest generates a "aws/request.Request" representing the
@@ -1545,6 +1716,12 @@ func (c *MemoryDB) DescribeEventsRequest(input *DescribeEventsInput) (req *reque
 		Name:       opDescribeEvents,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1601,6 +1778,57 @@ func (c *MemoryDB) DescribeEventsWithContext(ctx aws.Context, input *DescribeEve
 	return out, req.Send()
 }
 
+// DescribeEventsPages iterates over the pages of a DescribeEvents operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeEvents method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeEvents operation.
+//	pageNum := 0
+//	err := client.DescribeEventsPages(params,
+//	    func(page *memorydb.DescribeEventsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeEventsPages(input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool) error {
+	return c.DescribeEventsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeEventsPagesWithContext same as DescribeEventsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeEventsPagesWithContext(ctx aws.Context, input *DescribeEventsInput, fn func(*DescribeEventsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeEventsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeEventsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeEventsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeParameterGroups = "DescribeParameterGroups"
 
 // DescribeParameterGroupsRequest generates a "aws/request.Request" representing the
@@ -1631,6 +1859,12 @@ func (c *MemoryDB) DescribeParameterGroupsRequest(input *DescribeParameterGroups
 		Name:       opDescribeParameterGroups,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1686,6 +1920,57 @@ func (c *MemoryDB) DescribeParameterGroupsWithContext(ctx aws.Context, input *De
 	return out, req.Send()
 }
 
+// DescribeParameterGroupsPages iterates over the pages of a DescribeParameterGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeParameterGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeParameterGroups operation.
+//	pageNum := 0
+//	err := client.DescribeParameterGroupsPages(params,
+//	    func(page *memorydb.DescribeParameterGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeParameterGroupsPages(input *DescribeParameterGroupsInput, fn func(*DescribeParameterGroupsOutput, bool) bool) error {
+	return c.DescribeParameterGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeParameterGroupsPagesWithContext same as DescribeParameterGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeParameterGroupsPagesWithContext(ctx aws.Context, input *DescribeParameterGroupsInput, fn func(*DescribeParameterGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeParameterGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeParameterGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeParameterGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeParameters = "DescribeParameters"
 
 // DescribeParametersRequest generates a "aws/request.Request" representing the
@@ -1716,6 +2001,12 @@ func (c *MemoryDB) DescribeParametersRequest(input *DescribeParametersInput) (re
 		Name:       opDescribeParameters,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1770,6 +2061,342 @@ func (c *MemoryDB) DescribeParametersWithContext(ctx aws.Context, input *Describ
 	return out, req.Send()
 }
 
+// DescribeParametersPages iterates over the pages of a DescribeParameters operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeParameters method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeParameters operation.
+//	pageNum := 0
+//	err := client.DescribeParametersPages(params,
+//	    func(page *memorydb.DescribeParametersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeParametersPages(input *DescribeParametersInput, fn func(*DescribeParametersOutput, bool) bool) error {
+	return c.DescribeParametersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeParametersPagesWithContext same as DescribeParametersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeParametersPagesWithContext(ctx aws.Context, input *DescribeParametersInput, fn func(*DescribeParametersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeParametersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeParametersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeParametersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeReservedNodes = "DescribeReservedNodes"
+
+// DescribeReservedNodesRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeReservedNodes operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeReservedNodes for more information on using the DescribeReservedNodes
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeReservedNodesRequest method.
+//	req, resp := client.DescribeReservedNodesRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/memorydb-2021-01-01/DescribeReservedNodes
+func (c *MemoryDB) DescribeReservedNodesRequest(input *DescribeReservedNodesInput) (req *request.Request, output *DescribeReservedNodesOutput) {
+	op := &request.Operation{
+		Name:       opDescribeReservedNodes,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeReservedNodesInput{}
+	}
+
+	output = &DescribeReservedNodesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeReservedNodes API operation for Amazon MemoryDB.
+//
+// Returns information about reserved nodes for this account, or about a specified
+// reserved node.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon MemoryDB's
+// API operation DescribeReservedNodes for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ReservedNodeNotFoundFault
+//     The requested node does not exist.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//
+//   - InvalidParameterValueException
+//
+//   - InvalidParameterCombinationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/memorydb-2021-01-01/DescribeReservedNodes
+func (c *MemoryDB) DescribeReservedNodes(input *DescribeReservedNodesInput) (*DescribeReservedNodesOutput, error) {
+	req, out := c.DescribeReservedNodesRequest(input)
+	return out, req.Send()
+}
+
+// DescribeReservedNodesWithContext is the same as DescribeReservedNodes with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeReservedNodes for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeReservedNodesWithContext(ctx aws.Context, input *DescribeReservedNodesInput, opts ...request.Option) (*DescribeReservedNodesOutput, error) {
+	req, out := c.DescribeReservedNodesRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeReservedNodesPages iterates over the pages of a DescribeReservedNodes operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeReservedNodes method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeReservedNodes operation.
+//	pageNum := 0
+//	err := client.DescribeReservedNodesPages(params,
+//	    func(page *memorydb.DescribeReservedNodesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeReservedNodesPages(input *DescribeReservedNodesInput, fn func(*DescribeReservedNodesOutput, bool) bool) error {
+	return c.DescribeReservedNodesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeReservedNodesPagesWithContext same as DescribeReservedNodesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeReservedNodesPagesWithContext(ctx aws.Context, input *DescribeReservedNodesInput, fn func(*DescribeReservedNodesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeReservedNodesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeReservedNodesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeReservedNodesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
+const opDescribeReservedNodesOfferings = "DescribeReservedNodesOfferings"
+
+// DescribeReservedNodesOfferingsRequest generates a "aws/request.Request" representing the
+// client's request for the DescribeReservedNodesOfferings operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DescribeReservedNodesOfferings for more information on using the DescribeReservedNodesOfferings
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the DescribeReservedNodesOfferingsRequest method.
+//	req, resp := client.DescribeReservedNodesOfferingsRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/memorydb-2021-01-01/DescribeReservedNodesOfferings
+func (c *MemoryDB) DescribeReservedNodesOfferingsRequest(input *DescribeReservedNodesOfferingsInput) (req *request.Request, output *DescribeReservedNodesOfferingsOutput) {
+	op := &request.Operation{
+		Name:       opDescribeReservedNodesOfferings,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
+	}
+
+	if input == nil {
+		input = &DescribeReservedNodesOfferingsInput{}
+	}
+
+	output = &DescribeReservedNodesOfferingsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DescribeReservedNodesOfferings API operation for Amazon MemoryDB.
+//
+// Lists available reserved node offerings.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon MemoryDB's
+// API operation DescribeReservedNodesOfferings for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ReservedNodesOfferingNotFoundFault
+//     The requested node offering does not exist.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//
+//   - InvalidParameterValueException
+//
+//   - InvalidParameterCombinationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/memorydb-2021-01-01/DescribeReservedNodesOfferings
+func (c *MemoryDB) DescribeReservedNodesOfferings(input *DescribeReservedNodesOfferingsInput) (*DescribeReservedNodesOfferingsOutput, error) {
+	req, out := c.DescribeReservedNodesOfferingsRequest(input)
+	return out, req.Send()
+}
+
+// DescribeReservedNodesOfferingsWithContext is the same as DescribeReservedNodesOfferings with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DescribeReservedNodesOfferings for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeReservedNodesOfferingsWithContext(ctx aws.Context, input *DescribeReservedNodesOfferingsInput, opts ...request.Option) (*DescribeReservedNodesOfferingsOutput, error) {
+	req, out := c.DescribeReservedNodesOfferingsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+// DescribeReservedNodesOfferingsPages iterates over the pages of a DescribeReservedNodesOfferings operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeReservedNodesOfferings method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeReservedNodesOfferings operation.
+//	pageNum := 0
+//	err := client.DescribeReservedNodesOfferingsPages(params,
+//	    func(page *memorydb.DescribeReservedNodesOfferingsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeReservedNodesOfferingsPages(input *DescribeReservedNodesOfferingsInput, fn func(*DescribeReservedNodesOfferingsOutput, bool) bool) error {
+	return c.DescribeReservedNodesOfferingsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeReservedNodesOfferingsPagesWithContext same as DescribeReservedNodesOfferingsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeReservedNodesOfferingsPagesWithContext(ctx aws.Context, input *DescribeReservedNodesOfferingsInput, fn func(*DescribeReservedNodesOfferingsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeReservedNodesOfferingsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeReservedNodesOfferingsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeReservedNodesOfferingsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeServiceUpdates = "DescribeServiceUpdates"
 
 // DescribeServiceUpdatesRequest generates a "aws/request.Request" representing the
@@ -1800,6 +2427,12 @@ func (c *MemoryDB) DescribeServiceUpdatesRequest(input *DescribeServiceUpdatesIn
 		Name:       opDescribeServiceUpdates,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1850,6 +2483,57 @@ func (c *MemoryDB) DescribeServiceUpdatesWithContext(ctx aws.Context, input *Des
 	return out, req.Send()
 }
 
+// DescribeServiceUpdatesPages iterates over the pages of a DescribeServiceUpdates operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeServiceUpdates method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeServiceUpdates operation.
+//	pageNum := 0
+//	err := client.DescribeServiceUpdatesPages(params,
+//	    func(page *memorydb.DescribeServiceUpdatesOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeServiceUpdatesPages(input *DescribeServiceUpdatesInput, fn func(*DescribeServiceUpdatesOutput, bool) bool) error {
+	return c.DescribeServiceUpdatesPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeServiceUpdatesPagesWithContext same as DescribeServiceUpdatesPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeServiceUpdatesPagesWithContext(ctx aws.Context, input *DescribeServiceUpdatesInput, fn func(*DescribeServiceUpdatesOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeServiceUpdatesInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeServiceUpdatesRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeServiceUpdatesOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeSnapshots = "DescribeSnapshots"
 
 // DescribeSnapshotsRequest generates a "aws/request.Request" representing the
@@ -1880,6 +2564,12 @@ func (c *MemoryDB) DescribeSnapshotsRequest(input *DescribeSnapshotsInput) (req 
 		Name:       opDescribeSnapshots,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -1936,6 +2626,57 @@ func (c *MemoryDB) DescribeSnapshotsWithContext(ctx aws.Context, input *Describe
 	return out, req.Send()
 }
 
+// DescribeSnapshotsPages iterates over the pages of a DescribeSnapshots operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeSnapshots method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeSnapshots operation.
+//	pageNum := 0
+//	err := client.DescribeSnapshotsPages(params,
+//	    func(page *memorydb.DescribeSnapshotsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeSnapshotsPages(input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool) error {
+	return c.DescribeSnapshotsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeSnapshotsPagesWithContext same as DescribeSnapshotsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeSnapshotsPagesWithContext(ctx aws.Context, input *DescribeSnapshotsInput, fn func(*DescribeSnapshotsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeSnapshotsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeSnapshotsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSnapshotsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeSubnetGroups = "DescribeSubnetGroups"
 
 // DescribeSubnetGroupsRequest generates a "aws/request.Request" representing the
@@ -1966,6 +2707,12 @@ func (c *MemoryDB) DescribeSubnetGroupsRequest(input *DescribeSubnetGroupsInput)
 		Name:       opDescribeSubnetGroups,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2017,6 +2764,57 @@ func (c *MemoryDB) DescribeSubnetGroupsWithContext(ctx aws.Context, input *Descr
 	return out, req.Send()
 }
 
+// DescribeSubnetGroupsPages iterates over the pages of a DescribeSubnetGroups operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeSubnetGroups method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeSubnetGroups operation.
+//	pageNum := 0
+//	err := client.DescribeSubnetGroupsPages(params,
+//	    func(page *memorydb.DescribeSubnetGroupsOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeSubnetGroupsPages(input *DescribeSubnetGroupsInput, fn func(*DescribeSubnetGroupsOutput, bool) bool) error {
+	return c.DescribeSubnetGroupsPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeSubnetGroupsPagesWithContext same as DescribeSubnetGroupsPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeSubnetGroupsPagesWithContext(ctx aws.Context, input *DescribeSubnetGroupsInput, fn func(*DescribeSubnetGroupsOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeSubnetGroupsInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeSubnetGroupsRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeSubnetGroupsOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opDescribeUsers = "DescribeUsers"
 
 // DescribeUsersRequest generates a "aws/request.Request" representing the
@@ -2047,6 +2845,12 @@ func (c *MemoryDB) DescribeUsersRequest(input *DescribeUsersInput) (req *request
 		Name:       opDescribeUsers,
 		HTTPMethod: "POST",
 		HTTPPath:   "/",
+		Paginator: &request.Paginator{
+			InputTokens:     []string{"NextToken"},
+			OutputTokens:    []string{"NextToken"},
+			LimitToken:      "MaxResults",
+			TruncationToken: "",
+		},
 	}
 
 	if input == nil {
@@ -2097,6 +2901,57 @@ func (c *MemoryDB) DescribeUsersWithContext(ctx aws.Context, input *DescribeUser
 	return out, req.Send()
 }
 
+// DescribeUsersPages iterates over the pages of a DescribeUsers operation,
+// calling the "fn" function with the response data for each page. To stop
+// iterating, return false from the fn function.
+//
+// See DescribeUsers method for more information on how to use this operation.
+//
+// Note: This operation can generate multiple requests to a service.
+//
+//	// Example iterating over at most 3 pages of a DescribeUsers operation.
+//	pageNum := 0
+//	err := client.DescribeUsersPages(params,
+//	    func(page *memorydb.DescribeUsersOutput, lastPage bool) bool {
+//	        pageNum++
+//	        fmt.Println(page)
+//	        return pageNum <= 3
+//	    })
+func (c *MemoryDB) DescribeUsersPages(input *DescribeUsersInput, fn func(*DescribeUsersOutput, bool) bool) error {
+	return c.DescribeUsersPagesWithContext(aws.BackgroundContext(), input, fn)
+}
+
+// DescribeUsersPagesWithContext same as DescribeUsersPages except
+// it takes a Context and allows setting request options on the pages.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) DescribeUsersPagesWithContext(ctx aws.Context, input *DescribeUsersInput, fn func(*DescribeUsersOutput, bool) bool, opts ...request.Option) error {
+	p := request.Pagination{
+		NewRequest: func() (*request.Request, error) {
+			var inCpy *DescribeUsersInput
+			if input != nil {
+				tmp := *input
+				inCpy = &tmp
+			}
+			req, _ := c.DescribeUsersRequest(inCpy)
+			req.SetContext(ctx)
+			req.ApplyOptions(opts...)
+			return req, nil
+		},
+	}
+
+	for p.Next() {
+		if !fn(p.Page().(*DescribeUsersOutput), !p.HasNextPage()) {
+			break
+		}
+	}
+
+	return p.Err()
+}
+
 const opFailoverShard = "FailoverShard"
 
 // FailoverShardRequest generates a "aws/request.Request" representing the
@@ -2140,7 +2995,11 @@ func (c *MemoryDB) FailoverShardRequest(input *FailoverShardInput) (req *request
 
 // FailoverShard API operation for Amazon MemoryDB.
 //
-// # Used to failover a shard
+// Used to failover a shard. This API is designed for testing the behavior of
+// your application in case of MemoryDB failover. It is not designed to be used
+// as a production-level tool for initiating a failover to overcome a problem
+// you may have with the cluster. Moreover, in certain conditions such as large
+// scale operational events, Amazon may block this API.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2368,6 +3227,100 @@ func (c *MemoryDB) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
 // for more information on using Contexts.
 func (c *MemoryDB) ListTagsWithContext(ctx aws.Context, input *ListTagsInput, opts ...request.Option) (*ListTagsOutput, error) {
 	req, out := c.ListTagsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPurchaseReservedNodesOffering = "PurchaseReservedNodesOffering"
+
+// PurchaseReservedNodesOfferingRequest generates a "aws/request.Request" representing the
+// client's request for the PurchaseReservedNodesOffering operation. The "output" return
+// value will be populated with the request's response once the request completes
+// successfully.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PurchaseReservedNodesOffering for more information on using the PurchaseReservedNodesOffering
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//	// Example sending a request using the PurchaseReservedNodesOfferingRequest method.
+//	req, resp := client.PurchaseReservedNodesOfferingRequest(params)
+//
+//	err := req.Send()
+//	if err == nil { // resp is now filled
+//	    fmt.Println(resp)
+//	}
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/memorydb-2021-01-01/PurchaseReservedNodesOffering
+func (c *MemoryDB) PurchaseReservedNodesOfferingRequest(input *PurchaseReservedNodesOfferingInput) (req *request.Request, output *PurchaseReservedNodesOfferingOutput) {
+	op := &request.Operation{
+		Name:       opPurchaseReservedNodesOffering,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PurchaseReservedNodesOfferingInput{}
+	}
+
+	output = &PurchaseReservedNodesOfferingOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PurchaseReservedNodesOffering API operation for Amazon MemoryDB.
+//
+// Allows you to purchase a reserved node offering. Reserved nodes are not eligible
+// for cancellation and are non-refundable.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon MemoryDB's
+// API operation PurchaseReservedNodesOffering for usage and error information.
+//
+// Returned Error Types:
+//
+//   - ReservedNodesOfferingNotFoundFault
+//     The requested node offering does not exist.
+//
+//   - ReservedNodeAlreadyExistsFault
+//     You already have a reservation with the given identifier.
+//
+//   - ReservedNodeQuotaExceededFault
+//     The request cannot be processed because it would exceed the user's node quota.
+//
+//   - ServiceLinkedRoleNotFoundFault
+//
+//   - TagQuotaPerResourceExceeded
+//
+//   - InvalidParameterValueException
+//
+//   - InvalidParameterCombinationException
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/memorydb-2021-01-01/PurchaseReservedNodesOffering
+func (c *MemoryDB) PurchaseReservedNodesOffering(input *PurchaseReservedNodesOfferingInput) (*PurchaseReservedNodesOfferingOutput, error) {
+	req, out := c.PurchaseReservedNodesOfferingRequest(input)
+	return out, req.Send()
+}
+
+// PurchaseReservedNodesOfferingWithContext is the same as PurchaseReservedNodesOffering with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PurchaseReservedNodesOffering for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *MemoryDB) PurchaseReservedNodesOfferingWithContext(ctx aws.Context, input *PurchaseReservedNodesOfferingInput, opts ...request.Option) (*PurchaseReservedNodesOfferingOutput, error) {
+	req, out := c.PurchaseReservedNodesOfferingRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -3782,6 +4735,11 @@ type Cluster struct {
 	// The cluster's configuration endpoint
 	ClusterEndpoint *Endpoint `type:"structure"`
 
+	// Enables data tiering. Data tiering is only supported for clusters using the
+	// r6gd node type. This parameter must be set when using r6gd nodes. For more
+	// information, see Data tiering (https://docs.aws.amazon.com/memorydb/latest/devguide/data-tiering.html).
+	DataTiering *string `type:"string" enum:"DataTieringStatus"`
+
 	// A description of the cluster
 	Description *string `type:"string"`
 
@@ -3896,6 +4854,12 @@ func (s *Cluster) SetAvailabilityMode(v string) *Cluster {
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *Cluster) SetClusterEndpoint(v *Endpoint) *Cluster {
 	s.ClusterEndpoint = v
+	return s
+}
+
+// SetDataTiering sets the DataTiering field's value.
+func (s *Cluster) SetDataTiering(v string) *Cluster {
+	s.DataTiering = &v
 	return s
 }
 
@@ -4650,6 +5614,11 @@ type CreateClusterInput struct {
 	// ClusterName is a required field
 	ClusterName *string `type:"string" required:"true"`
 
+	// Enables data tiering. Data tiering is only supported for clusters using the
+	// r6gd node type. This parameter must be set when using r6gd nodes. For more
+	// information, see Data tiering (https://docs.aws.amazon.com/memorydb/latest/devguide/data-tiering.html).
+	DataTiering *bool `type:"boolean"`
+
 	// An optional description of the cluster.
 	Description *string `type:"string"`
 
@@ -4662,6 +5631,24 @@ type CreateClusterInput struct {
 	// Specifies the weekly time range during which maintenance on the cluster is
 	// performed. It is specified as a range in the format ddd:hh24:mi-ddd:hh24:mi
 	// (24H Clock UTC). The minimum maintenance window is a 60 minute period.
+	//
+	// Valid values for ddd are:
+	//
+	//    * sun
+	//
+	//    * mon
+	//
+	//    * tue
+	//
+	//    * wed
+	//
+	//    * thu
+	//
+	//    * fri
+	//
+	//    * sat
+	//
+	// Example: sun:23:00-mon:01:30
 	MaintenanceWindow *string `type:"string"`
 
 	// The compute and memory capacity of the nodes in the cluster.
@@ -4779,6 +5766,12 @@ func (s *CreateClusterInput) SetAutoMinorVersionUpgrade(v bool) *CreateClusterIn
 // SetClusterName sets the ClusterName field's value.
 func (s *CreateClusterInput) SetClusterName(v string) *CreateClusterInput {
 	s.ClusterName = &v
+	return s
+}
+
+// SetDataTiering sets the DataTiering field's value.
+func (s *CreateClusterInput) SetDataTiering(v bool) *CreateClusterInput {
+	s.DataTiering = &v
 	return s
 }
 
@@ -6594,6 +7587,272 @@ func (s *DescribeParametersOutput) SetNextToken(v string) *DescribeParametersOut
 // SetParameters sets the Parameters field's value.
 func (s *DescribeParametersOutput) SetParameters(v []*Parameter) *DescribeParametersOutput {
 	s.Parameters = v
+	return s
+}
+
+type DescribeReservedNodesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The duration filter value, specified in years or seconds. Use this parameter
+	// to show only reservations for this duration.
+	Duration *string `type:"string"`
+
+	// The maximum number of records to include in the response. If more records
+	// exist than the specified MaxRecords value, a marker is included in the response
+	// so that the remaining results can be retrieved.
+	MaxResults *int64 `type:"integer"`
+
+	// An optional marker returned from a prior request. Use this marker for pagination
+	// of results from this operation. If this parameter is specified, the response
+	// includes only records beyond the marker, up to the value specified by MaxRecords.
+	NextToken *string `type:"string"`
+
+	// The node type filter value. Use this parameter to show only those reservations
+	// matching the specified node type. For more information, see Supported node
+	// types (https://docs.aws.amazon.com/memorydb/latest/devguide/nodes.reserved.html#reserved-nodes-supported).
+	NodeType *string `type:"string"`
+
+	// The offering type filter value. Use this parameter to show only the available
+	// offerings matching the specified offering type. Valid values: "All Upfront"|"Partial
+	// Upfront"| "No Upfront"
+	OfferingType *string `type:"string"`
+
+	// The reserved node identifier filter value. Use this parameter to show only
+	// the reservation that matches the specified reservation ID.
+	ReservationId *string `type:"string"`
+
+	// The offering identifier filter value. Use this parameter to show only purchased
+	// reservations matching the specified offering identifier.
+	ReservedNodesOfferingId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesInput) GoString() string {
+	return s.String()
+}
+
+// SetDuration sets the Duration field's value.
+func (s *DescribeReservedNodesInput) SetDuration(v string) *DescribeReservedNodesInput {
+	s.Duration = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeReservedNodesInput) SetMaxResults(v int64) *DescribeReservedNodesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeReservedNodesInput) SetNextToken(v string) *DescribeReservedNodesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetNodeType sets the NodeType field's value.
+func (s *DescribeReservedNodesInput) SetNodeType(v string) *DescribeReservedNodesInput {
+	s.NodeType = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *DescribeReservedNodesInput) SetOfferingType(v string) *DescribeReservedNodesInput {
+	s.OfferingType = &v
+	return s
+}
+
+// SetReservationId sets the ReservationId field's value.
+func (s *DescribeReservedNodesInput) SetReservationId(v string) *DescribeReservedNodesInput {
+	s.ReservationId = &v
+	return s
+}
+
+// SetReservedNodesOfferingId sets the ReservedNodesOfferingId field's value.
+func (s *DescribeReservedNodesInput) SetReservedNodesOfferingId(v string) *DescribeReservedNodesInput {
+	s.ReservedNodesOfferingId = &v
+	return s
+}
+
+type DescribeReservedNodesOfferingsInput struct {
+	_ struct{} `type:"structure"`
+
+	// Duration filter value, specified in years or seconds. Use this parameter
+	// to show only reservations for a given duration.
+	Duration *string `type:"string"`
+
+	// The maximum number of records to include in the response. If more records
+	// exist than the specified MaxRecords value, a marker is included in the response
+	// so that the remaining results can be retrieved.
+	MaxResults *int64 `type:"integer"`
+
+	// An optional marker returned from a prior request. Use this marker for pagination
+	// of results from this operation. If this parameter is specified, the response
+	// includes only records beyond the marker, up to the value specified by MaxRecords.
+	NextToken *string `type:"string"`
+
+	// The node type for the reserved nodes. For more information, see Supported
+	// node types (https://docs.aws.amazon.com/memorydb/latest/devguide/nodes.reserved.html#reserved-nodes-supported).
+	NodeType *string `type:"string"`
+
+	// The offering type filter value. Use this parameter to show only the available
+	// offerings matching the specified offering type. Valid values: "All Upfront"|"Partial
+	// Upfront"| "No Upfront"
+	OfferingType *string `type:"string"`
+
+	// The offering identifier filter value. Use this parameter to show only the
+	// available offering that matches the specified reservation identifier.
+	ReservedNodesOfferingId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesOfferingsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesOfferingsInput) GoString() string {
+	return s.String()
+}
+
+// SetDuration sets the Duration field's value.
+func (s *DescribeReservedNodesOfferingsInput) SetDuration(v string) *DescribeReservedNodesOfferingsInput {
+	s.Duration = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *DescribeReservedNodesOfferingsInput) SetMaxResults(v int64) *DescribeReservedNodesOfferingsInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeReservedNodesOfferingsInput) SetNextToken(v string) *DescribeReservedNodesOfferingsInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetNodeType sets the NodeType field's value.
+func (s *DescribeReservedNodesOfferingsInput) SetNodeType(v string) *DescribeReservedNodesOfferingsInput {
+	s.NodeType = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *DescribeReservedNodesOfferingsInput) SetOfferingType(v string) *DescribeReservedNodesOfferingsInput {
+	s.OfferingType = &v
+	return s
+}
+
+// SetReservedNodesOfferingId sets the ReservedNodesOfferingId field's value.
+func (s *DescribeReservedNodesOfferingsInput) SetReservedNodesOfferingId(v string) *DescribeReservedNodesOfferingsInput {
+	s.ReservedNodesOfferingId = &v
+	return s
+}
+
+type DescribeReservedNodesOfferingsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An optional marker returned from a prior request. Use this marker for pagination
+	// of results from this operation. If this parameter is specified, the response
+	// includes only records beyond the marker, up to the value specified by MaxRecords.
+	NextToken *string `type:"string"`
+
+	// Lists available reserved node offerings.
+	ReservedNodesOfferings []*ReservedNodesOffering `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesOfferingsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesOfferingsOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeReservedNodesOfferingsOutput) SetNextToken(v string) *DescribeReservedNodesOfferingsOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReservedNodesOfferings sets the ReservedNodesOfferings field's value.
+func (s *DescribeReservedNodesOfferingsOutput) SetReservedNodesOfferings(v []*ReservedNodesOffering) *DescribeReservedNodesOfferingsOutput {
+	s.ReservedNodesOfferings = v
+	return s
+}
+
+type DescribeReservedNodesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// An optional marker returned from a prior request. Use this marker for pagination
+	// of results from this operation. If this parameter is specified, the response
+	// includes only records beyond the marker, up to the value specified by MaxRecords.
+	NextToken *string `type:"string"`
+
+	// Returns information about reserved nodes for this account, or about a specified
+	// reserved node.
+	ReservedNodes []*ReservedNode `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DescribeReservedNodesOutput) GoString() string {
+	return s.String()
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *DescribeReservedNodesOutput) SetNextToken(v string) *DescribeReservedNodesOutput {
+	s.NextToken = &v
+	return s
+}
+
+// SetReservedNodes sets the ReservedNodes field's value.
+func (s *DescribeReservedNodesOutput) SetReservedNodes(v []*ReservedNode) *DescribeReservedNodesOutput {
+	s.ReservedNodes = v
 	return s
 }
 
@@ -9170,6 +10429,152 @@ func (s *PendingModifiedServiceUpdate) SetStatus(v string) *PendingModifiedServi
 	return s
 }
 
+type PurchaseReservedNodesOfferingInput struct {
+	_ struct{} `type:"structure"`
+
+	// The number of node instances to reserve.
+	NodeCount *int64 `type:"integer"`
+
+	// A customer-specified identifier to track this reservation.
+	ReservationId *string `type:"string"`
+
+	// The ID of the reserved node offering to purchase.
+	//
+	// ReservedNodesOfferingId is a required field
+	ReservedNodesOfferingId *string `type:"string" required:"true"`
+
+	// A list of tags to be added to this resource. A tag is a key-value pair. A
+	// tag key must be accompanied by a tag value, although null is accepted.
+	Tags []*Tag `type:"list"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PurchaseReservedNodesOfferingInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PurchaseReservedNodesOfferingInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PurchaseReservedNodesOfferingInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PurchaseReservedNodesOfferingInput"}
+	if s.ReservedNodesOfferingId == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReservedNodesOfferingId"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetNodeCount sets the NodeCount field's value.
+func (s *PurchaseReservedNodesOfferingInput) SetNodeCount(v int64) *PurchaseReservedNodesOfferingInput {
+	s.NodeCount = &v
+	return s
+}
+
+// SetReservationId sets the ReservationId field's value.
+func (s *PurchaseReservedNodesOfferingInput) SetReservationId(v string) *PurchaseReservedNodesOfferingInput {
+	s.ReservationId = &v
+	return s
+}
+
+// SetReservedNodesOfferingId sets the ReservedNodesOfferingId field's value.
+func (s *PurchaseReservedNodesOfferingInput) SetReservedNodesOfferingId(v string) *PurchaseReservedNodesOfferingInput {
+	s.ReservedNodesOfferingId = &v
+	return s
+}
+
+// SetTags sets the Tags field's value.
+func (s *PurchaseReservedNodesOfferingInput) SetTags(v []*Tag) *PurchaseReservedNodesOfferingInput {
+	s.Tags = v
+	return s
+}
+
+type PurchaseReservedNodesOfferingOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Represents the output of a PurchaseReservedNodesOffering operation.
+	ReservedNode *ReservedNode `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PurchaseReservedNodesOfferingOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s PurchaseReservedNodesOfferingOutput) GoString() string {
+	return s.String()
+}
+
+// SetReservedNode sets the ReservedNode field's value.
+func (s *PurchaseReservedNodesOfferingOutput) SetReservedNode(v *ReservedNode) *PurchaseReservedNodesOfferingOutput {
+	s.ReservedNode = v
+	return s
+}
+
+// The recurring charge to run this reserved node.
+type RecurringCharge struct {
+	_ struct{} `type:"structure"`
+
+	// The amount of the recurring charge to run this reserved node.
+	RecurringChargeAmount *float64 `type:"double"`
+
+	// The frequency of the recurring price charged to run this reserved node.
+	RecurringChargeFrequency *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecurringCharge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s RecurringCharge) GoString() string {
+	return s.String()
+}
+
+// SetRecurringChargeAmount sets the RecurringChargeAmount field's value.
+func (s *RecurringCharge) SetRecurringChargeAmount(v float64) *RecurringCharge {
+	s.RecurringChargeAmount = &v
+	return s
+}
+
+// SetRecurringChargeFrequency sets the RecurringChargeFrequency field's value.
+func (s *RecurringCharge) SetRecurringChargeFrequency(v string) *RecurringCharge {
+	s.RecurringChargeFrequency = &v
+	return s
+}
+
 // A request to configure the number of replicas in a shard
 type ReplicaConfigurationRequest struct {
 	_ struct{} `type:"structure"`
@@ -9200,6 +10605,462 @@ func (s ReplicaConfigurationRequest) GoString() string {
 func (s *ReplicaConfigurationRequest) SetReplicaCount(v int64) *ReplicaConfigurationRequest {
 	s.ReplicaCount = &v
 	return s
+}
+
+// Represents the output of a PurchaseReservedNodesOffering operation.
+type ReservedNode struct {
+	_ struct{} `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the reserved node.
+	ARN *string `type:"string"`
+
+	// The duration of the reservation in seconds.
+	Duration *int64 `type:"integer"`
+
+	// The fixed price charged for this reserved node.
+	FixedPrice *float64 `type:"double"`
+
+	// The number of nodes that have been reserved.
+	NodeCount *int64 `type:"integer"`
+
+	// The node type for the reserved nodes.
+	NodeType *string `type:"string"`
+
+	// The offering type of this reserved node.
+	OfferingType *string `type:"string"`
+
+	// The recurring price charged to run this reserved node.
+	RecurringCharges []*RecurringCharge `type:"list"`
+
+	// A customer-specified identifier to track this reservation.
+	ReservationId *string `type:"string"`
+
+	// The ID of the reserved node offering to purchase.
+	ReservedNodesOfferingId *string `type:"string"`
+
+	// The time the reservation started.
+	StartTime *time.Time `type:"timestamp"`
+
+	// The state of the reserved node.
+	State *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNode) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNode) GoString() string {
+	return s.String()
+}
+
+// SetARN sets the ARN field's value.
+func (s *ReservedNode) SetARN(v string) *ReservedNode {
+	s.ARN = &v
+	return s
+}
+
+// SetDuration sets the Duration field's value.
+func (s *ReservedNode) SetDuration(v int64) *ReservedNode {
+	s.Duration = &v
+	return s
+}
+
+// SetFixedPrice sets the FixedPrice field's value.
+func (s *ReservedNode) SetFixedPrice(v float64) *ReservedNode {
+	s.FixedPrice = &v
+	return s
+}
+
+// SetNodeCount sets the NodeCount field's value.
+func (s *ReservedNode) SetNodeCount(v int64) *ReservedNode {
+	s.NodeCount = &v
+	return s
+}
+
+// SetNodeType sets the NodeType field's value.
+func (s *ReservedNode) SetNodeType(v string) *ReservedNode {
+	s.NodeType = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *ReservedNode) SetOfferingType(v string) *ReservedNode {
+	s.OfferingType = &v
+	return s
+}
+
+// SetRecurringCharges sets the RecurringCharges field's value.
+func (s *ReservedNode) SetRecurringCharges(v []*RecurringCharge) *ReservedNode {
+	s.RecurringCharges = v
+	return s
+}
+
+// SetReservationId sets the ReservationId field's value.
+func (s *ReservedNode) SetReservationId(v string) *ReservedNode {
+	s.ReservationId = &v
+	return s
+}
+
+// SetReservedNodesOfferingId sets the ReservedNodesOfferingId field's value.
+func (s *ReservedNode) SetReservedNodesOfferingId(v string) *ReservedNode {
+	s.ReservedNodesOfferingId = &v
+	return s
+}
+
+// SetStartTime sets the StartTime field's value.
+func (s *ReservedNode) SetStartTime(v time.Time) *ReservedNode {
+	s.StartTime = &v
+	return s
+}
+
+// SetState sets the State field's value.
+func (s *ReservedNode) SetState(v string) *ReservedNode {
+	s.State = &v
+	return s
+}
+
+// You already have a reservation with the given identifier.
+type ReservedNodeAlreadyExistsFault struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodeAlreadyExistsFault) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodeAlreadyExistsFault) GoString() string {
+	return s.String()
+}
+
+func newErrorReservedNodeAlreadyExistsFault(v protocol.ResponseMetadata) error {
+	return &ReservedNodeAlreadyExistsFault{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ReservedNodeAlreadyExistsFault) Code() string {
+	return "ReservedNodeAlreadyExistsFault"
+}
+
+// Message returns the exception's message.
+func (s *ReservedNodeAlreadyExistsFault) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ReservedNodeAlreadyExistsFault) OrigErr() error {
+	return nil
+}
+
+func (s *ReservedNodeAlreadyExistsFault) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ReservedNodeAlreadyExistsFault) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ReservedNodeAlreadyExistsFault) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The requested node does not exist.
+type ReservedNodeNotFoundFault struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodeNotFoundFault) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodeNotFoundFault) GoString() string {
+	return s.String()
+}
+
+func newErrorReservedNodeNotFoundFault(v protocol.ResponseMetadata) error {
+	return &ReservedNodeNotFoundFault{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ReservedNodeNotFoundFault) Code() string {
+	return "ReservedNodeNotFoundFault"
+}
+
+// Message returns the exception's message.
+func (s *ReservedNodeNotFoundFault) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ReservedNodeNotFoundFault) OrigErr() error {
+	return nil
+}
+
+func (s *ReservedNodeNotFoundFault) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ReservedNodeNotFoundFault) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ReservedNodeNotFoundFault) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The request cannot be processed because it would exceed the user's node quota.
+type ReservedNodeQuotaExceededFault struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodeQuotaExceededFault) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodeQuotaExceededFault) GoString() string {
+	return s.String()
+}
+
+func newErrorReservedNodeQuotaExceededFault(v protocol.ResponseMetadata) error {
+	return &ReservedNodeQuotaExceededFault{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ReservedNodeQuotaExceededFault) Code() string {
+	return "ReservedNodeQuotaExceededFault"
+}
+
+// Message returns the exception's message.
+func (s *ReservedNodeQuotaExceededFault) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ReservedNodeQuotaExceededFault) OrigErr() error {
+	return nil
+}
+
+func (s *ReservedNodeQuotaExceededFault) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ReservedNodeQuotaExceededFault) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ReservedNodeQuotaExceededFault) RequestID() string {
+	return s.RespMetadata.RequestID
+}
+
+// The offering type of this node.
+type ReservedNodesOffering struct {
+	_ struct{} `type:"structure"`
+
+	// The duration of the reservation in seconds.
+	Duration *int64 `type:"integer"`
+
+	// The fixed price charged for this reserved node.
+	FixedPrice *float64 `type:"double"`
+
+	// The node type for the reserved nodes. For more information, see Supported
+	// node types (https://docs.aws.amazon.com/memorydb/latest/devguide/nodes.reserved.html#reserved-nodes-supported).
+	NodeType *string `type:"string"`
+
+	// The offering type of this reserved node.
+	OfferingType *string `type:"string"`
+
+	// The recurring price charged to run this reserved node.
+	RecurringCharges []*RecurringCharge `type:"list"`
+
+	// The offering identifier.
+	ReservedNodesOfferingId *string `type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodesOffering) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodesOffering) GoString() string {
+	return s.String()
+}
+
+// SetDuration sets the Duration field's value.
+func (s *ReservedNodesOffering) SetDuration(v int64) *ReservedNodesOffering {
+	s.Duration = &v
+	return s
+}
+
+// SetFixedPrice sets the FixedPrice field's value.
+func (s *ReservedNodesOffering) SetFixedPrice(v float64) *ReservedNodesOffering {
+	s.FixedPrice = &v
+	return s
+}
+
+// SetNodeType sets the NodeType field's value.
+func (s *ReservedNodesOffering) SetNodeType(v string) *ReservedNodesOffering {
+	s.NodeType = &v
+	return s
+}
+
+// SetOfferingType sets the OfferingType field's value.
+func (s *ReservedNodesOffering) SetOfferingType(v string) *ReservedNodesOffering {
+	s.OfferingType = &v
+	return s
+}
+
+// SetRecurringCharges sets the RecurringCharges field's value.
+func (s *ReservedNodesOffering) SetRecurringCharges(v []*RecurringCharge) *ReservedNodesOffering {
+	s.RecurringCharges = v
+	return s
+}
+
+// SetReservedNodesOfferingId sets the ReservedNodesOfferingId field's value.
+func (s *ReservedNodesOffering) SetReservedNodesOfferingId(v string) *ReservedNodesOffering {
+	s.ReservedNodesOfferingId = &v
+	return s
+}
+
+// The requested node offering does not exist.
+type ReservedNodesOfferingNotFoundFault struct {
+	_            struct{}                  `type:"structure"`
+	RespMetadata protocol.ResponseMetadata `json:"-" xml:"-"`
+
+	Message_ *string `locationName:"message" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodesOfferingNotFoundFault) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s ReservedNodesOfferingNotFoundFault) GoString() string {
+	return s.String()
+}
+
+func newErrorReservedNodesOfferingNotFoundFault(v protocol.ResponseMetadata) error {
+	return &ReservedNodesOfferingNotFoundFault{
+		RespMetadata: v,
+	}
+}
+
+// Code returns the exception type name.
+func (s *ReservedNodesOfferingNotFoundFault) Code() string {
+	return "ReservedNodesOfferingNotFoundFault"
+}
+
+// Message returns the exception's message.
+func (s *ReservedNodesOfferingNotFoundFault) Message() string {
+	if s.Message_ != nil {
+		return *s.Message_
+	}
+	return ""
+}
+
+// OrigErr always returns nil, satisfies awserr.Error interface.
+func (s *ReservedNodesOfferingNotFoundFault) OrigErr() error {
+	return nil
+}
+
+func (s *ReservedNodesOfferingNotFoundFault) Error() string {
+	return fmt.Sprintf("%s: %s", s.Code(), s.Message())
+}
+
+// Status code returns the HTTP status code for the request's response error.
+func (s *ReservedNodesOfferingNotFoundFault) StatusCode() int {
+	return s.RespMetadata.StatusCode
+}
+
+// RequestID returns the service's response RequestID for request.
+func (s *ReservedNodesOfferingNotFoundFault) RequestID() string {
+	return s.RespMetadata.RequestID
 }
 
 type ResetParameterGroupInput struct {
@@ -10003,6 +11864,11 @@ type Snapshot struct {
 	// The configuration of the cluster from which the snapshot was taken
 	ClusterConfiguration *ClusterConfiguration `type:"structure"`
 
+	// Enables data tiering. Data tiering is only supported for clusters using the
+	// r6gd node type. This parameter must be set when using r6gd nodes. For more
+	// information, see Data tiering (https://docs.aws.amazon.com/memorydb/latest/devguide/data-tiering.html).
+	DataTiering *string `type:"string" enum:"DataTieringStatus"`
+
 	// The ID of the KMS key used to encrypt the snapshot.
 	KmsKeyId *string `type:"string"`
 
@@ -10045,6 +11911,12 @@ func (s *Snapshot) SetARN(v string) *Snapshot {
 // SetClusterConfiguration sets the ClusterConfiguration field's value.
 func (s *Snapshot) SetClusterConfiguration(v *ClusterConfiguration) *Snapshot {
 	s.ClusterConfiguration = v
+	return s
+}
+
+// SetDataTiering sets the DataTiering field's value.
+func (s *Snapshot) SetDataTiering(v string) *Snapshot {
+	s.DataTiering = &v
 	return s
 }
 
@@ -11411,7 +13283,27 @@ type UpdateClusterInput struct {
 	// existing cluster and create it anew with the earlier engine version.
 	EngineVersion *string `type:"string"`
 
-	// The maintenance window to update
+	// Specifies the weekly time range during which maintenance on the cluster is
+	// performed. It is specified as a range in the format ddd:hh24:mi-ddd:hh24:mi
+	// (24H Clock UTC). The minimum maintenance window is a 60 minute period.
+	//
+	// Valid values for ddd are:
+	//
+	//    * sun
+	//
+	//    * mon
+	//
+	//    * tue
+	//
+	//    * wed
+	//
+	//    * thu
+	//
+	//    * fri
+	//
+	//    * sat
+	//
+	// Example: sun:23:00-mon:01:30
 	MaintenanceWindow *string `type:"string"`
 
 	// A valid node type that you want to scale this cluster up or down to.
@@ -12187,6 +14079,9 @@ const (
 
 	// AuthenticationTypeNoPassword is a AuthenticationType enum value
 	AuthenticationTypeNoPassword = "no-password"
+
+	// AuthenticationTypeIam is a AuthenticationType enum value
+	AuthenticationTypeIam = "iam"
 )
 
 // AuthenticationType_Values returns all elements of the AuthenticationType enum
@@ -12194,18 +14089,39 @@ func AuthenticationType_Values() []string {
 	return []string{
 		AuthenticationTypePassword,
 		AuthenticationTypeNoPassword,
+		AuthenticationTypeIam,
+	}
+}
+
+const (
+	// DataTieringStatusTrue is a DataTieringStatus enum value
+	DataTieringStatusTrue = "true"
+
+	// DataTieringStatusFalse is a DataTieringStatus enum value
+	DataTieringStatusFalse = "false"
+)
+
+// DataTieringStatus_Values returns all elements of the DataTieringStatus enum
+func DataTieringStatus_Values() []string {
+	return []string{
+		DataTieringStatusTrue,
+		DataTieringStatusFalse,
 	}
 }
 
 const (
 	// InputAuthenticationTypePassword is a InputAuthenticationType enum value
 	InputAuthenticationTypePassword = "password"
+
+	// InputAuthenticationTypeIam is a InputAuthenticationType enum value
+	InputAuthenticationTypeIam = "iam"
 )
 
 // InputAuthenticationType_Values returns all elements of the InputAuthenticationType enum
 func InputAuthenticationType_Values() []string {
 	return []string{
 		InputAuthenticationTypePassword,
+		InputAuthenticationTypeIam,
 	}
 }
 

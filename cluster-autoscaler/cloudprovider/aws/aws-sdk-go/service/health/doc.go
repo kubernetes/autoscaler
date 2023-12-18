@@ -3,24 +3,31 @@
 // Package health provides the client and types for making API
 // requests to AWS Health APIs and Notifications.
 //
-// The Health API provides programmatic access to the Health information that
-// appears in the Personal Health Dashboard (https://phd.aws.amazon.com/phd/home#/).
-// You can use the API operations to get information about events that might
-// affect your Amazon Web Services services and resources.
+// The Health API provides access to the Health information that appears in
+// the Health Dashboard (https://health.aws.amazon.com/health/home). You can
+// use the API operations to get information about events that might affect
+// your Amazon Web Services and resources.
 //
-//   - You must have a Business, Enterprise On-Ramp, or Enterprise Support
-//     plan from Amazon Web Services Support (http://aws.amazon.com/premiumsupport/)
-//     to use the Health API. If you call the Health API from an Amazon Web Services
-//     account that doesn't have a Business, Enterprise On-Ramp, or Enterprise
-//     Support plan, you receive a SubscriptionRequiredException error.
+// You must have a Business, Enterprise On-Ramp, or Enterprise Support plan
+// from Amazon Web Services Support (http://aws.amazon.com/premiumsupport/)
+// to use the Health API. If you call the Health API from an Amazon Web Services
+// account that doesn't have a Business, Enterprise On-Ramp, or Enterprise Support
+// plan, you receive a SubscriptionRequiredException error.
 //
-//   - You can use the Health endpoint health.us-east-1.amazonaws.com (HTTPS)
-//     to call the Health API operations. Health supports a multi-Region application
-//     architecture and has two regional endpoints in an active-passive configuration.
-//     You can use the high availability endpoint example to determine which
-//     Amazon Web Services Region is active, so that you can get the latest information
-//     from the API. For more information, see Accessing the Health API (https://docs.aws.amazon.com/health/latest/ug/health-api.html)
-//     in the Health User Guide.
+// For API access, you need an access key ID and a secret access key. Use temporary
+// credentials instead of long-term access keys when possible. Temporary credentials
+// include an access key ID, a secret access key, and a security token that
+// indicates when the credentials expire. For more information, see Best practices
+// for managing Amazon Web Services access keys (https://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html)
+// in the Amazon Web Services General Reference.
+//
+// You can use the Health endpoint health.us-east-1.amazonaws.com (HTTPS) to
+// call the Health API operations. Health supports a multi-Region application
+// architecture and has two regional endpoints in an active-passive configuration.
+// You can use the high availability endpoint example to determine which Amazon
+// Web Services Region is active, so that you can get the latest information
+// from the API. For more information, see Accessing the Health API (https://docs.aws.amazon.com/health/latest/ug/health-api.html)
+// in the Health User Guide.
 //
 // For authentication of requests, Health uses the Signature Version 4 Signing
 // Process (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html).

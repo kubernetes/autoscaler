@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// FinSpace Public API.
 //	func myFunc(svc finspacedataiface.FinSpaceDataAPI) bool {
-//	    // Make svc.CreateChangeset request
+//	    // Make svc.AssociateUserToPermissionGroup request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockFinSpaceDataClient struct {
 //	    finspacedataiface.FinSpaceDataAPI
 //	}
-//	func (m *mockFinSpaceDataClient) CreateChangeset(input *finspacedata.CreateChangesetInput) (*finspacedata.CreateChangesetOutput, error) {
+//	func (m *mockFinSpaceDataClient) AssociateUserToPermissionGroup(input *finspacedata.AssociateUserToPermissionGroupInput) (*finspacedata.AssociateUserToPermissionGroupOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,10 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type FinSpaceDataAPI interface {
+	AssociateUserToPermissionGroup(*finspacedata.AssociateUserToPermissionGroupInput) (*finspacedata.AssociateUserToPermissionGroupOutput, error)
+	AssociateUserToPermissionGroupWithContext(aws.Context, *finspacedata.AssociateUserToPermissionGroupInput, ...request.Option) (*finspacedata.AssociateUserToPermissionGroupOutput, error)
+	AssociateUserToPermissionGroupRequest(*finspacedata.AssociateUserToPermissionGroupInput) (*request.Request, *finspacedata.AssociateUserToPermissionGroupOutput)
+
 	CreateChangeset(*finspacedata.CreateChangesetInput) (*finspacedata.CreateChangesetOutput, error)
 	CreateChangesetWithContext(aws.Context, *finspacedata.CreateChangesetInput, ...request.Option) (*finspacedata.CreateChangesetOutput, error)
 	CreateChangesetRequest(*finspacedata.CreateChangesetInput) (*request.Request, *finspacedata.CreateChangesetOutput)
@@ -92,6 +96,10 @@ type FinSpaceDataAPI interface {
 	DisableUserWithContext(aws.Context, *finspacedata.DisableUserInput, ...request.Option) (*finspacedata.DisableUserOutput, error)
 	DisableUserRequest(*finspacedata.DisableUserInput) (*request.Request, *finspacedata.DisableUserOutput)
 
+	DisassociateUserFromPermissionGroup(*finspacedata.DisassociateUserFromPermissionGroupInput) (*finspacedata.DisassociateUserFromPermissionGroupOutput, error)
+	DisassociateUserFromPermissionGroupWithContext(aws.Context, *finspacedata.DisassociateUserFromPermissionGroupInput, ...request.Option) (*finspacedata.DisassociateUserFromPermissionGroupOutput, error)
+	DisassociateUserFromPermissionGroupRequest(*finspacedata.DisassociateUserFromPermissionGroupInput) (*request.Request, *finspacedata.DisassociateUserFromPermissionGroupOutput)
+
 	EnableUser(*finspacedata.EnableUserInput) (*finspacedata.EnableUserOutput, error)
 	EnableUserWithContext(aws.Context, *finspacedata.EnableUserInput, ...request.Option) (*finspacedata.EnableUserOutput, error)
 	EnableUserRequest(*finspacedata.EnableUserInput) (*request.Request, *finspacedata.EnableUserOutput)
@@ -107,6 +115,14 @@ type FinSpaceDataAPI interface {
 	GetDataset(*finspacedata.GetDatasetInput) (*finspacedata.GetDatasetOutput, error)
 	GetDatasetWithContext(aws.Context, *finspacedata.GetDatasetInput, ...request.Option) (*finspacedata.GetDatasetOutput, error)
 	GetDatasetRequest(*finspacedata.GetDatasetInput) (*request.Request, *finspacedata.GetDatasetOutput)
+
+	GetExternalDataViewAccessDetails(*finspacedata.GetExternalDataViewAccessDetailsInput) (*finspacedata.GetExternalDataViewAccessDetailsOutput, error)
+	GetExternalDataViewAccessDetailsWithContext(aws.Context, *finspacedata.GetExternalDataViewAccessDetailsInput, ...request.Option) (*finspacedata.GetExternalDataViewAccessDetailsOutput, error)
+	GetExternalDataViewAccessDetailsRequest(*finspacedata.GetExternalDataViewAccessDetailsInput) (*request.Request, *finspacedata.GetExternalDataViewAccessDetailsOutput)
+
+	GetPermissionGroup(*finspacedata.GetPermissionGroupInput) (*finspacedata.GetPermissionGroupOutput, error)
+	GetPermissionGroupWithContext(aws.Context, *finspacedata.GetPermissionGroupInput, ...request.Option) (*finspacedata.GetPermissionGroupOutput, error)
+	GetPermissionGroupRequest(*finspacedata.GetPermissionGroupInput) (*request.Request, *finspacedata.GetPermissionGroupOutput)
 
 	GetProgrammaticAccessCredentials(*finspacedata.GetProgrammaticAccessCredentialsInput) (*finspacedata.GetProgrammaticAccessCredentialsOutput, error)
 	GetProgrammaticAccessCredentialsWithContext(aws.Context, *finspacedata.GetProgrammaticAccessCredentialsInput, ...request.Option) (*finspacedata.GetProgrammaticAccessCredentialsOutput, error)
@@ -148,12 +164,20 @@ type FinSpaceDataAPI interface {
 	ListPermissionGroupsPages(*finspacedata.ListPermissionGroupsInput, func(*finspacedata.ListPermissionGroupsOutput, bool) bool) error
 	ListPermissionGroupsPagesWithContext(aws.Context, *finspacedata.ListPermissionGroupsInput, func(*finspacedata.ListPermissionGroupsOutput, bool) bool, ...request.Option) error
 
+	ListPermissionGroupsByUser(*finspacedata.ListPermissionGroupsByUserInput) (*finspacedata.ListPermissionGroupsByUserOutput, error)
+	ListPermissionGroupsByUserWithContext(aws.Context, *finspacedata.ListPermissionGroupsByUserInput, ...request.Option) (*finspacedata.ListPermissionGroupsByUserOutput, error)
+	ListPermissionGroupsByUserRequest(*finspacedata.ListPermissionGroupsByUserInput) (*request.Request, *finspacedata.ListPermissionGroupsByUserOutput)
+
 	ListUsers(*finspacedata.ListUsersInput) (*finspacedata.ListUsersOutput, error)
 	ListUsersWithContext(aws.Context, *finspacedata.ListUsersInput, ...request.Option) (*finspacedata.ListUsersOutput, error)
 	ListUsersRequest(*finspacedata.ListUsersInput) (*request.Request, *finspacedata.ListUsersOutput)
 
 	ListUsersPages(*finspacedata.ListUsersInput, func(*finspacedata.ListUsersOutput, bool) bool) error
 	ListUsersPagesWithContext(aws.Context, *finspacedata.ListUsersInput, func(*finspacedata.ListUsersOutput, bool) bool, ...request.Option) error
+
+	ListUsersByPermissionGroup(*finspacedata.ListUsersByPermissionGroupInput) (*finspacedata.ListUsersByPermissionGroupOutput, error)
+	ListUsersByPermissionGroupWithContext(aws.Context, *finspacedata.ListUsersByPermissionGroupInput, ...request.Option) (*finspacedata.ListUsersByPermissionGroupOutput, error)
+	ListUsersByPermissionGroupRequest(*finspacedata.ListUsersByPermissionGroupInput) (*request.Request, *finspacedata.ListUsersByPermissionGroupOutput)
 
 	ResetUserPassword(*finspacedata.ResetUserPasswordInput) (*finspacedata.ResetUserPasswordOutput, error)
 	ResetUserPasswordWithContext(aws.Context, *finspacedata.ResetUserPasswordInput, ...request.Option) (*finspacedata.ResetUserPasswordOutput, error)

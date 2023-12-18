@@ -58,7 +58,8 @@ func (c *Firehose) CreateDeliveryStreamRequest(input *CreateDeliveryStreamInput)
 //
 // Creates a Kinesis Data Firehose delivery stream.
 //
-// By default, you can create up to 50 delivery streams per AWS Region.
+// By default, you can create up to 50 delivery streams per Amazon Web Services
+// Region.
 //
 // This is an asynchronous operation that immediately returns. The initial status
 // of the delivery stream is CREATING. After the delivery stream is created,
@@ -83,11 +84,14 @@ func (c *Firehose) CreateDeliveryStreamRequest(input *CreateDeliveryStreamInput)
 // You can also invoke StartDeliveryStreamEncryption to turn on SSE for an existing
 // delivery stream that doesn't have SSE enabled.
 //
-// A delivery stream is configured with a single destination: Amazon S3, Amazon
-// ES, Amazon Redshift, or Splunk. You must specify only one of the following
-// destination configuration parameters: ExtendedS3DestinationConfiguration,
-// S3DestinationConfiguration, ElasticsearchDestinationConfiguration, RedshiftDestinationConfiguration,
-// or SplunkDestinationConfiguration.
+// A delivery stream is configured with a single destination, such as Amazon
+// Simple Storage Service (Amazon S3), Amazon Redshift, Amazon OpenSearch Service,
+// Amazon OpenSearch Serverless, Splunk, and any custom HTTP endpoint or HTTP
+// endpoints owned by or supported by third-party service providers, including
+// Datadog, Dynatrace, LogicMonitor, MongoDB, New Relic, and Sumo Logic. You
+// must specify only one of the following destination configuration parameters:
+// ExtendedS3DestinationConfiguration, S3DestinationConfiguration, ElasticsearchDestinationConfiguration,
+// RedshiftDestinationConfiguration, or SplunkDestinationConfiguration.
 //
 // When you specify S3DestinationConfiguration, you can also provide the following
 // optional values: BufferingHints, EncryptionConfiguration, and CompressionFormat.
@@ -568,6 +572,12 @@ func (c *Firehose) PutRecordRequest(input *PutRecordInput) (req *request.Request
 // for each delivery stream. For more information about limits and how to request
 // an increase, see Amazon Kinesis Data Firehose Limits (https://docs.aws.amazon.com/firehose/latest/dev/limits.html).
 //
+// Kinesis Data Firehose accumulates and publishes a particular metric for a
+// customer account in one minute intervals. It is possible that the bursts
+// of incoming bytes/records ingested to a delivery stream last only for a few
+// seconds. Due to this, the actual spikes in the traffic might not be fully
+// visible in the customer's 1 minute CloudWatch metrics.
+//
 // You must specify the name of the delivery stream and the data record when
 // using PutRecord. The data record consists of a data blob that can be up to
 // 1,000 KiB in size, and any kind of data. For example, it can be a segment
@@ -584,9 +594,14 @@ func (c *Firehose) PutRecordRequest(input *PutRecordInput) (req *request.Request
 // to each record. Producer applications can use this ID for purposes such as
 // auditability and investigation.
 //
-// If the PutRecord operation throws a ServiceUnavailableException, back off
-// and retry. If the exception persists, it is possible that the throughput
-// limits have been exceeded for the delivery stream.
+// If the PutRecord operation throws a ServiceUnavailableException, the API
+// is automatically reinvoked (retried) 3 times. If the exception persists,
+// it is possible that the throughput limits have been exceeded for the delivery
+// stream.
+//
+// Re-invoking the Put API operations (for example, PutRecord and PutRecordBatch)
+// can result in data duplicates. For larger data assets, allow for a longer
+// time out before retrying Put API operations.
 //
 // Data records sent to Kinesis Data Firehose are stored for 24 hours from the
 // time they are added to a delivery stream as it tries to send the records
@@ -693,6 +708,12 @@ func (c *Firehose) PutRecordBatchRequest(input *PutRecordBatchInput) (req *reque
 // To write single data records into a delivery stream, use PutRecord. Applications
 // using these operations are referred to as producers.
 //
+// Kinesis Data Firehose accumulates and publishes a particular metric for a
+// customer account in one minute intervals. It is possible that the bursts
+// of incoming bytes/records ingested to a delivery stream last only for a few
+// seconds. Due to this, the actual spikes in the traffic might not be fully
+// visible in the customer's 1 minute CloudWatch metrics.
+//
 // For information about service quota, see Amazon Kinesis Data Firehose Quota
 // (https://docs.aws.amazon.com/firehose/latest/dev/limits.html).
 //
@@ -737,9 +758,13 @@ func (c *Firehose) PutRecordBatchRequest(input *PutRecordBatchInput) (req *reque
 // corresponding charges). We recommend that you handle any duplicates at the
 // destination.
 //
-// If PutRecordBatch throws ServiceUnavailableException, back off and retry.
-// If the exception persists, it is possible that the throughput limits have
-// been exceeded for the delivery stream.
+// If PutRecordBatch throws ServiceUnavailableException, the API is automatically
+// reinvoked (retried) 3 times. If the exception persists, it is possible that
+// the throughput limits have been exceeded for the delivery stream.
+//
+// Re-invoking the Put API operations (for example, PutRecord and PutRecordBatch)
+// can result in data duplicates. For larger data assets, allow for a longer
+// time out before retrying Put API operations.
 //
 // Data records sent to Kinesis Data Firehose are stored for 24 hours from the
 // time they are added to a delivery stream as it attempts to send the records
@@ -865,6 +890,10 @@ func (c *Firehose) StartDeliveryStreamEncryptionRequest(input *StartDeliveryStre
 // had on the old CMK for retirement. If the new CMK is of type CUSTOMER_MANAGED_CMK,
 // Kinesis Data Firehose creates a grant that enables it to use the new CMK
 // to encrypt and decrypt data and to manage the grant.
+//
+// For the KMS grant creation to be successful, Kinesis Data Firehose APIs StartDeliveryStreamEncryption
+// and CreateDeliveryStream should not be called with session credentials that
+// are more than 6 hours old.
 //
 // If a delivery stream already has encryption enabled and then you invoke this
 // operation to change the ARN of the CMK or both its type and ARN and you get
@@ -1090,13 +1119,13 @@ func (c *Firehose) TagDeliveryStreamRequest(input *TagDeliveryStreamInput) (req 
 // TagDeliveryStream API operation for Amazon Kinesis Firehose.
 //
 // Adds or updates tags for the specified delivery stream. A tag is a key-value
-// pair that you can define and assign to AWS resources. If you specify a tag
-// that already exists, the tag value is replaced with the value that you specify
-// in the request. Tags are metadata. For example, you can add friendly names
-// and descriptions or other types of information that can help you distinguish
-// the delivery stream. For more information about tags, see Using Cost Allocation
-// Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
-// in the AWS Billing and Cost Management User Guide.
+// pair that you can define and assign to Amazon Web Services resources. If
+// you specify a tag that already exists, the tag value is replaced with the
+// value that you specify in the request. Tags are metadata. For example, you
+// can add friendly names and descriptions or other types of information that
+// can help you distinguish the delivery stream. For more information about
+// tags, see Using Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
+// in the Amazon Web Services Billing and Cost Management User Guide.
 //
 // Each delivery stream can have up to 50 tags.
 //
@@ -1293,8 +1322,9 @@ func (c *Firehose) UpdateDestinationRequest(input *UpdateDestinationInput) (req 
 // writes to the delivery stream can continue during this process. The updated
 // configurations are usually effective within a few minutes.
 //
-// Switching between Amazon ES and other services is not supported. For an Amazon
-// ES destination, you can only update to another Amazon ES destination.
+// Switching between Amazon OpenSearch Service and other services is not supported.
+// For an Amazon OpenSearch Service destination, you can only update to another
+// Amazon OpenSearch Service destination.
 //
 // If the destination type is the same, Kinesis Data Firehose merges the configuration
 // parameters specified with the destination configuration that already exists
@@ -1358,11 +1388,553 @@ func (c *Firehose) UpdateDestinationWithContext(ctx aws.Context, input *UpdateDe
 	return out, req.Send()
 }
 
+// Describes the buffering to perform before delivering data to the Serverless
+// offering for Amazon OpenSearch Service destination.
+type AmazonOpenSearchServerlessBufferingHints struct {
+	_ struct{} `type:"structure"`
+
+	// Buffer incoming data for the specified period of time, in seconds, before
+	// delivering it to the destination. The default value is 300 (5 minutes).
+	IntervalInSeconds *int64 `min:"60" type:"integer"`
+
+	// Buffer incoming data to the specified size, in MBs, before delivering it
+	// to the destination. The default value is 5.
+	//
+	// We recommend setting this parameter to a value greater than the amount of
+	// data you typically ingest into the delivery stream in 10 seconds. For example,
+	// if you typically ingest data at 1 MB/sec, the value should be 10 MB or higher.
+	SizeInMBs *int64 `min:"1" type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessBufferingHints) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessBufferingHints) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AmazonOpenSearchServerlessBufferingHints) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AmazonOpenSearchServerlessBufferingHints"}
+	if s.IntervalInSeconds != nil && *s.IntervalInSeconds < 60 {
+		invalidParams.Add(request.NewErrParamMinValue("IntervalInSeconds", 60))
+	}
+	if s.SizeInMBs != nil && *s.SizeInMBs < 1 {
+		invalidParams.Add(request.NewErrParamMinValue("SizeInMBs", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIntervalInSeconds sets the IntervalInSeconds field's value.
+func (s *AmazonOpenSearchServerlessBufferingHints) SetIntervalInSeconds(v int64) *AmazonOpenSearchServerlessBufferingHints {
+	s.IntervalInSeconds = &v
+	return s
+}
+
+// SetSizeInMBs sets the SizeInMBs field's value.
+func (s *AmazonOpenSearchServerlessBufferingHints) SetSizeInMBs(v int64) *AmazonOpenSearchServerlessBufferingHints {
+	s.SizeInMBs = &v
+	return s
+}
+
+// Describes the configuration of a destination in the Serverless offering for
+// Amazon OpenSearch Service.
+type AmazonOpenSearchServerlessDestinationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The buffering options. If no value is specified, the default values for AmazonopensearchserviceBufferingHints
+	// are used.
+	BufferingHints *AmazonOpenSearchServerlessBufferingHints `type:"structure"`
+
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `type:"structure"`
+
+	// The endpoint to use when communicating with the collection in the Serverless
+	// offering for Amazon OpenSearch Service.
+	CollectionEndpoint *string `min:"1" type:"string"`
+
+	// The Serverless offering for Amazon OpenSearch Service index name.
+	//
+	// IndexName is a required field
+	IndexName *string `min:"1" type:"string" required:"true"`
+
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
+
+	// The retry behavior in case Kinesis Data Firehose is unable to deliver documents
+	// to the Serverless offering for Amazon OpenSearch Service. The default value
+	// is 300 (5 minutes).
+	RetryOptions *AmazonOpenSearchServerlessRetryOptions `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to be assumed by Kinesis Data
+	// Firehose for calling the Serverless offering for Amazon OpenSearch Service
+	// Configuration API and for indexing documents.
+	//
+	// RoleARN is a required field
+	RoleARN *string `min:"1" type:"string" required:"true"`
+
+	// Defines how documents should be delivered to Amazon S3. When it is set to
+	// FailedDocumentsOnly, Kinesis Data Firehose writes any documents that could
+	// not be indexed to the configured Amazon S3 destination, with AmazonOpenSearchService-failed/
+	// appended to the key prefix. When set to AllDocuments, Kinesis Data Firehose
+	// delivers all incoming records to Amazon S3, and also writes failed documents
+	// with AmazonOpenSearchService-failed/ appended to the prefix.
+	S3BackupMode *string `type:"string" enum:"AmazonOpenSearchServerlessS3BackupMode"`
+
+	// Describes the configuration of a destination in Amazon S3.
+	//
+	// S3Configuration is a required field
+	S3Configuration *S3DestinationConfiguration `type:"structure" required:"true"`
+
+	// The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+	// destination.
+	VpcConfiguration *VpcConfiguration `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessDestinationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessDestinationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AmazonOpenSearchServerlessDestinationConfiguration"}
+	if s.CollectionEndpoint != nil && len(*s.CollectionEndpoint) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CollectionEndpoint", 1))
+	}
+	if s.IndexName == nil {
+		invalidParams.Add(request.NewErrParamRequired("IndexName"))
+	}
+	if s.IndexName != nil && len(*s.IndexName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IndexName", 1))
+	}
+	if s.RoleARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleARN"))
+	}
+	if s.RoleARN != nil && len(*s.RoleARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleARN", 1))
+	}
+	if s.S3Configuration == nil {
+		invalidParams.Add(request.NewErrParamRequired("S3Configuration"))
+	}
+	if s.BufferingHints != nil {
+		if err := s.BufferingHints.Validate(); err != nil {
+			invalidParams.AddNested("BufferingHints", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ProcessingConfiguration != nil {
+		if err := s.ProcessingConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ProcessingConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.S3Configuration != nil {
+		if err := s.S3Configuration.Validate(); err != nil {
+			invalidParams.AddNested("S3Configuration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.VpcConfiguration != nil {
+		if err := s.VpcConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("VpcConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBufferingHints sets the BufferingHints field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetBufferingHints(v *AmazonOpenSearchServerlessBufferingHints) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.BufferingHints = v
+	return s
+}
+
+// SetCloudWatchLoggingOptions sets the CloudWatchLoggingOptions field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetCloudWatchLoggingOptions(v *CloudWatchLoggingOptions) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.CloudWatchLoggingOptions = v
+	return s
+}
+
+// SetCollectionEndpoint sets the CollectionEndpoint field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetCollectionEndpoint(v string) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.CollectionEndpoint = &v
+	return s
+}
+
+// SetIndexName sets the IndexName field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetIndexName(v string) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.IndexName = &v
+	return s
+}
+
+// SetProcessingConfiguration sets the ProcessingConfiguration field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetProcessingConfiguration(v *ProcessingConfiguration) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.ProcessingConfiguration = v
+	return s
+}
+
+// SetRetryOptions sets the RetryOptions field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetRetryOptions(v *AmazonOpenSearchServerlessRetryOptions) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.RetryOptions = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetRoleARN(v string) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.RoleARN = &v
+	return s
+}
+
+// SetS3BackupMode sets the S3BackupMode field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetS3BackupMode(v string) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.S3BackupMode = &v
+	return s
+}
+
+// SetS3Configuration sets the S3Configuration field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetS3Configuration(v *S3DestinationConfiguration) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.S3Configuration = v
+	return s
+}
+
+// SetVpcConfiguration sets the VpcConfiguration field's value.
+func (s *AmazonOpenSearchServerlessDestinationConfiguration) SetVpcConfiguration(v *VpcConfiguration) *AmazonOpenSearchServerlessDestinationConfiguration {
+	s.VpcConfiguration = v
+	return s
+}
+
+// The destination description in the Serverless offering for Amazon OpenSearch
+// Service.
+type AmazonOpenSearchServerlessDestinationDescription struct {
+	_ struct{} `type:"structure"`
+
+	// The buffering options.
+	BufferingHints *AmazonOpenSearchServerlessBufferingHints `type:"structure"`
+
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `type:"structure"`
+
+	// The endpoint to use when communicating with the collection in the Serverless
+	// offering for Amazon OpenSearch Service.
+	CollectionEndpoint *string `min:"1" type:"string"`
+
+	// The Serverless offering for Amazon OpenSearch Service index name.
+	IndexName *string `min:"1" type:"string"`
+
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
+
+	// The Serverless offering for Amazon OpenSearch Service retry options.
+	RetryOptions *AmazonOpenSearchServerlessRetryOptions `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials.
+	RoleARN *string `min:"1" type:"string"`
+
+	// The Amazon S3 backup mode.
+	S3BackupMode *string `type:"string" enum:"AmazonOpenSearchServerlessS3BackupMode"`
+
+	// Describes a destination in Amazon S3.
+	S3DestinationDescription *S3DestinationDescription `type:"structure"`
+
+	// The details of the VPC of the Amazon ES destination.
+	VpcConfigurationDescription *VpcConfigurationDescription `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessDestinationDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessDestinationDescription) GoString() string {
+	return s.String()
+}
+
+// SetBufferingHints sets the BufferingHints field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetBufferingHints(v *AmazonOpenSearchServerlessBufferingHints) *AmazonOpenSearchServerlessDestinationDescription {
+	s.BufferingHints = v
+	return s
+}
+
+// SetCloudWatchLoggingOptions sets the CloudWatchLoggingOptions field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetCloudWatchLoggingOptions(v *CloudWatchLoggingOptions) *AmazonOpenSearchServerlessDestinationDescription {
+	s.CloudWatchLoggingOptions = v
+	return s
+}
+
+// SetCollectionEndpoint sets the CollectionEndpoint field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetCollectionEndpoint(v string) *AmazonOpenSearchServerlessDestinationDescription {
+	s.CollectionEndpoint = &v
+	return s
+}
+
+// SetIndexName sets the IndexName field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetIndexName(v string) *AmazonOpenSearchServerlessDestinationDescription {
+	s.IndexName = &v
+	return s
+}
+
+// SetProcessingConfiguration sets the ProcessingConfiguration field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetProcessingConfiguration(v *ProcessingConfiguration) *AmazonOpenSearchServerlessDestinationDescription {
+	s.ProcessingConfiguration = v
+	return s
+}
+
+// SetRetryOptions sets the RetryOptions field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetRetryOptions(v *AmazonOpenSearchServerlessRetryOptions) *AmazonOpenSearchServerlessDestinationDescription {
+	s.RetryOptions = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetRoleARN(v string) *AmazonOpenSearchServerlessDestinationDescription {
+	s.RoleARN = &v
+	return s
+}
+
+// SetS3BackupMode sets the S3BackupMode field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetS3BackupMode(v string) *AmazonOpenSearchServerlessDestinationDescription {
+	s.S3BackupMode = &v
+	return s
+}
+
+// SetS3DestinationDescription sets the S3DestinationDescription field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetS3DestinationDescription(v *S3DestinationDescription) *AmazonOpenSearchServerlessDestinationDescription {
+	s.S3DestinationDescription = v
+	return s
+}
+
+// SetVpcConfigurationDescription sets the VpcConfigurationDescription field's value.
+func (s *AmazonOpenSearchServerlessDestinationDescription) SetVpcConfigurationDescription(v *VpcConfigurationDescription) *AmazonOpenSearchServerlessDestinationDescription {
+	s.VpcConfigurationDescription = v
+	return s
+}
+
+// Describes an update for a destination in the Serverless offering for Amazon
+// OpenSearch Service.
+type AmazonOpenSearchServerlessDestinationUpdate struct {
+	_ struct{} `type:"structure"`
+
+	// The buffering options. If no value is specified, AmazonopensearchBufferingHints
+	// object default values are used.
+	BufferingHints *AmazonOpenSearchServerlessBufferingHints `type:"structure"`
+
+	// Describes the Amazon CloudWatch logging options for your delivery stream.
+	CloudWatchLoggingOptions *CloudWatchLoggingOptions `type:"structure"`
+
+	// The endpoint to use when communicating with the collection in the Serverless
+	// offering for Amazon OpenSearch Service.
+	CollectionEndpoint *string `min:"1" type:"string"`
+
+	// The Serverless offering for Amazon OpenSearch Service index name.
+	IndexName *string `min:"1" type:"string"`
+
+	// Describes a data processing configuration.
+	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
+
+	// The retry behavior in case Kinesis Data Firehose is unable to deliver documents
+	// to the Serverless offering for Amazon OpenSearch Service. The default value
+	// is 300 (5 minutes).
+	RetryOptions *AmazonOpenSearchServerlessRetryOptions `type:"structure"`
+
+	// The Amazon Resource Name (ARN) of the IAM role to be assumed by Kinesis Data
+	// Firehose for calling the Serverless offering for Amazon OpenSearch Service
+	// Configuration API and for indexing documents.
+	RoleARN *string `min:"1" type:"string"`
+
+	// Describes an update for a destination in Amazon S3.
+	S3Update *S3DestinationUpdate `type:"structure"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessDestinationUpdate) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessDestinationUpdate) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AmazonOpenSearchServerlessDestinationUpdate"}
+	if s.CollectionEndpoint != nil && len(*s.CollectionEndpoint) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("CollectionEndpoint", 1))
+	}
+	if s.IndexName != nil && len(*s.IndexName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("IndexName", 1))
+	}
+	if s.RoleARN != nil && len(*s.RoleARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleARN", 1))
+	}
+	if s.BufferingHints != nil {
+		if err := s.BufferingHints.Validate(); err != nil {
+			invalidParams.AddNested("BufferingHints", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.ProcessingConfiguration != nil {
+		if err := s.ProcessingConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("ProcessingConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.S3Update != nil {
+		if err := s.S3Update.Validate(); err != nil {
+			invalidParams.AddNested("S3Update", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetBufferingHints sets the BufferingHints field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetBufferingHints(v *AmazonOpenSearchServerlessBufferingHints) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.BufferingHints = v
+	return s
+}
+
+// SetCloudWatchLoggingOptions sets the CloudWatchLoggingOptions field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetCloudWatchLoggingOptions(v *CloudWatchLoggingOptions) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.CloudWatchLoggingOptions = v
+	return s
+}
+
+// SetCollectionEndpoint sets the CollectionEndpoint field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetCollectionEndpoint(v string) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.CollectionEndpoint = &v
+	return s
+}
+
+// SetIndexName sets the IndexName field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetIndexName(v string) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.IndexName = &v
+	return s
+}
+
+// SetProcessingConfiguration sets the ProcessingConfiguration field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetProcessingConfiguration(v *ProcessingConfiguration) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.ProcessingConfiguration = v
+	return s
+}
+
+// SetRetryOptions sets the RetryOptions field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetRetryOptions(v *AmazonOpenSearchServerlessRetryOptions) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.RetryOptions = v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetRoleARN(v string) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.RoleARN = &v
+	return s
+}
+
+// SetS3Update sets the S3Update field's value.
+func (s *AmazonOpenSearchServerlessDestinationUpdate) SetS3Update(v *S3DestinationUpdate) *AmazonOpenSearchServerlessDestinationUpdate {
+	s.S3Update = v
+	return s
+}
+
+// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
+// documents to the Serverless offering for Amazon OpenSearch Service.
+type AmazonOpenSearchServerlessRetryOptions struct {
+	_ struct{} `type:"structure"`
+
+	// After an initial failure to deliver to the Serverless offering for Amazon
+	// OpenSearch Service, the total amount of time during which Kinesis Data Firehose
+	// retries delivery (including the first attempt). After this time has elapsed,
+	// the failed documents are written to Amazon S3. Default value is 300 seconds
+	// (5 minutes). A value of 0 (zero) results in no retries.
+	DurationInSeconds *int64 `type:"integer"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessRetryOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AmazonOpenSearchServerlessRetryOptions) GoString() string {
+	return s.String()
+}
+
+// SetDurationInSeconds sets the DurationInSeconds field's value.
+func (s *AmazonOpenSearchServerlessRetryOptions) SetDurationInSeconds(v int64) *AmazonOpenSearchServerlessRetryOptions {
+	s.DurationInSeconds = &v
+	return s
+}
+
+// Describes the buffering to perform before delivering data to the Amazon OpenSearch
+// Service destination.
 type AmazonopensearchserviceBufferingHints struct {
 	_ struct{} `type:"structure"`
 
+	// Buffer incoming data for the specified period of time, in seconds, before
+	// delivering it to the destination. The default value is 300 (5 minutes).
 	IntervalInSeconds *int64 `min:"60" type:"integer"`
 
+	// Buffer incoming data to the specified size, in MBs, before delivering it
+	// to the destination. The default value is 5.
+	//
+	// We recommend setting this parameter to a value greater than the amount of
+	// data you typically ingest into the delivery stream in 10 seconds. For example,
+	// if you typically ingest data at 1 MB/sec, the value should be 10 MB or higher.
 	SizeInMBs *int64 `min:"1" type:"integer"`
 }
 
@@ -1412,31 +1984,60 @@ func (s *AmazonopensearchserviceBufferingHints) SetSizeInMBs(v int64) *Amazonope
 	return s
 }
 
+// Describes the configuration of a destination in Amazon OpenSearch Service
 type AmazonopensearchserviceDestinationConfiguration struct {
 	_ struct{} `type:"structure"`
 
+	// The buffering options. If no value is specified, the default values for AmazonopensearchserviceBufferingHints
+	// are used.
 	BufferingHints *AmazonopensearchserviceBufferingHints `type:"structure"`
 
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `type:"structure"`
 
+	// The endpoint to use when communicating with the cluster. Specify either this
+	// ClusterEndpoint or the DomainARN field.
 	ClusterEndpoint *string `min:"1" type:"string"`
 
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIdOptions *DocumentIdOptions `type:"structure"`
+
+	// The ARN of the Amazon OpenSearch Service domain. The IAM role must have permissions
+	// for DescribeElasticsearchDomain, DescribeElasticsearchDomains, and DescribeElasticsearchDomainConfig
+	// after assuming the role specified in RoleARN.
 	DomainARN *string `min:"1" type:"string"`
 
+	// The ElasticsearAmazon OpenSearch Service index name.
+	//
 	// IndexName is a required field
 	IndexName *string `min:"1" type:"string" required:"true"`
 
+	// The Amazon OpenSearch Service index rotation period. Index rotation appends
+	// a timestamp to the IndexName to facilitate the expiration of old data.
 	IndexRotationPeriod *string `type:"string" enum:"AmazonopensearchserviceIndexRotationPeriod"`
 
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
 
+	// The retry behavior in case Kinesis Data Firehose is unable to deliver documents
+	// to Amazon OpenSearch Service. The default value is 300 (5 minutes).
 	RetryOptions *AmazonopensearchserviceRetryOptions `type:"structure"`
 
+	// The Amazon Resource Name (ARN) of the IAM role to be assumed by Kinesis Data
+	// Firehose for calling the Amazon OpenSearch Service Configuration API and
+	// for indexing documents.
+	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
 
+	// Defines how documents should be delivered to Amazon S3. When it is set to
+	// FailedDocumentsOnly, Kinesis Data Firehose writes any documents that could
+	// not be indexed to the configured Amazon S3 destination, with AmazonOpenSearchService-failed/
+	// appended to the key prefix. When set to AllDocuments, Kinesis Data Firehose
+	// delivers all incoming records to Amazon S3, and also writes failed documents
+	// with AmazonOpenSearchService-failed/ appended to the prefix.
 	S3BackupMode *string `type:"string" enum:"AmazonopensearchserviceS3BackupMode"`
 
 	// Describes the configuration of a destination in Amazon S3.
@@ -1444,9 +2045,14 @@ type AmazonopensearchserviceDestinationConfiguration struct {
 	// S3Configuration is a required field
 	S3Configuration *S3DestinationConfiguration `type:"structure" required:"true"`
 
+	// The Amazon OpenSearch Service type name. For Elasticsearch 6.x, there can
+	// be only one type per index. If you try to specify a new type for an existing
+	// index that already has another type, Kinesis Data Firehose returns an error
+	// during run time.
 	TypeName *string `type:"string"`
 
-	// The details of the VPC of the Amazon ES destination.
+	// The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+	// destination.
 	VpcConfiguration *VpcConfiguration `type:"structure"`
 }
 
@@ -1497,6 +2103,11 @@ func (s *AmazonopensearchserviceDestinationConfiguration) Validate() error {
 			invalidParams.AddNested("BufferingHints", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.DocumentIdOptions != nil {
+		if err := s.DocumentIdOptions.Validate(); err != nil {
+			invalidParams.AddNested("DocumentIdOptions", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ProcessingConfiguration != nil {
 		if err := s.ProcessingConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("ProcessingConfiguration", err.(request.ErrInvalidParams))
@@ -1534,6 +2145,12 @@ func (s *AmazonopensearchserviceDestinationConfiguration) SetCloudWatchLoggingOp
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *AmazonopensearchserviceDestinationConfiguration) SetClusterEndpoint(v string) *AmazonopensearchserviceDestinationConfiguration {
 	s.ClusterEndpoint = &v
+	return s
+}
+
+// SetDocumentIdOptions sets the DocumentIdOptions field's value.
+func (s *AmazonopensearchserviceDestinationConfiguration) SetDocumentIdOptions(v *DocumentIdOptions) *AmazonopensearchserviceDestinationConfiguration {
+	s.DocumentIdOptions = v
 	return s
 }
 
@@ -1597,34 +2214,53 @@ func (s *AmazonopensearchserviceDestinationConfiguration) SetVpcConfiguration(v 
 	return s
 }
 
+// The destination description in Amazon OpenSearch Service.
 type AmazonopensearchserviceDestinationDescription struct {
 	_ struct{} `type:"structure"`
 
+	// The buffering options.
 	BufferingHints *AmazonopensearchserviceBufferingHints `type:"structure"`
 
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `type:"structure"`
 
+	// The endpoint to use when communicating with the cluster. Kinesis Data Firehose
+	// uses either this ClusterEndpoint or the DomainARN field to send data to Amazon
+	// OpenSearch Service.
 	ClusterEndpoint *string `min:"1" type:"string"`
 
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIdOptions *DocumentIdOptions `type:"structure"`
+
+	// The ARN of the Amazon OpenSearch Service domain.
 	DomainARN *string `min:"1" type:"string"`
 
+	// The Amazon OpenSearch Service index name.
 	IndexName *string `min:"1" type:"string"`
 
+	// The Amazon OpenSearch Service index rotation period
 	IndexRotationPeriod *string `type:"string" enum:"AmazonopensearchserviceIndexRotationPeriod"`
 
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
 
+	// The Amazon OpenSearch Service retry options.
 	RetryOptions *AmazonopensearchserviceRetryOptions `type:"structure"`
 
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials.
 	RoleARN *string `min:"1" type:"string"`
 
+	// The Amazon S3 backup mode.
 	S3BackupMode *string `type:"string" enum:"AmazonopensearchserviceS3BackupMode"`
 
 	// Describes a destination in Amazon S3.
 	S3DestinationDescription *S3DestinationDescription `type:"structure"`
 
+	// The Amazon OpenSearch Service type name. This applies to Elasticsearch 6.x
+	// and lower versions. For Elasticsearch 7.x and OpenSearch Service 1.x, there's
+	// no value for TypeName.
 	TypeName *string `type:"string"`
 
 	// The details of the VPC of the Amazon ES destination.
@@ -1664,6 +2300,12 @@ func (s *AmazonopensearchserviceDestinationDescription) SetCloudWatchLoggingOpti
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *AmazonopensearchserviceDestinationDescription) SetClusterEndpoint(v string) *AmazonopensearchserviceDestinationDescription {
 	s.ClusterEndpoint = &v
+	return s
+}
+
+// SetDocumentIdOptions sets the DocumentIdOptions field's value.
+func (s *AmazonopensearchserviceDestinationDescription) SetDocumentIdOptions(v *DocumentIdOptions) *AmazonopensearchserviceDestinationDescription {
+	s.DocumentIdOptions = v
 	return s
 }
 
@@ -1727,32 +2369,62 @@ func (s *AmazonopensearchserviceDestinationDescription) SetVpcConfigurationDescr
 	return s
 }
 
+// Describes an update for a destination in Amazon OpenSearch Service.
 type AmazonopensearchserviceDestinationUpdate struct {
 	_ struct{} `type:"structure"`
 
+	// The buffering options. If no value is specified, AmazonopensearchBufferingHints
+	// object default values are used.
 	BufferingHints *AmazonopensearchserviceBufferingHints `type:"structure"`
 
 	// Describes the Amazon CloudWatch logging options for your delivery stream.
 	CloudWatchLoggingOptions *CloudWatchLoggingOptions `type:"structure"`
 
+	// The endpoint to use when communicating with the cluster. Specify either this
+	// ClusterEndpoint or the DomainARN field.
 	ClusterEndpoint *string `min:"1" type:"string"`
 
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIdOptions *DocumentIdOptions `type:"structure"`
+
+	// The ARN of the Amazon OpenSearch Service domain. The IAM role must have permissions
+	// for DescribeDomain, DescribeDomains, and DescribeDomainConfig after assuming
+	// the IAM role specified in RoleARN.
 	DomainARN *string `min:"1" type:"string"`
 
+	// The Amazon OpenSearch Service index name.
 	IndexName *string `min:"1" type:"string"`
 
+	// The Amazon OpenSearch Service index rotation period. Index rotation appends
+	// a timestamp to IndexName to facilitate the expiration of old data.
 	IndexRotationPeriod *string `type:"string" enum:"AmazonopensearchserviceIndexRotationPeriod"`
 
 	// Describes a data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
 
+	// The retry behavior in case Kinesis Data Firehose is unable to deliver documents
+	// to Amazon OpenSearch Service. The default value is 300 (5 minutes).
 	RetryOptions *AmazonopensearchserviceRetryOptions `type:"structure"`
 
+	// The Amazon Resource Name (ARN) of the IAM role to be assumed by Kinesis Data
+	// Firehose for calling the Amazon OpenSearch Service Configuration API and
+	// for indexing documents.
 	RoleARN *string `min:"1" type:"string"`
 
 	// Describes an update for a destination in Amazon S3.
 	S3Update *S3DestinationUpdate `type:"structure"`
 
+	// The Amazon OpenSearch Service type name. For Elasticsearch 6.x, there can
+	// be only one type per index. If you try to specify a new type for an existing
+	// index that already has another type, Kinesis Data Firehose returns an error
+	// during runtime.
+	//
+	// If you upgrade Elasticsearch from 6.x to 7.x and don’t update your delivery
+	// stream, Kinesis Data Firehose still delivers data to Elasticsearch with the
+	// old index name and type name. If you want to update your delivery stream
+	// with a new index name, provide an empty string for TypeName.
 	TypeName *string `type:"string"`
 }
 
@@ -1794,6 +2466,11 @@ func (s *AmazonopensearchserviceDestinationUpdate) Validate() error {
 			invalidParams.AddNested("BufferingHints", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.DocumentIdOptions != nil {
+		if err := s.DocumentIdOptions.Validate(); err != nil {
+			invalidParams.AddNested("DocumentIdOptions", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ProcessingConfiguration != nil {
 		if err := s.ProcessingConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("ProcessingConfiguration", err.(request.ErrInvalidParams))
@@ -1826,6 +2503,12 @@ func (s *AmazonopensearchserviceDestinationUpdate) SetCloudWatchLoggingOptions(v
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *AmazonopensearchserviceDestinationUpdate) SetClusterEndpoint(v string) *AmazonopensearchserviceDestinationUpdate {
 	s.ClusterEndpoint = &v
+	return s
+}
+
+// SetDocumentIdOptions sets the DocumentIdOptions field's value.
+func (s *AmazonopensearchserviceDestinationUpdate) SetDocumentIdOptions(v *DocumentIdOptions) *AmazonopensearchserviceDestinationUpdate {
+	s.DocumentIdOptions = v
 	return s
 }
 
@@ -1877,9 +2560,16 @@ func (s *AmazonopensearchserviceDestinationUpdate) SetTypeName(v string) *Amazon
 	return s
 }
 
+// Configures retry behavior in case Kinesis Data Firehose is unable to deliver
+// documents to Amazon OpenSearch Service.
 type AmazonopensearchserviceRetryOptions struct {
 	_ struct{} `type:"structure"`
 
+	// After an initial failure to deliver to Amazon OpenSearch Service, the total
+	// amount of time during which Kinesis Data Firehose retries delivery (including
+	// the first attempt). After this time has elapsed, the failed documents are
+	// written to Amazon S3. Default value is 300 seconds (5 minutes). A value of
+	// 0 (zero) results in no retries.
 	DurationInSeconds *int64 `type:"integer"`
 }
 
@@ -1904,6 +2594,70 @@ func (s AmazonopensearchserviceRetryOptions) GoString() string {
 // SetDurationInSeconds sets the DurationInSeconds field's value.
 func (s *AmazonopensearchserviceRetryOptions) SetDurationInSeconds(v int64) *AmazonopensearchserviceRetryOptions {
 	s.DurationInSeconds = &v
+	return s
+}
+
+// The authentication configuration of the Amazon MSK cluster.
+type AuthenticationConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The type of connectivity used to access the Amazon MSK cluster.
+	//
+	// Connectivity is a required field
+	Connectivity *string `type:"string" required:"true" enum:"Connectivity"`
+
+	// The ARN of the role used to access the Amazon MSK cluster.
+	//
+	// RoleARN is a required field
+	RoleARN *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthenticationConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s AuthenticationConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *AuthenticationConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "AuthenticationConfiguration"}
+	if s.Connectivity == nil {
+		invalidParams.Add(request.NewErrParamRequired("Connectivity"))
+	}
+	if s.RoleARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("RoleARN"))
+	}
+	if s.RoleARN != nil && len(*s.RoleARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("RoleARN", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetConnectivity sets the Connectivity field's value.
+func (s *AuthenticationConfiguration) SetConnectivity(v string) *AuthenticationConfiguration {
+	s.Connectivity = &v
+	return s
+}
+
+// SetRoleARN sets the RoleARN field's value.
+func (s *AuthenticationConfiguration) SetRoleARN(v string) *AuthenticationConfiguration {
+	s.RoleARN = &v
 	return s
 }
 
@@ -2187,16 +2941,21 @@ func (s *CopyCommand) SetDataTableName(v string) *CopyCommand {
 type CreateDeliveryStreamInput struct {
 	_ struct{} `type:"structure"`
 
+	// The destination in the Serverless offering for Amazon OpenSearch Service.
+	// You can specify only one destination.
+	AmazonOpenSearchServerlessDestinationConfiguration *AmazonOpenSearchServerlessDestinationConfiguration `type:"structure"`
+
+	// The destination in Amazon OpenSearch Service. You can specify only one destination.
 	AmazonopensearchserviceDestinationConfiguration *AmazonopensearchserviceDestinationConfiguration `type:"structure"`
 
 	// Used to specify the type and Amazon Resource Name (ARN) of the KMS key needed
 	// for Server-Side Encryption (SSE).
 	DeliveryStreamEncryptionConfigurationInput *DeliveryStreamEncryptionConfigurationInput `type:"structure"`
 
-	// The name of the delivery stream. This name must be unique per AWS account
-	// in the same AWS Region. If the delivery streams are in different accounts
-	// or different Regions, you can have multiple delivery streams with the same
-	// name.
+	// The name of the delivery stream. This name must be unique per Amazon Web
+	// Services account in the same Amazon Web Services Region. If the delivery
+	// streams are in different accounts or different Regions, you can have multiple
+	// delivery streams with the same name.
 	//
 	// DeliveryStreamName is a required field
 	DeliveryStreamName *string `min:"1" type:"string" required:"true"`
@@ -2224,6 +2983,10 @@ type CreateDeliveryStreamInput struct {
 	// Resource Name (ARN) and the role ARN for the source stream.
 	KinesisStreamSourceConfiguration *KinesisStreamSourceConfiguration `type:"structure"`
 
+	// The configuration for the Amazon MSK cluster to be used as the source for
+	// a delivery stream.
+	MSKSourceConfiguration *MSKSourceConfiguration `type:"structure"`
+
 	// The destination in Amazon Redshift. You can specify only one destination.
 	RedshiftDestinationConfiguration *RedshiftDestinationConfiguration `type:"structure"`
 
@@ -2236,11 +2999,11 @@ type CreateDeliveryStreamInput struct {
 	SplunkDestinationConfiguration *SplunkDestinationConfiguration `type:"structure"`
 
 	// A set of tags to assign to the delivery stream. A tag is a key-value pair
-	// that you can define and assign to AWS resources. Tags are metadata. For example,
-	// you can add friendly names and descriptions or other types of information
-	// that can help you distinguish the delivery stream. For more information about
-	// tags, see Using Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
-	// in the AWS Billing and Cost Management User Guide.
+	// that you can define and assign to Amazon Web Services resources. Tags are
+	// metadata. For example, you can add friendly names and descriptions or other
+	// types of information that can help you distinguish the delivery stream. For
+	// more information about tags, see Using Cost Allocation Tags (https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html)
+	// in the Amazon Web Services Billing and Cost Management User Guide.
 	//
 	// You can specify up to 50 tags when creating a delivery stream.
 	Tags []*Tag `min:"1" type:"list"`
@@ -2276,6 +3039,11 @@ func (s *CreateDeliveryStreamInput) Validate() error {
 	if s.Tags != nil && len(s.Tags) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("Tags", 1))
 	}
+	if s.AmazonOpenSearchServerlessDestinationConfiguration != nil {
+		if err := s.AmazonOpenSearchServerlessDestinationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("AmazonOpenSearchServerlessDestinationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.AmazonopensearchserviceDestinationConfiguration != nil {
 		if err := s.AmazonopensearchserviceDestinationConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("AmazonopensearchserviceDestinationConfiguration", err.(request.ErrInvalidParams))
@@ -2304,6 +3072,11 @@ func (s *CreateDeliveryStreamInput) Validate() error {
 	if s.KinesisStreamSourceConfiguration != nil {
 		if err := s.KinesisStreamSourceConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("KinesisStreamSourceConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+	if s.MSKSourceConfiguration != nil {
+		if err := s.MSKSourceConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("MSKSourceConfiguration", err.(request.ErrInvalidParams))
 		}
 	}
 	if s.RedshiftDestinationConfiguration != nil {
@@ -2336,6 +3109,12 @@ func (s *CreateDeliveryStreamInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAmazonOpenSearchServerlessDestinationConfiguration sets the AmazonOpenSearchServerlessDestinationConfiguration field's value.
+func (s *CreateDeliveryStreamInput) SetAmazonOpenSearchServerlessDestinationConfiguration(v *AmazonOpenSearchServerlessDestinationConfiguration) *CreateDeliveryStreamInput {
+	s.AmazonOpenSearchServerlessDestinationConfiguration = v
+	return s
 }
 
 // SetAmazonopensearchserviceDestinationConfiguration sets the AmazonopensearchserviceDestinationConfiguration field's value.
@@ -2383,6 +3162,12 @@ func (s *CreateDeliveryStreamInput) SetHttpEndpointDestinationConfiguration(v *H
 // SetKinesisStreamSourceConfiguration sets the KinesisStreamSourceConfiguration field's value.
 func (s *CreateDeliveryStreamInput) SetKinesisStreamSourceConfiguration(v *KinesisStreamSourceConfiguration) *CreateDeliveryStreamInput {
 	s.KinesisStreamSourceConfiguration = v
+	return s
+}
+
+// SetMSKSourceConfiguration sets the MSKSourceConfiguration field's value.
+func (s *CreateDeliveryStreamInput) SetMSKSourceConfiguration(v *MSKSourceConfiguration) *CreateDeliveryStreamInput {
+	s.MSKSourceConfiguration = v
 	return s
 }
 
@@ -2444,9 +3229,10 @@ func (s *CreateDeliveryStreamOutput) SetDeliveryStreamARN(v string) *CreateDeliv
 // Specifies that you want Kinesis Data Firehose to convert data from the JSON
 // format to the Parquet or ORC format before writing it to Amazon S3. Kinesis
 // Data Firehose uses the serializer and deserializer that you specify, in addition
-// to the column information from the AWS Glue table, to deserialize your input
-// data from JSON and then serialize it to the Parquet or ORC format. For more
-// information, see Kinesis Data Firehose Record Format Conversion (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
+// to the column information from the Amazon Web Services Glue table, to deserialize
+// your input data from JSON and then serialize it to the Parquet or ORC format.
+// For more information, see Kinesis Data Firehose Record Format Conversion
+// (https://docs.aws.amazon.com/firehose/latest/dev/record-format-conversion.html).
 type DataFormatConversionConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -2464,8 +3250,8 @@ type DataFormatConversionConfiguration struct {
 	// if Enabled is set to true.
 	OutputFormatConfiguration *OutputFormatConfiguration `type:"structure"`
 
-	// Specifies the AWS Glue Data Catalog table that contains the column information.
-	// This parameter is required if Enabled is set to true.
+	// Specifies the Amazon Web Services Glue Data Catalog table that contains the
+	// column information. This parameter is required if Enabled is set to true.
 	SchemaConfiguration *SchemaConfiguration `type:"structure"`
 }
 
@@ -2540,8 +3326,8 @@ type DeleteDeliveryStreamInput struct {
 	// the CMK or the grant are in an invalid state. If you force deletion, you
 	// can then use the RevokeGrant (https://docs.aws.amazon.com/kms/latest/APIReference/API_RevokeGrant.html)
 	// operation to revoke the grant you gave to Kinesis Data Firehose. If a failure
-	// to retire the grant happens due to an AWS KMS issue, Kinesis Data Firehose
-	// keeps retrying the delete operation.
+	// to retire the grant happens due to an Amazon Web Services KMS issue, Kinesis
+	// Data Firehose keeps retrying the delete operation.
 	//
 	// The default value is false.
 	AllowForceDelete *bool `type:"boolean"`
@@ -2628,7 +3414,8 @@ type DeliveryStreamDescription struct {
 	CreateTimestamp *time.Time `type:"timestamp"`
 
 	// The Amazon Resource Name (ARN) of the delivery stream. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// see Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces
+	// (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// DeliveryStreamARN is a required field
 	DeliveryStreamARN *string `min:"1" type:"string" required:"true"`
@@ -2793,13 +3580,13 @@ type DeliveryStreamEncryptionConfiguration struct {
 	FailureDescription *FailureDescription `type:"structure"`
 
 	// If KeyType is CUSTOMER_MANAGED_CMK, this field contains the ARN of the customer
-	// managed CMK. If KeyType is AWS_OWNED_CMK, DeliveryStreamEncryptionConfiguration
+	// managed CMK. If KeyType is Amazon Web Services_OWNED_CMK, DeliveryStreamEncryptionConfiguration
 	// doesn't contain a value for KeyARN.
 	KeyARN *string `min:"1" type:"string"`
 
 	// Indicates the type of customer master key (CMK) that is used for encryption.
-	// The default setting is AWS_OWNED_CMK. For more information about CMKs, see
-	// Customer Master Keys (CMKs) (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#master_keys).
+	// The default setting is Amazon Web Services_OWNED_CMK. For more information
+	// about CMKs, see Customer Master Keys (CMKs) (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#master_keys).
 	KeyType *string `type:"string" enum:"KeyType"`
 
 	// This is the server-side encryption (SSE) status for the delivery stream.
@@ -2857,13 +3644,13 @@ type DeliveryStreamEncryptionConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
 	// If you set KeyType to CUSTOMER_MANAGED_CMK, you must specify the Amazon Resource
-	// Name (ARN) of the CMK. If you set KeyType to AWS_OWNED_CMK, Kinesis Data
-	// Firehose uses a service-account CMK.
+	// Name (ARN) of the CMK. If you set KeyType to Amazon Web Services_OWNED_CMK,
+	// Kinesis Data Firehose uses a service-account CMK.
 	KeyARN *string `min:"1" type:"string"`
 
 	// Indicates the type of customer master key (CMK) to use for encryption. The
-	// default setting is AWS_OWNED_CMK. For more information about CMKs, see Customer
-	// Master Keys (CMKs) (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#master_keys).
+	// default setting is Amazon Web Services_OWNED_CMK. For more information about
+	// CMKs, see Customer Master Keys (CMKs) (https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#master_keys).
 	// When you invoke CreateDeliveryStream or StartDeliveryStreamEncryption with
 	// KeyType set to CUSTOMER_MANAGED_CMK, Kinesis Data Firehose invokes the Amazon
 	// KMS operation CreateGrant (https://docs.aws.amazon.com/kms/latest/APIReference/API_CreateGrant.html)
@@ -2882,7 +3669,7 @@ type DeliveryStreamEncryptionConfigurationInput struct {
 	// To encrypt your delivery stream, use symmetric CMKs. Kinesis Data Firehose
 	// doesn't support asymmetric CMKs. For information about symmetric and asymmetric
 	// CMKs, see About Symmetric and Asymmetric CMKs (https://docs.aws.amazon.com/kms/latest/developerguide/symm-asymm-concepts.html)
-	// in the AWS Key Management Service developer guide.
+	// in the Amazon Web Services Key Management Service developer guide.
 	//
 	// KeyType is a required field
 	KeyType *string `type:"string" required:"true" enum:"KeyType"`
@@ -3099,6 +3886,10 @@ func (s *Deserializer) SetOpenXJsonSerDe(v *OpenXJsonSerDe) *Deserializer {
 type DestinationDescription struct {
 	_ struct{} `type:"structure"`
 
+	// The destination in the Serverless offering for Amazon OpenSearch Service.
+	AmazonOpenSearchServerlessDestinationDescription *AmazonOpenSearchServerlessDestinationDescription `type:"structure"`
+
+	// The destination in Amazon OpenSearch Service.
 	AmazonopensearchserviceDestinationDescription *AmazonopensearchserviceDestinationDescription `type:"structure"`
 
 	// The ID of the destination.
@@ -3141,6 +3932,12 @@ func (s DestinationDescription) String() string {
 // value will be replaced with "sensitive".
 func (s DestinationDescription) GoString() string {
 	return s.String()
+}
+
+// SetAmazonOpenSearchServerlessDestinationDescription sets the AmazonOpenSearchServerlessDestinationDescription field's value.
+func (s *DestinationDescription) SetAmazonOpenSearchServerlessDestinationDescription(v *AmazonOpenSearchServerlessDestinationDescription) *DestinationDescription {
+	s.AmazonOpenSearchServerlessDestinationDescription = v
+	return s
 }
 
 // SetAmazonopensearchserviceDestinationDescription sets the AmazonopensearchserviceDestinationDescription field's value.
@@ -3191,11 +3988,71 @@ func (s *DestinationDescription) SetSplunkDestinationDescription(v *SplunkDestin
 	return s
 }
 
+// Indicates the method for setting up document ID. The supported methods are
+// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+// document ID.
+type DocumentIdOptions struct {
+	_ struct{} `type:"structure"`
+
+	// When the FIREHOSE_DEFAULT option is chosen, Kinesis Data Firehose generates
+	// a unique document ID for each record based on a unique internal identifier.
+	// The generated document ID is stable across multiple delivery attempts, which
+	// helps prevent the same record from being indexed multiple times with different
+	// document IDs.
+	//
+	// When the NO_DOCUMENT_ID option is chosen, Kinesis Data Firehose does not
+	// include any document IDs in the requests it sends to the Amazon OpenSearch
+	// Service. This causes the Amazon OpenSearch Service domain to generate document
+	// IDs. In case of multiple delivery attempts, this may cause the same record
+	// to be indexed more than once with different document IDs. This option enables
+	// write-heavy operations, such as the ingestion of logs and observability data,
+	// to consume less resources in the Amazon OpenSearch Service domain, resulting
+	// in improved performance.
+	//
+	// DefaultDocumentIdFormat is a required field
+	DefaultDocumentIdFormat *string `type:"string" required:"true" enum:"DefaultDocumentIdFormat"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DocumentIdOptions) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s DocumentIdOptions) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DocumentIdOptions) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DocumentIdOptions"}
+	if s.DefaultDocumentIdFormat == nil {
+		invalidParams.Add(request.NewErrParamRequired("DefaultDocumentIdFormat"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetDefaultDocumentIdFormat sets the DefaultDocumentIdFormat field's value.
+func (s *DocumentIdOptions) SetDefaultDocumentIdFormat(v string) *DocumentIdOptions {
+	s.DefaultDocumentIdFormat = &v
+	return s
+}
+
 // The configuration of the dynamic partitioning mechanism that creates smaller
 // data sets from the streaming data by partitioning it based on partition keys.
 // Currently, dynamic partitioning is only supported for Amazon S3 destinations.
-// For more information, see https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html
-// (https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html)
 type DynamicPartitioningConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -3317,10 +4174,15 @@ type ElasticsearchDestinationConfiguration struct {
 	// ClusterEndpoint or the DomainARN field.
 	ClusterEndpoint *string `min:"1" type:"string"`
 
-	// The ARN of the Amazon ES domain. The IAM role must have permissions for DescribeElasticsearchDomain,
-	// DescribeElasticsearchDomains, and DescribeElasticsearchDomainConfig after
-	// assuming the role specified in RoleARN. For more information, see Amazon
-	// Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIdOptions *DocumentIdOptions `type:"structure"`
+
+	// The ARN of the Amazon ES domain. The IAM role must have permissions for DescribeDomain,
+	// DescribeDomains, and DescribeDomainConfig after assuming the role specified
+	// in RoleARN. For more information, see Amazon Resource Names (ARNs) and Amazon
+	// Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// Specify either ClusterEndpoint or DomainARN.
 	DomainARN *string `min:"1" type:"string"`
@@ -3347,17 +4209,18 @@ type ElasticsearchDestinationConfiguration struct {
 	// Firehose for calling the Amazon ES Configuration API and for indexing documents.
 	// For more information, see Grant Kinesis Data Firehose Access to an Amazon
 	// S3 Destination (https://docs.aws.amazon.com/firehose/latest/dev/controlling-access.html#using-iam-s3)
-	// and Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// and Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces
+	// (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
 
 	// Defines how documents should be delivered to Amazon S3. When it is set to
 	// FailedDocumentsOnly, Kinesis Data Firehose writes any documents that could
-	// not be indexed to the configured Amazon S3 destination, with elasticsearch-failed/
+	// not be indexed to the configured Amazon S3 destination, with AmazonOpenSearchService-failed/
 	// appended to the key prefix. When set to AllDocuments, Kinesis Data Firehose
 	// delivers all incoming records to Amazon S3, and also writes failed documents
-	// with elasticsearch-failed/ appended to the prefix. For more information,
+	// with AmazonOpenSearchService-failed/ appended to the prefix. For more information,
 	// see Amazon S3 Backup for the Amazon ES Destination (https://docs.aws.amazon.com/firehose/latest/dev/basic-deliver.html#es-s3-backup).
 	// Default value is FailedDocumentsOnly.
 	//
@@ -3377,7 +4240,7 @@ type ElasticsearchDestinationConfiguration struct {
 	// For Elasticsearch 7.x, don't specify a TypeName.
 	TypeName *string `type:"string"`
 
-	// The details of the VPC of the Amazon ES destination.
+	// The details of the VPC of the Amazon destination.
 	VpcConfiguration *VpcConfiguration `type:"structure"`
 }
 
@@ -3428,6 +4291,11 @@ func (s *ElasticsearchDestinationConfiguration) Validate() error {
 			invalidParams.AddNested("BufferingHints", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.DocumentIdOptions != nil {
+		if err := s.DocumentIdOptions.Validate(); err != nil {
+			invalidParams.AddNested("DocumentIdOptions", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ProcessingConfiguration != nil {
 		if err := s.ProcessingConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("ProcessingConfiguration", err.(request.ErrInvalidParams))
@@ -3465,6 +4333,12 @@ func (s *ElasticsearchDestinationConfiguration) SetCloudWatchLoggingOptions(v *C
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *ElasticsearchDestinationConfiguration) SetClusterEndpoint(v string) *ElasticsearchDestinationConfiguration {
 	s.ClusterEndpoint = &v
+	return s
+}
+
+// SetDocumentIdOptions sets the DocumentIdOptions field's value.
+func (s *ElasticsearchDestinationConfiguration) SetDocumentIdOptions(v *DocumentIdOptions) *ElasticsearchDestinationConfiguration {
+	s.DocumentIdOptions = v
 	return s
 }
 
@@ -3543,8 +4417,13 @@ type ElasticsearchDestinationDescription struct {
 	// ES.
 	ClusterEndpoint *string `min:"1" type:"string"`
 
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIdOptions *DocumentIdOptions `type:"structure"`
+
 	// The ARN of the Amazon ES domain. For more information, see Amazon Resource
-	// Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// Names (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// Kinesis Data Firehose uses either ClusterEndpoint or DomainARN to send data
 	// to Amazon ES.
@@ -3562,8 +4441,9 @@ type ElasticsearchDestinationDescription struct {
 	// The Amazon ES retry options.
 	RetryOptions *ElasticsearchRetryOptions `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	RoleARN *string `min:"1" type:"string"`
 
 	// The Amazon S3 backup mode.
@@ -3573,10 +4453,12 @@ type ElasticsearchDestinationDescription struct {
 	S3DestinationDescription *S3DestinationDescription `type:"structure"`
 
 	// The Elasticsearch type name. This applies to Elasticsearch 6.x and lower
-	// versions. For Elasticsearch 7.x, there's no value for TypeName.
+	// versions. For Elasticsearch 7.x and OpenSearch Service 1.x, there's no value
+	// for TypeName.
 	TypeName *string `type:"string"`
 
-	// The details of the VPC of the Amazon ES destination.
+	// The details of the VPC of the Amazon OpenSearch or the Amazon OpenSearch
+	// Serverless destination.
 	VpcConfigurationDescription *VpcConfigurationDescription `type:"structure"`
 }
 
@@ -3613,6 +4495,12 @@ func (s *ElasticsearchDestinationDescription) SetCloudWatchLoggingOptions(v *Clo
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *ElasticsearchDestinationDescription) SetClusterEndpoint(v string) *ElasticsearchDestinationDescription {
 	s.ClusterEndpoint = &v
+	return s
+}
+
+// SetDocumentIdOptions sets the DocumentIdOptions field's value.
+func (s *ElasticsearchDestinationDescription) SetDocumentIdOptions(v *DocumentIdOptions) *ElasticsearchDestinationDescription {
+	s.DocumentIdOptions = v
 	return s
 }
 
@@ -3691,10 +4579,15 @@ type ElasticsearchDestinationUpdate struct {
 	// ClusterEndpoint or the DomainARN field.
 	ClusterEndpoint *string `min:"1" type:"string"`
 
-	// The ARN of the Amazon ES domain. The IAM role must have permissions for DescribeElasticsearchDomain,
-	// DescribeElasticsearchDomains, and DescribeElasticsearchDomainConfig after
-	// assuming the IAM role specified in RoleARN. For more information, see Amazon
-	// Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// Indicates the method for setting up document ID. The supported methods are
+	// Kinesis Data Firehose generated document ID and OpenSearch Service generated
+	// document ID.
+	DocumentIdOptions *DocumentIdOptions `type:"structure"`
+
+	// The ARN of the Amazon ES domain. The IAM role must have permissions for DescribeDomain,
+	// DescribeDomains, and DescribeDomainConfig after assuming the IAM role specified
+	// in RoleARN. For more information, see Amazon Resource Names (ARNs) and Amazon
+	// Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// Specify either ClusterEndpoint or DomainARN.
 	DomainARN *string `min:"1" type:"string"`
@@ -3719,7 +4612,8 @@ type ElasticsearchDestinationUpdate struct {
 	// Firehose for calling the Amazon ES Configuration API and for indexing documents.
 	// For more information, see Grant Kinesis Data Firehose Access to an Amazon
 	// S3 Destination (https://docs.aws.amazon.com/firehose/latest/dev/controlling-access.html#using-iam-s3)
-	// and Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// and Amazon Resource Names (ARNs) and Amazon Web Services Service Namespaces
+	// (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	RoleARN *string `min:"1" type:"string"`
 
 	// The Amazon S3 destination.
@@ -3774,6 +4668,11 @@ func (s *ElasticsearchDestinationUpdate) Validate() error {
 			invalidParams.AddNested("BufferingHints", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.DocumentIdOptions != nil {
+		if err := s.DocumentIdOptions.Validate(); err != nil {
+			invalidParams.AddNested("DocumentIdOptions", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.ProcessingConfiguration != nil {
 		if err := s.ProcessingConfiguration.Validate(); err != nil {
 			invalidParams.AddNested("ProcessingConfiguration", err.(request.ErrInvalidParams))
@@ -3806,6 +4705,12 @@ func (s *ElasticsearchDestinationUpdate) SetCloudWatchLoggingOptions(v *CloudWat
 // SetClusterEndpoint sets the ClusterEndpoint field's value.
 func (s *ElasticsearchDestinationUpdate) SetClusterEndpoint(v string) *ElasticsearchDestinationUpdate {
 	s.ClusterEndpoint = &v
+	return s
+}
+
+// SetDocumentIdOptions sets the DocumentIdOptions field's value.
+func (s *ElasticsearchDestinationUpdate) SetDocumentIdOptions(v *DocumentIdOptions) *ElasticsearchDestinationUpdate {
+	s.DocumentIdOptions = v
 	return s
 }
 
@@ -3956,7 +4861,7 @@ type ExtendedS3DestinationConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the S3 bucket. For more information, see Amazon Resource Names
-	// (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// BucketARN is a required field
 	BucketARN *string `min:"1" type:"string" required:"true"`
@@ -3977,8 +4882,6 @@ type ExtendedS3DestinationConfiguration struct {
 	// The configuration of the dynamic partitioning mechanism that creates smaller
 	// data sets from the streaming data by partitioning it based on partition keys.
 	// Currently, dynamic partitioning is only supported for Amazon S3 destinations.
-	// For more information, see https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html
-	// (https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html)
 	DynamicPartitioningConfiguration *DynamicPartitioningConfiguration `type:"structure"`
 
 	// The encryption configuration. If no value is specified, the default is no
@@ -3999,8 +4902,9 @@ type ExtendedS3DestinationConfiguration struct {
 	// The data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -4162,7 +5066,7 @@ type ExtendedS3DestinationDescription struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the S3 bucket. For more information, see Amazon Resource Names
-	// (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// BucketARN is a required field
 	BucketARN *string `min:"1" type:"string" required:"true"`
@@ -4187,8 +5091,6 @@ type ExtendedS3DestinationDescription struct {
 	// The configuration of the dynamic partitioning mechanism that creates smaller
 	// data sets from the streaming data by partitioning it based on partition keys.
 	// Currently, dynamic partitioning is only supported for Amazon S3 destinations.
-	// For more information, see https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html
-	// (https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html)
 	DynamicPartitioningConfiguration *DynamicPartitioningConfiguration `type:"structure"`
 
 	// The encryption configuration. If no value is specified, the default is no
@@ -4211,8 +5113,9 @@ type ExtendedS3DestinationDescription struct {
 	// The data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -4325,7 +5228,7 @@ type ExtendedS3DestinationUpdate struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the S3 bucket. For more information, see Amazon Resource Names
-	// (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	BucketARN *string `min:"1" type:"string"`
 
 	// The buffering option.
@@ -4344,8 +5247,6 @@ type ExtendedS3DestinationUpdate struct {
 	// The configuration of the dynamic partitioning mechanism that creates smaller
 	// data sets from the streaming data by partitioning it based on partition keys.
 	// Currently, dynamic partitioning is only supported for Amazon S3 destinations.
-	// For more information, see https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html
-	// (https://docs.aws.amazon.com/firehose/latest/dev/dynamic-partitioning.html)
 	DynamicPartitioningConfiguration *DynamicPartitioningConfiguration `type:"structure"`
 
 	// The encryption configuration. If no value is specified, the default is no
@@ -4366,8 +5267,9 @@ type ExtendedS3DestinationUpdate struct {
 	// The data processing configuration.
 	ProcessingConfiguration *ProcessingConfiguration `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	RoleARN *string `min:"1" type:"string"`
 
 	// You can update a delivery stream to enable Amazon S3 backup if it is disabled.
@@ -5579,8 +6481,9 @@ type KMSEncryptionConfig struct {
 	_ struct{} `type:"structure"`
 
 	// The Amazon Resource Name (ARN) of the encryption key. Must belong to the
-	// same AWS Region as the destination Amazon S3 bucket. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// same Amazon Web Services Region as the destination Amazon S3 bucket. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// AWSKMSKeyARN is a required field
 	AWSKMSKeyARN *string `min:"1" type:"string" required:"true"`
@@ -5638,8 +6541,8 @@ type KinesisStreamSourceConfiguration struct {
 	KinesisStreamARN *string `min:"1" type:"string" required:"true"`
 
 	// The ARN of the role that provides access to the source Kinesis data stream.
-	// For more information, see AWS Identity and Access Management (IAM) ARN Format
-	// (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam).
+	// For more information, see Amazon Web Services Identity and Access Management
+	// (IAM) ARN Format (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -5711,7 +6614,7 @@ type KinesisStreamSourceDescription struct {
 	KinesisStreamARN *string `min:"1" type:"string"`
 
 	// The ARN of the role used by the source Kinesis data stream. For more information,
-	// see AWS Identity and Access Management (IAM) ARN Format (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam).
+	// see Amazon Web Services Identity and Access Management (IAM) ARN Format (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html#arn-syntax-iam).
 	RoleARN *string `min:"1" type:"string"`
 }
 
@@ -6056,6 +6959,154 @@ func (s *ListTagsForDeliveryStreamOutput) SetHasMoreTags(v bool) *ListTagsForDel
 // SetTags sets the Tags field's value.
 func (s *ListTagsForDeliveryStreamOutput) SetTags(v []*Tag) *ListTagsForDeliveryStreamOutput {
 	s.Tags = v
+	return s
+}
+
+// The configuration for the Amazon MSK cluster to be used as the source for
+// a delivery stream.
+type MSKSourceConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// The authentication configuration of the Amazon MSK cluster.
+	//
+	// AuthenticationConfiguration is a required field
+	AuthenticationConfiguration *AuthenticationConfiguration `type:"structure" required:"true"`
+
+	// The ARN of the Amazon MSK cluster.
+	//
+	// MSKClusterARN is a required field
+	MSKClusterARN *string `min:"1" type:"string" required:"true"`
+
+	// The topic name within the Amazon MSK cluster.
+	//
+	// TopicName is a required field
+	TopicName *string `min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MSKSourceConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MSKSourceConfiguration) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *MSKSourceConfiguration) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "MSKSourceConfiguration"}
+	if s.AuthenticationConfiguration == nil {
+		invalidParams.Add(request.NewErrParamRequired("AuthenticationConfiguration"))
+	}
+	if s.MSKClusterARN == nil {
+		invalidParams.Add(request.NewErrParamRequired("MSKClusterARN"))
+	}
+	if s.MSKClusterARN != nil && len(*s.MSKClusterARN) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("MSKClusterARN", 1))
+	}
+	if s.TopicName == nil {
+		invalidParams.Add(request.NewErrParamRequired("TopicName"))
+	}
+	if s.TopicName != nil && len(*s.TopicName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("TopicName", 1))
+	}
+	if s.AuthenticationConfiguration != nil {
+		if err := s.AuthenticationConfiguration.Validate(); err != nil {
+			invalidParams.AddNested("AuthenticationConfiguration", err.(request.ErrInvalidParams))
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAuthenticationConfiguration sets the AuthenticationConfiguration field's value.
+func (s *MSKSourceConfiguration) SetAuthenticationConfiguration(v *AuthenticationConfiguration) *MSKSourceConfiguration {
+	s.AuthenticationConfiguration = v
+	return s
+}
+
+// SetMSKClusterARN sets the MSKClusterARN field's value.
+func (s *MSKSourceConfiguration) SetMSKClusterARN(v string) *MSKSourceConfiguration {
+	s.MSKClusterARN = &v
+	return s
+}
+
+// SetTopicName sets the TopicName field's value.
+func (s *MSKSourceConfiguration) SetTopicName(v string) *MSKSourceConfiguration {
+	s.TopicName = &v
+	return s
+}
+
+// Details about the Amazon MSK cluster used as the source for a Kinesis Data
+// Firehose delivery stream.
+type MSKSourceDescription struct {
+	_ struct{} `type:"structure"`
+
+	// The authentication configuration of the Amazon MSK cluster.
+	AuthenticationConfiguration *AuthenticationConfiguration `type:"structure"`
+
+	// Kinesis Data Firehose starts retrieving records from the topic within the
+	// Amazon MSK cluster starting with this timestamp.
+	DeliveryStartTimestamp *time.Time `type:"timestamp"`
+
+	// The ARN of the Amazon MSK cluster.
+	MSKClusterARN *string `min:"1" type:"string"`
+
+	// The topic name within the Amazon MSK cluster.
+	TopicName *string `min:"1" type:"string"`
+}
+
+// String returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MSKSourceDescription) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation.
+//
+// API parameter values that are decorated as "sensitive" in the API will not
+// be included in the string output. The member name will be present, but the
+// value will be replaced with "sensitive".
+func (s MSKSourceDescription) GoString() string {
+	return s.String()
+}
+
+// SetAuthenticationConfiguration sets the AuthenticationConfiguration field's value.
+func (s *MSKSourceDescription) SetAuthenticationConfiguration(v *AuthenticationConfiguration) *MSKSourceDescription {
+	s.AuthenticationConfiguration = v
+	return s
+}
+
+// SetDeliveryStartTimestamp sets the DeliveryStartTimestamp field's value.
+func (s *MSKSourceDescription) SetDeliveryStartTimestamp(v time.Time) *MSKSourceDescription {
+	s.DeliveryStartTimestamp = &v
+	return s
+}
+
+// SetMSKClusterARN sets the MSKClusterARN field's value.
+func (s *MSKSourceDescription) SetMSKClusterARN(v string) *MSKSourceDescription {
+	s.MSKClusterARN = &v
+	return s
+}
+
+// SetTopicName sets the TopicName field's value.
+func (s *MSKSourceDescription) SetTopicName(v string) *MSKSourceDescription {
+	s.TopicName = &v
 	return s
 }
 
@@ -6566,7 +7617,11 @@ func (s *Processor) SetType(v string) *Processor {
 type ProcessorParameter struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the parameter.
+	// The name of the parameter. Currently the following default values are supported:
+	// 3 for NumberOfRetries and 60 for the BufferIntervalInSeconds. The BufferSizeInMBs
+	// ranges between 0.2 MB and up to 3MB. The default buffering hint is 1MB for
+	// all destinations, except Splunk. For Splunk, the default buffering hint is
+	// 256 KB.
 	//
 	// ParameterName is a required field
 	ParameterName *string `type:"string" required:"true" enum:"ProcessorParameterName"`
@@ -7003,8 +8058,9 @@ type RedshiftDestinationConfiguration struct {
 	// to Amazon Redshift. Default value is 3600 (60 minutes).
 	RetryOptions *RedshiftRetryOptions `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -7205,8 +8261,9 @@ type RedshiftDestinationDescription struct {
 	// to Amazon Redshift. Default value is 3600 (60 minutes).
 	RetryOptions *RedshiftRetryOptions `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -7337,8 +8394,9 @@ type RedshiftDestinationUpdate struct {
 	// to Amazon Redshift. Default value is 3600 (60 minutes).
 	RetryOptions *RedshiftRetryOptions `type:"structure"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	RoleARN *string `min:"1" type:"string"`
 
 	// You can update a delivery stream to enable Amazon S3 backup if it is disabled.
@@ -7695,7 +8753,7 @@ type S3DestinationConfiguration struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the S3 bucket. For more information, see Amazon Resource Names
-	// (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// BucketARN is a required field
 	BucketARN *string `min:"1" type:"string" required:"true"`
@@ -7729,8 +8787,9 @@ type S3DestinationConfiguration struct {
 	// Prefixes for Amazon S3 Objects (https://docs.aws.amazon.com/firehose/latest/dev/s3-prefixes.html).
 	Prefix *string `type:"string"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -7839,7 +8898,7 @@ type S3DestinationDescription struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the S3 bucket. For more information, see Amazon Resource Names
-	// (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// BucketARN is a required field
 	BucketARN *string `min:"1" type:"string" required:"true"`
@@ -7875,8 +8934,9 @@ type S3DestinationDescription struct {
 	// Prefixes for Amazon S3 Objects (https://docs.aws.amazon.com/firehose/latest/dev/s3-prefixes.html).
 	Prefix *string `type:"string"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	//
 	// RoleARN is a required field
 	RoleARN *string `min:"1" type:"string" required:"true"`
@@ -7953,7 +9013,7 @@ type S3DestinationUpdate struct {
 	_ struct{} `type:"structure"`
 
 	// The ARN of the S3 bucket. For more information, see Amazon Resource Names
-	// (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// (ARNs) and Amazon Web Services Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	BucketARN *string `min:"1" type:"string"`
 
 	// The buffering option. If no value is specified, BufferingHints object default
@@ -7985,8 +9045,9 @@ type S3DestinationUpdate struct {
 	// Prefixes for Amazon S3 Objects (https://docs.aws.amazon.com/firehose/latest/dev/s3-prefixes.html).
 	Prefix *string `type:"string"`
 
-	// The Amazon Resource Name (ARN) of the AWS credentials. For more information,
-	// see Amazon Resource Names (ARNs) and AWS Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
+	// The Amazon Resource Name (ARN) of the Amazon Web Services credentials. For
+	// more information, see Amazon Resource Names (ARNs) and Amazon Web Services
+	// Service Namespaces (https://docs.aws.amazon.com/general/latest/gr/aws-arns-and-namespaces.html).
 	RoleARN *string `min:"1" type:"string"`
 }
 
@@ -8088,32 +9149,33 @@ func (s *S3DestinationUpdate) SetRoleARN(v string) *S3DestinationUpdate {
 type SchemaConfiguration struct {
 	_ struct{} `type:"structure"`
 
-	// The ID of the AWS Glue Data Catalog. If you don't supply this, the AWS account
-	// ID is used by default.
+	// The ID of the Amazon Web Services Glue Data Catalog. If you don't supply
+	// this, the Amazon Web Services account ID is used by default.
 	CatalogId *string `min:"1" type:"string"`
 
-	// Specifies the name of the AWS Glue database that contains the schema for
-	// the output data.
+	// Specifies the name of the Amazon Web Services Glue database that contains
+	// the schema for the output data.
 	//
 	// If the SchemaConfiguration request parameter is used as part of invoking
 	// the CreateDeliveryStream API, then the DatabaseName property is required
 	// and its value must be specified.
 	DatabaseName *string `min:"1" type:"string"`
 
-	// If you don't specify an AWS Region, the default is the current Region.
+	// If you don't specify an Amazon Web Services Region, the default is the current
+	// Region.
 	Region *string `min:"1" type:"string"`
 
-	// The role that Kinesis Data Firehose can use to access AWS Glue. This role
-	// must be in the same account you use for Kinesis Data Firehose. Cross-account
-	// roles aren't allowed.
+	// The role that Kinesis Data Firehose can use to access Amazon Web Services
+	// Glue. This role must be in the same account you use for Kinesis Data Firehose.
+	// Cross-account roles aren't allowed.
 	//
 	// If the SchemaConfiguration request parameter is used as part of invoking
 	// the CreateDeliveryStream API, then the RoleARN property is required and its
 	// value must be specified.
 	RoleARN *string `min:"1" type:"string"`
 
-	// Specifies the AWS Glue table that contains the column information that constitutes
-	// your data schema.
+	// Specifies the Amazon Web Services Glue table that contains the column information
+	// that constitutes your data schema.
 	//
 	// If the SchemaConfiguration request parameter is used as part of invoking
 	// the CreateDeliveryStream API, then the TableName property is required and
@@ -8350,6 +9412,10 @@ type SourceDescription struct {
 
 	// The KinesisStreamSourceDescription value for the source Kinesis data stream.
 	KinesisStreamSourceDescription *KinesisStreamSourceDescription `type:"structure"`
+
+	// The configuration description for the Amazon MSK cluster to be used as the
+	// source for a delivery stream.
+	MSKSourceDescription *MSKSourceDescription `type:"structure"`
 }
 
 // String returns the string representation.
@@ -8373,6 +9439,12 @@ func (s SourceDescription) GoString() string {
 // SetKinesisStreamSourceDescription sets the KinesisStreamSourceDescription field's value.
 func (s *SourceDescription) SetKinesisStreamSourceDescription(v *KinesisStreamSourceDescription) *SourceDescription {
 	s.KinesisStreamSourceDescription = v
+	return s
+}
+
+// SetMSKSourceDescription sets the MSKSourceDescription field's value.
+func (s *SourceDescription) SetMSKSourceDescription(v *MSKSourceDescription) *SourceDescription {
+	s.MSKSourceDescription = v
 	return s
 }
 
@@ -9236,6 +10308,11 @@ func (s UntagDeliveryStreamOutput) GoString() string {
 type UpdateDestinationInput struct {
 	_ struct{} `type:"structure"`
 
+	// Describes an update for a destination in the Serverless offering for Amazon
+	// OpenSearch Service.
+	AmazonOpenSearchServerlessDestinationUpdate *AmazonOpenSearchServerlessDestinationUpdate `type:"structure"`
+
+	// Describes an update for a destination in Amazon OpenSearch Service.
 	AmazonopensearchserviceDestinationUpdate *AmazonopensearchserviceDestinationUpdate `type:"structure"`
 
 	// Obtain this value from the VersionId result of DeliveryStreamDescription.
@@ -9318,6 +10395,11 @@ func (s *UpdateDestinationInput) Validate() error {
 	if s.DestinationId != nil && len(*s.DestinationId) < 1 {
 		invalidParams.Add(request.NewErrParamMinLen("DestinationId", 1))
 	}
+	if s.AmazonOpenSearchServerlessDestinationUpdate != nil {
+		if err := s.AmazonOpenSearchServerlessDestinationUpdate.Validate(); err != nil {
+			invalidParams.AddNested("AmazonOpenSearchServerlessDestinationUpdate", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.AmazonopensearchserviceDestinationUpdate != nil {
 		if err := s.AmazonopensearchserviceDestinationUpdate.Validate(); err != nil {
 			invalidParams.AddNested("AmazonopensearchserviceDestinationUpdate", err.(request.ErrInvalidParams))
@@ -9358,6 +10440,12 @@ func (s *UpdateDestinationInput) Validate() error {
 		return invalidParams
 	}
 	return nil
+}
+
+// SetAmazonOpenSearchServerlessDestinationUpdate sets the AmazonOpenSearchServerlessDestinationUpdate field's value.
+func (s *UpdateDestinationInput) SetAmazonOpenSearchServerlessDestinationUpdate(v *AmazonOpenSearchServerlessDestinationUpdate) *UpdateDestinationInput {
+	s.AmazonOpenSearchServerlessDestinationUpdate = v
+	return s
 }
 
 // SetAmazonopensearchserviceDestinationUpdate sets the AmazonopensearchserviceDestinationUpdate field's value.
@@ -9442,7 +10530,8 @@ func (s UpdateDestinationOutput) GoString() string {
 	return s.String()
 }
 
-// The details of the VPC of the Amazon ES destination.
+// The details of the VPC of the Amazon OpenSearch or Amazon OpenSearch Serverless
+// destination.
 type VpcConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -9690,6 +10779,22 @@ func (s *VpcConfigurationDescription) SetVpcId(v string) *VpcConfigurationDescri
 }
 
 const (
+	// AmazonOpenSearchServerlessS3BackupModeFailedDocumentsOnly is a AmazonOpenSearchServerlessS3BackupMode enum value
+	AmazonOpenSearchServerlessS3BackupModeFailedDocumentsOnly = "FailedDocumentsOnly"
+
+	// AmazonOpenSearchServerlessS3BackupModeAllDocuments is a AmazonOpenSearchServerlessS3BackupMode enum value
+	AmazonOpenSearchServerlessS3BackupModeAllDocuments = "AllDocuments"
+)
+
+// AmazonOpenSearchServerlessS3BackupMode_Values returns all elements of the AmazonOpenSearchServerlessS3BackupMode enum
+func AmazonOpenSearchServerlessS3BackupMode_Values() []string {
+	return []string{
+		AmazonOpenSearchServerlessS3BackupModeFailedDocumentsOnly,
+		AmazonOpenSearchServerlessS3BackupModeAllDocuments,
+	}
+}
+
+const (
 	// AmazonopensearchserviceIndexRotationPeriodNoRotation is a AmazonopensearchserviceIndexRotationPeriod enum value
 	AmazonopensearchserviceIndexRotationPeriodNoRotation = "NoRotation"
 
@@ -9762,6 +10867,22 @@ func CompressionFormat_Values() []string {
 }
 
 const (
+	// ConnectivityPublic is a Connectivity enum value
+	ConnectivityPublic = "PUBLIC"
+
+	// ConnectivityPrivate is a Connectivity enum value
+	ConnectivityPrivate = "PRIVATE"
+)
+
+// Connectivity_Values returns all elements of the Connectivity enum
+func Connectivity_Values() []string {
+	return []string{
+		ConnectivityPublic,
+		ConnectivityPrivate,
+	}
+}
+
+const (
 	// ContentEncodingNone is a ContentEncoding enum value
 	ContentEncodingNone = "NONE"
 
@@ -9774,6 +10895,22 @@ func ContentEncoding_Values() []string {
 	return []string{
 		ContentEncodingNone,
 		ContentEncodingGzip,
+	}
+}
+
+const (
+	// DefaultDocumentIdFormatFirehoseDefault is a DefaultDocumentIdFormat enum value
+	DefaultDocumentIdFormatFirehoseDefault = "FIREHOSE_DEFAULT"
+
+	// DefaultDocumentIdFormatNoDocumentId is a DefaultDocumentIdFormat enum value
+	DefaultDocumentIdFormatNoDocumentId = "NO_DOCUMENT_ID"
+)
+
+// DefaultDocumentIdFormat_Values returns all elements of the DefaultDocumentIdFormat enum
+func DefaultDocumentIdFormat_Values() []string {
+	return []string{
+		DefaultDocumentIdFormatFirehoseDefault,
+		DefaultDocumentIdFormatNoDocumentId,
 	}
 }
 
@@ -9911,6 +11048,9 @@ const (
 
 	// DeliveryStreamTypeKinesisStreamAsSource is a DeliveryStreamType enum value
 	DeliveryStreamTypeKinesisStreamAsSource = "KinesisStreamAsSource"
+
+	// DeliveryStreamTypeMskasSource is a DeliveryStreamType enum value
+	DeliveryStreamTypeMskasSource = "MSKAsSource"
 )
 
 // DeliveryStreamType_Values returns all elements of the DeliveryStreamType enum
@@ -9918,6 +11058,7 @@ func DeliveryStreamType_Values() []string {
 	return []string{
 		DeliveryStreamTypeDirectPut,
 		DeliveryStreamTypeKinesisStreamAsSource,
+		DeliveryStreamTypeMskasSource,
 	}
 }
 
@@ -10124,6 +11265,9 @@ const (
 
 	// ProcessorParameterNameDelimiter is a ProcessorParameterName enum value
 	ProcessorParameterNameDelimiter = "Delimiter"
+
+	// ProcessorParameterNameCompressionFormat is a ProcessorParameterName enum value
+	ProcessorParameterNameCompressionFormat = "CompressionFormat"
 )
 
 // ProcessorParameterName_Values returns all elements of the ProcessorParameterName enum
@@ -10138,12 +11282,16 @@ func ProcessorParameterName_Values() []string {
 		ProcessorParameterNameBufferIntervalInSeconds,
 		ProcessorParameterNameSubRecordType,
 		ProcessorParameterNameDelimiter,
+		ProcessorParameterNameCompressionFormat,
 	}
 }
 
 const (
 	// ProcessorTypeRecordDeAggregation is a ProcessorType enum value
 	ProcessorTypeRecordDeAggregation = "RecordDeAggregation"
+
+	// ProcessorTypeDecompression is a ProcessorType enum value
+	ProcessorTypeDecompression = "Decompression"
 
 	// ProcessorTypeLambda is a ProcessorType enum value
 	ProcessorTypeLambda = "Lambda"
@@ -10159,6 +11307,7 @@ const (
 func ProcessorType_Values() []string {
 	return []string{
 		ProcessorTypeRecordDeAggregation,
+		ProcessorTypeDecompression,
 		ProcessorTypeLambda,
 		ProcessorTypeMetadataExtraction,
 		ProcessorTypeAppendDelimiterToRecord,

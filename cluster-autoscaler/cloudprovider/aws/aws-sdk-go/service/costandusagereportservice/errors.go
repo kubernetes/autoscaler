@@ -29,10 +29,17 @@ const (
 	// must delete an existing report.
 	ErrCodeReportLimitReachedException = "ReportLimitReachedException"
 
+	// ErrCodeResourceNotFoundException for service response error code
+	// "ResourceNotFoundException".
+	//
+	// The specified report (ReportName) in the request doesn't exist.
+	ErrCodeResourceNotFoundException = "ResourceNotFoundException"
+
 	// ErrCodeValidationException for service response error code
 	// "ValidationException".
 	//
-	// The input fails to satisfy the constraints specified by an AWS service.
+	// The input fails to satisfy the constraints specified by an Amazon Web Services
+	// service.
 	ErrCodeValidationException = "ValidationException"
 )
 
@@ -40,5 +47,6 @@ var exceptionFromCode = map[string]func(protocol.ResponseMetadata) error{
 	"DuplicateReportNameException": newErrorDuplicateReportNameException,
 	"InternalErrorException":       newErrorInternalErrorException,
 	"ReportLimitReachedException":  newErrorReportLimitReachedException,
+	"ResourceNotFoundException":    newErrorResourceNotFoundException,
 	"ValidationException":          newErrorValidationException,
 }

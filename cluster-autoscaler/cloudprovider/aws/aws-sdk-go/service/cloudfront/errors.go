@@ -42,6 +42,25 @@ const (
 	// You can't change the value of a public key.
 	ErrCodeCannotChangeImmutablePublicKeyFields = "CannotChangeImmutablePublicKeyFields"
 
+	// ErrCodeCannotDeleteEntityWhileInUse for service response error code
+	// "CannotDeleteEntityWhileInUse".
+	//
+	// The Key Value Store entity cannot be deleted while it is in use.
+	ErrCodeCannotDeleteEntityWhileInUse = "CannotDeleteEntityWhileInUse"
+
+	// ErrCodeContinuousDeploymentPolicyAlreadyExists for service response error code
+	// "ContinuousDeploymentPolicyAlreadyExists".
+	//
+	// A continuous deployment policy with this configuration already exists.
+	ErrCodeContinuousDeploymentPolicyAlreadyExists = "ContinuousDeploymentPolicyAlreadyExists"
+
+	// ErrCodeContinuousDeploymentPolicyInUse for service response error code
+	// "ContinuousDeploymentPolicyInUse".
+	//
+	// You cannot delete a continuous deployment policy that is associated with
+	// a primary distribution.
+	ErrCodeContinuousDeploymentPolicyInUse = "ContinuousDeploymentPolicyInUse"
+
 	// ErrCodeDistributionAlreadyExists for service response error code
 	// "DistributionAlreadyExists".
 	//
@@ -55,6 +74,31 @@ const (
 	// The specified CloudFront distribution is not disabled. You must disable the
 	// distribution before you can delete it.
 	ErrCodeDistributionNotDisabled = "DistributionNotDisabled"
+
+	// ErrCodeEntityAlreadyExists for service response error code
+	// "EntityAlreadyExists".
+	//
+	// The Key Value Store entity already exists. You must provide a unique Key
+	// Value Store entity.
+	ErrCodeEntityAlreadyExists = "EntityAlreadyExists"
+
+	// ErrCodeEntityLimitExceeded for service response error code
+	// "EntityLimitExceeded".
+	//
+	// The Key Value Store entity limit has been exceeded.
+	ErrCodeEntityLimitExceeded = "EntityLimitExceeded"
+
+	// ErrCodeEntityNotFound for service response error code
+	// "EntityNotFound".
+	//
+	// The Key Value Store entity was not found.
+	ErrCodeEntityNotFound = "EntityNotFound"
+
+	// ErrCodeEntitySizeLimitExceeded for service response error code
+	// "EntitySizeLimitExceeded".
+	//
+	// The Key Value Store entity size limit was exceeded.
+	ErrCodeEntitySizeLimitExceeded = "EntitySizeLimitExceeded"
 
 	// ErrCodeFieldLevelEncryptionConfigAlreadyExists for service response error code
 	// "FieldLevelEncryptionConfigAlreadyExists".
@@ -97,7 +141,7 @@ const (
 	// ErrCodeFunctionInUse for service response error code
 	// "FunctionInUse".
 	//
-	// Cannot delete the function because it’s attached to one or more cache behaviors.
+	// Cannot delete the function because it's attached to one or more cache behaviors.
 	ErrCodeFunctionInUse = "FunctionInUse"
 
 	// ErrCodeFunctionSizeLimitExceeded for service response error code
@@ -119,6 +163,13 @@ const (
 	// The specified configuration for field-level encryption can't be associated
 	// with the specified cache behavior.
 	ErrCodeIllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior = "IllegalFieldLevelEncryptionConfigAssociationWithCacheBehavior"
+
+	// ErrCodeIllegalOriginAccessConfiguration for service response error code
+	// "IllegalOriginAccessConfiguration".
+	//
+	// An origin cannot contain both an origin access control (OAC) and an origin
+	// access identity (OAI).
+	ErrCodeIllegalOriginAccessConfiguration = "IllegalOriginAccessConfiguration"
 
 	// ErrCodeIllegalUpdate for service response error code
 	// "IllegalUpdate".
@@ -143,6 +194,13 @@ const (
 	//
 	// The default root object file name is too big or contains an invalid character.
 	ErrCodeInvalidDefaultRootObject = "InvalidDefaultRootObject"
+
+	// ErrCodeInvalidDomainNameForOriginAccessControl for service response error code
+	// "InvalidDomainNameForOriginAccessControl".
+	//
+	// An origin access control is associated with an origin whose domain name is
+	// not supported.
+	ErrCodeInvalidDomainNameForOriginAccessControl = "InvalidDomainNameForOriginAccessControl"
 
 	// ErrCodeInvalidErrorCode for service response error code
 	// "InvalidErrorCode".
@@ -207,6 +265,12 @@ const (
 	// The Amazon S3 origin server specified does not refer to a valid Amazon S3
 	// bucket.
 	ErrCodeInvalidOrigin = "InvalidOrigin"
+
+	// ErrCodeInvalidOriginAccessControl for service response error code
+	// "InvalidOriginAccessControl".
+	//
+	// The origin access control is not valid.
+	ErrCodeInvalidOriginAccessControl = "InvalidOriginAccessControl"
 
 	// ErrCodeInvalidOriginAccessIdentity for service response error code
 	// "InvalidOriginAccessIdentity".
@@ -301,6 +365,12 @@ const (
 	// header is set.
 	ErrCodeMissingBody = "MissingBody"
 
+	// ErrCodeMonitoringSubscriptionAlreadyExists for service response error code
+	// "MonitoringSubscriptionAlreadyExists".
+	//
+	// A monitoring subscription already exists for the specified distribution.
+	ErrCodeMonitoringSubscriptionAlreadyExists = "MonitoringSubscriptionAlreadyExists"
+
 	// ErrCodeNoSuchCachePolicy for service response error code
 	// "NoSuchCachePolicy".
 	//
@@ -312,6 +382,12 @@ const (
 	//
 	// The specified origin access identity does not exist.
 	ErrCodeNoSuchCloudFrontOriginAccessIdentity = "NoSuchCloudFrontOriginAccessIdentity"
+
+	// ErrCodeNoSuchContinuousDeploymentPolicy for service response error code
+	// "NoSuchContinuousDeploymentPolicy".
+	//
+	// The continuous deployment policy doesn't exist.
+	ErrCodeNoSuchContinuousDeploymentPolicy = "NoSuchContinuousDeploymentPolicy"
 
 	// ErrCodeNoSuchDistribution for service response error code
 	// "NoSuchDistribution".
@@ -343,11 +419,23 @@ const (
 	// The specified invalidation does not exist.
 	ErrCodeNoSuchInvalidation = "NoSuchInvalidation"
 
+	// ErrCodeNoSuchMonitoringSubscription for service response error code
+	// "NoSuchMonitoringSubscription".
+	//
+	// A monitoring subscription does not exist for the specified distribution.
+	ErrCodeNoSuchMonitoringSubscription = "NoSuchMonitoringSubscription"
+
 	// ErrCodeNoSuchOrigin for service response error code
 	// "NoSuchOrigin".
 	//
 	// No origin exists with the specified Origin Id.
 	ErrCodeNoSuchOrigin = "NoSuchOrigin"
+
+	// ErrCodeNoSuchOriginAccessControl for service response error code
+	// "NoSuchOriginAccessControl".
+	//
+	// The origin access control does not exist.
+	ErrCodeNoSuchOriginAccessControl = "NoSuchOriginAccessControl"
 
 	// ErrCodeNoSuchOriginRequestPolicy for service response error code
 	// "NoSuchOriginRequestPolicy".
@@ -384,6 +472,19 @@ const (
 	//
 	// The specified streaming distribution does not exist.
 	ErrCodeNoSuchStreamingDistribution = "NoSuchStreamingDistribution"
+
+	// ErrCodeOriginAccessControlAlreadyExists for service response error code
+	// "OriginAccessControlAlreadyExists".
+	//
+	// An origin access control with the specified parameters already exists.
+	ErrCodeOriginAccessControlAlreadyExists = "OriginAccessControlAlreadyExists"
+
+	// ErrCodeOriginAccessControlInUse for service response error code
+	// "OriginAccessControlInUse".
+	//
+	// Cannot delete the origin access control because it's in use by one or more
+	// distributions.
+	ErrCodeOriginAccessControlInUse = "OriginAccessControlInUse"
 
 	// ErrCodeOriginAccessIdentityAlreadyExists for service response error code
 	// "CloudFrontOriginAccessIdentityAlreadyExists".
@@ -479,6 +580,12 @@ const (
 	// more cache behaviors in a CloudFront distribution.
 	ErrCodeResponseHeadersPolicyInUse = "ResponseHeadersPolicyInUse"
 
+	// ErrCodeStagingDistributionInUse for service response error code
+	// "StagingDistributionInUse".
+	//
+	// A continuous deployment policy for this staging distribution already exists.
+	ErrCodeStagingDistributionInUse = "StagingDistributionInUse"
+
 	// ErrCodeStreamingDistributionAlreadyExists for service response error code
 	// "StreamingDistributionAlreadyExists".
 	//
@@ -535,6 +642,13 @@ const (
 	// Processing your request would cause you to exceed the maximum number of origin
 	// access identities allowed.
 	ErrCodeTooManyCloudFrontOriginAccessIdentities = "TooManyCloudFrontOriginAccessIdentities"
+
+	// ErrCodeTooManyContinuousDeploymentPolicies for service response error code
+	// "TooManyContinuousDeploymentPolicies".
+	//
+	// You have reached the maximum number of continuous deployment policies for
+	// this Amazon Web Services account.
+	ErrCodeTooManyContinuousDeploymentPolicies = "TooManyContinuousDeploymentPolicies"
 
 	// ErrCodeTooManyCookieNamesInWhiteList for service response error code
 	// "TooManyCookieNamesInWhiteList".
@@ -603,6 +717,16 @@ const (
 	// maximum allowed. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
 	// (formerly known as limits) in the Amazon CloudFront Developer Guide.
 	ErrCodeTooManyDistributionsAssociatedToKeyGroup = "TooManyDistributionsAssociatedToKeyGroup"
+
+	// ErrCodeTooManyDistributionsAssociatedToOriginAccessControl for service response error code
+	// "TooManyDistributionsAssociatedToOriginAccessControl".
+	//
+	// The maximum number of distributions have been associated with the specified
+	// origin access control.
+	//
+	// For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+	// (formerly known as limits) in the Amazon CloudFront Developer Guide.
+	ErrCodeTooManyDistributionsAssociatedToOriginAccessControl = "TooManyDistributionsAssociatedToOriginAccessControl"
 
 	// ErrCodeTooManyDistributionsAssociatedToOriginRequestPolicy for service response error code
 	// "TooManyDistributionsAssociatedToOriginRequestPolicy".
@@ -753,6 +877,16 @@ const (
 	// per distribution.
 	ErrCodeTooManyLambdaFunctionAssociations = "TooManyLambdaFunctionAssociations"
 
+	// ErrCodeTooManyOriginAccessControls for service response error code
+	// "TooManyOriginAccessControls".
+	//
+	// The number of origin access controls in your Amazon Web Services account
+	// exceeds the maximum allowed.
+	//
+	// For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+	// (formerly known as limits) in the Amazon CloudFront Developer Guide.
+	ErrCodeTooManyOriginAccessControls = "TooManyOriginAccessControls"
+
 	// ErrCodeTooManyOriginCustomHeaders for service response error code
 	// "TooManyOriginCustomHeaders".
 	//
@@ -824,6 +958,16 @@ const (
 	// Amazon Web Services account. For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
 	// (formerly known as limits) in the Amazon CloudFront Developer Guide.
 	ErrCodeTooManyRealtimeLogConfigs = "TooManyRealtimeLogConfigs"
+
+	// ErrCodeTooManyRemoveHeadersInResponseHeadersPolicy for service response error code
+	// "TooManyRemoveHeadersInResponseHeadersPolicy".
+	//
+	// The number of headers in RemoveHeadersConfig in the response headers policy
+	// exceeds the maximum.
+	//
+	// For more information, see Quotas (https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cloudfront-limits.html)
+	// (formerly known as limits) in the Amazon CloudFront Developer Guide.
+	ErrCodeTooManyRemoveHeadersInResponseHeadersPolicy = "TooManyRemoveHeadersInResponseHeadersPolicy"
 
 	// ErrCodeTooManyResponseHeadersPolicies for service response error code
 	// "TooManyResponseHeadersPolicies".

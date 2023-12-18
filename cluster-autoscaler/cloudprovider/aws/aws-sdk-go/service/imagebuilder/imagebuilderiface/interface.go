@@ -64,6 +64,10 @@ type ImagebuilderAPI interface {
 	CancelImageCreationWithContext(aws.Context, *imagebuilder.CancelImageCreationInput, ...request.Option) (*imagebuilder.CancelImageCreationOutput, error)
 	CancelImageCreationRequest(*imagebuilder.CancelImageCreationInput) (*request.Request, *imagebuilder.CancelImageCreationOutput)
 
+	CancelLifecycleExecution(*imagebuilder.CancelLifecycleExecutionInput) (*imagebuilder.CancelLifecycleExecutionOutput, error)
+	CancelLifecycleExecutionWithContext(aws.Context, *imagebuilder.CancelLifecycleExecutionInput, ...request.Option) (*imagebuilder.CancelLifecycleExecutionOutput, error)
+	CancelLifecycleExecutionRequest(*imagebuilder.CancelLifecycleExecutionInput) (*request.Request, *imagebuilder.CancelLifecycleExecutionOutput)
+
 	CreateComponent(*imagebuilder.CreateComponentInput) (*imagebuilder.CreateComponentOutput, error)
 	CreateComponentWithContext(aws.Context, *imagebuilder.CreateComponentInput, ...request.Option) (*imagebuilder.CreateComponentOutput, error)
 	CreateComponentRequest(*imagebuilder.CreateComponentInput) (*request.Request, *imagebuilder.CreateComponentOutput)
@@ -92,6 +96,10 @@ type ImagebuilderAPI interface {
 	CreateInfrastructureConfigurationWithContext(aws.Context, *imagebuilder.CreateInfrastructureConfigurationInput, ...request.Option) (*imagebuilder.CreateInfrastructureConfigurationOutput, error)
 	CreateInfrastructureConfigurationRequest(*imagebuilder.CreateInfrastructureConfigurationInput) (*request.Request, *imagebuilder.CreateInfrastructureConfigurationOutput)
 
+	CreateLifecyclePolicy(*imagebuilder.CreateLifecyclePolicyInput) (*imagebuilder.CreateLifecyclePolicyOutput, error)
+	CreateLifecyclePolicyWithContext(aws.Context, *imagebuilder.CreateLifecyclePolicyInput, ...request.Option) (*imagebuilder.CreateLifecyclePolicyOutput, error)
+	CreateLifecyclePolicyRequest(*imagebuilder.CreateLifecyclePolicyInput) (*request.Request, *imagebuilder.CreateLifecyclePolicyOutput)
+
 	DeleteComponent(*imagebuilder.DeleteComponentInput) (*imagebuilder.DeleteComponentOutput, error)
 	DeleteComponentWithContext(aws.Context, *imagebuilder.DeleteComponentInput, ...request.Option) (*imagebuilder.DeleteComponentOutput, error)
 	DeleteComponentRequest(*imagebuilder.DeleteComponentInput) (*request.Request, *imagebuilder.DeleteComponentOutput)
@@ -119,6 +127,10 @@ type ImagebuilderAPI interface {
 	DeleteInfrastructureConfiguration(*imagebuilder.DeleteInfrastructureConfigurationInput) (*imagebuilder.DeleteInfrastructureConfigurationOutput, error)
 	DeleteInfrastructureConfigurationWithContext(aws.Context, *imagebuilder.DeleteInfrastructureConfigurationInput, ...request.Option) (*imagebuilder.DeleteInfrastructureConfigurationOutput, error)
 	DeleteInfrastructureConfigurationRequest(*imagebuilder.DeleteInfrastructureConfigurationInput) (*request.Request, *imagebuilder.DeleteInfrastructureConfigurationOutput)
+
+	DeleteLifecyclePolicy(*imagebuilder.DeleteLifecyclePolicyInput) (*imagebuilder.DeleteLifecyclePolicyOutput, error)
+	DeleteLifecyclePolicyWithContext(aws.Context, *imagebuilder.DeleteLifecyclePolicyInput, ...request.Option) (*imagebuilder.DeleteLifecyclePolicyOutput, error)
+	DeleteLifecyclePolicyRequest(*imagebuilder.DeleteLifecyclePolicyInput) (*request.Request, *imagebuilder.DeleteLifecyclePolicyOutput)
 
 	GetComponent(*imagebuilder.GetComponentInput) (*imagebuilder.GetComponentOutput, error)
 	GetComponentWithContext(aws.Context, *imagebuilder.GetComponentInput, ...request.Option) (*imagebuilder.GetComponentOutput, error)
@@ -163,6 +175,22 @@ type ImagebuilderAPI interface {
 	GetInfrastructureConfiguration(*imagebuilder.GetInfrastructureConfigurationInput) (*imagebuilder.GetInfrastructureConfigurationOutput, error)
 	GetInfrastructureConfigurationWithContext(aws.Context, *imagebuilder.GetInfrastructureConfigurationInput, ...request.Option) (*imagebuilder.GetInfrastructureConfigurationOutput, error)
 	GetInfrastructureConfigurationRequest(*imagebuilder.GetInfrastructureConfigurationInput) (*request.Request, *imagebuilder.GetInfrastructureConfigurationOutput)
+
+	GetLifecycleExecution(*imagebuilder.GetLifecycleExecutionInput) (*imagebuilder.GetLifecycleExecutionOutput, error)
+	GetLifecycleExecutionWithContext(aws.Context, *imagebuilder.GetLifecycleExecutionInput, ...request.Option) (*imagebuilder.GetLifecycleExecutionOutput, error)
+	GetLifecycleExecutionRequest(*imagebuilder.GetLifecycleExecutionInput) (*request.Request, *imagebuilder.GetLifecycleExecutionOutput)
+
+	GetLifecyclePolicy(*imagebuilder.GetLifecyclePolicyInput) (*imagebuilder.GetLifecyclePolicyOutput, error)
+	GetLifecyclePolicyWithContext(aws.Context, *imagebuilder.GetLifecyclePolicyInput, ...request.Option) (*imagebuilder.GetLifecyclePolicyOutput, error)
+	GetLifecyclePolicyRequest(*imagebuilder.GetLifecyclePolicyInput) (*request.Request, *imagebuilder.GetLifecyclePolicyOutput)
+
+	GetWorkflowExecution(*imagebuilder.GetWorkflowExecutionInput) (*imagebuilder.GetWorkflowExecutionOutput, error)
+	GetWorkflowExecutionWithContext(aws.Context, *imagebuilder.GetWorkflowExecutionInput, ...request.Option) (*imagebuilder.GetWorkflowExecutionOutput, error)
+	GetWorkflowExecutionRequest(*imagebuilder.GetWorkflowExecutionInput) (*request.Request, *imagebuilder.GetWorkflowExecutionOutput)
+
+	GetWorkflowStepExecution(*imagebuilder.GetWorkflowStepExecutionInput) (*imagebuilder.GetWorkflowStepExecutionOutput, error)
+	GetWorkflowStepExecutionWithContext(aws.Context, *imagebuilder.GetWorkflowStepExecutionInput, ...request.Option) (*imagebuilder.GetWorkflowStepExecutionOutput, error)
+	GetWorkflowStepExecutionRequest(*imagebuilder.GetWorkflowStepExecutionInput) (*request.Request, *imagebuilder.GetWorkflowStepExecutionOutput)
 
 	ImportComponent(*imagebuilder.ImportComponentInput) (*imagebuilder.ImportComponentOutput, error)
 	ImportComponentWithContext(aws.Context, *imagebuilder.ImportComponentInput, ...request.Option) (*imagebuilder.ImportComponentOutput, error)
@@ -235,6 +263,20 @@ type ImagebuilderAPI interface {
 	ListImageRecipesPages(*imagebuilder.ListImageRecipesInput, func(*imagebuilder.ListImageRecipesOutput, bool) bool) error
 	ListImageRecipesPagesWithContext(aws.Context, *imagebuilder.ListImageRecipesInput, func(*imagebuilder.ListImageRecipesOutput, bool) bool, ...request.Option) error
 
+	ListImageScanFindingAggregations(*imagebuilder.ListImageScanFindingAggregationsInput) (*imagebuilder.ListImageScanFindingAggregationsOutput, error)
+	ListImageScanFindingAggregationsWithContext(aws.Context, *imagebuilder.ListImageScanFindingAggregationsInput, ...request.Option) (*imagebuilder.ListImageScanFindingAggregationsOutput, error)
+	ListImageScanFindingAggregationsRequest(*imagebuilder.ListImageScanFindingAggregationsInput) (*request.Request, *imagebuilder.ListImageScanFindingAggregationsOutput)
+
+	ListImageScanFindingAggregationsPages(*imagebuilder.ListImageScanFindingAggregationsInput, func(*imagebuilder.ListImageScanFindingAggregationsOutput, bool) bool) error
+	ListImageScanFindingAggregationsPagesWithContext(aws.Context, *imagebuilder.ListImageScanFindingAggregationsInput, func(*imagebuilder.ListImageScanFindingAggregationsOutput, bool) bool, ...request.Option) error
+
+	ListImageScanFindings(*imagebuilder.ListImageScanFindingsInput) (*imagebuilder.ListImageScanFindingsOutput, error)
+	ListImageScanFindingsWithContext(aws.Context, *imagebuilder.ListImageScanFindingsInput, ...request.Option) (*imagebuilder.ListImageScanFindingsOutput, error)
+	ListImageScanFindingsRequest(*imagebuilder.ListImageScanFindingsInput) (*request.Request, *imagebuilder.ListImageScanFindingsOutput)
+
+	ListImageScanFindingsPages(*imagebuilder.ListImageScanFindingsInput, func(*imagebuilder.ListImageScanFindingsOutput, bool) bool) error
+	ListImageScanFindingsPagesWithContext(aws.Context, *imagebuilder.ListImageScanFindingsInput, func(*imagebuilder.ListImageScanFindingsOutput, bool) bool, ...request.Option) error
+
 	ListImages(*imagebuilder.ListImagesInput) (*imagebuilder.ListImagesOutput, error)
 	ListImagesWithContext(aws.Context, *imagebuilder.ListImagesInput, ...request.Option) (*imagebuilder.ListImagesOutput, error)
 	ListImagesRequest(*imagebuilder.ListImagesInput) (*request.Request, *imagebuilder.ListImagesOutput)
@@ -249,9 +291,44 @@ type ImagebuilderAPI interface {
 	ListInfrastructureConfigurationsPages(*imagebuilder.ListInfrastructureConfigurationsInput, func(*imagebuilder.ListInfrastructureConfigurationsOutput, bool) bool) error
 	ListInfrastructureConfigurationsPagesWithContext(aws.Context, *imagebuilder.ListInfrastructureConfigurationsInput, func(*imagebuilder.ListInfrastructureConfigurationsOutput, bool) bool, ...request.Option) error
 
+	ListLifecycleExecutionResources(*imagebuilder.ListLifecycleExecutionResourcesInput) (*imagebuilder.ListLifecycleExecutionResourcesOutput, error)
+	ListLifecycleExecutionResourcesWithContext(aws.Context, *imagebuilder.ListLifecycleExecutionResourcesInput, ...request.Option) (*imagebuilder.ListLifecycleExecutionResourcesOutput, error)
+	ListLifecycleExecutionResourcesRequest(*imagebuilder.ListLifecycleExecutionResourcesInput) (*request.Request, *imagebuilder.ListLifecycleExecutionResourcesOutput)
+
+	ListLifecycleExecutionResourcesPages(*imagebuilder.ListLifecycleExecutionResourcesInput, func(*imagebuilder.ListLifecycleExecutionResourcesOutput, bool) bool) error
+	ListLifecycleExecutionResourcesPagesWithContext(aws.Context, *imagebuilder.ListLifecycleExecutionResourcesInput, func(*imagebuilder.ListLifecycleExecutionResourcesOutput, bool) bool, ...request.Option) error
+
+	ListLifecycleExecutions(*imagebuilder.ListLifecycleExecutionsInput) (*imagebuilder.ListLifecycleExecutionsOutput, error)
+	ListLifecycleExecutionsWithContext(aws.Context, *imagebuilder.ListLifecycleExecutionsInput, ...request.Option) (*imagebuilder.ListLifecycleExecutionsOutput, error)
+	ListLifecycleExecutionsRequest(*imagebuilder.ListLifecycleExecutionsInput) (*request.Request, *imagebuilder.ListLifecycleExecutionsOutput)
+
+	ListLifecycleExecutionsPages(*imagebuilder.ListLifecycleExecutionsInput, func(*imagebuilder.ListLifecycleExecutionsOutput, bool) bool) error
+	ListLifecycleExecutionsPagesWithContext(aws.Context, *imagebuilder.ListLifecycleExecutionsInput, func(*imagebuilder.ListLifecycleExecutionsOutput, bool) bool, ...request.Option) error
+
+	ListLifecyclePolicies(*imagebuilder.ListLifecyclePoliciesInput) (*imagebuilder.ListLifecyclePoliciesOutput, error)
+	ListLifecyclePoliciesWithContext(aws.Context, *imagebuilder.ListLifecyclePoliciesInput, ...request.Option) (*imagebuilder.ListLifecyclePoliciesOutput, error)
+	ListLifecyclePoliciesRequest(*imagebuilder.ListLifecyclePoliciesInput) (*request.Request, *imagebuilder.ListLifecyclePoliciesOutput)
+
+	ListLifecyclePoliciesPages(*imagebuilder.ListLifecyclePoliciesInput, func(*imagebuilder.ListLifecyclePoliciesOutput, bool) bool) error
+	ListLifecyclePoliciesPagesWithContext(aws.Context, *imagebuilder.ListLifecyclePoliciesInput, func(*imagebuilder.ListLifecyclePoliciesOutput, bool) bool, ...request.Option) error
+
 	ListTagsForResource(*imagebuilder.ListTagsForResourceInput) (*imagebuilder.ListTagsForResourceOutput, error)
 	ListTagsForResourceWithContext(aws.Context, *imagebuilder.ListTagsForResourceInput, ...request.Option) (*imagebuilder.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*imagebuilder.ListTagsForResourceInput) (*request.Request, *imagebuilder.ListTagsForResourceOutput)
+
+	ListWorkflowExecutions(*imagebuilder.ListWorkflowExecutionsInput) (*imagebuilder.ListWorkflowExecutionsOutput, error)
+	ListWorkflowExecutionsWithContext(aws.Context, *imagebuilder.ListWorkflowExecutionsInput, ...request.Option) (*imagebuilder.ListWorkflowExecutionsOutput, error)
+	ListWorkflowExecutionsRequest(*imagebuilder.ListWorkflowExecutionsInput) (*request.Request, *imagebuilder.ListWorkflowExecutionsOutput)
+
+	ListWorkflowExecutionsPages(*imagebuilder.ListWorkflowExecutionsInput, func(*imagebuilder.ListWorkflowExecutionsOutput, bool) bool) error
+	ListWorkflowExecutionsPagesWithContext(aws.Context, *imagebuilder.ListWorkflowExecutionsInput, func(*imagebuilder.ListWorkflowExecutionsOutput, bool) bool, ...request.Option) error
+
+	ListWorkflowStepExecutions(*imagebuilder.ListWorkflowStepExecutionsInput) (*imagebuilder.ListWorkflowStepExecutionsOutput, error)
+	ListWorkflowStepExecutionsWithContext(aws.Context, *imagebuilder.ListWorkflowStepExecutionsInput, ...request.Option) (*imagebuilder.ListWorkflowStepExecutionsOutput, error)
+	ListWorkflowStepExecutionsRequest(*imagebuilder.ListWorkflowStepExecutionsInput) (*request.Request, *imagebuilder.ListWorkflowStepExecutionsOutput)
+
+	ListWorkflowStepExecutionsPages(*imagebuilder.ListWorkflowStepExecutionsInput, func(*imagebuilder.ListWorkflowStepExecutionsOutput, bool) bool) error
+	ListWorkflowStepExecutionsPagesWithContext(aws.Context, *imagebuilder.ListWorkflowStepExecutionsInput, func(*imagebuilder.ListWorkflowStepExecutionsOutput, bool) bool, ...request.Option) error
 
 	PutComponentPolicy(*imagebuilder.PutComponentPolicyInput) (*imagebuilder.PutComponentPolicyOutput, error)
 	PutComponentPolicyWithContext(aws.Context, *imagebuilder.PutComponentPolicyInput, ...request.Option) (*imagebuilder.PutComponentPolicyOutput, error)
@@ -273,6 +350,10 @@ type ImagebuilderAPI interface {
 	StartImagePipelineExecutionWithContext(aws.Context, *imagebuilder.StartImagePipelineExecutionInput, ...request.Option) (*imagebuilder.StartImagePipelineExecutionOutput, error)
 	StartImagePipelineExecutionRequest(*imagebuilder.StartImagePipelineExecutionInput) (*request.Request, *imagebuilder.StartImagePipelineExecutionOutput)
 
+	StartResourceStateUpdate(*imagebuilder.StartResourceStateUpdateInput) (*imagebuilder.StartResourceStateUpdateOutput, error)
+	StartResourceStateUpdateWithContext(aws.Context, *imagebuilder.StartResourceStateUpdateInput, ...request.Option) (*imagebuilder.StartResourceStateUpdateOutput, error)
+	StartResourceStateUpdateRequest(*imagebuilder.StartResourceStateUpdateInput) (*request.Request, *imagebuilder.StartResourceStateUpdateOutput)
+
 	TagResource(*imagebuilder.TagResourceInput) (*imagebuilder.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *imagebuilder.TagResourceInput, ...request.Option) (*imagebuilder.TagResourceOutput, error)
 	TagResourceRequest(*imagebuilder.TagResourceInput) (*request.Request, *imagebuilder.TagResourceOutput)
@@ -292,6 +373,10 @@ type ImagebuilderAPI interface {
 	UpdateInfrastructureConfiguration(*imagebuilder.UpdateInfrastructureConfigurationInput) (*imagebuilder.UpdateInfrastructureConfigurationOutput, error)
 	UpdateInfrastructureConfigurationWithContext(aws.Context, *imagebuilder.UpdateInfrastructureConfigurationInput, ...request.Option) (*imagebuilder.UpdateInfrastructureConfigurationOutput, error)
 	UpdateInfrastructureConfigurationRequest(*imagebuilder.UpdateInfrastructureConfigurationInput) (*request.Request, *imagebuilder.UpdateInfrastructureConfigurationOutput)
+
+	UpdateLifecyclePolicy(*imagebuilder.UpdateLifecyclePolicyInput) (*imagebuilder.UpdateLifecyclePolicyOutput, error)
+	UpdateLifecyclePolicyWithContext(aws.Context, *imagebuilder.UpdateLifecyclePolicyInput, ...request.Option) (*imagebuilder.UpdateLifecyclePolicyOutput, error)
+	UpdateLifecyclePolicyRequest(*imagebuilder.UpdateLifecyclePolicyInput) (*request.Request, *imagebuilder.UpdateLifecyclePolicyOutput)
 }
 
 var _ ImagebuilderAPI = (*imagebuilder.Imagebuilder)(nil)

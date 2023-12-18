@@ -196,6 +196,27 @@ const (
 	// You have exceeded the number of events you can subscribe to.
 	ErrCodeEventSubscriptionQuotaExceededFault = "EventSubscriptionQuotaExceeded"
 
+	// ErrCodeGlobalClusterAlreadyExistsFault for service response error code
+	// "GlobalClusterAlreadyExistsFault".
+	//
+	// The GlobalClusterIdentifier already exists. Choose a new global database
+	// identifier (unique name) to create a new global database cluster.
+	ErrCodeGlobalClusterAlreadyExistsFault = "GlobalClusterAlreadyExistsFault"
+
+	// ErrCodeGlobalClusterNotFoundFault for service response error code
+	// "GlobalClusterNotFoundFault".
+	//
+	// The GlobalClusterIdentifier doesn't refer to an existing global database
+	// cluster.
+	ErrCodeGlobalClusterNotFoundFault = "GlobalClusterNotFoundFault"
+
+	// ErrCodeGlobalClusterQuotaExceededFault for service response error code
+	// "GlobalClusterQuotaExceededFault".
+	//
+	// The number of global database clusters for this account is already at the
+	// maximum allowed.
+	ErrCodeGlobalClusterQuotaExceededFault = "GlobalClusterQuotaExceededFault"
+
 	// ErrCodeInstanceQuotaExceededFault for service response error code
 	// "InstanceQuotaExceeded".
 	//
@@ -285,6 +306,13 @@ const (
 	//
 	// The event subscription is in an invalid state.
 	ErrCodeInvalidEventSubscriptionStateFault = "InvalidEventSubscriptionState"
+
+	// ErrCodeInvalidGlobalClusterStateFault for service response error code
+	// "InvalidGlobalClusterStateFault".
+	//
+	// The global cluster is in an invalid state and can't perform the requested
+	// operation.
+	ErrCodeInvalidGlobalClusterStateFault = "InvalidGlobalClusterStateFault"
 
 	// ErrCodeInvalidRestoreFault for service response error code
 	// "InvalidRestoreFault".

@@ -3,19 +3,24 @@
 // Package chime provides the client and types for making API
 // requests to Amazon Chime.
 //
-// The Amazon Chime API (application programming interface) is designed for
-// developers to perform key tasks, such as creating and managing Amazon Chime
-// accounts, users, and Voice Connectors. This guide provides detailed information
-// about the Amazon Chime API, including operations, types, inputs and outputs,
-// and error codes. It also includes API actions for use with the Amazon Chime
-// SDK, which developers use to build their own communication applications.
-// For more information about the Amazon Chime SDK, see Using the Amazon Chime
-// SDK (https://docs.aws.amazon.com/chime/latest/dg/meetings-sdk.html) in the
-// Amazon Chime Developer Guide.
+// Most of these APIs are no longer supported and will not be updated. We recommend
+// using the latest versions in the Amazon Chime SDK API reference (https://docs.aws.amazon.com/chime-sdk/latest/APIReference/welcome.html),
+// in the Amazon Chime SDK.
+//
+// Using the latest versions requires migrating to dedicated namespaces. For
+// more information, refer to Migrating from the Amazon Chime namespace (https://docs.aws.amazon.com/chime-sdk/latest/dg/migrate-from-chm-namespace.html)
+// in the Amazon Chime SDK Developer Guide.
+//
+// The Amazon Chime application programming interface (API) is designed so administrators
+// can perform key tasks, such as creating and managing Amazon Chime accounts,
+// users, and Voice Connectors. This guide provides detailed information about
+// the Amazon Chime API, including operations, types, inputs and outputs, and
+// error codes.
 //
 // You can use an AWS SDK, the AWS Command Line Interface (AWS CLI), or the
-// REST API to make API calls. We recommend using an AWS SDK or the AWS CLI.
-// Each API operation includes links to information about using it with a language-specific
+// REST API to make API calls for Amazon Chime. We recommend using an AWS SDK
+// or the AWS CLI. The page for each API action contains a See Also section
+// that includes links to information about using the action with a language-specific
 // AWS SDK or the AWS CLI.
 //
 // # Using an AWS SDK
@@ -37,7 +42,7 @@
 // # Using REST APIs
 //
 // If you use REST to make API calls, you must authenticate your request by
-// providing a signature. Amazon Chime supports signature version 4. For more
+// providing a signature. Amazon Chime supports Signature Version 4. For more
 // information, see Signature Version 4 Signing Process (https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html)
 // in the Amazon Web Services General Reference.
 //

@@ -26,7 +26,7 @@ import (
 //	// myFunc uses an SDK service client to make a request to
 //	// Amazon Lex Model Building V2.
 //	func myFunc(svc lexmodelsv2iface.LexModelsV2API) bool {
-//	    // Make svc.BuildBotLocale request
+//	    // Make svc.BatchCreateCustomVocabularyItem request
 //	}
 //
 //	func main() {
@@ -42,7 +42,7 @@ import (
 //	type mockLexModelsV2Client struct {
 //	    lexmodelsv2iface.LexModelsV2API
 //	}
-//	func (m *mockLexModelsV2Client) BuildBotLocale(input *lexmodelsv2.BuildBotLocaleInput) (*lexmodelsv2.BuildBotLocaleOutput, error) {
+//	func (m *mockLexModelsV2Client) BatchCreateCustomVocabularyItem(input *lexmodelsv2.BatchCreateCustomVocabularyItemInput) (*lexmodelsv2.BatchCreateCustomVocabularyItemOutput, error) {
 //	    // mock response/functionality
 //	}
 //
@@ -60,6 +60,18 @@ import (
 // and waiters. Its suggested to use the pattern above for testing, or using
 // tooling to generate mocks to satisfy the interfaces.
 type LexModelsV2API interface {
+	BatchCreateCustomVocabularyItem(*lexmodelsv2.BatchCreateCustomVocabularyItemInput) (*lexmodelsv2.BatchCreateCustomVocabularyItemOutput, error)
+	BatchCreateCustomVocabularyItemWithContext(aws.Context, *lexmodelsv2.BatchCreateCustomVocabularyItemInput, ...request.Option) (*lexmodelsv2.BatchCreateCustomVocabularyItemOutput, error)
+	BatchCreateCustomVocabularyItemRequest(*lexmodelsv2.BatchCreateCustomVocabularyItemInput) (*request.Request, *lexmodelsv2.BatchCreateCustomVocabularyItemOutput)
+
+	BatchDeleteCustomVocabularyItem(*lexmodelsv2.BatchDeleteCustomVocabularyItemInput) (*lexmodelsv2.BatchDeleteCustomVocabularyItemOutput, error)
+	BatchDeleteCustomVocabularyItemWithContext(aws.Context, *lexmodelsv2.BatchDeleteCustomVocabularyItemInput, ...request.Option) (*lexmodelsv2.BatchDeleteCustomVocabularyItemOutput, error)
+	BatchDeleteCustomVocabularyItemRequest(*lexmodelsv2.BatchDeleteCustomVocabularyItemInput) (*request.Request, *lexmodelsv2.BatchDeleteCustomVocabularyItemOutput)
+
+	BatchUpdateCustomVocabularyItem(*lexmodelsv2.BatchUpdateCustomVocabularyItemInput) (*lexmodelsv2.BatchUpdateCustomVocabularyItemOutput, error)
+	BatchUpdateCustomVocabularyItemWithContext(aws.Context, *lexmodelsv2.BatchUpdateCustomVocabularyItemInput, ...request.Option) (*lexmodelsv2.BatchUpdateCustomVocabularyItemOutput, error)
+	BatchUpdateCustomVocabularyItemRequest(*lexmodelsv2.BatchUpdateCustomVocabularyItemInput) (*request.Request, *lexmodelsv2.BatchUpdateCustomVocabularyItemOutput)
+
 	BuildBotLocale(*lexmodelsv2.BuildBotLocaleInput) (*lexmodelsv2.BuildBotLocaleOutput, error)
 	BuildBotLocaleWithContext(aws.Context, *lexmodelsv2.BuildBotLocaleInput, ...request.Option) (*lexmodelsv2.BuildBotLocaleOutput, error)
 	BuildBotLocaleRequest(*lexmodelsv2.BuildBotLocaleInput) (*request.Request, *lexmodelsv2.BuildBotLocaleOutput)
@@ -103,6 +115,10 @@ type LexModelsV2API interface {
 	CreateSlotType(*lexmodelsv2.CreateSlotTypeInput) (*lexmodelsv2.CreateSlotTypeOutput, error)
 	CreateSlotTypeWithContext(aws.Context, *lexmodelsv2.CreateSlotTypeInput, ...request.Option) (*lexmodelsv2.CreateSlotTypeOutput, error)
 	CreateSlotTypeRequest(*lexmodelsv2.CreateSlotTypeInput) (*request.Request, *lexmodelsv2.CreateSlotTypeOutput)
+
+	CreateTestSetDiscrepancyReport(*lexmodelsv2.CreateTestSetDiscrepancyReportInput) (*lexmodelsv2.CreateTestSetDiscrepancyReportOutput, error)
+	CreateTestSetDiscrepancyReportWithContext(aws.Context, *lexmodelsv2.CreateTestSetDiscrepancyReportInput, ...request.Option) (*lexmodelsv2.CreateTestSetDiscrepancyReportOutput, error)
+	CreateTestSetDiscrepancyReportRequest(*lexmodelsv2.CreateTestSetDiscrepancyReportInput) (*request.Request, *lexmodelsv2.CreateTestSetDiscrepancyReportOutput)
 
 	CreateUploadUrl(*lexmodelsv2.CreateUploadUrlInput) (*lexmodelsv2.CreateUploadUrlOutput, error)
 	CreateUploadUrlWithContext(aws.Context, *lexmodelsv2.CreateUploadUrlInput, ...request.Option) (*lexmodelsv2.CreateUploadUrlOutput, error)
@@ -156,6 +172,10 @@ type LexModelsV2API interface {
 	DeleteSlotTypeWithContext(aws.Context, *lexmodelsv2.DeleteSlotTypeInput, ...request.Option) (*lexmodelsv2.DeleteSlotTypeOutput, error)
 	DeleteSlotTypeRequest(*lexmodelsv2.DeleteSlotTypeInput) (*request.Request, *lexmodelsv2.DeleteSlotTypeOutput)
 
+	DeleteTestSet(*lexmodelsv2.DeleteTestSetInput) (*lexmodelsv2.DeleteTestSetOutput, error)
+	DeleteTestSetWithContext(aws.Context, *lexmodelsv2.DeleteTestSetInput, ...request.Option) (*lexmodelsv2.DeleteTestSetOutput, error)
+	DeleteTestSetRequest(*lexmodelsv2.DeleteTestSetInput) (*request.Request, *lexmodelsv2.DeleteTestSetOutput)
+
 	DeleteUtterances(*lexmodelsv2.DeleteUtterancesInput) (*lexmodelsv2.DeleteUtterancesOutput, error)
 	DeleteUtterancesWithContext(aws.Context, *lexmodelsv2.DeleteUtterancesInput, ...request.Option) (*lexmodelsv2.DeleteUtterancesOutput, error)
 	DeleteUtterancesRequest(*lexmodelsv2.DeleteUtterancesInput) (*request.Request, *lexmodelsv2.DeleteUtterancesOutput)
@@ -175,6 +195,10 @@ type LexModelsV2API interface {
 	DescribeBotRecommendation(*lexmodelsv2.DescribeBotRecommendationInput) (*lexmodelsv2.DescribeBotRecommendationOutput, error)
 	DescribeBotRecommendationWithContext(aws.Context, *lexmodelsv2.DescribeBotRecommendationInput, ...request.Option) (*lexmodelsv2.DescribeBotRecommendationOutput, error)
 	DescribeBotRecommendationRequest(*lexmodelsv2.DescribeBotRecommendationInput) (*request.Request, *lexmodelsv2.DescribeBotRecommendationOutput)
+
+	DescribeBotResourceGeneration(*lexmodelsv2.DescribeBotResourceGenerationInput) (*lexmodelsv2.DescribeBotResourceGenerationOutput, error)
+	DescribeBotResourceGenerationWithContext(aws.Context, *lexmodelsv2.DescribeBotResourceGenerationInput, ...request.Option) (*lexmodelsv2.DescribeBotResourceGenerationOutput, error)
+	DescribeBotResourceGenerationRequest(*lexmodelsv2.DescribeBotResourceGenerationInput) (*request.Request, *lexmodelsv2.DescribeBotResourceGenerationOutput)
 
 	DescribeBotVersion(*lexmodelsv2.DescribeBotVersionInput) (*lexmodelsv2.DescribeBotVersionOutput, error)
 	DescribeBotVersionWithContext(aws.Context, *lexmodelsv2.DescribeBotVersionInput, ...request.Option) (*lexmodelsv2.DescribeBotVersionOutput, error)
@@ -208,6 +232,30 @@ type LexModelsV2API interface {
 	DescribeSlotTypeWithContext(aws.Context, *lexmodelsv2.DescribeSlotTypeInput, ...request.Option) (*lexmodelsv2.DescribeSlotTypeOutput, error)
 	DescribeSlotTypeRequest(*lexmodelsv2.DescribeSlotTypeInput) (*request.Request, *lexmodelsv2.DescribeSlotTypeOutput)
 
+	DescribeTestExecution(*lexmodelsv2.DescribeTestExecutionInput) (*lexmodelsv2.DescribeTestExecutionOutput, error)
+	DescribeTestExecutionWithContext(aws.Context, *lexmodelsv2.DescribeTestExecutionInput, ...request.Option) (*lexmodelsv2.DescribeTestExecutionOutput, error)
+	DescribeTestExecutionRequest(*lexmodelsv2.DescribeTestExecutionInput) (*request.Request, *lexmodelsv2.DescribeTestExecutionOutput)
+
+	DescribeTestSet(*lexmodelsv2.DescribeTestSetInput) (*lexmodelsv2.DescribeTestSetOutput, error)
+	DescribeTestSetWithContext(aws.Context, *lexmodelsv2.DescribeTestSetInput, ...request.Option) (*lexmodelsv2.DescribeTestSetOutput, error)
+	DescribeTestSetRequest(*lexmodelsv2.DescribeTestSetInput) (*request.Request, *lexmodelsv2.DescribeTestSetOutput)
+
+	DescribeTestSetDiscrepancyReport(*lexmodelsv2.DescribeTestSetDiscrepancyReportInput) (*lexmodelsv2.DescribeTestSetDiscrepancyReportOutput, error)
+	DescribeTestSetDiscrepancyReportWithContext(aws.Context, *lexmodelsv2.DescribeTestSetDiscrepancyReportInput, ...request.Option) (*lexmodelsv2.DescribeTestSetDiscrepancyReportOutput, error)
+	DescribeTestSetDiscrepancyReportRequest(*lexmodelsv2.DescribeTestSetDiscrepancyReportInput) (*request.Request, *lexmodelsv2.DescribeTestSetDiscrepancyReportOutput)
+
+	DescribeTestSetGeneration(*lexmodelsv2.DescribeTestSetGenerationInput) (*lexmodelsv2.DescribeTestSetGenerationOutput, error)
+	DescribeTestSetGenerationWithContext(aws.Context, *lexmodelsv2.DescribeTestSetGenerationInput, ...request.Option) (*lexmodelsv2.DescribeTestSetGenerationOutput, error)
+	DescribeTestSetGenerationRequest(*lexmodelsv2.DescribeTestSetGenerationInput) (*request.Request, *lexmodelsv2.DescribeTestSetGenerationOutput)
+
+	GenerateBotElement(*lexmodelsv2.GenerateBotElementInput) (*lexmodelsv2.GenerateBotElementOutput, error)
+	GenerateBotElementWithContext(aws.Context, *lexmodelsv2.GenerateBotElementInput, ...request.Option) (*lexmodelsv2.GenerateBotElementOutput, error)
+	GenerateBotElementRequest(*lexmodelsv2.GenerateBotElementInput) (*request.Request, *lexmodelsv2.GenerateBotElementOutput)
+
+	GetTestExecutionArtifactsUrl(*lexmodelsv2.GetTestExecutionArtifactsUrlInput) (*lexmodelsv2.GetTestExecutionArtifactsUrlOutput, error)
+	GetTestExecutionArtifactsUrlWithContext(aws.Context, *lexmodelsv2.GetTestExecutionArtifactsUrlInput, ...request.Option) (*lexmodelsv2.GetTestExecutionArtifactsUrlOutput, error)
+	GetTestExecutionArtifactsUrlRequest(*lexmodelsv2.GetTestExecutionArtifactsUrlInput) (*request.Request, *lexmodelsv2.GetTestExecutionArtifactsUrlOutput)
+
 	ListAggregatedUtterances(*lexmodelsv2.ListAggregatedUtterancesInput) (*lexmodelsv2.ListAggregatedUtterancesOutput, error)
 	ListAggregatedUtterancesWithContext(aws.Context, *lexmodelsv2.ListAggregatedUtterancesInput, ...request.Option) (*lexmodelsv2.ListAggregatedUtterancesOutput, error)
 	ListAggregatedUtterancesRequest(*lexmodelsv2.ListAggregatedUtterancesInput) (*request.Request, *lexmodelsv2.ListAggregatedUtterancesOutput)
@@ -235,6 +283,13 @@ type LexModelsV2API interface {
 
 	ListBotRecommendationsPages(*lexmodelsv2.ListBotRecommendationsInput, func(*lexmodelsv2.ListBotRecommendationsOutput, bool) bool) error
 	ListBotRecommendationsPagesWithContext(aws.Context, *lexmodelsv2.ListBotRecommendationsInput, func(*lexmodelsv2.ListBotRecommendationsOutput, bool) bool, ...request.Option) error
+
+	ListBotResourceGenerations(*lexmodelsv2.ListBotResourceGenerationsInput) (*lexmodelsv2.ListBotResourceGenerationsOutput, error)
+	ListBotResourceGenerationsWithContext(aws.Context, *lexmodelsv2.ListBotResourceGenerationsInput, ...request.Option) (*lexmodelsv2.ListBotResourceGenerationsOutput, error)
+	ListBotResourceGenerationsRequest(*lexmodelsv2.ListBotResourceGenerationsInput) (*request.Request, *lexmodelsv2.ListBotResourceGenerationsOutput)
+
+	ListBotResourceGenerationsPages(*lexmodelsv2.ListBotResourceGenerationsInput, func(*lexmodelsv2.ListBotResourceGenerationsOutput, bool) bool) error
+	ListBotResourceGenerationsPagesWithContext(aws.Context, *lexmodelsv2.ListBotResourceGenerationsInput, func(*lexmodelsv2.ListBotResourceGenerationsOutput, bool) bool, ...request.Option) error
 
 	ListBotVersions(*lexmodelsv2.ListBotVersionsInput) (*lexmodelsv2.ListBotVersionsOutput, error)
 	ListBotVersionsWithContext(aws.Context, *lexmodelsv2.ListBotVersionsInput, ...request.Option) (*lexmodelsv2.ListBotVersionsOutput, error)
@@ -264,6 +319,13 @@ type LexModelsV2API interface {
 	ListBuiltInSlotTypesPages(*lexmodelsv2.ListBuiltInSlotTypesInput, func(*lexmodelsv2.ListBuiltInSlotTypesOutput, bool) bool) error
 	ListBuiltInSlotTypesPagesWithContext(aws.Context, *lexmodelsv2.ListBuiltInSlotTypesInput, func(*lexmodelsv2.ListBuiltInSlotTypesOutput, bool) bool, ...request.Option) error
 
+	ListCustomVocabularyItems(*lexmodelsv2.ListCustomVocabularyItemsInput) (*lexmodelsv2.ListCustomVocabularyItemsOutput, error)
+	ListCustomVocabularyItemsWithContext(aws.Context, *lexmodelsv2.ListCustomVocabularyItemsInput, ...request.Option) (*lexmodelsv2.ListCustomVocabularyItemsOutput, error)
+	ListCustomVocabularyItemsRequest(*lexmodelsv2.ListCustomVocabularyItemsInput) (*request.Request, *lexmodelsv2.ListCustomVocabularyItemsOutput)
+
+	ListCustomVocabularyItemsPages(*lexmodelsv2.ListCustomVocabularyItemsInput, func(*lexmodelsv2.ListCustomVocabularyItemsOutput, bool) bool) error
+	ListCustomVocabularyItemsPagesWithContext(aws.Context, *lexmodelsv2.ListCustomVocabularyItemsInput, func(*lexmodelsv2.ListCustomVocabularyItemsOutput, bool) bool, ...request.Option) error
+
 	ListExports(*lexmodelsv2.ListExportsInput) (*lexmodelsv2.ListExportsOutput, error)
 	ListExportsWithContext(aws.Context, *lexmodelsv2.ListExportsInput, ...request.Option) (*lexmodelsv2.ListExportsOutput, error)
 	ListExportsRequest(*lexmodelsv2.ListExportsInput) (*request.Request, *lexmodelsv2.ListExportsOutput)
@@ -278,6 +340,24 @@ type LexModelsV2API interface {
 	ListImportsPages(*lexmodelsv2.ListImportsInput, func(*lexmodelsv2.ListImportsOutput, bool) bool) error
 	ListImportsPagesWithContext(aws.Context, *lexmodelsv2.ListImportsInput, func(*lexmodelsv2.ListImportsOutput, bool) bool, ...request.Option) error
 
+	ListIntentMetrics(*lexmodelsv2.ListIntentMetricsInput) (*lexmodelsv2.ListIntentMetricsOutput, error)
+	ListIntentMetricsWithContext(aws.Context, *lexmodelsv2.ListIntentMetricsInput, ...request.Option) (*lexmodelsv2.ListIntentMetricsOutput, error)
+	ListIntentMetricsRequest(*lexmodelsv2.ListIntentMetricsInput) (*request.Request, *lexmodelsv2.ListIntentMetricsOutput)
+
+	ListIntentMetricsPages(*lexmodelsv2.ListIntentMetricsInput, func(*lexmodelsv2.ListIntentMetricsOutput, bool) bool) error
+	ListIntentMetricsPagesWithContext(aws.Context, *lexmodelsv2.ListIntentMetricsInput, func(*lexmodelsv2.ListIntentMetricsOutput, bool) bool, ...request.Option) error
+
+	ListIntentPaths(*lexmodelsv2.ListIntentPathsInput) (*lexmodelsv2.ListIntentPathsOutput, error)
+	ListIntentPathsWithContext(aws.Context, *lexmodelsv2.ListIntentPathsInput, ...request.Option) (*lexmodelsv2.ListIntentPathsOutput, error)
+	ListIntentPathsRequest(*lexmodelsv2.ListIntentPathsInput) (*request.Request, *lexmodelsv2.ListIntentPathsOutput)
+
+	ListIntentStageMetrics(*lexmodelsv2.ListIntentStageMetricsInput) (*lexmodelsv2.ListIntentStageMetricsOutput, error)
+	ListIntentStageMetricsWithContext(aws.Context, *lexmodelsv2.ListIntentStageMetricsInput, ...request.Option) (*lexmodelsv2.ListIntentStageMetricsOutput, error)
+	ListIntentStageMetricsRequest(*lexmodelsv2.ListIntentStageMetricsInput) (*request.Request, *lexmodelsv2.ListIntentStageMetricsOutput)
+
+	ListIntentStageMetricsPages(*lexmodelsv2.ListIntentStageMetricsInput, func(*lexmodelsv2.ListIntentStageMetricsOutput, bool) bool) error
+	ListIntentStageMetricsPagesWithContext(aws.Context, *lexmodelsv2.ListIntentStageMetricsInput, func(*lexmodelsv2.ListIntentStageMetricsOutput, bool) bool, ...request.Option) error
+
 	ListIntents(*lexmodelsv2.ListIntentsInput) (*lexmodelsv2.ListIntentsOutput, error)
 	ListIntentsWithContext(aws.Context, *lexmodelsv2.ListIntentsInput, ...request.Option) (*lexmodelsv2.ListIntentsOutput, error)
 	ListIntentsRequest(*lexmodelsv2.ListIntentsInput) (*request.Request, *lexmodelsv2.ListIntentsOutput)
@@ -291,6 +371,20 @@ type LexModelsV2API interface {
 
 	ListRecommendedIntentsPages(*lexmodelsv2.ListRecommendedIntentsInput, func(*lexmodelsv2.ListRecommendedIntentsOutput, bool) bool) error
 	ListRecommendedIntentsPagesWithContext(aws.Context, *lexmodelsv2.ListRecommendedIntentsInput, func(*lexmodelsv2.ListRecommendedIntentsOutput, bool) bool, ...request.Option) error
+
+	ListSessionAnalyticsData(*lexmodelsv2.ListSessionAnalyticsDataInput) (*lexmodelsv2.ListSessionAnalyticsDataOutput, error)
+	ListSessionAnalyticsDataWithContext(aws.Context, *lexmodelsv2.ListSessionAnalyticsDataInput, ...request.Option) (*lexmodelsv2.ListSessionAnalyticsDataOutput, error)
+	ListSessionAnalyticsDataRequest(*lexmodelsv2.ListSessionAnalyticsDataInput) (*request.Request, *lexmodelsv2.ListSessionAnalyticsDataOutput)
+
+	ListSessionAnalyticsDataPages(*lexmodelsv2.ListSessionAnalyticsDataInput, func(*lexmodelsv2.ListSessionAnalyticsDataOutput, bool) bool) error
+	ListSessionAnalyticsDataPagesWithContext(aws.Context, *lexmodelsv2.ListSessionAnalyticsDataInput, func(*lexmodelsv2.ListSessionAnalyticsDataOutput, bool) bool, ...request.Option) error
+
+	ListSessionMetrics(*lexmodelsv2.ListSessionMetricsInput) (*lexmodelsv2.ListSessionMetricsOutput, error)
+	ListSessionMetricsWithContext(aws.Context, *lexmodelsv2.ListSessionMetricsInput, ...request.Option) (*lexmodelsv2.ListSessionMetricsOutput, error)
+	ListSessionMetricsRequest(*lexmodelsv2.ListSessionMetricsInput) (*request.Request, *lexmodelsv2.ListSessionMetricsOutput)
+
+	ListSessionMetricsPages(*lexmodelsv2.ListSessionMetricsInput, func(*lexmodelsv2.ListSessionMetricsOutput, bool) bool) error
+	ListSessionMetricsPagesWithContext(aws.Context, *lexmodelsv2.ListSessionMetricsInput, func(*lexmodelsv2.ListSessionMetricsOutput, bool) bool, ...request.Option) error
 
 	ListSlotTypes(*lexmodelsv2.ListSlotTypesInput) (*lexmodelsv2.ListSlotTypesOutput, error)
 	ListSlotTypesWithContext(aws.Context, *lexmodelsv2.ListSlotTypesInput, ...request.Option) (*lexmodelsv2.ListSlotTypesOutput, error)
@@ -310,6 +404,48 @@ type LexModelsV2API interface {
 	ListTagsForResourceWithContext(aws.Context, *lexmodelsv2.ListTagsForResourceInput, ...request.Option) (*lexmodelsv2.ListTagsForResourceOutput, error)
 	ListTagsForResourceRequest(*lexmodelsv2.ListTagsForResourceInput) (*request.Request, *lexmodelsv2.ListTagsForResourceOutput)
 
+	ListTestExecutionResultItems(*lexmodelsv2.ListTestExecutionResultItemsInput) (*lexmodelsv2.ListTestExecutionResultItemsOutput, error)
+	ListTestExecutionResultItemsWithContext(aws.Context, *lexmodelsv2.ListTestExecutionResultItemsInput, ...request.Option) (*lexmodelsv2.ListTestExecutionResultItemsOutput, error)
+	ListTestExecutionResultItemsRequest(*lexmodelsv2.ListTestExecutionResultItemsInput) (*request.Request, *lexmodelsv2.ListTestExecutionResultItemsOutput)
+
+	ListTestExecutionResultItemsPages(*lexmodelsv2.ListTestExecutionResultItemsInput, func(*lexmodelsv2.ListTestExecutionResultItemsOutput, bool) bool) error
+	ListTestExecutionResultItemsPagesWithContext(aws.Context, *lexmodelsv2.ListTestExecutionResultItemsInput, func(*lexmodelsv2.ListTestExecutionResultItemsOutput, bool) bool, ...request.Option) error
+
+	ListTestExecutions(*lexmodelsv2.ListTestExecutionsInput) (*lexmodelsv2.ListTestExecutionsOutput, error)
+	ListTestExecutionsWithContext(aws.Context, *lexmodelsv2.ListTestExecutionsInput, ...request.Option) (*lexmodelsv2.ListTestExecutionsOutput, error)
+	ListTestExecutionsRequest(*lexmodelsv2.ListTestExecutionsInput) (*request.Request, *lexmodelsv2.ListTestExecutionsOutput)
+
+	ListTestExecutionsPages(*lexmodelsv2.ListTestExecutionsInput, func(*lexmodelsv2.ListTestExecutionsOutput, bool) bool) error
+	ListTestExecutionsPagesWithContext(aws.Context, *lexmodelsv2.ListTestExecutionsInput, func(*lexmodelsv2.ListTestExecutionsOutput, bool) bool, ...request.Option) error
+
+	ListTestSetRecords(*lexmodelsv2.ListTestSetRecordsInput) (*lexmodelsv2.ListTestSetRecordsOutput, error)
+	ListTestSetRecordsWithContext(aws.Context, *lexmodelsv2.ListTestSetRecordsInput, ...request.Option) (*lexmodelsv2.ListTestSetRecordsOutput, error)
+	ListTestSetRecordsRequest(*lexmodelsv2.ListTestSetRecordsInput) (*request.Request, *lexmodelsv2.ListTestSetRecordsOutput)
+
+	ListTestSetRecordsPages(*lexmodelsv2.ListTestSetRecordsInput, func(*lexmodelsv2.ListTestSetRecordsOutput, bool) bool) error
+	ListTestSetRecordsPagesWithContext(aws.Context, *lexmodelsv2.ListTestSetRecordsInput, func(*lexmodelsv2.ListTestSetRecordsOutput, bool) bool, ...request.Option) error
+
+	ListTestSets(*lexmodelsv2.ListTestSetsInput) (*lexmodelsv2.ListTestSetsOutput, error)
+	ListTestSetsWithContext(aws.Context, *lexmodelsv2.ListTestSetsInput, ...request.Option) (*lexmodelsv2.ListTestSetsOutput, error)
+	ListTestSetsRequest(*lexmodelsv2.ListTestSetsInput) (*request.Request, *lexmodelsv2.ListTestSetsOutput)
+
+	ListTestSetsPages(*lexmodelsv2.ListTestSetsInput, func(*lexmodelsv2.ListTestSetsOutput, bool) bool) error
+	ListTestSetsPagesWithContext(aws.Context, *lexmodelsv2.ListTestSetsInput, func(*lexmodelsv2.ListTestSetsOutput, bool) bool, ...request.Option) error
+
+	ListUtteranceAnalyticsData(*lexmodelsv2.ListUtteranceAnalyticsDataInput) (*lexmodelsv2.ListUtteranceAnalyticsDataOutput, error)
+	ListUtteranceAnalyticsDataWithContext(aws.Context, *lexmodelsv2.ListUtteranceAnalyticsDataInput, ...request.Option) (*lexmodelsv2.ListUtteranceAnalyticsDataOutput, error)
+	ListUtteranceAnalyticsDataRequest(*lexmodelsv2.ListUtteranceAnalyticsDataInput) (*request.Request, *lexmodelsv2.ListUtteranceAnalyticsDataOutput)
+
+	ListUtteranceAnalyticsDataPages(*lexmodelsv2.ListUtteranceAnalyticsDataInput, func(*lexmodelsv2.ListUtteranceAnalyticsDataOutput, bool) bool) error
+	ListUtteranceAnalyticsDataPagesWithContext(aws.Context, *lexmodelsv2.ListUtteranceAnalyticsDataInput, func(*lexmodelsv2.ListUtteranceAnalyticsDataOutput, bool) bool, ...request.Option) error
+
+	ListUtteranceMetrics(*lexmodelsv2.ListUtteranceMetricsInput) (*lexmodelsv2.ListUtteranceMetricsOutput, error)
+	ListUtteranceMetricsWithContext(aws.Context, *lexmodelsv2.ListUtteranceMetricsInput, ...request.Option) (*lexmodelsv2.ListUtteranceMetricsOutput, error)
+	ListUtteranceMetricsRequest(*lexmodelsv2.ListUtteranceMetricsInput) (*request.Request, *lexmodelsv2.ListUtteranceMetricsOutput)
+
+	ListUtteranceMetricsPages(*lexmodelsv2.ListUtteranceMetricsInput, func(*lexmodelsv2.ListUtteranceMetricsOutput, bool) bool) error
+	ListUtteranceMetricsPagesWithContext(aws.Context, *lexmodelsv2.ListUtteranceMetricsInput, func(*lexmodelsv2.ListUtteranceMetricsOutput, bool) bool, ...request.Option) error
+
 	SearchAssociatedTranscripts(*lexmodelsv2.SearchAssociatedTranscriptsInput) (*lexmodelsv2.SearchAssociatedTranscriptsOutput, error)
 	SearchAssociatedTranscriptsWithContext(aws.Context, *lexmodelsv2.SearchAssociatedTranscriptsInput, ...request.Option) (*lexmodelsv2.SearchAssociatedTranscriptsOutput, error)
 	SearchAssociatedTranscriptsRequest(*lexmodelsv2.SearchAssociatedTranscriptsInput) (*request.Request, *lexmodelsv2.SearchAssociatedTranscriptsOutput)
@@ -318,9 +454,25 @@ type LexModelsV2API interface {
 	StartBotRecommendationWithContext(aws.Context, *lexmodelsv2.StartBotRecommendationInput, ...request.Option) (*lexmodelsv2.StartBotRecommendationOutput, error)
 	StartBotRecommendationRequest(*lexmodelsv2.StartBotRecommendationInput) (*request.Request, *lexmodelsv2.StartBotRecommendationOutput)
 
+	StartBotResourceGeneration(*lexmodelsv2.StartBotResourceGenerationInput) (*lexmodelsv2.StartBotResourceGenerationOutput, error)
+	StartBotResourceGenerationWithContext(aws.Context, *lexmodelsv2.StartBotResourceGenerationInput, ...request.Option) (*lexmodelsv2.StartBotResourceGenerationOutput, error)
+	StartBotResourceGenerationRequest(*lexmodelsv2.StartBotResourceGenerationInput) (*request.Request, *lexmodelsv2.StartBotResourceGenerationOutput)
+
 	StartImport(*lexmodelsv2.StartImportInput) (*lexmodelsv2.StartImportOutput, error)
 	StartImportWithContext(aws.Context, *lexmodelsv2.StartImportInput, ...request.Option) (*lexmodelsv2.StartImportOutput, error)
 	StartImportRequest(*lexmodelsv2.StartImportInput) (*request.Request, *lexmodelsv2.StartImportOutput)
+
+	StartTestExecution(*lexmodelsv2.StartTestExecutionInput) (*lexmodelsv2.StartTestExecutionOutput, error)
+	StartTestExecutionWithContext(aws.Context, *lexmodelsv2.StartTestExecutionInput, ...request.Option) (*lexmodelsv2.StartTestExecutionOutput, error)
+	StartTestExecutionRequest(*lexmodelsv2.StartTestExecutionInput) (*request.Request, *lexmodelsv2.StartTestExecutionOutput)
+
+	StartTestSetGeneration(*lexmodelsv2.StartTestSetGenerationInput) (*lexmodelsv2.StartTestSetGenerationOutput, error)
+	StartTestSetGenerationWithContext(aws.Context, *lexmodelsv2.StartTestSetGenerationInput, ...request.Option) (*lexmodelsv2.StartTestSetGenerationOutput, error)
+	StartTestSetGenerationRequest(*lexmodelsv2.StartTestSetGenerationInput) (*request.Request, *lexmodelsv2.StartTestSetGenerationOutput)
+
+	StopBotRecommendation(*lexmodelsv2.StopBotRecommendationInput) (*lexmodelsv2.StopBotRecommendationOutput, error)
+	StopBotRecommendationWithContext(aws.Context, *lexmodelsv2.StopBotRecommendationInput, ...request.Option) (*lexmodelsv2.StopBotRecommendationOutput, error)
+	StopBotRecommendationRequest(*lexmodelsv2.StopBotRecommendationInput) (*request.Request, *lexmodelsv2.StopBotRecommendationOutput)
 
 	TagResource(*lexmodelsv2.TagResourceInput) (*lexmodelsv2.TagResourceOutput, error)
 	TagResourceWithContext(aws.Context, *lexmodelsv2.TagResourceInput, ...request.Option) (*lexmodelsv2.TagResourceOutput, error)
@@ -365,6 +517,10 @@ type LexModelsV2API interface {
 	UpdateSlotType(*lexmodelsv2.UpdateSlotTypeInput) (*lexmodelsv2.UpdateSlotTypeOutput, error)
 	UpdateSlotTypeWithContext(aws.Context, *lexmodelsv2.UpdateSlotTypeInput, ...request.Option) (*lexmodelsv2.UpdateSlotTypeOutput, error)
 	UpdateSlotTypeRequest(*lexmodelsv2.UpdateSlotTypeInput) (*request.Request, *lexmodelsv2.UpdateSlotTypeOutput)
+
+	UpdateTestSet(*lexmodelsv2.UpdateTestSetInput) (*lexmodelsv2.UpdateTestSetOutput, error)
+	UpdateTestSetWithContext(aws.Context, *lexmodelsv2.UpdateTestSetInput, ...request.Option) (*lexmodelsv2.UpdateTestSetOutput, error)
+	UpdateTestSetRequest(*lexmodelsv2.UpdateTestSetInput) (*request.Request, *lexmodelsv2.UpdateTestSetOutput)
 
 	WaitUntilBotAliasAvailable(*lexmodelsv2.DescribeBotAliasInput) error
 	WaitUntilBotAliasAvailableWithContext(aws.Context, *lexmodelsv2.DescribeBotAliasInput, ...request.WaiterOption) error

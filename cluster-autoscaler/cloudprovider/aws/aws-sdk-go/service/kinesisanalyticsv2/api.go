@@ -772,7 +772,7 @@ func (c *KinesisAnalyticsV2) CreateApplicationPresignedUrlRequest(input *CreateA
 // CreateApplicationPresignedUrl API operation for Amazon Kinesis Analytics.
 //
 // Creates and returns a URL that you can use to connect to an application's
-// extension. Currently, the only available extension is the Apache Flink dashboard.
+// extension.
 //
 // The IAM role or user used to call this API defines the permissions to access
 // the extension. After the presigned URL is created, no additional permission
@@ -1477,6 +1477,11 @@ func (c *KinesisAnalyticsV2) DeleteApplicationSnapshotRequest(input *DeleteAppli
 //
 //   - ResourceNotFoundException
 //     Specified application can't be found.
+//
+//   - ConcurrentModificationException
+//     Exception thrown as a result of concurrent modifications to an application.
+//     This error can be the result of attempting to modify an application without
+//     using the current application ID.
 //
 // See also, https://docs.aws.amazon.com/goto/WebAPI/kinesisanalyticsv2-2018-05-23/DeleteApplicationSnapshot
 func (c *KinesisAnalyticsV2) DeleteApplicationSnapshot(input *DeleteApplicationSnapshotInput) (*DeleteApplicationSnapshotOutput, error) {
@@ -4533,8 +4538,7 @@ type ApplicationDetail struct {
 	// The current timestamp when the application was last updated.
 	LastUpdateTimestamp *time.Time `type:"timestamp"`
 
-	// The runtime environment for the application (SQL-1_0, FLINK-1_6, FLINK-1_8,
-	// or FLINK-1_11).
+	// The runtime environment for the application.
 	//
 	// RuntimeEnvironment is a required field
 	RuntimeEnvironment *string `type:"string" required:"true" enum:"RuntimeEnvironment"`
@@ -6110,7 +6114,7 @@ type CreateApplicationInput struct {
 	// A summary description of the application.
 	ApplicationDescription *string `type:"string"`
 
-	// Use the STREAMING mode to create a Kinesis Data Analytics Studio notebook.
+	// Use the STREAMING mode to create a Kinesis Data Analytics For Flink application.
 	// To create a Kinesis Data Analytics Studio notebook, use the INTERACTIVE mode.
 	ApplicationMode *string `type:"string" enum:"ApplicationMode"`
 
@@ -6123,8 +6127,7 @@ type CreateApplicationInput struct {
 	// application configuration errors.
 	CloudWatchLoggingOptions []*CloudWatchLoggingOption `type:"list"`
 
-	// The runtime environment for the application (SQL-1_0, FLINK-1_6, FLINK-1_8,
-	// or FLINK-1_11).
+	// The runtime environment for the application.
 	//
 	// RuntimeEnvironment is a required field
 	RuntimeEnvironment *string `type:"string" required:"true" enum:"RuntimeEnvironment"`
@@ -15870,6 +15873,12 @@ const (
 
 	// RuntimeEnvironmentZeppelinFlink20 is a RuntimeEnvironment enum value
 	RuntimeEnvironmentZeppelinFlink20 = "ZEPPELIN-FLINK-2_0"
+
+	// RuntimeEnvironmentFlink115 is a RuntimeEnvironment enum value
+	RuntimeEnvironmentFlink115 = "FLINK-1_15"
+
+	// RuntimeEnvironmentZeppelinFlink30 is a RuntimeEnvironment enum value
+	RuntimeEnvironmentZeppelinFlink30 = "ZEPPELIN-FLINK-3_0"
 )
 
 // RuntimeEnvironment_Values returns all elements of the RuntimeEnvironment enum
@@ -15882,6 +15891,8 @@ func RuntimeEnvironment_Values() []string {
 		RuntimeEnvironmentFlink111,
 		RuntimeEnvironmentFlink113,
 		RuntimeEnvironmentZeppelinFlink20,
+		RuntimeEnvironmentFlink115,
+		RuntimeEnvironmentZeppelinFlink30,
 	}
 }
 

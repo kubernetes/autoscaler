@@ -72,9 +72,33 @@ type TextractAPI interface {
 	AnalyzeIDWithContext(aws.Context, *textract.AnalyzeIDInput, ...request.Option) (*textract.AnalyzeIDOutput, error)
 	AnalyzeIDRequest(*textract.AnalyzeIDInput) (*request.Request, *textract.AnalyzeIDOutput)
 
+	CreateAdapter(*textract.CreateAdapterInput) (*textract.CreateAdapterOutput, error)
+	CreateAdapterWithContext(aws.Context, *textract.CreateAdapterInput, ...request.Option) (*textract.CreateAdapterOutput, error)
+	CreateAdapterRequest(*textract.CreateAdapterInput) (*request.Request, *textract.CreateAdapterOutput)
+
+	CreateAdapterVersion(*textract.CreateAdapterVersionInput) (*textract.CreateAdapterVersionOutput, error)
+	CreateAdapterVersionWithContext(aws.Context, *textract.CreateAdapterVersionInput, ...request.Option) (*textract.CreateAdapterVersionOutput, error)
+	CreateAdapterVersionRequest(*textract.CreateAdapterVersionInput) (*request.Request, *textract.CreateAdapterVersionOutput)
+
+	DeleteAdapter(*textract.DeleteAdapterInput) (*textract.DeleteAdapterOutput, error)
+	DeleteAdapterWithContext(aws.Context, *textract.DeleteAdapterInput, ...request.Option) (*textract.DeleteAdapterOutput, error)
+	DeleteAdapterRequest(*textract.DeleteAdapterInput) (*request.Request, *textract.DeleteAdapterOutput)
+
+	DeleteAdapterVersion(*textract.DeleteAdapterVersionInput) (*textract.DeleteAdapterVersionOutput, error)
+	DeleteAdapterVersionWithContext(aws.Context, *textract.DeleteAdapterVersionInput, ...request.Option) (*textract.DeleteAdapterVersionOutput, error)
+	DeleteAdapterVersionRequest(*textract.DeleteAdapterVersionInput) (*request.Request, *textract.DeleteAdapterVersionOutput)
+
 	DetectDocumentText(*textract.DetectDocumentTextInput) (*textract.DetectDocumentTextOutput, error)
 	DetectDocumentTextWithContext(aws.Context, *textract.DetectDocumentTextInput, ...request.Option) (*textract.DetectDocumentTextOutput, error)
 	DetectDocumentTextRequest(*textract.DetectDocumentTextInput) (*request.Request, *textract.DetectDocumentTextOutput)
+
+	GetAdapter(*textract.GetAdapterInput) (*textract.GetAdapterOutput, error)
+	GetAdapterWithContext(aws.Context, *textract.GetAdapterInput, ...request.Option) (*textract.GetAdapterOutput, error)
+	GetAdapterRequest(*textract.GetAdapterInput) (*request.Request, *textract.GetAdapterOutput)
+
+	GetAdapterVersion(*textract.GetAdapterVersionInput) (*textract.GetAdapterVersionOutput, error)
+	GetAdapterVersionWithContext(aws.Context, *textract.GetAdapterVersionInput, ...request.Option) (*textract.GetAdapterVersionOutput, error)
+	GetAdapterVersionRequest(*textract.GetAdapterVersionInput) (*request.Request, *textract.GetAdapterVersionOutput)
 
 	GetDocumentAnalysis(*textract.GetDocumentAnalysisInput) (*textract.GetDocumentAnalysisOutput, error)
 	GetDocumentAnalysisWithContext(aws.Context, *textract.GetDocumentAnalysisInput, ...request.Option) (*textract.GetDocumentAnalysisOutput, error)
@@ -88,6 +112,32 @@ type TextractAPI interface {
 	GetExpenseAnalysisWithContext(aws.Context, *textract.GetExpenseAnalysisInput, ...request.Option) (*textract.GetExpenseAnalysisOutput, error)
 	GetExpenseAnalysisRequest(*textract.GetExpenseAnalysisInput) (*request.Request, *textract.GetExpenseAnalysisOutput)
 
+	GetLendingAnalysis(*textract.GetLendingAnalysisInput) (*textract.GetLendingAnalysisOutput, error)
+	GetLendingAnalysisWithContext(aws.Context, *textract.GetLendingAnalysisInput, ...request.Option) (*textract.GetLendingAnalysisOutput, error)
+	GetLendingAnalysisRequest(*textract.GetLendingAnalysisInput) (*request.Request, *textract.GetLendingAnalysisOutput)
+
+	GetLendingAnalysisSummary(*textract.GetLendingAnalysisSummaryInput) (*textract.GetLendingAnalysisSummaryOutput, error)
+	GetLendingAnalysisSummaryWithContext(aws.Context, *textract.GetLendingAnalysisSummaryInput, ...request.Option) (*textract.GetLendingAnalysisSummaryOutput, error)
+	GetLendingAnalysisSummaryRequest(*textract.GetLendingAnalysisSummaryInput) (*request.Request, *textract.GetLendingAnalysisSummaryOutput)
+
+	ListAdapterVersions(*textract.ListAdapterVersionsInput) (*textract.ListAdapterVersionsOutput, error)
+	ListAdapterVersionsWithContext(aws.Context, *textract.ListAdapterVersionsInput, ...request.Option) (*textract.ListAdapterVersionsOutput, error)
+	ListAdapterVersionsRequest(*textract.ListAdapterVersionsInput) (*request.Request, *textract.ListAdapterVersionsOutput)
+
+	ListAdapterVersionsPages(*textract.ListAdapterVersionsInput, func(*textract.ListAdapterVersionsOutput, bool) bool) error
+	ListAdapterVersionsPagesWithContext(aws.Context, *textract.ListAdapterVersionsInput, func(*textract.ListAdapterVersionsOutput, bool) bool, ...request.Option) error
+
+	ListAdapters(*textract.ListAdaptersInput) (*textract.ListAdaptersOutput, error)
+	ListAdaptersWithContext(aws.Context, *textract.ListAdaptersInput, ...request.Option) (*textract.ListAdaptersOutput, error)
+	ListAdaptersRequest(*textract.ListAdaptersInput) (*request.Request, *textract.ListAdaptersOutput)
+
+	ListAdaptersPages(*textract.ListAdaptersInput, func(*textract.ListAdaptersOutput, bool) bool) error
+	ListAdaptersPagesWithContext(aws.Context, *textract.ListAdaptersInput, func(*textract.ListAdaptersOutput, bool) bool, ...request.Option) error
+
+	ListTagsForResource(*textract.ListTagsForResourceInput) (*textract.ListTagsForResourceOutput, error)
+	ListTagsForResourceWithContext(aws.Context, *textract.ListTagsForResourceInput, ...request.Option) (*textract.ListTagsForResourceOutput, error)
+	ListTagsForResourceRequest(*textract.ListTagsForResourceInput) (*request.Request, *textract.ListTagsForResourceOutput)
+
 	StartDocumentAnalysis(*textract.StartDocumentAnalysisInput) (*textract.StartDocumentAnalysisOutput, error)
 	StartDocumentAnalysisWithContext(aws.Context, *textract.StartDocumentAnalysisInput, ...request.Option) (*textract.StartDocumentAnalysisOutput, error)
 	StartDocumentAnalysisRequest(*textract.StartDocumentAnalysisInput) (*request.Request, *textract.StartDocumentAnalysisOutput)
@@ -99,6 +149,22 @@ type TextractAPI interface {
 	StartExpenseAnalysis(*textract.StartExpenseAnalysisInput) (*textract.StartExpenseAnalysisOutput, error)
 	StartExpenseAnalysisWithContext(aws.Context, *textract.StartExpenseAnalysisInput, ...request.Option) (*textract.StartExpenseAnalysisOutput, error)
 	StartExpenseAnalysisRequest(*textract.StartExpenseAnalysisInput) (*request.Request, *textract.StartExpenseAnalysisOutput)
+
+	StartLendingAnalysis(*textract.StartLendingAnalysisInput) (*textract.StartLendingAnalysisOutput, error)
+	StartLendingAnalysisWithContext(aws.Context, *textract.StartLendingAnalysisInput, ...request.Option) (*textract.StartLendingAnalysisOutput, error)
+	StartLendingAnalysisRequest(*textract.StartLendingAnalysisInput) (*request.Request, *textract.StartLendingAnalysisOutput)
+
+	TagResource(*textract.TagResourceInput) (*textract.TagResourceOutput, error)
+	TagResourceWithContext(aws.Context, *textract.TagResourceInput, ...request.Option) (*textract.TagResourceOutput, error)
+	TagResourceRequest(*textract.TagResourceInput) (*request.Request, *textract.TagResourceOutput)
+
+	UntagResource(*textract.UntagResourceInput) (*textract.UntagResourceOutput, error)
+	UntagResourceWithContext(aws.Context, *textract.UntagResourceInput, ...request.Option) (*textract.UntagResourceOutput, error)
+	UntagResourceRequest(*textract.UntagResourceInput) (*request.Request, *textract.UntagResourceOutput)
+
+	UpdateAdapter(*textract.UpdateAdapterInput) (*textract.UpdateAdapterOutput, error)
+	UpdateAdapterWithContext(aws.Context, *textract.UpdateAdapterInput, ...request.Option) (*textract.UpdateAdapterOutput, error)
+	UpdateAdapterRequest(*textract.UpdateAdapterInput) (*request.Request, *textract.UpdateAdapterOutput)
 }
 
 var _ TextractAPI = (*textract.Textract)(nil)

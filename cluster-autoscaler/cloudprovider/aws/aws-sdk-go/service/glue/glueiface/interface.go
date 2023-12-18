@@ -92,6 +92,10 @@ type GlueAPI interface {
 	BatchGetCustomEntityTypesWithContext(aws.Context, *glue.BatchGetCustomEntityTypesInput, ...request.Option) (*glue.BatchGetCustomEntityTypesOutput, error)
 	BatchGetCustomEntityTypesRequest(*glue.BatchGetCustomEntityTypesInput) (*request.Request, *glue.BatchGetCustomEntityTypesOutput)
 
+	BatchGetDataQualityResult(*glue.BatchGetDataQualityResultInput) (*glue.BatchGetDataQualityResultOutput, error)
+	BatchGetDataQualityResultWithContext(aws.Context, *glue.BatchGetDataQualityResultInput, ...request.Option) (*glue.BatchGetDataQualityResultOutput, error)
+	BatchGetDataQualityResultRequest(*glue.BatchGetDataQualityResultInput) (*request.Request, *glue.BatchGetDataQualityResultOutput)
+
 	BatchGetDevEndpoints(*glue.BatchGetDevEndpointsInput) (*glue.BatchGetDevEndpointsOutput, error)
 	BatchGetDevEndpointsWithContext(aws.Context, *glue.BatchGetDevEndpointsInput, ...request.Option) (*glue.BatchGetDevEndpointsOutput, error)
 	BatchGetDevEndpointsRequest(*glue.BatchGetDevEndpointsInput) (*request.Request, *glue.BatchGetDevEndpointsOutput)
@@ -103,6 +107,10 @@ type GlueAPI interface {
 	BatchGetPartition(*glue.BatchGetPartitionInput) (*glue.BatchGetPartitionOutput, error)
 	BatchGetPartitionWithContext(aws.Context, *glue.BatchGetPartitionInput, ...request.Option) (*glue.BatchGetPartitionOutput, error)
 	BatchGetPartitionRequest(*glue.BatchGetPartitionInput) (*request.Request, *glue.BatchGetPartitionOutput)
+
+	BatchGetTableOptimizer(*glue.BatchGetTableOptimizerInput) (*glue.BatchGetTableOptimizerOutput, error)
+	BatchGetTableOptimizerWithContext(aws.Context, *glue.BatchGetTableOptimizerInput, ...request.Option) (*glue.BatchGetTableOptimizerOutput, error)
+	BatchGetTableOptimizerRequest(*glue.BatchGetTableOptimizerInput) (*request.Request, *glue.BatchGetTableOptimizerOutput)
 
 	BatchGetTriggers(*glue.BatchGetTriggersInput) (*glue.BatchGetTriggersOutput, error)
 	BatchGetTriggersWithContext(aws.Context, *glue.BatchGetTriggersInput, ...request.Option) (*glue.BatchGetTriggersOutput, error)
@@ -119,6 +127,14 @@ type GlueAPI interface {
 	BatchUpdatePartition(*glue.BatchUpdatePartitionInput) (*glue.BatchUpdatePartitionOutput, error)
 	BatchUpdatePartitionWithContext(aws.Context, *glue.BatchUpdatePartitionInput, ...request.Option) (*glue.BatchUpdatePartitionOutput, error)
 	BatchUpdatePartitionRequest(*glue.BatchUpdatePartitionInput) (*request.Request, *glue.BatchUpdatePartitionOutput)
+
+	CancelDataQualityRuleRecommendationRun(*glue.CancelDataQualityRuleRecommendationRunInput) (*glue.CancelDataQualityRuleRecommendationRunOutput, error)
+	CancelDataQualityRuleRecommendationRunWithContext(aws.Context, *glue.CancelDataQualityRuleRecommendationRunInput, ...request.Option) (*glue.CancelDataQualityRuleRecommendationRunOutput, error)
+	CancelDataQualityRuleRecommendationRunRequest(*glue.CancelDataQualityRuleRecommendationRunInput) (*request.Request, *glue.CancelDataQualityRuleRecommendationRunOutput)
+
+	CancelDataQualityRulesetEvaluationRun(*glue.CancelDataQualityRulesetEvaluationRunInput) (*glue.CancelDataQualityRulesetEvaluationRunOutput, error)
+	CancelDataQualityRulesetEvaluationRunWithContext(aws.Context, *glue.CancelDataQualityRulesetEvaluationRunInput, ...request.Option) (*glue.CancelDataQualityRulesetEvaluationRunOutput, error)
+	CancelDataQualityRulesetEvaluationRunRequest(*glue.CancelDataQualityRulesetEvaluationRunInput) (*request.Request, *glue.CancelDataQualityRulesetEvaluationRunOutput)
 
 	CancelMLTaskRun(*glue.CancelMLTaskRunInput) (*glue.CancelMLTaskRunOutput, error)
 	CancelMLTaskRunWithContext(aws.Context, *glue.CancelMLTaskRunInput, ...request.Option) (*glue.CancelMLTaskRunOutput, error)
@@ -151,6 +167,10 @@ type GlueAPI interface {
 	CreateCustomEntityType(*glue.CreateCustomEntityTypeInput) (*glue.CreateCustomEntityTypeOutput, error)
 	CreateCustomEntityTypeWithContext(aws.Context, *glue.CreateCustomEntityTypeInput, ...request.Option) (*glue.CreateCustomEntityTypeOutput, error)
 	CreateCustomEntityTypeRequest(*glue.CreateCustomEntityTypeInput) (*request.Request, *glue.CreateCustomEntityTypeOutput)
+
+	CreateDataQualityRuleset(*glue.CreateDataQualityRulesetInput) (*glue.CreateDataQualityRulesetOutput, error)
+	CreateDataQualityRulesetWithContext(aws.Context, *glue.CreateDataQualityRulesetInput, ...request.Option) (*glue.CreateDataQualityRulesetOutput, error)
+	CreateDataQualityRulesetRequest(*glue.CreateDataQualityRulesetInput) (*request.Request, *glue.CreateDataQualityRulesetOutput)
 
 	CreateDatabase(*glue.CreateDatabaseInput) (*glue.CreateDatabaseOutput, error)
 	CreateDatabaseWithContext(aws.Context, *glue.CreateDatabaseInput, ...request.Option) (*glue.CreateDatabaseOutput, error)
@@ -200,6 +220,10 @@ type GlueAPI interface {
 	CreateTableWithContext(aws.Context, *glue.CreateTableInput, ...request.Option) (*glue.CreateTableOutput, error)
 	CreateTableRequest(*glue.CreateTableInput) (*request.Request, *glue.CreateTableOutput)
 
+	CreateTableOptimizer(*glue.CreateTableOptimizerInput) (*glue.CreateTableOptimizerOutput, error)
+	CreateTableOptimizerWithContext(aws.Context, *glue.CreateTableOptimizerInput, ...request.Option) (*glue.CreateTableOptimizerOutput, error)
+	CreateTableOptimizerRequest(*glue.CreateTableOptimizerInput) (*request.Request, *glue.CreateTableOptimizerOutput)
+
 	CreateTrigger(*glue.CreateTriggerInput) (*glue.CreateTriggerOutput, error)
 	CreateTriggerWithContext(aws.Context, *glue.CreateTriggerInput, ...request.Option) (*glue.CreateTriggerOutput, error)
 	CreateTriggerRequest(*glue.CreateTriggerInput) (*request.Request, *glue.CreateTriggerOutput)
@@ -239,6 +263,10 @@ type GlueAPI interface {
 	DeleteCustomEntityType(*glue.DeleteCustomEntityTypeInput) (*glue.DeleteCustomEntityTypeOutput, error)
 	DeleteCustomEntityTypeWithContext(aws.Context, *glue.DeleteCustomEntityTypeInput, ...request.Option) (*glue.DeleteCustomEntityTypeOutput, error)
 	DeleteCustomEntityTypeRequest(*glue.DeleteCustomEntityTypeInput) (*request.Request, *glue.DeleteCustomEntityTypeOutput)
+
+	DeleteDataQualityRuleset(*glue.DeleteDataQualityRulesetInput) (*glue.DeleteDataQualityRulesetOutput, error)
+	DeleteDataQualityRulesetWithContext(aws.Context, *glue.DeleteDataQualityRulesetInput, ...request.Option) (*glue.DeleteDataQualityRulesetOutput, error)
+	DeleteDataQualityRulesetRequest(*glue.DeleteDataQualityRulesetInput) (*request.Request, *glue.DeleteDataQualityRulesetOutput)
 
 	DeleteDatabase(*glue.DeleteDatabaseInput) (*glue.DeleteDatabaseOutput, error)
 	DeleteDatabaseWithContext(aws.Context, *glue.DeleteDatabaseInput, ...request.Option) (*glue.DeleteDatabaseOutput, error)
@@ -291,6 +319,10 @@ type GlueAPI interface {
 	DeleteTable(*glue.DeleteTableInput) (*glue.DeleteTableOutput, error)
 	DeleteTableWithContext(aws.Context, *glue.DeleteTableInput, ...request.Option) (*glue.DeleteTableOutput, error)
 	DeleteTableRequest(*glue.DeleteTableInput) (*request.Request, *glue.DeleteTableOutput)
+
+	DeleteTableOptimizer(*glue.DeleteTableOptimizerInput) (*glue.DeleteTableOptimizerOutput, error)
+	DeleteTableOptimizerWithContext(aws.Context, *glue.DeleteTableOptimizerInput, ...request.Option) (*glue.DeleteTableOptimizerOutput, error)
+	DeleteTableOptimizerRequest(*glue.DeleteTableOptimizerInput) (*request.Request, *glue.DeleteTableOptimizerOutput)
 
 	DeleteTableVersion(*glue.DeleteTableVersionInput) (*glue.DeleteTableVersionOutput, error)
 	DeleteTableVersionWithContext(aws.Context, *glue.DeleteTableVersionInput, ...request.Option) (*glue.DeleteTableVersionOutput, error)
@@ -346,6 +378,17 @@ type GlueAPI interface {
 	GetColumnStatisticsForTableWithContext(aws.Context, *glue.GetColumnStatisticsForTableInput, ...request.Option) (*glue.GetColumnStatisticsForTableOutput, error)
 	GetColumnStatisticsForTableRequest(*glue.GetColumnStatisticsForTableInput) (*request.Request, *glue.GetColumnStatisticsForTableOutput)
 
+	GetColumnStatisticsTaskRun(*glue.GetColumnStatisticsTaskRunInput) (*glue.GetColumnStatisticsTaskRunOutput, error)
+	GetColumnStatisticsTaskRunWithContext(aws.Context, *glue.GetColumnStatisticsTaskRunInput, ...request.Option) (*glue.GetColumnStatisticsTaskRunOutput, error)
+	GetColumnStatisticsTaskRunRequest(*glue.GetColumnStatisticsTaskRunInput) (*request.Request, *glue.GetColumnStatisticsTaskRunOutput)
+
+	GetColumnStatisticsTaskRuns(*glue.GetColumnStatisticsTaskRunsInput) (*glue.GetColumnStatisticsTaskRunsOutput, error)
+	GetColumnStatisticsTaskRunsWithContext(aws.Context, *glue.GetColumnStatisticsTaskRunsInput, ...request.Option) (*glue.GetColumnStatisticsTaskRunsOutput, error)
+	GetColumnStatisticsTaskRunsRequest(*glue.GetColumnStatisticsTaskRunsInput) (*request.Request, *glue.GetColumnStatisticsTaskRunsOutput)
+
+	GetColumnStatisticsTaskRunsPages(*glue.GetColumnStatisticsTaskRunsInput, func(*glue.GetColumnStatisticsTaskRunsOutput, bool) bool) error
+	GetColumnStatisticsTaskRunsPagesWithContext(aws.Context, *glue.GetColumnStatisticsTaskRunsInput, func(*glue.GetColumnStatisticsTaskRunsOutput, bool) bool, ...request.Option) error
+
 	GetConnection(*glue.GetConnectionInput) (*glue.GetConnectionOutput, error)
 	GetConnectionWithContext(aws.Context, *glue.GetConnectionInput, ...request.Option) (*glue.GetConnectionOutput, error)
 	GetConnectionRequest(*glue.GetConnectionInput) (*request.Request, *glue.GetConnectionOutput)
@@ -382,6 +425,22 @@ type GlueAPI interface {
 	GetDataCatalogEncryptionSettings(*glue.GetDataCatalogEncryptionSettingsInput) (*glue.GetDataCatalogEncryptionSettingsOutput, error)
 	GetDataCatalogEncryptionSettingsWithContext(aws.Context, *glue.GetDataCatalogEncryptionSettingsInput, ...request.Option) (*glue.GetDataCatalogEncryptionSettingsOutput, error)
 	GetDataCatalogEncryptionSettingsRequest(*glue.GetDataCatalogEncryptionSettingsInput) (*request.Request, *glue.GetDataCatalogEncryptionSettingsOutput)
+
+	GetDataQualityResult(*glue.GetDataQualityResultInput) (*glue.GetDataQualityResultOutput, error)
+	GetDataQualityResultWithContext(aws.Context, *glue.GetDataQualityResultInput, ...request.Option) (*glue.GetDataQualityResultOutput, error)
+	GetDataQualityResultRequest(*glue.GetDataQualityResultInput) (*request.Request, *glue.GetDataQualityResultOutput)
+
+	GetDataQualityRuleRecommendationRun(*glue.GetDataQualityRuleRecommendationRunInput) (*glue.GetDataQualityRuleRecommendationRunOutput, error)
+	GetDataQualityRuleRecommendationRunWithContext(aws.Context, *glue.GetDataQualityRuleRecommendationRunInput, ...request.Option) (*glue.GetDataQualityRuleRecommendationRunOutput, error)
+	GetDataQualityRuleRecommendationRunRequest(*glue.GetDataQualityRuleRecommendationRunInput) (*request.Request, *glue.GetDataQualityRuleRecommendationRunOutput)
+
+	GetDataQualityRuleset(*glue.GetDataQualityRulesetInput) (*glue.GetDataQualityRulesetOutput, error)
+	GetDataQualityRulesetWithContext(aws.Context, *glue.GetDataQualityRulesetInput, ...request.Option) (*glue.GetDataQualityRulesetOutput, error)
+	GetDataQualityRulesetRequest(*glue.GetDataQualityRulesetInput) (*request.Request, *glue.GetDataQualityRulesetOutput)
+
+	GetDataQualityRulesetEvaluationRun(*glue.GetDataQualityRulesetEvaluationRunInput) (*glue.GetDataQualityRulesetEvaluationRunOutput, error)
+	GetDataQualityRulesetEvaluationRunWithContext(aws.Context, *glue.GetDataQualityRulesetEvaluationRunInput, ...request.Option) (*glue.GetDataQualityRulesetEvaluationRunOutput, error)
+	GetDataQualityRulesetEvaluationRunRequest(*glue.GetDataQualityRulesetEvaluationRunInput) (*request.Request, *glue.GetDataQualityRulesetEvaluationRunOutput)
 
 	GetDatabase(*glue.GetDatabaseInput) (*glue.GetDatabaseOutput, error)
 	GetDatabaseWithContext(aws.Context, *glue.GetDatabaseInput, ...request.Option) (*glue.GetDatabaseOutput, error)
@@ -537,6 +596,10 @@ type GlueAPI interface {
 	GetTableWithContext(aws.Context, *glue.GetTableInput, ...request.Option) (*glue.GetTableOutput, error)
 	GetTableRequest(*glue.GetTableInput) (*request.Request, *glue.GetTableOutput)
 
+	GetTableOptimizer(*glue.GetTableOptimizerInput) (*glue.GetTableOptimizerOutput, error)
+	GetTableOptimizerWithContext(aws.Context, *glue.GetTableOptimizerInput, ...request.Option) (*glue.GetTableOptimizerOutput, error)
+	GetTableOptimizerRequest(*glue.GetTableOptimizerInput) (*request.Request, *glue.GetTableOptimizerOutput)
+
 	GetTableVersion(*glue.GetTableVersionInput) (*glue.GetTableVersionOutput, error)
 	GetTableVersionWithContext(aws.Context, *glue.GetTableVersionInput, ...request.Option) (*glue.GetTableVersionOutput, error)
 	GetTableVersionRequest(*glue.GetTableVersionInput) (*request.Request, *glue.GetTableVersionOutput)
@@ -626,6 +689,13 @@ type GlueAPI interface {
 	ListBlueprintsPages(*glue.ListBlueprintsInput, func(*glue.ListBlueprintsOutput, bool) bool) error
 	ListBlueprintsPagesWithContext(aws.Context, *glue.ListBlueprintsInput, func(*glue.ListBlueprintsOutput, bool) bool, ...request.Option) error
 
+	ListColumnStatisticsTaskRuns(*glue.ListColumnStatisticsTaskRunsInput) (*glue.ListColumnStatisticsTaskRunsOutput, error)
+	ListColumnStatisticsTaskRunsWithContext(aws.Context, *glue.ListColumnStatisticsTaskRunsInput, ...request.Option) (*glue.ListColumnStatisticsTaskRunsOutput, error)
+	ListColumnStatisticsTaskRunsRequest(*glue.ListColumnStatisticsTaskRunsInput) (*request.Request, *glue.ListColumnStatisticsTaskRunsOutput)
+
+	ListColumnStatisticsTaskRunsPages(*glue.ListColumnStatisticsTaskRunsInput, func(*glue.ListColumnStatisticsTaskRunsOutput, bool) bool) error
+	ListColumnStatisticsTaskRunsPagesWithContext(aws.Context, *glue.ListColumnStatisticsTaskRunsInput, func(*glue.ListColumnStatisticsTaskRunsOutput, bool) bool, ...request.Option) error
+
 	ListCrawlers(*glue.ListCrawlersInput) (*glue.ListCrawlersOutput, error)
 	ListCrawlersWithContext(aws.Context, *glue.ListCrawlersInput, ...request.Option) (*glue.ListCrawlersOutput, error)
 	ListCrawlersRequest(*glue.ListCrawlersInput) (*request.Request, *glue.ListCrawlersOutput)
@@ -633,12 +703,44 @@ type GlueAPI interface {
 	ListCrawlersPages(*glue.ListCrawlersInput, func(*glue.ListCrawlersOutput, bool) bool) error
 	ListCrawlersPagesWithContext(aws.Context, *glue.ListCrawlersInput, func(*glue.ListCrawlersOutput, bool) bool, ...request.Option) error
 
+	ListCrawls(*glue.ListCrawlsInput) (*glue.ListCrawlsOutput, error)
+	ListCrawlsWithContext(aws.Context, *glue.ListCrawlsInput, ...request.Option) (*glue.ListCrawlsOutput, error)
+	ListCrawlsRequest(*glue.ListCrawlsInput) (*request.Request, *glue.ListCrawlsOutput)
+
 	ListCustomEntityTypes(*glue.ListCustomEntityTypesInput) (*glue.ListCustomEntityTypesOutput, error)
 	ListCustomEntityTypesWithContext(aws.Context, *glue.ListCustomEntityTypesInput, ...request.Option) (*glue.ListCustomEntityTypesOutput, error)
 	ListCustomEntityTypesRequest(*glue.ListCustomEntityTypesInput) (*request.Request, *glue.ListCustomEntityTypesOutput)
 
 	ListCustomEntityTypesPages(*glue.ListCustomEntityTypesInput, func(*glue.ListCustomEntityTypesOutput, bool) bool) error
 	ListCustomEntityTypesPagesWithContext(aws.Context, *glue.ListCustomEntityTypesInput, func(*glue.ListCustomEntityTypesOutput, bool) bool, ...request.Option) error
+
+	ListDataQualityResults(*glue.ListDataQualityResultsInput) (*glue.ListDataQualityResultsOutput, error)
+	ListDataQualityResultsWithContext(aws.Context, *glue.ListDataQualityResultsInput, ...request.Option) (*glue.ListDataQualityResultsOutput, error)
+	ListDataQualityResultsRequest(*glue.ListDataQualityResultsInput) (*request.Request, *glue.ListDataQualityResultsOutput)
+
+	ListDataQualityResultsPages(*glue.ListDataQualityResultsInput, func(*glue.ListDataQualityResultsOutput, bool) bool) error
+	ListDataQualityResultsPagesWithContext(aws.Context, *glue.ListDataQualityResultsInput, func(*glue.ListDataQualityResultsOutput, bool) bool, ...request.Option) error
+
+	ListDataQualityRuleRecommendationRuns(*glue.ListDataQualityRuleRecommendationRunsInput) (*glue.ListDataQualityRuleRecommendationRunsOutput, error)
+	ListDataQualityRuleRecommendationRunsWithContext(aws.Context, *glue.ListDataQualityRuleRecommendationRunsInput, ...request.Option) (*glue.ListDataQualityRuleRecommendationRunsOutput, error)
+	ListDataQualityRuleRecommendationRunsRequest(*glue.ListDataQualityRuleRecommendationRunsInput) (*request.Request, *glue.ListDataQualityRuleRecommendationRunsOutput)
+
+	ListDataQualityRuleRecommendationRunsPages(*glue.ListDataQualityRuleRecommendationRunsInput, func(*glue.ListDataQualityRuleRecommendationRunsOutput, bool) bool) error
+	ListDataQualityRuleRecommendationRunsPagesWithContext(aws.Context, *glue.ListDataQualityRuleRecommendationRunsInput, func(*glue.ListDataQualityRuleRecommendationRunsOutput, bool) bool, ...request.Option) error
+
+	ListDataQualityRulesetEvaluationRuns(*glue.ListDataQualityRulesetEvaluationRunsInput) (*glue.ListDataQualityRulesetEvaluationRunsOutput, error)
+	ListDataQualityRulesetEvaluationRunsWithContext(aws.Context, *glue.ListDataQualityRulesetEvaluationRunsInput, ...request.Option) (*glue.ListDataQualityRulesetEvaluationRunsOutput, error)
+	ListDataQualityRulesetEvaluationRunsRequest(*glue.ListDataQualityRulesetEvaluationRunsInput) (*request.Request, *glue.ListDataQualityRulesetEvaluationRunsOutput)
+
+	ListDataQualityRulesetEvaluationRunsPages(*glue.ListDataQualityRulesetEvaluationRunsInput, func(*glue.ListDataQualityRulesetEvaluationRunsOutput, bool) bool) error
+	ListDataQualityRulesetEvaluationRunsPagesWithContext(aws.Context, *glue.ListDataQualityRulesetEvaluationRunsInput, func(*glue.ListDataQualityRulesetEvaluationRunsOutput, bool) bool, ...request.Option) error
+
+	ListDataQualityRulesets(*glue.ListDataQualityRulesetsInput) (*glue.ListDataQualityRulesetsOutput, error)
+	ListDataQualityRulesetsWithContext(aws.Context, *glue.ListDataQualityRulesetsInput, ...request.Option) (*glue.ListDataQualityRulesetsOutput, error)
+	ListDataQualityRulesetsRequest(*glue.ListDataQualityRulesetsInput) (*request.Request, *glue.ListDataQualityRulesetsOutput)
+
+	ListDataQualityRulesetsPages(*glue.ListDataQualityRulesetsInput, func(*glue.ListDataQualityRulesetsOutput, bool) bool) error
+	ListDataQualityRulesetsPagesWithContext(aws.Context, *glue.ListDataQualityRulesetsInput, func(*glue.ListDataQualityRulesetsOutput, bool) bool, ...request.Option) error
 
 	ListDevEndpoints(*glue.ListDevEndpointsInput) (*glue.ListDevEndpointsOutput, error)
 	ListDevEndpointsWithContext(aws.Context, *glue.ListDevEndpointsInput, ...request.Option) (*glue.ListDevEndpointsOutput, error)
@@ -692,6 +794,13 @@ type GlueAPI interface {
 	ListStatements(*glue.ListStatementsInput) (*glue.ListStatementsOutput, error)
 	ListStatementsWithContext(aws.Context, *glue.ListStatementsInput, ...request.Option) (*glue.ListStatementsOutput, error)
 	ListStatementsRequest(*glue.ListStatementsInput) (*request.Request, *glue.ListStatementsOutput)
+
+	ListTableOptimizerRuns(*glue.ListTableOptimizerRunsInput) (*glue.ListTableOptimizerRunsOutput, error)
+	ListTableOptimizerRunsWithContext(aws.Context, *glue.ListTableOptimizerRunsInput, ...request.Option) (*glue.ListTableOptimizerRunsOutput, error)
+	ListTableOptimizerRunsRequest(*glue.ListTableOptimizerRunsInput) (*request.Request, *glue.ListTableOptimizerRunsOutput)
+
+	ListTableOptimizerRunsPages(*glue.ListTableOptimizerRunsInput, func(*glue.ListTableOptimizerRunsOutput, bool) bool) error
+	ListTableOptimizerRunsPagesWithContext(aws.Context, *glue.ListTableOptimizerRunsInput, func(*glue.ListTableOptimizerRunsOutput, bool) bool, ...request.Option) error
 
 	ListTriggers(*glue.ListTriggersInput) (*glue.ListTriggersOutput, error)
 	ListTriggersWithContext(aws.Context, *glue.ListTriggersInput, ...request.Option) (*glue.ListTriggersOutput, error)
@@ -758,6 +867,10 @@ type GlueAPI interface {
 	StartBlueprintRunWithContext(aws.Context, *glue.StartBlueprintRunInput, ...request.Option) (*glue.StartBlueprintRunOutput, error)
 	StartBlueprintRunRequest(*glue.StartBlueprintRunInput) (*request.Request, *glue.StartBlueprintRunOutput)
 
+	StartColumnStatisticsTaskRun(*glue.StartColumnStatisticsTaskRunInput) (*glue.StartColumnStatisticsTaskRunOutput, error)
+	StartColumnStatisticsTaskRunWithContext(aws.Context, *glue.StartColumnStatisticsTaskRunInput, ...request.Option) (*glue.StartColumnStatisticsTaskRunOutput, error)
+	StartColumnStatisticsTaskRunRequest(*glue.StartColumnStatisticsTaskRunInput) (*request.Request, *glue.StartColumnStatisticsTaskRunOutput)
+
 	StartCrawler(*glue.StartCrawlerInput) (*glue.StartCrawlerOutput, error)
 	StartCrawlerWithContext(aws.Context, *glue.StartCrawlerInput, ...request.Option) (*glue.StartCrawlerOutput, error)
 	StartCrawlerRequest(*glue.StartCrawlerInput) (*request.Request, *glue.StartCrawlerOutput)
@@ -765,6 +878,14 @@ type GlueAPI interface {
 	StartCrawlerSchedule(*glue.StartCrawlerScheduleInput) (*glue.StartCrawlerScheduleOutput, error)
 	StartCrawlerScheduleWithContext(aws.Context, *glue.StartCrawlerScheduleInput, ...request.Option) (*glue.StartCrawlerScheduleOutput, error)
 	StartCrawlerScheduleRequest(*glue.StartCrawlerScheduleInput) (*request.Request, *glue.StartCrawlerScheduleOutput)
+
+	StartDataQualityRuleRecommendationRun(*glue.StartDataQualityRuleRecommendationRunInput) (*glue.StartDataQualityRuleRecommendationRunOutput, error)
+	StartDataQualityRuleRecommendationRunWithContext(aws.Context, *glue.StartDataQualityRuleRecommendationRunInput, ...request.Option) (*glue.StartDataQualityRuleRecommendationRunOutput, error)
+	StartDataQualityRuleRecommendationRunRequest(*glue.StartDataQualityRuleRecommendationRunInput) (*request.Request, *glue.StartDataQualityRuleRecommendationRunOutput)
+
+	StartDataQualityRulesetEvaluationRun(*glue.StartDataQualityRulesetEvaluationRunInput) (*glue.StartDataQualityRulesetEvaluationRunOutput, error)
+	StartDataQualityRulesetEvaluationRunWithContext(aws.Context, *glue.StartDataQualityRulesetEvaluationRunInput, ...request.Option) (*glue.StartDataQualityRulesetEvaluationRunOutput, error)
+	StartDataQualityRulesetEvaluationRunRequest(*glue.StartDataQualityRulesetEvaluationRunInput) (*request.Request, *glue.StartDataQualityRulesetEvaluationRunOutput)
 
 	StartExportLabelsTaskRun(*glue.StartExportLabelsTaskRunInput) (*glue.StartExportLabelsTaskRunOutput, error)
 	StartExportLabelsTaskRunWithContext(aws.Context, *glue.StartExportLabelsTaskRunInput, ...request.Option) (*glue.StartExportLabelsTaskRunOutput, error)
@@ -793,6 +914,10 @@ type GlueAPI interface {
 	StartWorkflowRun(*glue.StartWorkflowRunInput) (*glue.StartWorkflowRunOutput, error)
 	StartWorkflowRunWithContext(aws.Context, *glue.StartWorkflowRunInput, ...request.Option) (*glue.StartWorkflowRunOutput, error)
 	StartWorkflowRunRequest(*glue.StartWorkflowRunInput) (*request.Request, *glue.StartWorkflowRunOutput)
+
+	StopColumnStatisticsTaskRun(*glue.StopColumnStatisticsTaskRunInput) (*glue.StopColumnStatisticsTaskRunOutput, error)
+	StopColumnStatisticsTaskRunWithContext(aws.Context, *glue.StopColumnStatisticsTaskRunInput, ...request.Option) (*glue.StopColumnStatisticsTaskRunOutput, error)
+	StopColumnStatisticsTaskRunRequest(*glue.StopColumnStatisticsTaskRunInput) (*request.Request, *glue.StopColumnStatisticsTaskRunOutput)
 
 	StopCrawler(*glue.StopCrawlerInput) (*glue.StopCrawlerOutput, error)
 	StopCrawlerWithContext(aws.Context, *glue.StopCrawlerInput, ...request.Option) (*glue.StopCrawlerOutput, error)
@@ -850,6 +975,10 @@ type GlueAPI interface {
 	UpdateCrawlerScheduleWithContext(aws.Context, *glue.UpdateCrawlerScheduleInput, ...request.Option) (*glue.UpdateCrawlerScheduleOutput, error)
 	UpdateCrawlerScheduleRequest(*glue.UpdateCrawlerScheduleInput) (*request.Request, *glue.UpdateCrawlerScheduleOutput)
 
+	UpdateDataQualityRuleset(*glue.UpdateDataQualityRulesetInput) (*glue.UpdateDataQualityRulesetOutput, error)
+	UpdateDataQualityRulesetWithContext(aws.Context, *glue.UpdateDataQualityRulesetInput, ...request.Option) (*glue.UpdateDataQualityRulesetOutput, error)
+	UpdateDataQualityRulesetRequest(*glue.UpdateDataQualityRulesetInput) (*request.Request, *glue.UpdateDataQualityRulesetOutput)
+
 	UpdateDatabase(*glue.UpdateDatabaseInput) (*glue.UpdateDatabaseOutput, error)
 	UpdateDatabaseWithContext(aws.Context, *glue.UpdateDatabaseInput, ...request.Option) (*glue.UpdateDatabaseOutput, error)
 	UpdateDatabaseRequest(*glue.UpdateDatabaseInput) (*request.Request, *glue.UpdateDatabaseOutput)
@@ -861,6 +990,10 @@ type GlueAPI interface {
 	UpdateJob(*glue.UpdateJobInput) (*glue.UpdateJobOutput, error)
 	UpdateJobWithContext(aws.Context, *glue.UpdateJobInput, ...request.Option) (*glue.UpdateJobOutput, error)
 	UpdateJobRequest(*glue.UpdateJobInput) (*request.Request, *glue.UpdateJobOutput)
+
+	UpdateJobFromSourceControl(*glue.UpdateJobFromSourceControlInput) (*glue.UpdateJobFromSourceControlOutput, error)
+	UpdateJobFromSourceControlWithContext(aws.Context, *glue.UpdateJobFromSourceControlInput, ...request.Option) (*glue.UpdateJobFromSourceControlOutput, error)
+	UpdateJobFromSourceControlRequest(*glue.UpdateJobFromSourceControlInput) (*request.Request, *glue.UpdateJobFromSourceControlOutput)
 
 	UpdateMLTransform(*glue.UpdateMLTransformInput) (*glue.UpdateMLTransformOutput, error)
 	UpdateMLTransformWithContext(aws.Context, *glue.UpdateMLTransformInput, ...request.Option) (*glue.UpdateMLTransformOutput, error)
@@ -878,9 +1011,17 @@ type GlueAPI interface {
 	UpdateSchemaWithContext(aws.Context, *glue.UpdateSchemaInput, ...request.Option) (*glue.UpdateSchemaOutput, error)
 	UpdateSchemaRequest(*glue.UpdateSchemaInput) (*request.Request, *glue.UpdateSchemaOutput)
 
+	UpdateSourceControlFromJob(*glue.UpdateSourceControlFromJobInput) (*glue.UpdateSourceControlFromJobOutput, error)
+	UpdateSourceControlFromJobWithContext(aws.Context, *glue.UpdateSourceControlFromJobInput, ...request.Option) (*glue.UpdateSourceControlFromJobOutput, error)
+	UpdateSourceControlFromJobRequest(*glue.UpdateSourceControlFromJobInput) (*request.Request, *glue.UpdateSourceControlFromJobOutput)
+
 	UpdateTable(*glue.UpdateTableInput) (*glue.UpdateTableOutput, error)
 	UpdateTableWithContext(aws.Context, *glue.UpdateTableInput, ...request.Option) (*glue.UpdateTableOutput, error)
 	UpdateTableRequest(*glue.UpdateTableInput) (*request.Request, *glue.UpdateTableOutput)
+
+	UpdateTableOptimizer(*glue.UpdateTableOptimizerInput) (*glue.UpdateTableOptimizerOutput, error)
+	UpdateTableOptimizerWithContext(aws.Context, *glue.UpdateTableOptimizerInput, ...request.Option) (*glue.UpdateTableOptimizerOutput, error)
+	UpdateTableOptimizerRequest(*glue.UpdateTableOptimizerInput) (*request.Request, *glue.UpdateTableOptimizerOutput)
 
 	UpdateTrigger(*glue.UpdateTriggerInput) (*glue.UpdateTriggerOutput, error)
 	UpdateTriggerWithContext(aws.Context, *glue.UpdateTriggerInput, ...request.Option) (*glue.UpdateTriggerOutput, error)

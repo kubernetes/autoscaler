@@ -154,7 +154,7 @@ func objectsAreEqual(expected, actual interface{}) bool {
 
 // Equal asserts that two objects are equal.
 //
-//	assert.Equal(t, 123, 123, "123 and 123 should be equal")
+//    assert.Equal(t, 123, 123, "123 and 123 should be equal")
 //
 // Returns whether the assertion was successful (true) or not (false).
 //
